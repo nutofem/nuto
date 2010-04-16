@@ -1,0 +1,2 @@
+# $Id#
+ADD_SUBDIRECTORY(c++)

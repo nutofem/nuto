@@ -1,0 +1,68 @@
+// $Id$
+
+#ifndef SectionPlane_H_
+#define SectionPlane_H_
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif // ENABLE_SERIALIZATION
+
+#include "nuto/mechanics/sections/SectionBase.h"
+
+namespace NuTo
+{
+//! @author Stefan Eckardt, ISM
+//! @date November 2009
+//! @brief ... section for two-dimensional elements
+class SectionPlane: public NuTo::SectionBase
+{
+#ifdef ENABLE_SERIALIZATION
+   friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
+public:
+    //! @brief ... constructor
+    SectionPlane(eSectionType rSectionType);
+
+    //! @brief ... get the section thickness
+    //! @return ... section thickness
+    virtual double GetThickness() const;
+
+    //! @brief ... set the thickness of the section
+    //! @param rThickness ... section thickness
+    virtual void SetThickness(double rThickness);
+
+    //! @brief ... get the section type
+    //! @return ... section type
+    virtual eSectionType GetType() const;
+
+    //! @brief ... print information about the section
+    //! @param rVerboseLevel ... verbosity of the information
+    virtual void Info(unsigned short rVerboseLevel) const;
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase)
+           & BOOST_SERIALIZATION_NVP(this->mThickness)
+           & BOOST_SERIALIZATION_NVP(this->mSectionType);
+    }
+#endif // ENABLE_SERIALIZATION
+
+private:
+    //! @brief ... section thickness
+    double        mThickness;
+    eSectionType   mSectionType;
+};
+
+}
+
+#endif // SectionPlane_H_

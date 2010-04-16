@@ -1,0 +1,168 @@
+// $Id: $
+
+#include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
+#include "nuto/mechanics/elements/Truss1D.h"
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
+#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include <assert.h>
+
+
+NuTo::Truss1D::Truss1D(NuTo::StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType) :
+        Truss(rStructure, rElementDataType, rIntegrationType)
+{}
+
+//! @brief calculates the local coordinates of the nodes
+//! @param localCoordinates vector with already correct size allocated
+//! this can be checked with an assertation
+void NuTo::Truss1D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const
+{
+    assert((int)rLocalCoordinates.size()==GetNumNodes());
+    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    {
+        dynamic_cast<const NodeCoordinates<1> *>(GetNode(theNode))->GetCoordinates(&(rLocalCoordinates[theNode]));
+    }
+}
+
+//! @brief calculates the local displacements of the nodes
+//! @param localDisplacements vector with already correct size allocated
+//! this can be checked with an assertation
+void NuTo::Truss1D::CalculateLocalDisplacements(std::vector<double>& rLocalDisplacements)const
+{
+    assert((int)rLocalDisplacements.size()==GetNumNodes());
+    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    {
+        const NodeDisplacements<1> *nodePtr(dynamic_cast<const NodeDisplacements<1> *>(GetNode(theNode)));
+        assert(nodePtr!=0);
+        nodePtr->GetDisplacements(&(rLocalDisplacements[theNode]));
+    }
+}
+
+// interpolate geometry
+void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const
+{
+    // calculate shape functions
+    std::vector<double> ShapeFunctions(this->GetNumNodes());
+    this->CalculateShapeFunctions(rLocalCoordinates, ShapeFunctions);
+
+    // start interpolation
+    rGlobalCoordinates[0] = 0.0;
+    rGlobalCoordinates[1] = 0.0;
+    rGlobalCoordinates[2] = 0.0;
+    for (int theNode = 0; theNode < this->GetNumNodes(); theNode++)
+    {
+        // get node coordinate
+        double NodeCoordinate;
+        const NodeCoordinates<1> *nodePtr(dynamic_cast<const NodeCoordinates<1> *>(GetNode(theNode)));
+        assert(nodePtr!=0);
+        nodePtr->GetCoordinates(&NodeCoordinate);
+
+        // add node contribution
+        rGlobalCoordinates[0] += ShapeFunctions[theNode] *  NodeCoordinate;
+    }
+}
+
+// interpolate displacements
+void NuTo::Truss1D::InterpolateDisplacementsFrom1D(double rLocalCoordinates, double rGlobalDisplacements[3]) const
+{
+    // calculate shape functions
+    std::vector<double> ShapeFunctions(this->GetNumNodes());
+    this->CalculateShapeFunctions(rLocalCoordinates, ShapeFunctions);
+
+    // start interpolation
+    rGlobalDisplacements[0] = 0.0;
+    rGlobalDisplacements[1] = 0.0;
+    rGlobalDisplacements[2] = 0.0;
+    for (int theNode = 0; theNode < this->GetNumNodes(); theNode++)
+    {
+        // get node displacements
+        double NodeDisplacement;
+        const NodeDisplacements<1> *nodePtr(dynamic_cast<const NodeDisplacements<1> *>(GetNode(theNode)));
+        assert(nodePtr!=0);
+        nodePtr->GetDisplacements(&NodeDisplacement);
+
+        // add node contribution
+        rGlobalDisplacements[0] += ShapeFunctions[theNode] *  NodeDisplacement;
+    }
+}
+
+// build global row dofs
+void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const
+{
+    rGlobalRowDofs.resize(this->GetNumNodes());
+    for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
+    {
+        const NodeDisplacements<1>* nodePtr = dynamic_cast< const NodeDisplacements<1>* >(this->GetNode(nodeCount));
+        assert(nodePtr != NULL);
+        rGlobalRowDofs[nodeCount] = nodePtr->GetDofDisplacement(0);
+    }
+}
+
+// build global column dof
+void NuTo::Truss1D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const
+{
+    this->CalculateGlobalRowDofs(rGlobalColumnDofs);
+}
+
+// check element definition
+void NuTo::Truss1D::CheckElement()
+{
+    // check nodes
+    for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
+    {
+        if (dynamic_cast< const NodeDisplacements<1>* >(this->GetNode(nodeCount)) == 0)
+        {
+            throw MechanicsException("[NuTo::Truss1D::CheckElement] invalid node type (check node definition for displacements).");
+        }
+    }
+
+    // check node ordering (element length must be positive) and for changing sign in jacobian determinant
+    //calculate local coordinates
+    std::vector<double> localNodeCoord(this->GetNumLocalDofs());
+    this->CalculateLocalCoordinates(localNodeCoord);
+
+    // check number of integration points
+    if (this->GetNumIntegrationPoints() < 1)
+    {
+        throw MechanicsException("[NuTo::Truss1D::CheckElement] invalid integration type.");
+    }
+
+    // check sign of the jacobian determinant of the first integration point
+    double localIPCoord;
+    this->GetLocalIntegrationPointCoordinates(0, localIPCoord);
+
+    std::vector<double> derivativeShapeFunctions(this->GetLocalDimension()*this->GetNumShapeFunctions());
+    this->CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
+
+    double detJacobian = this->DetJacobian(derivativeShapeFunctions,localNodeCoord);
+
+    // reorder nodes if determinant is negative
+    if (detJacobian < 0.0)
+    {
+        this->ReorderNodes();
+        // recalculate node coordinates after reordering
+        this->CalculateLocalCoordinates(localNodeCoord);
+    }
+
+    // check jacobian determinant for all integration points for positive sign and calculate element length
+    double length = 0;
+    for (int ipCount = 0; ipCount < this->GetNumIntegrationPoints(); ipCount++)
+    {
+        // calculate jacobian determinant
+        this->GetLocalIntegrationPointCoordinates(ipCount, localIPCoord);
+        this->CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
+        detJacobian = this->DetJacobian(derivativeShapeFunctions,localNodeCoord);
+        if (detJacobian <= 0)
+        {
+            throw MechanicsException("[NuTo::Truss1D::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
+        }
+        length += this->GetIntegrationPointWeight(ipCount) * detJacobian;
+    }
+
+    // check element length
+    if (length < 1e-14)
+    {
+        throw MechanicsException("[NuTo::Truss1D::CheckElement] element with zero length (check nodes).");
+    }
+}
+
