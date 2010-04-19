@@ -181,6 +181,56 @@ protected:
         // read empty line
         getline (file, line);
     }
+
+/*    void FullMatrix::ImportFromVtkASCIIFileReadHeader(std::ifstream& file, unsigned int imageDim[3], double imageSpacing[3], double imageOrigin[3], unsigned int& numEntries)
+     {
+         // @TODO check Input Format and DataType
+     	assert(file.is_open());
+
+         using namespace boost::spirit::classic;
+         // read first four lines
+         std::string line;
+         getline (file, line);
+         getline (file, line);
+         getline (file, line);
+         getline (file, line);
+         // read dimension
+         getline (file, line);
+         if (parse(line.c_str(),("DIMENSIONS " >> uint_p[assign_a(imageDim[0])] >> ' '
+     								   >> uint_p[assign_a(imageDim[1])] >> ' '
+                                        >> uint_p[assign_a(imageDim[2])] >> *space_p)).full == false)
+        {
+             throw MathException("[Matrix::importFromVtkASCIIFileReadHeader]error reading dimension.");
+        }
+         // read spacing
+         getline (file, line);
+         if (parse(line.c_str(),("SPACING ">> real_p[assign_a(imageSpacing[0])] >> ' '
+                                 >> real_p[assign_a(imageSpacing[1])] >> ' '
+                                 >> real_p[assign_a(imageSpacing[2])] >> *space_p)).full == false)
+         {
+             throw MathException("[Matrix::importFromVtkASCIIFileReadHeader]error reading spacing.");
+         }
+         // read origin
+         getline (file, line);
+         if (parse(line.c_str(),("ORIGIN ">> real_p[assign_a(imageOrigin[0])] >> ' '
+                                  >> real_p[assign_a(imageOrigin[1])] >> ' '
+                                  >> real_p[assign_a(imageOrigin[2])] >> *space_p)).full == false)
+         {
+              throw MathException("[Matrix::importFromVtkASCIIFileReadHeader]error reading origin.");
+         }
+         // read number of entries
+         getline (file, line);
+         if (parse(line.c_str(),("POINT DATA ">> uint_p[assign_a(numEntries)] >>  *space_p)).full == false)
+                {
+                    throw MathException("[Matrix::importFromVtkASCIIFileReadHeader]error reading number of entries.");
+                }
+         // read type of input data
+         getline (file, line);
+
+         // read empty line
+         getline (file, line);
+     }
+   */
     /*
     	virtual void Max(T& rResultOutput)=0;
     	virtual void Max(int& rRowOutput, int& rColumnOutput, T& rResultOutput)=0;

@@ -637,8 +637,13 @@ public:
     //! @return    converted matrix
     FullMatrix<int> Convert2int();
 
+    //! @brief ... converts any FullMatrix to a ShortFullMatrix
+    //! @return    converted matrix
+    FullMatrix<short> Convert2short();
 
     virtual void ImportFromSLangText ( const char* fileName );
+    //! @brief ... imports Matrix from a Vtk ASCII File
+    virtual void ImportFromVtkASCIIFile(const char* fileName);
 
     //! @brief performs a dyadic operator on all matrix entries and the entries of another matrix
     //! @param rOperator        Dyadic Operator
@@ -712,10 +717,10 @@ public:
 #endif
 
     //! @brief elementwise absolute value of the matrix
-    virtual FullMatrix<T> Abs()
-    {
-        return FullMatrix<T> ( mEigenMatrix.cwise().abs() );
-    }
+    virtual FullMatrix<T> Abs();
+//    {
+//		  //return FullMatrix<T> ( mEigenMatrix.cwise().abs() );
+//    }
 
     //! @brief elementwise absolute value of the matrix
     virtual FullMatrix<T> Trans()

@@ -24,3 +24,4 @@
 %include "nuto/math/FullMatrix.h"
 %template(DoubleFullMatrix) NuTo::FullMatrix<double>;
 %template(IntFullMatrix) NuTo::FullMatrix<int>;
+%template(ShortFullMatrix) NuTo::FullMatrix<short>;

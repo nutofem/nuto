@@ -17,7 +17,6 @@
 %apply double *OUTPUT { double& rResultOutput};
 %apply int *OUTPUT { int& rRowOutput, int& rColumnOutput, int& rResultOutput};
 
-
 // convert python string to std::string
 %include "std_string.i"
 // convert python tuple to std::vector
@@ -31,5 +30,6 @@
 %include "nuto/math/Matrix.h"
 %template(DoubleMatrix) NuTo::Matrix<double>;
 %template(IntMatrix) NuTo::Matrix<int>;
+%template(ShortMatrix) NuTo::Matrix<short>;
 %template(DoubleVector) std::vector<double>;
 %template(IntVector) std::vector<int>;

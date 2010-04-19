@@ -32,7 +32,9 @@
 NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject()
 {
     if (rDimension!=1 && rDimension!=2 && rDimension!=3)
+    {
         throw MechanicsException("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
+    }
     mDimension = rDimension;
     mNumDofs   = 0;
     mNodeNumberingRequired = true;

@@ -24,6 +24,14 @@ std::string NuTo::Matrix<int>::Convert2String(int value)
 }
 
 template <>
+std::string NuTo::Matrix<short>::Convert2String(short value)
+{
+    std::ostringstream format_message;
+    format_message << value;
+    return format_message.str();
+}
+
+template <>
 std::string NuTo::Matrix<double>::Convert2String(double value, bool scientific, int precision, int width)
 {
     std::ostringstream format_message;
@@ -43,6 +51,16 @@ std::string NuTo::Matrix<double>::Convert2String(double value, bool scientific, 
 
 template <>
 std::string NuTo::Matrix<int>::Convert2String(int value, bool scientific, int precision, int width)
+{
+    std::ostringstream format_message;
+    format_message.setf ( std::ios_base::right);
+    format_message.width(width);
+    format_message << value;
+    return format_message.str();
+}
+
+template <>
+std::string NuTo::Matrix<short>::Convert2String(short value, bool scientific, int precision, int width)
 {
     std::ostringstream format_message;
     format_message.setf ( std::ios_base::right);

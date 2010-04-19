@@ -63,6 +63,7 @@ elements/Truss1D.cpp
 elements/Truss1D2N.cpp
 elements/Truss1D3N.cpp
 elements/Tetrahedron4N.cpp
+elements/Voxel8N.cpp
 )
 
 SET(NuToMechanicsGroups_SOURCES
