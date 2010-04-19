@@ -51,7 +51,9 @@ elements/Brick8N.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutive.cpp
+elements/ElementDataConstitutiveBase.cpp
 elements/ElementDataConstitutiveStaticData.cpp
+elements/ElementDataStaticDataBase.cpp
 elements/ElementWithDataBase.cpp
 elements/Plane.cpp
 elements/Plane2D.cpp

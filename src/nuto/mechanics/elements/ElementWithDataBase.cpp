@@ -34,6 +34,7 @@ NuTo::ElementWithDataBase::ElementWithDataBase(const StructureBase* rStructure,
 	}
 
 	mElementData = ptrElementData;
+	printf("Allocate %p",ptrElementData);
 }
 
 // destructor
@@ -41,6 +42,7 @@ NuTo::ElementWithDataBase::~ElementWithDataBase()
 {
     if(this->mElementData != 0)
     {
+    	printf("Delete %p",mElementData);
         delete this->mElementData;
     }
 }

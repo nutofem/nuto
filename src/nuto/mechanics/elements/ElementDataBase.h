@@ -38,39 +38,39 @@ public:
     };
 
     //! @brief constructor
-    ElementDataBase(const NuTo::IntegrationTypeBase* rIntegrationType)
-    {
-    	mIntegrationType = rIntegrationType;
-    };
+    ElementDataBase(const NuTo::IntegrationTypeBase* rIntegrationType);
+
+    //! @brief constructor
+    virtual ~ElementDataBase();
     
     //! @brief sets the constitutive law for all integration points of the element
     //! @param rConstitutiveLaw constitutive law
-    virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw)=0;
+    virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief sets the constitutive law for a single integration point of the element
     //! @param rConstitutiveLaw constitutive law
     //! @param rIp integration point
-   virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw)=0;
+   virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-    virtual ConstitutiveStaticDataBase* GetStaticData(int rIp)=0;
+    virtual ConstitutiveStaticDataBase* GetStaticData(int rIp);
 
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-   virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const=0;
+   virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point
     //! @return constitutive law
-    virtual  ConstitutiveBase* GetConstitutiveLaw(int rIp)=0;
+    virtual  ConstitutiveBase* GetConstitutiveLaw(int rIp);
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point
     //! @return constitutive law
-    virtual  const ConstitutiveBase* GetConstitutiveLaw(int rIp)const=0;
+    virtual  const ConstitutiveBase* GetConstitutiveLaw(int rIp)const;
 
     //! @brief sets the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -90,6 +90,11 @@ public:
     //! @param rIp integration point
     virtual void UpdateForModifiedIntegrationType(const ElementBase* rElement)=0;
 
+    //! @brief update the information related to a modification of the constitutive law, e.g. reallocation of the static data, ip data
+    //! @param rElement pointer to element
+    //! @param rIp integration point
+    virtual void UpdateForModifiedConstitutiveLaw(const ElementBase* rElement)=0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -102,6 +107,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
     
 protected:
+    //ElementDataBase(){};
     const IntegrationTypeBase *mIntegrationType;
 };
 }//namespace NuTo
