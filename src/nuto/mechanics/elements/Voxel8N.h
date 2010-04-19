@@ -28,10 +28,10 @@ class Voxel8N : public Solid
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,ElementDataBase::eElementDataType rElementDataType);
+    Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,NuTo::ElementDataBase::eElementDataType rElementDataType);
 
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,ElementDataBase::eElementDataType rElementDataType);
+    Voxel8N(NuTo::StructureBase* rStructure,NuTo::ElementDataBase::eElementDataType rElementDataType);
 
     #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

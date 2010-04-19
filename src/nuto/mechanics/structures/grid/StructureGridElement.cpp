@@ -93,9 +93,6 @@ void NuTo::StructureGrid::ElementCreate (unsigned int rElementNumber, unsigned i
 void NuTo::StructureGrid::ElementCreate(unsigned int rElementNumber, unsigned int rElementID,  const std::string& rElementType,
         const std::string& rElementDataType)
 {
-
-    const IntegrationTypeBase *ptrIntegrationType;
-    ElementBase* ptrElement;
     // get element type
     std::string upperCaseElementType;
     std::transform(rElementType.begin(), rElementType.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
@@ -113,7 +110,7 @@ void NuTo::StructureGrid::ElementCreate(unsigned int rElementNumber, unsigned in
      std::string upperCaseElementDataType;
      std::transform(rElementDataType.begin(), rElementDataType.end(), std::back_inserter(upperCaseElementDataType), (int(*)(int)) toupper);
 
-     ElementDataBase::eElementDataType elementDataType;
+     NuTo::ElementDataBase::eElementDataType elementDataType;
      if (upperCaseElementDataType=="CONSTITUTIVELAWELEMENT_NOSTATICDATA")
      {
          elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWELEMENT_NOSTATICDATA;
@@ -135,23 +132,35 @@ void NuTo::StructureGrid::ElementCreate(unsigned int rElementNumber, unsigned in
          throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist.");
      }
 
-     switch (elementType)
-     {
-      case NuTo::ElementBase::VOXEL8N:
-         // get the integration type pointer, if not existent, create the integration type
-         //ptrIntegrationType = GetPtrIntegrationType(NuTo::Brick8N::GetStandardIntegrationType());
-         if (this->mDimension != 3)
-         {
-             throw MechanicsException("[NuTo::StructureGrid::ElementCreate] Voxel8N is a 3D element.");
-         }
-         ptrElement = new NuTo::Voxel8N(this,rElementID, elementDataType);
-         //ptrElement = new NuTo::Voxel8N(this,rElementDataType);
-         break;
-     default:
-         throw NuTo::MechanicsException("[NuTo::StructureGrid::ElementCreate] Invalid element type.");
-     }
-     this->mElementVec.push_back(ptrElement);
+     this->ElementCreate(rElementNumber, rElementID, elementType,elementDataType);
 }
 
+//! @brief Creates an element
+//! @param rElementIdent identifier for the element
+//! @param rElementType element type
+//! @param rNodeIdents Identifier for the corresponding nodes
 
+void NuTo::StructureGrid::ElementCreate (unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, ElementDataBase::eElementDataType rElementDataType)
+{
+    // const IntegrationTypeBase *ptrIntegrationType;
+    ElementBase* ptrElement;
+    switch (rElementType)
+    {
+     case NuTo::ElementBase::VOXEL8N:
+        // get the integration type pointer, if not existent, create the integration type
+        //ptrIntegrationType = GetPtrIntegrationType(NuTo::Voxel8N::GetStandardIntegrationType());
+        if (this->mDimension != 3)
+        {
+            throw MechanicsException("[NuTo::StructureGrid::ElementCreate] Voxel8N is a 3D element.");
+        }
+        ptrElement = new NuTo::Voxel8N(this,rElementID, rElementDataType);
+        //ptrElement = new NuTo::Voxel8N(this,rElementDataType);
+        break;
+    default:
+        throw NuTo::MechanicsException("[NuTo::StructureGrid::ElementCreate] Invalid element type.");
+    }
+    this->mElementVec.push_back(ptrElement);
+
+
+}
 

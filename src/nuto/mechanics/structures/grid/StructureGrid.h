@@ -156,21 +156,15 @@ public:
     //! @param rElementType element type
     void ElementCreate (unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType, const std::string& rElementDataType);
 
-    //! @brief Creates an element
-    //! @param rElementID identifier for the element
-    //! @param rElementNumber number of the element
-    //! @param rElementType element type
-  // void ElementCreate(unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rType, ElementDataBase::eElementDataType rElementDataType);
-/*
 #ifndef SWIG
     //! @brief Creates an element
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, ElementDataBase::eElementDataType rElementDataType);
+    void ElementCreate (unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, NuTo::ElementDataBase::eElementDataType rElementDataType);
 
 #endif //SWIG
-*/
+
 protected:
     unsigned int mNumVoxel;  //number of voxels
 //! @TODO length of list in function of real dimension

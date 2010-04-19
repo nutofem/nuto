@@ -52,8 +52,8 @@ int NuTo::StructureGrid::NodeGetId(const NodeBase* rNode)const
     }
     if (it== mNodeVec.end())
         throw MechanicsException("[NuTo::StructureGrid::GetNodeId] Node does not exist.");
- //   NuTo::NodeGridCoordinates* myNode = static_cast<const NuTo::NodeGridCoordinates*>(rNode);
-//    return  myNode.GetNodeID();
+    const NuTo::NodeGridCoordinates* myNode = dynamic_cast<const NuTo::NodeGridCoordinates*>(rNode);
+    return  myNode->GetNodeID();
     //   return ((const NuTo::NodeGridCoordinates*)rNode)->GetNodeID();
    //return rNode->GetNumCoordinates();
 }

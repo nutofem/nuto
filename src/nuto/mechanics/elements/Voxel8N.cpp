@@ -6,12 +6,12 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include <assert.h>
 
-NuTo::Voxel8N::Voxel8N(NuTo::StructureBase* rStructure, unsigned int rElementID, ElementDataBase::eElementDataType rElementDataType) :
+NuTo::Voxel8N::Voxel8N(NuTo::StructureBase* rStructure, unsigned int rElementID, NuTo::ElementDataBase::eElementDataType rElementDataType) :
         NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
 {
     mVoxelID = (int) rElementID;
 }
-NuTo::Voxel8N::Voxel8N(NuTo::StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType) :
+NuTo::Voxel8N::Voxel8N(NuTo::StructureBase* rStructure, NuTo::ElementDataBase::eElementDataType rElementDataType) :
         NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
 {
     mVoxelID = -1;

@@ -146,7 +146,7 @@ int main()
         myGrid.CreateElementGrid(myMapColorModul,"BRICK8N");
         std::cout<<"ElementGrid created"<<std::endl;
         std::cout<<"knoten "<<myGrid.GetNumNodes()<<std::endl;
- //       std::cout<<"knoten "<<myGrid.NodeGetID(GetNumNodes()-1)<<std::endl;
+        std::cout<<"knoten "<<myGrid.NodeGetID(GetNumNodes()-1)<<std::endl;
     }
     catch (NuTo::MechanicsException& e)
     {
