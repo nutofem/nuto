@@ -142,6 +142,13 @@ public:
         mEigenMatrix-=other.mEigenMatrix;
         return *this;
     }
+    
+    FullMatrix<T> operator*= ( const T &other )
+    {
+        mEigenMatrix*=other;
+        return *this;
+    }
+
 
     T& operator() ( int i, int j )
     {

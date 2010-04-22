@@ -184,6 +184,11 @@ public:
     //! @param rMatrix ... full matrix
     //! @return ... result matrix (full storage)
     FullMatrix<T> operator* (const FullMatrix<T>& rMatrix) const;
+    
+    //! @brief ... multiplies the matrix with an scalar value
+    //! @param rOther ... scalar value
+    //! @return ... the multiplied matrix (sparse csr storage)
+	SparseMatrixCSRSymmetric<T> operator* (const T& rScal) const;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed

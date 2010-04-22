@@ -20,6 +20,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
+#include <boost/foreach.hpp>
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrix.h"
@@ -232,6 +233,17 @@ public:
         for (unsigned int count=0; count<mValues.size(); count++)
             mValues[count] = rDOperator->Evaluate(mValues[count],rValue);
     }
+
+    //! @brief ... multiplies the matrix with an scalar value
+    //! @param rOther ... scalar value
+    //! @return ... the multiplied matrix (sparse csr storage)
+    SparseMatrixCSR<T>& operator*=  ( const T &rOther )
+    {
+		BOOST_FOREACH( T &val, this->mValues )
+			val *= rOther;
+        return *this;
+    }
+
 
     //! @brief Determine the largest matrix entry
     //! @param rResultOutput ... largest matrix entry

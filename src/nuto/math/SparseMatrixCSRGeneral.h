@@ -421,6 +421,17 @@ public:
         return result;
     }
 
+    //! @brief ... multiplies the matrix with an scalar value
+    //! @param rOther ... scalar value
+    //! @return ... the multiplied matrix (sparse csr storage)
+    SparseMatrixCSRGeneral<T> operator* ( const T &rOther ) const
+    {
+        SparseMatrixCSRGeneral<T> result(*this);
+		BOOST_FOREACH( T &val, result.mValues )
+			val *= rOther;
+        return result;
+    }
+
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix

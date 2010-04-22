@@ -349,4 +349,22 @@ FullMatrix<double> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix
     return result;
 }
 
+// multiply sparse matrix with scalar
+template<>
+SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator* (const int& rScal) const
+{
+    throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
+}
+
+// multiply sparse matrix with scalar
+template<>
+SparseMatrixCSRSymmetric<double> SparseMatrixCSRSymmetric<double>::operator* (const double& rScal) const
+{
+	SparseMatrixCSRSymmetric<double> result(*this);
+	BOOST_FOREACH( double &val, result.mValues )
+		val *= rScal;
+	return result;
+}
+
+
 } // namespace NuTo
