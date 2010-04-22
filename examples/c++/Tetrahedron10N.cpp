@@ -67,12 +67,12 @@ int main()
     int myElement1 = myStructure.ElementCreate("Tetrahedron10N",Incidence);
 
 	//create constitutive law
-    myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic");
-    myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",1);
-    myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0);
+    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
+    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
 
     // assign constitutive law
-    myStructure.ElementSetConstitutiveLaw(myElement1,"myMatLin");
+    myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
 
     NuTo::FullMatrix<double> Ke;
     NuTo::FullMatrix<int> rowIndex;

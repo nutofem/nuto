@@ -41,9 +41,9 @@ int main()
     unsigned int myElement2 = myStructure.ElementCreate("Truss1D2N", Incidences);
 
     // create constitutive law
-    myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic");
-    myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",10);
-    myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0.1);
+    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
+    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
     // create section
     myStructure.SectionCreate("mySection1","1D");
@@ -51,9 +51,9 @@ int main()
 
     // assign material, section and integration type
     myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip");
-    myStructure.ElementSetConstitutiveLaw(myElement1,"myMatLin");
+    myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
     myStructure.ElementSetSection(myElement1,"mySection1");
-    myStructure.ElementSetConstitutiveLaw(myElement2,"myMatLin");
+    myStructure.ElementSetConstitutiveLaw(myElement2,myMatLin);
     myStructure.ElementSetSection(myElement2,"mySection1");
 
     // visualize element

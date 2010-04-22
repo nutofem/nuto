@@ -7,7 +7,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 
 // create a new constitutive law
-void NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rIdent, const std::string& rType)
+int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
 {
     // convert section type string to upper case
     std::string ConstitutiveLawTypeString;
@@ -27,14 +27,24 @@ void NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rIdent, const
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
     }
-    this->ConstitutiveLawCreate(rIdent, ConstitutiveLawType);
+
+	//find unused integer id
+	int constitutiveNumber(mConstitutiveLawMap.size());
+	boost::ptr_map<int,ConstitutiveBase>::iterator it = mConstitutiveLawMap.find(constitutiveNumber);
+	while (it!=mConstitutiveLawMap.end())
+	{
+		constitutiveNumber++;
+		it = mConstitutiveLawMap.find(constitutiveNumber);
+	}
+
+    this->ConstitutiveLawCreate(constitutiveNumber, ConstitutiveLawType);
 }
 
-// create a new section
-void NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rIdent, ConstitutiveBase::eConstitutiveType rType)
+// create a new constitutive law
+void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, ConstitutiveBase::eConstitutiveType rType)
 {
     // check if constitutive law identifier exists
-    boost::ptr_map<std::string,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
+    boost::ptr_map<int,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
         // create new constitutive law
@@ -52,7 +62,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rIdent, Const
         }
 
         // add section to map (insert does not allow const keys!!!!)
-        this->mConstitutiveLawMap.insert(const_cast<std::string&>(rIdent), ConstitutiveLawPtr);
+        this->mConstitutiveLawMap.insert(rIdent, ConstitutiveLawPtr);
     }
     else
     {
@@ -61,10 +71,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rIdent, Const
 }
 
 // delete an existing constitutive law
-void NuTo::StructureBase::ConstitutiveLawDelete(const std::string& rIdent)
+void NuTo::StructureBase::ConstitutiveLawDelete(int rIdent)
 {
     // find constitutive law identifier in map
-    boost::ptr_map<std::string,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
+    boost::ptr_map<int,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawDelete] Constitutive law does not exist.");
@@ -76,9 +86,9 @@ void NuTo::StructureBase::ConstitutiveLawDelete(const std::string& rIdent)
 }
 
 // get constitutive law pointer from constitutive law identifier
-NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPtr(const std::string& rIdent)
+NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPtr(int rIdent)
 {
-    boost::ptr_map<std::string,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
+    boost::ptr_map<int,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPtr] Constitutive law does not exist.");
@@ -87,9 +97,9 @@ NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPt
 }
 
 // get constitutive law pointer from constitutive law identifier
-const NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPtr(const std::string& rIdent) const
+const NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPtr(int rIdent) const
 {
-    boost::ptr_map<std::string,ConstitutiveBase>::const_iterator it = this->mConstitutiveLawMap.find(rIdent);
+    boost::ptr_map<int,ConstitutiveBase>::const_iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPtr] Constitutive law does not exist.");
@@ -98,9 +108,9 @@ const NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiv
 }
 
 // get constitutive law identifier from constitutive law pointer
-std::string NuTo::StructureBase::ConstitutiveLawGetId(const NuTo::ConstitutiveBase* rConstitutiveLawPtr) const
+int NuTo::StructureBase::ConstitutiveLawGetId(const NuTo::ConstitutiveBase* rConstitutiveLawPtr) const
 {
-    for (boost::ptr_map<std::string,ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it!= mConstitutiveLawMap.end(); it++)
+    for (boost::ptr_map<int,ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it!= mConstitutiveLawMap.end(); it++)
     {
         if (it->second == rConstitutiveLawPtr)
         {
@@ -114,14 +124,14 @@ std::string NuTo::StructureBase::ConstitutiveLawGetId(const NuTo::ConstitutiveBa
 void NuTo::StructureBase::ConstitutiveLawInfo(unsigned short rVerboseLevel) const
 {
     std::cout << "Number of constitutive laws: " << this->GetNumConstitutiveLaws() << std::endl;
-    for (boost::ptr_map<std::string,ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it!= mConstitutiveLawMap.end(); it++)
+    for (boost::ptr_map<int,ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it!= mConstitutiveLawMap.end(); it++)
     {
         std::cout << "  Constitutive law: " << it->first << std::endl;
         it->second->Info(rVerboseLevel);
     }
 }
 
-void NuTo::StructureBase::ConstitutiveLawInfo(const std::string& rIdent, unsigned short rVerboseLevel) const
+void NuTo::StructureBase::ConstitutiveLawInfo(int rIdent, unsigned short rVerboseLevel) const
 {
     const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     std::cout << "  Constitutive law: " << rIdent << std::endl;
@@ -129,7 +139,7 @@ void NuTo::StructureBase::ConstitutiveLawInfo(const std::string& rIdent, unsigne
 }
 
 // set Young's modulus
-void NuTo::StructureBase::ConstitutiveLawSetYoungsModulus(const std::string& rIdent, double rE)
+void NuTo::StructureBase::ConstitutiveLawSetYoungsModulus(int rIdent, double rE)
 {
     try
     {
@@ -144,7 +154,7 @@ void NuTo::StructureBase::ConstitutiveLawSetYoungsModulus(const std::string& rId
 }
 
 // get Young's modulus
-double NuTo::StructureBase::ConstitutiveLawGetYoungsModulus(const std::string& rIdent) const
+double NuTo::StructureBase::ConstitutiveLawGetYoungsModulus(int rIdent) const
 {
     double youngs_modulus;
     try
@@ -161,7 +171,7 @@ double NuTo::StructureBase::ConstitutiveLawGetYoungsModulus(const std::string& r
 }
 
 // set Poisson's ratio
-void NuTo::StructureBase::ConstitutiveLawSetPoissonsRatio(const std::string& rIdent, double rNu)
+void NuTo::StructureBase::ConstitutiveLawSetPoissonsRatio(int rIdent, double rNu)
 {
     try
     {
@@ -176,7 +186,7 @@ void NuTo::StructureBase::ConstitutiveLawSetPoissonsRatio(const std::string& rId
 }
 
 // get Poisson's ratio
-double NuTo::StructureBase::ConstitutiveLawGetPoissonsRatio(const std::string& rIdent) const
+double NuTo::StructureBase::ConstitutiveLawGetPoissonsRatio(int rIdent) const
 {
     double nu;
     try
@@ -194,7 +204,7 @@ double NuTo::StructureBase::ConstitutiveLawGetPoissonsRatio(const std::string& r
 
 //! @brief ... get initial yield strength
 //! @return ... yield strength
-double NuTo::StructureBase::ConstitutiveLawGetInitialYieldStrength(const std::string& rIdent) const
+double NuTo::StructureBase::ConstitutiveLawGetInitialYieldStrength(int rIdent) const
 {
 	try
 	{
@@ -210,7 +220,7 @@ double NuTo::StructureBase::ConstitutiveLawGetInitialYieldStrength(const std::st
 
 //! @brief ... set initial yield strength
 //! @param rSigma ...  yield strength
-void NuTo::StructureBase::ConstitutiveLawSetInitialYieldStrength(const std::string& rIdent, double rSigma)
+void NuTo::StructureBase::ConstitutiveLawSetInitialYieldStrength(int rIdent, double rSigma)
 {
     try
     {
@@ -227,7 +237,7 @@ void NuTo::StructureBase::ConstitutiveLawSetInitialYieldStrength(const std::stri
 //! @brief ... get yield strength for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding yield strength
-NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetYieldStrength(const std::string& rIdent) const
+NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetYieldStrength(int rIdent) const
 {
 	try
 	{
@@ -244,7 +254,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetYieldStrength(co
 //! @brief ... add yield strength
 //! @param rEpsilon ...  equivalent plastic strain
 //! @param rSigma ...  yield strength
-void NuTo::StructureBase::ConstitutiveLawAddYieldStrength(const std::string& rIdent, double rEpsilon, double rSigma)
+void NuTo::StructureBase::ConstitutiveLawAddYieldStrength(int rIdent, double rEpsilon, double rSigma)
 {
     try
     {
@@ -260,7 +270,7 @@ void NuTo::StructureBase::ConstitutiveLawAddYieldStrength(const std::string& rId
 
 //! @brief ... get initial hardening modulus
 //! @return ... hardening modulus
-double NuTo::StructureBase::ConstitutiveLawGetInitialHardeningModulus(const std::string& rIdent) const
+double NuTo::StructureBase::ConstitutiveLawGetInitialHardeningModulus(int rIdent) const
 {
 	try
 	{
@@ -276,7 +286,7 @@ double NuTo::StructureBase::ConstitutiveLawGetInitialHardeningModulus(const std:
 
 //! @brief ... set hardening modulus
 //! @param rH ...  hardening modulus
-void NuTo::StructureBase::ConstitutiveLawSetInitialHardeningModulus(const std::string& rIdent, double rH)
+void NuTo::StructureBase::ConstitutiveLawSetInitialHardeningModulus(int rIdent, double rH)
 {
     try
     {
@@ -293,7 +303,7 @@ void NuTo::StructureBase::ConstitutiveLawSetInitialHardeningModulus(const std::s
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding hardening modulus
-NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetHardeningModulus(const std::string& rIdent) const
+NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetHardeningModulus(int rIdent) const
 {
 	try
 	{
@@ -310,7 +320,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetHardeningModulus
 //! @brief ... add hardening modulus
 //! @param rEpsilon ...  equivalent plastic strain
 //! @param rSigma ...  hardening modulus
-void NuTo::StructureBase::ConstitutiveLawAddHardeningModulus(const std::string& rIdent, double rEpsilon, double rH)
+void NuTo::StructureBase::ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH)
 {
     try
     {

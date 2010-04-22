@@ -48,13 +48,13 @@ myNode10 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(0,0
 myElement1 = myStructure.ElementCreate("Tetrahedron10N",nuto.IntFullMatrix(10,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8,myNode9,myNode10)))
 
 #create constitutive law
-myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",10)
-myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0.25)
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
+myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
 #assign constitutive law 
 #myStructure.ElementSetIntegrationType(myElement1,"3D4NGauss4Ip")
-myStructure.ElementSetConstitutiveLaw(myElement1,"myMatLin")
+myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 
 #set displacements of right node
 myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(3,1,(0.5,0.,0.)))
