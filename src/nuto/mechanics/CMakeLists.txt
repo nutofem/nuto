@@ -96,6 +96,7 @@ loads/LoadNodeGroupForces3D.cpp
 
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
+nodes/NodeNonlocalDataBase.cpp
 )
 
 SET(NuToMechanicsSection_SOURCES

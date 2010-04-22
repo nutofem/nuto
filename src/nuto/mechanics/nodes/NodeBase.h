@@ -27,7 +27,8 @@ public:
         COORDINATES=0,
         DISPLACEMENTS,
         ROTATIONS,
-        TEMPERATURES
+        TEMPERATURES,
+        NONLOCALDATA
     };
     //! @brief constructor
     NodeBase();

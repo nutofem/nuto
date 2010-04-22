@@ -9,7 +9,7 @@
 NuTo::ElementDataConstitutive::ElementDataConstitutive(const NuTo::IntegrationTypeBase* rIntegrationType)
 : NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase(rIntegrationType), NuTo::ElementDataBase::ElementDataBase(rIntegrationType)
 {
-	std::cout << "ElementDataConstitutive constructor " << std::endl;
+	//std::cout << "ElementDataConstitutive constructor " << std::endl;
 }
 
 //! @brief update the information related to a modification of the integration type, e.g. reallocation of the static data

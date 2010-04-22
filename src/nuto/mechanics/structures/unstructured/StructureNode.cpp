@@ -8,6 +8,7 @@
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesTemperatures.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -96,6 +97,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     //! bit 1 : displacements
     //! bit 2 : rotations
     //! bit 3 : temperatures
+    //! bit 4 : nonlocal data
     boost::tokenizer<> tok(rDOFs);
     for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
@@ -105,6 +107,8 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             attributes = attributes | 1 << NodeBase::ROTATIONS;
         if (*beg=="TEMPERATURES")
             attributes = attributes | 1 << NodeBase::TEMPERATURES;
+        if (*beg=="NONLOCALDATA")
+            attributes = attributes | 1 << NodeBase::NONLOCALDATA;
     }
     if (rCoordinates.GetNumRows()!=mDimension || rCoordinates.GetNumColumns()!=1)
         throw MechanicsException("[NuTo::Structure::NodeCreate]\
@@ -183,6 +187,23 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
+	case (1 << NodeBase::COORDINATES) | (1 << NodeBase::DISPLACEMENTS) | (1 << NodeBase::NONLOCALDATA):
+		// coordinates, displacements and nonlocal data
+		switch (mDimension)
+		{
+		case 1:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData<1,1>();
+			break;
+		case 2:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData<2,2>();
+			break;
+		case 3:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData<3,3>();
+			break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+		}
+		break;
     default:
         throw MechanicsException("[NuTo::Structure::NodeCreate] This combination of attributes is not implemented (just add in the source file the relevant combination).");
     }
