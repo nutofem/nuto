@@ -38,6 +38,7 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
 	}
 
     this->ConstitutiveLawCreate(constitutiveNumber, ConstitutiveLawType);
+    return constitutiveNumber;
 }
 
 // create a new constitutive law
