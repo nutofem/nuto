@@ -380,7 +380,7 @@ void NuTo::Structure::NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatr
 					// find global dof number
 					int theDOF = theDispNode->GetDofDisplacement(theDisp);
 
-					for (int local_dof=0; local_dof<elementVectorGlobalDofs.size(); local_dof++)
+					for (unsigned int local_dof=0; local_dof<elementVectorGlobalDofs.size(); local_dof++)
 					{
 						if (elementVectorGlobalDofs[local_dof]==theDOF)
 						{

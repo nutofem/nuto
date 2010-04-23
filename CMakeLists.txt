@@ -81,6 +81,10 @@ ELSE(ENABLE_OPENMP)
   FIND_PACKAGE(Threads REQUIRED)
 ENDIF(ENABLE_OPENMP)
 
+IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ansi -Wall -Wno-long-long -pedantic-errors")
+ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+
 # Python required for interface files c++ and python
 MESSAGE(STATUS "Checking for Python...")
 FIND_PACKAGE(PythonLibs REQUIRED)

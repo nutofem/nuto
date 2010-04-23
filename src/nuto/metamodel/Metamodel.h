@@ -4,14 +4,13 @@
 #include <string>
 #include <time.h>
 
-extern "C" { 
-#include <dSFMT.h>
-}
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/base/NuToObject.h"
 #include "nuto/metamodel/SupportPoints.h"
 
-
+extern "C" { 
+#include <dSFMT.h>
+}
 
 namespace NuTo
 {

@@ -7,7 +7,7 @@
 
 
 NuTo::ElementDataConstitutive::ElementDataConstitutive(const NuTo::IntegrationTypeBase* rIntegrationType)
-: NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase(rIntegrationType), NuTo::ElementDataBase::ElementDataBase(rIntegrationType)
+: NuTo::ElementDataBase::ElementDataBase(rIntegrationType), NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase(rIntegrationType)
 {
 	//std::cout << "ElementDataConstitutive constructor " << std::endl;
 }

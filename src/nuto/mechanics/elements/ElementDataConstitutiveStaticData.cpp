@@ -5,7 +5,7 @@
 
 
 NuTo::ElementDataConstitutiveStaticData::ElementDataConstitutiveStaticData(const NuTo::IntegrationTypeBase* rIntegrationType) :
-ElementDataConstitutiveBase(rIntegrationType) , ElementDataStaticDataBase(rIntegrationType), NuTo::ElementDataBase::ElementDataBase(rIntegrationType)
+NuTo::ElementDataBase::ElementDataBase(rIntegrationType), ElementDataConstitutiveBase(rIntegrationType) , ElementDataStaticDataBase(rIntegrationType) 
 {
 }
 

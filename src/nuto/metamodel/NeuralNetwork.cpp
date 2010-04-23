@@ -1494,11 +1494,11 @@ void NuTo::NeuralNetwork::GetNoiseCorrelationMatrix(NuTo::FullMatrix<double>& rN
     
     // calculate correlation matrix
     rNoiseCorrelation.Resize(this->mSupportPoints.GetDimOutput(),this->mSupportPoints.GetDimOutput());
-    for(unsigned int col= 0; col < this->mSupportPoints.GetDimOutput(); col++)
+    for(int col= 0; col < this->mSupportPoints.GetDimOutput(); col++)
     {
-        for(unsigned int row= 0; row< this->mSupportPoints.GetDimOutput(); row++)
+        for(int row= 0; row< this->mSupportPoints.GetDimOutput(); row++)
         {
-            rNoiseCorrelation.SetValue(row, col, noiseCovarianceMatrix[row,col] / (noiseStdDev[row] * noiseStdDev[col]));
+            rNoiseCorrelation.SetValue(row, col, noiseCovarianceMatrix(row,col) / (noiseStdDev[row] * noiseStdDev[col]));
         }
     }
 }

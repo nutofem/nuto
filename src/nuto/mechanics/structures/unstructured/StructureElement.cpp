@@ -202,7 +202,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, ElementBase::eElementTyp
         std::vector<NodeBase*> rNodeVector, ElementDataBase::eElementDataType rElementDataType)
 {
 
-	const IntegrationTypeBase *ptrIntegrationType;
+	//const IntegrationTypeBase *ptrIntegrationType;
 	ElementBase* ptrElement;
     switch (rType)
 	{

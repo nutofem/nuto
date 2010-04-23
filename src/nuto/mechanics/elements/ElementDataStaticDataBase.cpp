@@ -17,7 +17,7 @@ NuTo::ElementDataStaticDataBase::ElementDataStaticDataBase(const NuTo::Integrati
 
 NuTo::ElementDataStaticDataBase::~ElementDataStaticDataBase()
 {
-    for (int count=0; count< mStaticData.size(); count++)
+    for (unsigned int count=0; mStaticData.size(); count++)
     {
     	if (mStaticData[count]!=0)
     		delete mStaticData[count];

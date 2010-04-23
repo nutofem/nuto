@@ -34,7 +34,7 @@ public:
         CONSTITUTIVELAWELEMENT_NOSTATICDATA=0,   //!< constitutive law stored for at element level, no static data at ip
         CONSTITUTIVELAWELEMENT_STATICDATA,     //!< constitutive law stored for at element level, static data at ip
         CONSTITUTIVELAWIP_NOSTATICDATA,        //!< constitutive law stored for at integration point level, no static data at ip
-        CONSTITUTIVELAWIP_STATICDATA,          //!< constitutive law stored for at integration point level, static data at ip
+        CONSTITUTIVELAWIP_STATICDATA          //!< constitutive law stored for at integration point level, static data at ip
     };
 
     //! @brief constructor
