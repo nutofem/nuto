@@ -223,16 +223,16 @@ public:
     //! @brief modifies the constitutive law of a single element
     //! @param rElementIdent identifier for the element
     //! @param rConstitutiveLawIdent identifier for the material
-    void ElementSetConstitutiveLaw(int rElementId, const std::string& rConstitutiveLawIdent);
+    void ElementSetConstitutiveLaw(int rElementId, int rConstitutiveLawIdent);
 
     //! @brief modifies the constitutive law of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rConstitutiveLawIdent identifier for the material
-    void ElementGroupSetConstitutiveLaw(const std::string& rGroupIdent, const std::string& rConstitutiveLawIdent);
+    void ElementGroupSetConstitutiveLaw(const std::string& rGroupIdent, int rConstitutiveLawIdent);
 
     //! @brief modifies the constitutive law of a all elements
     //! @param rConstitutiveLawIdent identifier for the material
-    void ElementTotalSetConstitutiveLaw(const std::string& rConstitutiveLawIdent);
+    void ElementTotalSetConstitutiveLaw(int rConstitutiveLawIdent);
 
 #ifndef SWIG
     //! @brief modifies the constitutive law of a single element
@@ -467,11 +467,11 @@ public:
     //! @brief ... create a new constitutive law
     //! @param rIdent ... constitutive law identifier
     //! @param rType ... constitutive law type
-    void ConstitutiveLawCreate(const std::string& rIdent, const std::string& rType);
+    int ConstitutiveLawCreate(const std::string& rType);
 
     //! @brief ... delete an existing constitutive law
     //! @param rIdent ... constitutive law identifier
-    void ConstitutiveLawDelete(const std::string& rIdent);
+    void ConstitutiveLawDelete(int rIdent);
 
     //! @brief ... print information about all constitutive laws
     //! @param rVerboseLevel ... controls the verbosity of the information
@@ -480,84 +480,84 @@ public:
     //! @brief ... print information of a single constitutive law
     //! @param rIdent ... constitutive law identifier
     //! @param rVerboseLevel ... controls the verbosity of the information
-    void ConstitutiveLawInfo(const std::string& rIdent, unsigned short rVerboseLevel) const;
+    void ConstitutiveLawInfo(int rIdent, unsigned short rVerboseLevel) const;
 
     //! @brief ... set Young's modulus
     //! @param rIdent ... constitutive law identifier
     //! @param rE ... Young's modulus
-    void ConstitutiveLawSetYoungsModulus(const std::string& rIdent, double rE);
+    void ConstitutiveLawSetYoungsModulus(int rIdent, double rE);
 
     //! @brief ... get Young's modulus
     //! @param rIdent ... constitutive law identifier
     //! @return ... Young's modulus
-    double ConstitutiveLawGetYoungsModulus(const std::string& rIdent) const;
+    double ConstitutiveLawGetYoungsModulus(int rIdent) const;
 
     //! @brief ... set Poisson's ratio
     //! @param rIdent ... constitutive law identifier
     //! @param rNu ... Poisson's ratio
-    void ConstitutiveLawSetPoissonsRatio(const std::string& rIdent, double rNu);
+    void ConstitutiveLawSetPoissonsRatio(int rIdent, double rNu);
 
     //! @brief ... get Poisson's ratio
     //! @param rIdent ... constitutive law identifier
     //! @return ... Poisson's ratio
-    double ConstitutiveLawGetPoissonsRatio(const std::string& rIdent) const;
+    double ConstitutiveLawGetPoissonsRatio(int rIdent) const;
 
     //! @brief ... get initial yield strength
     //! @return ... yield strength
-    double ConstitutiveLawGetInitialYieldStrength(const std::string& rIdent) const;
+    double ConstitutiveLawGetInitialYieldStrength(int rIdent) const;
 
     //! @brief ... set initial yield strength
     //! @param rSigma ...  yield strength
-    void ConstitutiveLawSetInitialYieldStrength(const std::string& rIdent, double rSigma);
+    void ConstitutiveLawSetInitialYieldStrength(int rIdent, double rSigma);
 
     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding yield strength
-    NuTo::FullMatrix<double> ConstitutiveLawGetYieldStrength(const std::string& rIdent) const;
+    NuTo::FullMatrix<double> ConstitutiveLawGetYieldStrength(int rIdent) const;
 
     //! @brief ... add yield strength
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  yield strength
-    void ConstitutiveLawAddYieldStrength(const std::string& rIdent, double rEpsilon, double rSigma);
+    void ConstitutiveLawAddYieldStrength(int rIdent, double rEpsilon, double rSigma);
 
     //! @brief ... get initial hardening modulus
     //! @return ... hardening modulus
-    double ConstitutiveLawGetInitialHardeningModulus(const std::string& rIdent) const;
+    double ConstitutiveLawGetInitialHardeningModulus(int rIdent) const;
 
     //! @brief ... set hardening modulus
     //! @param rH ...  hardening modulus
-    void ConstitutiveLawSetInitialHardeningModulus(const std::string& rIdent, double rH);
+    void ConstitutiveLawSetInitialHardeningModulus(int rIdent, double rH);
 
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
-    NuTo::FullMatrix<double> ConstitutiveLawGetHardeningModulus(const std::string& rIdent) const;
+    NuTo::FullMatrix<double> ConstitutiveLawGetHardeningModulus(int rIdent) const;
 
     //! @brief ... add hardening modulus
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  hardening modulus
-    void ConstitutiveLawAddHardeningModulus(const std::string& rIdent, double rEpsilon, double rH);
+    void ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH);
 
 #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
-    void ConstitutiveLawCreate(const std::string& rIdent, ConstitutiveBase::eConstitutiveType rType);
+    void ConstitutiveLawCreate(int rIdent, ConstitutiveBase::eConstitutiveType rType);
 
     //! @brief ... get the pointer to a constitutive law from the constitutive law identifier
     //! @param rIdent ... constitutive law identifier
     //! @return ... pointer to the constitutive law
-    ConstitutiveBase* ConstitutiveLawGetConstitutiveLawPtr(const std::string& rIdent);
+    ConstitutiveBase* ConstitutiveLawGetConstitutiveLawPtr(int rIdent);
 
     //! @brief ... get the pointer to a constitutive law from the constitutive law identifier
     //! @param rIdent ... constitutive law identifier
     //! @return ... pointer to the constitutive law
-    const ConstitutiveBase* ConstitutiveLawGetConstitutiveLawPtr(const std::string& rIdent) const;
+    const ConstitutiveBase* ConstitutiveLawGetConstitutiveLawPtr(int rIdent) const;
 
     //! @brief ... get the identifier of the constitutive law from the pointer to constitutive law object
     //! @param rConstitutiveLawPtr ... pointer to constitutive law
     //! @return ... constitutive law identifier
-    std::string ConstitutiveLawGetId(const ConstitutiveBase* rConstitutiveLawPtr) const;
+    int ConstitutiveLawGetId(const ConstitutiveBase* rConstitutiveLawPtr) const;
 #endif
 
     //*************************************************
@@ -733,7 +733,7 @@ protected:
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase
-    boost::ptr_map<std::string,ConstitutiveBase> mConstitutiveLawMap;
+    boost::ptr_map<int,ConstitutiveBase> mConstitutiveLawMap;
 
     //! @brief ... map storing the constraints
     //! @sa ConstraintBase

@@ -1,7 +1,7 @@
-#include "nuto/metamodel/Metamodel.h"
 #include "nuto/metamodel/MinMaxTransformation.h"
 #include "nuto/metamodel/ZeroMeanUnitVarianceTransformation.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/metamodel/Metamodel.h"
 
 using namespace NuTo;
 

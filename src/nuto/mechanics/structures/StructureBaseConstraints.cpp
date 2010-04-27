@@ -32,13 +32,13 @@ int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const Nu
         mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements1D(rNode,rDirection(0,0),rValue));
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintDisplacementNode] To be implemented.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] To be implemented.");
         break;
     case 3:
         mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements3D(rNode,rDirection,rValue));
         break;
     default:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintDisplacementNode] Incorrect dimension of the structure.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
     }
     return id;
 }
@@ -56,14 +56,13 @@ int  NuTo::StructureBase::ConstraintSetDisplacementNode(int rIdent, const NuTo::
     }
     catch (NuTo::MechanicsException &e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstraintDisplacementNode] Node with the given identifier could not be found.");
+        e.AddMessage("[NuTo::StructureBase::ConstraintSetDisplacementNode] Node with the given identifier could not be found.");
         throw e;
     }
     catch (...)
     {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintDisplacementNode] Node with the given identifier could not be found.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Node with the given identifier could not be found.");
     }
-
     return ConstraintSetDisplacementNode(nodePtr,rDirection, rValue);
 }
 
@@ -89,13 +88,13 @@ int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGr
         mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements1D(rGroup,rDirection(0,0),rValue));
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintDisplacementNode] To be implemented.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNodeGroup] To be implemented.");
         break;
     case 3:
         mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements3D(rGroup,rDirection,rValue));
         break;
     default:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintDisplacementNode] Incorrect dimension of the structure.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
     }
     return id;
 }
@@ -157,7 +156,7 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
 void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
 {
     //find unused integer id
-    int id(0);
+    //int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
     if (it==mConstraintMap.end())
     {

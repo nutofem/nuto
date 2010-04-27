@@ -23,6 +23,10 @@ public:
     NodeGridCoordinatesDisplacements() : NodeGridCoordinates (), NodeDisplacements<NUMDISPLACEMENTS>()
     {}
 
+   //! @brief constructor
+    NodeGridCoordinatesDisplacements(unsigned int rNodeID) : NodeGridCoordinates (rNodeID), NodeDisplacements<NUMDISPLACEMENTS>()
+    {}
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

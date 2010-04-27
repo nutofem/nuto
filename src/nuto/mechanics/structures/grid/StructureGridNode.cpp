@@ -36,6 +36,89 @@ const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rNodeNumber) const
     return &mNodeVec[rNodeNumber];
  }
 
+//! @brief a reference to a node
+//! @param node ID
+//! @return reference to a node
+NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromId(int rNodeId)
+{
+    unsigned int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+    if (rNodeId<0 || rNodeId>=(int) numGridNodes)
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
+    int nodeNumber(0);
+     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
+     {
+         if (it->GetNodeId()==rNodeId)
+         {
+             break;
+         }
+      }
+     if (it== mNodeVec.end())
+           throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Node with this id does not exist.");
+    return &mNodeVec[nodeNumber];
+}
+
+//! @brief a reference to a node
+//! @param node ID
+//! @return reference to a node
+const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromId(int rNodeId) const
+{
+    unsigned int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+    if (rNodeId<0 || rNodeId>=(int) numGridNodes)
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
+    int nodeNumber(0);
+     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
+     {
+         if (it->GetNodeId()==rNodeId)
+              break;
+     }
+     if (it== mNodeVec.end())
+           throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Node with this node id  does not exist.");
+    return &mNodeVec[nodeNumber];
+}
+
+//! @brief a reference to a node
+//! @param node ID
+//! @return reference to a node
+int NuTo::StructureGrid::NodeGetNodeNumberFromId(int rNodeId)
+{
+    unsigned int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+    if (rNodeId<0 || rNodeId>=(int) numGridNodes)
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
+    int nodeNumber(0);
+     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
+     {
+         if (it->GetNodeId()==rNodeId)
+             break;
+      }
+     if (it== mNodeVec.end())
+           throw MechanicsException("[NuTo::StructureGrid::NodeGetNodeNumberFromId] Node with this node id does not exist.");
+    return nodeNumber;
+}
+
+//! @brief a reference to a node
+//! @param node ID
+//! @return reference to a node
+const int NuTo::StructureGrid::NodeGetNodeNumberFromId(int rNodeId) const
+{
+    unsigned int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+    if (rNodeId<0 || rNodeId>=(int) numGridNodes)
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
+    int nodeNumber(0);
+     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
+     {
+         if (it->GetNodeId()==rNodeId)
+             break;
+     }
+     if (it== mNodeVec.end())
+           throw MechanicsException("[NuTo::StructureGrid::NodeGetNodeNumberFromId] Node with this node id does not exist.");
+     return nodeNumber;
+}
+
+
 //! @brief gives the identifier of a node
 //! @param reference to a node
 //! @return identifier
@@ -46,18 +129,25 @@ int NuTo::StructureGrid::NodeGetId(const NodeBase* rNode)const
     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
     {
         if (&(*it)==rNode)
-        {
             break;
-        }
     }
     if (it== mNodeVec.end())
         throw MechanicsException("[NuTo::StructureGrid::GetNodeId] Node does not exist.");
     const NuTo::NodeGridCoordinates* myNode = dynamic_cast<const NuTo::NodeGridCoordinates*>(rNode);
-    return  myNode->GetNodeID();
-    //   return ((const NuTo::NodeGridCoordinates*)rNode)->GetNodeID();
-   //return rNode->GetNumCoordinates();
+    return  myNode->GetNodeId();
 }
 
+//! @brief gives the identifier of a node
+//! @param reference to a node
+//! @return identifier
+int NuTo::StructureGrid::NodeGetId(int rNodeNumber)const
+{
+    if (rNodeNumber<0 || rNodeNumber>=GetNumNodes())
+        throw MechanicsException("[NuTo::StructureGrid::NodeGetID] Node number is not valid.");
+    const NodeBase* myNode = &mNodeVec[rNodeNumber];
+    const NuTo::NodeGridCoordinates* myNode2 = dynamic_cast<const NuTo::NodeGridCoordinates*>(myNode);
+    return myNode2->GetNodeId();
+}
 //! @brief info about the nodes in the grid structure
 void NuTo::StructureGrid::NodeInfo(int mVerboseLevel) const
 {
@@ -83,13 +173,11 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
     unsigned int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
     unsigned int numMatNodes=0;//all existing nodes (with material)
     int numVoxel=mGridDimension[0]*mGridDimension[1]*mGridDimension[2];
-    std::cout<<"numVoxels: "<<numVoxel <<std::endl;
-   NuTo::FullMatrix<int> imageValues (numVoxel,1);
+    NuTo::FullMatrix<int> imageValues (numVoxel,1);
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
-    for (unsigned int countNodes =0; countNodes<numGridNodes;countNodes++)//countNodes correpond to nodeID
-    {
+    for (unsigned int countNodes =0; countNodes<numGridNodes;countNodes++)//countNodes correspond to nodeID
+        {
          //get coincident voxels for each node, check if one voxel has material, then create node
-         std::cout<<"geht in coincident routine!"<<std::endl;
          TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(countNodes);
          int flag=0;
          for (int count =0; count<8; count++)
@@ -98,9 +186,7 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
              if (coincidentVoxels[count]>-1)
              {
                    // voxel has material
-                 std::cout<<"VoxelValue: "<<imageValues(coincidentVoxels[count],0)<<std::endl;
-
-                 if(imageValues(coincidentVoxels[count],0)>180)//@TODO replace with variable for material boundary values
+                 if(imageValues(coincidentVoxels[count],0)>130)//@TODO replace with variable for material boundary values
                  {
                      flag=1;
                      count=8;
@@ -111,7 +197,6 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
          {
              NuTo::StructureGrid::NodeCreate(numMatNodes,countNodes,rDOFs);//node number, node id, attr.
              numMatNodes++;
-             std::cout<<"Knoten erstellt Nr.:"<<numMatNodes-1<<std::endl;
          }
      }
 }
@@ -136,8 +221,6 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
     unsigned int numDim3;
     numDim3=rNodeID/((mGridDimension[0]+1)*(mGridDimension[1]+1));
     numDim2=(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3)/(mGridDimension[0]+1);
-    std::cout<<"numDim3 "<<numDim3<< "; numDim2 "<<numDim2<< std::endl;
-
 
     // for all nodes
     coincidentVoxels[0]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0]-1 -mGridDimension[0]*mGridDimension[1]);
@@ -163,10 +246,8 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
             coincidentVoxels[count]=-1;
     }
     if(rNodeID == 0)
-    {
-        std::cout<<"Schleife rNodeId =0"<<std::endl;
         coincidentVoxels[7]=-1;
-    }
+
     // for nodes with dim0=mGridDimension[0]!!!
     else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==0 )
     {
@@ -199,10 +280,12 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
         coincidentVoxels[6]=-1;
         coincidentVoxels[7]=-1;
     }
+/*
     std::cout<<"Knoten"<<rNodeID<< "Voxels:"<<std::endl;
     for (int count=0;count<8;count++)
         std::cout<< coincidentVoxels[count]<<" ";
     std::cout<<" "<<std::endl;
+ */
     return coincidentVoxels;
 }
 //! @brief creates a node
@@ -252,13 +335,13 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
         switch (mDimension)
         {
         case 1:
-            nodePtr = new NuTo::NodeGridCoordinates();
+            nodePtr = new NuTo::NodeGridCoordinates(rNodeID);
             break;
         case 2:
-            nodePtr = new NuTo::NodeGridCoordinates();
+            nodePtr = new NuTo::NodeGridCoordinates(rNodeID);
             break;
         case 3:
-            nodePtr = new NuTo::NodeGridCoordinates();
+            nodePtr = new NuTo::NodeGridCoordinates(rNodeID);
             break;
         default:
             throw MechanicsException("[NuTo::StructureGrid::NodeCreate] Dimension of the structure is not valid.");
@@ -268,13 +351,13 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
         switch (mDimension)
          {
          case 1:
-             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<1>();
+             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<1>(rNodeID);
              break;
          case 2:
-             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<2>();
+             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<2>(rNodeID);
              break;
          case 3:
-             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<3>();
+             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<3>(rNodeID);
              break;
          default:
              throw MechanicsException("[NuTo::StructureGrid::NodeCreate] Dimension of the structure is not valid.");
@@ -289,21 +372,109 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
    //add node to vector, richtige id ????????????????????????
     this->mNodeVec.push_back(nodePtr);
 
-    //renumbering of dofs for global matrices not required
-    this->mNodeNumberingRequired  = false;
+    //renumbering of dofs for global matrices not required, why not???
+    this->mNodeNumberingRequired  = true;
 
 
 }
 
-// extract dof values (e.g. displacements, temperatures to the nodes)
-void NuTo::StructureGrid::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+
+//! @brief number the dofs in the structure
+void NuTo::StructureGrid::NodeBuildGlobalDofs()
+{
+    // build initial node numbering
+    this->mNumDofs = 0;
+    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    {
+        it->SetGlobalDofs(this->mNumDofs);
+    }
+
+    // build constraint matrix
+    this->mNodeNumberingRequired = false;
+    this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
+    this->mNodeNumberingRequired = true;
+
+    // perform gauss algorithm
+    std::vector<int> mappingInitialToNewOrdering;
+    std::vector<int> mappingNewToInitialOrdering;
+    this->mConstraintMatrix.Gauss(this->mConstraintRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
+
+    // move dependent dofs at the end
+    // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
+    unsigned int numDependentDofs = this->mConstraintMatrix.GetNumRows();
+    this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
+    std::vector<int> tmpMapping;
+    for (unsigned int dependentDofCount = 0; dependentDofCount < numDependentDofs; dependentDofCount++)
+    {
+        tmpMapping.push_back(this->mNumActiveDofs + dependentDofCount);
+        mappingInitialToNewOrdering[mappingNewToInitialOrdering[dependentDofCount]] += this->mNumActiveDofs;
+    }
+    for (int activeDofCount = numDependentDofs; activeDofCount < this->mNumDofs; activeDofCount++)
+    {
+        tmpMapping.push_back(activeDofCount - numDependentDofs);
+        mappingInitialToNewOrdering[mappingNewToInitialOrdering[activeDofCount]] -= numDependentDofs;
+    }
+    mappingNewToInitialOrdering.clear();
+
+    // reorder columns
+    this->mConstraintMatrix.ReorderColumns(tmpMapping);
+
+    // remove columns of dependent dofs
+    // check if the submatrix which is removed is a diagonal matrix
+    const std::vector<int>& constraintMatrixRowIndex = this->mConstraintMatrix.GetRowIndex();
+    const std::vector<int>& constraintMatrixColumns = this->mConstraintMatrix.GetColumns();
+    for (int row = 0; row < this->mConstraintMatrix.GetNumRows(); row++)
+    {
+        for (int pos = constraintMatrixRowIndex[row]; pos < constraintMatrixRowIndex[row + 1]; pos++)
+        {
+            if ((constraintMatrixColumns[pos] > this->mNumActiveDofs) && (constraintMatrixColumns[pos] != row + this->mNumActiveDofs))
+            {
+                throw MechanicsException("[NuTo::StructureGrid::NodeBuildGlobalDofs] invalid matrix structure.");
+            }
+        }
+    }
+    this->mConstraintMatrix.RemoveLastColumns(numDependentDofs);
+
+    // renumber dofs
+    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    {
+        it->RenumberGlobalDofs(mappingInitialToNewOrdering);
+    }
+
+    mNodeNumberingRequired = false;
+}
+
+// merge dof values
+void NuTo::StructureGrid::NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues)
+{
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureGrid::NodeMergeActiceDofValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    }
+    if ((rActiveDofValues.GetNumRows() != this->mNumActiveDofs) || rActiveDofValues.GetNumColumns() != 1)
+    {
+        throw MechanicsException("[NuTo::StructureGrid::NodeMergeActiceDofValues] invalid dimension of input object (number of active dofs,1).");
+    }
+
+    // calculate dependent dof values
+    NuTo::FullMatrix<double> dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
+
+    // write dof values to the nodes
+    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    {
+        it->SetGlobalDofValues(rActiveDofValues, dependentDofValues);
+    }
+}
+
+//! @brief extract dof values (e.g. displacements, temperatures to the nodes)
+void NuTo::StructureGrid::NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
 {
 
     try
     {
         if (this->mNodeNumberingRequired)
         {
-           throw MechanicsException("[NuTo::GridStructure::NodeExtractDofValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+           throw MechanicsException("[NuTo::StructureGrid::NodeExtractDofValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
         }
     }
     catch(MechanicsException& e)
@@ -320,10 +491,63 @@ void NuTo::StructureGrid::NodeExtractDofValues(FullMatrix<double>& rActiveDofVal
         it->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 }
-void NuTo::StructureGrid::NodeBuildGlobalDofs()
+/*
+void NuTo::StructureGrid::NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const
 {
-    throw MechanicsException("[NuTo::GridStructure::NodeBuildGlobalDofs] routine is not implemented");
+   // define variables storing the element contribution outside the loop
+    NuTo::FullMatrix<double> elementVector;
+    std::vector<int> elementVectorGlobalDofs;
+
+    //iterate over the elements, check if the node is part of the element
+    for (boost::ptr_vector<ElementBase>::const_iterator itElement = mElementVec.begin(); itElement!=mElementVec.end(); itElement++)
+    {
+        const ElementBase* elem_ptr(itElement);
+        for (int local_node=0; local_node<elem_ptr->GetNumNodes(); local_node++)
+        {
+            if (elem_ptr->GetNode(local_node)==rNode)
+            {
+                //node has been found, build internal force vector of element and add relevant parts to the global vector
+                elem_ptr->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+                const NodeDisplacementsBase *theDispNode(dynamic_cast<const NodeDisplacementsBase* > (rNode));
+                if (theDispNode==0)
+                {
+                    std::stringstream message;
+                    message << "[NuTo::StructureGrid::NodeGetInternalForce] Node" << NodeGetId(rNode) << " has no displacement degrees of freedom.";
+                    throw MechanicsException(message.str());
+                }
+
+                for (int theDisp=0; theDisp<theDispNode->GetNumDisplacements(); theDisp++)
+                {
+                    // find global dof number
+                    int theDOF = theDispNode->GetDofDisplacement(theDisp);
+
+                    for (int local_dof=0; local_dof<elementVectorGlobalDofs.size(); local_dof++)
+                    {
+                        if (elementVectorGlobalDofs[local_dof]==theDOF)
+                        {
+                            // add node force
+                            rNodeForce(theDisp,0)+=elementVector(local_dof,0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
 
+//! @brief calculates the internal force vector for a given node
+//! @param rNodeId node id
+//! @param rNodeForce return value
+void NuTo::StructureGrid::NodeGetInternalForce(int rNodeId, FullMatrix<double>& rNodeForce)const
+{
+    const NodeBase* node_ptr(NodeGetNodePtr(rNodeId));
 
+    // initialize matrix
+    rNodeForce.Resize(node_ptr->GetNumDisplacements(),1);
+
+    // add internal force
+    NodeGetInternalForce(node_ptr, rNodeForce);
+}
+*/
 

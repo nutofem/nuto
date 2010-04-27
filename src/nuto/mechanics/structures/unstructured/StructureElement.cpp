@@ -84,7 +84,7 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 int NuTo::Structure::ElementCreate (const std::string& rElementType,
         const NuTo::FullMatrix<int>& rNodeNumbers, const std::string& rElementDataType)
 {
-	//find unused integer id
+    //find unused integer id
 	int elementNumber(mElementMap.size());
 	boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(elementNumber);
 	while (it!=mElementMap.end())
@@ -102,6 +102,7 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
         const NuTo::FullMatrix<int> &rNodeNumbers)
 {
+    std::cout<<__FILE__<<" "<<" test 6"<<std::endl;
 	ElementCreate(rElementNumber,rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA"));
 }
 
@@ -202,7 +203,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, ElementBase::eElementTyp
         std::vector<NodeBase*> rNodeVector, ElementDataBase::eElementDataType rElementDataType)
 {
 
-	const IntegrationTypeBase *ptrIntegrationType;
+	//const IntegrationTypeBase *ptrIntegrationType;
 	ElementBase* ptrElement;
     switch (rType)
 	{

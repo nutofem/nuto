@@ -40,9 +40,9 @@ myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(1,1,(3,))
 myElement1 = myStructure.ElementCreate("Truss1D3N",nuto.IntFullMatrix(3,1,(myNode1,myNode2,myNode3)))
 
 #create constitutive law
-myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",3)
-myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0.1)
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,3)
+myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 
 #create section
 myStructure.SectionCreate("mySection1","TRUSS")
@@ -54,7 +54,7 @@ myStructure.SectionSetArea("mySection1",0.01)
 #but it demonstrates the idea
 #myStructure.ElementSetIntegrationType(myElement1,"1D2NConst3Ip")
 #myStructure.ElementSetIntegrationType(myElement1,"1D2NConst100Ip")
-myStructure.ElementSetConstitutiveLaw(myElement1,"myMatLin")
+myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 myStructure.ElementSetSection(myElement1,"mySection1")
 
 #set displacements of right node

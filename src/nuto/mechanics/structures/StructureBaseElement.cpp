@@ -131,11 +131,11 @@ void NuTo::StructureBase::ElementCoefficientMatrix_2(int rElementId,
 //! @brief sets the constitutive law of a single element
 //! @param rElementIdent identifier for the element
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, const std::string& rConstitutiveLawIdent)
+void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstitutiveLawIdent)
 {
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
-    boost::ptr_map<std::string,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
+    boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive==mConstitutiveLawMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementSetConstitutiveLaw] Constitutive law with the given identifier does not exist.");
 
@@ -163,7 +163,7 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, const std::s
 //! @brief sets the constitutive law of a group of elements
 //! @param rGroupIdent identifier for the group of elements
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(const std::string& rGroupIdent, const std::string& rConstitutiveLawIdent)
+void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(const std::string& rGroupIdent, int rConstitutiveLawIdent)
 {
 	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
@@ -173,7 +173,7 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(const std::string& rGro
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-	boost::ptr_map<std::string,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
+	boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive==mConstitutiveLawMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Constitutive law with the given identifier does not exist.");
 
@@ -203,9 +203,9 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(const std::string& rGro
 
 //! @brief sets the constitutive law of a all elements
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(const std::string& rConstitutiveLawIdent)
+void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIdent)
 {
-    boost::ptr_map<std::string,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
+    boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive==mConstitutiveLawMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Constitutive law with the given identifier does not exist.");
 

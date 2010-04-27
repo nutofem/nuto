@@ -30,8 +30,8 @@ const NuTo::ElementBase* NuTo::StructureGrid::ElementGetElementPtr(int rElementN
     return &mElementVec[rElementNumber];
 }
 
-//! @brief gives the identifier of a node
-//! @param reference to a node
+//! @brief gives the identifier of a element
+//! @param reference to a element
 //! @return identifier
 int NuTo::StructureGrid::ElementGetId(const ElementBase* rElement)const
 {
@@ -56,25 +56,63 @@ void NuTo::StructureGrid::ElementInfo(int mVerboseLevel)const
 }
 
 //! @brief create element grid without data free elements
-void NuTo::StructureGrid::CreateElementGrid(const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType)
+//! @param reference to a base coefficient matrix, to a ColorToMaterialMatrix and to an element type
+void NuTo::StructureGrid::CreateElementGrid( NuTo::SparseMatrixCSRGeneral<double>& rBaseCoefficientMatrix0,
+const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType)
 {
-    int numVoxel=mGridDimension[0]*mGridDimension[1]*mGridDimension[2];
-    unsigned int numElements;
-    NuTo::FullMatrix<int> imageValues (numVoxel,1);
+    unsigned int numElements=0;       //counter for created elements
+    NuTo::FullMatrix<int> imageValues (mNumVoxel,1);         //Color value for each voxel
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
-    if(rColorToMaterialData.GetNumRows()==1)
+    typedef NuTo::SparseMatrixCSRGeneral<double> sparseMat ;
+    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixHelp ;
+    std::vector<sparseMat> stiffnessMatrix(1);
+    int numCoeffMat=0;   //material counter
+    std::vector<double> youngsModulus(1);
+    youngsModulus[0]=0;
+    int matFlag=1;
+    if (rColorToMaterialData.GetNumColumns()==1) //Only Young's modulus as changing parameter
     {
-        for(int countVoxels =0; countVoxels<numVoxel;countVoxels++)//countVoxels correspond to VoxelID
+        for(int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
         {
-             std::cout<<"in CreateElementGrid routine!"<<std::endl;
-             if (rColorToMaterialData(imageValues(countVoxels,0),0)>0.1) //if Modul is zero
-             {
-                 NuTo::StructureGrid::ElementCreate(numElements,countVoxels,rElementType);//element number, element id, attr.
-                 numElements++;
-                 std::cout<<"Element erstellt Nr.:"<<numElements-1<<std::endl;
-             }
-         }
+            if (rColorToMaterialData(imageValues(countVoxels,0),0)>0.1) //if Modul is> zero
+            {
+                if (youngsModulus[0]==0) //no coefficient matrix yet
+                {
+                    //set youngsModulus and add on material on counter
+                    youngsModulus[numCoeffMat]=rColorToMaterialData(imageValues(countVoxels,0),0);
+                    //stiffnessMatrixHelp = rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat];
+                    stiffnessMatrix[numCoeffMat] = rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat];
+                    NuTo::StructureGrid::ElementCreate(stiffnessMatrix[numCoeffMat],numElements,countVoxels,rElementType);//element number, element id, attr.
+                    numElements++;
+                    numCoeffMat++;
+                    matFlag=0; //matrix already added
+                }
+                else
+                {
+                    for(int countMat=0;countMat<numCoeffMat;countMat++)
+                    {
+                        if (rColorToMaterialData(imageValues(countVoxels,0),0)==youngsModulus[countMat]) //same modulus already used
+                        {
+                            NuTo::StructureGrid::ElementCreate(stiffnessMatrix[countMat],numElements,countVoxels,rElementType);//element number, element id, attr.
+                            numElements++;
+                            countMat=numCoeffMat;
+                            matFlag=0; //do not add a new coefficient matrix
+                        }
+                    }
+                }
+                if (matFlag==1)    //no equal coeff matrix found, create new
+                {
+                    youngsModulus.push_back(rColorToMaterialData(imageValues(countVoxels,0),0));
+                    stiffnessMatrix.push_back(rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat]) ;
+                    NuTo::StructureGrid::ElementCreate(stiffnessMatrix[numCoeffMat],numElements,countVoxels,rElementType);//element number, element id, attr.
+                    numElements++;
+                    numCoeffMat++;
+                }
+            }
+            matFlag=1; //initialize matFlag for next step
+      }
     }
+
 }
 //! @TODO ElementCreate without elementNumber
 
@@ -82,15 +120,15 @@ void NuTo::StructureGrid::CreateElementGrid(const NuTo::FullMatrix<double>& rCol
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
-void NuTo::StructureGrid::ElementCreate (unsigned int rElementNumber, unsigned int rElementID, const std::string& rElementType)
+void NuTo::StructureGrid::ElementCreate ( NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, const std::string& rElementType)
 {
-    ElementCreate(rElementNumber,rElementID,rElementType,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA"));
+    ElementCreate(rCoefficientMatrix0,rElementNumber,rElementID,rElementType,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA"));
 }
 //! @brief Creates an element
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
-void NuTo::StructureGrid::ElementCreate(unsigned int rElementNumber, unsigned int rElementID,  const std::string& rElementType,
+void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID,  const std::string& rElementType,
         const std::string& rElementDataType)
 {
     // get element type
@@ -132,7 +170,7 @@ void NuTo::StructureGrid::ElementCreate(unsigned int rElementNumber, unsigned in
          throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist.");
      }
 
-     this->ElementCreate(rElementNumber, rElementID, elementType,elementDataType);
+     this->ElementCreate(rCoefficientMatrix0,rElementNumber, rElementID, elementType,elementDataType);
 }
 
 //! @brief Creates an element
@@ -140,7 +178,7 @@ void NuTo::StructureGrid::ElementCreate(unsigned int rElementNumber, unsigned in
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 
-void NuTo::StructureGrid::ElementCreate (unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, ElementDataBase::eElementDataType rElementDataType)
+void NuTo::StructureGrid::ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, ElementDataBase::eElementDataType rElementDataType)
 {
     // const IntegrationTypeBase *ptrIntegrationType;
     ElementBase* ptrElement;
@@ -153,14 +191,13 @@ void NuTo::StructureGrid::ElementCreate (unsigned int rElementNumber, unsigned i
         {
             throw MechanicsException("[NuTo::StructureGrid::ElementCreate] Voxel8N is a 3D element.");
         }
-        ptrElement = new NuTo::Voxel8N(this,rElementID, rElementDataType);
-        //ptrElement = new NuTo::Voxel8N(this,rElementDataType);
+        ptrElement = new NuTo::Voxel8N(this,rElementID,rCoefficientMatrix0,rElementDataType);
+
+        //ptrElement = new NuTo::Voxel8N(this,&rLocalCoefficientMatrix0, rElementDataType);
         break;
     default:
         throw NuTo::MechanicsException("[NuTo::StructureGrid::ElementCreate] Invalid element type.");
     }
     this->mElementVec.push_back(ptrElement);
-
-
 }
 

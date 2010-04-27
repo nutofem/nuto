@@ -12,6 +12,7 @@
 #endif // ENABLE_SERIALIZATION
 #include <vector>
 #include "nuto/mechanics/elements/Solid.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
 
 namespace NuTo
 {
@@ -28,10 +29,17 @@ class Voxel8N : public Solid
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,NuTo::ElementDataBase::eElementDataType rElementDataType);
-
+    Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
+            NuTo::ElementDataBase::eElementDataType rElementDataType):mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+    {
+        mVoxelID = (int) rElementID;
+    }
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,NuTo::ElementDataBase::eElementDataType rElementDataType);
+    Voxel8N(NuTo::StructureBase* rStructure,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0, NuTo::ElementDataBase::eElementDataType rElementDataType):
+        mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+    {
+        mVoxelID = -1;
+    }
 
     #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -146,7 +154,7 @@ public:
 
 protected:
     int mVoxelID;
-    //NuTo::FullMatrix<double> &mLocalCoefficientMatrix0;
+    NuTo::SparseMatrixCSRGeneral<double>& mLocalCoefficientMatrix0;
 };
 }
 #endif //Voxel8N_H

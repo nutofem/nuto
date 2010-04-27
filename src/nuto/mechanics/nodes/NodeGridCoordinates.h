@@ -52,9 +52,9 @@ public:
 
     //! @brief get the ID
     //! @param rNodeNumber number of the node
-    int GetNodeID() const
+    int GetNodeId() const
     {
-        return 4;
+        return mNodeID;
     }
 
     //! @brief writes the coordinates of a node to the prescribed pointer

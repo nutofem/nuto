@@ -30,7 +30,7 @@ public:
     {
         TRUSS,	          //!< one-dimensional truss behavior
         PLANE_STRAIN,     //!< two-dimensional behavior plane strain
-        PLANE_STRESS,     //!< two-dimensional behavior plane stress
+        PLANE_STRESS      //!< two-dimensional behavior plane stress
     };
 
     //! @brief ... get the section type

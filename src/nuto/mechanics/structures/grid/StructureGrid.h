@@ -92,11 +92,40 @@ public:
     //! @return reference to a node
     const NodeBase* NodeGetNodePtr(int rNodeNumber)const;
 
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    NodeBase* NodeGetNodePtrFromId(int rNodeId);
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    const NodeBase* NodeGetNodePtrFromId(int rNodeId) const;
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    int NodeGetNodeNumberFromId(int rNodeId);
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    const int NodeGetNodeNumberFromId(int rNodeId) const;
+
+
+
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
     int NodeGetId(const NodeBase* rNode)const;
 #endif //SWIG
+
+    //! @brief gives the identifier of a node
+    //! @param reference to a node
+    //! @return identifier
+    int NodeGetId(int rNodeNumber)const;
+
+
 
     //! @brief info about the nodes in the Structure
     virtual void NodeInfo(int mVerboseLevel) const;
@@ -115,6 +144,19 @@ public:
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
+
+    //! @brief merge dof values
+    void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues);
+/*
+    //! @brief get internal forces
+    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const;
+
+    //! @brief calculates the internal force vector for a given node
+    //! @param rNodeId node id
+    //! @param rNodeForce return value
+    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const;
+*/
+
 
 //*************************************************
 //************ Element routines     ***************
@@ -142,26 +184,27 @@ public:
     //! @brief info about the elements in the Structure
     virtual void ElementInfo(int mVerboseLevel) const;
 
-    void CreateElementGrid(const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
+    void CreateElementGrid(NuTo::SparseMatrixCSRGeneral<double>& rBaseCoefficientMatrix0,
+            const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
 
     //! @brief Creates an element
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType);
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType);
 
     //! @brief Creates an element
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType, const std::string& rElementDataType);
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType, const std::string& rElementDataType);
 
 #ifndef SWIG
     //! @brief Creates an element
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, NuTo::ElementDataBase::eElementDataType rElementDataType);
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, NuTo::ElementDataBase::eElementDataType rElementDataType);
 
 #endif //SWIG
 

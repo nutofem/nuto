@@ -25,8 +25,8 @@ int main()
 	myStructure.SectionSetArea("Section1", Area);
 
 	// create material law
-	myStructure.ConstitutiveLawCreate("Material1","LinearElastic");
-	myStructure.ConstitutiveLawSetYoungsModulus("Material1", YoungsModulus);
+	int Material1 = myStructure.ConstitutiveLawCreate("LinearElastic");
+	myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
 
 	// create nodes
 	NuTo::FullMatrix<double> nodeCoordinates(1,1);
@@ -46,7 +46,7 @@ int main()
 		elementIncidence(1, 0) = element + 1;
 		myStructure.ElementCreate(element, "Truss1D2N", elementIncidence);
 		myStructure.ElementSetSection(element,"Section1");
-		myStructure.ElementSetConstitutiveLaw(element,"Material1");
+		myStructure.ElementSetConstitutiveLaw(element,Material1);
 	}
 
 	// set boundary conditions and loads

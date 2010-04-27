@@ -33,21 +33,21 @@ error = False
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 structure=nuto.Structure(3)
 
-structure.ConstitutiveLawCreate("Material 1","LinearElastic")
-structure.ConstitutiveLawSetYoungsModulus("Material 1", 20000)
-structure.ConstitutiveLawSetPoissonsRatio("Material 1", 0.2)
+Material1 = structure.ConstitutiveLawCreate("LinearElastic")
+structure.ConstitutiveLawSetYoungsModulus(Material1, 20000)
+structure.ConstitutiveLawSetPoissonsRatio(Material1, 0.2)
 if(printResult):
-    structure.ConstitutiveLawInfo("Material 1", 0)
-E = structure.ConstitutiveLawGetYoungsModulus("Material 1")
+    structure.ConstitutiveLawInfo(Material1, 0)
+E = structure.ConstitutiveLawGetYoungsModulus(Material1)
 if(E != 20000):
     print '[' + system,sys.argv[0] + '] : Young\'s modulus is not correct.'
     error = True
-Nu = structure.ConstitutiveLawGetPoissonsRatio("Material 1")
+Nu = structure.ConstitutiveLawGetPoissonsRatio(Material1)
 if(Nu != 0.2):
     print '[' + system,sys.argv[0] + '] : Poisson\'s ratio is not correct.'
     error = True
 
-structure.ConstitutiveLawDelete("Material 1")
+structure.ConstitutiveLawDelete(Material1)
 if(structure.GetNumConstitutiveLaws() != 0):
     print '[' + system,sys.argv[0] + '] : number of constitutive laws is not correct.'
     error = True

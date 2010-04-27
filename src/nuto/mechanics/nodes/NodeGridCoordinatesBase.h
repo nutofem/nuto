@@ -42,7 +42,7 @@ public:
 
     //! @brief get the ID
      //! @param rNodeNumber number of the node
-    virtual int GetNodeID() const=0;
+    virtual int GetNodeId() const=0;
 
 
 };

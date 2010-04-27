@@ -9,7 +9,7 @@ SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
-OPTION(ENABLE_MUMPS "enables support for MUMPS solver" FALSE)
+OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" false)
@@ -81,6 +81,10 @@ ELSE(ENABLE_OPENMP)
   FIND_PACKAGE(Threads REQUIRED)
 ENDIF(ENABLE_OPENMP)
 
+#IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+#  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ansi -Wall -Wno-long-long -pedantic-errors")
+#ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+
 # Python required for interface files c++ and python
 MESSAGE(STATUS "Checking for Python...")
 FIND_PACKAGE(PythonLibs REQUIRED)
@@ -123,7 +127,7 @@ ENDIF(ENABLE_MKL)
 
 # boost
 MESSAGE(STATUS "Checking for Boost...")
-SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41")
+SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42")
 IF(ENABLE_STATIC_EXTERNALS)
   SET(Boost_USE_STATIC_LIBS TRUE)
 ENDIF(ENABLE_STATIC_EXTERNALS)

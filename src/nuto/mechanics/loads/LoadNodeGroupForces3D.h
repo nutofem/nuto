@@ -20,7 +20,7 @@ template <class T>
 class Group;
 template <class T>
 class FullMatrix;
-;//! @author Jörg F. Unger, ISM
+//! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for all forces applied to a group of nodes in 3D
 class LoadNodeGroupForces3D : public LoadNodeGroup

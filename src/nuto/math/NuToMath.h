@@ -35,5 +35,5 @@ public:
     static void print (const double *rA, unsigned int rNumRowsA, unsigned int rNumColumnsA);
 #endif
 };
-};
+}
 #endif // NUTOMATH_H
