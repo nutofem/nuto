@@ -97,6 +97,12 @@ public:
     //! @param rCoordinates ...  node coordinates
     void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates);
 
+    //! @brief creates multiple nodes
+    //! @param rDOFs ... space separated string containing the nodal dofs (e.g. displacements, rotations, temperatures)
+    //! @param rCoordinates ...  nodal coordinates (column-wise storage of each nodal coordinate)
+    //! @return a NuTo::FullMatrix<int> containing the node numbers
+    NuTo::FullMatrix<int> NodesCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates);
+
    //! @brief info about the nodes in the Structure
     void NodeInfo(int mVerboseLevel)const;
 
@@ -186,6 +192,13 @@ public:
     //! @return element number
     void ElementCreate (int rElementNumber, const std::string& rElementType,
     		const NuTo::FullMatrix<int> &rNodeNumbers, const std::string& rElementDataType);
+
+    //! @brief creates multiple elements
+    //! @param rElementType element type
+    //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
+    //! @return a NuTo::FullMatrix<int> containing the element numbers
+    NuTo::FullMatrix<int> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int> &rNodeNumbers);
+
 #ifndef SWIG
     //! @brief Creates an element
     //! @param rElementNumber element number

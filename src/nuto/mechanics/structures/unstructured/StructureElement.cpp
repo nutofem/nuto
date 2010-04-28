@@ -264,3 +264,22 @@ void NuTo::Structure::ElementCreate(int rElementNumber, ElementBase::eElementTyp
 	}
     mElementMap.insert(rElementNumber, ptrElement);
 }
+
+//! @brief creates multiple elements
+//! @param rElementType element type
+//! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
+//! @return a NuTo::FullMatrix<int> containing the element numbers
+NuTo::FullMatrix<int> NuTo::Structure::ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int> & rNodeNumbers)
+{
+	std::vector<int> idVec;
+	/// go through the elements
+	for(size_t i=0 ; i<rNodeNumbers.GetNumColumns(); ++i)
+	{
+		const NuTo::FullMatrix<int> incidence(rNodeNumbers.GetColumn(i));
+		idVec.push_back(this-> ElementCreate(rElementType,incidence,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA")) );
+	}
+
+    //return int identifiers of the new elements as FullMatrix
+	NuTo::FullMatrix<int> ids(idVec);
+    return ids;
+}

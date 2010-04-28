@@ -247,6 +247,24 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     this->mNodeNumberingRequired  = true;
 }
 
+//! @brief create multiple nodes
+//! @param reference to a FullMatrix containing the node coordinates (row->coordinate; col->nodes)
+//! @return a FullMatrix<int> with the identifiers
+NuTo::FullMatrix<int> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates)
+{
+	std::vector<int> idVec;
+	/// go through the nodes
+	for(size_t i=0 ; i<rCoordinates.GetNumColumns(); ++i)
+	{
+		NuTo::FullMatrix<double> coordinate(rCoordinates.GetColumn(i));
+		idVec.push_back(this->NodeCreate(rDOFs, coordinate));
+	}
+
+    //return int identifiers of the new nodes as FullMatrix
+	NuTo::FullMatrix<int> ids(idVec);
+    return ids;
+}
+
 //! @brief number the dofs in the structure
 void NuTo::Structure::NodeBuildGlobalDofs()
 {
