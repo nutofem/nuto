@@ -300,11 +300,11 @@ int main()
         myGrid.BuildGlobalGradientInternalPotentialVector(intForceVector);
         NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
         std::cout << "residual: " << residualVector.Norm() << std::endl;
-
-        // visualize results
- //       myGrid.ExportVtkDataFile("Voxel8N.vtk","displacements engineering_strain engineering_stress");
-
 */
+        // visualize results
+//        myGrid.ExportVtkDataFile("StrukturedGrid3D.vtk","DISPLACEMENTS");
+
+
     }
     catch (NuTo::MechanicsException& e)
     {
@@ -316,5 +316,6 @@ int main()
     {
         throw NuTo::MechanicsException("[NuTo::StructureGrid3D] Unknown error catched .");
     }
+    return 0;
 
 }
