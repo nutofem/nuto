@@ -133,4 +133,74 @@ void FullMatrix<int>::ImportFromSLangText(const char* fileName)
     throw MathException("[FullMatrix::importFromSLang] not implemented for this data-type.");
 }
 
+template<>
+void FullMatrix<int>::ImportFromVtkASCIIFile(const char* rFileName)
+{
+    using namespace boost::spirit::classic;
+
+    // open file
+    std::ifstream file(rFileName, std::ios::in);
+    if (file.is_open() == false)
+    {
+        throw MathException("[FullMatrix::ImportFromVtkASCIIFile] error opening file.");
+    }
+    //skip read header, is done in StructureGrid.cpp
+    // read first four lines
+    unsigned int numEntries(0);
+
+    std::string line;
+    for (unsigned int count=0;count<7;count++)
+    {
+        getline (file, line);
+    }
+
+    // read number of entries
+    getline (file, line);
+    if (parse(line.c_str(),("POINT_DATA ">> uint_p[assign_a(numEntries)] >>  *space_p)).full == false)
+           {
+               throw MathException("[Matrix::importFromVtkASCIIFile]error reading number of entries.");
+           }
+    // read data type
+    getline (file, line);
+    // read empty line
+    getline (file, line);
+
+  // read entries
+    std::vector<int> imageValues;
+    int value;
+    imageValues.reserve(numEntries);
+
+    while(getline(file,line))
+    {
+    	std::istringstream iss(line);
+    	while(iss >> value)
+    	{
+			imageValues.push_back(value);
+    	}
+    }
+    for (unsigned int count = 0; count<numEntries; count++)
+    {
+        this->mEigenMatrix(count, 0) = imageValues[count];
+    }
+    // close file
+   file.close();
+}
+template<>
+void FullMatrix<double>::ImportFromVtkASCIIFile(const char* rfileName)
+{
+    throw MathException("[FullMatrix::importFromVtkASCIIFile] not implemented for double data-type.");
+}
+
+//! @brief elementwise absolute value of the matrix
+template<>
+FullMatrix<int> FullMatrix<int>::Abs()
+{
+	return FullMatrix<int> ( mEigenMatrix.cwise().abs() );
+}
+
+template<>
+ FullMatrix<double> FullMatrix<double>::Abs()
+{
+	return FullMatrix<double> ( mEigenMatrix.cwise().abs() );
+}
 }

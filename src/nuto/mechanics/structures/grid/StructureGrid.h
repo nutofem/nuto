@@ -3,9 +3,15 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeGridCoordinates.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
 #include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
 
 namespace NuTo
 {
@@ -21,19 +27,51 @@ class StructureGrid :  public StructureBase
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
-    StructureGrid(int mDimension);
+    StructureGrid(int rDimension);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief ... save the object to a file
+    //! @param filename ... filename
+    //! @param aType ... type of file, either BINARY, XML or TEXT
+    void Save (const std::string &filename, std::string rType )const;
+
+    //! @brief ... restore the object from a file
+    //! @param filename ... filename
+    //! @param aType ... type of file, either BINARY, XML or TEXT
+    void Restore (const std::string &filename, std::string rType );
+#endif // ENABLE_SERIALIZATION
+
+    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
+    //!            in case of restoring from a file with the wrong object type, the file id is printed
+    //! @return    class name
+    std::string GetTypeId()const
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
-//           & BOOST_SERIALIZATION_NVP(mDimension);
+        return std::string("StructureGrid");
     }
-#endif  // ENABLE_SERIALIZATION
+
+    virtual void ImportFromVtkASCIIFileHeader(const char* rFileName);
+
+    //! @brief returns number of Voxels
+    //! @return number of Voxels
+    unsigned int GetNumVoxels() const;
+
+    //! @brief returns  VoxelSpacing
+    //! @return VoxelSpacing
+    const double* GetVoxelSpacing() const;
+
+    //! @brief returns GridOrigin
+    //! @return GridOrigin
+    const double* GetGridOrigin() const;
+
+     //! @brief returns GridDimension
+     //! @return GridDimension
+    const unsigned int* GetGridDimension() const;
 
 //*************************************************
 //************ Node routines        ***************
@@ -43,18 +81,63 @@ public:
     //! @return number of nodes
     int GetNumNodes() const;
 
+#ifndef SWIG
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
-    NodeBase* NodeGetNodePtr(int rIdent);
+    NodeBase* NodeGetNodePtr(int rNodeNumber);
+
+    //! @brief returns a reference to a node
+    //! @param identifier
+    //! @return reference to a node
+    const NodeBase* NodeGetNodePtr(int rNodeNumber)const;
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    NodeBase* NodeGetNodePtrFromId(int rNodeId);
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    const NodeBase* NodeGetNodePtrFromId(int rNodeId) const;
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    int NodeGetNodeNumberFromId(int rNodeId);
+
+    //! @brief a reference to a node
+    //! @param node ID
+    //! @return reference to a node
+    const int NodeGetNodeNumberFromId(int rNodeId) const;
+
+
 
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
-    int NodeGetId(NodeBase* rNode)const;
+    int NodeGetId(const NodeBase* rNode)const;
+#endif //SWIG
 
-    //! @brief info about the elements in the Structure
-    virtual void NodeInfo(int mVerboseLevel)=0;
+    //! @brief gives the identifier of a node
+    //! @param reference to a node
+    //! @return identifier
+    int NodeGetId(int rNodeNumber)const;
+
+
+
+    //! @brief info about the nodes in the Structure
+    virtual void NodeInfo(int mVerboseLevel) const;
+
+    void NodeCreate(unsigned int rNodeNumber, unsigned int rNodeID, std::string rDOFs);
+
+    void CreateNodeGrid(std::string rDOFs);
+
+    typedef std::vector<int> TCoincidentVoxelList;
+    TCoincidentVoxelList GetCoincidenceVoxelIDs(unsigned int rNodeID);
+    //! @brief numbers the dofs in the structure
+    void NodeBuildGlobalDofs();
 
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
@@ -62,12 +145,25 @@ public:
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
 
+    //! @brief merge dof values
+    void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues);
+/*
+    //! @brief get internal forces
+    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const;
+
+    //! @brief calculates the internal force vector for a given node
+    //! @param rNodeId node id
+    //! @param rNodeForce return value
+    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const;
+*/
+
+
 //*************************************************
 //************ Element routines     ***************
 //**  defined in structures/StructureGridElement.cpp **
-//*************************************************
-    //! @brief returns the number of nodes
-    //! @return number of nodes
+//***********************************************"elementVec",**
+    //! @brief returns the number of elements
+    //! @return number of elements
     int GetNumElements() const;
 
     //! @brief returns a reference to an element
@@ -75,24 +171,63 @@ public:
     //! @return reference to an element
     ElementBase* ElementGetElementPtr(int rIdent);
 
+    //! @brief returns a reference to an element
+    //! @param identifier
+    //! @return reference to an element
+    const ElementBase* ElementGetElementPtr(int rIdent) const;
+
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
-    int ElementGetId(ElementBase* rElement)const;
+    int ElementGetId(const ElementBase* rElement) const;
 
     //! @brief info about the elements in the Structure
-    virtual void ElementInfo(int mVerboseLevel)=0;
+    virtual void ElementInfo(int mVerboseLevel) const;
+
+    void CreateElementGrid(NuTo::SparseMatrixCSRGeneral<double>& rBaseCoefficientMatrix0,
+            const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
+
+    //! @brief Creates an element
+    //! @param rElementID identifier for the element
+    //! @param rElementNumber number of the element
+    //! @param rElementType element type
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType);
+
+    //! @brief Creates an element
+    //! @param rElementID identifier for the element
+    //! @param rElementNumber number of the element
+    //! @param rElementType element type
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType, const std::string& rElementDataType);
+
+#ifndef SWIG
+    //! @brief Creates an element
+    //! @param rElementID identifier for the element
+    //! @param rElementNumber number of the element
+    //! @param rElementType element type
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, NuTo::ElementDataBase::eElementDataType rElementDataType);
+
+#endif //SWIG
 
 protected:
-
-protected:
-    int mNumVoxel[3];  //number of voxels for each dimension
+    unsigned int mNumVoxel;  //number of voxels
+//! @TODO length of list in function of real dimension
+    double mVoxelSpacing[3]; //spacing between center of neighbor voxels / dimension of each voxel
+    unsigned int mGridDimension[3]; //dimension of the voxel model
+    double mGridOrigin[3];// origin of the model , in the center of the first voxel
     boost::ptr_vector<NodeBase> mNodeVec;
     boost::ptr_vector<ElementBase> mElementVec;
+    const char* mImageDataFile;
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<ElementBase*>& rElements);
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
+
+    //! @brief ... create local coefficient matrix 0 for a voxel and save a pointer to the matrix
+    void BuildLocalCoefficientMatrix0() const;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)

@@ -15,17 +15,17 @@ int main()
     NuTo::FullMatrix<double> Displacements(1,1);
 
     Coordinates(0,0) = 1;
-    unsigned int myNode1 = myStructure.NodeCreate("displacements", Coordinates);
+    int myNode1 = myStructure.NodeCreate("displacements", Coordinates);
     Displacements(0,0) = 0;
     myStructure.NodeSetDisplacements(myNode1, Displacements);
 
     Coordinates(0,0) = 6;
-    unsigned int myNode2 = myStructure.NodeCreate("displacements", Coordinates);
+    int myNode2 = myStructure.NodeCreate("displacements", Coordinates);
     Displacements(0,0) = 0.3;
     myStructure.NodeSetDisplacements(myNode2, Displacements);
 
     Coordinates(0,0) = 10;
-    unsigned int myNode3 = myStructure.NodeCreate("displacements", Coordinates);
+    int myNode3 = myStructure.NodeCreate("displacements", Coordinates);
     Displacements(0,0) = 0.6;
     myStructure.NodeSetDisplacements(myNode3, Displacements);
 
@@ -34,11 +34,11 @@ int main()
 
     Incidences(0,0) = myNode1;
     Incidences(1,0) = myNode2;
-    unsigned int myElement1 = myStructure.ElementCreate("Truss1D2N", Incidences);
+    int myElement1 = myStructure.ElementCreate("Truss1D2N", Incidences);
 
     Incidences(0,0) = myNode3;
     Incidences(1,0) = myNode2;
-    unsigned int myElement2 = myStructure.ElementCreate("Truss1D2N", Incidences);
+    int myElement2 = myStructure.ElementCreate("Truss1D2N", Incidences);
 
     // create constitutive law
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");

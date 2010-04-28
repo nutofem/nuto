@@ -647,6 +647,9 @@ public:
 
     virtual void ImportFromSLangText ( const char* fileName );
 
+    //! @brief ... imports Matrix from a Vtk ASCII File
+    virtual void ImportFromVtkASCIIFile(const char* fileName);
+
     //! @brief performs a dyadic operator on all matrix entries and the entries of another matrix
     //! @param rOperator        Dyadic Operator
     void Map ( NuTo::DyadicOperator<T>* rDOperator, const FullMatrix<T> &otherMatrix )
@@ -719,10 +722,10 @@ public:
 #endif
 
     //! @brief elementwise absolute value of the matrix
-    virtual FullMatrix<T> Abs()
-    {
-        return FullMatrix<T> ( mEigenMatrix.cwise().abs() );
-    }
+    virtual FullMatrix<T> Abs();
+//    {
+//		  //return FullMatrix<T> ( mEigenMatrix.cwise().abs() );
+//    }
 
     //! @brief elementwise absolute value of the matrix
     virtual FullMatrix<T> Trans()
