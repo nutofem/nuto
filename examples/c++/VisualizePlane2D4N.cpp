@@ -5,6 +5,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
+#include "nuto/base/Debug.h"
 
 int main()
 {
@@ -63,9 +64,9 @@ int main()
 	    NuTo::FullMatrix<int> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences);
 
 	    // create constitutive law
-	    myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic");
-	    myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",10);
-	    myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0.1);
+	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+	    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
+	    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
 	    // create section
 	    myStructure.SectionCreate("mySection1","PLANE_STRAIN");
@@ -73,7 +74,7 @@ int main()
 
 	    // assign material, section and integration type
 	    myStructure.ElementTotalSetIntegrationType("2D4NGauss4Ip");
-	    myStructure.ElementTotalSetConstitutiveLaw("myMatLin");
+	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	    myStructure.ElementTotalSetSection("mySection1");
 
 		// visualize element
