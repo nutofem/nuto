@@ -83,7 +83,19 @@ public:
                 mEigenMatrix ( i,j ) = *ptr;                     // to access matrix coefficients,
     }
 
-    //! @brief ... copy constructor
+    //! @brief ... constructor
+    //! @brief ... creates a FullVector(means a FullMatrix size(m,1) )
+    //! @param entries_ ... vector containing the matrix in column-major orientation
+    FullMatrix<T> ( const std::vector<T>& entries_ )
+    {
+        mEigenMatrix.resize ( entries_.size(),1 );
+        const T *ptr = &entries_[0];
+
+		for ( int i=0; i<mEigenMatrix.rows(); i++, ptr++ )   	// loop over rows
+			mEigenMatrix ( i,0 ) = *ptr;                     	// to access matrix coefficients,
+    }
+
+   //! @brief ... copy constructor
     //! @param  rOther ... copied element
     FullMatrix<T> ( const FullMatrix<T>& rOther )
     {
