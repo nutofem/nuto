@@ -243,7 +243,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices requrid
+    //renumbering of dofs for global matrices required
     this->mNodeNumberingRequired  = true;
 }
 
