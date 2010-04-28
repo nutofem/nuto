@@ -43,9 +43,9 @@ int main()
         NuTo::Structure myStructure(3);
 
         // create material law
-        myStructure.ConstitutiveLawCreate("Material1","LinearElastic");
-        myStructure.ConstitutiveLawSetYoungsModulus("Material1", YoungsModulus);
-        myStructure.ConstitutiveLawSetPoissonsRatio("Material1", PoissonsRatio);
+        int Material1 = myStructure.ConstitutiveLawCreate("LinearElastic");
+        myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
+        myStructure.ConstitutiveLawSetPoissonsRatio(Material1, PoissonsRatio);
 
         // create nodes
         NuTo::FullMatrix<double> nodeCoordinates(3,1);
@@ -87,7 +87,7 @@ int main()
                     //std::cout << "element: " << element << " incidence: " << std::endl;
                     //elementIncidence.Info();
                     myStructure.ElementCreate(element, "Brick8N", elementIncidence);
-                    myStructure.ElementSetConstitutiveLaw(element,"Material1");
+                    myStructure.ElementSetConstitutiveLaw(element,Material1);
                     element ++;
                 }
             }
@@ -213,3 +213,4 @@ int main()
     }
     return 0;
 }
+
