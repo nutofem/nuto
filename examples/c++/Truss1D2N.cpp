@@ -21,7 +21,7 @@ int main()
 	NuTo::Structure myStructure(1);
 
 	// create section
-	myStructure.SectionCreate("Section1","1D");
+	myStructure.SectionCreate("Section1","Truss");
 	myStructure.SectionSetArea("Section1", Area);
 
 	// create material law

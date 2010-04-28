@@ -10,7 +10,7 @@ NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::No
         NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType())
 {
 	if (rNodes.size()!=4)
-        throw MechanicsException("[NuTo::Plane2D4N::Plane2D4N] Exactly two nodes are required for this type of element.");
+        throw MechanicsException("[NuTo::Plane2D4N::Plane2D4N] Exactly four nodes are required for this type of element.");
     mNodes[0] = rNodes[0];
     mNodes[1] = rNodes[1];
     mNodes[2] = rNodes[2];
