@@ -38,7 +38,7 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual eSectionType GetType() const;
+    virtual Section::eSectionType GetType() const;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information

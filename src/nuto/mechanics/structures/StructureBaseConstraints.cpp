@@ -1,6 +1,7 @@
 // $Id$
 
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constraints/ConstraintEquation.h"
@@ -8,7 +9,6 @@
 #include "nuto/mechanics/constraints/ConstraintNodeDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements1D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements3D.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
 
 //! @brief adds a displacement constraint equation for a node
 //! @param rNode pointer to node
@@ -109,7 +109,7 @@ int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(std::string rGroupId
     boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintDisplacementNodeGroup] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::GroupBase::Nodes)
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
         throw MechanicsException("[NuTo::Structure::NodeGroupAddSingleConstraint] Group is not a node group.");
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
@@ -191,7 +191,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, c
     try
     {
         // convert dof string
-        NuTo::NodeBase::eAttributes dofType;
+        NuTo::Node::eAttributes dofType;
         int dofComponent;
         this->ConstraintEquationGetDofInformationFromString(rDof, dofType, dofComponent);
 
@@ -206,7 +206,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, c
 }
 
 // create a constraint equation
-void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, NuTo::NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS)
+void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS)
 {
     // check if constraint equation already exists
     if(this->mConstraintMap.find(rConstraint) != this->mConstraintMap.end())
@@ -238,7 +238,7 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
     try
     {
         // convert dof string
-        NuTo::NodeBase::eAttributes dofType;
+        NuTo::Node::eAttributes dofType;
         int dofComponent;
         this->ConstraintEquationGetDofInformationFromString(rDof, dofType, dofComponent);
 
@@ -253,7 +253,7 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
 }
 
 // add a term to a constraint equation
-void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient)
+void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
 {
     // get iterator
     boost::ptr_map<int,ConstraintBase>::iterator it = this->mConstraintMap.find(rConstraint);
@@ -277,14 +277,14 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
     }
 }
 
-void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::NodeBase::eAttributes& rDofType, int& rDofComponent)
+void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eAttributes& rDofType, int& rDofComponent)
 {
     // convert string to upper-case
     std::string dofString;
     std::transform(rDof.begin(), rDof.end(), std::back_inserter(dofString), (int(*)(int)) toupper);
     if(dofString == "X_DISPLACEMENT")
     {
-        rDofType = NuTo::NodeBase::DISPLACEMENTS;
+        rDofType = NuTo::Node::DISPLACEMENTS;
         rDofComponent = 0;
     }
     else if(dofString == "Y_DISPLACEMENT")
@@ -293,7 +293,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] y-displacement dofs are only available in 2D or 3D structures.");
         }
-        rDofType = NuTo::NodeBase::DISPLACEMENTS;
+        rDofType = NuTo::Node::DISPLACEMENTS;
         rDofComponent = 1;
     }
     else if(dofString == "Z_DISPLACEMENT")
@@ -302,7 +302,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] z-displacement dofs are only available in 3D structures.");
         }
-        rDofType = NuTo::NodeBase::DISPLACEMENTS;
+        rDofType = NuTo::Node::DISPLACEMENTS;
         rDofComponent = 2;
     }
     else if(dofString == "X_ROTATION")
@@ -311,7 +311,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] x-rotation dofs are only available in 3D structures.");
         }
-        rDofType = NuTo::NodeBase::ROTATIONS;
+        rDofType = NuTo::Node::ROTATIONS;
         rDofComponent = 0;
     }
     else if(dofString == "Y_ROTATION")
@@ -320,12 +320,12 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] y-rotation dofs are only available in 3D structures.");
         }
-        rDofType = NuTo::NodeBase::ROTATIONS;
+        rDofType = NuTo::Node::ROTATIONS;
         rDofComponent = 1;
     }
     else if(dofString == "Z_ROTATION")
     {
-        rDofType = NuTo::NodeBase::ROTATIONS;
+        rDofType = NuTo::Node::ROTATIONS;
         if(this->mDimension == 2)
         {
             rDofComponent = 0; // in 2D only one rotation
@@ -341,7 +341,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     }
     else if(dofString == "TEMPERATURE")
     {
-        rDofType = NuTo::NodeBase::TEMPERATURES;
+        rDofType = NuTo::Node::TEMPERATURES;
         rDofComponent = 0;
     }
     else

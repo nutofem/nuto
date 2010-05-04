@@ -5,12 +5,14 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Truss.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 
 //! @brief constructor
-NuTo::Truss::Truss(const StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType) :
-        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType)
+NuTo::Truss::Truss(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
+        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {
     mSection = 0;
 }
@@ -150,6 +152,7 @@ void NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofs);
 }
+
 //! @brief Update the static data of an element
 void NuTo::Truss::UpdateStaticData()
 {
@@ -190,7 +193,6 @@ void NuTo::Truss::UpdateStaticData()
         constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
     }
 }
-
 
 //! @brief calculates deformation gradient1D
 //! @param rRerivativeShapeFunctions derivatives of the shape functions
@@ -239,6 +241,34 @@ void NuTo::Truss::GetLocalIntegrationPointCoordinates(int rIpNum, double& rCoord
     return;
 }
 
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point
+//! @param rCoordinates local coordinates (return value)
+void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
+{
+    double naturalCoordinates;
+    double nodeCoordinates[3];
+    std::vector<double> shapeFunctions(GetNumNodes());
+    GetLocalIntegrationPointCoordinates(rIpNum, naturalCoordinates);
+    CalculateShapeFunctions(naturalCoordinates, shapeFunctions);
+    rCoordinates[0] = 0.;
+    rCoordinates[1] = 0.;
+    rCoordinates[2] = 0.;
+
+    nodeCoordinates[0] = 0;
+    nodeCoordinates[1] = 0;
+    nodeCoordinates[2] = 0;
+    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    {
+    	const NodeCoordinatesBase *nodePtr(dynamic_cast<const NodeCoordinatesBase *>(GetNode(theNode)));
+    	nodePtr->GetCoordinates(nodeCoordinates);
+    	for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
+    	{
+    		rCoordinates[theCoordinate]+=shapeFunctions[theNode]*nodeCoordinates[theCoordinate];
+    	}
+    }
+    return;
+}
 
 //! @brief calculates the engineering strain
 //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
@@ -420,3 +450,30 @@ void NuTo::Truss::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
     }
 }
 
+//! @brief calculates the volume of an integration point (weight * detJac)
+//! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
+void NuTo::Truss::GetIntegrationPointVolume(std::vector<double>& rVolume)const
+{
+    //calculate local coordinates
+    std::vector<double> localNodeCoord(GetNumLocalDofs());
+    CalculateLocalCoordinates(localNodeCoord);
+
+    //allocate space for local ip coordinates
+    double localIPCoord;
+
+    //allocate space for local shape functions
+    std::vector<double> derivativeShapeFunctions(GetLocalDimension()*GetNumShapeFunctions());
+
+	rVolume.resize(GetNumIntegrationPoints());
+
+     for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+    {
+        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
+
+        CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
+
+		//attention in 1D, this is just the length, but that is required for the nonlocal model
+		rVolume[theIP] = DetJacobian(derivativeShapeFunctions,localNodeCoord)
+                       *(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
+    }
+}

@@ -18,7 +18,8 @@ public:
     {
         DISPLACEMENTS,            //!< visualize displacements
         ENGINEERING_STRESS,       //!< visualize engineering stress tensor
-        ENGINEERING_STRAIN        //!< visualize engineering strain tensor
+        ENGINEERING_STRAIN,       //!< visualize engineering strain tensor
+        NONLOCAL_WEIGHT          //!< visualize engineering strain tensor
     };
 
     //! @brief ... export to Vtk datafile

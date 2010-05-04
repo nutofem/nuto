@@ -8,8 +8,9 @@
 #include <assert.h>
 
 
-NuTo::Truss1D::Truss1D(NuTo::StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType) :
-        Truss(rStructure, rElementDataType, rIntegrationType)
+NuTo::Truss1D::Truss1D(NuTo::StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
+        Truss(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {}
 
 //! @brief calculates the local coordinates of the nodes

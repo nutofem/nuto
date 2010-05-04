@@ -32,6 +32,7 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 
 NuTo::LinearElastic::LinearElastic() : ConstitutiveEngineeringStressStrain(), ConstitutivePiolaKirchhoffIIGreenLagrange()
 {
@@ -91,7 +92,7 @@ void NuTo::LinearElastic::GetEngineeringStrain(const ElementBase* rElement, int 
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
     assert(rElement->GetSection()!=0);
-    if (rElement->GetSection()->GetType()==SectionBase::PLANE_STRAIN)
+    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
     {
         rEngineeringStrain.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
     	rEngineeringStrain.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
@@ -253,7 +254,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
     assert(rElement->GetSection()!=0);
-    if (rElement->GetSection()->GetType()==SectionBase::PLANE_STRAIN)
+    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
     {
 		// calculate coefficients of the material matrix
 		double C11, C12, C33;
@@ -295,7 +296,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 	rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
 	assert(rElement->GetSection()!=0);
-	if (rElement->GetSection()->GetType()==SectionBase::PLANE_STRAIN)
+	if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
 	{
 	    // calculate coefficients of the material matrix
 	    double C11, C12, C33;
@@ -401,7 +402,7 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 	const SectionBase* theSection(rElement->GetSection());
     if (theSection==0)
     	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-	if (theSection->GetType()==SectionBase::PLANE_STRAIN)
+	if (theSection->GetType()==Section::PLANE_STRAIN)
 	{
 	    // calculate coefficients of the material matrix
 	    double C11, C12, C33;
@@ -616,7 +617,7 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
 	const SectionBase* theSection(rElement->GetSection());
     if (theSection==0)
     	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-	if (theSection->GetType()==SectionBase::PLANE_STRAIN)
+	if (theSection->GetType()==Section::PLANE_STRAIN)
 	{
 		// calculate coefficients of the material matrix
 		double C11, C12, C33;
@@ -1233,34 +1234,34 @@ void NuTo::LinearElastic::SetPoissonsRatio(double rNu)
 //! @brief ... get type of constitutive relationship
 //! @return ... type of constitutive relationship
 //! @sa eConstitutiveType
-NuTo::ConstitutiveBase::eConstitutiveType NuTo::LinearElastic::GetType() const
+NuTo::Constitutive::eConstitutiveType NuTo::LinearElastic::GetType() const
 {
-    return NuTo::ConstitutiveBase::LINEAR_ELASTIC;
+    return NuTo::Constitutive::LINEAR_ELASTIC;
 }
 
 
 //! @brief ... check compatibility between element type and type of constitutive relationship
 //! @param rElementType ... element type
 //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-bool NuTo::LinearElastic::CheckElementCompatibility(NuTo::ElementBase::eElementType rElementType) const
+bool NuTo::LinearElastic::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
 {
     switch (rElementType)
     {
-    case NuTo::ElementBase::BRICK8N:
+    case NuTo::Element::BRICK8N:
         return true;
-    case NuTo::ElementBase::PLANE2D3N:
+    case NuTo::Element::PLANE2D3N:
         return true;
-    case NuTo::ElementBase::PLANE2D4N:
+    case NuTo::Element::PLANE2D4N:
         return true;
-    case NuTo::ElementBase::PLANE2D6N:
+    case NuTo::Element::PLANE2D6N:
         return true;
-    case NuTo::ElementBase::TETRAHEDRON4N:
+    case NuTo::Element::TETRAHEDRON4N:
         return true;
-    case NuTo::ElementBase::TETRAHEDRON10N:
+    case NuTo::Element::TETRAHEDRON10N:
         return true;
-    case NuTo::ElementBase::TRUSS1D2N:
+    case NuTo::Element::TRUSS1D2N:
         return true;
-    case NuTo::ElementBase::TRUSS1D3N:
+    case NuTo::Element::TRUSS1D3N:
         return true;
     default:
         return false;

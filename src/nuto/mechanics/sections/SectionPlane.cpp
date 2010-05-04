@@ -4,10 +4,10 @@
 #include <nuto/mechanics/sections/SectionPlane.h>
 
 // constructor
-NuTo::SectionPlane::SectionPlane(eSectionType rSectionType)
+NuTo::SectionPlane::SectionPlane(Section::eSectionType rSectionType)
 {
     this->mThickness = 0.0;
-    if (rSectionType==PLANE_STRAIN || rSectionType==PLANE_STRESS)
+    if (rSectionType==Section::PLANE_STRAIN || rSectionType==Section::PLANE_STRESS)
     	this->mSectionType = rSectionType;
     else
     {
@@ -32,7 +32,7 @@ double NuTo::SectionPlane::GetThickness() const
 }
 
 // get section type
-NuTo::SectionBase::eSectionType NuTo::SectionPlane::GetType() const
+NuTo::Section::eSectionType NuTo::SectionPlane::GetType() const
 {
     return mSectionType;
 }
@@ -43,11 +43,11 @@ void NuTo::SectionPlane::Info(unsigned short rVerboseLevel) const
     this->SectionBase::Info(rVerboseLevel);
     std::cout << "    section type: 2D" << std::endl;
     std::cout << "    section thickness: " << this->mThickness << std::endl;
-    if (mSectionType==PLANE_STRAIN)
+    if (mSectionType==Section::PLANE_STRAIN)
         std::cout << "    section stress state: plane strain" << std::endl;
     else
     {
-        if (mSectionType==PLANE_STRESS)
+        if (mSectionType==Section::PLANE_STRESS)
             std::cout << "    section stress state: plane stress" << std::endl;
     }
 }

@@ -12,7 +12,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/ElementWithDataBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
@@ -32,8 +31,10 @@ class Plane : public ElementWithDataBase
 public:
     //! @brief constructor
     Plane(const StructureBase* rStructure,
-    		ElementDataBase::eElementDataType rElementDataType,
-    		IntegrationTypeBase::eIntegrationType rIntegrationType);
+    		ElementData::eElementDataType rElementDataType,
+    		IntegrationType::eIntegrationType rIntegrationType,
+    		IpData::eIpDataType rIpDataType
+    		);
 
     //! @brief returns the global dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -132,7 +133,6 @@ public:
     //! @param rCoordinates coordinates to be returned
     virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const;
 
-
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
@@ -202,6 +202,10 @@ public:
     //! @param rNaturalCoordinates ... two-dimensional point coordinates in natural coordinate system
     //! @param rGlobalDisplacements ... three-dimension global point displacements
     void InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const;
+
+    //! @brief calculates the volume of an integration point (weight * detJac)
+    //! @param rVolume  vector for storage of the ip volumes (area in 2D)
+    void GetIntegrationPointVolume(std::vector<double>& rVolume)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

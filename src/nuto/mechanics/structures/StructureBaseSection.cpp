@@ -1,10 +1,9 @@
 // $Id$
 
+#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
 
 // create a new section
 void NuTo::StructureBase::SectionCreate(const std::string& rIdent, const std::string& rType)
@@ -14,18 +13,18 @@ void NuTo::StructureBase::SectionCreate(const std::string& rIdent, const std::st
     std::transform(rType.begin(), rType.end(), std::back_inserter(SectionTypeString), (int(*)(int)) toupper);
 
     // get section type from string
-    SectionBase::eSectionType SectionType;
+    Section::eSectionType SectionType;
     if (SectionTypeString == "TRUSS")
     {
-        SectionType = SectionBase::TRUSS;
+        SectionType = Section::TRUSS;
     }
     else if (SectionTypeString == "PLANE_STRAIN")
     {
-        SectionType = SectionBase::PLANE_STRAIN;
+        SectionType = Section::PLANE_STRAIN;
     }
     else if (SectionTypeString == "PLANE_STRESS")
     {
-        SectionType = SectionBase::PLANE_STRESS;
+        SectionType = Section::PLANE_STRESS;
     }
     else
     {
@@ -35,7 +34,7 @@ void NuTo::StructureBase::SectionCreate(const std::string& rIdent, const std::st
 }
 
 // create a new section
-void NuTo::StructureBase::SectionCreate(const std::string& rIdent, SectionBase::eSectionType rType)
+void NuTo::StructureBase::SectionCreate(const std::string& rIdent, Section::eSectionType rType)
 {
     // check if section identifier exists
     boost::ptr_map<std::string,SectionBase>::iterator it = this->mSectionMap.find(rIdent);
@@ -45,11 +44,11 @@ void NuTo::StructureBase::SectionCreate(const std::string& rIdent, SectionBase::
         SectionBase* SectionPtr;
         switch (rType)
         {
-        case SectionBase::TRUSS:
+        case Section::TRUSS:
             SectionPtr = new SectionTruss();
             break;
-        case SectionBase::PLANE_STRAIN:
-        case SectionBase::PLANE_STRESS:
+        case Section::PLANE_STRAIN:
+        case Section::PLANE_STRESS:
             SectionPtr = new SectionPlane(rType);
             break;
         default:

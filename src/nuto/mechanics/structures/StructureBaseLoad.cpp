@@ -1,7 +1,7 @@
 // $Id$
-#include "nuto/mechanics/groups/GroupBase.h"
-#include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadNode.h"
 #include "nuto/mechanics/loads/LoadNodeForces1D.h"
 #include "nuto/mechanics/loads/LoadNodeForces3D.h"

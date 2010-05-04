@@ -24,7 +24,8 @@ class Plane2D : public Plane
 
 public:
     Plane2D(NuTo::StructureBase* rStructure,
-    		ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType);
+    		ElementData::eElementDataType rElementDataType, IntegrationType::eIntegrationType rIntegrationType,
+    		IpData::eIpDataType rIpDataType);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

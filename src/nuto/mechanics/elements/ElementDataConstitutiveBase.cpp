@@ -12,17 +12,22 @@
 #include <assert.h>
 
 
-NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase(const NuTo::IntegrationTypeBase* rIntegrationType) :  NuTo::ElementDataBase::ElementDataBase(rIntegrationType)
+NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase() :  NuTo::ElementDataBase::ElementDataBase()
 {
-    //std::cout << "ElementDataConstitutiveBase constructor " << std::endl;
+    std::cout << "ElementDataConstitutiveBase constructor " << std::endl;
 	mConstitutiveLaw = 0;
 }
-
-void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw)
+//! @brief deconstructor
+NuTo::ElementDataConstitutiveBase::~ElementDataConstitutiveBase()
 {
+    //std::cout << "NuTo::ElementDataConstitutiveBase::~ElementDataConstitutiveBase()" << std::endl;
+}
+
+void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw)
+{
+	std::cout << "NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw" << std::endl;
 	assert(rConstitutiveLaw!=0);
 	mConstitutiveLaw = rConstitutiveLaw;
-	UpdateForModifiedConstitutiveLaw(rElement);
 }
 
 NuTo::ConstitutiveBase* NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw(int rIp)

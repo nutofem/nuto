@@ -1,8 +1,8 @@
 #include "nuto/mechanics/elements/Tetrahedron4N.h"
 
-NuTo::Tetrahedron4N::Tetrahedron4N(NuTo::StructureBase* rStructure,
-                                   std::vector<NodeBase*> &rNodes, ElementDataBase::eElementDataType rElementDataType) :
-        Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+NuTo::Tetrahedron4N::Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
+        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
     if (rNodes.size()!=4)
         throw MechanicsException("[NuTo::Tetrahedron4N::Tetrahedron4N] Exactly four nodes are required for this type of element.");
@@ -58,10 +58,10 @@ void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocal(
 }
 
 //! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationTypeBase::eIntegrationType NuTo::Tetrahedron4N::GetStandardIntegrationType()
+NuTo::IntegrationType::eIntegrationType NuTo::Tetrahedron4N::GetStandardIntegrationType()
 {
     throw MechanicsException("Tetrahedron4N::getStandardIntegrationType: necessary integration type not implemented yet");
-    return IntegrationTypeBase::IntegrationType3D8NGauss2x2x2Ip;
+    return IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
 }
 
 //! @brief reorder element nodes

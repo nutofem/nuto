@@ -30,7 +30,8 @@ class Tetrahedron10N : public Solid
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes, ElementDataBase::eElementDataType rElementDataType);
+    Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -45,9 +46,9 @@ public:
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::ElementBase::eElementType GetEnumType()const
+    NuTo::Element::eElementType GetEnumType()const
     {
-        return NuTo::ElementBase::TETRAHEDRON10N;
+        return NuTo::Element::TETRAHEDRON10N;
     }
 
     //! @brief returns the number of nodes in this element
@@ -121,7 +122,7 @@ public:
     }
 
     //! @brief returns the enum of the standard integration type for this element
-    NuTo::IntegrationTypeBase::eIntegrationType GetStandardIntegrationType();
+    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
 
 protected:

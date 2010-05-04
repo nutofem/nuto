@@ -191,4 +191,9 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
         return "unknown error code";
     }
 }
+#else // HAVE_MUMPS
+void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
+{
+	throw NuTo::MathException("[SparseDirectSolverMUMPS::Solve] MUMPS-solver was not found on your system (check cmake)");
+}
 #endif // HAVE_MUMPS

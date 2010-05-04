@@ -12,7 +12,8 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 namespace NuTo
@@ -56,6 +57,16 @@ public:
     {
         return std::string("Structure");
     }
+
+    //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
+    //! @param rConstitutiveId constitutive model for which the data is build
+    void BuildNonlocalData(int rConstitutiveId);
+
+#ifndef SWIG
+    //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
+    //! @param rConstitutiveId constitutive model for which the data is build
+    void BuildNonlocalData(const ConstitutiveBase* rConstitutive);
+#endif //SWIG
 
 //*************************************************
 //************ Node routines        ***************
@@ -166,10 +177,11 @@ public:
     //! @brief Creates an element
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
-    //! @param rElementDataType data of the element (static data, constitutive at element etc)
+    //! @param rElementDataType data of the element (nonlocal,ip)
+    //! @param rIpDataType data of the ip (static data, nonlocal data,..)
     //! @return element number
     int ElementCreate (const std::string& rElementType,
-            const NuTo::FullMatrix<int>& rNodeNumbers, const std::string& rElementDataType);
+            const NuTo::FullMatrix<int>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief Creates an element
     //! @param rElementType element type
@@ -188,10 +200,11 @@ public:
     //! @param rElementNumber element number
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
-    //! @param rElementDataType data of the element (static data, constitutive at element etc)
+    //! @param rElementDataType data of the element (nonlocal,ip)
+    //! @param rIpDataType data of the ip (static data, nonlocal data,..)
     //! @return element number
     void ElementCreate (int rElementNumber, const std::string& rElementType,
-    		const NuTo::FullMatrix<int> &rNodeNumbers, const std::string& rElementDataType);
+    		const NuTo::FullMatrix<int> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief creates multiple elements
     //! @param rElementType element type
@@ -204,10 +217,10 @@ public:
     //! @param rElementNumber element number
     //! @param rElementType element type
     //! @param rNodeIdents pointers to the corresponding nodes
-    void ElementCreate(int rElementNumber, ElementBase::eElementType rType, std::vector<NodeBase*> rNodeVector, ElementDataBase::eElementDataType rElementDataType);
+    void ElementCreate(int rElementNumber, Element::eElementType rType, std::vector<NodeBase*> rNodeVector,
+    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
 #endif //SWIG
-
 
     //*************************************************
     //************ Info routine         ***************

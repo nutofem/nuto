@@ -26,7 +26,7 @@ void NuTo::StructureBase::IntegrationTypeInfo(int rVerboseLevel)const
 //! if the integration type does not exist, the integration type is created
 //! @param identIntegrationType Identifier for an integration type
 const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
-       (NuTo::IntegrationTypeBase::eIntegrationType rEnumIntegrationType)
+       (NuTo::IntegrationType::eIntegrationType rEnumIntegrationType)
 {
     boost::ptr_map<std::string,IntegrationTypeBase>::iterator it = mIntegrationTypeMap.find(mMappingIntEnum2String[rEnumIntegrationType]);
     if (it!=mIntegrationTypeMap.end())
@@ -37,25 +37,25 @@ const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         NuTo::IntegrationTypeBase *ptrIntegrationType;
         switch(rEnumIntegrationType)
         {
-        case  NuTo::IntegrationTypeBase::IntegrationType1D2NGauss1Ip:
+        case  NuTo::IntegrationType::IntegrationType1D2NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss1Ip();
         break;
-        case  NuTo::IntegrationTypeBase::IntegrationType1D2NGauss2Ip:
+        case  NuTo::IntegrationType::IntegrationType1D2NGauss2Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss2Ip();
         break;
-        case  NuTo::IntegrationTypeBase::IntegrationType2D4NGauss1Ip:
+        case  NuTo::IntegrationType::IntegrationType2D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NGauss1Ip();
         break;
-        case  NuTo::IntegrationTypeBase::IntegrationType2D4NGauss4Ip:
+        case  NuTo::IntegrationType::IntegrationType2D4NGauss4Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NGauss4Ip();
         break;
-        case  NuTo::IntegrationTypeBase::IntegrationType3D4NGauss1Ip:
+        case  NuTo::IntegrationType::IntegrationType3D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss1Ip();
         break;
-        case  NuTo::IntegrationTypeBase::IntegrationType3D8NGauss1Ip:
+        case  NuTo::IntegrationType::IntegrationType3D8NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NGauss1Ip();
         break;
-        case  NuTo::IntegrationTypeBase::IntegrationType3D8NGauss2x2x2Ip:
+        case  NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NGauss2x2x2Ip();
         break;
         default:
@@ -85,7 +85,7 @@ const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(cons
         {
             if (mMappingIntEnum2String[theIntegrationType]==IntegrationTypeString)
             {
-                return GetPtrIntegrationType((NuTo::IntegrationTypeBase::eIntegrationType)theIntegrationType);
+                return GetPtrIntegrationType((NuTo::IntegrationType::eIntegrationType)theIntegrationType);
             }
         }
 

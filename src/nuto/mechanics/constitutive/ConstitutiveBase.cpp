@@ -1,4 +1,6 @@
 // $Id$
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/math/FullMatrix.h"
 #include <iostream>
 
 #ifdef ENABLE_SERIALIZATION
@@ -12,7 +14,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 // constructor
 NuTo::ConstitutiveBase::ConstitutiveBase()
@@ -134,6 +135,20 @@ void NuTo::ConstitutiveBase::AddHardeningModulus(double rEpsilon, double rH)
 double NuTo::ConstitutiveBase::GetRanfieldFactorHardeningModulus(const ElementBase* rElement,int rIp) const
 {
     return 1;
+}
+
+//! @brief ... get nonlocal radius
+//! @return ... nonlocal radius
+double NuTo::ConstitutiveBase::GetNonlocalRadius() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetNonlocalRadius] The constitutive relationship does not have a nonlocal radius.");
+}
+
+//! @brief ... set nonlocal radius
+//! @param rRadius ...  nonlocal radius
+void NuTo::ConstitutiveBase::SetNonlocalRadius(double rH)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNonlocalRadius] The constitutive relationship does not have a nonlocal radius.");
 }
 
 // modify parameter validity flag

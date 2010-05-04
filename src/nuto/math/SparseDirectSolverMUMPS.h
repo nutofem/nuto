@@ -38,6 +38,13 @@ protected:
 
     //! @brief ... type of fill-in reducing odering of the coefficient matrix
     //int orderingType;
+#else
+    //! @brief ... solve system of equations: rMatrix * rSolution = rRhs
+    //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
+    //! @param rRhs ... matrix storing the right-hand-side vectors (input)
+    //! @param rSolution ... matrix storing the corresponding solution vectors (output)
+    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+
 #endif // HAVE_MUMPS
 };
 }

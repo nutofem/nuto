@@ -28,11 +28,6 @@ class LoadBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    enum eAttributes
-    {
-        FORCES=0,
-        MOMENTS
-    };
     //! @brief constructor
     LoadBase();
 

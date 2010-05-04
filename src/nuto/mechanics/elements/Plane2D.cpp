@@ -8,8 +8,9 @@
 #include <assert.h>
 
 
-NuTo::Plane2D::Plane2D(NuTo::StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType) :
-        Plane(rStructure, rElementDataType, rIntegrationType)
+NuTo::Plane2D::Plane2D(NuTo::StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
+        Plane(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {}
 
 //! @brief calculates the local coordinates of the nodes

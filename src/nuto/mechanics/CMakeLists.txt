@@ -26,6 +26,7 @@ constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
 constitutive/mechanics/LinearElastic.cpp
+constitutive/mechanics/NonlocalDamagePlasticity.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements1D.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements3D.cpp
@@ -50,11 +51,16 @@ SET(NuToMechanicsElements_SOURCES
 elements/Brick8N.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
-elements/ElementDataConstitutive.cpp
 elements/ElementDataConstitutiveBase.cpp
-elements/ElementDataConstitutiveStaticData.cpp
-elements/ElementDataStaticDataBase.cpp
+elements/ElementDataConstitutiveIp.cpp
+elements/ElementDataIpBase.cpp
+elements/ElementDataNonlocalBase.cpp
 elements/ElementWithDataBase.cpp
+elements/IpDataBase.cpp
+elements/IpDataNonlocalBase.cpp
+elements/IpDataStaticData.cpp
+elements/IpDataStaticDataBase.cpp
+elements/IpDataStaticDataNonlocal.cpp
 elements/Plane.cpp
 elements/Plane2D.cpp
 elements/Plane2D4N.cpp
@@ -74,11 +80,14 @@ groups/GroupBase.cpp
 )
 
 SET(NuToMechanicsIntegrationtypes_SOURCES
+integrationtypes/IntegrationType1D.cpp
 integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp
+integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp
+integrationtypes/IntegrationType3D.cpp
 integrationtypes/IntegrationType3D4NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
@@ -151,7 +160,7 @@ FOREACH(NuToMechanics_SWIG_MODULE ${NuToMechanics_SWIG_MODULES})
   SET_SOURCE_FILES_PROPERTIES(${NuToMechanics_SWIG_MODULE}.i PROPERTIES CPLUSPLUS ON)
   SET_SOURCE_FILES_PROPERTIES(${NuToMechanics_SWIG_MODULE}.i PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
   SWIG_ADD_MODULE(${NuToMechanics_SWIG_MODULE} python ${NuToMechanics_SWIG_MODULE}.i)
-  SWIG_LINK_LIBRARIES(${NuToMechanics_SWIG_MODULE} NuToMechanics NuToBase NuToMath ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+  SWIG_LINK_LIBRARIES(${NuToMechanics_SWIG_MODULE} NuToMechanics NuToBase NuToMath ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ANN_LIBRARIES})
   IF (ENABLE_VISUALIZE)
     SWIG_LINK_LIBRARIES(${NuToMechanics_SWIG_MODULE}  NuToVisualize)
   ENDIF (ENABLE_VISUALIZE)

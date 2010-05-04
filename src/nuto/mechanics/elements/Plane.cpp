@@ -11,8 +11,9 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 
 //! @brief constructor
-NuTo::Plane::Plane(const StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType) :
-        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType)
+NuTo::Plane::Plane(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
+        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {
     mSection = 0;
 }
@@ -193,11 +194,14 @@ void NuTo::Plane::CalculateJacobian(const std::vector<double>& rDerivativeShapeF
     if (rDetJac==0)
         throw MechanicsException("[NuTo::Plane::CalculateJacobian] Determinant of the Jacobian is zero, no inversion possible.");
 
-    double invDeterminant(1./rDetJac);
-    rInvJacobian[0]=j3*invDeterminant;
-    rInvJacobian[1]=-j2*invDeterminant;
-    rInvJacobian[2]=-j1*invDeterminant;
-    rInvJacobian[3]=j0*invDeterminant;
+    if (rInvJacobian!=0)
+    {
+		double invDeterminant(1./rDetJac);
+		rInvJacobian[0]=j3*invDeterminant;
+		rInvJacobian[1]=-j2*invDeterminant;
+		rInvJacobian[2]=-j1*invDeterminant;
+		rInvJacobian[3]=j0*invDeterminant;
+    }
 }
 
 //! @brief calculates the derivative of the shape functions with respect to global coordinates
@@ -690,11 +694,11 @@ void NuTo::Plane::CheckElement()
     // calculate coordinates
     std::vector<double> nodeCoord(2*this->GetNumNodes());
     this->CalculateLocalCoordinates(nodeCoord);
-    for (int count=0; count<GetNumNodes(); count++)
+    /*for (int count=0; count<GetNumNodes(); count++)
     {
     	std::cout << "Node " << count+1 << " with coordinates " << nodeCoord[2*count]<<","
     			<< nodeCoord[2*count+1]<<std::endl;
-    }
+    }*/
 
     // check number of integration points
     if (this->GetNumIntegrationPoints() < 1)
@@ -727,7 +731,7 @@ void NuTo::Plane::CheckElement()
         this->GetLocalIntegrationPointCoordinates(ipCount, naturalIPCoord);
         this->CalculateDerivativeShapeFunctionsNatural(naturalIPCoord, derivativeShapeFunctionsNatural);
         this->CalculateJacobian(derivativeShapeFunctionsNatural,nodeCoord, invJacobian, detJacobian);
-        std::cout << "Jacobian " << detJacobian << std::endl;
+        //std::cout << "Jacobian " << detJacobian << std::endl;
         if (detJacobian <= 0)
         {
             throw MechanicsException("[NuTo::Plane::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
@@ -759,5 +763,37 @@ void NuTo::Plane::SetSection(const SectionBase* rSection)
 const NuTo::SectionBase* NuTo::Plane::GetSection()const
 {
     return mSection;
+}
+
+//! @brief calculates the volume of an integration point (weight * detJac)
+//! @param rVolume  vector for storage of the ip volumes (area in 2D)
+void NuTo::Plane::GetIntegrationPointVolume(std::vector<double>& rVolume)const
+{
+   //calculate local coordinates
+	std::vector<double> localNodeCoord(GetNumLocalDofs());
+	CalculateLocalCoordinates(localNodeCoord);
+
+	//allocate space for ip coordinates in natural coordinate system (-1,1)
+	double naturalIPCoord[2];
+
+	//allocate space for derivatives of shape functions in natural coordinate system
+	std::vector<double> derivativeShapeFunctionsNatural(2*GetNumShapeFunctions());
+
+	//determinant of Jacobian
+	double detJac;
+
+	rVolume.resize(GetNumIntegrationPoints());
+
+	for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+	{
+		GetLocalIntegrationPointCoordinates(theIP, naturalIPCoord);
+
+		CalculateDerivativeShapeFunctionsNatural(naturalIPCoord, derivativeShapeFunctionsNatural);
+
+		CalculateJacobian(derivativeShapeFunctionsNatural,localNodeCoord, 0, detJac);
+
+		//attention in 2D, this is just the area, but that is required for the nonlocal model
+		rVolume[theIP] = detJac * mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+	}
 }
 

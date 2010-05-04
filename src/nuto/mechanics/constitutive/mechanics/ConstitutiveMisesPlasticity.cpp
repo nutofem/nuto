@@ -936,24 +936,24 @@ void NuTo::ConstitutiveMisesPlasticity::AddHardeningModulus(double rEpsilon, dou
 //! @brief ... get type of constitutive relationship
 //! @return ... type of constitutive relationship
 //! @sa eConstitutiveType
-NuTo::ConstitutiveBase::eConstitutiveType NuTo::ConstitutiveMisesPlasticity::GetType() const
+NuTo::Constitutive::eConstitutiveType NuTo::ConstitutiveMisesPlasticity::GetType() const
 {
-    return NuTo::ConstitutiveBase::LINEAR_ELASTIC;
+    return NuTo::Constitutive::LINEAR_ELASTIC;
 }
 
 
 //! @brief ... check compatibility between element type and type of constitutive relationship
 //! @param rElementType ... element type
 //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-bool NuTo::ConstitutiveMisesPlasticity::CheckElementCompatibility(NuTo::ElementBase::eElementType rElementType) const
+bool NuTo::ConstitutiveMisesPlasticity::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
 {
     switch (rElementType)
     {
-    case NuTo::ElementBase::TETRAHEDRON4N:
+    case NuTo::Element::TETRAHEDRON4N:
         return true;
-    case NuTo::ElementBase::TETRAHEDRON10N:
+    case NuTo::Element::TETRAHEDRON10N:
         return true;
-    case NuTo::ElementBase::BRICK8N:
+    case NuTo::Element::BRICK8N:
         return true;
     default:
         return false;

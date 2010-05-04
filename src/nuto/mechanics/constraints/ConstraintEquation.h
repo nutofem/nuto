@@ -10,14 +10,14 @@
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
-
+class NodeBase;
 //! @brief ... constraint equations
 //! @author Stefan Eckardt, ISM
 //! @date 16.12.2009
@@ -30,14 +30,14 @@ public:
     //! @param rDofComponent ... which dof is constrained (e.g. 0 - displacement in x-direction) (first term only)
     //! @param rCoefficient ... weighting of this term in the constraint equation (first term only)
     //! @param rRhsValue ... right-hand-side value of the constraint equation
-    ConstraintEquation(const NodeBase* rNode, NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue);
+    ConstraintEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue);
 
     //! @brief add term to constraint
     //! @param rNode ... node pointer
     //! @param rDofType ... which type of dof (e.g. displacement, rotation, temperature) is constrained
     //! @param rDofComponent ... which dof is constrained (e.g. 0 - displacement in x-direction)
     //! @param rCoefficient ... weighting of this term in the constraint equation
-    void AddTerm(const NodeBase* rNode, NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient);
+    void AddTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
 
     //! @brief adds the constraint equation term to the matrix
     //! @param rConstraintEquation ... row in constraint matrix (is incremented during the function call)

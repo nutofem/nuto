@@ -15,6 +15,8 @@
 #endif // ENABLE_SERIALIZATION
 #include <boost/noncopyable.hpp>
 
+#include "nuto/mechanics/sections/SectionEnum.h"
+
 namespace NuTo
 {
 //! @author Stefan Eckardt, ISM
@@ -26,16 +28,9 @@ class SectionBase : boost::noncopyable
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    enum eSectionType
-    {
-        TRUSS,	          //!< one-dimensional truss behavior
-        PLANE_STRAIN,     //!< two-dimensional behavior plane strain
-        PLANE_STRESS      //!< two-dimensional behavior plane stress
-    };
-
     //! @brief ... get the section type
     //! @return ... section type
-    virtual eSectionType GetType() const = 0;
+    virtual Section::eSectionType GetType() const = 0;
 
     //! @brief ... get the cross-section area of the section
     //! @return ... section cross-section area

@@ -26,9 +26,9 @@ double NuTo::SectionTruss::GetArea() const
 }
 
 // get section type
-NuTo::SectionBase::eSectionType NuTo::SectionTruss::GetType() const
+NuTo::Section::eSectionType NuTo::SectionTruss::GetType() const
 {
-    return TRUSS;
+    return Section::TRUSS;
 }
 
 // info routine

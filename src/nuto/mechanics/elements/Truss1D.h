@@ -24,7 +24,8 @@ class Truss1D : public Truss
 
 public:
     Truss1D(NuTo::StructureBase* rStructure,
-    		ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType);
+    		ElementData::eElementDataType rElementDataType, IntegrationType::eIntegrationType rIntegrationType,
+    		IpData::eIpDataType rIpDataType);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

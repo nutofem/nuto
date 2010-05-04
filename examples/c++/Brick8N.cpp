@@ -209,7 +209,10 @@ int main()
         std::cout << "residual: " << residualVector.Norm() << std::endl;
 
         // visualize results
-        myStructure.ExportVtkDataFile("Brick8N.vtk","displacements engineering_strain engineering_stress");
+        myStructure.AddVisualizationComponentDisplacements();
+        myStructure.AddVisualizationComponentEngineeringStrain();
+        myStructure.AddVisualizationComponentEngineeringStress();
+        myStructure.ExportVtkDataFile("Plane2D4N.vtk");
     }
     return 0;
 }

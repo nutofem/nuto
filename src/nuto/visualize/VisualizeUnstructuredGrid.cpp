@@ -414,7 +414,8 @@ void NuTo::VisualizeUnstructuredGrid::CheckDataIdent(const std::string& rIdent) 
     std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(tokens));
     if (tokens.size() != 1)
     {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::CheckDataIdent] data identifier must be a single word.");
+        //std::cout << "data ident : " << rIdent << std::endl;
+    	throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::CheckDataIdent] data identifier must be a single word.");
     }
 }
 

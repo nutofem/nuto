@@ -6,8 +6,9 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include <assert.h>
 
-NuTo::Brick8N::Brick8N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes, ElementDataBase::eElementDataType rElementDataType) :
-        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+NuTo::Brick8N::Brick8N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
+        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
     if (rNodes.size()!=8)
         throw MechanicsException("[NuTo::Brick8N::Brick8N] Exactly eight nodes are required for this type of element.");
@@ -100,9 +101,9 @@ void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCo
 
 
 //! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationTypeBase::eIntegrationType NuTo::Brick8N::GetStandardIntegrationType()
+NuTo::IntegrationType::eIntegrationType NuTo::Brick8N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationTypeBase::IntegrationType3D8NGauss2x2x2Ip;
+    return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
 }
 
 //! @brief reorder element nodes

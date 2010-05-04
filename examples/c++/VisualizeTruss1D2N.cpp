@@ -50,14 +50,17 @@ int main()
     myStructure.SectionSetArea("mySection1",0.01);
 
     // assign material, section and integration type
-    myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip");
+    myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA");
     myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
     myStructure.ElementSetSection(myElement1,"mySection1");
     myStructure.ElementSetConstitutiveLaw(myElement2,myMatLin);
     myStructure.ElementSetSection(myElement2,"mySection1");
 
     // visualize element
-    myStructure.ExportVtkDataFile("Truss1D2N.vtk","displacements engineering_strain engineering_stress");
+    myStructure.AddVisualizationComponentDisplacements();
+    myStructure.AddVisualizationComponentEngineeringStrain();
+    myStructure.AddVisualizationComponentEngineeringStress();
+    myStructure.ExportVtkDataFile("Truss1D2N.vtk");
 
     return 0;
 }

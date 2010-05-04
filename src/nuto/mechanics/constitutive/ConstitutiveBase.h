@@ -7,7 +7,8 @@
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 namespace NuTo
 {
@@ -28,6 +29,7 @@ class SecondPiolaKirchhoffStress1D;
 class SecondPiolaKirchhoffStress2D;
 class SecondPiolaKirchhoffStress3D;
 class EngineeringStrain3D;
+class ElementBase;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Stefan Eckardt, ISM
@@ -38,12 +40,6 @@ class ConstitutiveBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    enum eConstitutiveType
-    {
-        LINEAR_ELASTIC,    //!< linear-elastic behavior
-        MISES_PLASTICITY    //!< mises plasticity with isotropic and kinematic hardening
-    };
-
     //! @brief ... constructor
     ConstitutiveBase();
 
@@ -123,17 +119,25 @@ public:
     //! @param rElement ...  element
     //! @param rIp ...  integration point
     double GetRanfieldFactorHardeningModulus(const ElementBase* rElement,int rIp) const;
+
+    //! @brief ... get nonlocal radius
+    //! @return ... nonlocal radius
+    virtual double GetNonlocalRadius() const;
+
+    //! @brief ... set nonlocal radius
+    //! @param rRadius...  nonlocal radius
+    virtual void SetNonlocalRadius(double rRadius);
    ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual ConstitutiveBase::eConstitutiveType GetType() const = 0;
+    virtual Constitutive::eConstitutiveType GetType() const = 0;
 
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(ElementBase::eElementType rElementType) const = 0;
+    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const = 0;
 
     //! @brief ... returns whether the parameters of the constitutive relationship are valid or not
     //! @return ...  <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise

@@ -15,9 +15,9 @@
 #include <sstream>
 #include <string>
 
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
@@ -25,9 +25,15 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include "nuto/visualize/VisualizeComponentDisplacement.h"
+#include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
+#include "nuto/visualize/VisualizeComponentEngineeringStress.h"
+#include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #endif // ENABLE_VISUALIZE
 
 
@@ -41,18 +47,18 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mNumDofs   = 0;
     mNodeNumberingRequired = true;
 
-    mMappingIntEnum2String.resize(NuTo::IntegrationTypeBase::NumIntegrationTypes);
-    mMappingIntEnum2String[NuTo::IntegrationTypeBase::IntegrationType1D2NGauss1Ip]=
+    mMappingIntEnum2String.resize(NuTo::IntegrationType::NumIntegrationTypes);
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss1Ip]=
         NuTo::IntegrationType1D2NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationTypeBase::IntegrationType1D2NGauss2Ip]=
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss2Ip]=
         NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationTypeBase::IntegrationType2D4NGauss1Ip]=
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss1Ip]=
         NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationTypeBase::IntegrationType2D4NGauss4Ip]=
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss4Ip]=
         NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationTypeBase::IntegrationType3D8NGauss1Ip]=
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss1Ip]=
         NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationTypeBase::IntegrationType3D8NGauss2x2x2Ip]=
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip]=
         NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
 }
 
@@ -80,6 +86,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 //       & boost::serialization::make_nvp("groupMap", mGroupMap)
 //       & boost::serialization::make_nvp("integrationTypeMap", mIntegrationTypeMap)
 //       & boost::serialization::make_nvp("sectionMap", mSectionMap);
+//         mVisualizeComponents ifdef VISUALIZATION
     std::cout << "finish serialization of structure base" << std::endl;
 }
 #endif  // ENABLE_SERIALIZATION
@@ -108,73 +115,87 @@ void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementG
 
 // Export to Vtk data file ////////////////////////////////////////////////////
 #ifdef ENABLE_VISUALIZE
-void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName, const std::string& rWhat) const
+//! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentDisplacements()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentDisplacement());
+}
+
+//! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStrain());
+}
+
+//! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStress());
+}
+
+//! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
+//! @param rElementId ... Element id
+//! @param rIp ... local ip number
+void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementId, int rIp)
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight());
+	try
+	{
+		(dynamic_cast<NuTo::VisualizeComponentNonlocalWeight*>(*(--mVisualizeComponents.end())))->SetElementIp(rElementId,rIp);
+	}
+    catch (NuTo::MechanicsException &e)
+    {
+    	e.AddMessage("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
+    	throw e;
+    }
+    catch(...)
+    {
+    	throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
+    }
+
+}
+
+void NuTo::StructureBase::ClearVisualizationComponents()
+{
+	mVisualizeComponents.clear();
+}
+
+
+void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName) const
 {
     std::vector<const ElementBase*> ElementVec;
     this->GetElementsTotal(ElementVec);
-    this->ExportVtkDataFile(ElementVec, rFileName, rWhat);
+    this->ExportVtkDataFile(ElementVec, rFileName);
 }
 
-void NuTo::StructureBase::ElementGroupExportVtkDataFile(const std::string& rGroupIdent, const std::string& rFileName, const std::string& rWhat) const
+void NuTo::StructureBase::ElementGroupExportVtkDataFile(const std::string& rGroupIdent, const std::string& rFileName) const
 {
     // find group by name
     const Group<ElementBase>* ElementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupIdent));
     std::vector<const ElementBase*> ElementVec;
     this->GetElementsByGroup(ElementGroup,ElementVec);
-    this->ExportVtkDataFile(ElementVec, rFileName, rWhat);
+    this->ExportVtkDataFile(ElementVec, rFileName);
 }
 
-void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName, const std::string& rWhat) const
-{
-    std::map<std::string,NuTo::VisualizeBase::eVisualizeWhat> enumWhatMap;
-    // split string
-    std::vector<std::string> tokens;
-    std::istringstream iss(rWhat);
-    std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(tokens));
-
-    std::vector<std::string>::iterator tokenIter = tokens.begin();
-    while (tokenIter != tokens.end())
-    {
-        // convert to uppercase
-        std::transform(tokenIter->begin(), tokenIter->end(), tokenIter->begin(), (int(*)(int)) toupper);
-        // find enum type
-        if (*tokenIter == "DISPLACEMENTS")
-        {
-            enumWhatMap[*tokenIter] = NuTo::VisualizeBase::DISPLACEMENTS;
-        }
-        else if (*tokenIter == "ENGINEERING_STRESS")
-        {
-            enumWhatMap[*tokenIter] = NuTo::VisualizeBase::ENGINEERING_STRESS;
-        }
-        else if (*tokenIter == "ENGINEERING_STRAIN")
-        {
-            enumWhatMap[*tokenIter] = NuTo::VisualizeBase::ENGINEERING_STRAIN;
-        }
-        else
-        {
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] invalid data description.");
-        }
-        tokenIter++;
-    }
-
-    // call export routine
-    this->ExportVtkDataFile(rElements, rFileName, enumWhatMap);
-}
-
-void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName, const std::map<std::string,NuTo::VisualizeBase::eVisualizeWhat>& rWhat) const
+void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName) const
 {
     VisualizeUnstructuredGrid Visualize;
-    std::map<std::string,NuTo::VisualizeBase::eVisualizeWhat>::const_iterator itWhat = rWhat.begin();
-    while (itWhat != rWhat.end())
+    std::list<NuTo::VisualizeComponentBase*>::const_iterator itWhat = mVisualizeComponents.begin();
+    while (itWhat != mVisualizeComponents.end())
     {
-        switch (itWhat->second)
+        switch ((*itWhat)->GetComponentEnum())
         {
         case NuTo::VisualizeBase::DISPLACEMENTS:
-            Visualize.DefinePointDataVector(itWhat->first);
+            Visualize.DefinePointDataVector((*itWhat)->GetComponentName());
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
+            Visualize.DefineCellDataTensor((*itWhat)->GetComponentName());
+            break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-            Visualize.DefineCellDataTensor(itWhat->first);
+            Visualize.DefineCellDataTensor((*itWhat)->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+            Visualize.DefineCellDataScalar((*itWhat)->GetComponentName());
             break;
         default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] invalid data description.");
@@ -183,7 +204,7 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
     }
     for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
     {
-        rElements[ElementCount]->Visualize(Visualize, rWhat);
+        rElements[ElementCount]->Visualize(Visualize, mVisualizeComponents);
     }
     Visualize.ExportVtkDataFile(rFileName);
 }

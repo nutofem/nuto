@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <boost/tokenizer.hpp>
+#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
-#include "nuto/mechanics/structures/StructureBase.h"
 
 //! @brief calls ElementCoefficientMatrix_0,
 //! renaming only for clarification in mechanical problems for the end user
@@ -168,7 +168,7 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(const std::string& rGro
 	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::GroupBase::Elements)
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
     	throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -285,7 +285,7 @@ void NuTo::StructureBase::ElementGroupSetSection(const std::string& rGroupIdent,
 	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::GroupBase::Elements)
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
     	throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -361,18 +361,47 @@ void NuTo::StructureBase::ElementSetSection(ElementBase* rElement, SectionBase* 
     rElement->SetSection(rSection);
 }
 
+//! @brief returns the enum of string identifier for an integration type
+//! @param rIpDataTypeStr string
+//! @return enum
+NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(const std::string& rIpDataTypeStr)
+{
+    // get ip data type
+    std::string upperCaseIpDataTypeStr;
+    std::transform(rIpDataTypeStr.begin(), rIpDataTypeStr.end(), std::back_inserter(upperCaseIpDataTypeStr), (int(*)(int)) toupper);
+
+    NuTo::IpData::eIpDataType ipDataType;
+    if (upperCaseIpDataTypeStr=="NOIPDATA")
+    {
+    	ipDataType = NuTo::IpData::eIpDataType::NOIPDATA;
+    }
+    else if (upperCaseIpDataTypeStr=="STATICDATA")
+	{
+    	ipDataType = NuTo::IpData::eIpDataType::STATICDATA;
+	}
+    else if (upperCaseIpDataTypeStr=="STATICDATANONLOCAL")
+    {
+    	ipDataType = NuTo::IpData::eIpDataType::STATICDATANONLOCAL;
+    }
+    else
+    {
+    	throw MechanicsException("[NuTo::Structure::ElementGetEnumIntegrationType] Ip data type "+upperCaseIpDataTypeStr +" does not exist.");
+    }
+    return ipDataType;
+}
+
 
 //! @brief modifies the section of a single element
 //! @param rElementIdent identifier for the element
 //! @param rSectionIdent identifier for the section
 void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
-		const std::string& rIntegrationTypeIdent)
+		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
     {
-    	ElementSetIntegrationType(elementPtr,GetPtrIntegrationType(rIntegrationTypeIdent));
+    	ElementSetIntegrationType(elementPtr,GetPtrIntegrationType(rIntegrationTypeIdent), ElementGetEnumIntegrationType(rIpDataTypeStr));
     }
     catch(NuTo::MechanicsException e)
     {
@@ -396,21 +425,21 @@ void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
 //! @param rGroupIdent identifier for the group of elements
 //! @param rIntegrationTypeIdent identifier for the integration type
 void NuTo::StructureBase::ElementGroupSetIntegrationType(const std::string& rGroupIdent,
-		const std::string& rIntegrationTypeIdent)
+		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
 	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetIntegrationType] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::GroupBase::Elements)
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
     	throw MechanicsException("[NuTo::StructureBase::ElementGroupSetIntegrationType] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
-
+    NuTo::IpData::eIpDataType ipDataType = ElementGetEnumIntegrationType(rIpDataTypeStr);
     for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         try
         {
-        	ElementSetIntegrationType(*itElement,GetPtrIntegrationType(rIntegrationTypeIdent));
+        	ElementSetIntegrationType(*itElement,GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
         }
         catch(NuTo::MechanicsException e)
         {
@@ -433,15 +462,16 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(const std::string& rGro
 
 //! @brief modifies the section of a all elements
 //! @param rSectionIdent identifier for the section
-void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent)
+void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
+    NuTo::IpData::eIpDataType ipDataType = ElementGetEnumIntegrationType(rIpDataTypeStr);
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
     for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
     {
         try
         {
-        	ElementSetIntegrationType(elementVector[countElement],GetPtrIntegrationType(rIntegrationTypeIdent));
+        	ElementSetIntegrationType(elementVector[countElement],GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
         }
         catch(NuTo::MechanicsException e)
         {
@@ -465,9 +495,9 @@ void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rInt
 //! @brief modifies the integration type of a single element
 //! @param rElement element pointer
 //! @param rIntegrationType integration type
-void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType)
+void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
-	rElement->SetIntegrationType(rIntegrationType);
+	rElement->SetIntegrationType(rIntegrationType, rIpDataType);
 }
 
 //! @brief calculates the engineering strain

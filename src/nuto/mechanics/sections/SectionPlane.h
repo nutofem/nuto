@@ -13,6 +13,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 
 namespace NuTo
 {
@@ -26,7 +27,7 @@ class SectionPlane: public NuTo::SectionBase
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
-    SectionPlane(eSectionType rSectionType);
+    SectionPlane(Section::eSectionType rSectionType);
 
     //! @brief ... get the section thickness
     //! @return ... section thickness
@@ -38,7 +39,7 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual eSectionType GetType() const;
+    virtual Section::eSectionType GetType() const;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information
@@ -60,7 +61,7 @@ public:
 private:
     //! @brief ... section thickness
     double        mThickness;
-    eSectionType   mSectionType;
+    Section::eSectionType   mSectionType;
 };
 
 }

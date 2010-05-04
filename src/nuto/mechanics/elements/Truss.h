@@ -31,8 +31,11 @@ class Truss : public ElementWithDataBase
 
 public:
     //! @brief constructor
-    Truss(const StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType,
-    		IntegrationTypeBase::eIntegrationType rIntegrationType);
+    Truss(const StructureBase* rStructure,
+    		ElementData::eElementDataType rElementDataType,
+    		IntegrationType::eIntegrationType rIntegrationType,
+    		IpData::eIpDataType rIpDataType
+    		);
 
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
@@ -111,15 +114,20 @@ public:
     //! @return local dimension
     virtual int GetNumShapeFunctions()const=0;
 
-    //! @brief returns the coordinates of an integration point
+    //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
     virtual void GetLocalIntegrationPointCoordinates(int rIpNum, double& rCoordinates)const;
 
+    //! @brief returns the global coordinates of an integration point
+    //! @param rIpNum integration point
+    //! @param rCoordinates coordinates to be returned
+    virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const;
+
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-    virtual void CalculateShapeFunctions(const double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
+    virtual void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
 
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
@@ -180,6 +188,11 @@ public:
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
     ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw)const;
+
+    //! @brief calculates the volume of an integration point (weight * detJac)
+    //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
+    void GetIntegrationPointVolume(std::vector<double>& rVolume)const;
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

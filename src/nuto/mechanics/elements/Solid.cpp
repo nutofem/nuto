@@ -8,8 +8,9 @@
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 
 //! @brief constructor
-NuTo::Solid::Solid(const StructureBase* rStructure, ElementDataBase::eElementDataType rElementDataType, IntegrationTypeBase::eIntegrationType rIntegrationType) :
-        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType)
+NuTo::Solid::Solid(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
+        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {
 }
 
@@ -219,16 +220,19 @@ void NuTo::Solid::CalculateJacobian(const std::vector<double>& rDerivativeShapeF
     if (rDetJac==0)
         throw MechanicsException("[NuTo::Solid::CalculateJacobian] Determinant of the Jacobian is zero, no inversion possible.");
 
-    double invDeterminant(1./rDetJac);
-    rInvJacobian[0]=j48_57*invDeterminant;
-    rInvJacobian[1]=j27_18*invDeterminant;
-    rInvJacobian[2]=j15_24*invDeterminant;
-    rInvJacobian[3]=(j5*j6-j3*j8)*invDeterminant;
-    rInvJacobian[4]=(j0*j8-j2*j6)*invDeterminant;
-    rInvJacobian[5]=(j2*j3-j0*j5)*invDeterminant;
-    rInvJacobian[6]=(j3*j7-j4*j6)*invDeterminant;
-    rInvJacobian[7]=(j1*j6-j0*j7)*invDeterminant;
-    rInvJacobian[8]=(j0*j4-j1*j3)*invDeterminant;
+    if (rInvJacobian!=0)
+    {
+        double invDeterminant(1./rDetJac);
+        rInvJacobian[0]=j48_57*invDeterminant;
+        rInvJacobian[1]=j27_18*invDeterminant;
+        rInvJacobian[2]=j15_24*invDeterminant;
+        rInvJacobian[3]=(j5*j6-j3*j8)*invDeterminant;
+        rInvJacobian[4]=(j0*j8-j2*j6)*invDeterminant;
+        rInvJacobian[5]=(j2*j3-j0*j5)*invDeterminant;
+        rInvJacobian[6]=(j3*j7-j4*j6)*invDeterminant;
+        rInvJacobian[7]=(j1*j6-j0*j7)*invDeterminant;
+        rInvJacobian[8]=(j0*j4-j1*j3)*invDeterminant;
+    }
 }
 
 //! @brief calculates the derivative of the shape functions with respect to global coordinates
@@ -815,4 +819,34 @@ void NuTo::Solid::CheckElement()
     }
 }
 
+//! @brief calculates the volume of an integration point (weight * detJac)
+//! @param rVolume  vector for storage of the ip volumes (area in 2D)
+void NuTo::Solid::GetIntegrationPointVolume(std::vector<double>& rVolume)const
+{
+    //calculate coordinates
+    std::vector<double> nodeCoord(GetNumDofs());
+    CalculateCoordinates(nodeCoord);
+
+    //allocate space for local ip coordinates
+    double localIPCoord[3];
+
+    //allocate space for derivatives of shape functions
+    std::vector<double> derivativeShapeFunctionsLocal(GetNumDofs());
+
+    //determinant of Jacobian
+    double detJac;
+
+    rVolume.resize(GetNumIntegrationPoints());
+
+    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+    {
+        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
+
+        CalculateDerivativeShapeFunctionsLocal(localIPCoord, derivativeShapeFunctionsLocal);
+
+        CalculateJacobian(derivativeShapeFunctionsLocal,nodeCoord, 0, detJac);
+
+		rVolume[theIP] = detJac * mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+    }
+}
 

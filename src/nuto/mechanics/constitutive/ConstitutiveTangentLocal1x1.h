@@ -29,6 +29,7 @@ class ConstitutiveTangentLocal1x1: public NuTo::ConstitutiveTangentLocalBase
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
     friend class ConstitutiveMisesPlasticity;
+    friend class NonlocalDamagePlasticity;
 
 public:
     //! @brief ... constructor

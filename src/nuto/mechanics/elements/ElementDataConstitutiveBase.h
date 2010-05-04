@@ -34,9 +34,11 @@ class ElementDataConstitutiveBase : public virtual ElementDataBase
 
 public:
     //! @brief constructor
-    ElementDataConstitutiveBase(const NuTo::IntegrationTypeBase* rIntegrationType);
+    ElementDataConstitutiveBase();
 
-    virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual ~ElementDataConstitutiveBase();
+
+    virtual void SetConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point

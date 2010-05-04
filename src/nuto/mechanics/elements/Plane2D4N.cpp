@@ -6,8 +6,9 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include <assert.h>
 
-NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes, ElementDataBase::eElementDataType rElementDataType) :
-        NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType())
+NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
+        NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
 	if (rNodes.size()!=4)
         throw MechanicsException("[NuTo::Plane2D4N::Plane2D4N] Exactly four nodes are required for this type of element.");
@@ -53,15 +54,15 @@ void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsNatural(const double rNat
 
 
 //! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationTypeBase::eIntegrationType NuTo::Plane2D4N::GetStandardIntegrationType()
+NuTo::IntegrationType::eIntegrationType NuTo::Plane2D4N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationTypeBase::IntegrationType2D4NGauss4Ip;
+    return NuTo::IntegrationType::IntegrationType2D4NGauss4Ip;
 }
 
 // reorder nodes such that the sign of the length/area/volume of the element changes
 void NuTo::Plane2D4N::ReorderNodes()
 {
-	std::cout << "reorder element nodes" << std::endl;
+	//std::cout << "reorder element nodes" << std::endl;
     NodeBase* tmp = this->mNodes[1];
     this->mNodes[1] = this->mNodes[3];
     this->mNodes[3] = tmp;

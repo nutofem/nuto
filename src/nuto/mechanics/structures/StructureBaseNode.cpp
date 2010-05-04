@@ -1,7 +1,6 @@
 // $Id: $
 
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeDisplacements.h"
 
 //! @brief sets the displacements of a node

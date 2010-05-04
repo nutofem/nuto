@@ -6,8 +6,9 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include <assert.h>
 
-NuTo::Truss1D2N::Truss1D2N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes, ElementDataBase::eElementDataType rElementDataType) :
-        NuTo::Truss1D::Truss1D(rStructure, rElementDataType, GetStandardIntegrationType())
+NuTo::Truss1D2N::Truss1D2N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
+        NuTo::Truss1D::Truss1D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
     if (rNodes.size()!=2)
         throw MechanicsException("[NuTo::Truss2N::Truss2N] Exactly two nodes are required for this type of element.");
@@ -20,7 +21,7 @@ NuTo::Truss1D2N::Truss1D2N(NuTo::StructureBase* rStructure, std::vector<NuTo::No
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
-void NuTo::Truss1D2N::CalculateShapeFunctions(const double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+void NuTo::Truss1D2N::CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
     assert(rShapeFunctions.size()==2);
     rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates);
@@ -31,7 +32,7 @@ void NuTo::Truss1D2N::CalculateShapeFunctions(const double rLocalCoordinates, st
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::Truss1D2N::CalculateDerivativeShapeFunctions(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Truss1D2N::CalculateDerivativeShapeFunctions(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
     assert(rDerivativeShapeFunctions.size()==2);
     rDerivativeShapeFunctions[0] = -0.5;
@@ -40,9 +41,9 @@ void NuTo::Truss1D2N::CalculateDerivativeShapeFunctions(const double rLocalCoord
 
 
 //! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationTypeBase::eIntegrationType NuTo::Truss1D2N::GetStandardIntegrationType()
+NuTo::IntegrationType::eIntegrationType NuTo::Truss1D2N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationTypeBase::IntegrationType1D2NGauss1Ip;
+    return NuTo::IntegrationType::IntegrationType1D2NGauss1Ip;
 }
 
 // reorder nodes such that the sign of the length/area/volume of the element changes

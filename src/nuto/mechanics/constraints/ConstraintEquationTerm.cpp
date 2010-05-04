@@ -18,12 +18,12 @@
 #include "nuto/mechanics/nodes/NodeTemperatures.h"
 
 // constructor
-NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient)
+NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
 {
     assert(rNode != 0);
     switch (rDofType)
     {
-    case NodeBase::DISPLACEMENTS:
+    case Node::DISPLACEMENTS:
     {
         int numDisplacements = rNode->GetNumDisplacements();
         switch (numDisplacements)
@@ -55,7 +55,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
         }
     }
     break;
-    case NodeBase::ROTATIONS:
+    case Node::ROTATIONS:
     {
         int numRotations = rNode->GetNumRotations();
         switch (numRotations)
@@ -81,7 +81,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
         }
     }
     break;
-    case NodeBase::TEMPERATURES:
+    case Node::TEMPERATURES:
     {
         int numTemperatures = rNode->GetNumTemperatures();
         switch (numTemperatures)
@@ -116,7 +116,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
 NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
 {
     this->mNode = 0;
-    this->mDofType = NodeBase::COORDINATES;
+    this->mDofType = Node::COORDINATES;
     this->mDofComponent = 0;
     this->mCoefficient = 0;
 }
@@ -130,7 +130,7 @@ void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseM
     int column;
     switch (this->mDofType)
     {
-    case NodeBase::DISPLACEMENTS:
+    case Node::DISPLACEMENTS:
     {
         int numDisplacements = this->mNode->GetNumDisplacements();
         switch (numDisplacements)
@@ -161,7 +161,7 @@ void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseM
         }
     }
     break;
-    case NodeBase::ROTATIONS:
+    case Node::ROTATIONS:
     {
         int numRotations = this->mNode->GetNumRotations();
         switch (numRotations)
@@ -185,7 +185,7 @@ void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseM
         }
     }
     break;
-    case NodeBase::TEMPERATURES:
+    case Node::TEMPERATURES:
     {
         int numTemperatures = this->mNode->GetNumTemperatures();
         switch (numTemperatures)

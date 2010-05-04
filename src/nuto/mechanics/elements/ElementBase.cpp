@@ -1,6 +1,19 @@
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/groups/GroupBase.h"
+#include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/structures/StructureBase.h"
+
+//! @brief returns the id number of the element
+//! @return id
+int NuTo::ElementBase::ElementGetId()
+{
+	return mStructure->ElementGetId(this);
+}
+
 
 //! @brief sets the section of an element
 //! implemented with an exception for all elements, reimplementation required for those elements
@@ -25,7 +38,7 @@ const NuTo::SectionBase* NuTo::ElementBase::GetSection()const
 //! implemented with an exception for all elements, reimplementation required for those elements
 //! which actually need an integration type
 //! @param rIntegrationType pointer to integration type
-void NuTo::ElementBase::SetIntegrationType(const IntegrationTypeBase* rIntegrationType)
+void NuTo::ElementBase::SetIntegrationType(const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
     throw MechanicsException("[NuTo::ElementBase::SetIntegrationType] Integration type for is type of elements not required.");
 }

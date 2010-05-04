@@ -22,14 +22,6 @@ class NodeBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    enum eAttributes
-    {
-        COORDINATES=0,
-        DISPLACEMENTS,
-        ROTATIONS,
-        TEMPERATURES,
-        NONLOCALDATA
-    };
     //! @brief constructor
     NodeBase();
 

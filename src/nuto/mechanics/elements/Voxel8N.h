@@ -30,13 +30,17 @@ class Voxel8N : public Solid
 public:
     //! @brief constructor
     Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
-            NuTo::ElementDataBase::eElementDataType rElementDataType):mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+            NuTo::ElementData::eElementDataType rElementDataType , IpData::eIpDataType rIpDataType):
+            	mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),
+            	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
     {
         mVoxelID = (int) rElementID;
     }
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0, NuTo::ElementDataBase::eElementDataType rElementDataType):
-        mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+    Voxel8N(NuTo::StructureBase* rStructure,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
+    		NuTo::ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType):
+        mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),
+        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
     {
         mVoxelID = -1;
     }
@@ -54,9 +58,9 @@ public:
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::ElementBase::eElementType GetEnumType()const
+    NuTo::Element::eElementType GetEnumType()const
     {
-        return NuTo::ElementBase::VOXEL8N;
+        return NuTo::Element::VOXEL8N;
     }
 
     //! @brief returns the number of nodes in this element
@@ -150,7 +154,7 @@ public:
 
 
     //! @brief returns the enum of the standard integration type for this element
-    NuTo::IntegrationTypeBase::eIntegrationType GetStandardIntegrationType();
+    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
 protected:
     int mVoxelID;

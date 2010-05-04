@@ -6,8 +6,9 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include <assert.h>
 
-NuTo::Tetrahedron10N::Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes, ElementDataBase::eElementDataType rElementDataType) :
-        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType())
+NuTo::Tetrahedron10N::Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
+        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
     if (rNodes.size()!=10)
         throw MechanicsException("[NuTo::Tetrahedron10N::Tetrahedron10N] Exactly ten nodes are required for this type of element.");
@@ -126,9 +127,9 @@ void NuTo::Tetrahedron10N::CalculateDerivativeShapeFunctionsLocal(const double r
 
 
 //! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationTypeBase::eIntegrationType NuTo::Tetrahedron10N::GetStandardIntegrationType()
+NuTo::IntegrationType::eIntegrationType NuTo::Tetrahedron10N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationTypeBase::IntegrationType3D4NGauss1Ip;
+    return NuTo::IntegrationType::IntegrationType3D4NGauss1Ip;
 }
 
 

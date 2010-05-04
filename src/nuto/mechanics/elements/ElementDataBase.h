@@ -10,7 +10,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <vector>
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
@@ -18,6 +20,7 @@ class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
 class IntegrationTypeBase;
 class ElementBase;
+class ElementWithDataBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -29,28 +32,20 @@ class ElementDataBase
 #endif // ENABLE_SERIALIZATION
 
 public:
-    enum eElementDataType
-    {
-        CONSTITUTIVELAWELEMENT_NOSTATICDATA=0,   //!< constitutive law stored for at element level, no static data at ip
-        CONSTITUTIVELAWELEMENT_STATICDATA,     //!< constitutive law stored for at element level, static data at ip
-        CONSTITUTIVELAWIP_NOSTATICDATA,        //!< constitutive law stored for at integration point level, no static data at ip
-        CONSTITUTIVELAWIP_STATICDATA          //!< constitutive law stored for at integration point level, static data at ip
-    };
-
     //! @brief constructor
-    ElementDataBase(const NuTo::IntegrationTypeBase* rIntegrationType);
+    ElementDataBase();
 
     //! @brief constructor
     virtual ~ElementDataBase();
     
     //! @brief sets the constitutive law for all integration points of the element
     //! @param rConstitutiveLaw constitutive law
-    virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief sets the constitutive law for a single integration point of the element
     //! @param rConstitutiveLaw constitutive law
     //! @param rIp integration point
-   virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
+   virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
@@ -77,15 +72,15 @@ public:
     //! which actually need an integration type
     //! @param rElement pointer to element
     //! @param rIntegrationType pointer to integration type
-    void SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType);
+    virtual void SetIntegrationType(const ElementWithDataBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
     //! @brief returns a pointer to the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
     //! @return pointer to integration type
-    const IntegrationTypeBase* GetIntegrationType()const;
+    virtual const IntegrationTypeBase* GetIntegrationType()const;
 
-    //! @brief update the information related to a modification of the integration type, e.g. reallocation of the static data
+/*    //! @brief update the information related to a modification of the integration type, e.g. reallocation of the static data
     //! @param rElement pointer to element
     //! @param rIp integration point
     virtual void UpdateForModifiedIntegrationType(const ElementBase* rElement)=0;
@@ -94,6 +89,25 @@ public:
     //! @param rElement pointer to element
     //! @param rIp integration point
     virtual void UpdateForModifiedConstitutiveLaw(const ElementBase* rElement)=0;
+*/
+    //! @brief adds the nonlocal weight to an integration point
+    //! @param rLocalIpNumber local Ip
+    //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
+    //! @param rNonlocalElement element of the nonlocal ip
+    //! @param rNonlocalIp local ip number of the nonlocal ip
+    //! @param rWeight weight
+    virtual void AddNonlocalIp(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
+    		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+
+    //! @brief gets the nonlocal elements for a constitutive model
+    //! @param rConstitutive constitutive model
+    //! @return vector to nonlocal elements
+    virtual const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+
+    //! @brief gets the nonlocal weights
+    //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
+    //! @return vector of weights for all integration points of the nonlocal element
+   virtual const std::vector<double>& GetNonlocalWeights(const ConstitutiveBase* rConstitutive, int rNonlocalElement)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -102,13 +116,11 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {    
-        ar & BOOST_SERIALIZATION_NVP(mIntegrationType);
+        //ar & BOOST_SERIALIZATION_NVP(mIntegrationType);
     }
 #endif  // ENABLE_SERIALIZATION
     
 protected:
-    //ElementDataBase(){};
-    const IntegrationTypeBase *mIntegrationType;
 };
 }//namespace NuTo
 #endif //ELEMENT_DATA_BASE_H

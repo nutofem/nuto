@@ -9,16 +9,15 @@ namespace NuTo
 class Tetrahedron4N : public Solid
 {
 public:
-    Tetrahedron4N(NuTo::StructureBase* rStructure,
-                  std::vector<NuTo::NodeBase* >& rNodes,
-                  ElementDataBase::eElementDataType rElementDataType);
+    Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
     virtual ~Tetrahedron4N();
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::ElementBase::eElementType GetEnumType()const
+    NuTo::Element::eElementType GetEnumType()const
     {
-        return NuTo::ElementBase::TETRAHEDRON4N;
+        return NuTo::Element::TETRAHEDRON4N;
     }
 
     //! @brief returns the number of nodes in this element
@@ -95,7 +94,7 @@ public:
     }
 
     //! @brief returns the enum of the standard integration type for this element
-    NuTo::IntegrationTypeBase::eIntegrationType GetStandardIntegrationType();
+    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 protected:
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes();

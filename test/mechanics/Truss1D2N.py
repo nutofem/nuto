@@ -51,7 +51,7 @@ myStructure.SectionSetArea("mySection1",0.01)
 #myStructure.ElementSetIntegrationType("myElement1","1D2NGauss2Ip")
 #variable integration type, for the 2-node truss element it makes no sense, 
 #but it demonstrates the idea
-myStructure.ElementSetIntegrationType(myElement1,"1D2NConst3Ip")
+myStructure.ElementSetIntegrationType(myElement1,"1D2NConst3Ip","NOIPDATA")
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 myStructure.ElementSetSection(myElement1,"mySection1")
 

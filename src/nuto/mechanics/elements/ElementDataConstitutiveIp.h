@@ -1,6 +1,6 @@
 // $Id: $
-#ifndef ElementDataConstitutiveStaticData_H
-#define ElementDataConstitutiveStaticData_H
+#ifndef ElementDataConstitutiveIpData_H
+#define ElementDataConstitutiveIpData_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -13,32 +13,28 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "nuto/mechanics/elements/ElementDataConstitutiveBase.h"
-#include "nuto/mechanics/elements/ElementDataStaticDataBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/elements/ElementDataIpBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
+class IntegrationTypeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for elements with a single material per element static data for each integration point
-class ElementDataConstitutiveStaticData : public ElementDataConstitutiveBase, public ElementDataStaticDataBase
+class ElementDataConstitutiveIp : public ElementDataConstitutiveBase, public ElementDataIpBase
 {
-
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
-	ElementDataConstitutiveStaticData(const NuTo::IntegrationTypeBase* rIntegrationType);
+	ElementDataConstitutiveIp(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
-	~ElementDataConstitutiveStaticData();
+	virtual ~ElementDataConstitutiveIp();
 
-    //! @brief update the information related to a modification of the integration type, e.g. reallocation of the static data
-    void UpdateForModifiedIntegrationType(const ElementBase* rElement);
-
-    //! @brief update the information related to a modification of the constitutive law, e.g. reallocation of the static data
-    void UpdateForModifiedConstitutiveLaw(const ElementBase* rElement);
+	void SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -48,7 +44,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataConstitutiveBase)
-           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataStaticDataBase);
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataIpBase);
     }
 #endif  // ENABLE_SERIALIZATION
 
@@ -56,4 +52,4 @@ protected:
 };
 }
 
-#endif //ElementDataConstitutiveStaticData_H
+#endif //ElementDataConstitutiveIpData_H

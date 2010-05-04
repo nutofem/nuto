@@ -2,7 +2,6 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
 
 void NuTo::StructureBase::GroupInfo(int rVerboseLevel)const
 {
@@ -67,7 +66,7 @@ void NuTo::StructureBase::GroupAddNode(const std::string& rIdentGroup, int rIdNo
     boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=GroupBase::Nodes)
+    if (itGroup->second->GetType()!=Groups::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] A node can be added only to a node group.");
 
     itGroup->second->AddMember(NodeGetNodePtr(rIdNode));
@@ -81,7 +80,7 @@ void NuTo::StructureBase::GroupAddElement(const std::string& rIdentGroup, int rI
     boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=GroupBase::Elements)
+    if (itGroup->second->GetType()!=Groups::Elements)
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group.");
 
     itGroup->second->AddMember(ElementGetElementPtr(rIdElement));

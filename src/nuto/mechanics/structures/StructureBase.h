@@ -10,15 +10,17 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <string>
 #include "nuto/base/NuToObject.h"
-#include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
-#include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/groups/GroupBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/loads/LoadBase.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
@@ -27,8 +29,10 @@
 namespace NuTo
 {
 class ElementBase;
+template <class T> class FullMatrix;
 class NodeBase;
 template<class T> class SparseMatrixCSRSymmetric;
+class VisualizeComponentBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -61,29 +65,39 @@ public:
     int GetDimension();
 
 #ifdef ENABLE_VISUALIZE
+    //! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentDisplacements();
+
+    //! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentEngineeringStrain();
+
+    //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentEngineeringStress();
+
+    //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
+    //! @param rElementId ... Element id
+    //! @param rIp ... local ip number
+    void AddVisualizationComponentNonlocalWeights(int rElementId, int rIp);
+
+    //! @brief ... clear all visualization components
+    void ClearVisualizationComponents();
+
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFile(const std::string& rFileName, const std::string& rWhat) const;
+    void ExportVtkDataFile(const std::string& rFileName) const;
 
     //! @brief ... export an element group to Vtk data file
     //! @param rGroupIdent ... group ident
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ElementGroupExportVtkDataFile(const std::string& rGroupIdent, const std::string& rFileName, const std::string& rWhat) const;
+    void ElementGroupExportVtkDataFile(const std::string& rGroupIdent, const std::string& rFileName) const;
 
 #ifndef SWIG
     //! @brief ... export elements to Vtk data file
     //! @param rElements ... vector of elements
     //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName, const std::string& rWhat) const;
-
-    //! @brief ... export elements to Vtk data file
-    //! @param rElements ... vector of elements
-    //! @param rFileName ... file name
-    //! @param rWhat ... vector which describes what to plot
-    void ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName, const std::map<std::string,NuTo::VisualizeBase::eVisualizeWhat>& rWhat) const;
+    void ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName) const;
 #endif //SWIG
 #endif // ENABLE_VISUALIZE
 
@@ -256,25 +270,30 @@ public:
     void ElementTotalSetSection(const std::string& rSectionIdent);
 
 #ifndef SWIG
+    //! @brief returns the enum of string identifier for an integration type
+    //! @param rIpDataTypeStr string
+    //! @return enum
+    NuTo::IpData::eIpDataType ElementGetEnumIntegrationType(const std::string& rIpDataTypeStr);
+
     //! @brief modifies the constitutive law of a single element
     //! @param rElement element pointer
     //! @param rConstitutive material pointer
-    void ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType);
+    void ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 #endif //SWIG
 
     //! @brief modifies the section of a single element
     //! @param rElementIdent element number
     //! @param rSectionIdent identifier for the section
-    void ElementSetIntegrationType(int rElementId, const std::string& rIntegrationTypeIdent);
+    void ElementSetIntegrationType(int rElementId, const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
 
     //! @brief modifies the section of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rSectionId identifier for the section
-    void ElementGroupSetIntegrationType(const std::string& rGroupIdent, const std::string& rIntegrationTypeIdent);
+    void ElementGroupSetIntegrationType(const std::string& rGroupIdent, const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
 
     //! @brief modifies the section of a all elements
     //! @param rSectionIdent identifier for the section
-    void ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent);
+    void ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
 
 
 #ifndef SWIG
@@ -376,7 +395,7 @@ public:
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintEquationCreate(int rConstraint, int rNode, NuTo::NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
+    void ConstraintEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
 #endif
 
     //! @brief ... add a term to a constraint equation
@@ -393,7 +412,7 @@ public:
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
-    void ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient);
+    void ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
 #endif
 
 private:
@@ -401,7 +420,7 @@ private:
     //! @brief rDof ... input string
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
-    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::NodeBase::eAttributes& rDofType, int& rDofComponent);
+    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eAttributes& rDofType, int& rDofComponent);
 
 public:
     //*************************************************
@@ -538,11 +557,19 @@ public:
     //! @param rSigma ...  hardening modulus
     void ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH);
 
+    //! @brief ... get nonlocal radius
+    //! @return ... nonlocal radius
+    double ConstitutiveLawGetNonlocalRadius(int rIdent) const;
+
+    //! @brief ... set nonlocal radius
+    //! @param rH ...  nonlocal radius
+    void ConstitutiveLawSetNonlocalRadius(int rIdent, double rRadius);
+
 #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
-    void ConstitutiveLawCreate(int rIdent, ConstitutiveBase::eConstitutiveType rType);
+    void ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType);
 
     //! @brief ... get the pointer to a constitutive law from the constitutive law identifier
     //! @param rIdent ... constitutive law identifier
@@ -613,7 +640,7 @@ public:
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
-    void SectionCreate(const std::string& rIdent, SectionBase::eSectionType rType);
+    void SectionCreate(const std::string& rIdent, Section::eSectionType rType);
 
     //! @brief ... get the pointer to a section from the section identifier
     //! @param rIdent ... section identifier
@@ -717,7 +744,7 @@ public:
     //! @brief ... Returns a pointer to an integration type
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
-    const NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::IntegrationTypeBase::eIntegrationType rIdentIntegrationType);
+    const NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::IntegrationType::eIntegrationType rIdentIntegrationType);
 #endif //SWIG
 
     //*************************************************
@@ -757,6 +784,9 @@ protected:
 
     //! @brief ... a mapping from the enums of the predefined integration types to their corresponding string name
     std::vector<std::string> mMappingIntEnum2String;
+
+    //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
+    std::list<NuTo::VisualizeComponentBase*> mVisualizeComponents;
 
     //! @brief ... total number of degrees of freedom of the structure
     int mNumDofs;

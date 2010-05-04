@@ -7,6 +7,9 @@
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutivePiolaKirchhoffIIGreenLagrange.h"
 
@@ -487,7 +490,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    ConstitutiveBase::eConstitutiveType GetType() const;
+    Constitutive::eConstitutiveType GetType() const;
 
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
@@ -495,7 +498,7 @@ public:
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    bool CheckElementCompatibility(ElementBase::eElementType rElementType) const;
+    bool CheckElementCompatibility(Element::eElementType rElementType) const;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

@@ -122,23 +122,23 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
 //! @param rNodeIdents Identifier for the corresponding nodes
 void NuTo::StructureGrid::ElementCreate ( NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, const std::string& rElementType)
 {
-    ElementCreate(rCoefficientMatrix0,rElementNumber,rElementID,rElementType,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA"));
+    ElementCreate(rCoefficientMatrix0,rElementNumber,rElementID,rElementType,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA"));
 }
 //! @brief Creates an element
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID,  const std::string& rElementType,
-        const std::string& rElementDataType)
+        const std::string& rElementDataType, const std::string& rIpDataType)
 {
     // get element type
     std::string upperCaseElementType;
     std::transform(rElementType.begin(), rElementType.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
 
-    ElementBase::eElementType elementType;
+    Element::eElementType elementType;
     if (upperCaseElementType=="VOXEL8N")
     {
-        elementType = NuTo::ElementBase::VOXEL8N;
+        elementType = NuTo::Element::VOXEL8N;
     }
     else
     {
@@ -148,29 +148,43 @@ void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rC
      std::string upperCaseElementDataType;
      std::transform(rElementDataType.begin(), rElementDataType.end(), std::back_inserter(upperCaseElementDataType), (int(*)(int)) toupper);
 
-     NuTo::ElementDataBase::eElementDataType elementDataType;
-     if (upperCaseElementDataType=="CONSTITUTIVELAWELEMENT_NOSTATICDATA")
+     ElementData::eElementDataType elementDataType;
+     if (upperCaseElementDataType=="CONSTITUTIVELAWIP")
      {
-         elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWELEMENT_NOSTATICDATA;
+     	elementDataType = NuTo::ElementData::CONSTITUTIVELAWIP;
      }
-     else if (upperCaseElementDataType=="CONSTITUTIVELAWELEMENT_STATICDATA")
-     {
-         elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWELEMENT_STATICDATA;
-     }
-     else if (upperCaseElementType=="CONSTITUTIVELAWIP_NOSTATICDATA")
-     {
-         elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWIP_NOSTATICDATA;
-     }
-     else if (upperCaseElementType=="CONSTITUTIVELAWIP_STATICDATA")
-     {
-         elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWIP_STATICDATA;
-     }
-     else
-     {
-         throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist.");
-     }
+     else if (upperCaseElementDataType=="CONSTITUTIVELAWIP")
+    	{
+ 		elementDataType = NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
+    	}
+ 	else
+ 	{
+ 		throw MechanicsException("[NuTo::StructureGrid::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist for structured grids.");
+ 	}
 
-     this->ElementCreate(rCoefficientMatrix0,rElementNumber, rElementID, elementType,elementDataType);
+     // check ip data
+     std::string upperCaseIpDataType;
+     std::transform(rIpDataType.begin(), rIpDataType.end(), std::back_inserter(upperCaseIpDataType), (int(*)(int)) toupper);
+
+     IpData::eIpDataType ipDataType;
+     if (upperCaseIpDataType=="NOIPDATA")
+     {
+     	ipDataType = NuTo::IpData::NOIPDATA;
+     }
+     else if (upperCaseIpDataType=="STATICDATA")
+    	{
+     	ipDataType = NuTo::IpData::STATICDATA;
+    	}
+     else if (upperCaseIpDataType=="STATICDATANONLOCAL")
+    	{
+     	ipDataType = NuTo::IpData::STATICDATANONLOCAL;
+    	}
+ 	else
+ 	{
+ 		throw MechanicsException("[NuTo::StructureGrid::ElementCreate] Element data type "+upperCaseIpDataType +" does not exist for structured grids.");
+ 	}
+
+     this->ElementCreate(rCoefficientMatrix0,rElementNumber, rElementID, elementType,elementDataType, ipDataType);
 }
 
 //! @brief Creates an element
@@ -178,20 +192,21 @@ void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rC
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 
-void NuTo::StructureGrid::ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, ElementDataBase::eElementDataType rElementDataType)
+void NuTo::StructureGrid::ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,
+		unsigned int rElementID, Element::eElementType rElementType, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
     // const IntegrationTypeBase *ptrIntegrationType;
     ElementBase* ptrElement;
     switch (rElementType)
     {
-     case NuTo::ElementBase::VOXEL8N:
+     case NuTo::Element::VOXEL8N:
         // get the integration type pointer, if not existent, create the integration type
         //ptrIntegrationType = GetPtrIntegrationType(NuTo::Voxel8N::GetStandardIntegrationType());
         if (this->mDimension != 3)
         {
             throw MechanicsException("[NuTo::StructureGrid::ElementCreate] Voxel8N is a 3D element.");
         }
-        ptrElement = new NuTo::Voxel8N(this,rElementID,rCoefficientMatrix0,rElementDataType);
+        ptrElement = new NuTo::Voxel8N(this,rElementID,rCoefficientMatrix0,rElementDataType,rIpDataType);
 
         //ptrElement = new NuTo::Voxel8N(this,&rLocalCoefficientMatrix0, rElementDataType);
         break;

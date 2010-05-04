@@ -4,7 +4,6 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/groups/Group.h"
-
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesTemperatures.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations.h"
@@ -92,7 +91,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     std::transform(rDOFs.begin(), rDOFs.end(), rDOFs.begin(), toupper);
 
     // check all values
-    int attributes(1 << NodeBase::COORDINATES);
+    int attributes(1 << Node::COORDINATES);
     //! bit 0 : coordinates
     //! bit 1 : displacements
     //! bit 2 : rotations
@@ -102,13 +101,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
         if (*beg=="DISPLACEMENTS")
-            attributes = attributes | 1 << NodeBase::DISPLACEMENTS;
+            attributes = attributes | 1 << Node::DISPLACEMENTS;
         if (*beg=="ROTATIONS")
-            attributes = attributes | 1 << NodeBase::ROTATIONS;
+            attributes = attributes | 1 << Node::ROTATIONS;
         if (*beg=="TEMPERATURES")
-            attributes = attributes | 1 << NodeBase::TEMPERATURES;
+            attributes = attributes | 1 << Node::TEMPERATURES;
         if (*beg=="NONLOCALDATA")
-            attributes = attributes | 1 << NodeBase::NONLOCALDATA;
+            attributes = attributes | 1 << Node::NONLOCALDATA;
     }
     if (rCoordinates.GetNumRows()!=mDimension || rCoordinates.GetNumColumns()!=1)
         throw MechanicsException("[NuTo::Structure::NodeCreate]\
@@ -119,7 +118,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     {
         // the << shifts the 1 bitwise to the left, so 1<<n = 2^n
         // it actually sets the n-th bit (from the right) to 1, and all the other to zero
-    case (1 << NodeBase::COORDINATES):
+    case (1 << Node::COORDINATES):
         // reference node having only coordinates
         switch (mDimension)
         {
@@ -136,7 +135,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
-    case (1 << NodeBase::COORDINATES) | (1 << NodeBase::DISPLACEMENTS):
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS):
         // coordinates and displacements
         switch (mDimension)
         {
@@ -153,7 +152,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
-    case (1 << NodeBase::COORDINATES) | (1 << NodeBase::DISPLACEMENTS) | (1 << NodeBase::ROTATIONS):
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS):
         // coordinates and displacements
         switch (mDimension)
         {
@@ -170,7 +169,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
-    case (1 << NodeBase::COORDINATES) | (1 << NodeBase::TEMPERATURES):
+    case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
         // coordinates and temperatures
         switch (mDimension)
         {
@@ -187,7 +186,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
-	case (1 << NodeBase::COORDINATES) | (1 << NodeBase::DISPLACEMENTS) | (1 << NodeBase::NONLOCALDATA):
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::NONLOCALDATA):
 		// coordinates, displacements and nonlocal data
 		switch (mDimension)
 		{
@@ -254,7 +253,7 @@ NuTo::FullMatrix<int> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::Full
 {
 	std::vector<int> idVec;
 	/// go through the nodes
-	for(size_t i=0 ; i<rCoordinates.GetNumColumns(); ++i)
+	for(size_t i=0 ; i<(size_t)rCoordinates.GetNumColumns(); ++i)
 	{
 		NuTo::FullMatrix<double> coordinate(rCoordinates.GetColumn(i));
 		idVec.push_back(this->NodeCreate(rDOFs, coordinate));
@@ -434,7 +433,7 @@ void NuTo::Structure::NodeGroupGetInternalForce(const std::string& rIdentGroup, 
     boost::ptr_map<std::string,GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::NodeGroupGetInternalForce] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=GroupBase::Nodes)
+    if (itGroup->second->GetType()!=Groups::Nodes)
         throw MechanicsException("[NuTo::Structure::NodeGroupGetInternalForce] Group is not a node group.");
 
     const Group<NodeBase>* nodeGroup = dynamic_cast<const Group<NodeBase>* >(itGroup->second);

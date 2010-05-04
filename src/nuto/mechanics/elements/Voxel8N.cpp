@@ -84,8 +84,8 @@ void NuTo::Voxel8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCo
 
 
 //! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationTypeBase::eIntegrationType NuTo::Voxel8N::GetStandardIntegrationType()
+NuTo::IntegrationType::eIntegrationType NuTo::Voxel8N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationTypeBase::IntegrationType3D8NGauss2x2x2Ip;
+    return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
 }
 

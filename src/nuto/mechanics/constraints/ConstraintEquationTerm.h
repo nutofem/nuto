@@ -7,6 +7,7 @@
 #include <boost/serialization/access.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 namespace NuTo
 {
@@ -26,7 +27,7 @@ public:
     //! @param rDofType ... which type of dof (e.g. displacement, rotation, temperature) is constrained
     //! @param rDofComponent ... which dof is constrained (e.g. 0 - dispalacement in x-direction)
     //! @param rCoefficient ... weighting of this term in the constraint equation
-    ConstraintEquationTerm(const NodeBase* rNode, NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient);
+    ConstraintEquationTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
 
     //! @brief adds the constraint equation term to the matrix
     //! @param rRow ... row in constraint matrix
@@ -42,7 +43,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 protected:
     const NodeBase* mNode;           //!< node pointer
-    NodeBase::eAttributes mDofType;  //!< which type of dof (e.g. displacement, rotation, temperature) is constrained
+    Node::eAttributes mDofType;  //!< which type of dof (e.g. displacement, rotation, temperature) is constrained
     int mDofComponent;               //!< which dof is constrained (e.g. 0 - dispalacement in x-direction)
     double mCoefficient;             //!< weighting of this term in the constraint equation
 

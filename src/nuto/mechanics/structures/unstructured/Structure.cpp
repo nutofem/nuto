@@ -11,11 +11,12 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementWithDataBase.h"
+
+#include <ANN.h>
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -516,4 +517,168 @@ void NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullM
         }
         elementIter++;
     }
+}
+
+//! @brief Builds the nonlocal data for integral type nonlocal constitutive models
+//! @param rConstitutiveId constitutive model for which the data is build
+void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
+{
+    boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveId);
+    if (itConstitutive==mConstitutiveLawMap.end())
+        throw MechanicsException("[NuTo::Structure::BuildNonlocalData] Constitutive law with the given identifier does not exist.");
+
+    try
+    {
+    	BuildNonlocalData(itConstitutive->second);
+    }
+    catch(NuTo::MechanicsException e)
+    {
+        e.AddMessage("[NuTo::Structure::BuildNonlocalData] Error calculating nonlocal data.");
+        throw e;
+    }
+    catch(...)
+    {
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::StructureBase::ElementSetConstitutiveLaw] Error calculating nonlocal data.");
+    }
+}
+
+//! @brief Builds the nonlocal data for integral type nonlocal constitutive models
+//! @param rConstitutiveId constitutive model for which the data is build
+void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
+{
+	double R(rConstitutive->GetNonlocalRadius());
+	double R2(R*R);
+    std::vector<ElementWithDataBase*> indexElement;
+    std::vector<int> indexIp;
+    std::vector<double> indexIpVolume;
+
+
+	// build up search tree with all integration points
+    boost::ptr_map<int,ElementBase>::iterator elementIter;
+    for (elementIter = this->mElementMap.begin(); elementIter!= this->mElementMap.end(); elementIter++)
+    {
+        ElementWithDataBase* elementPtr = dynamic_cast<ElementWithDataBase*>(elementIter->second);
+        if (elementPtr==0)
+        	continue;
+
+        // check element type
+        std::vector<double> ipVolume;
+        elementPtr->GetIntegrationPointVolume(ipVolume);
+
+        //calculate element contribution and iterate over all integration points
+		for (int theIp = 0; theIp<elementPtr->GetNumIntegrationPoints();theIp++)
+		{
+			//theWeight = elementIter->second->GetGlobalIntegrationPointWeight(theIp);
+			if (elementPtr->GetConstitutiveLaw(theIp)==rConstitutive)
+			{
+				indexElement.push_back(elementPtr);
+				indexIp.push_back(theIp);
+				indexIpVolume.push_back(ipVolume[theIp]);
+			}
+    	}
+    }
+
+    // build kd_tree
+    ANNpointArray dataPoints;
+    ANNkd_tree*   kdTree;
+
+    if(mDimension == 2)
+    {
+    	dataPoints = annAllocPts(indexIp.size(),2);
+        for(unsigned int count = 0; count < indexIp.size(); count++)
+        {
+            ANNpoint thePoint = dataPoints[count];
+            double coordinates[3];
+            indexElement[count]->GetGlobalIntegrationPointCoordinates(indexIp[count],coordinates);
+            //the third parameter is probably zero, but in order to avoid writing another routine ...
+            thePoint[0] = coordinates[0];
+            thePoint[1] = coordinates[1];
+        }
+        kdTree = new ANNkd_tree(dataPoints,indexIp.size(),2);
+    }
+    else
+    {
+    	dataPoints = annAllocPts(indexIp.size(),3);
+        for(unsigned int count = 0; count < indexIp.size(); count++)
+        {
+            ANNpoint thePoint = dataPoints[count];
+            double coordinates[3];
+            indexElement[count]->GetGlobalIntegrationPointCoordinates(indexIp[count],coordinates);
+            thePoint[0] = coordinates[0];
+            thePoint[1] = coordinates[1];
+            thePoint[2] = coordinates[2];
+        }
+        kdTree = new ANNkd_tree(dataPoints,indexIp.size(),2);
+    }
+
+    // find the neighbors in radius R
+    unsigned int allocatedResultPoints = 100;
+    ANNidxArray nnIdx = new ANNidx[allocatedResultPoints];
+    ANNdistArray dists = new ANNdist[allocatedResultPoints];
+
+    for(unsigned int theIp = 0; theIp < indexIp.size(); theIp++)
+    {
+    	ElementWithDataBase* elementPtr = indexElement[theIp];
+        int localIpNumber = indexIp[theIp];
+        unsigned int numNeighborPoints = 0;
+        do
+        {
+        	numNeighborPoints = kdTree->annkFRSearch(dataPoints[theIp],
+                                                    R2,
+                                                    allocatedResultPoints,
+                                                    nnIdx,
+                                                    dists,
+                                                    0
+                                                   );
+            if(numNeighborPoints > allocatedResultPoints)
+            {
+                allocatedResultPoints = numNeighborPoints;
+                delete [] nnIdx;
+                delete [] dists;
+                nnIdx = new ANNidx[allocatedResultPoints];
+                dists = new ANNdist[allocatedResultPoints];
+                numNeighborPoints = 0;
+            }
+        }
+        while(numNeighborPoints == 0);
+
+        //calculate total weight to scale the weights
+        double totalVolume(0);
+        for (unsigned int theNeighborPoint=0; theNeighborPoint<numNeighborPoints; theNeighborPoint++)
+        {
+        	if (dists[theNeighborPoint]>R2)
+        	{
+        		dists[theNeighborPoint] = (1-dists[theNeighborPoint]/R2);
+        		dists[theNeighborPoint]*= dists[theNeighborPoint];
+        		totalVolume+=indexIpVolume[nnIdx[theNeighborPoint]]*dists[theNeighborPoint];
+        	}
+        	else
+        		dists[theNeighborPoint] = 0.;
+
+        }
+        totalVolume=1./totalVolume;
+
+        //add all the nonlocal integration points to the nonlocal data of theIp
+        for (unsigned int theNeighborPoint=0; theNeighborPoint<numNeighborPoints; theNeighborPoint++)
+        {
+        	int theNeighborIndex(nnIdx[theNeighborPoint]);
+        	elementPtr->AddNonlocalIp(localIpNumber, rConstitutive, indexElement[theNeighborIndex],
+        			indexIp[theNeighborIndex], dists[theNeighborPoint]*totalVolume);
+        }
+    }
+
+     delete kdTree;
+    annDeallocPts(dataPoints);
+/*
+    delete [] nnIdx;
+    delete [] dists;
+
+    annClose();
+    if(EXIT_SUCCESS != 0)
+    {
+        INTERPRET_INTERN error_mess("ELEMENT_BUILD_NL_ELEMENTS_ANN: Error using ANN library.");
+        return -1;
+    }
+*/
 }

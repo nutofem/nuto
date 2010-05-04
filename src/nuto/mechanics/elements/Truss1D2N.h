@@ -25,7 +25,8 @@ class Truss1D2N : public Truss1D
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Truss1D2N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes, ElementDataBase::eElementDataType rElementDataType);
+    Truss1D2N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -40,9 +41,9 @@ public:
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::ElementBase::eElementType GetEnumType()const
+    NuTo::Element::eElementType GetEnumType()const
     {
-        return NuTo::ElementBase::TRUSS1D2N;
+        return NuTo::Element::TRUSS1D2N;
     }
 
     //! @brief returns the number of nodes in this element
@@ -64,13 +65,13 @@ public:
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes
-    void CalculateShapeFunctions(const double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+    void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes,
     //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctions(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+    void CalculateDerivativeShapeFunctions(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief returns the number of local degrees of freedom
     //! @return number of local degrees of freedom
@@ -116,7 +117,7 @@ public:
     }
 
     //! @brief returns the enum of the standard integration type for this element
-    NuTo::IntegrationTypeBase::eIntegrationType GetStandardIntegrationType();
+    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
 
 protected:

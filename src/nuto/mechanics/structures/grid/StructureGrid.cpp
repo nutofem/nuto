@@ -10,7 +10,12 @@
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
 
+
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/elements/IpDataBase.h"
+#include "nuto/mechanics/nodes/NodeGridCoordinates.h"
 
 NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
 {

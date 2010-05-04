@@ -1,10 +1,10 @@
 // $Id$
 
+#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElastic.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveMisesPlasticity.h"
-#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -14,14 +14,18 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     std::transform(rType.begin(), rType.end(), std::back_inserter(ConstitutiveLawTypeString), (int(*)(int)) toupper);
 
     // get section type from string
-    ConstitutiveBase::eConstitutiveType ConstitutiveLawType;
+    Constitutive::eConstitutiveType ConstitutiveLawType;
     if (ConstitutiveLawTypeString == "LINEARELASTIC")
     {
-        ConstitutiveLawType = ConstitutiveBase::LINEAR_ELASTIC;
+        ConstitutiveLawType = Constitutive::LINEAR_ELASTIC;
     }
     else if (ConstitutiveLawTypeString == "MISESPLASTICITY")
     {
-        ConstitutiveLawType = ConstitutiveBase::MISES_PLASTICITY;
+        ConstitutiveLawType = Constitutive::MISES_PLASTICITY;
+    }
+    else if (ConstitutiveLawTypeString == "NONLOCALDAMAGEPLASTICITY")
+    {
+        ConstitutiveLawType = Constitutive::NONLOCAL_DAMAGE_PLASTICITY;
     }
     else
     {
@@ -42,7 +46,7 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
 }
 
 // create a new constitutive law
-void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, ConstitutiveBase::eConstitutiveType rType)
+void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType)
 {
     // check if constitutive law identifier exists
     boost::ptr_map<int,ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
@@ -52,11 +56,14 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, ConstitutiveBase::eC
         ConstitutiveBase* ConstitutiveLawPtr;
         switch (rType)
         {
-        case NuTo::ConstitutiveBase::LINEAR_ELASTIC:
+        case NuTo::Constitutive::LINEAR_ELASTIC:
             ConstitutiveLawPtr = new NuTo::LinearElastic();
             break;
-        case NuTo::ConstitutiveBase::MISES_PLASTICITY:
+        case NuTo::Constitutive::MISES_PLASTICITY:
             ConstitutiveLawPtr = new NuTo::ConstitutiveMisesPlasticity();
+            break;
+        case NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY:
+            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticity();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
@@ -335,3 +342,34 @@ void NuTo::StructureBase::ConstitutiveLawAddHardeningModulus(int rIdent, double 
     }
 }
 
+//! @brief ... get nonlocal radius
+//! @return ... nonlocal radius
+double NuTo::StructureBase::ConstitutiveLawGetNonlocalRadius(int rIdent) const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetNonlocalRadius();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetNonlocalRadius] error getting nonlocal radius.");
+		throw e;
+	}
+}
+
+//! @brief ... set nonlocal radius
+//! @param rRadius ...  nonlocal radius
+void NuTo::StructureBase::ConstitutiveLawSetNonlocalRadius(int rIdent, double rRadius)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetNonlocalRadius(rRadius);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNonlocalRadius] error setting nonlocal radius.");
+        throw e;
+    }
+}

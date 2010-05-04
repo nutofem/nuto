@@ -44,6 +44,11 @@ public:
         return 2;
     }
 
+    //! @brief ... check compatibility between element type and integration type
+    //! @param rElementType ... element type
+    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
+    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const;
+
 protected:
 
 

@@ -1,20 +1,25 @@
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
 
 namespace NuTo
 {
 template<>
-Group<NodeBase>::eGroupId Group<NodeBase>::GetType()const
+Groups::eGroupId Group<NodeBase>::GetType()const
 {
-    return GroupBase::Nodes;
+    return Groups::Nodes;
 }
 
 template<>
-Group<NodeBase>::eGroupId Group<ElementBase>::GetType()const
+Groups::eGroupId Group<ElementBase>::GetType()const
 {
-    return GroupBase::Elements;
+    return Groups::Elements;
 }
 template<>
 std::string Group<NodeBase>::GetTypeString()const

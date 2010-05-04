@@ -2,10 +2,10 @@
 #define STRUCTUREGRID_H
 
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeGridCoordinates.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
@@ -191,20 +191,25 @@ public:
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType);
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID,
+    		const std::string& rElementType);
 
     //! @brief Creates an element
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID, const std::string& rElementType, const std::string& rElementDataType);
+    //! @param rIpDataType ip type
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID,
+    		const std::string& rElementType, const std::string& rElementDataType, const std::string& rIpDataType);
 
 #ifndef SWIG
     //! @brief Creates an element
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, ElementBase::eElementType rElementType, NuTo::ElementDataBase::eElementDataType rElementDataType);
+    //! @param rIpDataType ip type
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID,
+    		Element::eElementType rElementType, NuTo::ElementData::eElementDataType rElementDataType, NuTo::IpData::eIpDataType rIpDataType);
 
 #endif //SWIG
 

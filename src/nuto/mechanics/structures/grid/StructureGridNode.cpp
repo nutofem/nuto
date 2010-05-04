@@ -1,9 +1,8 @@
 #include <boost/tokenizer.hpp>
+#include <sstream>
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/math/FullMatrix.h"
-#include <sstream>
-
 #include "nuto/mechanics/nodes/NodeGridCoordinates.h"
 #include "nuto/mechanics/nodes/NodeGridCoordinatesDisplacements.h"
 #include "nuto/mechanics/nodes/NodeDisplacements.h"
@@ -309,7 +308,7 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
     std::transform(rDOFs.begin(), rDOFs.end(), rDOFs.begin(), toupper);
 
     // check all values
-    int attributes(1 << NodeBase::COORDINATES);
+    int attributes(1 << Node::COORDINATES);
     //! bit 0 : coordinates
     //! bit 1 : displacements
     //! bit 2 : rotations
@@ -318,11 +317,11 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
     for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
         if (*beg=="DISPLACEMENTS")
-            attributes = attributes |  1 << NodeBase::DISPLACEMENTS;
+            attributes = attributes |  1 << Node::DISPLACEMENTS;
         if (*beg=="ROTATIONS")
-            attributes = attributes |  1 << NodeBase::ROTATIONS;
+            attributes = attributes |  1 << Node::ROTATIONS;
         if (*beg=="TEMPERATURES")
-            attributes = attributes |  1 << NodeBase::TEMPERATURES;
+            attributes = attributes |  1 << Node::TEMPERATURES;
     }
 
     NodeBase* nodePtr;
@@ -330,7 +329,7 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
     {
         // the << shifts the 1 bitwise to the left, so 1<<n = 2^n
         // it actually sets the n-th bit (from the right) to 1, and all the other to zero
-    case (1 << NodeBase::COORDINATES):
+    case (1 << Node::COORDINATES):
         // for grid nodes COORDINATES are replaced with NodeID
         switch (mDimension)
         {
@@ -347,7 +346,7 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
             throw MechanicsException("[NuTo::StructureGrid::NodeCreate] Dimension of the structure is not valid.");
         }
        break;
-    case (1 << NodeBase::COORDINATES) | (1 << NodeBase::DISPLACEMENTS):
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS):
         switch (mDimension)
          {
          case 1:
@@ -364,7 +363,7 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
          }
         break;
 //! @Todo: add NodeGridCoordinatesDisplacementsRotations.h
-    case (1 << NodeBase::COORDINATES) | (1 << NodeBase::DISPLACEMENTS) | (1 << NodeBase::ROTATIONS):
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS):
          throw MechanicsException("[NuTo::StructureGrid::NodeCreate] Rotation not implemented.");
          break;
    }

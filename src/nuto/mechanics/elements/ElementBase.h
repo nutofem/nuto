@@ -10,6 +10,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -28,6 +30,7 @@ class SectionBase;
 class StructureBase;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
+class VisualizeComponentBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -40,19 +43,6 @@ class ElementBase
 #endif // ENABLE_SERIALIZATION
 
 public:
-    enum eElementType
-    {
-        BRICK8N,             //!< three-dimensional brick element with 8 nodes
-        PLANE2D3N,           //!< two-dimensional plane element with 3 nodes
-        PLANE2D4N,           //!< two-dimensional plane element with 4 nodes
-        PLANE2D6N,           //!< two-dimensional plane element with 6 nodes
-        TETRAHEDRON4N,       //!< three-dimensional tetrahedron element with 4 nodes
-        TETRAHEDRON10N,      //!< three-dimensional tetrahedron element with 10 nodes
-        TRUSS1D2N,           //!< one-dimensional truss element with two nodes
-        TRUSS1D3N,            //!< one-dimensional truss element with three nodes
-        VOXEL8N              //!< three-dimensional cube element of a grid structure with 8 coincident nodes
-    };
-
     //! @brief constructor
     //! @param rStructure ... structure to which the element belongs
     ElementBase(const StructureBase* rStructure) : mStructure(rStructure) {};
@@ -61,7 +51,11 @@ public:
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    virtual NuTo::ElementBase::eElementType GetEnumType()const=0;
+    virtual NuTo::Element::eElementType GetEnumType()const=0;
+
+    //! @brief returns the id number of the element
+    //! @return id
+    int ElementGetId();
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
@@ -113,7 +107,7 @@ public:
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
     //! @param rIntegrationType pointer to integration type
-    virtual void SetIntegrationType(const IntegrationTypeBase* rIntegrationType);
+    virtual void SetIntegrationType(const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
     //! @brief returns a pointer to the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -217,7 +211,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::map<std::string,NuTo::VisualizeBase::eVisualizeWhat>& rWhat) const = 0;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<NuTo::VisualizeComponentBase*>& rWhat) const = 0;
 #endif // ENABLE_VISUALIZE
 protected:
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes

@@ -11,6 +11,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/groups/GroupEnum.h"
+
 namespace NuTo
 {
 class StructureBase;
@@ -29,12 +31,6 @@ class GroupBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-	#ifndef SWIG
-	enum eGroupId {
-		Nodes=0,
-		Elements
-	};
-	#endif
 	//! @brief constructor
 	GroupBase();
 
@@ -54,7 +50,7 @@ public:
 
 	//! @brief gives the group type
 	//! @return group type
-	virtual eGroupId GetType()const=0;
+	virtual Groups::eGroupId GetType()const=0;
 
 	//! @brief gives the group type as a string
 	//! @return group type

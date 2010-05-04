@@ -177,7 +177,10 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
         error = True;
 
 # visualize results
-myStructure.ExportVtkDataFile("Plane2D4N.vtk","displacements engineering_strain engineering_stress")
+myStructure.AddVisualizationComponentDisplacements()
+myStructure.AddVisualizationComponentEngineeringStrain()
+myStructure.AddVisualizationComponentEngineeringStress()
+myStructure.ExportVtkDataFile("Plane2D4N.vtk")
 
 if (error):
     sys.exit(-1)

@@ -119,7 +119,7 @@ public:
 
     //! @brief gives the group type
     //! @return group type
-    eGroupId GetType()const;
+    Groups::eGroupId GetType()const;
 
     //! @brief gives the group type
     //! @return group type as string

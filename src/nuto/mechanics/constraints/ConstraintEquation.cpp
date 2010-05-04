@@ -13,16 +13,17 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintEquation.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 // constructor
-NuTo::ConstraintEquation::ConstraintEquation(const NodeBase* rNode, NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue)
+NuTo::ConstraintEquation::ConstraintEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue)
 {
     this->AddTerm(rNode, rDofType, rDofComponent, rCoefficient);
     this->mRhsValue = rRhsValue;
 }
 
 // add term
-void NuTo::ConstraintEquation::AddTerm(const NodeBase* rNode, NodeBase::eAttributes rDofType, int rDofComponent, double rCoefficient)
+void NuTo::ConstraintEquation::AddTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
 {
     try
     {

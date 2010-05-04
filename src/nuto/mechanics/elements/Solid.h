@@ -12,7 +12,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/ElementWithDataBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
@@ -32,8 +31,10 @@ class Solid : public ElementWithDataBase
 public:
     //! @brief constructor
     Solid(const StructureBase* rStructure,
-    		ElementDataBase::eElementDataType rElementDataType,
-    		IntegrationTypeBase::eIntegrationType rIntegrationType);
+    		ElementData::eElementDataType rElementDataType,
+    		IntegrationType::eIntegrationType rIntegrationType,
+    		IpData::eIpDataType rIpDataType
+    		);
 
     //! @brief returns the global dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -189,6 +190,11 @@ public:
     //! @param rLocalCoordinates ... three-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
     void InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
+
+    //! @brief calculates the volume of an integration point (weight * detJac)
+    //! @param rVolume  vector for storage of the ip volumes (area in 2D)
+    void GetIntegrationPointVolume(std::vector<double>& rVolume)const;
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

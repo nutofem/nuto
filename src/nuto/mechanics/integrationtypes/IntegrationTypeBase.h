@@ -10,7 +10,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
+
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/CellBase.h"
 #endif // ENABLE_VISUALIZE
@@ -27,17 +29,6 @@ class IntegrationTypeBase
 
 public:
 #ifndef SWIG
-    enum eIntegrationType
-    {
-        IntegrationType1D2NGauss1Ip=0,
-        IntegrationType1D2NGauss2Ip,
-        IntegrationType2D4NGauss1Ip,
-        IntegrationType2D4NGauss4Ip,
-        IntegrationType3D4NGauss1Ip,
-        IntegrationType3D8NGauss1Ip,
-        IntegrationType3D8NGauss2x2x2Ip,
-        NumIntegrationTypes
-    };
 #endif
 
 //! @brief constructor
@@ -88,6 +79,11 @@ public:
     //! @param rVerboseLevel determines how detailed the information is
     void Info(int rVerboseLevel)const;
 
+    //! @brief ... check compatibility between element type and integration type
+    //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)
+    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
+    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const = 0;
+
 #ifdef ENABLE_VISUALIZE
     virtual void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,
@@ -101,5 +97,6 @@ protected:
 
 
 };
+
 }//namespace NuTo
 #endif //INTEGRATIONTYPEBASE_H

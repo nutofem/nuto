@@ -73,12 +73,15 @@ int main()
 	    myStructure.SectionSetThickness("mySection1",0.01);
 
 	    // assign material, section and integration type
-	    myStructure.ElementTotalSetIntegrationType("2D4NGauss4Ip");
+	    myStructure.ElementTotalSetIntegrationType("2D4NGauss4Ip","NOIPDATA");
 	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	    myStructure.ElementTotalSetSection("mySection1");
 
-		// visualize element
-		myStructure.ExportVtkDataFile("Plane2D4N.vtk","displacements engineering_strain engineering_stress");
+            // visualize element
+        myStructure.AddVisualizationComponentDisplacements();
+        myStructure.AddVisualizationComponentEngineeringStrain();
+        myStructure.AddVisualizationComponentEngineeringStress();
+        myStructure.ExportVtkDataFile("Plane2D4N.vtk");
 	}
 	catch (NuTo::MathException& e)
 	{

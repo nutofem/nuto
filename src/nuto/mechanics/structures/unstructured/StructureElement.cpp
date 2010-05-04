@@ -1,13 +1,11 @@
 #include <assert.h>
 #include <boost/tokenizer.hpp>
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
-#include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-
 //! @brief returns the number of nodes
 //! @return number of nodes
 int NuTo::Structure::GetNumElements() const
@@ -74,7 +72,7 @@ void NuTo::Structure::ElementInfo(int mVerboseLevel)const
 int NuTo::Structure::ElementCreate (const std::string& rElementType,
         const NuTo::FullMatrix<int>& rNodeNumbers)
 {
-	return ElementCreate(rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA"));
+	return ElementCreate(rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA") );
 }
 
 //! @brief Creates an element
@@ -82,7 +80,7 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 int NuTo::Structure::ElementCreate (const std::string& rElementType,
-        const NuTo::FullMatrix<int>& rNodeNumbers, const std::string& rElementDataType)
+        const NuTo::FullMatrix<int>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
 {
 	//find unused integer id
 	int elementNumber(mElementMap.size());
@@ -94,7 +92,7 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 	}
 
 	// create element
-	this->ElementCreate(elementNumber, rElementType, rNodeNumbers,rElementDataType);
+	this->ElementCreate(elementNumber, rElementType, rNodeNumbers,rElementDataType,rIpDataType);
 
 	// return element number
 	return elementNumber;
@@ -102,11 +100,11 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
         const NuTo::FullMatrix<int> &rNodeNumbers)
 {
-	ElementCreate(rElementNumber,rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA"));
+	ElementCreate(rElementNumber,rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA"));
 }
 
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
-        const NuTo::FullMatrix<int> &rNodeNumbers, const std::string& rElementDataType)
+        const NuTo::FullMatrix<int> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
 {
 	// check node number
 	boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(rElementNumber);
@@ -128,34 +126,34 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
     std::string upperCaseElementType;
     std::transform(rElementType.begin(), rElementType.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
 
-    ElementBase::eElementType elementType;
+    Element::eElementType elementType;
     if (upperCaseElementType=="TRUSS1D2N")
     {
-    	elementType = NuTo::ElementBase::TRUSS1D2N;
+    	elementType = NuTo::Element::TRUSS1D2N;
     }
     else if (upperCaseElementType=="TRUSS1D3N")
 	{
-    	elementType = NuTo::ElementBase::TRUSS1D3N;
+    	elementType = NuTo::Element::TRUSS1D3N;
 	}
     else if (upperCaseElementType=="BRICK8N")
     {
-    	elementType = NuTo::ElementBase::BRICK8N;
+    	elementType = NuTo::Element::BRICK8N;
     }
     else if (upperCaseElementType=="PLANE2D3N")
     {
-    	elementType = NuTo::ElementBase::PLANE2D3N;
+    	elementType = NuTo::Element::PLANE2D3N;
     }
     else if (upperCaseElementType=="PLANE2D4N")
     {
-    	elementType = NuTo::ElementBase::PLANE2D4N;
+    	elementType = NuTo::Element::PLANE2D4N;
     }
     else if (upperCaseElementType=="PLANE2D6N")
     {
-    	elementType = NuTo::ElementBase::PLANE2D6N;
+    	elementType = NuTo::Element::PLANE2D6N;
     }
     else if (upperCaseElementType=="TETRAHEDRON10N")
     {
-    	elementType = NuTo::ElementBase::TETRAHEDRON10N;
+    	elementType = NuTo::Element::TETRAHEDRON10N;
     }
     else
     {
@@ -166,30 +164,44 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
     std::string upperCaseElementDataType;
     std::transform(rElementDataType.begin(), rElementDataType.end(), std::back_inserter(upperCaseElementDataType), (int(*)(int)) toupper);
 
-    ElementDataBase::eElementDataType elementDataType;
-    if (upperCaseElementDataType=="CONSTITUTIVELAWELEMENT_NOSTATICDATA")
+    ElementData::eElementDataType elementDataType;
+    if (upperCaseElementDataType=="CONSTITUTIVELAWIP")
     {
-    	elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWELEMENT_NOSTATICDATA;
+    	elementDataType = NuTo::ElementData::CONSTITUTIVELAWIP;
     }
-    else if (upperCaseElementDataType=="CONSTITUTIVELAWELEMENT_STATICDATA")
+    else if (upperCaseElementDataType=="CONSTITUTIVELAWIP")
    	{
-		elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWELEMENT_STATICDATA;
+		elementDataType = NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
    	}
-	else if (upperCaseElementType=="CONSTITUTIVELAWIP_NOSTATICDATA")
-	{
-		elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWIP_NOSTATICDATA;
-	}
-	else if (upperCaseElementType=="CONSTITUTIVELAWIP_STATICDATA")
-	{
-		elementDataType = NuTo::ElementDataBase::CONSTITUTIVELAWIP_STATICDATA;
-	}
 	else
 	{
 		throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist.");
 	}
 
+    // check ip data
+    std::string upperCaseIpDataType;
+    std::transform(rIpDataType.begin(), rIpDataType.end(), std::back_inserter(upperCaseIpDataType), (int(*)(int)) toupper);
+
+    IpData::eIpDataType ipDataType;
+    if (upperCaseIpDataType=="NOIPDATA")
+    {
+    	ipDataType = NuTo::IpData::NOIPDATA;
+    }
+    else if (upperCaseIpDataType=="STATICDATA")
+   	{
+    	ipDataType = NuTo::IpData::STATICDATA;
+   	}
+    else if (upperCaseIpDataType=="STATICDATANONLOCAL")
+   	{
+    	ipDataType = NuTo::IpData::STATICDATANONLOCAL;
+   	}
+	else
+	{
+		throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseIpDataType +" does not exist.");
+	}
+
     // create element
-    this->ElementCreate(rElementNumber, elementType, nodeVector, elementDataType);
+    this->ElementCreate(rElementNumber, elementType, nodeVector, elementDataType, ipDataType);
 
 }
 
@@ -198,66 +210,66 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
 //! @param rElementType element type
 //! @param rNodeIdents pointers to the corresponding nodes
 //! @return element number
-void NuTo::Structure::ElementCreate(int rElementNumber, ElementBase::eElementType rType,
-        std::vector<NodeBase*> rNodeVector, ElementDataBase::eElementDataType rElementDataType)
+void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rType,
+        std::vector<NodeBase*> rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
 
 	//const IntegrationTypeBase *ptrIntegrationType;
 	ElementBase* ptrElement;
     switch (rType)
 	{
-    case NuTo::ElementBase::TRUSS1D2N:
+    case NuTo::Element::TRUSS1D2N:
 		// get the integration type pointer, if not existent, create the integration type
 		//ptrIntegrationType = GetPtrIntegrationType(NuTo::Truss1D2N::GetStandardIntegrationType());
 		if (1!=mDimension)
 			throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D2N.");
-		ptrElement = new NuTo::Truss1D2N(this, rNodeVector, rElementDataType);
+		ptrElement = new NuTo::Truss1D2N(this, rNodeVector, rElementDataType, rIpDataType);
 		break;
-    case NuTo::ElementBase::TRUSS1D3N:
+    case NuTo::Element::TRUSS1D3N:
 		// get the integration type pointer, if not existent, create the integration type
 		//ptrIntegrationType = GetPtrIntegrationType(NuTo::Truss1D3N::GetStandardIntegrationType());
 		if (1!=mDimension)
 			throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D3N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D3N.");
-		ptrElement = new NuTo::Truss1D3N(this, rNodeVector, rElementDataType);
+		ptrElement = new NuTo::Truss1D3N(this, rNodeVector, rElementDataType, rIpDataType);
 		break;
-    case NuTo::ElementBase::BRICK8N:
+    case NuTo::Element::BRICK8N:
         // get the integration type pointer, if not existent, create the integration type
         //ptrIntegrationType = GetPtrIntegrationType(NuTo::Brick8N::GetStandardIntegrationType());
         if (this->mDimension != 3)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] Brick8N is a 3D element.");
         }
-        ptrElement = new NuTo::Brick8N(this, rNodeVector, rElementDataType);
+        ptrElement = new NuTo::Brick8N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
-    case NuTo::ElementBase::PLANE2D3N:
+    case NuTo::Element::PLANE2D3N:
         if (this->mDimension != 2)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D3N is a 2D element.");
         }
-        //ptrElement = new NuTo::Plane2D3N(this, rNodeVector, rElementDataType);
+        //ptrElement = new NuTo::Plane2D3N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
-    case NuTo::ElementBase::PLANE2D4N:
+    case NuTo::Element::PLANE2D4N:
         if (this->mDimension != 2)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4N is a 2D element.");
         }
-        ptrElement = new NuTo::Plane2D4N(this, rNodeVector, rElementDataType);
+        ptrElement = new NuTo::Plane2D4N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
-    case NuTo::ElementBase::PLANE2D6N:
+    case NuTo::Element::PLANE2D6N:
         if (this->mDimension != 2)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D6N is a 2D element.");
         }
-        //ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType);
+        //ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
-    case NuTo::ElementBase::TETRAHEDRON10N:
+    case NuTo::Element::TETRAHEDRON10N:
         // get the integration type pointer, if not existent, create the integration type
         //ptrIntegrationType = GetPtrIntegrationType(NuTo::Tetrahedron10N::GetStandardIntegrationType());
         if (this->mDimension != 3)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron10N is a 3D element.");
         }
-        ptrElement = new NuTo::Tetrahedron10N(this, rNodeVector, rElementDataType);
+        ptrElement = new NuTo::Tetrahedron10N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
 	default:
 		throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Invalid element type.");
@@ -273,10 +285,10 @@ NuTo::FullMatrix<int> NuTo::Structure::ElementsCreate (const std::string& rEleme
 {
 	std::vector<int> idVec;
 	/// go through the elements
-	for(size_t i=0 ; i<rNodeNumbers.GetNumColumns(); ++i)
+	for(size_t i=0 ; i<(size_t)rNodeNumbers.GetNumColumns(); ++i)
 	{
 		const NuTo::FullMatrix<int> incidence(rNodeNumbers.GetColumn(i));
-		idVec.push_back(this-> ElementCreate(rElementType,incidence,std::string("CONSTITUTIVELAWELEMENT_NOSTATICDATA")) );
+		idVec.push_back(this-> ElementCreate(rElementType,incidence ));
 	}
 
     //return int identifiers of the new elements as FullMatrix
