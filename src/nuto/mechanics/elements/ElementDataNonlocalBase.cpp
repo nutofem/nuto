@@ -45,7 +45,7 @@ const std::vector<const NuTo::ElementWithDataBase*>&
 //! @return the local element number, the element is either append to the list, or the existing local number is returned
 int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
 {
-	printf("\n[NuTo::ElementDataNonlocalBase::AddNonlocalElement %p %p\n]",rConstitutive,mConstitutive);
+	printf("\n[NuTo::ElementDataNonlocalBase::AddNonlocalElement %p %p\n]",static_cast<const void*>(rConstitutive),static_cast<const void*>(mConstitutive));
 	if (mConstitutive==0)
 		mConstitutive=rConstitutive;
 	assert(rConstitutive==mConstitutive);

@@ -37,7 +37,7 @@ int main()
         std::cout<<"numVoxel"<< numVoxel << std::endl;
 
         //RB
-        double Force = 1.;
+        //double Force = 1.;
         bool EnableDisplacementControl = true;
         double BoundaryDisplacement = 0.1;
 
@@ -309,8 +309,8 @@ int main()
     catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureGrid3D] error.");
-        std::cout<<e.ErrorMessage()<<std::endl;
-        exit;
+        std::cerr<<e.ErrorMessage()<<std::endl;
+        return -1;
     }
     catch(...)
     {

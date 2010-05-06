@@ -166,6 +166,7 @@ public:
     //! @return number of elements
     int GetNumElements() const;
 
+#ifndef SWIG
     //! @brief returns a reference to an element
     //! @param identifier
     //! @return reference to an element
@@ -180,6 +181,7 @@ public:
     //! @param reference to an element
     //! @return identifier
     int ElementGetId(const ElementBase* rElement) const;
+#endif //SWIG
 
     //! @brief info about the elements in the Structure
     virtual void ElementInfo(int mVerboseLevel) const;

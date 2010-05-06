@@ -72,7 +72,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
     int matFlag=1;
     if (rColorToMaterialData.GetNumColumns()==1) //Only Young's modulus as changing parameter
     {
-        for(int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
+        for(unsigned int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
         {
             if (rColorToMaterialData(imageValues(countVoxels,0),0)>0.1) //if Modul is> zero
             {

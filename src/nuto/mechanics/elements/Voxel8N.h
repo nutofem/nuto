@@ -31,16 +31,16 @@ public:
     //! @brief constructor
     Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
             NuTo::ElementData::eElementDataType rElementDataType , IpData::eIpDataType rIpDataType):
-            	mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),
-            	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
+            	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType), 
+            	mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0)            	
     {
         mVoxelID = (int) rElementID;
     }
     //! @brief constructor
     Voxel8N(NuTo::StructureBase* rStructure,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
     		NuTo::ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType):
-        mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0),
-        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
+        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType),
+        mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0)
     {
         mVoxelID = -1;
     }
