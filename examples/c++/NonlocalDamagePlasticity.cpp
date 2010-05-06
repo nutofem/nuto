@@ -77,6 +77,10 @@ int main()
 	myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
 	myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25);
 	myStructure.ConstitutiveLawSetNonlocalRadius(myMatLin,1);
+	myStructure.ConstitutiveLawSetTensileStrength(myMatLin,2);
+	myStructure.ConstitutiveLawSetCompressiveStrength(myMatLin,20);
+	myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatLin,25);
+	myStructure.ConstitutiveLawSetFractureEnergy(myMatLin,0.2);
 
 	//create section
 	myStructure.SectionCreate("mySection","Plane_Strain");
@@ -107,6 +111,12 @@ int main()
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement4,2);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement4,3);
 	myStructure.ExportVtkDataFile("PlaneNonlocalWeights.vtk");
+        
+	//calculate the stiffness matrix
+	NuTo::FullMatrix<double> Ke;
+        NuTo::FullMatrix<int> rowIndex;
+    	NuTo::FullMatrix<int> colIndex;
+    	myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
     }
     catch (NuTo::Exception& e)
     {

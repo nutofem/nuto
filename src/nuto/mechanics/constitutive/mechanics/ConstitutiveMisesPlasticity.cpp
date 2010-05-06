@@ -346,7 +346,6 @@ NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveMisesPlasticity::AllocateSta
 	}
 	else
 	{
-		std::cout << "ConstitutiveStaticDataMisesPlasticity3D" << std::endl;
 		return new NuTo::ConstitutiveStaticDataMisesPlasticity3D();
 	}
 }

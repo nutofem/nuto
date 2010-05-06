@@ -581,7 +581,7 @@ public:
 
     //! @brief ... set compressive strength
     //! @param rCompressiveStrength ...  compressive strength
-    void ConstitutiveLaSetCompressiveStrength(int rIdent, double rCompressiveStrength);
+    void ConstitutiveLawSetCompressiveStrength(int rIdent, double rCompressiveStrength);
 
     //! @brief ... get biaxial compressive strength
     //! @param rBiaxialCompressiveStrength ...  biaxial compressive strength

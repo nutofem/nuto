@@ -16,6 +16,8 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
@@ -544,8 +546,7 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
 NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D(
 		const ElementBase* rElement) const
 {
-	//no static data return Null-Pointer
-    return 0;
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Nonlocal damage plasticity model not implemented for 1D.");
 }
 
 
@@ -554,8 +555,10 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStatic
 NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain2D(
 		const ElementBase* rElement) const
 {
-	//no static data return Null-Pointer
-	return 0;
+	if (rElement->GetSection()->GetType()==NuTo::Section::PLANE_STRESS)
+		throw MechanicsException("[NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Nonlocal damage plasticity model not implemented for plane stress.");
+	else
+	    return new ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain();
 }
 
 
@@ -564,8 +567,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStatic
 NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain3D(
 		const ElementBase* rElement) const
 {
-	//no static data return Null-Pointer
-	return 0;
+    return new ConstitutiveStaticDataPrevEngineeringStressStrain3D();
 }
 
 

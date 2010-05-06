@@ -424,7 +424,7 @@ double NuTo::StructureBase::ConstitutiveLawGetCompressiveStrength(int rIdent)
 
 //! @brief ... set compressive strength
 //! @param rCompressiveStrength ...  compressive strength
-void NuTo::StructureBase::ConstitutiveLaSetCompressiveStrength(int rIdent, double rCompressiveStrength)
+void NuTo::StructureBase::ConstitutiveLawSetCompressiveStrength(int rIdent, double rCompressiveStrength)
 {
     try
     {
