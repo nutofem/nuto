@@ -300,9 +300,40 @@ public:
 
     //! @brief ... set nonlocal radius
     //! @param rRadius...  nonlocal radius
-    void SetNonlocalRadius(double rRadius);
-    ///////////////////////////////////////////////////////////////////////////
+    void SetNonlocalRadius(double rNonlocalRadius);
 
+    //! @brief ... get tensile strength
+    //! @return ... tensile strength
+    double GetTensileStrength() const;
+
+    //! @brief ... set tensile strength
+    //! @param rTensileStrength...  tensile strength
+    void SetTensileStrength(double rTensileStrength);
+
+    //! @brief ... get compressive strength
+    //! @return ... compressive strength
+    double GetCompressiveStrength() const;
+
+    //! @brief ... set compressive strength
+    //! @param rCompressiveStrength...  compressive strength
+    void SetCompressiveStrength(double rCompressiveStrength);
+
+    //! @brief ... get biaxial compressive strength
+    //! @return ... biaxial compressive strength
+    double GetBiaxialCompressiveStrength() const;
+
+    //! @brief ... set biaxial compressive strength
+    //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
+    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength);
+
+    //! @brief ... get fracture energy
+    //! @return ... fracture energy
+    double GetFractureEnergy() const;
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy... fracture energy
+    void SetFractureEnergy(double rFractureEnergy);
+///////////////////////////////////////////////////////////////////////////
     //! @brief ... get dimension of the constitutive relationship
     //! @return ... dimension of the constitutive relationship (1, 2 or 3)
     int GetGlobalDimension() const;
@@ -340,7 +371,19 @@ protected:
     double mNu;
 
     //! @brief ... nonlocal radius
-    double mRadius;
+    double mNonlocalRadius;
+
+    //! @brief ... uniaxial tensile strength
+    double mTensileStrength;
+
+    //! @brief ... uniaxial compressive strength
+    double mCompressiveStrength;
+
+    //! @brief ... biaxial compressive strength
+    double mBiaxialCompressiveStrength;
+
+    //! @brief ... fracture energy
+    double mFractureEnergy;
 
     //! @brief ... check if Young's modulus is positive
     //! @param rE ... Young's modulus
@@ -350,10 +393,25 @@ protected:
     //! @param rNu ... Poisson's ratio
     void CheckPoissonsRatio(double rNu) const;
 
-    //! @brief ... check nonlocal radius is positive
+    //! @brief ... check if nonlocal radius is positive
     //! @param rRadius ... nonlocal radius
-    void CheckNonlocalRadius(double rRadius) const;
+    void CheckNonlocalRadius(double rNonlocalRadius) const;
 
+    //! @brief ... check if tensile strength is positive
+    //! @param rTensileStrength ... nonlocal radius
+    void CheckTensileStrength(double rTensileStrength) const;
+
+    //! @brief ... check if compressive strength is positive
+    //! @param rRadius ... compressive strength
+    void CheckCompressiveStrength(double rCompressiveStrength) const;
+
+    //! @brief ... check if biaxial compressive strength is positive
+    //! @param rBiaxialCompressiveStrength ... biaxial compressive strength
+    void CheckBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) const;
+
+    //! @brief ... check if fracture energy is positive
+    //! @param rFractureEnergy ... fracture energy
+    void CheckFractureEnergy(double rFractureEnergy) const;
 };
 }
 #endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

@@ -373,3 +373,131 @@ void NuTo::StructureBase::ConstitutiveLawSetNonlocalRadius(int rIdent, double rR
         throw e;
     }
 }
+
+//! @brief ... get tensile strength
+//! @param rTensileStrength ...  tensile strength
+double NuTo::StructureBase::ConstitutiveLawGetTensileStrength(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetTensileStrength();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetTensileStrength] error getting tensile strength.");
+		throw e;
+	}
+}
+
+//! @brief ... set tensile strength
+//! @param rTensileStrength ...  tensile strength
+void NuTo::StructureBase::ConstitutiveLawSetTensileStrength(int rIdent, double rTensileStrength)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetTensileStrength(rTensileStrength);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetTensileStrength] error setting tensile strength.");
+        throw e;
+    }
+}
+
+//! @brief ... get compressive strength
+//! @param rCompressiveStrength ...  compressive strength
+double NuTo::StructureBase::ConstitutiveLawGetCompressiveStrength(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetCompressiveStrength();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetCompressiveStrength] error getting compressive strength.");
+		throw e;
+	}
+}
+
+//! @brief ... set compressive strength
+//! @param rCompressiveStrength ...  compressive strength
+void NuTo::StructureBase::ConstitutiveLaSetCompressiveStrength(int rIdent, double rCompressiveStrength)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetNonlocalRadius(rCompressiveStrength);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLaSetCompressiveStrength] error setting compressive strength.");
+        throw e;
+    }
+}
+
+//! @brief ... get biaxial compressive strength
+//! @param rBiaxialCompressiveStrength ...  biaxial compressive strength
+double NuTo::StructureBase::ConstitutiveLawGetBiaxialCompressiveStrength(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetBiaxialCompressiveStrength();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBiaxialCompressiveStrength] error getting biaxial compressive strength.");
+		throw e;
+	}
+}
+
+//! @brief ... set biaxial compressive strength
+//! @param rBiaxialCompressiveStrength ...  biaxial compressive strength
+void NuTo::StructureBase::ConstitutiveLawSetBiaxialCompressiveStrength(int rIdent, double rBiaxialCompressiveStrength)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetBiaxialCompressiveStrength(rBiaxialCompressiveStrength);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBiaxialCompressiveStrength] error setting biaxial compressive strength.");
+        throw e;
+    }
+}
+
+//! @brief ... get fracture energy
+//! @param rFractureEnergy ...  fracture energy
+double NuTo::StructureBase::ConstitutiveLawGetFractureEnergy(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetFractureEnergy();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetFractureEnergy] error getting fracture energy.");
+		throw e;
+	}
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy ...  fracture energy
+void NuTo::StructureBase::ConstitutiveLawSetFractureEnergy(int rIdent, double rFractureEnergy)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetFractureEnergy(rFractureEnergy);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetFractureEnergy] error setting fracture energy.");
+        throw e;
+    }
+}

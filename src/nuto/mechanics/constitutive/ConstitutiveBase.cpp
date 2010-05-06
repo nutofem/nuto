@@ -150,6 +150,61 @@ void NuTo::ConstitutiveBase::SetNonlocalRadius(double rH)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNonlocalRadius] The constitutive relationship does not have a nonlocal radius.");
 }
+//! @brief ... get tensile strength
+//! @return ... tensile strength
+double NuTo::ConstitutiveBase::GetTensileStrength() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetTensileStrength] The constitutive relationship does not have a tensile strength.");
+}
+
+//! @brief ... set tensile strength
+//! @param rTensileStrength...  tensile strength
+void NuTo::ConstitutiveBase::SetTensileStrength(double rTensileStrength)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetTensileStrength] The constitutive relationship does not have a tensile strength.");
+}
+
+//! @brief ... get compressive strength
+//! @return ... compressive strength
+double NuTo::ConstitutiveBase::GetCompressiveStrength() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetCompressiveStrength] The constitutive relationship does not have a compressive strength.");
+}
+
+//! @brief ... set compressive strength
+//! @param rCompressiveStrength...  compressive strength
+void NuTo::ConstitutiveBase::SetCompressiveStrength(double rCompressiveStrength)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetCompressiveStrength] The constitutive relationship does not have a compressive strength.");
+}
+
+//! @brief ... get biaxial compressive strength
+//! @return ... biaxial compressive strength
+double NuTo::ConstitutiveBase::GetBiaxialCompressiveStrength() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBiaxialCompressiveStrength] The constitutive relationship does not have a biaxial compressive strength.");
+}
+
+//! @brief ... set biaxial compressive strength
+//! @param rBiaxialCompressiveStrength...  biaxial compressive strength
+void NuTo::ConstitutiveBase::SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBiaxialCompressiveStrength] The constitutive relationship does not have a biaxial compressive strength.");
+}
+
+//! @brief ... get fracture energy
+//! @return ... fracture energy
+double NuTo::ConstitutiveBase::GetFractureEnergy() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetFractureEnergy] The constitutive relationship does not have a fracture energy.");
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy... fracture energy
+void NuTo::ConstitutiveBase::SetFractureEnergy(double rFractureEnergy)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFractureEnergy] The constitutive relationship does not have a fracture energy.");
+}
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()

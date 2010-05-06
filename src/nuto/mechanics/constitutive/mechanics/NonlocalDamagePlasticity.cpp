@@ -40,7 +40,7 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
 	std::cout << "[NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity]" << std::endl;
 	mE = 0.;
 	mNu = 0.;
-	mRadius = 1.;
+	mNonlocalRadius = 1.;
 	SetParametersValid();
 }
 
@@ -808,18 +808,80 @@ void NuTo::NonlocalDamagePlasticity::SetPoissonsRatio(double rNu)
 //! @return ... nonlocal radius
 double NuTo::NonlocalDamagePlasticity::GetNonlocalRadius() const
 {
-    return mRadius;
+    return mNonlocalRadius;
 }
 
 //! @brief ... set nonlocal radius
 //! @param rRadius...  nonlocal radius
-void NuTo::NonlocalDamagePlasticity::SetNonlocalRadius(double rRadius)
+void NuTo::NonlocalDamagePlasticity::SetNonlocalRadius(double rNonlocalRadius)
 {
-    this->CheckNonlocalRadius(rRadius);
-    this->mRadius = rRadius;
+    this->CheckNonlocalRadius(rNonlocalRadius);
+    this->mNonlocalRadius = rNonlocalRadius;
+    this->SetParametersValid();
+}
+//! @brief ... get tensile strength
+//! @return ... tensile strength
+double NuTo::NonlocalDamagePlasticity::GetTensileStrength() const
+{
+    return mTensileStrength;
+}
+
+//! @brief ... set tensile strength
+//! @param rTensileStrength...  tensile strength
+void NuTo::NonlocalDamagePlasticity::SetTensileStrength(double rTensileStrength)
+{
+    this->CheckNonlocalRadius(rTensileStrength);
+    this->mTensileStrength = rTensileStrength;
     this->SetParametersValid();
 }
 
+//! @brief ... get compressive strength
+//! @return ... compressive strength
+double NuTo::NonlocalDamagePlasticity::GetCompressiveStrength() const
+{
+    return mCompressiveStrength;
+}
+
+//! @brief ... set compressive strength
+//! @param rCompressiveStrength...  compressive strength
+void NuTo::NonlocalDamagePlasticity::SetCompressiveStrength(double rCompressiveStrength)
+{
+    this->CheckNonlocalRadius(rCompressiveStrength);
+    this->mCompressiveStrength = rCompressiveStrength;
+    this->SetParametersValid();
+}
+
+//! @brief ... get biaxial compressive strength
+//! @return ... biaxial compressive strength
+double NuTo::NonlocalDamagePlasticity::GetBiaxialCompressiveStrength() const
+{
+    return mBiaxialCompressiveStrength;
+}
+
+//! @brief ... set biaxial compressive strength
+//! @param rBiaxialCompressiveStrength...  biaxial compressive strength
+void NuTo::NonlocalDamagePlasticity::SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength)
+{
+    this->CheckNonlocalRadius(rBiaxialCompressiveStrength);
+    this->mBiaxialCompressiveStrength = rBiaxialCompressiveStrength;
+    this->SetParametersValid();
+}
+
+//! @brief ... get fracture energy
+//! @return ... fracture energy
+double NuTo::NonlocalDamagePlasticity::GetFractureEnergy() const
+{
+    return mFractureEnergy;
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy... fracture energy
+void NuTo::NonlocalDamagePlasticity::SetFractureEnergy(double rFractureEnergy)
+{
+    this->CheckNonlocalRadius(rFractureEnergy);
+    this->mFractureEnergy = rFractureEnergy;
+    this->SetParametersValid();
+}
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -828,7 +890,7 @@ void NuTo::NonlocalDamagePlasticity::SetNonlocalRadius(double rRadius)
 //! @sa eConstitutiveType
 NuTo::Constitutive::eConstitutiveType NuTo::NonlocalDamagePlasticity::GetType() const
 {
-    return NuTo::Constitutive::LINEAR_ELASTIC;
+    return NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY;
 }
 
 
@@ -893,22 +955,74 @@ void NuTo::NonlocalDamagePlasticity::CheckNonlocalRadius(double rRadius) const
         throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckNonlocalRadius] Nonlocal radius must be positive.");
     }
 }
+//! @brief ... check if tensile strength is positive
+//! @param rTensileStrength ... nonlocal radius
+void NuTo::NonlocalDamagePlasticity::CheckTensileStrength(double rTensileStrength) const
+{
+    if (rTensileStrength <= 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckTensileStrength] The tensile strength must be a positive value.");
+    }
+}
+
+//! @brief ... check if compressive strength is positive
+//! @param rRadius ... compressive strength
+void NuTo::NonlocalDamagePlasticity::CheckCompressiveStrength(double rCompressiveStrength) const
+{
+    if (rCompressiveStrength <= 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckCompressiveStrength] The compressive strength must be a positive value.");
+    }
+}
+
+//! @brief ... check if biaxial compressive strength is positive
+//! @param rBiaxialCompressiveStrength ... biaxial compressive strength
+void NuTo::NonlocalDamagePlasticity::CheckBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) const
+{
+    if (rBiaxialCompressiveStrength <= 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckBiaxialCompressiveStrength] The biaxial compressive strength must be a positive value.");
+    }
+    if (rBiaxialCompressiveStrength <= mCompressiveStrength)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckBiaxialCompressiveStrength] The biaxial compressive strength must be higher than the uniaxial compressive strength.");
+    }
+}
+
+//! @brief ... check if fracture energy is positive
+//! @param rFractureEnergy ... fracture energy
+void NuTo::NonlocalDamagePlasticity::CheckFractureEnergy(double rFractureEnergy) const
+{
+    if (rFractureEnergy <= 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckFractureEnergy] The fracture energy must be a positive value.");
+    }
+}
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
 void NuTo::NonlocalDamagePlasticity::Info(unsigned short rVerboseLevel) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel);
-    std::cout << "    Young's modulus: " << this->mE << std::endl;
-    std::cout << "    Poisson's ratio: " << this->mNu << std::endl;
-
+    std::cout << "    Young's modulus      : " << this->mE << std::endl;
+    std::cout << "    Poisson's ratio      : " << this->mNu << std::endl;
+    std::cout << "    nonlocal radius      : " << this->mNonlocalRadius << std::endl;
+    std::cout << "    tensile strength     : " << this->mTensileStrength << std::endl;
+    std::cout << "    compressive strength : " << this->mCompressiveStrength << std::endl;
+    std::cout << "    biaxial compressive strength : " << this->mBiaxialCompressiveStrength << std::endl;
+    std::cout << "    fracture energy      : " << this->mFractureEnergy << std::endl;
 }
 
 // check parameters
 void NuTo::NonlocalDamagePlasticity::CheckParameters()const
 {
+    this->CheckBiaxialCompressiveStrength(this->mNu);
     this->CheckYoungsModulus(this->mE);
     this->CheckPoissonsRatio(this->mNu);
+    this->CheckNonlocalRadius(this->mNu);
+    this->CheckTensileStrength(this->mNu);
+    this->CheckCompressiveStrength(this->mNu);
+    this->CheckFractureEnergy(this->mNu);
 }
 
 

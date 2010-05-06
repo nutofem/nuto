@@ -567,6 +567,38 @@ public:
     //! @param rH ...  nonlocal radius
     void ConstitutiveLawSetNonlocalRadius(int rIdent, double rRadius);
 
+    //! @brief ... get tensile strength
+    //! @param rTensileStrength ...  tensile strength
+    double ConstitutiveLawGetTensileStrength(int rIdent);
+
+    //! @brief ... set tensile strength
+    //! @param rTensileStrength ...  tensile strength
+    void ConstitutiveLawSetTensileStrength(int rIdent, double rTensileStrength);
+
+    //! @brief ... get compressive strength
+    //! @param rCompressiveStrength ...  compressive strength
+    double ConstitutiveLawGetCompressiveStrength(int rIdent);
+
+    //! @brief ... set compressive strength
+    //! @param rCompressiveStrength ...  compressive strength
+    void ConstitutiveLaSetCompressiveStrength(int rIdent, double rCompressiveStrength);
+
+    //! @brief ... get biaxial compressive strength
+    //! @param rBiaxialCompressiveStrength ...  biaxial compressive strength
+    double ConstitutiveLawGetBiaxialCompressiveStrength(int rIdent);
+
+    //! @brief ... set biaxial compressive strength
+    //! @param rBiaxialCompressiveStrength ...  biaxial compressive strength
+    void ConstitutiveLawSetBiaxialCompressiveStrength(int rIdent, double rBiaxialCompressiveStrength);
+
+    //! @brief ... get fracture energy
+    //! @param rFractureEnergy ...  fracture energy
+    double ConstitutiveLawGetFractureEnergy(int rIdent);
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy ...  fracture energy
+    void ConstitutiveLawSetFractureEnergy(int rIdent, double rFractureEnergy);
+
 #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier

@@ -127,6 +127,38 @@ public:
     //! @brief ... set nonlocal radius
     //! @param rRadius...  nonlocal radius
     virtual void SetNonlocalRadius(double rRadius);
+
+    //! @brief ... get tensile strength
+    //! @return ... tensile strength
+    virtual double GetTensileStrength() const;
+
+    //! @brief ... set tensile strength
+    //! @param rTensileStrength...  tensile strength
+    virtual void SetTensileStrength(double rTensileStrength);
+
+    //! @brief ... get compressive strength
+    //! @return ... compressive strength
+    virtual double GetCompressiveStrength() const;
+
+    //! @brief ... set compressive strength
+    //! @param rCompressiveStrength...  compressive strength
+    virtual void SetCompressiveStrength(double rCompressiveStrength);
+
+    //! @brief ... get biaxial compressive strength
+    //! @return ... biaxial compressive strength
+    virtual double GetBiaxialCompressiveStrength() const;
+
+    //! @brief ... set biaxial compressive strength
+    //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
+    virtual void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength);
+
+    //! @brief ... get fracture energy
+    //! @return ... fracture energy
+    virtual double GetFractureEnergy() const;
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy... fracture energy
+    virtual void SetFractureEnergy(double rFractureEnergy);
    ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship
