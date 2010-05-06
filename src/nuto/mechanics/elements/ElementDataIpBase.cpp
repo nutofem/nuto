@@ -3,6 +3,7 @@
 // created Apr 28, 2010 by Joerg F. Unger
 
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
+#include "nuto/mechanics/elements/ElementWithDataBase.h"
 #include "nuto/mechanics/elements/IpDataEmpty.h"
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
@@ -35,7 +36,8 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementWithDataBase *rElement, 
 		default:
 			throw MechanicsException("[NuTo::ElementDataIpBase::ElementDataIpBase] Ip data type not known.");
 		}
-		mIpData[theIp].Initialize(rElement,theIp);
+		//initialize data without constitutive law - store zeros as pointers e.g. to static data reallocation, when constitutive model is modified
+		mIpData[theIp].Initialize(rElement, (ConstitutiveBase*)0);
 	}
 }
 
@@ -74,7 +76,7 @@ void NuTo::ElementDataIpBase::SetIntegrationType(const ElementWithDataBase* rEle
 		default:
 			throw MechanicsException("[NuTo::ElementDataIpBase::ElementDataIpBase] Ip data type not known.");
 		}
-		mIpData[theIp].Initialize(rElement,theIp);
+		mIpData[theIp].Initialize(rElement,rElement->GetConstitutiveLaw(theIp));
 	}
 }
 

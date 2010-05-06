@@ -5,6 +5,7 @@
 
 NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 {
+    mStaticData=0;
 }
 
 NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()

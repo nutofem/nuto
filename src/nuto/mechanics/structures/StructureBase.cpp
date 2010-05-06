@@ -18,6 +18,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementWithDataBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
@@ -138,10 +139,15 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
 //! @param rIp ... local ip number
 void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementId, int rIp)
 {
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight());
 	try
 	{
-		(dynamic_cast<NuTo::VisualizeComponentNonlocalWeight*>(*(--mVisualizeComponents.end())))->SetElementIp(rElementId,rIp);
+		const ElementWithDataBase *elementWithDataBase = dynamic_cast<const ElementWithDataBase* >(ElementGetElementPtr(rElementId));
+		if (elementWithDataBase==0)
+			throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Element to be visualized has no ip data (-> no nonlocal data)");
+	    int numIp = elementWithDataBase->GetNumIntegrationPoints();
+	    if (rIp<0 || rIp>=numIp)
+			throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Integration point number is out of range.");
+		mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight(elementWithDataBase,rElementId,rIp));
 	}
     catch (NuTo::MechanicsException &e)
     {
@@ -152,7 +158,6 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
     {
     	throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
     }
-
 }
 
 void NuTo::StructureBase::ClearVisualizationComponents()
@@ -180,22 +185,22 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(const std::string& rGrou
 void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName) const
 {
     VisualizeUnstructuredGrid Visualize;
-    std::list<NuTo::VisualizeComponentBase*>::const_iterator itWhat = mVisualizeComponents.begin();
+    boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
     while (itWhat != mVisualizeComponents.end())
     {
-        switch ((*itWhat)->GetComponentEnum())
+        switch (itWhat->GetComponentEnum())
         {
         case NuTo::VisualizeBase::DISPLACEMENTS:
-            Visualize.DefinePointDataVector((*itWhat)->GetComponentName());
+            Visualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
-            Visualize.DefineCellDataTensor((*itWhat)->GetComponentName());
+            Visualize.DefineCellDataTensor(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-            Visualize.DefineCellDataTensor((*itWhat)->GetComponentName());
+            Visualize.DefineCellDataTensor(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
-            Visualize.DefineCellDataScalar((*itWhat)->GetComponentName());
+            Visualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
         default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] invalid data description.");

@@ -562,7 +562,8 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
         if (elementPtr==0)
         	continue;
 
-        // check element type
+//TODO check element type
+//TODO check constitutive type
         std::vector<double> ipVolume;
         elementPtr->GetIntegrationPointVolume(ipVolume);
 
@@ -619,6 +620,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 
     for(unsigned int theIp = 0; theIp < indexIp.size(); theIp++)
     {
+    	std::cout << "ip " << theIp << std::endl;
     	ElementWithDataBase* elementPtr = indexElement[theIp];
         int localIpNumber = indexIp[theIp];
         unsigned int numNeighborPoints = 0;
@@ -647,7 +649,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
         double totalVolume(0);
         for (unsigned int theNeighborPoint=0; theNeighborPoint<numNeighborPoints; theNeighborPoint++)
         {
-        	if (dists[theNeighborPoint]>R2)
+        	if (dists[theNeighborPoint]<R2)
         	{
         		dists[theNeighborPoint] = (1-dists[theNeighborPoint]/R2);
         		dists[theNeighborPoint]*= dists[theNeighborPoint];
@@ -663,18 +665,19 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
         for (unsigned int theNeighborPoint=0; theNeighborPoint<numNeighborPoints; theNeighborPoint++)
         {
         	int theNeighborIndex(nnIdx[theNeighborPoint]);
-        	elementPtr->AddNonlocalIp(localIpNumber, rConstitutive, indexElement[theNeighborIndex],
+        	elementPtr->SetNonlocalWeight(localIpNumber, rConstitutive, indexElement[theNeighborIndex],
         			indexIp[theNeighborIndex], dists[theNeighborPoint]*totalVolume);
         }
     }
 
-     delete kdTree;
+    delete kdTree;
     annDeallocPts(dataPoints);
-/*
+
     delete [] nnIdx;
     delete [] dists;
 
     annClose();
+/*
     if(EXIT_SUCCESS != 0)
     {
         INTERPRET_INTERN error_mess("ELEMENT_BUILD_NL_ELEMENTS_ANN: Error using ANN library.");

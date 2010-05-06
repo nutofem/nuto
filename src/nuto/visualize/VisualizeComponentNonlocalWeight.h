@@ -16,13 +16,13 @@ class ElementWithDataBase;
 class VisualizeComponentNonlocalWeight : public VisualizeComponentBase
 {
 public:
-	VisualizeComponentNonlocalWeight();
-
-    void SetElementIp(int rElementId, int rIp);
+	VisualizeComponentNonlocalWeight(const ElementWithDataBase* rElement, int rElementId, int rIp);
 
     std::string GetComponentName()const;
 
     int GetElementId()const;
+
+    const NuTo::ElementWithDataBase* GetElement()const;
 
     int GetIp()const;
 
@@ -33,7 +33,9 @@ public:
 
 protected:
     int mElementId;
-    int	 mIp;
+    const ElementWithDataBase* mElement;
+    int	mIp;
+    int mConstitutiveId;
 };
 }
 #endif /* VISUALIZECOMPONENTNONLOCALWEIGHT_H_ */

@@ -93,11 +93,17 @@ public:
     //! @param rIdent ... identifier
     void DefineCellDataTensor(const std::string& rIdent);
 
+    //! @brief ... set scalar cell data
+    //! @param rPointIndex ... cell index
+    //! @param rDataIdent ... data identifier
+    //! @param rData ... scalar data
+    void SetCellDataScalar(unsigned int rCellIndex, const std::string& rDataIdent, double rData);
+
     //! @brief ... set tensor cell data
     //! @param rPointIndex ... cell index
     //! @param rDataIdent ... data identifier
     //! @param rData ... tensor data
-    void SetCellDataTensor(unsigned int rCellIndex, const std::string& rDataIdent, double rData[3]);
+    void SetCellDataTensor(unsigned int rCellIndex, const std::string& rDataIdent, double rData[9]);
 
     //! @brief ... define field cell data at the structure
     //! @param rIdent ... identifier

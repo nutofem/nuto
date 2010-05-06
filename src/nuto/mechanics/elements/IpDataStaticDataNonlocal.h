@@ -13,13 +13,11 @@ namespace NuTo
 class IpDataStaticDataNonlocal : public IpDataStaticDataBase ,public IpDataNonlocalBase
 {
 public:
-	IpDataStaticDataNonlocal() :IpDataBase() , IpDataStaticDataBase() , IpDataNonlocalBase()
-	{
-	}
+	IpDataStaticDataNonlocal();
 
 	virtual ~IpDataStaticDataNonlocal();
 
-	virtual void Initialize(const ElementWithDataBase* rElement, int rIp);
+	virtual void Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive);
 };
 }
 #endif /* IPDATASTATICDATANONLOCAL_H_ */

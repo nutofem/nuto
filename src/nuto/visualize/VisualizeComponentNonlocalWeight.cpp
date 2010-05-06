@@ -6,19 +6,21 @@
 #include "nuto/visualize/VisualizeException.h"
 #include <sstream>
 
-NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight() : VisualizeComponentBase::VisualizeComponentBase()
-{}
-
-void NuTo::VisualizeComponentNonlocalWeight::SetElementIp(int rElementId, int rIp)
+NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(const ElementWithDataBase* rElement, int rElementId, int rIp) : VisualizeComponentBase::VisualizeComponentBase()
 {
+    mElement = rElement;
     mElementId = rElementId;
     mIp = rIp;
 }
 
-
 int NuTo::VisualizeComponentNonlocalWeight::GetElementId()const
 {
 	return mElementId;
+}
+
+const NuTo::ElementWithDataBase* NuTo::VisualizeComponentNonlocalWeight::GetElement()const
+{
+	return mElement;
 }
 
 int NuTo::VisualizeComponentNonlocalWeight::GetIp()const

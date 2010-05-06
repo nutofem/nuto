@@ -45,9 +45,13 @@ public:
     //! @brief sets the constitutive law for a single integration point of the element
     //! @param rConstitutiveLaw constitutive law
     //! @param rIp integration point
-   virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
-    //! @brief returns the static data of an integration point
+    //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+    //! @param rElement element
+    virtual void InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement)=0;
+
+   //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
     virtual ConstitutiveStaticDataBase* GetStaticData(int rIp);
@@ -96,18 +100,18 @@ public:
     //! @param rNonlocalElement element of the nonlocal ip
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
-    virtual void AddNonlocalIp(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
+    virtual void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
     		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
     //! @brief gets the nonlocal elements for a constitutive model
     //! @param rConstitutive constitutive model
     //! @return vector to nonlocal elements
-    virtual const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+    virtual const std::vector<const NuTo::ElementWithDataBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
 
     //! @brief gets the nonlocal weights
     //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
     //! @return vector of weights for all integration points of the nonlocal element
-   virtual const std::vector<double>& GetNonlocalWeights(const ConstitutiveBase* rConstitutive, int rNonlocalElement)const;
+   virtual const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

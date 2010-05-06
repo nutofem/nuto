@@ -31,9 +31,27 @@ class ElementDataConstitutiveIpNonlocal : public ElementDataConstitutiveBase, pu
 
 public:
 	//! @brief constructor
-	ElementDataConstitutiveIpDataNonlocal(const ElementWithDataBase *rElement, IpDataBase::eIpDataType rIpDataType, const NuTo::IntegrationTypeBase* rIntegrationType);
+	ElementDataConstitutiveIpNonlocal(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
-	virtual ~ElementDataConstitutiveIpDataStaticDataNonlocalWeights();
+	virtual ~ElementDataConstitutiveIpNonlocal();
+
+	//! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+    //! @param rElement element
+    virtual void InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement);
+
+    //! @brief adds the nonlocal weight to an integration point
+    //! @param rLocalIpNumber local Ip
+    //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
+    //! @param rNonlocalElement element of the nonlocal ip
+    //! @param rNonlocalIp local ip number of the nonlocal ip
+    //! @param rWeight weight
+     void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
+    		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+
+     //! @brief gets the nonlocal weights
+     //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
+     //! @return vector of weights for all integration points of the nonlocal element
+     const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
 
 #ifdef ENABLE_SERIALIZATION
 	//! @brief serializes the class
@@ -43,7 +61,7 @@ public:
 	void serialize(Archive & ar, const unsigned int version)
 	{
 		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataConstitutiveBase)
-		   & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataIpDataBase)
+		   & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataIpBase)
 		   & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataNonlocalBase);
 	}
 #endif  // ENABLE_SERIALIZATION

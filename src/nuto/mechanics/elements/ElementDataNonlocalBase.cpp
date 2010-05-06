@@ -17,7 +17,7 @@ NuTo::ElementDataNonlocalBase::~ElementDataNonlocalBase()
 	//std::cout << "NuTo::ElementDataNonlocalBase::~ElementDataNonlocalBase()" << std::endl;
 }
 
-const std::vector<const NuTo::ElementBase*>&
+const std::vector<const NuTo::ElementWithDataBase*>&
   NuTo::ElementDataNonlocalBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
 {
     if (rConstitutive==mConstitutive)
@@ -40,12 +40,20 @@ const std::vector<const NuTo::ElementBase*>&
     	throw MechanicsException("[NuTo::ElementDataNonlocalBase::GetNonlocalElements] For this constitutive model no nonlocal data is available");
 }
 */
-
-//! @brief adds the nonlocal weight to an integration point
-//! @param rNonlocalElement element of the nonlocal ip
-//! @param rWeight weights for each integration point of the nonlocal element
-/*void NuTo::ElementDataNonlocalBase::AddNonlocalElement(int rNonlocalElement)
+//! @brief adds an element to the nonlocal elements
+//! @param rConstitutive  constitutive model
+//! @return the local element number, the element is either append to the list, or the existing local number is returned
+int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
 {
-	throw MechanicsException("[NuTo::ElementDataNonlocalBase::AddNonlocalElement] To be implemented.");
+	printf("\n[NuTo::ElementDataNonlocalBase::AddNonlocalElement %p %p\n]",rConstitutive,mConstitutive);
+	if (mConstitutive==0)
+		mConstitutive=rConstitutive;
+	assert(rConstitutive==mConstitutive);
+	for (int theElement=0; theElement<(int)mNonlocalElements.size();theElement++)
+	{
+		if (mNonlocalElements[theElement]==rElement)
+			return theElement;
+	}
+	mNonlocalElements.push_back(rElement);
+	return mNonlocalElements.size()-1;
 }
-*/

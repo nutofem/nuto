@@ -8,6 +8,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/ptr_container/ptr_map.hpp>
+#include <boost/ptr_container/ptr_list.hpp>
 #include <string>
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -24,6 +25,7 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
+#include "nuto/visualize/VisualizeComponentBase.h"
 #endif // ENABLE_VISUALIZE
 
 namespace NuTo
@@ -786,7 +788,7 @@ protected:
     std::vector<std::string> mMappingIntEnum2String;
 
     //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
-    std::list<NuTo::VisualizeComponentBase*> mVisualizeComponents;
+    boost::ptr_list<NuTo::VisualizeComponentBase> mVisualizeComponents;
 
     //! @brief ... total number of degrees of freedom of the structure
     int mNumDofs;

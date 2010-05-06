@@ -17,7 +17,7 @@ public:
 
 	virtual ~IpDataStaticData();
 
-	void Initialize(const ElementWithDataBase* rElement, int rIp);
+	void Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

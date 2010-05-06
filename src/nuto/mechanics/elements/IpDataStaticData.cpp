@@ -25,7 +25,12 @@ NuTo::IpDataStaticData::~IpDataStaticData()
     }
 #endif  // ENABLE_SERIALIZATION
 
-void NuTo::IpDataStaticData::Initialize(const ElementWithDataBase* rElement, int rIp)
+void NuTo::IpDataStaticData::Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
 {
-	mStaticData = rElement->AllocateStaticData(rElement->GetConstitutiveLaw(rIp));
+	if (mStaticData!=0)
+		delete mStaticData;
+	if (rConstitutive!=0)
+	    mStaticData = rElement->AllocateStaticData(rConstitutive);
+	else
+		mStaticData = 0;
 }

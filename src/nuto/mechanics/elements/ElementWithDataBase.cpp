@@ -3,6 +3,7 @@
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementWithDataBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
+#include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
@@ -12,6 +13,8 @@
 #ifdef ENABLE_VISUALIZE
    #include "nuto/visualize/CellBase.h"
    #include "nuto/visualize/VisualizeComponentBase.h"
+   #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
+   #include "nuto/visualize/VisualizeException.h"
 #endif // ENABLE_VISUALIZE
 
 //! @brief constructor
@@ -30,7 +33,7 @@ NuTo::ElementWithDataBase::ElementWithDataBase(const StructureBase* rStructure, 
 		ptrElementData = new NuTo::ElementDataConstitutiveIp(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL:
-		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] CONSTITUTIVELAWIPNONLOCAL to be implemented.");
+		ptrElementData = new NuTo::ElementDataConstitutiveIpNonlocal(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
     break;
 	default:
 		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] unsupported element data type.");
@@ -78,7 +81,6 @@ void NuTo::ElementWithDataBase::SetConstitutiveLaw(ConstitutiveBase* rConstituti
 	if (rConstitutiveLaw->CheckElementCompatibility(this->GetEnumType()))
 	{
 		//printf("check element constitutive was positive.\n");
-		printf("[NuTo::ElementWithDataBase::SetConstitutiveLaw] %p\n",mElementData);
 
 		mElementData->SetConstitutiveLaw(this, rConstitutiveLaw);
 	}
@@ -152,7 +154,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::ElementWithDataBase::GetStaticData(int r
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<NuTo::VisualizeComponentBase*>& rWhat) const
+void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
 {
     // get visualization cells from integration type
     const IntegrationTypeBase* IntegrationType = this->mElementData->GetIntegrationType();
@@ -272,10 +274,10 @@ void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize,
     }
 
     // store data
-    std::list<VisualizeComponentBase*>::const_iterator WhatIter = rWhat.begin();
+    boost::ptr_list<VisualizeComponentBase>::const_iterator WhatIter = rWhat.begin();
     while (WhatIter != rWhat.end())
     {
-        switch ((*WhatIter)->GetComponentEnum())
+        switch (WhatIter->GetComponentEnum())
         {
         case NuTo::VisualizeBase::DISPLACEMENTS:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
@@ -296,7 +298,7 @@ void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize,
                     throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] invalid dimension of local coordinates");
                 }
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, (*WhatIter)->GetComponentName(), GlobalDisplacements);
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalDisplacements);
             }
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
@@ -319,7 +321,7 @@ void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize,
                 EngineeringStrainTensor[8] = EngineeringStrainVector[2];
 
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataTensor(CellId, (*WhatIter)->GetComponentName(), EngineeringStrainTensor);
+                rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStrainTensor);
             }
         }
         break;
@@ -343,46 +345,69 @@ void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize,
                 EngineeringStressTensor[8] = EngineeringStressVector[2];
 
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataTensor(CellId, (*WhatIter)->GetComponentName(), EngineeringStressTensor);
+                rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStressTensor);
             }
         }
         break;
-        /*        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
         {
-            // get nonlocal weights
-        	ConstitutiveBase* constitutive(0);
-        	std::vector<double> Weights;
-        	Weights.resize(this->GetNumIntegrationPoints());
+        	// get constitutive model and nonlocal element
+        	const ElementWithDataBase* visualizeElement(WhatIter->GetElement());
+        	const ConstitutiveBase* constitutive(visualizeElement->GetConstitutiveLaw(WhatIter->GetIp()));
 
         	// get local number within nonlocal elements for current element
         	try
         	{
-            	const std::vector<const NuTo::ElementBase*> nonlocalElements(mElementData->GetNonlocalElements(constitutive));
-            	std::vector<double>::iterator it = std::find(nonlocalElements.begin(),nonlocalElements.end(),mStructure->ElementGetElementPtr((*WhatIter)->GetElementId()));
-            	if (it!=nonlocalElements.end())
+            	const std::vector<const NuTo::ElementWithDataBase*>& nonlocalElements(visualizeElement->GetNonlocalElements(constitutive));
+            	int countNonlocalElement;
+            	for (countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+            	{
+            		if (this==nonlocalElements[countNonlocalElement])
+            		{
+            			//visualize the weights
+            			break;
+            		}
+            	}
+            	if (countNonlocalElement<(int)nonlocalElements.size())
             	{
             		// get the weights
-            		Weights = GetNonlocalWeights(constitutive, (*it));
-            	} // otherwise they just remain zero
+                    for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+                     {
+                         unsigned int theIp = VisualizationCellsIP[CellCount];
+                         unsigned int CellId = CellIdVec[CellCount];
+                         double weight(visualizeElement->GetNonlocalWeights(WhatIter->GetIp(),countNonlocalElement,constitutive)[theIp]);
+                         rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(),weight);
+                     }
+            	}
+            	else
+            	{
+            		// otherwise they just remain zero
+                    for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+                     {
+                         unsigned int CellId = CellIdVec[CellCount];
+                         rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), 0);
+                     }
+            	}
         	}
-        	catch(...)
-        	{
-
-        	}
-        	// get nonlocal weights
-        	std::vector<double> Weights(GetNonlocalWeights(constitutive, nonlocalElement));
-
-           for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            catch (NuTo::MechanicsException &e)
             {
-        	   unsigned int theIp = VisualizationCellsIP[CellCount];
-        	   // get nonlocal weight
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, (*WhatIter)->GetComponentName(), EngineeringStressTensor);
+            	e.AddMessage("[NuTo::ElementWithDataBase::Visualize] error getting visualization data for nonlocal weights.");
+            	throw e;
             }
-
+#ifdef ENABLE_VISUALIZE
+            catch (NuTo::VisualizeException &e)
+            {
+            	e.AddMessage("[NuTo::ElementWithDataBase::Visualize] error getting visualization data for nonlocal weights.");
+            	throw e;
+            }
+#endif
+            catch(...)
+            {
+            	throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] error getting visualization data for nonlocal weights.");
+            }
         }
         break;
-*/        default:
+        default:
             throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] unsupported datatype for visualization.");
         }
         WhatIter++;
@@ -396,8 +421,26 @@ void NuTo::ElementWithDataBase::Visualize(VisualizeUnstructuredGrid& rVisualize,
 //! @param rNonlocalElement element of the nonlocal ip
 //! @param rNonlocalIp local ip number of the nonlocal ip
 //! @param rWeight weight
-void NuTo::ElementWithDataBase::AddNonlocalIp(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
+void NuTo::ElementWithDataBase::SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
 		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight)
 {
-	this->mElementData->AddNonlocalIp(rLocalIpNumber,rConstitutive,rNonlocalElement,rNonlocalIp,rWeight);
+	this->mElementData->SetNonlocalWeight(rLocalIpNumber,rConstitutive,rNonlocalElement,rNonlocalIp,rWeight);
+}
+
+//! @brief returns a vector of weights for an ip
+//! @param rIp local Ip
+//! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
+//! @param rConstitutive constitutive model
+//! @return weights for each integration point of the nonlocal element
+const std::vector<double>& NuTo::ElementWithDataBase::GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const
+{
+    return mElementData->GetNonlocalWeights(rIp,rNonlocalElement,rConstitutive);
+}
+
+//! @brief returns a vector of the nonlocal elements
+//! @param rConstitutive constitutive model for the nonlocale elements
+//! @retrun nonlocal elements
+const std::vector<const NuTo::ElementWithDataBase*>& NuTo::ElementWithDataBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
+{
+	return this->mElementData->GetNonlocalElements(rConstitutive);
 }

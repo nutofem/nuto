@@ -53,6 +53,7 @@ elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
 elements/ElementDataConstitutiveIp.cpp
+elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
 elements/ElementDataNonlocalBase.cpp
 elements/ElementWithDataBase.cpp

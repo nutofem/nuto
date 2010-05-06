@@ -11,7 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/elements/ElementWithDataBase.h"
 
 #ifdef ENABLE_SERIALIZATION
    #include <boost/serialization/vector.hpp>
@@ -36,9 +36,12 @@ public:
 
 	virtual ~ElementDataNonlocalBase();
 
-    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+	const std::vector<const ElementWithDataBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
 
-//    const std::vector<double>& GetNonlocalWeights(const ConstitutiveBase* rConstitutive, int rLocalIp,  int rNonlocalElement)const;
+    //! @brief adds an element to the nonlocal elements
+    //! @param rConstitutive  constitutive model
+    //! @return the local element number, the element is either append to the list, or the existing local number is returned
+    int AddNonlocalElement(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -62,7 +65,7 @@ public:
 //    		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
 protected:
-    std::vector<const ElementBase*> mNonlocalElements;
+    std::vector<const ElementWithDataBase*> mNonlocalElements;
     //! @brief constitutive model for which the nonlocal elements are build, for different const. models in one model, just introduce a map<const mConstitutive,std::vector<const ElementBase*> >
     const ConstitutiveBase* mConstitutive;
 };

@@ -169,7 +169,7 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
     {
     	elementDataType = NuTo::ElementData::CONSTITUTIVELAWIP;
     }
-    else if (upperCaseElementDataType=="CONSTITUTIVELAWIP")
+    else if (upperCaseElementDataType=="CONSTITUTIVELAWIPNONLOCAL")
    	{
 		elementDataType = NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
    	}

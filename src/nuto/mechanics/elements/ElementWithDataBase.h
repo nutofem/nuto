@@ -101,8 +101,19 @@ public:
     //! @param rNonlocalElement element of the nonlocal ip
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
-    void AddNonlocalIp(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
+    void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
     		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+
+    //! @brief returns a vector of weights for an ip
+    //! @param rIp local Ip
+    //! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
+    //! @retrun weights for each integration point of the nonlocal element
+    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
+
+    //! @brief returns a vector of the nonlocal elements
+    //! @param rConstitutive constitutive model for the nonlocale elements
+    //! @retrun nonlocal elements
+    const std::vector<const NuTo::ElementWithDataBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
@@ -120,7 +131,7 @@ public:
     }
 #endif  // ENABLE_SERIALIZATION
 #ifdef ENABLE_VISUALIZE
-    void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<NuTo::VisualizeComponentBase*>& rWhat) const;
+    void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 #endif // ENABLE_VISUALIZE
 
 protected:

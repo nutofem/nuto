@@ -10,6 +10,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+
+#include <boost/ptr_container/ptr_list.hpp>
+
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
@@ -31,6 +34,7 @@ class StructureBase;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class VisualizeComponentBase;
+
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -211,7 +215,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<NuTo::VisualizeComponentBase*>& rWhat) const = 0;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const = 0;
 #endif // ENABLE_VISUALIZE
 protected:
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes

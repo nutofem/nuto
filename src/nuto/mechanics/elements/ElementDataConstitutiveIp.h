@@ -34,7 +34,9 @@ public:
 
 	virtual ~ElementDataConstitutiveIp();
 
-	void SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+    //! @param rElement element
+   virtual void InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

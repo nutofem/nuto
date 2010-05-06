@@ -72,6 +72,20 @@ void NuTo::CellBase::AddDataTensor(unsigned int rDataIndex)
     this->mData.push_back(new NuTo::VisualizeDataTensor());
 }
 
+// set scalar data
+void NuTo::CellBase::SetDataScalar(unsigned int rDataIndex, double rData)
+{
+    if (rDataIndex >= this->mData.size())
+    {
+        throw NuTo::VisualizeException("[NuTo::CellBase::SetDataTensor] invalid data index.");
+    }
+    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::SCALAR)
+    {
+        throw NuTo::VisualizeException("[NuTo::CellBase::SetDataScalar] invalid data type.");
+    }
+    this->mData[rDataIndex].SetData(&rData);
+}
+
 // set tensor data
 void NuTo::CellBase::SetDataTensor(unsigned int rDataIndex, double rData[9])
 {
