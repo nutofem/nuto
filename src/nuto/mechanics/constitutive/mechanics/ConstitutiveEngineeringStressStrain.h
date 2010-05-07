@@ -51,8 +51,8 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    virtual void GetEngineeringStrain(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const=0;
+    void GetEngineeringStrain(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
 
     //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering strain from deformation gradient in 2D (e.g. plane stress)
@@ -61,8 +61,8 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    virtual void GetEngineeringStrain(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const=0;
+    void GetEngineeringStrain(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
 
     //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering strain from deformation gradient in 3D
@@ -70,8 +70,8 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    virtual void GetEngineeringStrain(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const=0;
+    void GetEngineeringStrain(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
 
     //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering plastic strain from deformation gradient in 3D

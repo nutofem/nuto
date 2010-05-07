@@ -34,36 +34,6 @@ public:
     ConstitutiveMisesPlasticity();
 
     //  Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering strain from deformation gradient in 1D (truss is assumed to be plane stress)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringStrain(const ElementBase* rElement, int rIp,
-    		      const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
-
-    //  Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering strain from deformation gradient in 2D (e.g. plane stress)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringStrain(const ElementBase* rElement, int rIp,
-    		      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
-
-    //  Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering strain from deformation gradient in 3D
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringStrain(const ElementBase* rElement, int rIp,
-    		      const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
-
-    //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
     //! @param rElement ... element
     //! @param rIp ... integration point

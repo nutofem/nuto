@@ -30,6 +30,7 @@ class EngineeringStrain2D
     friend class LinearElastic;
     friend class ConstitutiveMisesPlasticity;
     friend class NonlocalDamagePlasticity;
+    friend class ConstitutiveEngineeringStressStrain;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure

@@ -3,8 +3,14 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.h"
+#include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
+#include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
+#include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
+#include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/elements/ElementWithDataBase.h"
 
 NuTo::ConstitutiveEngineeringStressStrain::ConstitutiveEngineeringStressStrain() : ConstitutiveBase()
@@ -22,6 +28,71 @@ NuTo::ConstitutiveEngineeringStressStrain::ConstitutiveEngineeringStressStrain()
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase);
     }
 #endif // ENABLE_SERIALIZATION
+
+    //  Engineering strain /////////////////////////////////////
+//! @brief ... calculate engineering strain from deformation gradient in 1D (truss is assumed to be plane stress)
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+//! @param rEngineeringStrain ... engineering strain
+void NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain(const ElementBase* rElement, int rIp,
+			  const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
+{
+	EngineeringStrain1D engineeringStrain;
+	rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+
+	double mNu(GetPoissonsRatio());
+
+	rEngineeringStrain.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain;
+	rEngineeringStrain.mEngineeringStrain[1] = -mNu*engineeringStrain.mEngineeringStrain;
+	rEngineeringStrain.mEngineeringStrain[2] = -mNu*engineeringStrain.mEngineeringStrain;
+	rEngineeringStrain.mEngineeringStrain[3] = 0.;
+	rEngineeringStrain.mEngineeringStrain[4] = 0.;
+	rEngineeringStrain.mEngineeringStrain[5] = 0.;
+}
+
+//  Engineering strain /////////////////////////////////////
+//! @brief ... calculate engineering strain from deformation gradient in 3D
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+//! @param rEngineeringStrain ... engineering strain
+void NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain(const ElementBase* rElement, int rIp,
+		      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
+{
+    EngineeringStrain2D engineeringStrain;
+    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+
+    assert(rElement->GetSection()!=0);
+    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
+    {
+        rEngineeringStrain.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
+    	rEngineeringStrain.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
+    	rEngineeringStrain.mEngineeringStrain[2] = 0;
+    	rEngineeringStrain.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
+    	rEngineeringStrain.mEngineeringStrain[4] = 0.;
+    	rEngineeringStrain.mEngineeringStrain[5] = 0.;
+    }
+    else //plane stress
+    {
+    	throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain] Plane stress not yet implemented.");
+    }
+}
+
+//  Engineering strain /////////////////////////////////////
+//! @brief ... calculate engineering strain from deformation gradient in 3D
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+//! @param rEngineeringStrain ... engineering strain
+void NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain(const ElementBase* rElement, int rIp,
+			  const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
+{
+	rDeformationGradient.GetEngineeringStrain(rEngineeringStrain);
+}
 
 //! @brief ... calculate the total energy density
 //! @param rStructure ... structure

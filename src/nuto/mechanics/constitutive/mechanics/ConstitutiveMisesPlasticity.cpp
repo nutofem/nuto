@@ -49,53 +49,6 @@ NuTo::ConstitutiveMisesPlasticity::ConstitutiveMisesPlasticity() : ConstitutiveE
 #endif // ENABLE_SERIALIZATION
 
 //  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering strain from deformation gradient in 1D (truss is assumed to be plane stress)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStrain ... engineering strain
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain(const ElementBase* rElement, int rIp,
-		      const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
-{
-    EngineeringStrain1D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    rEngineeringStrain.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain;
-	rEngineeringStrain.mEngineeringStrain[1] = -mNu*engineeringStrain.mEngineeringStrain;
-	rEngineeringStrain.mEngineeringStrain[2] = -mNu*engineeringStrain.mEngineeringStrain;
-	rEngineeringStrain.mEngineeringStrain[3] = 0.;
-	rEngineeringStrain.mEngineeringStrain[4] = 0.;
-	rEngineeringStrain.mEngineeringStrain[5] = 0.;
-}
-
-//  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering strain from deformation gradient in 3D
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStrain ... engineering strain
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain(const ElementBase* rElement, int rIp,
-		      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
-{
-    throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain] To be implemented.");
-}
-
-//  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering strain from deformation gradient in 3D
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStrain ... engineering strain
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain(const ElementBase* rElement, int rIp,
-		      const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
-{
-    rDeformationGradient.GetEngineeringStrain(rEngineeringStrain);
-}
-
-//  Engineering strain /////////////////////////////////////
 //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
 //! @param rElement ... element
 //! @param rIp ... integration point
