@@ -97,7 +97,10 @@ int main()
 	std::cout << "residual: " << residualVector.Norm() << std::endl;
 
 	// visualize results
-	myStructure.ExportVtkDataFile("Truss1D2N.vtk","displacements engineering_strain engineering_stress");
+    myStructure.AddVisualizationComponentDisplacements();
+    myStructure.AddVisualizationComponentEngineeringStrain();
+    myStructure.AddVisualizationComponentEngineeringStress();
+	myStructure.ExportVtkDataFile("Truss1D2N.vtk");
 
 #else
     std::cout << "MUMPS not available - can't solve system of equations " << std::endl;
