@@ -16,7 +16,7 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/elements/ElementWithDataBase.h"
 
-#include <ANN.h>
+#include <ANN/ANN.h>
 
 //! @brief constructor
 //! @param mDimension number of nodes
