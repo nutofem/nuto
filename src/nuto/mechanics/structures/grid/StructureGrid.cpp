@@ -15,7 +15,7 @@
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
-#include "nuto/mechanics/nodes/NodeGridCoordinates.h"
+#include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
 
 NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
 {

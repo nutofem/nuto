@@ -4,10 +4,19 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/groups/Group.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperatures.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData.h"
+#include "nuto/mechanics/nodes/NodeCoordinates1D.h"
+#include "nuto/mechanics/nodes/NodeCoordinates2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinates3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements1D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesTemperature1D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesTemperature2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesTemperature3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData3D.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -123,13 +132,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         switch (mDimension)
         {
         case 1:
-        	nodePtr = new NuTo::NodeCoordinates<1>();
+        	nodePtr = new NuTo::NodeCoordinates1D();
             break;
         case 2:
-        	nodePtr = new NuTo::NodeCoordinates<2>();
+        	nodePtr = new NuTo::NodeCoordinates2D();
             break;
         case 3:
-        	nodePtr = new NuTo::NodeCoordinates<3>();
+        	nodePtr = new NuTo::NodeCoordinates3D();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -140,13 +149,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         switch (mDimension)
         {
         case 1:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacements<1,1>();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacements1D();
             break;
         case 2:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacements<2,2>();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacements2D();
             break;
         case 3:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacements<3,3>();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacements3D();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -160,10 +169,10 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a rotational DOF is not allowed.");
             break;
         case 2:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations<2,2,1>();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations2D();
             break;
         case 3:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations<3,3,3>();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations3D();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -174,13 +183,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         switch (mDimension)
         {
         case 1:
-        	nodePtr = new NuTo::NodeCoordinatesTemperatures<1,1>();
+        	nodePtr = new NuTo::NodeCoordinatesTemperature1D();
             break;
         case 2:
-        	nodePtr = new NuTo::NodeCoordinatesTemperatures<2,1>();
+        	nodePtr = new NuTo::NodeCoordinatesTemperature2D();
             break;
         case 3:
-        	nodePtr = new NuTo::NodeCoordinatesTemperatures<3,1>();
+        	nodePtr = new NuTo::NodeCoordinatesTemperature3D();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -191,13 +200,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
 		switch (mDimension)
 		{
 		case 1:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData<1,1>();
+			throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with nonlocal data is not implemented");
 			break;
 		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData<2,2>();
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData2D();
 			break;
 		case 3:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData<3,3>();
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData3D();
 			break;
 		default:
 			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -213,13 +222,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         switch (mDimension)
         {
         case 1:
-            dynamic_cast<NodeCoordinates<1> *>(nodePtr)->SetCoordinates(rCoordinates.mEigenMatrix.data());
+            nodePtr->SetCoordinates1D(rCoordinates.mEigenMatrix.data());
             break;
         case 2:
-            dynamic_cast<NodeCoordinates<2> *>(nodePtr)->SetCoordinates(rCoordinates.mEigenMatrix.data());
+            nodePtr->SetCoordinates2D(rCoordinates.mEigenMatrix.data());
             break;
         case 3:
-            dynamic_cast<NodeCoordinates<3> *>(nodePtr)->SetCoordinates(rCoordinates.mEigenMatrix.data());
+            nodePtr->SetCoordinates3D(rCoordinates.mEigenMatrix.data());
             break;
         case 0:
             throw MechanicsException("[NuTo::StructureBase::NodeCreate] Node has no displacements.");
@@ -384,18 +393,17 @@ void NuTo::Structure::NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatr
 			{
 				//node has been found, build internal force vector of element and add relevant parts to the global vector
 				elem_ptr->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
-				const NodeDisplacementsBase *theDispNode(dynamic_cast<const NodeDisplacementsBase* > (rNode));
-				if (theDispNode==0)
+				if (rNode->GetNumDisplacements()==0)
 				{
 				    std::stringstream message;
 				    message << "[NuTo::Structure::NodeGetInternalForce] Node" << NodeGetId(rNode) << " has no displacement degrees of freedom.";
 					throw MechanicsException(message.str());
 				}
 
-				for (int theDisp=0; theDisp<theDispNode->GetNumDisplacements(); theDisp++)
+				for (int theDisp=0; theDisp<rNode->GetNumDisplacements(); theDisp++)
 				{
 					// find global dof number
-					int theDOF = theDispNode->GetDofDisplacement(theDisp);
+					int theDOF = rNode->GetDofDisplacement(theDisp);
 
 					for (unsigned int local_dof=0; local_dof<elementVectorGlobalDofs.size(); local_dof++)
 					{

@@ -3,8 +3,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Plane2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinates.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
 
 
@@ -21,9 +20,7 @@ void NuTo::Plane2D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
 	assert((int)rLocalCoordinates.size()==2*GetNumNodes());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        const NodeCoordinates<2> *nodePtr(dynamic_cast<const NodeCoordinates<2> *>(GetNode(theNode)));
-        assert(nodePtr!=0);
-        nodePtr->GetCoordinates(&(rLocalCoordinates[2*theNode]));
+        GetNode(theNode)->GetCoordinates2D(&(rLocalCoordinates[2*theNode]));
     }
 }
 
@@ -35,9 +32,7 @@ void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDispl
 	assert((int)rLocalDisplacements.size()==2*GetNumNodes());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        const NodeDisplacements<2> *nodePtr(dynamic_cast<const NodeDisplacements<2> *>(GetNode(theNode)));
-        assert(nodePtr!=0);
-        nodePtr->GetDisplacements(&(rLocalDisplacements[2*theNode]));
+        GetNode(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
     }
 }
 
@@ -47,8 +42,7 @@ void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) con
 	rGlobalRowDofs.resize(2 * this->GetNumNodes());
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        const NodeDisplacementsBase *nodePtr = dynamic_cast< const NodeDisplacementsBase* >(this->GetNode(nodeCount));
-        assert(nodePtr != NULL);
+        const NodeBase *nodePtr = this->GetNode(nodeCount);
         rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
         rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
     }
@@ -59,4 +53,23 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
 {
     this->CalculateGlobalRowDofs(rGlobalColumnDofs);
 }
+
+//! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
+//! @return Area
+double NuTo::Plane2D::CalculateArea()const
+{
+    double coordinates1[2];
+    double coordinates2[2];
+    GetNode(GetNumNodes()-1)->GetCoordinates2D(coordinates1);
+	double area(0);
+	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	{
+		coordinates2[0] = coordinates1[0];
+		coordinates2[1] = coordinates1[1];
+		GetNode(theNode)->GetCoordinates2D(coordinates1);
+		area += coordinates1[0]*coordinates2[1] - coordinates1[1]*coordinates2[0];
+	}
+    return area;
+}
+
 

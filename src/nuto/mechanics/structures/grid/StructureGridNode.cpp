@@ -3,10 +3,12 @@
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/nodes/NodeGridCoordinates.h"
-#include "nuto/mechanics/nodes/NodeGridCoordinatesDisplacements.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
-#include "nuto/mechanics/nodes/NodeTemperatures.h"
+#include "nuto/mechanics/nodes/NodeGrid1D.h"
+#include "nuto/mechanics/nodes/NodeGrid2D.h"
+#include "nuto/mechanics/nodes/NodeGrid3D.h"
+#include "nuto/mechanics/nodes/NodeGridDisplacements1D.h"
+#include "nuto/mechanics/nodes/NodeGridDisplacements2D.h"
+#include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -44,16 +46,16 @@ NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromId(int rNodeId)
     if (rNodeId<0 || rNodeId>=(int) numGridNodes)
          throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
     int nodeNumber(0);
-     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
-     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
-     {
-         if (it->GetNodeId()==rNodeId)
-         {
-             break;
-         }
-      }
-     if (it== mNodeVec.end())
-           throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Node with this id does not exist.");
+    boost::ptr_vector<NodeBase>::const_iterator it;
+    for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
+    {
+        if (it->GetNodeId()==rNodeId)
+        {
+            break;
+        }
+    }
+    if (it== mNodeVec.end())
+        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Node with this id does not exist.");
     return &mNodeVec[nodeNumber];
 }
 
@@ -66,7 +68,7 @@ const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromId(int rNodeId) con
     if (rNodeId<0 || rNodeId>=(int) numGridNodes)
          throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
     int nodeNumber(0);
-     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     boost::ptr_vector<NodeBase>::const_iterator it;
      for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
      {
          if (it->GetNodeId()==rNodeId)
@@ -86,7 +88,7 @@ int NuTo::StructureGrid::NodeGetNodeNumberFromId(int rNodeId)
     if (rNodeId<0 || rNodeId>=(int) numGridNodes)
          throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
     int nodeNumber(0);
-     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     boost::ptr_vector<NodeBase>::const_iterator it;
      for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
      {
          if (it->GetNodeId()==rNodeId)
@@ -106,7 +108,7 @@ const int NuTo::StructureGrid::NodeGetNodeNumberFromId(int rNodeId) const
     if (rNodeId<0 || rNodeId>=(int) numGridNodes)
          throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromId] Grid Node number is not valid.");
     int nodeNumber(0);
-     boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
+     boost::ptr_vector<NodeBase>::const_iterator it;
      for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
      {
          if (it->GetNodeId()==rNodeId)
@@ -123,17 +125,7 @@ const int NuTo::StructureGrid::NodeGetNodeNumberFromId(int rNodeId) const
 //! @return identifier
 int NuTo::StructureGrid::NodeGetId(const NodeBase* rNode)const
 {
-    int nodeNumber(0);
-    boost::ptr_vector<NodeGridCoordinates>::const_iterator it;
-    for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
-    {
-        if (&(*it)==rNode)
-            break;
-    }
-    if (it== mNodeVec.end())
-        throw MechanicsException("[NuTo::StructureGrid::GetNodeId] Node does not exist.");
-    const NuTo::NodeGridCoordinates* myNode = dynamic_cast<const NuTo::NodeGridCoordinates*>(rNode);
-    return  myNode->GetNodeId();
+    return  rNode->GetNodeId();
 }
 
 //! @brief gives the identifier of a node
@@ -144,8 +136,7 @@ int NuTo::StructureGrid::NodeGetId(int rNodeNumber)const
     if (rNodeNumber<0 || rNodeNumber>=GetNumNodes())
         throw MechanicsException("[NuTo::StructureGrid::NodeGetID] Node number is not valid.");
     const NodeBase* myNode = &mNodeVec[rNodeNumber];
-    const NuTo::NodeGridCoordinates* myNode2 = dynamic_cast<const NuTo::NodeGridCoordinates*>(myNode);
-    return myNode2->GetNodeId();
+    return myNode->GetNodeId();
 }
 //! @brief info about the nodes in the grid structure
 void NuTo::StructureGrid::NodeInfo(int mVerboseLevel) const
@@ -334,13 +325,13 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
         switch (mDimension)
         {
         case 1:
-            nodePtr = new NuTo::NodeGridCoordinates(rNodeID);
+            nodePtr = new NuTo::NodeGrid1D(rNodeID);
             break;
         case 2:
-            nodePtr = new NuTo::NodeGridCoordinates(rNodeID);
+            nodePtr = new NuTo::NodeGrid2D(rNodeID);
             break;
         case 3:
-            nodePtr = new NuTo::NodeGridCoordinates(rNodeID);
+            nodePtr = new NuTo::NodeGrid3D(rNodeID);
             break;
         default:
             throw MechanicsException("[NuTo::StructureGrid::NodeCreate] Dimension of the structure is not valid.");
@@ -350,13 +341,13 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
         switch (mDimension)
          {
          case 1:
-             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<1>(rNodeID);
+             nodePtr = new NuTo::NodeGridDisplacements1D(rNodeID);
              break;
          case 2:
-             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<2>(rNodeID);
+             nodePtr = new NuTo::NodeGridDisplacements2D(rNodeID);
              break;
          case 3:
-             nodePtr = new NuTo::NodeGridCoordinatesDisplacements<3>(rNodeID);
+             nodePtr = new NuTo::NodeGridDisplacements3D(rNodeID);
              break;
          default:
              throw MechanicsException("[NuTo::StructureGrid::NodeCreate] Dimension of the structure is not valid.");

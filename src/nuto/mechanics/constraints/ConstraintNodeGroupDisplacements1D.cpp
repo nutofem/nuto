@@ -10,7 +10,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeDisplacements1D.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements1D.h"
 #include "nuto/math/FullMatrix.h"
@@ -54,12 +54,11 @@ void NuTo::ConstraintNodeGroupDisplacements1D::AddToConstraintMatrix(int& curCon
         rRHS(curConstraintEquation,0) = mValue;
 
         // add constraint to constrain matrix
-        const NodeDisplacements<1> *nodePtr(dynamic_cast<const NodeDisplacements<1> *>(*itNode));
-        if (nodePtr==0)
+        if ((*itNode)->GetNumDisplacements()!=1)
         {
             throw MechanicsException("[NuTo::ConstraintNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }
-        rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(0),this->mDirection);
+        rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(0),this->mDirection);
 
         // increase constraint equation number
         curConstraintEquation++;

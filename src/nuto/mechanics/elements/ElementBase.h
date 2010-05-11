@@ -203,6 +203,10 @@ public:
     //! @param rGlobalDisplacements ... three-dimension global point displacements
     virtual void InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
 
+    //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
+    //! @return Area
+    virtual double CalculateArea()const;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

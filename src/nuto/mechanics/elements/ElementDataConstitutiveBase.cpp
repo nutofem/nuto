@@ -14,7 +14,7 @@
 
 NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase() :  NuTo::ElementDataBase::ElementDataBase()
 {
-    std::cout << "ElementDataConstitutiveBase constructor " << std::endl;
+    //std::cout << "ElementDataConstitutiveBase constructor " << std::endl;
 	mConstitutiveLaw = 0;
 }
 //! @brief deconstructor
@@ -25,7 +25,7 @@ NuTo::ElementDataConstitutiveBase::~ElementDataConstitutiveBase()
 
 void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw)
 {
-	std::cout << "NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw" << std::endl;
+	//std::cout << "NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw" << std::endl;
 	assert(rConstitutiveLaw!=0);
 	mConstitutiveLaw = rConstitutiveLaw;
 	InitializeUpdatedConstitutiveLaw(rElement);

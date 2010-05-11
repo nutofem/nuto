@@ -1,6 +1,6 @@
 // $Id$
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces1D.h"
 #include "nuto/math/FullMatrix.h"
@@ -30,8 +30,7 @@ void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<dou
     {
         try
         {
-            const NodeDisplacements<1>& node = dynamic_cast<const NodeDisplacements<1> &>(**itNode);
-            int dof = node.GetDofDisplacement(0);
+            int dof = (*itNode)->GetDofDisplacement(0);
             assert(dof >= 0);
             if (dof < rActiceDofsLoadVector.GetNumRows())
             {

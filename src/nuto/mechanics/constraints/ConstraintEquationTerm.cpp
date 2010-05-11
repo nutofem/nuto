@@ -13,9 +13,7 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
-#include "nuto/mechanics/nodes/NodeRotations.h"
-#include "nuto/mechanics/nodes/NodeTemperatures.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 // constructor
 NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
@@ -26,29 +24,6 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     case Node::DISPLACEMENTS:
     {
         int numDisplacements = rNode->GetNumDisplacements();
-        switch (numDisplacements)
-        {
-        case 1:
-            if (dynamic_cast< const NuTo::NodeDisplacements<1>* >(rNode) == 0)
-            {
-                throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] node does not have the correct number of displacement dofs.");
-            }
-            break;
-        case 2:
-            if (dynamic_cast< const NuTo::NodeDisplacements<2>* >(rNode) == 0)
-            {
-                throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] node does not have the correct number of displacement dofs.");
-            }
-            break;
-        case 3:
-            if (dynamic_cast< const NuTo::NodeDisplacements<3>* >(rNode) == 0)
-            {
-                throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] node does not have the correct number of displacement dofs.");
-            }
-            break;
-        default:
-            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid number of displacement dofs.");
-        }
         if (rDofComponent < 0 || rDofComponent >= numDisplacements)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid displacement component.");
@@ -58,23 +33,6 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     case Node::ROTATIONS:
     {
         int numRotations = rNode->GetNumRotations();
-        switch (numRotations)
-        {
-        case 1:
-            if (dynamic_cast< const NuTo::NodeRotations<1>* >(rNode) == 0)
-            {
-                throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] node does not have the correct number of rotation dofs.");
-            }
-            break;
-        case 3:
-            if (dynamic_cast< const NuTo::NodeRotations<3>* >(rNode) == 0)
-            {
-                throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] node does not have the correct number of rotation dofs.");
-            }
-            break;
-        default:
-            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid number of rotation dofs.");
-        }
         if (rDofComponent < 0 || rDofComponent >= numRotations)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid displacement component.");
@@ -84,17 +42,6 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     case Node::TEMPERATURES:
     {
         int numTemperatures = rNode->GetNumTemperatures();
-        switch (numTemperatures)
-        {
-        case 1:
-            if (dynamic_cast< const NuTo::NodeTemperatures<1>* >(rNode) == 0)
-            {
-                throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] node does not have the correct number of temperature dofs.");
-            }
-            break;
-        default:
-            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid number of temeprature dofs.");
-        }
         if (rDofComponent < 0 || rDofComponent >= numTemperatures)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid temerature component.");
@@ -132,74 +79,17 @@ void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseM
     {
     case Node::DISPLACEMENTS:
     {
-        int numDisplacements = this->mNode->GetNumDisplacements();
-        switch (numDisplacements)
-        {
-        case 1:
-        {
-            const NuTo::NodeDisplacements<1>* tmpNodePtr = dynamic_cast< const NuTo::NodeDisplacements<1>* >(this->mNode);
-            assert(tmpNodePtr != 0);
-            column = tmpNodePtr->GetDofDisplacement(this->mDofComponent);
-        }
-        break;
-        case 2:
-        {
-            const NuTo::NodeDisplacements<2>* tmpNodePtr = dynamic_cast< const NuTo::NodeDisplacements<2>* >(this->mNode);
-            assert(tmpNodePtr != 0);
-            column = tmpNodePtr->GetDofDisplacement(this->mDofComponent);
-        }
-        break;
-        case 3:
-        {
-            const NuTo::NodeDisplacements<3>* tmpNodePtr = dynamic_cast< const NuTo::NodeDisplacements<3>* >(this->mNode);
-            assert(tmpNodePtr != 0);
-            column = tmpNodePtr->GetDofDisplacement(this->mDofComponent);
-        }
-        break;
-        default:
-            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid number of displacement dofs.");
-        }
+        column = mNode->GetDofDisplacement(this->mDofComponent);
     }
     break;
     case Node::ROTATIONS:
     {
-        int numRotations = this->mNode->GetNumRotations();
-        switch (numRotations)
-        {
-        case 1:
-        {
-            const NuTo::NodeRotations<1>* tmpNodePtr = dynamic_cast< const NuTo::NodeRotations<1>* >(this->mNode);
-            assert(tmpNodePtr != 0);
-            column = tmpNodePtr->GetDofRotation(this->mDofComponent);
-        }
-        break;
-        case 3:
-        {
-            const NuTo::NodeRotations<3>* tmpNodePtr = dynamic_cast< const NuTo::NodeRotations<3>* >(this->mNode);
-            assert(tmpNodePtr != 0);
-            column = tmpNodePtr->GetDofRotation(this->mDofComponent);
-        }
-        break;
-        default:
-            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid number of rotation dofs.");
-        }
+    	column = mNode->GetDofRotation(this->mDofComponent);
     }
     break;
     case Node::TEMPERATURES:
     {
-        int numTemperatures = this->mNode->GetNumTemperatures();
-        switch (numTemperatures)
-        {
-        case 1:
-        {
-            const NuTo::NodeTemperatures<1>* tmpNodePtr = dynamic_cast< const NuTo::NodeTemperatures<1>* >(this->mNode);
-            assert(tmpNodePtr != 0);
-            column = tmpNodePtr->GetDofTemperature(this->mDofComponent);
-        }
-        break;
-        default:
-            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid number of temeprature dofs.");
-        }
+        column = mNode->GetDofTemperature(this->mDofComponent);
     }
     break;
     default:

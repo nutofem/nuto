@@ -1,7 +1,7 @@
 // $Id: $
 
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 //! @brief sets the displacements of a node
 //! @param rIdent node identifier
@@ -11,31 +11,27 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 	NodeBase* nodePtr=NodeGetNodePtr(rNode);
 
 	if (rDisplacements.GetNumColumns()!=1)
-    	throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Displacement matrix has to have a single column.");
+	throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Displacement matrix has to have a single column.");
 	try
 	{
 		switch (rDisplacements.GetNumRows())
 		{
 		case 1:
-			dynamic_cast<NodeDisplacements<1> &> (*nodePtr).SetDisplacements(rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements1D(rDisplacements.mEigenMatrix.data());
 		break;
 		case 2:
-			dynamic_cast<NodeDisplacements<2> &> (*nodePtr).SetDisplacements(rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements2D(rDisplacements.mEigenMatrix.data());
 		break;
 		case 3:
-			dynamic_cast<NodeDisplacements<3> &> (*nodePtr).SetDisplacements(rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements3D(rDisplacements.mEigenMatrix.data());
 		break;
 		default:
 			throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
 		}
 	}
-    catch(std::bad_cast & b)
-	{
-	    throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Node has no displacements or its dimension is not equivalent to the dimension of the input matrix.");
-	}
     catch(NuTo::MechanicsException & b)
 	{
-	    b.AddMessage("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements.");
+    	b.AddMessage("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements.");
     	throw b;
 	}
     catch(...)
@@ -57,28 +53,24 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 		{
 		case 1:
 			rDisplacements.Resize(1,1);
-			dynamic_cast<const NodeDisplacements<1> &> (*nodePtr).GetDisplacements(rDisplacements.mEigenMatrix.data());
+			nodePtr->GetDisplacements1D(rDisplacements.mEigenMatrix.data());
 		break;
 		case 2:
 			rDisplacements.Resize(2,1);
-			dynamic_cast<const NodeDisplacements<2> &> (*nodePtr).GetDisplacements(rDisplacements.mEigenMatrix.data());
+			nodePtr->GetDisplacements2D(rDisplacements.mEigenMatrix.data());
 		break;
 		case 3:
 			rDisplacements.Resize(3,1);
-			dynamic_cast<const NodeDisplacements<3> &> (*nodePtr).GetDisplacements(rDisplacements.mEigenMatrix.data());
+			nodePtr->GetDisplacements3D(rDisplacements.mEigenMatrix.data());
 		break;
 		case 0:
 			throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Node has no displacements.");
 		break;
 		}
 	}
-    catch(std::bad_cast & b)
-	{
-	    throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Node has no displacements or its dimension is not equivalent to the dimension of the input matrix.");
-	}
     catch(NuTo::MechanicsException & b)
 	{
-	    b.AddMessage("[NuTo::StructureBase::NodeGetDisplacements] Error getting displacements.");
+        b.AddMessage("[NuTo::StructureBase::NodeGetDisplacements] Error getting displacements.");
     	throw b;
 	}
     catch(...)

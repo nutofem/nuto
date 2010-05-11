@@ -55,17 +55,116 @@ public:
     //! @return number of coordinates
     virtual int GetNumCoordinates()const;
 
+    //! @brief returns the coordinates of the node
+    //! @return coordinates
+    virtual void GetCoordinates1D(double rCoordinates[1])const;
+
+    //! @brief set the coordinates
+    //! @param rCoordinates  given coordinates
+    virtual void SetCoordinates1D(const double rCoordinates[1]);
+
+    //! @brief returns the coordinates of the node
+    //! @return coordinates
+    virtual void GetCoordinates2D(double rCoordinates[2])const;
+
+    //! @brief set the coordinates
+    //! @param rCoordinates  given coordinates
+    virtual void SetCoordinates2D(const double rCoordinates[2]);
+
+    //! @brief returns the coordinates of the node
+    //! @return coordinates
+    virtual void GetCoordinates3D(double rCoordinates[3])const;
+
+    //! @brief set the coordinates
+    //! @param rCoordinates  given coordinates
+    virtual void SetCoordinates3D(const double rCoordinates[3]);
+
+    //! @brief returns the number of coordinates of the node
+    //! @return coordinates
+    virtual double GetCoordinate(short rIndex)const;
+
     //! @brief returns the number of displacements of the node
     //! @return number of displacements
     virtual int GetNumDisplacements()const;
 
-    //! @brief returns the number of rotations of the node
-    //! @return number of rotations
+    //! @brief gives the global DOF of a displacement component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofDisplacement(int rComponent)const;
+
+    //! @brief returns the displacements of the node
+    //! @return displacement
+    virtual void GetDisplacements1D(double rCoordinates[1])const;
+
+    //! @brief set the displacements
+    //! @param rDisplacements  given displacements
+    virtual void SetDisplacements1D(const double rDisplacements[1]);
+
+    //! @brief returns the displacements of the node
+    //! @return displacement
+    virtual void GetDisplacements2D(double rCoordinates[2])const;
+
+    //! @brief set the displacements
+    //! @param rDisplacements  given displacements
+    virtual void SetDisplacements2D(const double rDisplacements[2]);
+
+    //! @brief returns the displacements of the node
+    //! @return displacement
+    virtual void GetDisplacements3D(double rCoordinates[3])const;
+
+    //! @brief set the displacements
+    //! @param rDisplacements  given displacements
+    virtual void SetDisplacements3D(const double rDisplacements[3]);
+
+    //! @brief returns the displacements of the node
+    //! @return displacement
+    virtual double GetDisplacement(short rIndex)const;
+
+    //! @brief returns the number of Rotations of the node
+    //! @return number of Rotations
     virtual int GetNumRotations()const;
+
+    //! @brief gives the global DOF of a Rotation component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofRotation(int rComponent)const;
+
+    //! @brief returns the Rotations of the node
+    //! @return Rotation
+    virtual void GetRotations2D(double rCoordinates[2])const;
+
+    //! @brief set the Rotations
+    //! @param rRotations  given Rotations
+    virtual void SetRotations2D(const double rRotations[2]);
+
+    //! @brief returns the Rotations of the node
+    //! @return Rotation
+    virtual void GetRotations3D(double rCoordinates[3])const;
+
+    //! @brief set the Rotations
+    //! @param rRotations  given Rotations
+    virtual void SetRotations3D(const double rRotations[3]);
+
+    //! @brief returns the Rotations of the node
+    //! @return Rotation
+    virtual double GetRotation(short rIndex)const;
 
     //! @brief returns the number of temperatures of the node
     //! @return number of temperatures
     virtual int GetNumTemperatures()const;
+
+    //! @brief gives the global DOF of a temperature component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofTemperature(int rComponent)const;
+
+    //! @brief gives the node Id of the node, this is only implemented for the Grid node, since it stores the id
+    //! @return NodeId
+    virtual int GetNodeId()const;
+
+    //! @brief returns the number of temperatures of the node
+    //! @return number of temperatures
+    virtual std::string GetNodeTypeStr()const=0;
 
 protected:
     //the base class of the nodes must not contain any data

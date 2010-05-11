@@ -1,17 +1,16 @@
 // $Id: $
-#ifndef NodeCoordinatesTemperatures_H
-#define NodeCoordinatesTemperatures_H
+#ifndef NodeGridDisplacements_3d_H
+#define NodeGridDisplacements_3d_H
 
-#include "nuto/mechanics/nodes/NodeCoordinates.h"
-#include "nuto/mechanics/nodes/NodeTemperatures.h"
+#include "nuto/mechanics/nodes/NodeGrid3D.h"
+#include "nuto/mechanics/nodes/NodeDisplacements3D.h"
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
-//! @brief ... class for nodes having coordinates and Temperatures
-template<int NUMCOORDINATES, int NUMTEMPERATURES>
-class NodeCoordinatesTemperatures : public  NodeCoordinates<NUMCOORDINATES>, public NodeTemperatures<NUMTEMPERATURES>
+//! @brief ... class for grid nodes with displacements
+class NodeGridDisplacements3D : public NodeGrid3D, public NodeDisplacements3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -20,7 +19,7 @@ class NodeCoordinatesTemperatures : public  NodeCoordinates<NUMCOORDINATES>, pub
 public:
 
     //! @brief constructor
-    NodeCoordinatesTemperatures() : NodeCoordinates<NUMCOORDINATES> (), NodeTemperatures<NUMTEMPERATURES>()
+    NodeGridDisplacements3D(int rNodeId) : NodeGrid3D (rNodeId), NodeDisplacements3D()
     {}
 
 #ifdef ENABLE_SERIALIZATION
@@ -30,16 +29,17 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinates)
-        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeTemperatures);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeGrid3D)
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacements3D);
     }
 #endif  // ENABLE_SERIALIZATION
+
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)
     {
-        NodeCoordinates<NUMCOORDINATES>::SetGlobalDofs(rDOF);
-        NodeTemperatures<NUMTEMPERATURES>::SetGlobalDofs(rDOF);
+        NodeGrid3D::SetGlobalDofs(rDOF);
+        NodeDisplacements3D::SetGlobalDofs(rDOF);
     }
 
     //! @brief write dof values to the node (based on global dof number)
@@ -47,8 +47,8 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
     {
-        NodeCoordinates<NUMCOORDINATES>::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
-        NodeTemperatures<NUMTEMPERATURES>::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        NodeGrid3D::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        NodeDisplacements3D::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 
     //! @brief extract dof values from the node (based on global dof number)
@@ -56,18 +56,25 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
     {
-        NodeCoordinates<NUMCOORDINATES>::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
-        NodeTemperatures<NUMTEMPERATURES>::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        NodeGrid3D::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        NodeDisplacements3D::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     {
-        NodeCoordinates<NUMCOORDINATES>::RenumberGlobalDofs(rMappingInitialToNewOrdering);
-        NodeTemperatures<NUMTEMPERATURES>::RenumberGlobalDofs(rMappingInitialToNewOrdering);
+        NodeGrid3D::RenumberGlobalDofs(rMappingInitialToNewOrdering);
+        NodeDisplacements3D::RenumberGlobalDofs(rMappingInitialToNewOrdering);
+    }
+
+    //! @brief returns the type of the node
+    //! @return type
+    virtual std::string GetNodeTypeStr()const
+    {
+    	return std::string("NodeGridDisplacements3D");
     }
 };
 }
 
-#endif //NodeCoordinatesTemperatures_H
+#endif //NodeGridDisplacements_3d_H

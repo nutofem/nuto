@@ -10,7 +10,7 @@
 
 NuTo::IpDataBase::~IpDataBase()
 {
-	std::cout << "call Desctructor [NuTo::IpDataBase::~IpDataBase]." << std::endl;
+	//std::cout << "call Desctructor [NuTo::IpDataBase::~IpDataBase]." << std::endl;
 }
 
 //! @brief adds the weight to an integration point, eventually reallocates the data

@@ -1,7 +1,7 @@
 // $Id$
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeDisplacements3D.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements3D.h"
 #include "nuto/math/FullMatrix.h"
@@ -46,16 +46,15 @@ void NuTo::ConstraintNodeGroupDisplacements3D::AddToConstraintMatrix(int& curCon
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         rRHS(curConstraintEquation,0) = mValue;
-        const NodeDisplacements<3> *nodePtr(dynamic_cast<const NodeDisplacements<3> *>(*itNode));
-        if (nodePtr==0)
+        if ((*itNode)->GetNumDisplacements()==0)
             throw MechanicsException("[NuTo::ConstraintNodeGroupDisplacements3D::AddToConstraintMatrix] Node does not have displacements or has more than three displacement components.");
 
         if (fabs(mDirection[0])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(0),mDirection[0]);
+            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(0),mDirection[0]);
         if (fabs(mDirection[1])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(1),mDirection[1]);
+            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(1),mDirection[1]);
         if (fabs(mDirection[2])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(2),mDirection[2]);
+            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(2),mDirection[2]);
 
         curConstraintEquation++;
     }

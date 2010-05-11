@@ -82,3 +82,11 @@ void NuTo::ElementBase::InterpolateDisplacementsFrom3D(double rLocalCoordinates[
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom3D] 3D displacement interpolation routine not implemented.");
 }
+
+//! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
+//! @return Area
+double NuTo::ElementBase::CalculateArea()const
+{
+    throw MechanicsException("[NuTo::ElementBase::CalculateArea] The area can only be calculated for 2D elements.");
+}
+

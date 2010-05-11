@@ -1,7 +1,7 @@
 // $Id$
 #include <assert.h>
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/loads/LoadNodeForces1D.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -28,8 +28,7 @@ void NuTo::LoadNodeForces1D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<double>&
     assert(rDependentDofsLoadVector.GetNumColumns()==1);
     try
     {
-        const NodeDisplacements<1>& node = dynamic_cast<const NodeDisplacements<1> &>(*(this->mNode));
-        int dof = node.GetDofDisplacement(0);
+        int dof = mNode->GetDofDisplacement(0);
         assert(dof >= 0);
         if (dof < rActiceDofsLoadVector.GetNumRows())
         {

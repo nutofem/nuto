@@ -1,0 +1,128 @@
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+#include "nuto/mechanics/nodes/NodeDisplacements1D.h"
+
+//! @brief constructor
+NuTo::NodeDisplacements1D::NodeDisplacements1D() : NodeBase ()
+{
+    mDisplacements[0]=0;
+}
+
+//! @brief constructor
+NuTo::NodeDisplacements1D::NodeDisplacements1D (const double rDisplacements[1])  : NodeBase ()
+{
+    mDisplacements[0]= rDisplacements[0];
+}
+
+#ifdef ENABLE_SERIALIZATION
+//! @brief serializes the class
+//! @param ar         archive
+//! @param version    version
+template<class Archive>
+void NuTo::NodeDisplacements1D::serialize(Archive & ar, const unsigned int version)
+{
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
+       & BOOST_SERIALIZATION_NVP(mDisplacements);
+}
+#endif // ENABLE_SERIALIZATION
+
+//! @brief returns the number of displacements of the node
+//! @return number of displacements
+int NuTo::NodeDisplacements1D::GetNumDisplacements()const
+{
+    return 1;
+}
+
+//! @brief gives the global DOF of a displacement component
+//! @param rComponent component
+//! @return global DOF
+int NuTo::NodeDisplacements1D::GetDofDisplacement(int rComponent)const
+{
+	if (rComponent!=0)
+		throw MechanicsException("[NuTo::NodeDisplacements1D::GetDofDisplacement] Node has only a single displacement component.");
+    return mDOF[0];
+}
+
+//! @brief set the displacements
+//! @param rDisplacements  given displacements
+void NuTo::NodeDisplacements1D::SetDisplacements1D(const double rDisplacements[1])
+{
+    mDisplacements[0] = rDisplacements[0];
+}
+
+//! @brief writes the displacements of a node to the prescribed pointer
+//! @param rDisplacements displacements
+void NuTo::NodeDisplacements1D::GetDisplacements1D(double rDisplacements[1])const
+{
+    rDisplacements[0] = mDisplacements[0];
+}
+
+//! @brief sets the global dofs
+//! @param rDOF current maximum DOF, this variable is increased within the routine
+void NuTo::NodeDisplacements1D::SetGlobalDofs(int& rDOF)
+{
+    mDOF[0]=rDOF++;
+}
+
+//! @brief write dof values to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeDisplacements1D::SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+    assert(rActiveDofValues.GetNumColumns() == 1);
+    assert(rDependentDofValues.GetNumColumns() == 1);
+	int dof = this->mDOF[0];
+	double value;
+	if (dof >= rActiveDofValues.GetNumRows())
+	{
+		dof -= rActiveDofValues.GetNumRows();
+		assert(dof < rDependentDofValues.GetNumRows());
+		value = rDependentDofValues(dof,0);
+	}
+	else
+	{
+		value = rActiveDofValues(dof,0);
+	}
+	this->mDisplacements[0] = value;
+}
+
+//! @brief extract dof values from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeDisplacements1D::GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+    assert(rActiveDofValues.GetNumColumns() == 1);
+    assert(rDependentDofValues.GetNumColumns() == 1);
+	int dof = this->mDOF[0];
+	double value = this->mDisplacements[0];
+	if (dof >= rActiveDofValues.GetNumRows())
+	{
+		dof -= rActiveDofValues.GetNumRows();
+		assert(dof < rDependentDofValues.GetNumRows());
+		rDependentDofValues(dof,0) = value;
+	}
+	else
+	{
+		rActiveDofValues(dof,0) = value;
+    }
+}
+
+//! @brief renumber the global dofs according to predefined ordering
+//! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
+void NuTo::NodeDisplacements1D::RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
+{
+    mDOF[0]=rMappingInitialToNewOrdering[mDOF[0]];
+}
+
+//! @brief returns the type of the node
+//! @return type
+std::string NuTo::NodeDisplacements1D::GetNodeTypeStr()const
+{
+	return std::string("NodeDisplacements1D");
+}

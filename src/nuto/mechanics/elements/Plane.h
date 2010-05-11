@@ -207,6 +207,10 @@ public:
     //! @param rVolume  vector for storage of the ip volumes (area in 2D)
     void GetIntegrationPointVolume(std::vector<double>& rVolume)const;
 
+    //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
+    //! @return Area
+    virtual double CalculateArea()const=0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

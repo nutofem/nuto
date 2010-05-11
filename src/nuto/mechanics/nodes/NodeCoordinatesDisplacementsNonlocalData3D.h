@@ -1,8 +1,8 @@
 // $Id: $
-#ifndef NodeCoordinatesDisplacementsNonlocalData_H
-#define NodeCoordinatesDisplacementsNonlocalData_H
+#ifndef NodeCoordinatesDisplacementsNonlocalData3D_H
+#define NodeCoordinatesDisplacementsNonlocalData3D_H
 
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements3D.h"
 #include "nuto/mechanics/nodes/NodeNonlocalDataBase.h"
 
 namespace NuTo
@@ -10,8 +10,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates and displacements
-template<int NUMCOORDINATES, int NUMDISPLACEMENTS>
-class NodeCoordinatesDisplacementsNonlocalData : public  NodeCoordinatesDisplacements<NUMCOORDINATES,NUMDISPLACEMENTS>, public NodeNonlocalDataBase
+class NodeCoordinatesDisplacementsNonlocalData3D : public  NodeCoordinatesDisplacements3D, public NodeNonlocalDataBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -20,7 +19,7 @@ class NodeCoordinatesDisplacementsNonlocalData : public  NodeCoordinatesDisplace
 public:
 
     //! @brief constructor
-    NodeCoordinatesDisplacementsNonlocalData() : NodeCoordinatesDisplacements<NUMCOORDINATES,NUMDISPLACEMENTS> (), NodeNonlocalDataBase()
+    NodeCoordinatesDisplacementsNonlocalData3D() : NodeCoordinatesDisplacements3D(), NodeNonlocalDataBase()
     {}
 
 #ifdef ENABLE_SERIALIZATION
@@ -30,7 +29,7 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinatesDisplacements)
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinatesDisplacements3D)
            & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeNonlocalDataBase);
     }
 #endif  // ENABLE_SERIALIZATION
@@ -38,4 +37,4 @@ public:
 };
 }
 
-#endif //NodeCoordinatesDisplacementsNonlocalData_H
+#endif //NodeCoordinatesDisplacementsNonlocalData2D_H

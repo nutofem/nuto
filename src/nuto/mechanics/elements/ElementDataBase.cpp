@@ -4,7 +4,7 @@
 //! @brief constructor
 NuTo::ElementDataBase::ElementDataBase()
 {
-    std::cout << "ElementDataBase constructor " << std::endl;
+    //std::cout << "ElementDataBase constructor " << std::endl;
 }
 
 //! @brief deconstructor

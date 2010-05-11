@@ -14,6 +14,7 @@
 
 namespace NuTo
 {
+class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
 //! @brief ...
@@ -382,6 +383,13 @@ protected:
     //! @brief ... check if fracture energy is positive
     //! @param rFractureEnergy ... fracture energy
     void CheckFractureEnergy(double rFractureEnergy) const;
+
+    //! @brief ... performs the return mapping procedure for the plasticity model
+    void ReturnMapping2D(
+    		const ElementBase* rElement,
+    		const EngineeringStrain2D& rStrain,
+    		const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* rOldStaticData,
+    		ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* rNewStaticData)const;
 };
 }
 #endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

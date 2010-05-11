@@ -67,6 +67,10 @@ public:
     void BlowLocalVectorToGlobal(NuTo::FullMatrix<double>& rFullVector)const
     {}
 
+    //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
+    //! @return Area
+    double CalculateArea()const;
+
 protected:
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs

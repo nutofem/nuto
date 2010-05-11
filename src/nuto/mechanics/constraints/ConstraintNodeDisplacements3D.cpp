@@ -10,7 +10,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeDisplacements3D.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -51,15 +51,14 @@ void NuTo::ConstraintNodeDisplacements3D::AddToConstraintMatrix(int& curConstrai
         NuTo::FullMatrix<double>& rRHS)const
 {
     rRHS(curConstraintEquation,0) = mValue;
-    const NodeDisplacements<3> *nodePtr(dynamic_cast<const NodeDisplacements<3> *>(mNode));
-    if (nodePtr==0)
+    if (mNode->GetNumDisplacements()!=3)
         throw MechanicsException("[NuTo::ConstraintNodeDisplacements3D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
     if (fabs(mDirection[0])>1e-18)
-        rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(0),mDirection[0]);
+        rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofDisplacement(0),mDirection[0]);
     if (fabs(mDirection[1])>1e-18)
-        rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(1),mDirection[1]);
+        rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofDisplacement(1),mDirection[1]);
     if (fabs(mDirection[2])>1e-18)
-        rConstraintMatrix.AddEntry(curConstraintEquation,nodePtr->GetDofDisplacement(2),mDirection[2]);
+        rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofDisplacement(2),mDirection[2]);
 
     curConstraintEquation++;
 }

@@ -5,8 +5,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
 #include "nuto/mechanics/elements/Plane.h"
-#include "nuto/mechanics/nodes/NodeCoordinates.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 
@@ -420,8 +419,11 @@ void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     nodeCoordinates[2] = 0;
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-    	const NodeCoordinatesBase * nodePtr(dynamic_cast<const NodeCoordinatesBase *>(GetNode(theNode)));
-    	nodePtr->GetCoordinates(nodeCoordinates);
+    	const NodeBase *nodePtr(GetNode(theNode));
+    	if (nodePtr->GetNumCoordinates()==2)
+    	    nodePtr->GetCoordinates2D(nodeCoordinates);
+    	else
+    		nodePtr->GetCoordinates3D(nodeCoordinates);
     	for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
     	{
     		rCoordinates[theCoordinate]+=shapeFunctions[theNode]*nodeCoordinates[theCoordinate];
@@ -637,10 +639,11 @@ void NuTo::Plane::InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], do
     {
         // get node coordinate
         double NodeCoordinate[3];
-        const NodeCoordinatesBase *nodePtr(dynamic_cast<const NodeCoordinatesBase *>(GetNode(NodeCount)));
-        if (nodePtr==0)
-            throw MechanicsException("[NuTo::Plane::InterpolateCoordinatesFrom2D] Node has no coordinates.");
-        nodePtr->GetCoordinates(NodeCoordinate);
+        const NodeBase *nodePtr(GetNode(NodeCount));
+        if (nodePtr->GetNumCoordinates()==2)
+            nodePtr->GetCoordinates2D(NodeCoordinate);
+        else
+            nodePtr->GetCoordinates3D(NodeCoordinate);
 
         // add node contribution
         for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
@@ -665,10 +668,11 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], 
     {
         // get node displacements
         double NodeDisplacement[3];
-        const NodeDisplacementsBase *nodePtr(dynamic_cast<const NodeDisplacementsBase *>(GetNode(NodeCount)));
-        if (nodePtr==0)
-            throw MechanicsException("[NuTo::Plane::InterpolateDisplacementsFrom2D] Node has no displacements.");
-        nodePtr->GetDisplacements(NodeDisplacement);
+        const NodeBase *nodePtr(GetNode(NodeCount));
+        if (nodePtr->GetNumDisplacements()==2)
+            nodePtr->GetDisplacements2D(NodeDisplacement);
+        else
+            nodePtr->GetDisplacements3D(NodeDisplacement);
 
         // add node contribution
         for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
@@ -684,7 +688,8 @@ void NuTo::Plane::CheckElement()
 	// check nodes
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        if (dynamic_cast< const NodeCoordinatesBase* >(this->GetNode(nodeCount)) == 0)
+        int numCoordinates(GetNode(nodeCount)->GetNumCoordinates());
+    	if (numCoordinates<2 || numCoordinates>3)
         {
             throw MechanicsException("[NuTo::Plane::CheckElement] invalid node type (check node definition for coordinates).");
         }
@@ -796,4 +801,3 @@ void NuTo::Plane::GetIntegrationPointVolume(std::vector<double>& rVolume)const
 		rVolume[theIP] = detJac * mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
 	}
 }
-

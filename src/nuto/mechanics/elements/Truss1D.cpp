@@ -3,8 +3,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Truss1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinates.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
 
 
@@ -21,7 +20,7 @@ void NuTo::Truss1D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
     assert((int)rLocalCoordinates.size()==GetNumNodes());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        dynamic_cast<const NodeCoordinates<1> *>(GetNode(theNode))->GetCoordinates(&(rLocalCoordinates[theNode]));
+        GetNode(theNode)->GetCoordinates1D(&(rLocalCoordinates[theNode]));
     }
 }
 
@@ -33,9 +32,7 @@ void NuTo::Truss1D::CalculateLocalDisplacements(std::vector<double>& rLocalDispl
     assert((int)rLocalDisplacements.size()==GetNumNodes());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        const NodeDisplacements<1> *nodePtr(dynamic_cast<const NodeDisplacements<1> *>(GetNode(theNode)));
-        assert(nodePtr!=0);
-        nodePtr->GetDisplacements(&(rLocalDisplacements[theNode]));
+        GetNode(theNode)->GetDisplacements1D(&(rLocalDisplacements[theNode]));
     }
 }
 
@@ -54,9 +51,7 @@ void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, doubl
     {
         // get node coordinate
         double NodeCoordinate;
-        const NodeCoordinates<1> *nodePtr(dynamic_cast<const NodeCoordinates<1> *>(GetNode(theNode)));
-        assert(nodePtr!=0);
-        nodePtr->GetCoordinates(&NodeCoordinate);
+        GetNode(theNode)->GetCoordinates1D(&NodeCoordinate);
 
         // add node contribution
         rGlobalCoordinates[0] += ShapeFunctions[theNode] *  NodeCoordinate;
@@ -78,9 +73,7 @@ void NuTo::Truss1D::InterpolateDisplacementsFrom1D(double rLocalCoordinates, dou
     {
         // get node displacements
         double NodeDisplacement;
-        const NodeDisplacements<1> *nodePtr(dynamic_cast<const NodeDisplacements<1> *>(GetNode(theNode)));
-        assert(nodePtr!=0);
-        nodePtr->GetDisplacements(&NodeDisplacement);
+        GetNode(theNode)->GetDisplacements1D(&NodeDisplacement);
 
         // add node contribution
         rGlobalDisplacements[0] += ShapeFunctions[theNode] *  NodeDisplacement;
@@ -93,9 +86,7 @@ void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) con
     rGlobalRowDofs.resize(this->GetNumNodes());
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        const NodeDisplacements<1>* nodePtr = dynamic_cast< const NodeDisplacements<1>* >(this->GetNode(nodeCount));
-        assert(nodePtr != NULL);
-        rGlobalRowDofs[nodeCount] = nodePtr->GetDofDisplacement(0);
+        rGlobalRowDofs[nodeCount] = GetNode(nodeCount)->GetDofDisplacement(0);
     }
 }
 
@@ -111,9 +102,10 @@ void NuTo::Truss1D::CheckElement()
     // check nodes
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        if (dynamic_cast< const NodeDisplacements<1>* >(this->GetNode(nodeCount)) == 0)
+        int numCoordinates(GetNode(nodeCount)->GetNumCoordinates());
+    	if (numCoordinates<1 || numCoordinates>3)
         {
-            throw MechanicsException("[NuTo::Truss1D::CheckElement] invalid node type (check node definition for displacements).");
+            throw MechanicsException("[NuTo::Truss1D::CheckElement] invalid node type (check node definition for coordinates).");
         }
     }
 

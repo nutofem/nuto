@@ -1,7 +1,7 @@
 // $Id: ConstitutiveStaticDataNonlocalDamagePlasticity3D.h 87 2009-11-06 10:35:39Z unger3 $
 
-#ifndef CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY3D_H
-#define CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY3D_H
+#ifndef CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY2DPLANESTRAIN_H
+#define CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY2DPLANESTRAIN_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -25,7 +25,7 @@ class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain : public Const
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ConstitutiveStaticDataMisesPlasticity3D;
+    friend class NonlocalDamagePlasticity;
 public:
 	//! @brief constructor
     ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain();
@@ -47,6 +47,9 @@ protected:
 
     //! @brief plastic strain
     double mEpsilonP[4];
+
+    //! @brief derivative of local plastic strain with respect to local total strain (row wise storage 4x4)
+    double mDEpsilonPdEpsilon[16];
 };
 
 }

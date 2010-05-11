@@ -12,25 +12,24 @@
 //! @brief constructor
 NuTo::ElementDataIpBase::ElementDataIpBase(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) : NuTo::ElementDataBase()
 {
-    std::cout << "ElementDataIpBase constructor " << std::endl;
+    //std::cout << "ElementDataIpBase constructor " << std::endl;
 	mIntegrationType = rIntegrationType;
 	mIpData.clear();
 	mIpData.reserve(mIntegrationType->GetNumIntegrationPoints());
-	printf("num int ppoints %d",mIntegrationType->GetNumIntegrationPoints());
 	for (int theIp=0; theIp<mIntegrationType->GetNumIntegrationPoints();theIp++)
 	{
 		switch (rIpDataType)
 		{
 		case NuTo::IpData::NOIPDATA:
-			printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
+			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
 			mIpData.push_back(new IpDataEmpty());
 			break;
 		case NuTo::IpData::STATICDATA:
-			printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
+			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
 			mIpData.push_back(new IpDataStaticData());
 			break;
 		case NuTo::IpData::STATICDATANONLOCAL:
-			printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATANONLOCAL\n");
+			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATANONLOCAL\n");
 			mIpData.push_back(new IpDataStaticDataNonlocal());
 			break;
 		default:

@@ -16,8 +16,8 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
@@ -34,6 +34,7 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain1D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
+#include "nuto/mechanics/elements/ElementWithDataBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
@@ -79,12 +80,7 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-	rEngineeringPlasticStrain.mEngineeringStrain[0] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[1] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[2] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[3] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+	//TODO check this routine if it is necessary
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -96,12 +92,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBa
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-	rEngineeringPlasticStrain.mEngineeringStrain[0] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[1] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[2] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[3] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+	//TODO check this routine if it is necessary
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -113,12 +104,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBa
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-	rEngineeringPlasticStrain.mEngineeringStrain[0] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[1] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[2] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[3] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+    //TODO check this routine if it is necessary
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -131,21 +117,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBa
 void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-   		//throw an exception giving information related to the wrong parameter
-    	CheckParameters();
-    	//if there is no exception thrown there is a problem with the source code
-    	//since every time a material parameter is changed, the parametes should be checked
-    	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain1D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    // calculate Engineering stress
-    rEngineeringStress.mEngineeringStress = mE * engineeringStrain.mEngineeringStrain;
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 1D.");
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -158,26 +130,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 	      const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
-	// check if parameters are valid
-	if (this->mParametersValid == false)
-	{
-   		//throw an exception giving information related to the wrong parameter
-    	CheckParameters();
-    	//if there is no exception thrown there is a problem with the source code
-    	//since every time a material parameter is changed, the parametes should be checked
-	    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
-	}
-	// calculate engineering strain
-	EngineeringStrain1D engineeringStrain;
-	rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-	// calculate Engineering stress
-	rEngineeringStress.mEngineeringStress[0] = mE * engineeringStrain.mEngineeringStrain;
-	rEngineeringStress.mEngineeringStress[1] = 0.;
-	rEngineeringStress.mEngineeringStress[2] = 0.;
-	rEngineeringStress.mEngineeringStress[3] = 0.;
-	rEngineeringStress.mEngineeringStress[4] = 0.;
-	rEngineeringStress.mEngineeringStress[5] = 0.;
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 1D.");
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -206,19 +159,22 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
     assert(rElement->GetSection()!=0);
     if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
     {
-		// calculate coefficients of the material matrix
-		double C11, C12, C33;
-		this->CalculateCoefficients3D(C11, C12, C33);
+    	ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData =
+    			dynamic_cast<ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain*>(rElement->GetStaticData(rIp));
+        if (oldStaticData==0)
+        	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Static data of element is not of type ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.");
+    	// no new history variables, since no update has to be performed
+        this->ReturnMapping2D(rElement,engineeringStrain,oldStaticData, 0);
 
 		// calculate Engineering stress
-		rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
-		rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
-		rEngineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
+		//rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
+		//rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
+		//rEngineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
 
     }
     else
     {
-    	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
+    	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Plane stress is not implemented.");
     }
 }
 
@@ -504,7 +460,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStatic
 	if (rElement->GetSection()->GetType()==NuTo::Section::PLANE_STRESS)
 		throw MechanicsException("[NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Nonlocal damage plasticity model not implemented for plane stress.");
 	else
-	    return new ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain();
+	    return new ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain();
 }
 
 
@@ -513,7 +469,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStatic
 NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain3D(
 		const ElementBase* rElement) const
 {
-    return new ConstitutiveStaticDataPrevEngineeringStressStrain3D();
+	return new ConstitutiveStaticDataNonlocalDamagePlasticity3D();
 }
 
 
@@ -945,6 +901,114 @@ void NuTo::NonlocalDamagePlasticity::CheckFractureEnergy(double rFractureEnergy)
     {
         throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckFractureEnergy] The fracture energy must be a positive value.");
     }
+}
+//! @brief ... performs the return mapping procedure for the plasticity model
+void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
+		const ElementBase* rElement,
+		const EngineeringStrain2D& rStrain,
+		const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* rOldStaticData,
+		ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* rNewStaticData)const
+{
+    //TODO
+	double minCutbackFactor(1e-3);
+	double stress[4];
+    double mM(1);
+
+    double l_element(sqrt(rElement->CalculateArea()*0.5));
+
+    double kappa_d = 15.*mFractureEnergy/(16.*mTensileStrength);
+    double l_eq_plane = mNonlocalRadius;
+    double l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
+
+    double e_mod = mE; //modify that one in the case of random fields
+    double   nu  = mNu;
+    double f_ct  = mTensileStrength;
+    double f_ck  = mCompressiveStrength;
+    double f_ck2 = mBiaxialCompressiveStrength;
+    double     G = mFractureEnergy;
+
+    assert(f_ck2>f_ck);
+
+
+	double curTotalStrain[4];
+	double curPlastStrain[4];
+	double lastPlastStrain[4];
+	double deltaStrain[4];
+
+	/* apply strains in steps */
+	deltaStrain[0] = rStrain.mEngineeringStrain[0]-rOldStaticData->GetPrevStrain()[0];
+	deltaStrain[1] = rStrain.mEngineeringStrain[0]-rOldStaticData->GetPrevStrain()[1];
+	deltaStrain[2] = rStrain.mEngineeringStrain[0]-rOldStaticData->GetPrevStrain()[2];
+	deltaStrain[3] = 0;
+
+    lastPlastStrain[0] =  rOldStaticData->mEpsilonP[0];
+    lastPlastStrain[1] =  rOldStaticData->mEpsilonP[1];
+    lastPlastStrain[2] =  rOldStaticData->mEpsilonP[2];
+    lastPlastStrain[3] =  rOldStaticData->mEpsilonP[3];
+
+    curPlastStrain[0] =  lastPlastStrain[0];
+    curPlastStrain[1] =  lastPlastStrain[1];
+    curPlastStrain[2] =  lastPlastStrain[2];
+    curPlastStrain[3] =  lastPlastStrain[3];
+
+	double cutbackFactor = 1, deltaCutbackFactor=1.;
+	bool finished(false);
+	bool converged;
+	while (cutbackFactor>minCutbackFactor && !finished)
+	{
+
+		curTotalStrain[0] = rOldStaticData->mPrevStrain[0]+cutbackFactor*deltaStrain[0];
+		curTotalStrain[1] = rOldStaticData->mPrevStrain[1]+cutbackFactor*deltaStrain[1];
+		curTotalStrain[2] = rOldStaticData->mPrevStrain[2]+cutbackFactor*deltaStrain[2];
+		curTotalStrain[3] = 0.;
+
+        try
+        {
+        	converged = false;
+        	// perform return mapping
+
+        }
+        catch (NuTo::MechanicsException& e)
+        {
+        	e.AddMessage("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] Error performing return mapping procedure.");
+        	throw e;
+        }
+        catch (...)
+        {
+           	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] Error performing return mapping procedure.");
+        }
+
+        if (converged)
+        {
+        	if (cutbackFactor==1.)
+        		finished=true;
+        	else
+        	{
+        	    curPlastStrain[0] =  lastPlastStrain[0];
+        	    curPlastStrain[1] =  lastPlastStrain[1];
+        	    curPlastStrain[2] =  lastPlastStrain[2];
+        	    curPlastStrain[3] =  lastPlastStrain[3];
+        	    cutbackFactor +=cutbackFactor;
+				if (cutbackFactor>1)
+				{
+					deltaCutbackFactor -= cutbackFactor -1.;
+					cutbackFactor = 1.;
+				}
+        	}
+        }
+        else
+        {
+			/* no convergence in return mapping*/
+        	deltaCutbackFactor*=0.5;
+			deltaCutbackFactor-=deltaCutbackFactor;
+        }
+	}
+	if (deltaCutbackFactor<=minCutbackFactor)
+	{
+		throw MechanicsException("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] No convergence can be obtained in the return mapping procedure.");
+	}
+
+	//here set new stress, tangent and static data
 }
 
 //! @brief ... print information about the object

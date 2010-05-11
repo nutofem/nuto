@@ -110,6 +110,18 @@ loads/LoadNodeGroupForces3D.cpp
 
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
+nodes/NodeCoordinates1D.cpp
+nodes/NodeCoordinates2D.cpp
+nodes/NodeCoordinates3D.cpp
+nodes/NodeDisplacements1D.cpp
+nodes/NodeDisplacements2D.cpp
+nodes/NodeDisplacements3D.cpp
+nodes/NodeGrid1D.cpp
+nodes/NodeGrid2D.cpp
+nodes/NodeGrid3D.cpp
+nodes/NodeRotations2D.cpp
+nodes/NodeRotations3D.cpp
+nodes/NodeTemperature.cpp
 nodes/NodeNonlocalDataBase.cpp
 )
 

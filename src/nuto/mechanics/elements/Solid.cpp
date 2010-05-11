@@ -3,8 +3,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
 #include "nuto/mechanics/elements/Solid.h"
-#include "nuto/mechanics/nodes/NodeCoordinates.h"
-#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 
 //! @brief constructor
@@ -464,7 +463,7 @@ void  NuTo::Solid::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     nodeCoordinates[2] = 0;
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        dynamic_cast<const NodeCoordinates<3> *>(GetNode(theNode))->GetCoordinates(nodeCoordinates);
+        GetNode(theNode)->GetCoordinates3D(nodeCoordinates);
         rCoordinates[0]+=shapeFunctions[theNode]*nodeCoordinates[0];
         rCoordinates[1]+=shapeFunctions[theNode]*nodeCoordinates[1];
         rCoordinates[2]+=shapeFunctions[theNode]*nodeCoordinates[2];
@@ -669,7 +668,7 @@ void NuTo::Solid::CalculateCoordinates(std::vector<double>& rCoordinates)const
     assert((int)rCoordinates.size()==3*GetNumNodes());
     for (int count=0; count<GetNumNodes(); count++)
     {
-        dynamic_cast<const NodeCoordinates<3> *>(GetNode(count))->GetCoordinates(&(rCoordinates[3*count]));
+        GetNode(count)->GetCoordinates3D(&(rCoordinates[3*count]));
     }
 
 }
@@ -682,7 +681,7 @@ void NuTo::Solid::CalculateDisplacements(std::vector<double>& rDisplacements)con
     assert((int)rDisplacements.size()==3*GetNumNodes());
     for (int count=0; count<GetNumNodes(); count++)
     {
-        dynamic_cast<const NodeDisplacements<3> *>(GetNode(count))->GetDisplacements(&(rDisplacements[3*count]));
+        GetNode(count)->GetDisplacements3D(&(rDisplacements[3*count]));
     }
 }
 
@@ -702,7 +701,7 @@ void NuTo::Solid::InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], doub
     {
         // get node coordinate
         double NodeCoordinate[3];
-        dynamic_cast<const NodeCoordinates<3> *>(GetNode(NodeCount))->GetCoordinates(NodeCoordinate);
+        GetNode(NodeCount)->GetCoordinates3D(NodeCoordinate);
 
         // add node contribution
         rGlobalCoordinates[0] += ShapeFunctions[NodeCount] *  NodeCoordinate[0];
@@ -726,7 +725,7 @@ void NuTo::Solid::InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], do
     {
         // get node displacements
         double NodeDisplacement[3];
-        dynamic_cast<const NodeDisplacements<3> *>(GetNode(NodeCount))->GetDisplacements(NodeDisplacement);
+        GetNode(NodeCount)->GetDisplacements3D(NodeDisplacement);
 
         // add node contribution
         rGlobalDisplacements[0] += ShapeFunctions[NodeCount] *  NodeDisplacement[0];
@@ -742,8 +741,7 @@ void NuTo::Solid::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const
     rGlobalRowDofs.resize(3 * this->GetNumNodes());
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        const NodeDisplacements<3>* nodePtr = dynamic_cast< const NodeDisplacements<3>* >(this->GetNode(nodeCount));
-        assert(nodePtr != NULL);
+        const NodeBase * nodePtr(GetNode(nodeCount));
         rGlobalRowDofs[3 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
         rGlobalRowDofs[3 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
         rGlobalRowDofs[3 * nodeCount + 2] = nodePtr->GetDofDisplacement(2);
@@ -763,7 +761,7 @@ void NuTo::Solid::CheckElement()
     // check nodes
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        if (dynamic_cast< const NodeDisplacementsBase* >(this->GetNode(nodeCount)) == 0)
+        if (GetNode(nodeCount)->GetNumCoordinates()!=3)
         {
             throw MechanicsException("[NuTo::Solid::CheckElement] invalid node type (check node definition for coordinates).");
         }

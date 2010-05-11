@@ -5,7 +5,6 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Truss.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 
@@ -260,8 +259,21 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     nodeCoordinates[2] = 0;
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-    	const NodeCoordinatesBase *nodePtr(dynamic_cast<const NodeCoordinatesBase *>(GetNode(theNode)));
-    	nodePtr->GetCoordinates(nodeCoordinates);
+    	const NodeBase *nodePtr(GetNode(theNode));
+    	switch (nodePtr->GetNumCoordinates())
+    	{
+    	case 1:
+    		nodePtr->GetCoordinates1D(rCoordinates);
+    	break;
+    	case 2:
+    		nodePtr->GetCoordinates2D(rCoordinates);
+    	break;
+    	case 3:
+    		nodePtr->GetCoordinates3D(rCoordinates);
+    	break;
+    	default:
+    		throw MechanicsException("[NuTo::Truss::GetGlobalIntegrationPointCoordinates] Node has to have 1, 2 or 3 coordinates.");
+    	}
     	for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
     	{
     		rCoordinates[theCoordinate]+=shapeFunctions[theNode]*nodeCoordinates[theCoordinate];

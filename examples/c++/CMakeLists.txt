@@ -117,3 +117,9 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(StructureGrid3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
+
+# VirtualFunctionsVsDynamicCast
+ADD_EXECUTABLE(VirtualFunctionsVsDynamicCast VirtualFunctionsVsDynamicCastClasses.cpp VirtualFunctionsVsDynamicCast.cpp)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(VirtualFunctionsVsDynamicCast PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)

@@ -8,7 +8,7 @@ NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp(const ElementWithData
 		const NuTo::IntegrationTypeBase* rIntegrationType,	NuTo::IpData::eIpDataType rIpDataType) :
 		NuTo::ElementDataBase::ElementDataBase(), ElementDataConstitutiveBase() , ElementDataIpBase(rElement,rIntegrationType,rIpDataType)
 {
-	std::cout << "NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp" << std::endl;
+	//std::cout << "NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp" << std::endl;
 }
 
 NuTo::ElementDataConstitutiveIp::~ElementDataConstitutiveIp()
