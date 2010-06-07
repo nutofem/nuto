@@ -2,6 +2,8 @@
 #ifndef GroupBase_H
 #define GroupBase_H
 
+#include <string>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>

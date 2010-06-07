@@ -1,5 +1,7 @@
 // $Id$
 
+#include <iostream>
+
 #include "nuto/mechanics/constitutive/mechanics/RelativeInterfaceDisplacements2D.h"
 
 NuTo::RelativeInterfaceDisplacements2D::RelativeInterfaceDisplacements2D()
