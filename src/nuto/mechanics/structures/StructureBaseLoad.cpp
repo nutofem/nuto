@@ -4,9 +4,11 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadNode.h"
 #include "nuto/mechanics/loads/LoadNodeForces1D.h"
+#include "nuto/mechanics/loads/LoadNodeForces2D.h"
 #include "nuto/mechanics/loads/LoadNodeForces3D.h"
 #include "nuto/mechanics/loads/LoadNodeGroup.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces1D.h"
+#include "nuto/mechanics/loads/LoadNodeGroupForces2D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
 
 // adds a force for a node
@@ -50,7 +52,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::
         loadPtr = new NuTo::LoadNodeForces1D(rNode, rDirection(0,0), rValue);
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] To be implemented.");
+        loadPtr = new NuTo::LoadNodeForces2D(rNode, rDirection, rValue);
         break;
     case 3:
         loadPtr = new NuTo::LoadNodeForces3D(rNode, rDirection, rValue);
@@ -102,7 +104,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGr
         loadPtr = new NuTo::LoadNodeGroupForces1D(rNodeGroup, rDirection(0,0), rValue);
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] To be implemented.");
+        loadPtr = new NuTo::LoadNodeGroupForces2D(rNodeGroup, rDirection, rValue);
         break;
     case 3:
         loadPtr = new NuTo::LoadNodeGroupForces3D(rNodeGroup, rDirection, rValue);

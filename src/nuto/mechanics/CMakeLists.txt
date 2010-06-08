@@ -105,8 +105,10 @@ loads/LoadBase.cpp
 loads/LoadNode.cpp
 loads/LoadNodeGroup.cpp
 loads/LoadNodeForces1D.cpp
+loads/LoadNodeForces2D.cpp
 loads/LoadNodeForces3D.cpp
 loads/LoadNodeGroupForces1D.cpp
+loads/LoadNodeGroupForces2D.cpp
 loads/LoadNodeGroupForces3D.cpp
 )
 
