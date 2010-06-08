@@ -6,8 +6,10 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constraints/ConstraintEquation.h"
 #include "nuto/mechanics/constraints/ConstraintNodeDisplacements1D.h"
+#include "nuto/mechanics/constraints/ConstraintNodeDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements1D.h"
+#include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements3D.h"
 
 //! @brief adds a displacement constraint equation for a node
@@ -32,7 +34,7 @@ int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const Nu
         mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements1D(rNode,rDirection(0,0),rValue));
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] To be implemented.");
+        mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements2D(rNode,rDirection,rValue));
         break;
     case 3:
         mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements3D(rNode,rDirection,rValue));
@@ -89,7 +91,7 @@ int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGr
         mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements1D(rGroup,rDirection(0,0),rValue));
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNodeGroup] To be implemented.");
+        mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements2D(rGroup,rDirection,rValue));
         break;
     case 3:
         mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements3D(rGroup,rDirection,rValue));

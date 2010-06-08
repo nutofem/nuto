@@ -1,3 +1,5 @@
+// $Id$
+
 #ifndef NODE_DISPLACEMENTS_2D_H
 #define NODE_DISPLACEMENTS_2D_H
 
@@ -6,8 +8,8 @@
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
+//! @author Daniel Arnold, ISM
+//! @date June 2010
 //! @brief ... standard class for nodes having displacement degrees of freedom
 class NodeDisplacements2D : public virtual NodeBase
 {

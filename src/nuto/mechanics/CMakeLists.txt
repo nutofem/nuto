@@ -44,9 +44,11 @@ constraints/ConstraintEquation.cpp
 constraints/ConstraintEquationTerm.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeDisplacements1D.cpp
+constraints/ConstraintNodeDisplacements2D.cpp
 constraints/ConstraintNodeDisplacements3D.cpp
 constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNodeGroupDisplacements1D.cpp
+constraints/ConstraintNodeGroupDisplacements2D.cpp
 constraints/ConstraintNodeGroupDisplacements3D.cpp
 )
 
