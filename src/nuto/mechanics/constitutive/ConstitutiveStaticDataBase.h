@@ -22,6 +22,8 @@
 //! @date November 2009
 namespace NuTo
 {
+class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
+
 class ConstitutiveStaticDataBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -35,6 +37,9 @@ public:
     //!@ brief destructor (virtual, in order to make the class a polymorphic type)
     virtual ~ConstitutiveStaticDataBase()
     {};
+
+    //!@ brief reinterpret as nonlocal damage2d static data
+    virtual ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

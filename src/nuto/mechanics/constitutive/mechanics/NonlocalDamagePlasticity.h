@@ -334,6 +334,57 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
+    //! @brief ... performs the return mapping procedure for the plasticity model
+    //! @param rStrain              ... current total strain
+    //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
+    //! @param rPrevTotalStrain     ... previous total strain (history variable)
+    //! @param rPrevEqPlasticStrain ... previous equiavalente plastic strain (history variable)
+    //! @param rEpsilonP            ... new plastic strain after return mapping
+    //! @param rEqPlasticStrain     ... new equivalente olastic strain after return mapping
+    //! @param rdEpsilonPdEpsilon   ... new derivative of current plastic strain with respect to the total strain
+    void ReturnMapping2D(
+            const EngineeringStrain2D& rStrain,
+            const double rPrevPlasticStrain[4],
+            const double rPrevTotalStrain[3],
+            double rPrevEqPlasticStrain,
+            Eigen::Matrix<double,4,1>& rEpsilonP,
+            double& rNewEqPlasticStrain,
+            Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon)const;
+
+    //! @brief calculates the rounded rankine yield surface
+    //! @param rStress current stress
+    //! @param rSigma_1 first principal stress
+    //! @param rSigma_2 second principal stress
+    //! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm 0.5*value_sqrt$
+    //! @return yield condition
+    double YieldSurfaceRankine2DRounded(Eigen::Matrix<double,4,1>& rStress, double rFct)const;
+
+    //! @brief calculates the first and second derivative of the rounded Rankine yield surface with respect to the stress
+    //! @param dF_dsigma return value (first derivative)
+    //! @param d2F_d2sigma return value (second derivative)
+    //! @param stress vector
+    //! @param sigma_1 first principal stress in the plane
+    //! @param sigma_2 second principal stress in the plane
+    //! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm value_sqrt$
+    void YieldSurfaceRankine2DRoundedDerivatives(Eigen::Matrix<double,4,1>& rdF_dSigma,Eigen::Matrix<double,4,4>* rd2F_d2Sigma,
+    		Eigen::Matrix<double,4,1>& rStress)const;
+
+    //! @brief calculates the drucker prager yield surface
+    //! @param rStress current stress
+    //! @param rBeta parameter of the Drucker-Prager yield surface
+    //! @param rHP parameter of the Drucker-Prager yield surface
+    //! @return yield condition
+    double YieldSurfaceDruckerPrager2D(Eigen::Matrix<double,4,1>& rStress, double rBeta, double rHP)const;
+
+    //! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
+    //! @param dF_dsigma return value (first derivative)
+    //! @param d2F_d2sigma return value (second derivative)
+    //! @param elasticStress current stress
+     //! @param BETA parameter of the Drucker Prager yield surface
+    //! @return false, if the stress is on the hydrostatic axis otherwise true
+    bool YieldSurfaceDruckerPrager2DDerivatives(Eigen::Matrix<double,4,1>& dF_dsigma,Eigen::Matrix<double,4,4>* d2F_d2sigma,
+    		Eigen::Matrix<double,4,1>& elasticStress, double BETA)const;
+
 protected:
     //! @brief ... Young's modulus \f$ E \f$
     double mE;
@@ -355,6 +406,13 @@ protected:
 
     //! @brief ... fracture energy
     double mFractureEnergy;
+
+    //! @brief ... yield mode (Drucker Prager, Rankine and combinations)
+    Constitutive::eNonlocalDamageYieldSurface mYieldSurface;
+
+    //! @brief ... either use a pure plasticity model (false) or add softening using the damage model (true)
+    bool mDamage;
+
 
     //! @brief ... check if Young's modulus is positive
     //! @param rE ... Young's modulus
@@ -384,12 +442,10 @@ protected:
     //! @param rFractureEnergy ... fracture energy
     void CheckFractureEnergy(double rFractureEnergy) const;
 
-    //! @brief ... performs the return mapping procedure for the plasticity model
-    void ReturnMapping2D(
-    		const ElementBase* rElement,
-    		const EngineeringStrain2D& rStrain,
-    		const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* rOldStaticData,
-    		ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* rNewStaticData)const;
+    //! @brief ... calculate the length of the element in plane coordinates (square root of area)
+    void CalculateEquivalentLength(const ElementBase* rElement, double& l_eq_plane, double& l_eq_circ) const;
+
+
 };
 }
 #endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

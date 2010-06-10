@@ -50,6 +50,11 @@ public:
     //! @sa mDeformationGradient
     const double* GetData() const;
 
+    //! @brief ... set Engineering Strain
+    //! @return ... Engineering Strain (exx,eyy,gxy)
+    //! @sa mDeformationGradient
+    void SetData(double rEngineeringStrain[3]);
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

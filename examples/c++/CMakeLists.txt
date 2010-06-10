@@ -56,6 +56,19 @@ IF(MINGW)
   SET_TARGET_PROPERTIES(NonlocalDamagePlasticity PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 
+# NonlocalDamagePlasticityLocal
+#ADD_EXECUTABLE(NonlocalDamagePlasticityLocal NonlocalDamagePlasticityLocal.cpp)
+#TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityLocal NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
+#IF (ENABLE_VISUALIZE)
+#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityLocal NuToVisualize)
+#ENDIF (ENABLE_VISUALIZE)
+#IF(MUMPS_FOUND)
+#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityLocal ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+#ENDIF(MUMPS_FOUND)
+#IF(MINGW)
+#  SET_TARGET_PROPERTIES(NonlocalDamagePlasticityLocal PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+#ENDIF(MINGW)
+
 # Operators
 ADD_EXECUTABLE(TestOperators TestOperators.cpp)
 TARGET_LINK_LIBRARIES(TestOperators NuToMath NuToBase ${Boost_LIBRARIES})

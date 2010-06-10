@@ -32,3 +32,9 @@ void NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::serializ
        & BOOST_SERIALIZATION_NVP(mEpsilonP);
 }
 #endif // ENABLE_SERIALIZATION
+
+//!@ brief reinterpret as nonlocal damage2d static data
+NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::AsNonlocalDamagePlasticity2DPlaneStrain()
+{
+    return this;
+}

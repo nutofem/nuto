@@ -12,6 +12,16 @@ enum eConstitutiveType
     MISES_PLASTICITY,          //!< mises plasticity with isotropic and kinematic hardening
     NONLOCAL_DAMAGE_PLASTICITY //!< nonlocal damage model with plasticity in the effective stress space
 };
+
+enum eNonlocalDamageYieldSurface
+{
+	RANKINE_ROUNDED,            //!< Rankine yield surface (rounded in tension
+	ONLY_DP,                    //!< only Drucker-Prager yield surface
+	COMBINED_ROUNDED,           //!< Drucker-Prager and rounded Rankine
+	COMBINED_SHARP,             //!< Drucker-Prager and Rankine (no rounding)
+	TWO_DP                      //!< two Drucker Prager cones
+};
+
 }
 }
 #endif /* CONSTITUTIVEENUM_H_ */

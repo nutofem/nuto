@@ -1,5 +1,13 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+
+//just for test
+#include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
+#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
+#include <eigen2/Eigen/Core>
+
+
 int main()
 {
     try
@@ -87,8 +95,8 @@ int main()
 	myStructure.SectionSetThickness("mySection",1);
 
 	//assign constitutive law 
-	myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	myStructure.ElementTotalSetSection("mySection");
+	myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 
 	//Build nonlocal elements
 	myStructure.BuildNonlocalData(myMatLin);
@@ -117,6 +125,10 @@ int main()
         NuTo::FullMatrix<int> rowIndex;
     	NuTo::FullMatrix<int> colIndex;
     	myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
+
+
+
+
     }
     catch (NuTo::Exception& e)
     {

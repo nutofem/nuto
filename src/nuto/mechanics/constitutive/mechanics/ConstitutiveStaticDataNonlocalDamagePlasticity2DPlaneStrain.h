@@ -30,6 +30,9 @@ public:
 	//! @brief constructor
     ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain();
 
+    //!@ brief reinterpret as nonlocal damage2d static data
+    ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain();
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

@@ -29,3 +29,13 @@ const double* NuTo::EngineeringStrain2D::GetData() const
 {
     return mEngineeringStrain;
 }
+
+//! @brief ... set Engineering Strain
+//! @return ... Engineering Strain (exx,eyy,gxy)
+//! @sa mDeformationGradient
+void NuTo::EngineeringStrain2D::SetData(double rEngineeringStrain[3])
+{
+	mEngineeringStrain[0] = rEngineeringStrain[0];
+	mEngineeringStrain[1] = rEngineeringStrain[1];
+	mEngineeringStrain[2] = rEngineeringStrain[2];
+}
