@@ -10,7 +10,7 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
 OPTION(ENABLE_MUMPS "enables support for MUMPS solver" FALSE)
-OPTION(ENABLE_DEBUG "enables debug information" FALSE)
+OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" false)
 OPTION(ENABLE_SERIALIZATION "enables serialization" true)

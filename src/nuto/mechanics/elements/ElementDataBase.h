@@ -20,7 +20,6 @@ class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
 class IntegrationTypeBase;
 class ElementBase;
-class ElementWithDataBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -40,18 +39,18 @@ public:
     
     //! @brief sets the constitutive law for all integration points of the element
     //! @param rConstitutiveLaw constitutive law
-    virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief sets the constitutive law for a single integration point of the element
     //! @param rConstitutiveLaw constitutive law
     //! @param rIp integration point
-    virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
-    virtual void InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement)=0;
+    virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement)=0;
 
-   //! @brief returns the static data of an integration point
+    //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
     virtual ConstitutiveStaticDataBase* GetStaticData(int rIp);
@@ -59,7 +58,7 @@ public:
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-   virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+    virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point
@@ -76,7 +75,7 @@ public:
     //! which actually need an integration type
     //! @param rElement pointer to element
     //! @param rIntegrationType pointer to integration type
-    virtual void SetIntegrationType(const ElementWithDataBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
+    virtual void SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
     //! @brief returns a pointer to the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -101,17 +100,17 @@ public:
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
     virtual void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-    		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+    		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
     //! @brief gets the nonlocal elements for a constitutive model
     //! @param rConstitutive constitutive model
     //! @return vector to nonlocal elements
-    virtual const std::vector<const NuTo::ElementWithDataBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+    virtual const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
 
     //! @brief gets the nonlocal weights
     //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
     //! @return vector of weights for all integration points of the nonlocal element
-   virtual const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
+    virtual const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

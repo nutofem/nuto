@@ -8,7 +8,7 @@
 
 namespace NuTo
 {
-class ElementWithDataBase;
+class ElementBase;
 
 //! @author Joerg F. Unger
 //! @date Apr 27, 2010
@@ -16,13 +16,13 @@ class ElementWithDataBase;
 class VisualizeComponentNonlocalWeight : public VisualizeComponentBase
 {
 public:
-	VisualizeComponentNonlocalWeight(const ElementWithDataBase* rElement, int rElementId, int rIp);
+	VisualizeComponentNonlocalWeight(const ElementBase* rElement, int rElementId, int rIp);
 
     std::string GetComponentName()const;
 
     int GetElementId()const;
 
-    const NuTo::ElementWithDataBase* GetElement()const;
+    const NuTo::ElementBase* GetElement()const;
 
     int GetIp()const;
 
@@ -33,7 +33,7 @@ public:
 
 protected:
     int mElementId;
-    const ElementWithDataBase* mElement;
+    const ElementBase* mElement;
     int	mIp;
     int mConstitutiveId;
 };

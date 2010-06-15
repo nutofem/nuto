@@ -2,14 +2,16 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
+#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/Solid.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 
 //! @brief constructor
 NuTo::Solid::Solid(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
 		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
-        NuTo::ElementWithDataBase::ElementWithDataBase(rStructure, rElementDataType, rIntegrationType, rIpDataType)
+        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {
 }
 
@@ -327,7 +329,7 @@ void NuTo::Solid::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
 }
 
 //! @brief Update the static data of an element
-void NuTo::Solid::UpdateStaticData()
+void NuTo::Solid::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
 {
     //calculate coordinates
     std::vector<double> nodeCoord(GetNumDofs());
@@ -372,7 +374,17 @@ void NuTo::Solid::UpdateStaticData()
         constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Solid::UpdateStaticData] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        switch(rUpdateType)
+        {
+        case NuTo::Element::STATICDATA:
+            constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        break;
+        case NuTo::Element::TMPSTATICDATA:
+            constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        break;
+        default:
+        	throw MechanicsException("[NuTo::Solid::UpdateStaticData] update static data flag not known (neither static not tmpstatic data");
+        }
     }
 }
 

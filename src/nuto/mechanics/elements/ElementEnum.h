@@ -18,6 +18,12 @@ enum eElementType
     TRUSS1D3N,           //!< one-dimensional truss element with three nodes
     VOXEL8N              //!< three-dimensional cube element of a grid structure with 8 coincident nodes
 };
+
+enum eUpdateType
+{
+    STATICDATA=0,
+    TMPSTATICDATA
+};
 }
 }
 #endif /* ELEMENTENUM_H_ */

@@ -31,13 +31,13 @@ class ElementDataConstitutiveIpNonlocal : public ElementDataConstitutiveBase, pu
 
 public:
 	//! @brief constructor
-	ElementDataConstitutiveIpNonlocal(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
+	ElementDataConstitutiveIpNonlocal(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
 	virtual ~ElementDataConstitutiveIpNonlocal();
 
 	//! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
-    virtual void InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement);
+    virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement);
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
@@ -46,7 +46,7 @@ public:
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
      void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-    		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+    		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
      //! @brief gets the nonlocal weights
      //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()

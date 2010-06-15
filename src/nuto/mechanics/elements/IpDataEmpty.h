@@ -15,7 +15,7 @@ public:
 	IpDataEmpty() : IpDataBase()
 	{}
 
-	void Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
+	void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 	{}
 
 };

@@ -17,7 +17,7 @@ public:
 
 	virtual ~IpDataStaticDataNonlocal();
 
-	virtual void Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive);
+	virtual void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive);
 };
 }
 #endif /* IPDATASTATICDATANONLOCAL_H_ */

@@ -4,7 +4,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementDataNonlocalBase.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include <assert.h>
 
 NuTo::ElementDataNonlocalBase::ElementDataNonlocalBase() :  NuTo::ElementDataBase::ElementDataBase()
@@ -17,7 +17,7 @@ NuTo::ElementDataNonlocalBase::~ElementDataNonlocalBase()
 	//std::cout << "NuTo::ElementDataNonlocalBase::~ElementDataNonlocalBase()" << std::endl;
 }
 
-const std::vector<const NuTo::ElementWithDataBase*>&
+const std::vector<const NuTo::ElementBase*>&
   NuTo::ElementDataNonlocalBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
 {
     if (rConstitutive==mConstitutive)
@@ -43,7 +43,7 @@ const std::vector<const NuTo::ElementWithDataBase*>&
 //! @brief adds an element to the nonlocal elements
 //! @param rConstitutive  constitutive model
 //! @return the local element number, the element is either append to the list, or the existing local number is returned
-int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
+int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 {
 	printf("\n[NuTo::ElementDataNonlocalBase::AddNonlocalElement %p %p\n]",static_cast<const void*>(rConstitutive),static_cast<const void*>(mConstitutive));
 	if (mConstitutive==0)

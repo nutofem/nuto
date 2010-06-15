@@ -7,6 +7,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
 NuTo::IpDataBase::~IpDataBase()
 {
@@ -29,4 +30,19 @@ void NuTo::IpDataBase::SetNonlocalWeight(int rElement,int rNonlocalIp,int rNumIp
 const std::vector<double>& NuTo::IpDataBase::GetNonlocalWeights(int rNonlocalElement)const
 {
 	throw NuTo::MechanicsException("[IpDataBase::GetNonlocalWeights] This Ip data type cannot store nonlocal weights - check the ip data type.");
+}
+
+NuTo::ConstitutiveStaticDataBase* NuTo::IpDataBase::GetStaticData()
+{
+	throw NuTo::MechanicsException("[IpDataBase::GetStaticData] This Ip data type has no static data.");
+}
+
+const NuTo::ConstitutiveStaticDataBase* NuTo::IpDataBase::GetStaticData()const
+{
+	throw NuTo::MechanicsException("[IpDataBase::GetStaticData] This Ip data type has no static data.");
+}
+
+void NuTo::IpDataBase::SetStaticData(ConstitutiveStaticDataBase* rStaticData)
+{
+	throw NuTo::MechanicsException("[IpDataBase::SetStaticData] This Ip data type has no static data.");
 }

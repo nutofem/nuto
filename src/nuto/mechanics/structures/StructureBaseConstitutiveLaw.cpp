@@ -71,6 +71,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         // add section to map (insert does not allow const keys!!!!)
         this->mConstitutiveLawMap.insert(rIdent, ConstitutiveLawPtr);
+        if (ConstitutiveLawPtr->HaveTmpStaticData())
+            mHaveTmpStaticData = true;
     }
     else
     {
@@ -429,7 +431,7 @@ void NuTo::StructureBase::ConstitutiveLawSetCompressiveStrength(int rIdent, doub
     try
     {
         ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetNonlocalRadius(rCompressiveStrength);
+        ConstitutiveLawPtr->SetCompressiveStrength(rCompressiveStrength);
     }
     catch (NuTo::MechanicsException& e)
     {

@@ -11,7 +11,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/sections/SectionBase.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 NuTo::ConstitutiveEngineeringStressStrain::ConstitutiveEngineeringStressStrain() : ConstitutiveBase()
 {
@@ -139,12 +139,8 @@ double NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStre
     GetEngineeringStrain(rElement,rIp,rDeformationGradient, strain);
 
     //get previous data
-	const ElementWithDataBase* elementWithDataBasePtr(dynamic_cast<const NuTo::ElementWithDataBase* >(rElement));
-	if (elementWithDataBasePtr==0)
-		throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] Element has no data.");
-
 	const ConstitutiveStaticDataPrevEngineeringStressStrain3D*
-	    staticDataPtr(dynamic_cast<const NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D* >(elementWithDataBasePtr->GetStaticData(rIp)));
+	    staticDataPtr(dynamic_cast<const NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D* >(rElement->GetStaticData(rIp)));
 	if (staticDataPtr==0)
 	{
 		throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] Static data is not derived from StaticDataPrevStressStrain.");
@@ -221,12 +217,8 @@ double NuTo::ConstitutiveEngineeringStressStrain::GetElasticEnergy_EngineeringSt
 	GetDeltaElasticEngineeringStrain(rElement,rIp,rDeformationGradient, deltaElasticStrain);
 
 	//get previous data
-	const ElementWithDataBase* elementWithDataBasePtr(dynamic_cast<const NuTo::ElementWithDataBase* >(rElement));
-	if (elementWithDataBasePtr==0)
-		throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] Element has no data.");
-
 	const ConstitutiveStaticDataPrevEngineeringStressStrain3D*
-		staticDataPtr(dynamic_cast<const NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D* >(elementWithDataBasePtr->GetStaticData(rIp)));
+		staticDataPtr(dynamic_cast<const NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D* >(rElement->GetStaticData(rIp)));
 	if (staticDataPtr==0)
 	{
 		throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] Static data is not derived from StaticDataPrevStressStrain.");

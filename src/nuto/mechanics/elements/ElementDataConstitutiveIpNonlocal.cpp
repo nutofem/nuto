@@ -1,9 +1,10 @@
 // $Id: $
 #include <assert.h>
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
 
 
-NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveIpNonlocal(const ElementWithDataBase *rElement,
+NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveIpNonlocal(const ElementBase *rElement,
 		const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) :
    NuTo::ElementDataBase::ElementDataBase(), ElementDataConstitutiveBase(), ElementDataNonlocalBase() , ElementDataIpBase(rElement,rIntegrationType,rIpDataType)
 {
@@ -17,7 +18,7 @@ NuTo::ElementDataConstitutiveIpNonlocal::~ElementDataConstitutiveIpNonlocal()
 
 //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
 //! @param rElement element
-void NuTo::ElementDataConstitutiveIpNonlocal::InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement)
+void NuTo::ElementDataConstitutiveIpNonlocal::InitializeUpdatedConstitutiveLaw(const ElementBase* rElement)
 {
 	//reinitialize ip data (f.e. if different static data or nonlocal data are required with another constitutive model)
 	for (int theIp=0; theIp<(int)mIpData.size();theIp++)
@@ -33,7 +34,7 @@ void NuTo::ElementDataConstitutiveIpNonlocal::InitializeUpdatedConstitutiveLaw(c
 //! @param rNonlocalIp local ip number of the nonlocal ip
 //! @param rWeight weight
 void NuTo::ElementDataConstitutiveIpNonlocal::SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight)
+		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
 {
     int oldNumNonlocalElements(mNonlocalElements.size());
 	//search for nonlocal element in existing nonlocal elements (get back local element number)

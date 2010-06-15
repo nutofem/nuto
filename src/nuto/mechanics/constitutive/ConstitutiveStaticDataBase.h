@@ -41,6 +41,9 @@ public:
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain();
 
+    //!@ brief reinterpret as nonlocal damage2d static data
+    virtual const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain()const;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

@@ -30,13 +30,13 @@ class ElementDataConstitutiveIp : public ElementDataConstitutiveBase, public Ele
 
 public:
     //! @brief constructor
-	ElementDataConstitutiveIp(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
+	ElementDataConstitutiveIp(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
 	virtual ~ElementDataConstitutiveIp();
 
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
-   virtual void InitializeUpdatedConstitutiveLaw(const ElementWithDataBase* rElement);
+   virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

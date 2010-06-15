@@ -14,7 +14,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 #include <ANN/ANN.h>
 
@@ -549,7 +549,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 {
 	double R(rConstitutive->GetNonlocalRadius());
 	double R2(R*R);
-    std::vector<ElementWithDataBase*> indexElement;
+    std::vector<ElementBase*> indexElement;
     std::vector<int> indexIp;
     std::vector<double> indexIpVolume;
 
@@ -558,7 +558,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
     boost::ptr_map<int,ElementBase>::iterator elementIter;
     for (elementIter = this->mElementMap.begin(); elementIter!= this->mElementMap.end(); elementIter++)
     {
-        ElementWithDataBase* elementPtr = dynamic_cast<ElementWithDataBase*>(elementIter->second);
+        ElementBase* elementPtr = elementIter->second;
         if (elementPtr==0)
         	continue;
 
@@ -621,7 +621,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
     for(unsigned int theIp = 0; theIp < indexIp.size(); theIp++)
     {
     	std::cout << "ip " << theIp << std::endl;
-    	ElementWithDataBase* elementPtr = indexElement[theIp];
+    	ElementBase* elementPtr = indexElement[theIp];
         int localIpNumber = indexIp[theIp];
         unsigned int numNeighborPoints = 0;
         do

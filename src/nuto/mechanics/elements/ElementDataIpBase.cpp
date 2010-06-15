@@ -3,14 +3,14 @@
 // created Apr 28, 2010 by Joerg F. Unger
 
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/IpDataEmpty.h"
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 //! @brief constructor
-NuTo::ElementDataIpBase::ElementDataIpBase(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) : NuTo::ElementDataBase()
+NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) : NuTo::ElementDataBase()
 {
     //std::cout << "ElementDataIpBase constructor " << std::endl;
 	mIntegrationType = rIntegrationType;
@@ -51,7 +51,7 @@ NuTo::ElementDataIpBase::~ElementDataIpBase()
 //! which actually need an integration type
 //! @param rElement pointer to element
 //! @param rIntegrationType pointer to integration type
-void NuTo::ElementDataIpBase::SetIntegrationType(const ElementWithDataBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
+void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
 	mIntegrationType = rIntegrationType;
 	mIpData.clear();
@@ -86,5 +86,22 @@ void NuTo::ElementDataIpBase::SetIntegrationType(const ElementWithDataBase* rEle
 const NuTo::IntegrationTypeBase* NuTo::ElementDataIpBase::GetIntegrationType()const
 {
 	return mIntegrationType;
+}
+//! @brief returns the static data of an integration point
+//! @param rIp integration point
+//! @return static data
+NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataIpBase::GetStaticData(int rIp)
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+    return mIpData[rIp].GetStaticData();
+}
+
+//! @brief returns the static data of an integration point
+//! @param rIp integration point
+//! @return static data
+const NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataIpBase::GetStaticData(int rIp)const
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+	return mIpData[rIp].GetStaticData();
 }
 

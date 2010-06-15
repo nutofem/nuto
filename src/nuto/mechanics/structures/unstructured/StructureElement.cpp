@@ -215,7 +215,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
 {
 
 	//const IntegrationTypeBase *ptrIntegrationType;
-	ElementBase* ptrElement;
+	ElementBase* ptrElement(0);
     switch (rType)
 	{
     case NuTo::Element::TRUSS1D2N:

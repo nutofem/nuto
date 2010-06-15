@@ -158,6 +158,30 @@ public:
     void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient) const;
 
+    //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+            const DeformationGradient1D& rDeformationGradient) const;
+
+    //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+            const DeformationGradient2D& rDeformationGradient) const;
+
+    //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+            const DeformationGradient3D& rDeformationGradient) const;
+
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const;
@@ -346,9 +370,8 @@ public:
             const EngineeringStrain2D& rStrain,
             const double rPrevPlasticStrain[4],
             const double rPrevTotalStrain[3],
-            double rPrevEqPlasticStrain,
             Eigen::Matrix<double,4,1>& rEpsilonP,
-            double& rNewEqPlasticStrain,
+            double& rDeltaEqPlasticStrain,
             Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon)const;
 
     //! @brief calculates the rounded rankine yield surface
@@ -384,6 +407,13 @@ public:
     //! @return false, if the stress is on the hydrostatic axis otherwise true
     bool YieldSurfaceDruckerPrager2DDerivatives(Eigen::Matrix<double,4,1>& dF_dsigma,Eigen::Matrix<double,4,4>* d2F_d2sigma,
     		Eigen::Matrix<double,4,1>& elasticStress, double BETA)const;
+
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @return ... see brief explanation
+    virtual bool HaveTmpStaticData() const
+    {
+    	return true;
+    }
 
 protected:
     //! @brief ... Young's modulus \f$ E \f$
@@ -443,9 +473,23 @@ protected:
     void CheckFractureEnergy(double rFractureEnergy) const;
 
     //! @brief ... calculate the length of the element in plane coordinates (square root of area)
-    void CalculateEquivalentLength(const ElementBase* rElement, double& l_eq_plane, double& l_eq_circ) const;
+    //! @brief ... an interpolation is made based on the principal strains in plane and thickness direction
+    double CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP) const;
 
+    //! @brief ... calculate the nonlocal equivalente plastic strain of an integration point
+    //! @param rElement Element
+    //! @param rIp integration point
+    //! @return equivalente plastic strain
+    double CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp)const;
 
+    //! @brief ... calculate the isotropic damage variable from the nonlocal equivalente plastic strain
+    //! @param rEpsilonPEq nonlocal equivalente plastic strain
+    //! @return isotropic damage variable
+    double CalculateDamage(double rNonlocalEpsilonPEq, double rKappaUnscaled)const;
+
+    //! @brief ... calculate the unscaled kappa_d used for scaling the equivalent plastic strain (related to the fracture energy)
+    //! @brief ... return kappa_d
+    double CalculateKappaD()const;
 };
 }
 #endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

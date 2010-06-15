@@ -3,7 +3,7 @@
 // created Apr 29, 2010 by Joerg F. Unger
 
 #include "nuto/mechanics/elements/IpDataStaticData.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 NuTo::IpDataStaticData::IpDataStaticData() : IpDataBase()
 {
@@ -25,7 +25,7 @@ NuTo::IpDataStaticData::~IpDataStaticData()
     }
 #endif  // ENABLE_SERIALIZATION
 
-void NuTo::IpDataStaticData::Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
+void NuTo::IpDataStaticData::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 {
 	if (mStaticData!=0)
 		delete mStaticData;

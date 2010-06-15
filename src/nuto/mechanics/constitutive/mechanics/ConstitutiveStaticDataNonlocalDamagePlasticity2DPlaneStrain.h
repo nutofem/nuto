@@ -33,6 +33,9 @@ public:
     //!@ brief reinterpret as nonlocal damage2d static data
     ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain();
 
+    //!@ brief reinterpret as nonlocal damage2d static data
+    const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain()const;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -45,14 +48,17 @@ protected:
     //! @brief accumulated plastic strain scaled by nonlocal radius and a factor considering the fracture energy
     double mKappa;
 
-    //! @brief nonlocal damage variable
-    double mOmega;
-
     //! @brief plastic strain
     double mEpsilonP[4];
 
-    //! @brief derivative of local plastic strain with respect to local total strain (row wise storage 4x4)
-    double mDEpsilonPdEpsilon[16];
+    //! @brief tmp static data derivative of local plastic strain with respect to local total strain (row wise storage 4x4)
+    double mTmpdEpsilonPdEpsilon[16];
+
+    //! @brief tmp static data equivalente plastic strain
+    double mTmpKappa;
+
+    //! @brief tmp static data plastic strain
+    double mTmpEpsilonP[4];
 };
 
 }

@@ -38,7 +38,7 @@ public:
 
     virtual ~ElementDataConstitutiveBase();
 
-    virtual void SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point

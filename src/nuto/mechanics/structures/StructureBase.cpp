@@ -18,7 +18,6 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
@@ -61,6 +60,9 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip]=
         NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
+
+    mHaveTmpStaticData = false;
+    mUpdateTmpStaticDataRequired = true;
 }
 
 int NuTo::StructureBase::GetDimension()
@@ -141,13 +143,11 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
 {
 	try
 	{
-		const ElementWithDataBase *elementWithDataBase = dynamic_cast<const ElementWithDataBase* >(ElementGetElementPtr(rElementId));
-		if (elementWithDataBase==0)
-			throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Element to be visualized has no ip data (-> no nonlocal data)");
-	    int numIp = elementWithDataBase->GetNumIntegrationPoints();
+		const ElementBase *elementBase = ElementGetElementPtr(rElementId);
+	    int numIp = elementBase->GetNumIntegrationPoints();
 	    if (rIp<0 || rIp>=numIp)
 			throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Integration point number is out of range.");
-		mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight(elementWithDataBase,rElementId,rIp));
+		mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight(elementBase,rElementId,rIp));
 	}
     catch (NuTo::MechanicsException &e)
     {
@@ -207,6 +207,12 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
         }
         itWhat++;
     }
+
+    if (mHaveTmpStaticData && mUpdateTmpStaticDataRequired)
+    {
+    	throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] Update of tmpStaticData required first.");
+    }
+
     for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
     {
         rElements[ElementCount]->Visualize(Visualize, mVisualizeComponents);
@@ -244,6 +250,11 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
     {
         e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
         throw e;
+    }
+    //update tmpStaticData if required
+    if (mUpdateTmpStaticDataRequired)
+    {
+    	this->ElementTotalUpdateTmpStaticData();
     }
 
     // resize output objects
@@ -314,6 +325,12 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
         throw e;
     }
 
+    //update tmpStaticData if required
+    if (mHaveTmpStaticData)
+    {
+    	this->ElementTotalUpdateTmpStaticData();
+    }
+
     // resize output objects
     rMatrix.Resize(this->mNumActiveDofs);
     rVector.Resize(this->mNumActiveDofs, 1);
@@ -368,6 +385,7 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
             throw e;
         }
     }
+
     rVector.Resize(this->mNumActiveDofs, 1);
     FullMatrix<double> dependentDofLoadVector(this->mNumDofs - this->mNumActiveDofs,1);
 
@@ -400,6 +418,13 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
             throw e;
         }
     }
+
+    //update tmpStaticData if required
+    if (mHaveTmpStaticData)
+    {
+    	this->ElementTotalUpdateTmpStaticData();
+    }
+
     rVector.Resize(this->mNumActiveDofs, 1);
     FullMatrix<double> dependentDofGradientVector(this->mNumDofs - this->mNumActiveDofs,1);
 

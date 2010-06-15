@@ -12,7 +12,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
 namespace NuTo
 {
 class LinearElastic;

@@ -3,7 +3,7 @@
 // created Apr 29, 2010 by Joerg F. Unger
 
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::IpDataBase() ,
     NuTo::IpDataStaticDataBase::IpDataStaticDataBase() , NuTo::IpDataNonlocalBase::IpDataNonlocalBase()
 {
@@ -12,9 +12,11 @@ NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::Ip
 
 NuTo::IpDataStaticDataNonlocal::~IpDataStaticDataNonlocal()
 {
+	if (mStaticData!=0)
+		delete mStaticData;
 }
 
-void NuTo::IpDataStaticDataNonlocal::Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)
+void NuTo::IpDataStaticDataNonlocal::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 {
 	if (mStaticData!=0)
 		delete mStaticData;

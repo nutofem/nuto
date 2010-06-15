@@ -2,7 +2,7 @@
 // VisualizeComponentBase.cpp
 // created Apr 27, 2010 by Joerg F. Unger
 
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/visualize/VisualizeComponentBase.h"
 #include "nuto/visualize/VisualizeException.h"
 
@@ -11,7 +11,7 @@ int NuTo::VisualizeComponentBase::GetElementId()const
 	throw VisualizeException("[NuTo::VisualizeComponentBase::GetElementId] Visualization component has no ElementId.");
 }
 
-const NuTo::ElementWithDataBase* NuTo::VisualizeComponentBase::GetElement()const
+const NuTo::ElementBase* NuTo::VisualizeComponentBase::GetElement()const
 {
 	throw VisualizeException("[NuTo::VisualizeComponentBase::GetElement] Visualization component has no Element.");
 }

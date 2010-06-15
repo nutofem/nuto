@@ -15,7 +15,7 @@ NuTo::ElementDataBase::~ElementDataBase()
 
     //! @brief sets the constitutive law for all integration points of the element
 //! @param rConstitutiveLaw constitutive law
-void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementWithDataBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw)
+void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw)
 {
 	throw MechanicsException("[NuTo::ElementDataBase::SetConstitutiveLaw] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
@@ -23,7 +23,7 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementWithDataBase* rEleme
 //! @brief sets the constitutive law for a single integration point of the element
 //! @param rConstitutiveLaw constitutive law
 //! @param rIp integration point
-void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementWithDataBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw)
+void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw)
 {
 	throw MechanicsException("[NuTo::ElementDataBase::SetConstitutiveLaw] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
@@ -33,7 +33,7 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementWithDataBase* rEleme
 //! @return static data
 NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataBase::GetStaticData(int rIp)
 {
-	throw MechanicsException("[NuTo::ElementDataBase::GetStaticData] Not implemented for the Ele - check the allocated element data type.mentDataClass.");
+	throw MechanicsException("[NuTo::ElementDataBase::GetStaticData] Not implemented for the ElementDataClass - check the allocated element data type.");
 }
 
 //! @brief returns the static data of an integration point
@@ -62,7 +62,7 @@ const NuTo::ConstitutiveBase* NuTo::ElementDataBase::GetConstitutiveLaw(int rIp)
 
 //! @brief sets the integration type of an element
 //! @param rIntegrationType pointer to integration type
-void NuTo::ElementDataBase::SetIntegrationType(const ElementWithDataBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
+void NuTo::ElementDataBase::SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
 	throw MechanicsException("[NuTo::ElementDataBase::SetIntegrationType] Not implemented for the ElementDataClass - check the allocated element data type.");
 }
@@ -81,7 +81,7 @@ const NuTo::IntegrationTypeBase* NuTo::ElementDataBase::GetIntegrationType()cons
 //! @param rNonlocalIp local ip number of the nonlocal ip
 //! @param rWeight weight
  void NuTo::ElementDataBase::SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight)
+		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
 {
     throw MechanicsException("[NuTo::ElementDataBase::AddNonlocalIp] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
@@ -89,7 +89,7 @@ const NuTo::IntegrationTypeBase* NuTo::ElementDataBase::GetIntegrationType()cons
 //! @brief gets the nonlocal elements for a constitutive model
 //! @param rConstitutive constitutive model
 //! @return vector to nonlocal elements
-const std::vector<const NuTo::ElementWithDataBase*>& NuTo::ElementDataBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
+const std::vector<const NuTo::ElementBase*>& NuTo::ElementDataBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
 {
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalElements] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }

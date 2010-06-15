@@ -15,8 +15,9 @@ int main()
 	//create structure
 	NuTo::Structure myStructure(2);
 
+	//3x3 nodes 2x2 element grid
 	//create nodes
-        NuTo::FullMatrix<double> Coordinates(2,1);
+    NuTo::FullMatrix<double> Coordinates(2,1);
 	Coordinates(0,0) = 0.0;
 	Coordinates(1,0) = 0.0;
 	int node1 = myStructure.NodeCreate("displacements",Coordinates);
@@ -59,26 +60,26 @@ int main()
 	Incidence(1,0) = node2;
 	Incidence(2,0) = node5;
 	Incidence(3,0) = node4;
-        int myElement1 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
-        myStructure.ElementSetIntegrationType(myElement1,"2D4NGauss1Ip","StaticDataNonlocal");
+    int myElement1 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+//    myStructure.ElementSetIntegrationType(myElement1,"2D4NGauss1Ip","StaticDataNonlocal");
 		
 	Incidence(0,0) = node2;
 	Incidence(1,0) = node3;
 	Incidence(2,0) = node6;
 	Incidence(3,0) = node5;
-        int myElement2 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    int myElement2 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 		
 	Incidence(0,0) = node4;
 	Incidence(1,0) = node5;
 	Incidence(2,0) = node8;
 	Incidence(3,0) = node7;
-        int myElement3 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    int myElement3 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 		
 	Incidence(0,0) = node5;
 	Incidence(1,0) = node6;
 	Incidence(2,0) = node9;
 	Incidence(3,0) = node8;
-        int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");	
+    int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 	
 	//create constitutive law
 	int myMatLin = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity");
@@ -120,6 +121,35 @@ int main()
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement4,3);
 	myStructure.ExportVtkDataFile("PlaneNonlocalWeights.vtk");
         
+	//apply displacements
+	double rightDisp(1);
+	NuTo::FullMatrix<double>matrixRightDisp(2,1);
+	matrixRightDisp.SetValue(0,0,rightDisp);
+	matrixRightDisp.SetValue(1,0,0.);
+
+	myStructure.NodeSetDisplacements(node3,matrixRightDisp);
+	myStructure.NodeSetDisplacements(node6,matrixRightDisp);
+	myStructure.NodeSetDisplacements(node9,matrixRightDisp);
+
+	NuTo::FullMatrix<double>matrixCenterDisp(2,1);
+	matrixCenterDisp.SetValue(0,0,0.5*rightDisp);
+	matrixCenterDisp.SetValue(1,0,0.);
+
+	myStructure.NodeSetDisplacements(node2,matrixCenterDisp);
+	myStructure.NodeSetDisplacements(node5,matrixCenterDisp);
+	myStructure.NodeSetDisplacements(node8,matrixCenterDisp);
+
+	NuTo::FullMatrix<double>matrixLeftDisp(2,1);
+	matrixLeftDisp.SetValue(0,0,0.0);
+	matrixLeftDisp.SetValue(1,0,0.);
+
+	myStructure.NodeSetDisplacements(node2,matrixLeftDisp);
+	myStructure.NodeSetDisplacements(node5,matrixLeftDisp);
+	myStructure.NodeSetDisplacements(node8,matrixLeftDisp);
+
+	myStructure.ElementTotalUpdateTmpStaticData();
+	myStructure.ElementTotalUpdateTmpStaticData();
+
 	//calculate the stiffness matrix
 	NuTo::FullMatrix<double> Ke;
         NuTo::FullMatrix<int> rowIndex;

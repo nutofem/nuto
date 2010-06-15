@@ -17,7 +17,7 @@ class IpDataBase;
 class ElementDataIpBase : public virtual ElementDataBase
 {
 public:
-	ElementDataIpBase(const ElementWithDataBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
+	ElementDataIpBase(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
 	virtual ~ElementDataIpBase();
 
@@ -26,13 +26,23 @@ public:
     //! which actually need an integration type
     //! @param rElement pointer to element
     //! @param rIntegrationType pointer to integration type
-    void SetIntegrationType(const ElementWithDataBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
+    void SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
     //! @brief returns a pointer to the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
     //! @return pointer to integration type
     const IntegrationTypeBase* GetIntegrationType()const;
+
+    //! @brief returns the static data of an integration point
+    //! @param rIp integration point
+    //! @return static data
+    ConstitutiveStaticDataBase* GetStaticData(int rIp);
+
+    //! @brief returns the static data of an integration point
+    //! @param rIp integration point
+    //! @return static data
+    const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
 
 protected:
     const IntegrationTypeBase *mIntegrationType;

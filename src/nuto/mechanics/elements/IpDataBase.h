@@ -7,7 +7,8 @@
 namespace NuTo
 {
 class ConstitutiveBase;
-class ElementWithDataBase;
+class ConstitutiveStaticDataBase;
+class ElementBase;
 //! @author Joerg F. Unger
 //! @date Apr 28, 2010
 //! @brief ...
@@ -17,7 +18,7 @@ public :
 
 	virtual ~IpDataBase();
 
-	virtual void Initialize(const ElementWithDataBase* rElement, const ConstitutiveBase* rConstitutive)=0;
+	virtual void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)=0;
 
 	//! @brief adds the weight to an integration point, eventually reallocates the data
 	//! @param rNonlocalElement the Element (local number from the nonlocal elements)
@@ -30,6 +31,12 @@ public :
 	//! @param rNonlocalElement nonlocal element (between 0 and nonlocal elements.size stored in nonlocal element data)
 	//! @return nonlocal weights
 	virtual const std::vector<double>& GetNonlocalWeights(int rNonlocalElement)const;
+
+	virtual ConstitutiveStaticDataBase* GetStaticData();
+
+    virtual const ConstitutiveStaticDataBase* GetStaticData()const;
+
+    virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
 };
 }
 #endif /* IPDATABASE_H_ */

@@ -10,7 +10,6 @@
 NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain()
    : NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain()
 {
-	mOmega = 0.;
 	mKappa = 0.;
 
 	mEpsilonP[0] = 0.;
@@ -27,7 +26,6 @@ template<class Archive>
 void NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::serialize(Archive & ar, const unsigned int version)
 {
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain)
-       & BOOST_SERIALIZATION_NVP(mOmega)
        & BOOST_SERIALIZATION_NVP(mKappa)
        & BOOST_SERIALIZATION_NVP(mEpsilonP);
 }
@@ -35,6 +33,12 @@ void NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::serializ
 
 //!@ brief reinterpret as nonlocal damage2d static data
 NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::AsNonlocalDamagePlasticity2DPlaneStrain()
+{
+    return this;
+}
+
+//!@ brief reinterpret as nonlocal damage2d static data
+const NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::AsNonlocalDamagePlasticity2DPlaneStrain()const
 {
     return this;
 }

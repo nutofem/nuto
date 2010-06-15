@@ -473,6 +473,39 @@ void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(E
 	   //no static data required -> empty routine
 }
 
+//! @brief ... update tmp static data (history variables) of the constitutive relationship
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+		const DeformationGradient1D& rDeformationGradient) const
+{
+	//no need to update tmp static data
+}
+
+
+//! @brief ... update mp static data (history variables) of the constitutive relationship
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+		const DeformationGradient2D& rDeformationGradient) const
+{
+	//no need to update tmp static data
+}
+
+//! @brief ... update mp static data (history variables) of the constitutive relationship
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+		const DeformationGradient3D& rDeformationGradient) const
+{
+	//no need to update tmp static data
+}
 
 //! @brief ... create new static data object for an integration point
 //! @return ... pointer to static data object

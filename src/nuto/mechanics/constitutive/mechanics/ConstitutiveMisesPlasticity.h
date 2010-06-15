@@ -164,6 +164,30 @@ public:
     void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient) const;
 
+    //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    		const DeformationGradient1D& rDeformationGradient) const;
+
+    //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    		const DeformationGradient2D& rDeformationGradient) const;
+
+    //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    		const DeformationGradient3D& rDeformationGradient) const;
+
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const;
@@ -292,6 +316,13 @@ public:
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const;
+
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @return ... see brief explanation
+    virtual bool HaveTmpStaticData() const
+    {
+    	return false;
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

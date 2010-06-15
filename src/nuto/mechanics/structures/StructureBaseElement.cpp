@@ -241,7 +241,8 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
 //! @param rConstitutive material pointer
 void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive)
 {
-    rElement->SetConstitutiveLaw(rConstitutive);
+    std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << std::endl;
+	rElement->SetConstitutiveLaw(rConstitutive);
 }
 
 
@@ -592,7 +593,7 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
     {
         try
         {
-        	elementVector[countElement]->UpdateStaticData();
+        	elementVector[countElement]->UpdateStaticData(NuTo::Element::STATICDATA);
         }
         catch(NuTo::MechanicsException e)
         {
@@ -608,6 +609,36 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
             ss << ElementGetId(elementVector[countElement]);
         	throw NuTo::MechanicsException
         	   ("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element "
+        			   + ss.str() + ".");
+        }
+    }
+}
+
+//! @brief updates the history data of a all elements
+void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
+{
+    std::vector<ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+    {
+        try
+        {
+        	elementVector[countElement]->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[countElement]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] Error updating temporary static data for element "
+            		+ ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[countElement]);
+        	throw NuTo::MechanicsException
+        	   ("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] Error updating temporary static data for element "
         			   + ss.str() + ".");
         }
     }

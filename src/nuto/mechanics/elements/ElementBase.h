@@ -13,11 +13,12 @@
 
 #include <boost/ptr_container/ptr_list.hpp>
 
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
@@ -34,6 +35,8 @@ class StructureBase;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class VisualizeComponentBase;
+class ElementDataBase;
+class IntegrationTypeBase;
 
 
 //! @author Jörg F. Unger, ISM
@@ -49,9 +52,10 @@ class ElementBase
 public:
     //! @brief constructor
     //! @param rStructure ... structure to which the element belongs
-    ElementBase(const StructureBase* rStructure) : mStructure(rStructure) {};
+    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+    		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType);
 
-    virtual ~ElementBase() {}
+    virtual ~ElementBase();
 
     //! @brief returns the enum (type of the element)
     //! @return enum
@@ -83,17 +87,17 @@ public:
 
     //! @brief sets the constitutive law for an element
     //! @param rConstitutiveLaw Pointer to constitutive law entry
-    virtual void SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)=0;
+    virtual void SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief returns a pointer to the constitutive law for an integration point
     //! @param integration point number (counting from zero)
     //! @return pointer to constitutive law
-    virtual const ConstitutiveBase* GetConstitutiveLaw(int rIp)const=0;
+    const ConstitutiveBase* GetConstitutiveLaw(int rIp)const;
 
     //! @brief returns a pointer to the constitutive law for an integration point
     //! @param integration point number (counting from zero)
     //! @return pointer to constitutive law
-    virtual ConstitutiveBase* GetConstitutiveLaw(int rIp)=0;
+    ConstitutiveBase* GetConstitutiveLaw(int rIp);
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -118,6 +122,15 @@ public:
     //! which actually need an integration type
     //! @return pointer to integration type
     virtual const IntegrationTypeBase* GetIntegrationType()const;
+
+    //! @brief returns the number of integration points
+    //! @return number of integration points
+    int GetNumIntegrationPoints()const;
+
+    //! @brief returns the weight of an integration point
+    //! @param rIpNum integration point
+    //! @return weight
+    double GetIntegrationPointWeight(int rIpNum)const;
 
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
@@ -168,10 +181,15 @@ public:
     //! @brief Returns the static data for an integration point of an element
     //! @param rIp integration point
     //! @return static data
-    virtual  ConstitutiveStaticDataBase* GetStaticData(int rIp)const=0;
+    virtual  ConstitutiveStaticDataBase* GetStaticData(int rIp);
+
+    //! @brief Returns the static data for an integration point of an element
+    //! @param rIp integration point
+    //! @return static data
+    virtual  const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
 
     //! @brief Update the static data of an element
-    virtual  void UpdateStaticData()=0;
+    virtual  void UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
     //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
@@ -203,9 +221,38 @@ public:
     //! @param rGlobalDisplacements ... three-dimension global point displacements
     virtual void InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
 
+    //! @brief adds the nonlocal weight to an integration point
+    //! @param rLocalIpNumber local Ip
+    //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
+    //! @param rNonlocalElement element of the nonlocal ip
+    //! @param rNonlocalIp local ip number of the nonlocal ip
+    //! @param rWeight weight
+    void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
+    		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+
+    //! @brief returns a vector of weights for an ip
+    //! @param rIp local Ip
+    //! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
+    //! @retrun weights for each integration point of the nonlocal element
+    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
+
+    //! @brief returns a vector of the nonlocal elements
+    //! @param rConstitutive constitutive model for the nonlocale elements
+    //! @retrun nonlocal elements
+    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+
     //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
     //! @return Area
     virtual double CalculateArea()const;
+
+    //! @brief calculates the volume of an integration point (weight * detJac)
+    //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
+    virtual void GetIntegrationPointVolume(std::vector<double>& rVolume)const=0;
+
+    //! @brief returns the coordinates of an integration point
+    //! @param rIpNum integration point
+    //! @param rCoordinates coordinates to be returned
+    virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -219,7 +266,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const = 0;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 #endif // ENABLE_VISUALIZE
 protected:
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
@@ -238,6 +285,9 @@ protected:
 
     //the base class of the elements must not contain any data apart from a const pointer to the structure
     const StructureBase* mStructure;
+
+    //the base class of the elements data
+    ElementDataBase *mElementData;
 
 };
 }//namespace NuTo

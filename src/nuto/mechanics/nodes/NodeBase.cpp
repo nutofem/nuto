@@ -125,14 +125,14 @@ void NuTo::NodeBase::SetDisplacements2D(const double rDisplacements[2])
 //! @return displacement
 void NuTo::NodeBase::GetDisplacements3D(double rCoordinates[3])const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 2D displacements.");
+	throw MechanicsException("[NuTo::NodeBase::GetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
 }
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
 void NuTo::NodeBase::SetDisplacements3D(const double rDisplacements[3])
 {
-	throw MechanicsException("[NuTo::NodeBase::SetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 2D displacements.");
+	throw MechanicsException("[NuTo::NodeBase::SetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
 }
 
 //! @brief returns the displacements of the node

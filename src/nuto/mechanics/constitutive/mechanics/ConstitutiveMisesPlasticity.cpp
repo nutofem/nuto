@@ -22,7 +22,7 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D.h"
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 NuTo::ConstitutiveMisesPlasticity::ConstitutiveMisesPlasticity() : ConstitutiveEngineeringStressStrain()
 {
@@ -259,15 +259,46 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 		const DeformationGradient3D& rDeformationGradient) const
 {
     // perform return mapping
-	ElementWithDataBase* elementWithDataBasePtr(dynamic_cast<NuTo::ElementWithDataBase* >(rElement));
-	if (elementWithDataBasePtr==0)
-		throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Element has no data.");
 	ConstitutiveStaticDataMisesPlasticity3D*
-	    staticDataPtr(dynamic_cast<NuTo::ConstitutiveStaticDataMisesPlasticity3D* >(elementWithDataBasePtr->GetStaticData(rIp)));
+	    staticDataPtr(dynamic_cast<NuTo::ConstitutiveStaticDataMisesPlasticity3D* >(rElement->GetStaticData(rIp)));
 	if (staticDataPtr==0)
 		throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Static data is not derived from Mises3D.");
     ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, staticDataPtr);
     std::cout<<"updated plastic strain " << staticDataPtr->mEpsilonP[0] << std::endl;
+}
+
+//! @brief ... update tmp static data (history variables) of the constitutive relationship
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+		const DeformationGradient1D& rDeformationGradient) const
+{
+	//no need to update tmp static data
+}
+
+
+//! @brief ... update mp static data (history variables) of the constitutive relationship
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+		const DeformationGradient2D& rDeformationGradient) const
+{
+	//no need to update tmp static data
+}
+
+//! @brief ... update mp static data (history variables) of the constitutive relationship
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+		const DeformationGradient3D& rDeformationGradient) const
+{
+	//no need to update tmp static data
 }
 
 //! @brief ... create new static data object for an integration point
@@ -345,12 +376,8 @@ void NuTo::ConstitutiveMisesPlasticity::GetDeltaElasticEngineeringStrain(const E
     ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, &newStaticData);
 
 	//get previous data
-	const ElementWithDataBase* elementWithDataBasePtr(dynamic_cast<const NuTo::ElementWithDataBase* >(rElement));
-	if (elementWithDataBasePtr==0)
-		throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetDeltaElasticEngineeringStrain] Element has no data.");
-
 	const ConstitutiveStaticDataMisesPlasticityWithEnergy3D*
-		staticDataPtr(dynamic_cast<const NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D* >(elementWithDataBasePtr->GetStaticData(rIp)));
+		staticDataPtr(dynamic_cast<const NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D* >(rElement->GetStaticData(rIp)));
 	if (staticDataPtr==0)
 	{
 		throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetDeltaElasticEngineeringStrain] Static data is not derived from ConstitutiveStaticDataMisesPlasticityWithEnergy3D.");
@@ -1005,4 +1032,3 @@ void NuTo::ConstitutiveMisesPlasticity::CheckParameters()const
     this->CheckYieldStrength(this->mSigma);
     this->CheckHardeningModulus(this->mH);
 }
-

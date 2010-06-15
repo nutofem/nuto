@@ -186,6 +186,10 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     virtual void Info(unsigned short rVerboseLevel) const;
 
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @return ... see brief explanation
+    virtual bool HaveTmpStaticData() const=0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

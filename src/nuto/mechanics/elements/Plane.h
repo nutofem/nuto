@@ -11,7 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementWithDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 namespace NuTo
 {
@@ -22,7 +22,7 @@ class EngineeringStress2D;
 //! @author Jörg F. Unger, ISM
 //! @date March 2010
 //! @brief ... standard abstract class for all isoparametric displacement based finite elements in 2D
-class Plane : public ElementWithDataBase
+class Plane : public ElementBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -93,7 +93,7 @@ public:
     const SectionBase* GetSection()const;
 
     //! @brief Update the static data of an element
-    void UpdateStaticData();
+    void UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
 
     //! @brief calculates the deformation gradient in 2D
     //! @param rRerivativeShapeFunctions derivatives of the shape functions with respect to local coordinates (plane world coordinates)
@@ -218,7 +218,7 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementWithDataBase);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementBase);
     }
 #endif  // ENABLE_SERIALIZATION
 

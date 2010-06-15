@@ -323,6 +323,10 @@ public:
     //! @brief updates the history data of a all elements
     void ElementTotalUpdateStaticData();
 
+    //! @brief updates the temprory static data of a all elements
+    //! its is a const function, since only mutuable data (instead of const) is updated (kind of temporary data)
+    void ElementTotalUpdateTmpStaticData();
+
     //*************************************************
     //************ Constraint routines     ***************
     //**  defined in StructureBaseConstraints.cpp **
@@ -836,6 +840,12 @@ protected:
 
     //! @brief right hand side of the constraint equations
     FullMatrix<double> mConstraintRHS;
+
+    //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
+    bool mHaveTmpStaticData;
+
+    //! @brief is set to false, if the structure is changed (nodes, elements) or (DOFs at the nodes)
+    bool mUpdateTmpStaticDataRequired;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
