@@ -1,5 +1,7 @@
 #include <iostream>
 #include <ctime>
+#include <cstdio>
+
 #include "VirtualFunctionsVsDynamicCastClasses.h"
 
 int main()
