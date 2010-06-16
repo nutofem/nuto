@@ -374,15 +374,15 @@ NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(con
     NuTo::IpData::eIpDataType ipDataType;
     if (upperCaseIpDataTypeStr=="NOIPDATA")
     {
-    	ipDataType = NuTo::IpData::eIpDataType::NOIPDATA;
+    	ipDataType = NuTo::IpData::NOIPDATA;
     }
     else if (upperCaseIpDataTypeStr=="STATICDATA")
 	{
-    	ipDataType = NuTo::IpData::eIpDataType::STATICDATA;
+    	ipDataType = NuTo::IpData::STATICDATA;
 	}
     else if (upperCaseIpDataTypeStr=="STATICDATANONLOCAL")
     {
-    	ipDataType = NuTo::IpData::eIpDataType::STATICDATANONLOCAL;
+    	ipDataType = NuTo::IpData::STATICDATANONLOCAL;
     }
     else
     {
