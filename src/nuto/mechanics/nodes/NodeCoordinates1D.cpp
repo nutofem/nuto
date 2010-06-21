@@ -1,3 +1,5 @@
+#include <iostream>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -53,6 +55,23 @@ void NuTo::NodeCoordinates1D::GetCoordinates1D(double rCoordinates[1])const
 {
 	rCoordinates[0] = mCoordinates[0];
 }
+
+//! @brief returns the coordinate of a given direction of the node
+//! @param rIndex index of the direction
+//! @return coordinate
+double NuTo::NodeCoordinates1D::GetCoordinate(short rIndex)const
+{
+	if((rIndex > this->GetNumCoordinates()) | (rIndex < 0 ) )
+	{
+		std::stringstream ss;
+		ss << rIndex;
+		throw NuTo::MechanicsException(
+				"[NuTo::NodeCoordinates::GetCoordinate] Error getting coordinate(" + ss.str() + ") for " + GetNodeTypeStr() + ".");
+	}
+
+	return mCoordinates[rIndex];
+}
+
 
 //! @brief sets the global dofs
 //! @param rDOF current maximum DOF, this variable is increased within the routine

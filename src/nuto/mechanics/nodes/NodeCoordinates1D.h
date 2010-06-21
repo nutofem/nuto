@@ -42,6 +42,11 @@ public:
     //! @param rCoordinates coordinates
     virtual void GetCoordinates1D(double rCoordinates[1])const;
 
+    //! @brief returns the coordinate of a given direction of the node
+    //! @param rIndex index of the direction
+    //! @return coordinate
+    virtual double GetCoordinate(short rIndex)const;
+
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF);

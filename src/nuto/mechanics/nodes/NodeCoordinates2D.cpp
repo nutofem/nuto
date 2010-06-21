@@ -57,6 +57,22 @@ void NuTo::NodeCoordinates2D::GetCoordinates2D(double rCoordinates[2])const
 	rCoordinates[1] = mCoordinates[1];
 }
 
+//! @brief returns the coordinate of a given direction of the node
+//! @param rIndex index of the direction
+//! @return coordinate
+double NuTo::NodeCoordinates2D::GetCoordinate(short rIndex)const
+{
+	if((rIndex > this->GetNumCoordinates()) | (rIndex < 0 ) )
+	{
+		std::stringstream ss;
+		ss << rIndex;
+		throw NuTo::MechanicsException(
+				"[NuTo::NodeCoordinates::GetCoordinate] Error getting coordinate(" + ss.str() + ") for " + GetNodeTypeStr() + ".");
+	}
+
+	return mCoordinates[rIndex];
+}
+
 //! @brief sets the global dofs
 //! @param rDOF current maximum DOF, this variable is increased within the routine
 void NuTo::NodeCoordinates2D::SetGlobalDofs(int& rDOF)
