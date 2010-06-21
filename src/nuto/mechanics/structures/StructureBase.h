@@ -146,6 +146,10 @@ public:
     virtual int NodeGetId(const NodeBase* rNode)const=0;
 #endif //SWIG
 
+    //! @brief delete node
+    //! @param rIdent ... node identifier
+    virtual void NodeDelete(const int rIdent)=0;
+
     //! @brief info about the nodes in the Structure
     virtual void NodeInfo(int mVerboseLevel)const=0;
 
@@ -199,6 +203,10 @@ public:
     //! @return identifier
     virtual int ElementGetId(const ElementBase* rElement)const=0;
 #endif //SWIG
+
+    //! @brief delete element
+    //! @param rIdent ... element identifier
+    virtual void ElementDelete(const int rIdent)=0;
 
     //! @brief info about the elements in the Structure
     virtual void ElementInfo(int mVerboseLevel)const=0;
@@ -725,6 +733,10 @@ public:
     //! @param ... rIdent identifier for the group
     //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
     void GroupCreate(const std::string& rIdent, const std::string& rType);
+
+    //! @brief ... Deletes a group from the structure
+    //! @param ... rIdent identifier for the group
+    void GroupDelete(const std::string& rIdent);
 
     //! @brief ... Unites two groups and stores the result in a new group
     //! @param ... rIdentGroup1 identifier for the first group

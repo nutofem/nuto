@@ -369,6 +369,17 @@ void NuTo::StructureGrid::NodeCreate(unsigned int rNodeNumber,unsigned int rNode
 }
 
 
+//! @brief Deletes a node
+//! @param rElementIdent identifier for the node
+void NuTo::StructureGrid::NodeDelete(const int rNodeNumber)
+{
+
+	// @TODO [NuTo::StructureGrid::NodeDelete] has to be implemented
+    throw MechanicsException("[NuTo::StructureGrid::NodeDelete] Not implemented yet!!!");
+
+}
+
+
 //! @brief number the dofs in the structure
 void NuTo::StructureGrid::NodeBuildGlobalDofs()
 {

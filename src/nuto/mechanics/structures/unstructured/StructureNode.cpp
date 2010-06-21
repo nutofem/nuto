@@ -64,9 +64,25 @@ int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
 }
 
 //! @brief info about the elements in the Structure
-void NuTo::Structure::NodeInfo(int mVerboseLevel)const
+void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 {
     std::cout<<"number of nodes   : " << mNodeMap.size() <<std::endl;
+    if (rVerboseLevel>3)
+    {
+    	std::cout << "\t\tnodes :" <<std::endl;
+    	for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    	{
+			std::cout << "\t\t" << it->first;
+			if (rVerboseLevel>4)
+			{
+				std::cout << "\t:";
+				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
+					std::cout << "\t" << it->second->GetCoordinate(iDof);
+			}
+			std::cout << std::endl;
+    	}
+
+    }
 }
 
 // creates a node
@@ -271,6 +287,45 @@ NuTo::FullMatrix<int> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::Full
     //return int identifiers of the new nodes as FullMatrix
 	NuTo::FullMatrix<int> ids(idVec);
     return ids;
+}
+
+//! @brief Deletes a nodes
+//! @param rNodeNumber identifier for the node
+void NuTo::Structure::NodeDelete(const int rNodeNumber)
+{
+    boost::ptr_map<int,NodeBase>::iterator itNode = mNodeMap.find(rNodeNumber);
+    if (itNode==this->mNodeMap.end())
+    {
+        throw MechanicsException("[NuTo::Structure::NodeDelete] Node with the given id does not exist.");
+    }
+    else
+    {
+    	/// Search for node in elements: using a loop over all elements
+        for(boost::ptr_map<int,ElementBase>::const_iterator elemIt=mElementMap.begin(); elemIt!=mElementMap.end(); ++elemIt){
+        	// loop over all element nodes
+        	for(unsigned short iNode=0; iNode<elemIt->second->GetNumNodes(); ++iNode){
+            	// if the id of the node to be deleted is found, throw an error
+        		if(rNodeNumber == this->NodeGetId(elemIt->second->GetNode(iNode)) ){
+        	        throw MechanicsException( "[NuTo::Structure::NodeDelete] Node with given id is already in use.");
+        		}
+        	}
+        }
+
+    	//! Search for node in groups
+        //! using a loop over all groups
+        //! remove the entry from all groups
+        for(boost::ptr_map<std::string,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
+        	if(groupIt->second->GetType()==NuTo::Groups::Nodes){
+        		if(groupIt->second->Contain(itNode->second)){
+        			groupIt->second->RemoveMember(itNode->second);
+        		}
+        	}
+        }
+
+        // delete element from map
+        this->mNodeMap.erase(itNode);
+    }
+
 }
 
 //! @brief number the dofs in the structure

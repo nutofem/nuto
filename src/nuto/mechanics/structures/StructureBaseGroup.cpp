@@ -58,6 +58,24 @@ void NuTo::StructureBase::GroupCreate(const std::string& rIdent, const std::stri
     }
 }
 
+//! @brief ... Deletes a group from the structure
+//! @param ... rIdent identifier for the group
+void NuTo::StructureBase::GroupDelete(const std::string& rIdentGroup)
+{
+
+    // find group in map
+    boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup == this->mGroupMap.end())
+    {
+        throw MechanicsException("[NuTo::StructureBase::GroupDelete] Group with the given identifier does not exist.");
+    }
+    else
+    {
+        // delete load from map
+        this->mGroupMap.erase(itGroup);
+    }
+}
+
 //! @brief ... Adds a node to a node group
 //! @param ... rIdentGroup identifier for the group
 //! @param ... rIdentNode  identifier for the node

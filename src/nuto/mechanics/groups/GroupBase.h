@@ -73,6 +73,24 @@ public:
 	//! @param rNodePtr Node pointer
 	virtual void AddMember(ElementBase* rNodePtr);
 
+	//! @brief Removes a node from the group
+	//! @param rNodePtr Node pointer
+	virtual void RemoveMember(NodeBase* rNodePtr);
+
+	//! @brief Removes an element from the group
+	//! @param rElementPtr Element pointer
+	virtual void RemoveMember(ElementBase* rElementPtr);
+
+	//! @brief check if a group contains the entry
+	//! @param rNodePtr Node pointer
+    //! @return TRUE if rMember is in the group, FALSE otherwise
+	virtual bool Contain(NodeBase* rNodePtr);
+
+	//! @brief check if a group contains the entry
+	//! @param rElementPtr Element pointer
+    //! @return TRUE if rMember is in the group, FALSE otherwise
+	virtual bool Contain(ElementBase* rElementPtr);
+
 	//! @brief Unites two groups
 	//! @param rOther other group
 	//! @return newly created united group

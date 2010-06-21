@@ -65,6 +65,15 @@ public:
             throw MechanicsException("[Group::AddMember] Group member to be deleted is not within the group.");
     }
     
+	//! @brief check if a group contains the entry
+	//! @param rElementPtr Element pointer
+    //! @return TRUE if rMember is in the group, FALSE otherwise
+    bool Contain(T* rMember)
+    {
+        if (this->find(rMember)==this->end())	return false;
+        else							       	return true;
+    }
+
     //! @brief joins two groups
     //! @return group
     GroupBase* Unite (const NuTo::GroupBase* rOther)const

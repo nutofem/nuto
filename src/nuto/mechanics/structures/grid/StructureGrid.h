@@ -125,6 +125,9 @@ public:
     //! @return identifier
     int NodeGetId(int rNodeNumber)const;
 
+    //! @brief deletes a node
+    //! @param rNodeNumber ... node number
+    void NodeDelete(const int rNodeNumber);
 
 
     //! @brief info about the nodes in the Structure
@@ -212,6 +215,11 @@ public:
     //! @param rIpDataType ip type
     void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID,
     		Element::eElementType rElementType, NuTo::ElementData::eElementDataType rElementDataType, NuTo::IpData::eIpDataType rIpDataType);
+
+    //! @brief Deletes an element
+    //! @param rElementNumber element number
+    void ElementDelete (const int rElementNumber);
+
 
 #endif //SWIG
 

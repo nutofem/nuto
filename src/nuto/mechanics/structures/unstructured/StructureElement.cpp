@@ -60,9 +60,24 @@ int NuTo::Structure::ElementGetId(const ElementBase* rElement)const
 }
 
 //! @brief info about the elements in the Structure
-void NuTo::Structure::ElementInfo(int mVerboseLevel)const
+void NuTo::Structure::ElementInfo(int rVerboseLevel)const
 {
     std::cout<<"number of elements: " << mElementMap.size() <<std::endl;
+    if (rVerboseLevel>3)
+    {
+    	std::cout << "\t\telements :" <<std::endl;
+    	for (boost::ptr_map<int,ElementBase>::const_iterator it = mElementMap.begin(); it!= mElementMap.end(); it++)
+    	{
+    		std::cout << "\t\t" << it->first;
+    	    if (rVerboseLevel>4)
+    	    {
+				std::cout << "\t:";
+				for(unsigned short iNode=0; iNode<it->second->GetNumNodes(); ++iNode)
+					std::cout << "\t" << this->NodeGetId(it->second->GetNode(iNode));
+    	    }
+        	std::cout << std::endl;
+    	}
+    }
 }
 
 //! @brief Creates an element
@@ -294,4 +309,31 @@ NuTo::FullMatrix<int> NuTo::Structure::ElementsCreate (const std::string& rEleme
     //return int identifiers of the new elements as FullMatrix
 	NuTo::FullMatrix<int> ids(idVec);
     return ids;
+}
+
+//! @brief Deletes an element
+//! @param rElementIdent identifier for the element
+void NuTo::Structure::ElementDelete(const int rElementNumber)
+{
+
+	// find element
+	boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.find(rElementNumber);
+    if (itElement == this->mElementMap.end())
+    {
+        throw MechanicsException("[NuTo::Structure::ElementDelete] Element does not exist.");
+    }
+    else
+    {
+    	// Search for elements in groups: using a loop over all groups
+        for(boost::ptr_map<std::string,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
+        	if(groupIt->second->GetType()==NuTo::Groups::Elements){
+        		if(groupIt->second->Contain(itElement->second)){
+        			groupIt->second->RemoveMember(itElement->second);
+        		}
+        	}
+        }
+
+        // delete element from map
+        this->mElementMap.erase(itElement);
+    }
 }

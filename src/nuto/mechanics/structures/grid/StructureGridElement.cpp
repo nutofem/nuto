@@ -216,3 +216,12 @@ void NuTo::StructureGrid::ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& r
     this->mElementVec.push_back(ptrElement);
 }
 
+//! @brief Deletes an element
+//! @param rElementIdent identifier for the element
+void NuTo::StructureGrid::ElementDelete(const int rElementNumber)
+{
+
+	// @TODO [NuTo::StructureGrid::ElementDelete] has to be implemented
+    throw MechanicsException("[NuTo::StructureGrid::ElementDelete] Not implemented yet!!!");
+
+}

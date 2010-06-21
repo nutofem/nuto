@@ -241,7 +241,7 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
 //! @param rConstitutive material pointer
 void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive)
 {
-    std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << std::endl;
+    //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << std::endl;
 	rElement->SetConstitutiveLaw(rConstitutive);
 }
 

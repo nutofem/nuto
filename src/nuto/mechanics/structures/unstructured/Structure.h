@@ -114,6 +114,10 @@ public:
     //! @return a NuTo::FullMatrix<int> containing the node numbers
     NuTo::FullMatrix<int> NodesCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates);
 
+    //! @brief deletes a node
+    //! @param rNodeNumber ... node number
+    void NodeDelete(const int rNodeNumber);
+
    //! @brief info about the nodes in the Structure
     void NodeInfo(int mVerboseLevel)const;
 
@@ -211,6 +215,10 @@ public:
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @return a NuTo::FullMatrix<int> containing the element numbers
     NuTo::FullMatrix<int> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int> &rNodeNumbers);
+
+    //! @brief Deletes an element
+    //! @param rElementNumber element number
+    void ElementDelete (const int rElementNumber);
 
 #ifndef SWIG
     //! @brief Creates an element
