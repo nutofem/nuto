@@ -11,7 +11,7 @@
 //! @brief constructor
 NuTo::NodeBase::NodeBase()
 {}
-    
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -207,9 +207,9 @@ int NuTo::NodeBase::GetDofTemperature(int rComponent)const
 	throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
-//! @brief gives the node Id of the node, this is only implemented for the Grid node, since it stores the id
-//! @return NodeId
-int NuTo::NodeBase::GetNodeId()const
+//! @brief gives the grid number of the node, this is only implemented for the Grid node, since it stores the grid number
+//! @return NodeGridNum
+int NuTo::NodeBase::GetNodeGridNum()const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetNodeId] Node of type " + GetNodeTypeStr() + " does not store his id - access the id via the structure.");
+	throw MechanicsException("[NuTo::NodeBase::GetNodeGridNum] Node of type " + GetNodeTypeStr() + " does not store his id - access the id via the structure.");
 }

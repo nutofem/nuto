@@ -13,10 +13,10 @@ int main()
     //for local base stiffness matrix
     double YoungsModulus = 1.;
 
-    unsigned int numVoxel;
+    int numVoxel;
     const double* voxelSpacing;
     const double* gridOrigin;
-    const unsigned int* gridDimension;
+    const int* gridDimension;
 
     // create structure
     try
@@ -24,14 +24,14 @@ int main()
         NuTo::StructureGrid myGrid(3);
 
         // read entries
-        myGrid.NuTo::StructureGrid::ImportFromVtkASCIIFileHeader("/home/fuhlrott/develop/nuto/examples/c++/InputStructureGrid3D");
+        myGrid.NuTo::StructureGrid::ImportFromVtkASCIIFileHeader("/home/fuhlrott/develop/nuto_work/nuto/examples/c++/InputStructureGrid3D");
         numVoxel=myGrid.GetNumVoxels();
         voxelSpacing=myGrid.GetVoxelSpacing();
         gridOrigin=myGrid.GetGridOrigin();
         gridDimension=myGrid.GetGridDimension();
         std::cout<<__FILE__<<"  variab: spac: "<<voxelSpacing[0]<< " gridDim: "<<gridDimension[0]<<std::endl;
         NuTo::FullMatrix<int> imageValues (numVoxel,1);
-        imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "/home/fuhlrott/develop/nuto/examples/c++/InputStructureGrid3D");
+        imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "/home/fuhlrott/develop/nuto_work/nuto/examples/c++/InputStructureGrid3D");
 
         std::cout<<"first value "<< imageValues(0,0) << std::endl;
         std::cout<<"numVoxel"<< numVoxel << std::endl;
@@ -123,7 +123,8 @@ int main()
         std::cout<<"NodeGrid created"<<std::endl;
         int numNodes=myGrid.GetNumNodes();
         std::cout<<"num nodes "<<myGrid.GetNumNodes()<<std::endl;
-        std::cout<<"knoten "<<myGrid.NodeGetId(numNodes-1)<<std::endl; //Gitterknoten
+        NuTo::NodeBase* myNode=myGrid.NodeGetNodePtr(numNodes-1);
+        std::cout<<"knoten "<<myNode->GetNodeGridNum()<<std::endl; //Gitterknoten
 
 
         //set Modul for each color
@@ -159,7 +160,7 @@ int main()
                 int flag=0;
                 try
                 {
-                    myNodeNumber=myGrid.NodeGetNodeNumberFromId(node); //node from type NodeGridCoordinates
+                    myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
                 }
                 catch(NuTo::MechanicsException& e)
                 {
@@ -198,7 +199,7 @@ int main()
                     int flag=0;
                     try
                     {
-                        myNodeNumber=myGrid.NodeGetNodeNumberFromId(node); //node from type NodeGridCoordinates
+                        myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
                     }
                     catch(NuTo::MechanicsException& e)
                     {

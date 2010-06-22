@@ -146,17 +146,17 @@ void FullMatrix<int>::ImportFromVtkASCIIFile(const char* rFileName)
     }
     //skip read header, is done in StructureGrid.cpp
     // read first four lines
-    unsigned int numEntries(0);
+    int numEntries(0);
 
     std::string line;
-    for (unsigned int count=0;count<7;count++)
+    for (int count=0;count<7;count++)
     {
         getline (file, line);
     }
 
     // read number of entries
     getline (file, line);
-    if (parse(line.c_str(),("POINT_DATA ">> uint_p[assign_a(numEntries)] >>  *space_p)).full == false)
+    if (parse(line.c_str(),("POINT_DATA ">> int_p[assign_a(numEntries)] >>  *space_p)).full == false)
            {
                throw MathException("[Matrix::importFromVtkASCIIFile]error reading number of entries.");
            }
@@ -178,7 +178,7 @@ void FullMatrix<int>::ImportFromVtkASCIIFile(const char* rFileName)
 			imageValues.push_back(value);
     	}
     }
-    for (unsigned int count = 0; count<numEntries; count++)
+    for (int count = 0; count<numEntries; count++)
     {
         this->mEigenMatrix(count, 0) = imageValues[count];
     }

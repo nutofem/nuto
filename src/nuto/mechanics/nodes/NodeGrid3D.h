@@ -14,13 +14,10 @@ class NodeGrid3D : public virtual NodeBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
+
 public:
-
-    //! @brief constructor
-    NodeGrid3D();
-
-    //! @brief constructor
-    NodeGrid3D(int rNodeID);
+   //! @brief constructor
+    NodeGrid3D(int rNodeGridNum);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -36,11 +33,11 @@ public:
 
     //! @brief set the coordinates
     //! @param rCoordinates  given coordinates
-    virtual void SetNodeId(int rNodeId);
+    virtual void SetNodeGridNum(int rNodeGridNum);
 
     //! @brief writes the coordinates of a node to the prescribed pointer
     //! @param rCoordinates coordinates
-    virtual int GetNodeId()const;
+    int GetNodeGridNum()const;
 
     //! @brief writes the coordinates of a node to the prescribed pointer
     //! @param rCoordinates coordinates
@@ -69,8 +66,10 @@ public:
     virtual std::string GetNodeTypeStr()const;
 
 protected:
-    int mNodeId;
-    int mDof[3];
+    //! @brief stores the grid number of the node
+    //! @param grid number of the node
+
+    int mNodeGridNum;
 
 };
 }//namespace NuTo

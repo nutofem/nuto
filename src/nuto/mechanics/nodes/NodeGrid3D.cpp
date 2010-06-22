@@ -9,15 +9,9 @@
 #include "nuto/mechanics/nodes/NodeGrid3D.h"
 
 //! @brief constructor
-NuTo::NodeGrid3D::NodeGrid3D()
+NuTo::NodeGrid3D::NodeGrid3D(int rNodeGridNum)  : NodeBase ()
 {
-	mNodeId = 0.;
-}
-
-//! @brief constructor
-NuTo::NodeGrid3D::NodeGrid3D(int rNodeId)  : NodeBase ()
-{
-	mNodeId = rNodeId;
+	mNodeGridNum = rNodeGridNum;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -41,16 +35,16 @@ int NuTo::NodeGrid3D::GetNumCoordinates()const
 
 //! @brief set the coordinates
 //! @param rCoordinates  given coordinates
-void NuTo::NodeGrid3D::SetNodeId(int rNodeId)
+void NuTo::NodeGrid3D::SetNodeGridNum(int rNodeGridNum)
 {
-	mNodeId = rNodeId;
+	mNodeGridNum = rNodeGridNum;
 }
 
 //! @brief set the coordinates
 //! @param rCoordinates  given coordinates
-int NuTo::NodeGrid3D::GetNodeId()const
+int NuTo::NodeGrid3D::GetNodeGridNum()const
 {
-	return mNodeId;
+	return mNodeGridNum;
 }
 
 //! @brief writes the coordinates of a node to the prescribed pointer

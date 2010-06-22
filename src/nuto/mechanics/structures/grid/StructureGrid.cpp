@@ -196,7 +196,7 @@ void NuTo::StructureGrid::GetElementsTotal(std::vector<const ElementBase*>& rEle
 
 //! @brief returns number of Voxels
 //! @return number of Voxels
-unsigned int NuTo::StructureGrid::GetNumVoxels() const
+int NuTo::StructureGrid::GetNumVoxels() const
 {
     return mNumVoxel;
 }
@@ -217,7 +217,7 @@ const double* NuTo::StructureGrid::GetGridOrigin() const
 
  //! @brief returns GridDimension
  //! @return GridDimension
-const unsigned int* NuTo::StructureGrid::GetGridDimension() const
+const int* NuTo::StructureGrid::GetGridDimension() const
  {
      return mGridDimension;
  }

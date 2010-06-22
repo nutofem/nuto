@@ -74,7 +74,10 @@ public:
     {
     	return std::string("NodeGridDisplacements3D");
     }
+
+protected:
+    int mDof[3];
 };
-}
+}//namespace NuTo
 
 #endif //NodeGridDisplacements_3d_H

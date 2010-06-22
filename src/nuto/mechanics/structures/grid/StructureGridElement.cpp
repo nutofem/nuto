@@ -60,11 +60,11 @@ void NuTo::StructureGrid::ElementInfo(int mVerboseLevel)const
 void NuTo::StructureGrid::CreateElementGrid( NuTo::SparseMatrixCSRGeneral<double>& rBaseCoefficientMatrix0,
 const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType)
 {
-    unsigned int numElements=0;       //counter for created elements
+    int numElements=0;       //counter for created elements
     NuTo::FullMatrix<int> imageValues (mNumVoxel,1);         //Color value for each voxel
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
     typedef NuTo::SparseMatrixCSRGeneral<double> sparseMat ;
-    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixHelp ;
+    sparseMat stiffnessMatrixHelp ;
     std::vector<sparseMat> stiffnessMatrix(1);
     int numCoeffMat=0;   //material counter
     std::vector<double> youngsModulus(1);
@@ -72,7 +72,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
     int matFlag=1;
     if (rColorToMaterialData.GetNumColumns()==1) //Only Young's modulus as changing parameter
     {
-        for(unsigned int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
+        for(int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
         {
             if (rColorToMaterialData(imageValues(countVoxels,0),0)>0.1) //if Modul is> zero
             {
@@ -120,7 +120,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
-void NuTo::StructureGrid::ElementCreate ( NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID, const std::string& rElementType)
+void NuTo::StructureGrid::ElementCreate ( NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID, const std::string& rElementType)
 {
     ElementCreate(rCoefficientMatrix0,rElementNumber,rElementID,rElementType,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA"));
 }
@@ -128,7 +128,7 @@ void NuTo::StructureGrid::ElementCreate ( NuTo::SparseMatrixCSRGeneral<double>& 
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
-void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID,  const std::string& rElementType,
+void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,  const std::string& rElementType,
         const std::string& rElementDataType, const std::string& rIpDataType)
 {
     // get element type
@@ -192,8 +192,8 @@ void NuTo::StructureGrid::ElementCreate(NuTo::SparseMatrixCSRGeneral<double>& rC
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 
-void NuTo::StructureGrid::ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,
-		unsigned int rElementID, Element::eElementType rElementType, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+void NuTo::StructureGrid::ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber,
+		int rElementID, Element::eElementType rElementType, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
     // const IntegrationTypeBase *ptrIntegrationType;
     ElementBase* ptrElement;

@@ -59,7 +59,7 @@ public:
 
     //! @brief returns number of Voxels
     //! @return number of Voxels
-    unsigned int GetNumVoxels() const;
+    int GetNumVoxels() const;
 
     //! @brief returns  VoxelSpacing
     //! @return VoxelSpacing
@@ -71,7 +71,7 @@ public:
 
      //! @brief returns GridDimension
      //! @return GridDimension
-    const unsigned int* GetGridDimension() const;
+    const int* GetGridDimension() const;
 
 //*************************************************
 //************ Node routines        ***************
@@ -85,22 +85,22 @@ public:
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
-    NodeBase* NodeGetNodePtr(int rNodeNumber);
+    NodeBase* NodeGetNodePtr(int rIdent);
 
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
-    const NodeBase* NodeGetNodePtr(int rNodeNumber)const;
+    const NodeBase* NodeGetNodePtr(int rIdent)const;
 
     //! @brief a reference to a node
-    //! @param node ID
+    //! @param node GridNum
     //! @return reference to a node
-    NodeBase* NodeGetNodePtrFromId(int rNodeId);
+    NodeBase* NodeGetNodePtrFromGridNum(int rNodeGridNum);
 
     //! @brief a reference to a node
-    //! @param node ID
+    //! @param node GridNum
     //! @return reference to a node
-    const NodeBase* NodeGetNodePtrFromId(int rNodeId) const;
+    const NodeBase* NodeGetNodePtrFromGridNum(int rNodeGridNum) const;
 
     //! @brief a reference to a node
     //! @param node ID
@@ -118,27 +118,25 @@ public:
     //! @param reference to a node
     //! @return identifier
     int NodeGetId(const NodeBase* rNode)const;
-#endif //SWIG
 
-    //! @brief gives the identifier of a node
-    //! @param reference to a node
+    //! @brief a identifier of a node
+    //! @param node GridNum
     //! @return identifier
-    int NodeGetId(int rNodeNumber)const;
+    const int NodeGetIdFromGridNum(int rNodeGridNum) const;
 
-    //! @brief deletes a node
+#endif //SWIG
     //! @param rNodeNumber ... node number
     void NodeDelete(const int rNodeNumber);
-
 
     //! @brief info about the nodes in the Structure
     virtual void NodeInfo(int mVerboseLevel) const;
 
-    void NodeCreate(unsigned int rNodeNumber, unsigned int rNodeID, std::string rDOFs);
+    void NodeCreate(int rNodeNumber, int rNodeID, std::string rDOFs);
 
     void CreateNodeGrid(std::string rDOFs);
 
     typedef std::vector<int> TCoincidentVoxelList;
-    TCoincidentVoxelList GetCoincidenceVoxelIDs(unsigned int rNodeID);
+    TCoincidentVoxelList GetCoincidenceVoxelIDs(int rNodeID);
     //! @brief numbers the dofs in the structure
     void NodeBuildGlobalDofs();
 
@@ -196,7 +194,7 @@ public:
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID,
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
     		const std::string& rElementType);
 
     //! @brief Creates an element
@@ -204,7 +202,7 @@ public:
     //! @param rElementNumber number of the element
     //! @param rElementType element type
     //! @param rIpDataType ip type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber,  unsigned int rElementID,
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
     		const std::string& rElementType, const std::string& rElementDataType, const std::string& rIpDataType);
 
 #ifndef SWIG
@@ -213,7 +211,7 @@ public:
     //! @param rElementNumber number of the element
     //! @param rElementType element type
     //! @param rIpDataType ip type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,unsigned int rElementNumber, unsigned int rElementID,
+    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
     		Element::eElementType rElementType, NuTo::ElementData::eElementDataType rElementDataType, NuTo::IpData::eIpDataType rIpDataType);
 
     //! @brief Deletes an element
@@ -224,10 +222,10 @@ public:
 #endif //SWIG
 
 protected:
-    unsigned int mNumVoxel;  //number of voxels
+    int mNumVoxel;  //number of voxels
 //! @TODO length of list in function of real dimension
     double mVoxelSpacing[3]; //spacing between center of neighbor voxels / dimension of each voxel
-    unsigned int mGridDimension[3]; //dimension of the voxel model
+    int mGridDimension[3]; //dimension of the voxel model
     double mGridOrigin[3];// origin of the model , in the center of the first voxel
     boost::ptr_vector<NodeBase> mNodeVec;
     boost::ptr_vector<ElementBase> mElementVec;

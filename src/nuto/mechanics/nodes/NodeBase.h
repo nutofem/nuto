@@ -158,9 +158,9 @@ public:
     //! @return global DOF
     virtual int GetDofTemperature(int rComponent)const;
 
-    //! @brief gives the node Id of the node, this is only implemented for the Grid node, since it stores the id
-    //! @return NodeId
-    virtual int GetNodeId()const;
+    //! @brief gives the grid number of the node, this is only implemented for the Grid node, since it stores the grid number
+    //! @return NodeGridNum
+    virtual int GetNodeGridNum()const;
 
     //! @brief returns the number of temperatures of the node
     //! @return number of temperatures
