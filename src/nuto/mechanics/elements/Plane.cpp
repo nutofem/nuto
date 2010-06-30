@@ -11,6 +11,9 @@
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 
+#include "nuto/math/FullMatrix.h"
+#include "nuto/base/Debug.h"
+
 //! @brief constructor
 NuTo::Plane::Plane(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
 		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
@@ -65,6 +68,16 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
 
         CalculateDerivativeShapeFunctionsLocal(derivativeShapeFunctionsNatural,invJacobian,
                                                 derivativeShapeFunctionsLocal);
+
+// @TODO :for now
+        NuTo::FullMatrix<double> testMat( GetNumNodes() ,2 , derivativeShapeFunctionsLocal);
+
+        DBG_POSITION_INFO("derivativeShapeFunctionsNatural")
+        DBG_PRINT_VEC(derivativeShapeFunctionsNatural)
+        DBG_POSITION_INFO("derivativeShapeFunctionsNatural")
+        DBG_PRINT_VEC(derivativeShapeFunctionsLocal)
+        testMat.Info();
+
 
         // determine deformation gradient from the local Displacements and the derivative of the shape functions
         // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
