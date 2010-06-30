@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef INTEGRATIONTYPEENUM_H_
 #define INTEGRATIONTYPEENUM_H_
 
@@ -14,6 +14,7 @@ enum eIntegrationType
 {
     IntegrationType1D2NGauss1Ip=0,
     IntegrationType1D2NGauss2Ip,
+    IntegrationType2D3NGauss3Ip,
     IntegrationType2D4NGauss1Ip,
     IntegrationType2D4NGauss4Ip,
     IntegrationType3D4NGauss1Ip,
@@ -24,3 +25,4 @@ enum eIntegrationType
 }
 }
 #endif /* INTEGRATIONTYPEENUM_H_ */
+

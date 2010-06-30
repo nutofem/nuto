@@ -3,6 +3,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/elements/Brick8N.h"
+#include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
@@ -261,7 +262,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D3N is a 2D element.");
         }
-        //ptrElement = new NuTo::Plane2D3N(this, rNodeVector, rElementDataType, rIpDataType);
+        ptrElement = new NuTo::Plane2D3N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
     case NuTo::Element::PLANE2D4N:
         if (this->mDimension != 2)
