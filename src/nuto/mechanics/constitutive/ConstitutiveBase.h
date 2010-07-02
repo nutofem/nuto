@@ -16,6 +16,7 @@ namespace NuTo
 template<class T>
 class FullMatrix;
 class StructureBase;
+class ConstitutiveEngineeringStressStrain;
 class ConstitutiveTangentLocal1x1;
 class ConstitutiveTangentLocal3x3;
 class ConstitutiveTangentLocal6x6;
@@ -190,7 +191,16 @@ public:
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const=0;
 
-#ifdef ENABLE_SERIALIZATION
+    //! @brief ... avoid dynamic cast
+    //! @return ... see brief explanation
+    virtual const ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain()const;
+
+    //! @brief ... avoid dynamic cast
+    //! @return ... see brief explanation
+    virtual ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain();
+
+
+    #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version

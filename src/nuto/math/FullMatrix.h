@@ -7,6 +7,7 @@
 #include <fstream>  //for file acces
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include <boost/tokenizer.hpp>
 
@@ -112,6 +113,9 @@ public:
         else
             mEigenMatrix.resize ( rows,cols );
     }
+
+    template <class F>
+    friend std::ostream& operator<<(std::ostream& os, const FullMatrix<F>& r);
 
     FullMatrix<T> operator+ ( const FullMatrix<T> &other ) const
     {
@@ -925,5 +929,13 @@ private:
 
 
 };
+
+template<class T>
+std::ostream& operator<<(std::ostream& os, const NuTo::FullMatrix<T>& r)
+{
+    os << r.mEigenMatrix;
+return os;
+}
+
 } //NAMESPACE NUTO
 #endif // FULL_MATRIX_H

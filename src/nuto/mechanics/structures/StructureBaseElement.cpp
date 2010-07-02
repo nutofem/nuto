@@ -510,7 +510,7 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 
     try
     {
-    	elementPtr->GetEngineeringStrain(rEngineeringStrain);
+    	elementPtr->GetIpData(NuTo::IpData::ENGINEERING_STRAIN, rEngineeringStrain);
     }
     catch(NuTo::MechanicsException e)
     {
@@ -532,13 +532,13 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 //! @brief calculates the engineering plastic strain
 //! @param rElemIdent  identifier for the element
 //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringStrain)const
+void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringPlasticStrain)const
 {
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
     {
-    	elementPtr->GetEngineeringPlasticStrain(rEngineeringStrain);
+    	elementPtr->GetIpData(NuTo::IpData::ENGINEERING_PLASTIC_STRAIN, rEngineeringPlasticStrain);
     }
     catch(NuTo::MechanicsException e)
     {
@@ -565,7 +565,7 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     try
     {
-    	elementPtr->GetEngineeringStress(rEngineeringStress);
+    	elementPtr->GetIpData(NuTo::IpData::ENGINEERING_STRESS, rEngineeringStress);
     }
     catch(NuTo::MechanicsException e)
     {
@@ -617,29 +617,34 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
 //! @brief updates the history data of a all elements
 void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 {
-    std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
-    {
-        try
-        {
-        	elementVector[countElement]->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[countElement]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] Error updating temporary static data for element "
-            		+ ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[countElement]);
-        	throw NuTo::MechanicsException
-        	   ("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] Error updating temporary static data for element "
-        			   + ss.str() + ".");
-        }
-    }
+	if (mHaveTmpStaticData)
+	{
+		std::vector<ElementBase*> elementVector;
+		GetElementsTotal(elementVector);
+		for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+		{
+			try
+			{
+				elementVector[countElement]->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+			}
+			catch(NuTo::MechanicsException e)
+			{
+				std::stringstream ss;
+				ss << ElementGetId(elementVector[countElement]);
+				e.AddMessage("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] Error updating temporary static data for element "
+						+ ss.str() + ".");
+				throw e;
+			}
+			catch(...)
+			{
+				std::stringstream ss;
+				ss << ElementGetId(elementVector[countElement]);
+				throw NuTo::MechanicsException
+				   ("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] Error updating temporary static data for element "
+						   + ss.str() + ".");
+			}
+		}
+	}
+	//std::cout << "NuTo::StructureBase::ElementTotalUpdateTmpStaticData " << mUpdateTmpStaticDataRequired << std::endl;
+	mUpdateTmpStaticDataRequired = false;
 }

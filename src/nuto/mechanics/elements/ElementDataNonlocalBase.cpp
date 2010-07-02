@@ -9,7 +9,6 @@
 
 NuTo::ElementDataNonlocalBase::ElementDataNonlocalBase() :  NuTo::ElementDataBase::ElementDataBase()
 {
-	mConstitutive = 0;
 }
 
 NuTo::ElementDataNonlocalBase::~ElementDataNonlocalBase()
@@ -18,12 +17,14 @@ NuTo::ElementDataNonlocalBase::~ElementDataNonlocalBase()
 }
 
 const std::vector<const NuTo::ElementBase*>&
-  NuTo::ElementDataNonlocalBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
+  NuTo::ElementDataNonlocalBase::GetNonlocalElements()const
 {
-    if (rConstitutive==mConstitutive)
-	    return mNonlocalElements;
-    else
-    	throw MechanicsException("[NuTo::ElementDataNonlocalBase::GetNonlocalElements] For this constitutive model no nonlocal data is available");
+    return mNonlocalElements;
+}
+
+int NuTo::ElementDataNonlocalBase::GetNumNonlocalElements()const
+{
+    return mNonlocalElements.size();
 }
 
 /*const std::vector<double>&
@@ -43,12 +44,8 @@ const std::vector<const NuTo::ElementBase*>&
 //! @brief adds an element to the nonlocal elements
 //! @param rConstitutive  constitutive model
 //! @return the local element number, the element is either append to the list, or the existing local number is returned
-int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
+int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementBase* rElement)
 {
-	printf("\n[NuTo::ElementDataNonlocalBase::AddNonlocalElement %p %p\n]",static_cast<const void*>(rConstitutive),static_cast<const void*>(mConstitutive));
-	if (mConstitutive==0)
-		mConstitutive=rConstitutive;
-	assert(rConstitutive==mConstitutive);
 	for (int theElement=0; theElement<(int)mNonlocalElements.size();theElement++)
 	{
 		if (mNonlocalElements[theElement]==rElement)

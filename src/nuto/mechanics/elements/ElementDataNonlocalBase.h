@@ -36,12 +36,20 @@ public:
 
 	virtual ~ElementDataNonlocalBase();
 
-	const std::vector<const ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+    //! @brief gets the nonlocal elements for a constitutive model
+    //! @param rConstitutive constitutive model
+    //! @return vector to nonlocal elements
+	virtual const std::vector<const ElementBase*>& GetNonlocalElements()const;
+
+    //! @brief gets the number of nonlocal elements for a constitutive model
+    //! @param rConstitutive constitutive model
+    //! @return number of nonlocal elements
+	virtual int GetNumNonlocalElements()const;
 
     //! @brief adds an element to the nonlocal elements
     //! @param rConstitutive  constitutive model
     //! @return the local element number, the element is either append to the list, or the existing local number is returned
-    int AddNonlocalElement(const ElementBase* rElement, const ConstitutiveBase* rConstitutive);
+    int AddNonlocalElement(const ElementBase* rElement);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -51,7 +59,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase)
-           & BOOST_SERIALIZATION_NVP(mConstitutive);
+           & BOOST_SERIALIZATION_NVP(mNonlocalElements);
     }
 #endif  // ENABLE_SERIALIZATION
 
@@ -66,8 +74,6 @@ public:
 
 protected:
     std::vector<const ElementBase*> mNonlocalElements;
-    //! @brief constitutive model for which the nonlocal elements are build, for different const. models in one model, just introduce a map<const mConstitutive,std::vector<const ElementBase*> >
-    const ConstitutiveBase* mConstitutive;
 };
 }
 #endif /* ELEMENTDATANONLOCALBASE_H_ */

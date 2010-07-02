@@ -171,6 +171,42 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
     ReturnMapping3D(rElement, rIp, rDeformationGradient, &rEngineeringStress, 0, 0);
 }
 
+//  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 1D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+ void NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient1D& rDeformationGradient, double& rDamage) const
+{
+	rDamage=0.;
+}
+
+ //  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 2D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+ void NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient2D& rDeformationGradient, double& rDamage) const
+{
+    rDamage=0.;
+}
+
+ //  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 3D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+ void NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient3D& rDeformationGradient, double& rDamage) const
+{
+    rDamage=0.;
+}
+
 
 //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
 //! @param rStructure ... structure
@@ -180,7 +216,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
 //! @param rTangent ... tangent
 void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient,
-		ConstitutiveTangentLocal1x1& rTangent) const
+		ConstitutiveTangentBase* rTangent) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain] To be implemented.");
 }
@@ -194,7 +230,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
 //! @param rTangent ... tangent
 void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient,
-		ConstitutiveTangentLocal3x3& rTangent) const
+		ConstitutiveTangentBase* rTangent) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain] To be implemented.");
 }
@@ -208,7 +244,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
 //! @param rTangent ... tangent
 void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient,
-		ConstitutiveTangentLocal6x6& rTangent) const
+		ConstitutiveTangentBase* rTangent) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -221,8 +257,8 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
     }
 
     // perform return mapping
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , &rTangent, 0);
-    rTangent.SetSymmetry(true);
+    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , rTangent->AsConstitutiveTangentLocal6x6(), 0);
+    rTangent->SetSymmetry(true);
 }
 
 

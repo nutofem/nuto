@@ -51,7 +51,32 @@ void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) con
 // build global column dof
 void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const
 {
-    this->CalculateGlobalRowDofs(rGlobalColumnDofs);
+    int NumNonlocalElements(GetNumNonlocalElements());
+	if (GetNumNonlocalElements()==0)
+	    this->CalculateGlobalRowDofs(rGlobalColumnDofs);
+    else
+    {
+	    const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
+        int NumCols(0);
+        for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
+        {
+        	NumCols += nonlocalElements[theNonlocalElement]->AsPlane()->GetNumLocalDofs();
+        }
+        rGlobalColumnDofs.resize(NumCols);
+        int shift(0);
+        for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
+        {
+            const ElementBase* nonlocalElement(nonlocalElements[theNonlocalElement]);
+        	for (int nodeCount = 0; nodeCount < nonlocalElement->GetNumNodes(); nodeCount++)
+            {
+                const NodeBase *nodePtr = nonlocalElement->GetNode(nodeCount);
+                rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
+                rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+            }
+            shift+=2*nonlocalElement->GetNumNodes();
+        }
+        assert(shift==NumCols);
+    }
 }
 
 //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
@@ -60,16 +85,16 @@ double NuTo::Plane2D::CalculateArea()const
 {
     double coordinates1[2];
     double coordinates2[2];
-    GetNode(GetNumNodes()-1)->GetCoordinates2D(coordinates1);
+    GetNode(GetNumNodes()-1)->GetCoordinates2D(coordinates2);
 	double area(0);
 	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
 	{
-		coordinates2[0] = coordinates1[0];
-		coordinates2[1] = coordinates1[1];
-		GetNode(theNode)->GetCoordinates2D(coordinates1);
+		coordinates1[0] = coordinates2[0];
+		coordinates1[1] = coordinates2[1];
+		GetNode(theNode)->GetCoordinates2D(coordinates2);
 		area += coordinates1[0]*coordinates2[1] - coordinates1[1]*coordinates2[0];
 	}
-    return area;
+    return 0.5*area;
 }
 
 

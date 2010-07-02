@@ -111,8 +111,8 @@ public:
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
     void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient1D& rDeformationGradient,
-            ConstitutiveTangentLocal1x1& rTangent) const;
+            const DeformationGradient1D& rDeformationGradient,
+            ConstitutiveTangentBase* rTangent) const;
 
     //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
     //! @param rStructure ... structure
@@ -121,8 +121,8 @@ public:
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
     void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient2D& rDeformationGradient,
-            ConstitutiveTangentLocal3x3& rTangent) const;
+            const DeformationGradient2D& rDeformationGradient,
+            ConstitutiveTangentBase* rTangent) const;
 
     //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
     //! @param rStructure ... structure
@@ -131,8 +131,35 @@ public:
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
     void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient3D& rDeformationGradient,
-            ConstitutiveTangentLocal6x6& rTangent) const;
+            const DeformationGradient3D& rDeformationGradient,
+            ConstitutiveTangentBase* rTangent) const;
+
+    //  Damage /////////////////////////////////////
+    //! @brief ... calculate isotropic damage from deformation gradient in 1D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    //! @param rDamage ... damage variable
+    void GetDamage(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient1D& rDeformationGradient, double& rDamage) const;
+
+    //  Damage /////////////////////////////////////
+    //! @brief ... calculate isotropic damage from deformation gradient in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    //! @param rDamage ... damage variable
+    void GetDamage(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient2D& rDeformationGradient, double& rDamage) const;
+
+    //  Damage /////////////////////////////////////
+    //! @brief ... calculate isotropic damage from deformation gradient in 3D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    //! @param rDamage ... damage variable
+    void GetDamage(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient3D& rDeformationGradient, double& rDamage) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
     //! @param rStructure ... structure
@@ -410,10 +437,11 @@ public:
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
-    virtual bool HaveTmpStaticData() const
-    {
-    	return true;
-    }
+    bool HaveTmpStaticData() const;
+
+    //! @brief ... returns true, if a material model has is nonlocal (stiffness is of dynamic size, nonlocal averaging)
+    //! @return ... see brief explanation
+    bool IsNonlocalModel()const;
 
 protected:
     //! @brief ... Young's modulus \f$ E \f$
@@ -476,16 +504,36 @@ protected:
     //! @brief ... an interpolation is made based on the principal strains in plane and thickness direction
     double CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP) const;
 
+    //! @brief ... calculates the derivative of the equivalent length of the element in plane coordinates (square root of area) with respect to the plastic strains
+    //! @brief ... an interpolation is made based on the principal strains in plane and thickness direction
+    double CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP,
+    		                    Eigen::Matrix<double,4,1>& rdLdEpsilonP) const;
+
     //! @brief ... calculate the nonlocal equivalente plastic strain of an integration point
     //! @param rElement Element
     //! @param rIp integration point
     //! @return equivalente plastic strain
     double CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp)const;
 
+    //! @brief ... calculate the nonlocal plastic strain of an integration point
+    //! @param rElement Element
+    //! @param rIp integration point
+    //! @param rNonlocalPlasticStrain nonlocal plastic strain (return value)
+    //! @return void
+    void CalculateNonlocalPlasticStrain(const ElementBase* rElement, int rIp, double rNonlocalPlasticStrain[4])const;
+
     //! @brief ... calculate the isotropic damage variable from the nonlocal equivalente plastic strain
-    //! @param rEpsilonPEq nonlocal equivalente plastic strain
+    //! @param rkappa scaled nonlocal equivalente plastic strain
+    //! @param rKappaD material parameter related to the fracture energy and the nonlocal radius
     //! @return isotropic damage variable
     double CalculateDamage(double rNonlocalEpsilonPEq, double rKappaUnscaled)const;
+
+    //! @brief ... calculate the isotropic damage variable from the nonlocal equivalente plastic strain and its derivative
+    //! @param rkappa scaled nonlocal equivalente plastic strain
+    //! @param rKappaD material parameter related to the fracture energy and the nonlocal radius
+    //! @param rdOmegadKappa derivative of omega w.r.t. Kappa
+    //! @return isotropic damage variable
+    double CalculateDerivativeDamage(double rkappa, double rKappaD, double& rdOmegadKappa)const;
 
     //! @brief ... calculate the unscaled kappa_d used for scaling the equivalent plastic strain (related to the fracture energy)
     //! @brief ... return kappa_d

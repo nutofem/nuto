@@ -48,7 +48,7 @@ NuTo::ElementBase::~ElementBase()
 
 //! @brief returns the id number of the element
 //! @return id
-int NuTo::ElementBase::ElementGetId()
+int NuTo::ElementBase::ElementGetId()const
 {
 	return mStructure->ElementGetId(this);
 }
@@ -243,7 +243,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             this->InterpolateCoordinatesFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], GlobalPointCoor);
             break;
         default:
-            throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] invalid dimension of local coordinates");
+            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
         }
         unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor);
         PointIdVec.push_back(PointId);
@@ -322,7 +322,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         }
         break;
         default:
-            throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] unsupported visualization cell type");
+            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported visualization cell type");
         }
     }
 
@@ -332,6 +332,19 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
     {
         switch (WhatIter->GetComponentEnum())
         {
+        case NuTo::VisualizeBase::DAMAGE:
+        {
+        	FullMatrix<double> damage;
+            this->GetIpData(NuTo::IpData::DAMAGE,damage);
+            //this->GetCurrentIpData(IPDATA,damage);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), damage.mEigenMatrix.data()[theIp]);
+            }
+        }
+        break;
         case NuTo::VisualizeBase::DISPLACEMENTS:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
@@ -348,7 +361,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                     this->InterpolateDisplacementsFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], GlobalDisplacements);
                     break;
                 default:
-                    throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] invalid dimension of local coordinates");
+                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
                 }
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalDisplacements);
@@ -357,7 +370,31 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
         {
             FullMatrix<double> EngineeringStrains;
-            this->GetEngineeringStrain(EngineeringStrains);
+            this->GetIpData(NuTo::IpData::ENGINEERING_STRAIN,EngineeringStrains);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                const double* EngineeringStrainVector = &(EngineeringStrains.mEigenMatrix.data()[theIp*6]);
+                double EngineeringStrainTensor[9];
+                EngineeringStrainTensor[0] = EngineeringStrainVector[0];
+                EngineeringStrainTensor[1] = 0.5 * EngineeringStrainVector[3];
+                EngineeringStrainTensor[2] = 0.5 * EngineeringStrainVector[5];
+                EngineeringStrainTensor[3] = 0.5 * EngineeringStrainVector[3];
+                EngineeringStrainTensor[4] = EngineeringStrainVector[1];
+                EngineeringStrainTensor[5] = 0.5 * EngineeringStrainVector[4];
+                EngineeringStrainTensor[6] = 0.5 * EngineeringStrainVector[5];
+                EngineeringStrainTensor[7] = 0.5 * EngineeringStrainVector[4];
+                EngineeringStrainTensor[8] = EngineeringStrainVector[2];
+
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStrainTensor);
+            }
+        }
+        break;
+        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
+        {
+            FullMatrix<double> EngineeringStrains;
+            this->GetIpData(NuTo::IpData::ENGINEERING_PLASTIC_STRAIN,EngineeringStrains);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
@@ -381,7 +418,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
         {
             FullMatrix<double> EngineeringStress;
-            this->GetEngineeringStress(EngineeringStress);
+            this->GetIpData(NuTo::IpData::ENGINEERING_STRESS,EngineeringStress);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
@@ -397,6 +434,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 EngineeringStressTensor[7] = EngineeringStressVector[4];
                 EngineeringStressTensor[8] = EngineeringStressVector[2];
 
+                //std::cout<<"[NuTo::ElementBase::VisualizeEngineeringStressTensor]" << EngineeringStressTensor[0] << EngineeringStressTensor[1] << std::endl;
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStressTensor);
             }
@@ -406,12 +444,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         {
         	// get constitutive model and nonlocal element
         	const ElementBase* visualizeElement(WhatIter->GetElement());
-        	const ConstitutiveBase* constitutive(visualizeElement->GetConstitutiveLaw(WhatIter->GetIp()));
 
         	// get local number within nonlocal elements for current element
         	try
         	{
-            	const std::vector<const NuTo::ElementBase*>& nonlocalElements(visualizeElement->GetNonlocalElements(constitutive));
+            	const std::vector<const NuTo::ElementBase*>& nonlocalElements(visualizeElement->GetNonlocalElements());
             	int countNonlocalElement;
             	for (countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
             	{
@@ -428,7 +465,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                      {
                          unsigned int theIp = VisualizationCellsIP[CellCount];
                          unsigned int CellId = CellIdVec[CellCount];
-                         double weight(visualizeElement->GetNonlocalWeights(WhatIter->GetIp(),countNonlocalElement,constitutive)[theIp]);
+                         double weight(visualizeElement->GetNonlocalWeights(WhatIter->GetIp(),countNonlocalElement)[theIp]);
                          rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(),weight);
                      }
             	}
@@ -444,24 +481,24 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         	}
             catch (NuTo::MechanicsException &e)
             {
-            	e.AddMessage("[NuTo::ElementWithDataBase::Visualize] error getting visualization data for nonlocal weights.");
+            	e.AddMessage("[NuTo::ElementBase::Visualize] error getting visualization data for nonlocal weights.");
             	throw e;
             }
 #ifdef ENABLE_VISUALIZE
             catch (NuTo::VisualizeException &e)
             {
-            	e.AddMessage("[NuTo::ElementWithDataBase::Visualize] error getting visualization data for nonlocal weights.");
+            	e.AddMessage("[NuTo::ElementBase::Visualize] error getting visualization data for nonlocal weights.");
             	throw e;
             }
 #endif
             catch(...)
             {
-            	throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] error getting visualization data for nonlocal weights.");
+            	throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] error getting visualization data for nonlocal weights.");
             }
         }
         break;
         default:
-            throw NuTo::MechanicsException("[NuTo::ElementWithDataBase::Visualize] unsupported datatype for visualization.");
+            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported datatype for visualization.");
         }
         WhatIter++;
     }
@@ -474,26 +511,68 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 //! @param rNonlocalElement element of the nonlocal ip
 //! @param rNonlocalIp local ip number of the nonlocal ip
 //! @param rWeight weight
-void NuTo::ElementBase::SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
+void NuTo::ElementBase::SetNonlocalWeight(int rLocalIpNumber,	const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
 {
-	this->mElementData->SetNonlocalWeight(rLocalIpNumber,rConstitutive,rNonlocalElement,rNonlocalIp,rWeight);
+	this->mElementData->SetNonlocalWeight(rLocalIpNumber,rNonlocalElement,rNonlocalIp,rWeight);
 }
 
 //! @brief returns a vector of weights for an ip
 //! @param rIp local Ip
 //! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
-//! @param rConstitutive constitutive model
 //! @return weights for each integration point of the nonlocal element
-const std::vector<double>& NuTo::ElementBase::GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const
+const std::vector<double>& NuTo::ElementBase::GetNonlocalWeights(int rIp, int rNonlocalElement)const
 {
-    return mElementData->GetNonlocalWeights(rIp,rNonlocalElement,rConstitutive);
+    return mElementData->GetNonlocalWeights(rIp,rNonlocalElement);
+}
+
+//! @brief returns a vector of the nonlocal elements
+//! @retrun nonlocal elements
+const std::vector<const NuTo::ElementBase*>& NuTo::ElementBase::GetNonlocalElements()const
+{
+	return this->mElementData->GetNonlocalElements();
 }
 
 //! @brief returns a vector of the nonlocal elements
 //! @param rConstitutive constitutive model for the nonlocale elements
 //! @retrun nonlocal elements
-const std::vector<const NuTo::ElementBase*>& NuTo::ElementBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
+int NuTo::ElementBase::GetNumNonlocalElements()const
 {
-	return this->mElementData->GetNonlocalElements(rConstitutive);
+	return this->mElementData->GetNumNonlocalElements();
 }
+
+//! @brief cast the base pointer to a Plane, otherwise throws an exception
+const NuTo::Plane* NuTo::ElementBase::AsPlane()const
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type ElementPlane.");
+}
+
+//! @brief cast the base pointer to a Plane, otherwise throws an exception
+NuTo::Plane* NuTo::ElementBase::AsPlane()
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type ElementPlane.");
+}
+
+//! @brief cast the base pointer to a Solid, otherwise throws an exception
+const NuTo::Solid* NuTo::ElementBase::AsSolid()const
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementSolid] Element is not of type ElementSolid.");
+}
+
+//! @brief cast the base pointer to a Solid, otherwise throws an exception
+NuTo::Solid* NuTo::ElementBase::AsSolid()
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementSolid] Element is not of type ElementSolid.");
+}
+
+//! @brief cast the base pointer to a Truss, otherwise throws an exception
+const NuTo::Truss* NuTo::ElementBase::AsTruss()const
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
+}
+
+//! @brief cast the base pointer to a Truss, otherwise throws an exception
+NuTo::Truss* NuTo::ElementBase::AsTruss()
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
+}
+

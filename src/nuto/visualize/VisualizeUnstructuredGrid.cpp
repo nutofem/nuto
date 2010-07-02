@@ -475,5 +475,6 @@ unsigned int NuTo::VisualizeUnstructuredGrid::GetCellDataIndex(const std::string
             return CellDataCount;
         }
     }
+    std::cout << rIdent << std::endl;
     throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::GetCellDataIndex] data identifier not found.");
 }

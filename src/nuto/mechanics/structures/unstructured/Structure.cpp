@@ -620,7 +620,6 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 
     for(unsigned int theIp = 0; theIp < indexIp.size(); theIp++)
     {
-    	std::cout << "ip " << theIp << std::endl;
     	ElementBase* elementPtr = indexElement[theIp];
         int localIpNumber = indexIp[theIp];
         unsigned int numNeighborPoints = 0;
@@ -665,8 +664,36 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
         for (unsigned int theNeighborPoint=0; theNeighborPoint<numNeighborPoints; theNeighborPoint++)
         {
         	int theNeighborIndex(nnIdx[theNeighborPoint]);
-        	elementPtr->SetNonlocalWeight(localIpNumber, rConstitutive, indexElement[theNeighborIndex],
-        			indexIp[theNeighborIndex], dists[theNeighborPoint]*totalVolume);
+        	elementPtr->SetNonlocalWeight(localIpNumber, indexElement[theNeighborIndex],
+        			indexIp[theNeighborIndex], indexIpVolume[theNeighborIndex]*dists[theNeighborPoint]*totalVolume);
+        }
+    }
+
+    //just check the sum of the weights to be one
+    for (elementIter = this->mElementMap.begin(); elementIter!= this->mElementMap.end(); elementIter++)
+    {
+        ElementBase* elementPtr = elementIter->second;
+        if (elementPtr==0)
+        	continue;
+
+        for (int theIp=0; theIp< elementPtr->GetNumIntegrationPoints(); theIp++)
+        {
+			const std::vector<const NuTo::ElementBase*>& nonlocalElements(elementPtr->GetNonlocalElements());
+
+			double sumW(0.);
+			for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+			{
+				const std::vector<double>& weights(elementPtr->GetNonlocalWeights(theIp,countNonlocalElement));
+
+				assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+
+				//Go through all the integration points
+				for (int theIP=0; theIP<(int)weights.size(); theIP++)
+				{
+					 //and add up to nonlocal equivalent plastic strain
+					sumW+=weights[theIP];
+				}
+			}
         }
     }
 

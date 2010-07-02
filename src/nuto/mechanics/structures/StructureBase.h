@@ -67,11 +67,17 @@ public:
     int GetDimension();
 
 #ifdef ENABLE_VISUALIZE
+    //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentDamage();
+
     //! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentDisplacements();
 
     //! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentEngineeringStrain();
+
+    //! @brief ... Add engineering plastic strains to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentEngineeringPlasticStrain();
 
     //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentEngineeringStress();

@@ -3,7 +3,7 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
 
 // constructor
-NuTo::ConstitutiveTangentLocal3x3::ConstitutiveTangentLocal3x3()
+NuTo::ConstitutiveTangentLocal3x3::ConstitutiveTangentLocal3x3() : NuTo::ConstitutiveTangentBase::ConstitutiveTangentBase()
 {
     mTangent[0] = 0.;
     mTangent[1] = 0.;
@@ -37,11 +37,5 @@ unsigned int NuTo::ConstitutiveTangentLocal3x3::GetNumberOfColumns() const
 const double* NuTo::ConstitutiveTangentLocal3x3::GetData() const
 {
     return mTangent;
-}
-
-// set tangent
-void NuTo::ConstitutiveTangentLocal3x3::SetData(const double* rTangentMatrix)
-{
-	memcpy(mTangent,rTangentMatrix,9*sizeof(double));
 }
 

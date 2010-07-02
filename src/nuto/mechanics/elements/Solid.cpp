@@ -70,7 +70,7 @@ void NuTo::Solid::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Solid::CalculateCoefficientMatrix_0] Constitutive law can not deal with engineering stresses and strains");
         constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
-                deformationGradient, tangent);
+                deformationGradient, &tangent);
         areAllIpsSymmetric &= tangent.GetSymmetry();
 
         // calculate element stiffness matrix
@@ -484,9 +484,10 @@ void  NuTo::Solid::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
 }
 
 
-//! @brief calculates the engineering strain
-//! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-void NuTo::Solid::GetEngineeringStrain(FullMatrix<double>& rEngineeringStrain)const
+//! @brief calculates the integration point data with the current displacements applied
+//! @param rIpDataType data type to be stored for each integration point
+//! @param rIpData return value with dimension (dim of data type) x (numIp)
+void NuTo::Solid::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
 {
     //calculate coordinates
     std::vector<double> nodeCoord(GetNumDofs());
@@ -509,64 +510,8 @@ void NuTo::Solid::GetEngineeringStrain(FullMatrix<double>& rEngineeringStrain)co
     //allocate global engineering stress
     EngineeringStrain3D engineeringStrain;
 
-    //InvJacobian and determinant of Jacobian
-    double invJacobian[9], detJac;
-
-    //material pointer
-    const ConstitutiveEngineeringStressStrain *constitutivePtr;
-
-    //allocate and initialize result matrix
-    rEngineeringStrain.Resize(6,GetNumIntegrationPoints());
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
-    {
-        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
-
-        CalculateDerivativeShapeFunctionsLocal(localIPCoord, derivativeShapeFunctionsLocal);
-
-        CalculateJacobian(derivativeShapeFunctionsLocal,nodeCoord, invJacobian, detJac);
-
-        CalculateDerivativeShapeFunctionsGlobal(derivativeShapeFunctionsLocal,invJacobian,
-                                                derivativeShapeFunctionsGlobal);
-
-        // determine deformation gradient from the local Displacements and the derivative of the shape functions
-        // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-        CalculateDeformationGradient(derivativeShapeFunctionsGlobal, nodeDisp, deformationGradient);
-
-        //call material law to calculate engineering strain
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
-        if (constitutivePtr==0)
-            throw MechanicsException("[NuTo::Solid::GetEngineeringStrain] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
-
-        //copy to FullMatrix
-        memcpy(&(rEngineeringStrain.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
-    }
-}
-
-//! @brief calculates the engineering plastic strain
-//! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-void NuTo::Solid::GetEngineeringPlasticStrain(FullMatrix<double>& rEngineeringPlasticStrain)const
-{
-    //calculate coordinates
-    std::vector<double> nodeCoord(GetNumDofs());
-    CalculateCoordinates(nodeCoord);
-
-    //calculate local displacements
-    std::vector<double> nodeDisp(GetNumDofs());
-    CalculateDisplacements(nodeDisp);
-
-    //allocate space for local ip coordinates
-    double localIPCoord[3];
-
-    //allocate space for derivatives of shape functions
-    std::vector<double> derivativeShapeFunctionsLocal(GetNumDofs());
-    std::vector<double> derivativeShapeFunctionsGlobal(GetNumDofs());
-
-    //allocate deformation gradient
-    DeformationGradient3D deformationGradient;
-
     //allocate global engineering stress
-    EngineeringStrain3D engineeringPlasticStrain;
+	EngineeringStress3D engineeringStress;
 
     //InvJacobian and determinant of Jacobian
     double invJacobian[9], detJac;
@@ -575,65 +520,21 @@ void NuTo::Solid::GetEngineeringPlasticStrain(FullMatrix<double>& rEngineeringPl
     const ConstitutiveEngineeringStressStrain *constitutivePtr;
 
     //allocate and initialize result matrix
-    rEngineeringPlasticStrain.Resize(6,GetNumIntegrationPoints());
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+    switch (rIpDataType)
     {
-        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
-
-        CalculateDerivativeShapeFunctionsLocal(localIPCoord, derivativeShapeFunctionsLocal);
-
-        CalculateJacobian(derivativeShapeFunctionsLocal,nodeCoord, invJacobian, detJac);
-
-        CalculateDerivativeShapeFunctionsGlobal(derivativeShapeFunctionsLocal,invJacobian,
-                                                derivativeShapeFunctionsGlobal);
-
-        // determine deformation gradient from the local Displacements and the derivative of the shape functions
-        // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-        CalculateDeformationGradient(derivativeShapeFunctionsGlobal, nodeDisp, deformationGradient);
-
-        //call material law to calculate engineering strain
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
-        if (constitutivePtr==0)
-            throw MechanicsException("[NuTo::Solid::GetEngineeringStrain] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringPlasticStrain);
-
-        //copy to FullMatrix
-        memcpy(&(rEngineeringPlasticStrain.mEigenMatrix.data()[theIP*6]),engineeringPlasticStrain.GetData(),6*sizeof(double));
+    case NuTo::IpData::ENGINEERING_STRAIN:
+    case NuTo::IpData::ENGINEERING_STRESS:
+    case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+       	rIpData.Resize(6,GetNumIntegrationPoints());
+    break;
+    case NuTo::IpData::DAMAGE:
+       	rIpData.Resize(1,GetNumIntegrationPoints());
+    break;
+    default:
+    	throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
     }
-}
-//! @brief calculates the engineering stress
-//! @param rEngineeringStress engineering stress (return value, always 6xnumIp matrix)
-void NuTo::Solid::GetEngineeringStress(FullMatrix<double>& rEngineeringStress)const
-{
-    //calculate coordinates
-    std::vector<double> nodeCoord(GetNumDofs());
-    CalculateCoordinates(nodeCoord);
 
-    //calculate local displacements
-    std::vector<double> nodeDisp(GetNumDofs());
-    CalculateDisplacements(nodeDisp);
-
-    //allocate space for local ip coordinates
-    double localIPCoord[3];
-
-    //allocate space for derivatives of shape functions
-    std::vector<double> derivativeShapeFunctionsLocal(GetNumDofs());
-    std::vector<double> derivativeShapeFunctionsGlobal(GetNumDofs());
-
-    //allocate deformation gradient
-    DeformationGradient3D deformationGradient;
-
-    //allocate global engineering stress
-    EngineeringStress3D engineeringStress;
-
-    //InvJacobian and determinant of Jacobian
-    double invJacobian[9], detJac;
-
-    //material pointer
-    const ConstitutiveEngineeringStressStrain *constitutivePtr;
-
-    //allocate and initialize result matrix
-    rEngineeringStress.Resize(6,GetNumIntegrationPoints());
+    //store the data
     for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
     {
         GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
@@ -650,13 +551,28 @@ void NuTo::Solid::GetEngineeringStress(FullMatrix<double>& rEngineeringStress)co
         CalculateDeformationGradient(derivativeShapeFunctionsGlobal, nodeDisp, deformationGradient);
 
         //call material law to calculate engineering strain
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
-        if (constitutivePtr==0)
-            throw MechanicsException("[NuTo::Solid::GetEngineeringStress] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
 
-        //copy to FullMatrix
-        memcpy(&(rEngineeringStress.mEigenMatrix.data()[theIP*6]),engineeringStress.GetData(),6*sizeof(double));
+        switch (rIpDataType)
+        {
+        case NuTo::IpData::ENGINEERING_STRAIN:
+            constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
+            memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
+        break;
+        case NuTo::IpData::ENGINEERING_STRESS:
+            constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
+            memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStress.GetData(),6*sizeof(double));
+        break;
+        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+            constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
+            memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
+        break;
+        case NuTo::IpData::DAMAGE:
+            constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+        break;
+        default:
+        	throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
+        }
     }
 }
 
@@ -858,5 +774,16 @@ void NuTo::Solid::GetIntegrationPointVolume(std::vector<double>& rVolume)const
 
 		rVolume[theIP] = detJac * mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
     }
+}
+//! @brief cast the base pointer to a Solid, otherwise throws an exception
+const NuTo::Solid* NuTo::Solid::AsSolid()const
+{
+	return this;
+}
+
+//! @brief cast the base pointer to a Solid, otherwise throws an exception
+NuTo::Solid* NuTo::Solid::AsSolid()
+{
+	return this;
 }
 

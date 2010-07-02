@@ -213,13 +213,11 @@ public:
     //! @param rIpDataType ip type
     void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
     		Element::eElementType rElementType, NuTo::ElementData::eElementDataType rElementDataType, NuTo::IpData::eIpDataType rIpDataType);
+#endif //SWIG
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
     void ElementDelete (const int rElementNumber);
-
-
-#endif //SWIG
 
 protected:
     int mNumVoxel;  //number of voxels

@@ -159,8 +159,20 @@ public:
     //! @param rFactor factor including determinant of Jacobian and IP weight
     //! @param rCoefficientMatrix to be added to
     void AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsLocal,
-                     const ConstitutiveTangentLocal3x3& rConstitutiveTangent, double rFactor,
+                     const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
                      FullMatrix<double>& rCoefficientMatrix)const;
+
+    //! @brief adds to a matrix the product B^tCBnonlocal, where B contains the derivatives of the shape functions and C is the constitutive tangent and Bnonlocal is the nonlocal B matrix
+    //! eventually include also area/width of an element
+    //! @param rLocalDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+    //! @param rNonlocalDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rFactor factor including determinant of Jacobian and IP weight
+    //! @param rCoefficientMatrix to be added to
+    //! &param rFirstCol first column of the coefficient matrix to be modified (corresponding to the current nonlocal element)
+    void AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFunctionsLocal,const std::vector<double>& rNonlocalDerivativeShapeFunctionsLocal,
+                                  const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
+                                  FullMatrix<double>& rCoefficientMatrix, int rFirstCol)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -177,17 +189,10 @@ public:
     // rGlobalDofsColumn global dofs corresponding to the columns of the matrix
     virtual void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const=0;
 
-    //! @brief calculates the engineering strain
-    //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    void GetEngineeringStrain(FullMatrix<double>& rEngineeringStrain)const;
-
-    //! @brief calculates the engineering plastic strain
-    //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    void GetEngineeringPlasticStrain(FullMatrix<double>& rEngineeringPlasticStrain)const;
-
-    //! @brief calculates the engineering stress
-    //! @param rEngineerungStress engineering stress (return value, always 6xnumIp matrix)
-    void GetEngineeringStress(FullMatrix<double>& rEngineeringStress)const;
+    //! @brief calculates the integration point data with the current displacements applied
+    //! @param rIpDataType data type to be stored for each integration point
+    //! @param rIpData return value with dimension (dim of data type) x (numIp)
+    void GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -210,6 +215,12 @@ public:
     //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
     //! @return Area
     virtual double CalculateArea()const=0;
+
+    //! @brief cast the base pointer to an Plane, otherwise throws an exception
+    const Plane* AsPlane()const;
+
+    //! @brief cast the base pointer to an Plane, otherwise throws an exception
+    Plane* AsPlane();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

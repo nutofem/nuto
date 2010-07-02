@@ -99,18 +99,22 @@ public:
     //! @param rNonlocalElement element of the nonlocal ip
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
-    virtual void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-    		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+    virtual void SetNonlocalWeight(int rLocalIpNumber, const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
     //! @brief gets the nonlocal elements for a constitutive model
     //! @param rConstitutive constitutive model
     //! @return vector to nonlocal elements
-    virtual const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+    virtual const std::vector<const NuTo::ElementBase*>& GetNonlocalElements()const;
+
+    //! @brief gets the number of nonlocal elements for a constitutive model
+    //! @param rConstitutive constitutive model
+    //! @return number of nonlocal elements
+    virtual int GetNumNonlocalElements()const;
 
     //! @brief gets the nonlocal weights
     //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
     //! @return vector of weights for all integration points of the nonlocal element
-    virtual const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
+    virtual const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

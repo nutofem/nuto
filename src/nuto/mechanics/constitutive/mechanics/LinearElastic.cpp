@@ -288,6 +288,41 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
     rEngineeringStress.mEngineeringStress[4] = C44 * engineeringStrain.mEngineeringStrain[4] ;
     rEngineeringStress.mEngineeringStress[5] = C44 * engineeringStrain.mEngineeringStrain[5] ;
 }
+//  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 1D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+ void NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient1D& rDeformationGradient, double& rDamage) const
+{
+	rDamage=0.;
+}
+
+ //  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 2D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+ void NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient2D& rDeformationGradient, double& rDamage) const
+{
+    rDamage=0.;
+}
+
+ //  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 3D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+ void NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient3D& rDeformationGradient, double& rDamage) const
+{
+    rDamage=0.;
+}
 
 
 //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
@@ -298,9 +333,10 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 //! @param rTangent ... tangent
 void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient,
-		ConstitutiveTangentLocal1x1& rTangent) const
+		ConstitutiveTangentBase* rTangent) const
 {
-    // check if parameters are valid
+	ConstitutiveTangentLocal1x1 *tangent(rTangent->AsConstitutiveTangentLocal1x1());
+	// check if parameters are valid
     if (this->mParametersValid == false)
     {
    		//throw an exception giving information related to the wrong parameter
@@ -311,8 +347,8 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
     }
 
     // store tangent at the output object
-    rTangent.mTangent = mE;
-    rTangent.SetSymmetry(true);
+    tangent->mTangent = mE;
+    tangent->SetSymmetry(true);
 }
 
 
@@ -324,8 +360,9 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 //! @param rTangent ... tangent
 void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient,
-		ConstitutiveTangentLocal3x3& rTangent) const
+		ConstitutiveTangentBase* rTangent) const
 {
+	ConstitutiveTangentLocal3x3 *tangent(rTangent->AsConstitutiveTangentLocal3x3());
     // check if parameters are valid
     if (this->mParametersValid == false)
     {
@@ -346,24 +383,24 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 	    this->CalculateCoefficients3D(C11, C12, C33);
 
 	    // store tangent at the output object
-	     rTangent.mTangent[ 0] = C11;
-	     rTangent.mTangent[ 1] = C12;
-	     rTangent.mTangent[ 2] = 0;
+	    tangent->mTangent[ 0] = C11;
+	    tangent->mTangent[ 1] = C12;
+	    tangent->mTangent[ 2] = 0;
 
-	     rTangent.mTangent[ 3] = C12;
-	     rTangent.mTangent[ 4] = C11;
-	     rTangent.mTangent[ 5] = 0;
+	    tangent->mTangent[ 3] = C12;
+	    tangent->mTangent[ 4] = C11;
+	    tangent->mTangent[ 5] = 0;
 
-	     rTangent.mTangent[ 6] = 0.;
-	     rTangent.mTangent[ 7] = 0.;
-	     rTangent.mTangent[ 8] = C33;
+	    tangent->mTangent[ 6] = 0.;
+	    tangent->mTangent[ 7] = 0.;
+	    tangent->mTangent[ 8] = C33;
 	}
 	else
 	{
 	    throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
 	}
 
-    rTangent.SetSymmetry(true);
+    rTangent->SetSymmetry(true);
 }
 
 
@@ -375,9 +412,11 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 //! @param rTangent ... tangent
 void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient,
-		ConstitutiveTangentLocal6x6& rTangent) const
+		ConstitutiveTangentBase* rTangent) const
 {
-    // check if parameters are valid
+	ConstitutiveTangentLocal6x6 *tangent(rTangent->AsConstitutiveTangentLocal6x6());
+
+	// check if parameters are valid
     if (this->mParametersValid == false)
     {
    		//throw an exception giving information related to the wrong parameter
@@ -391,50 +430,52 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
     double C11, C12, C44;
     this->CalculateCoefficients3D(C11, C12, C44);
 
+    double *data(tangent->mTangent);
+
     // store tangent at the output object
-    rTangent.mTangent[ 0] = C11;
-    rTangent.mTangent[ 1] = C12;
-    rTangent.mTangent[ 2] = C12;
-    rTangent.mTangent[ 3] = 0;
-    rTangent.mTangent[ 4] = 0;
-    rTangent.mTangent[ 5] = 0;
+    data[ 0] = C11;
+    data[ 1] = C12;
+    data[ 2] = C12;
+    data[ 3] = 0;
+    data[ 4] = 0;
+    data[ 5] = 0;
 
-    rTangent.mTangent[ 6] = C12;
-    rTangent.mTangent[ 7] = C11;
-    rTangent.mTangent[ 8] = C12;
-    rTangent.mTangent[ 9] = 0;
-    rTangent.mTangent[10] = 0;
-    rTangent.mTangent[11] = 0;
+    data[ 6] = C12;
+    data[ 7] = C11;
+    data[ 8] = C12;
+    data[ 9] = 0;
+    data[10] = 0;
+    data[11] = 0;
 
-    rTangent.mTangent[12] = C12;
-    rTangent.mTangent[13] = C12;
-    rTangent.mTangent[14] = C11;
-    rTangent.mTangent[15] = 0;
-    rTangent.mTangent[16] = 0;
-    rTangent.mTangent[17] = 0;
+    data[12] = C12;
+    data[13] = C12;
+    data[14] = C11;
+    data[15] = 0;
+    data[16] = 0;
+    data[17] = 0;
 
-    rTangent.mTangent[18] = 0;
-    rTangent.mTangent[19] = 0;
-    rTangent.mTangent[20] = 0;
-    rTangent.mTangent[21] = C44;
-    rTangent.mTangent[22] = 0;
-    rTangent.mTangent[23] = 0;
+    data[18] = 0;
+    data[19] = 0;
+    data[20] = 0;
+    data[21] = C44;
+    data[22] = 0;
+    data[23] = 0;
 
-    rTangent.mTangent[24] = 0;
-    rTangent.mTangent[25] = 0;
-    rTangent.mTangent[26] = 0;
-    rTangent.mTangent[27] = 0;
-    rTangent.mTangent[28] = C44;
-    rTangent.mTangent[29] = 0;
+    data[24] = 0;
+    data[25] = 0;
+    data[26] = 0;
+    data[27] = 0;
+    data[28] = C44;
+    data[29] = 0;
 
-    rTangent.mTangent[30] = 0;
-    rTangent.mTangent[31] = 0;
-    rTangent.mTangent[32] = 0;
-    rTangent.mTangent[33] = 0;
-    rTangent.mTangent[34] = 0;
-    rTangent.mTangent[35] = C44;
+    data[30] = 0;
+    data[31] = 0;
+    data[32] = 0;
+    data[33] = 0;
+    data[34] = 0;
+    data[35] = C44;
 
-    rTangent.SetSymmetry(true);
+    tangent->SetSymmetry(true);
 }
 
 

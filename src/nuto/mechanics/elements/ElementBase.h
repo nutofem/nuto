@@ -27,16 +27,19 @@
 
 namespace NuTo
 {
-template<class T>
-class SparseMatrix;
-class NodeBase;
-class SectionBase;
-class StructureBase;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
-class VisualizeComponentBase;
 class ElementDataBase;
 class IntegrationTypeBase;
+class NodeBase;
+class Plane;
+class SectionBase;
+template<class T>
+class SparseMatrix;
+class Solid;
+class StructureBase;
+class Truss;
+class VisualizeComponentBase;
 
 
 //! @author Jörg F. Unger, ISM
@@ -63,7 +66,7 @@ public:
 
     //! @brief returns the id number of the element
     //! @return id
-    int ElementGetId();
+    int ElementGetId()const;
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
@@ -162,17 +165,22 @@ public:
     //! @brief calculates the total internal inelastic energy of the system
 //   virtual double InElasticEnergy()=0;
 
-    //! @brief calculates the engineering strain
+/*    //! @brief calculates the engineering strain
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
     virtual void GetEngineeringStrain(FullMatrix<double>& rEngineeringStrain)const=0;
 
-    //! @brief calculates the engineering plstic strain
+    //! @brief calculates the engineering plastic strain
     //! @param rEngineerungPlsticStrain engineering strain (return value, always 6xnumIp matrix)
     virtual void GetEngineeringPlasticStrain(FullMatrix<double>& rEngineeringPlasticStrain)const=0;
 
     //! @brief calculates the engineering strain
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
     virtual void GetEngineeringStress(FullMatrix<double>& rEngineeringStress)const=0;
+*/
+    //! @brief calculates the integration point data with the current displacements applied
+    //! @param rIpDataType data type to be stored for each integration point
+    //! @param rIpData return value with dimension (dim of data type) x (numIp)
+    virtual void GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const=0;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -223,23 +231,25 @@ public:
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
-    //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
     //! @param rNonlocalElement element of the nonlocal ip
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
-    void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-    		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+    void SetNonlocalWeight(int rLocalIpNumber, const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
     //! @brief returns a vector of weights for an ip
     //! @param rIp local Ip
     //! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
     //! @retrun weights for each integration point of the nonlocal element
-    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
+    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement)const;
 
     //! @brief returns a vector of the nonlocal elements
-    //! @param rConstitutive constitutive model for the nonlocale elements
     //! @retrun nonlocal elements
-    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements(const ConstitutiveBase* rConstitutive)const;
+    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements()const;
+
+    //! @brief returns the number of nonlocal elements
+    //! @param rConstitutive constitutive model for the nonlocale elements
+    //! @rerun number of nonlocal elements
+    int GetNumNonlocalElements()const;
 
     //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
     //! @return Area
@@ -253,6 +263,24 @@ public:
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
     virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const=0;
+
+    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
+    virtual const Plane* AsPlane()const;
+
+    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
+    virtual Plane* AsPlane();
+
+    //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
+    virtual const Solid* AsSolid()const;
+
+    //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
+    virtual Solid* AsSolid();
+
+    //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
+    virtual const Truss* AsTruss()const;
+
+    //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
+    virtual Truss* AsTruss();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

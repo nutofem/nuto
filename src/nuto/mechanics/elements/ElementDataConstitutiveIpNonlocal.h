@@ -45,13 +45,12 @@ public:
     //! @param rNonlocalElement element of the nonlocal ip
     //! @param rNonlocalIp local ip number of the nonlocal ip
     //! @param rWeight weight
-     void SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-    		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
+     void SetNonlocalWeight(int rLocalIpNumber,const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
      //! @brief gets the nonlocal weights
      //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
      //! @return vector of weights for all integration points of the nonlocal element
-     const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const;
+     const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement)const;
 
 #ifdef ENABLE_SERIALIZATION
 	//! @brief serializes the class

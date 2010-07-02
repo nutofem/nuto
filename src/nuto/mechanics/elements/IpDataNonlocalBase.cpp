@@ -30,7 +30,6 @@ void NuTo::IpDataNonlocalBase::SetNonlocalWeight(int rNonlocalElement,int rNonlo
     	// the nonlocal element has to be added
     	assert(rNonlocalElement==(int)mNonlocalWeights.size());
     	mNonlocalWeights.push_back(std::vector<double>(rNumIps,0));
-    	std::cout << "[NuTo::IpDataNonlocalBase::SetNonlocalWeight] " << rNonlocalIp << " " << rNumIps << std::endl;
     	assert(rNonlocalIp<rNumIps);
     	mNonlocalWeights[rNonlocalElement][rNonlocalIp]=rWeight;
     }

@@ -14,17 +14,22 @@
 
 namespace NuTo
 {
+class ConstitutiveTangentLocal1x1;
+class ConstitutiveTangentLocal3x3;
+class ConstitutiveTangentLocal6x6;
+class ConstitutiveTangentNonlocal3x3;
+
 //! @brief ... base class storing the tangent of the constitutive relationship
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class ConstitutiveTangentLocalBase
+class ConstitutiveTangentBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
-    ConstitutiveTangentLocalBase();
+    ConstitutiveTangentBase();
 
     //! @brief ... get the number of rows of the tangent matrix
     //! @return ... number of rows
@@ -54,11 +59,17 @@ public:
         this->mSymmetry = rSymmetry;
     }
 
-    //! @brief ... set tangent matrix
-    //! @param rNumberOfRows ... number of rows
-    //! @param rNumberOfColumns ... number of columns
-    //! @param rTangentMatrix ... tangent matrix (column major storage)
-    virtual void SetData(const double* rTangentMatrix) = 0;
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    virtual ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3() = 0;
+
+    //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
+    virtual ConstitutiveTangentLocal1x1* AsConstitutiveTangentLocal1x1() = 0;
+
+    //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
+    virtual ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3() = 0;
+
+    //! @brief reinterpret as ConstitutiveTangentLocal6x6, otherwise throw an exception
+    virtual ConstitutiveTangentLocal6x6* AsConstitutiveTangentLocal6x6() = 0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

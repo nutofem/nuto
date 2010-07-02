@@ -16,10 +16,12 @@ class VisualizeBase
 public:
     enum eVisualizeWhat
     {
-        DISPLACEMENTS,            //!< visualize displacements
-        ENGINEERING_STRESS,       //!< visualize engineering stress tensor
-        ENGINEERING_STRAIN,       //!< visualize engineering strain tensor
-        NONLOCAL_WEIGHT          //!< visualize engineering strain tensor
+        DISPLACEMENTS,             //!< visualize displacements
+        ENGINEERING_STRESS,        //!< visualize engineering stress tensor
+        ENGINEERING_STRAIN,        //!< visualize engineering strain tensor
+        NONLOCAL_WEIGHT,           //!< visualize nonlocal weights
+        DAMAGE,                    //!< visualize damage
+        ENGINEERING_PLASTIC_STRAIN //!< visualize engineering plastic strain
     };
 
     //! @brief ... export to Vtk datafile

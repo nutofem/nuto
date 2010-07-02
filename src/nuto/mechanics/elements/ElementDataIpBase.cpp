@@ -61,15 +61,12 @@ void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement, co
 		switch (rIpDataType)
 		{
 		case NuTo::IpData::NOIPDATA:
-			printf("[NuTo::ElementDataIpBase::SetIntegrationType]empty\n");
 			mIpData.push_back(new IpDataEmpty());
 			break;
 		case NuTo::IpData::STATICDATA:
-			printf("[NuTo::ElementDataIpBase::SetIntegrationType]STATICDATA\n");
 			mIpData.push_back(new IpDataStaticData());
 			break;
 		case NuTo::IpData::STATICDATANONLOCAL:
-			printf("[NuTo::ElementDataIpBase::SetIntegrationType]STATICDATANONLOCAL\n");
 			mIpData.push_back(new IpDataStaticDataNonlocal());
 			break;
 		default:

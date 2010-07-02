@@ -31,7 +31,7 @@ public:
 
     inline bool IsIdent(const std::string& rIdent) const
     {
-        if (rIdent == this->mIdent)
+    	if (rIdent == this->mIdent)
         {
             return true;
         }

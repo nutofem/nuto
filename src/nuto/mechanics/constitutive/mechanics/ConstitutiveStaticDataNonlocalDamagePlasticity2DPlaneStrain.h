@@ -45,7 +45,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief accumulated plastic strain scaled by nonlocal radius and a factor considering the fracture energy
+    //! @brief local accumulated plastic strain scaled by nonlocal radius
     double mKappa;
 
     //! @brief plastic strain
@@ -54,7 +54,7 @@ protected:
     //! @brief tmp static data derivative of local plastic strain with respect to local total strain (row wise storage 4x4)
     double mTmpdEpsilonPdEpsilon[16];
 
-    //! @brief tmp static data equivalente plastic strain
+    //! @brief tmp static data for accumulated plastic strain scaled by equivalente length
     double mTmpKappa;
 
     //! @brief tmp static data plastic strain

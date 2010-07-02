@@ -19,9 +19,7 @@ namespace NuTo
 {
 // forward declarations
 class ElementBase;
-class ConstitutiveTangentLocal1x1;
-class ConstitutiveTangentLocal3x3;
-class ConstitutiveTangentLocal6x6;
+class ConstitutiveTangentBase;
 class DeformationGradient1D;
 class DeformationGradient2D;
 class DeformationGradient3D;
@@ -150,6 +148,33 @@ public:
     virtual void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const=0;
 
+    //  Damage /////////////////////////////////////
+    //! @brief ... calculate isotropic damage from deformation gradient in 1D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    //! @param rDamage ... damage variable
+    virtual void GetDamage(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient1D& rDeformationGradient, double& rDamage) const=0;
+
+    //  Damage /////////////////////////////////////
+    //! @brief ... calculate isotropic damage from deformation gradient in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    //! @param rDamage ... damage variable
+    virtual void GetDamage(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient2D& rDeformationGradient, double& rDamage) const=0;
+
+    //  Damage /////////////////////////////////////
+    //! @brief ... calculate isotropic damage from deformation gradient in 3D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    //! @param rDamage ... damage variable
+    virtual void GetDamage(const ElementBase* rElement, int rIp,
+                                      const DeformationGradient3D& rDeformationGradient, double& rDamage) const=0;
+
     //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
     //! @param rStructure ... structure
     //! @param rElement ... element
@@ -158,7 +183,7 @@ public:
     //! @param rTangent ... tangent
     virtual void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient1D& rDeformationGradient,
-            ConstitutiveTangentLocal1x1& rTangent) const=0;
+            ConstitutiveTangentBase* rTangent) const=0;
 
     //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
     //! @param rStructure ... structure
@@ -168,7 +193,7 @@ public:
     //! @param rTangent ... tangent
     virtual void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient2D& rDeformationGradient,
-            ConstitutiveTangentLocal3x3& rTangent) const=0;
+            ConstitutiveTangentBase* rTangent) const=0;
 
     //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
     //! @param rStructure ... structure
@@ -178,7 +203,7 @@ public:
     //! @param rTangent ... tangent
     virtual void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient,
-            ConstitutiveTangentLocal6x6& rTangent) const=0;
+            ConstitutiveTangentBase* rTangent) const=0;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
     //! @param rStructure ... structure
@@ -314,6 +339,14 @@ public:
     //! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
     virtual void GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rDeltaElasticEngineeringStrain) const=0;
+
+    //! @brief ... avoid dynamic cast
+    //! @return ... see brief explanation
+    virtual const ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain()const;
+
+    //! @brief ... avoid dynamic cast
+    //! @return ... see brief explanation
+    virtual ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

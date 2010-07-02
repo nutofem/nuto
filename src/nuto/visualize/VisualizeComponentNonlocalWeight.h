@@ -35,7 +35,6 @@ protected:
     int mElementId;
     const ElementBase* mElement;
     int	mIp;
-    int mConstitutiveId;
 };
 }
 #endif /* VISUALIZECOMPONENTNONLOCALWEIGHT_H_ */

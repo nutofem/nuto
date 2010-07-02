@@ -16,9 +16,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal3x3.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
@@ -46,7 +44,6 @@
 
 NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEngineeringStressStrain()
 {
-    std::cout << "[NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity]" << std::endl;
     mE = 0.;
     mNu = 0.;
     mNonlocalRadius = 1.;
@@ -55,7 +52,7 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
     mBiaxialCompressiveStrength = 0.;
     mFractureEnergy = 0.;
     mYieldSurface = Constitutive::COMBINED_ROUNDED;
-    mDamage = false;
+    mDamage = true;
     SetParametersValid();
 }
 
@@ -66,7 +63,6 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
     template<class Archive>
     void NuTo::NonlocalDamagePlasticity::serialize(Archive & ar, const unsigned int version)
     {
-        std::cout << "start serialization of linear elastic" << std::endl;
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
            & BOOST_SERIALIZATION_NVP(mE)
            & BOOST_SERIALIZATION_NVP(mNu)
@@ -77,12 +73,11 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
            & BOOST_SERIALIZATION_NVP(mFractureEnergy)
            & BOOST_SERIALIZATION_NVP(mYieldSurface)
            & BOOST_SERIALIZATION_NVP(mDamage);
-        std::cout << "finish serialization of linear elastic" << std::endl;
     }
 #endif // ENABLE_SERIALIZATION
 
 //  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering plastic strain from deformation gradient in 3D
+//! @brief ... calculate engineering plastic strain from deformation gradient in 1D
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
@@ -90,7 +85,7 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-    //TODO check this routine if it is necessary
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 1D.");
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -102,7 +97,14 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBa
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-    //TODO check this routine if it is necessary
+	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+    // update the temporary parts of the static data
+	rEngineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
+	rEngineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
+	rEngineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
+	rEngineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
+	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
+	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -114,7 +116,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBa
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-    //TODO check this routine if it is necessary
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 3D.");
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -169,6 +171,94 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
     if (theSection->GetType()==Section::PLANE_STRAIN)
     {
         // calculate coefficients of the material matrix
+        double C11, C12, C33;
+        this->CalculateCoefficients3D(C11, C12, C33);
+
+        //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
+        //Get previous ip_data
+    	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+
+        // calculate engineering strain
+        EngineeringStrain2D engineeringStrain;
+        rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+
+        // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
+        double elastStrain[4];
+        elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+        elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+        elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+        elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
+/*
+        std::cout << "strain" << std::endl;
+        std::cout << engineeringStrain.mEngineeringStrain[0] << std::endl;
+        std::cout << engineeringStrain.mEngineeringStrain[1] << std::endl;
+        std::cout << engineeringStrain.mEngineeringStrain[2] << std::endl;
+        std::cout << engineeringStrain.mEngineeringStrain[3] << std::endl;
+*/
+        if (mDamage)
+        {
+			//calculate scaled equivalent plastic strain (scaled by the element length)
+			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+
+			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
+			double kappaD = CalculateKappaD();
+
+			//calculate damage parameter from the equivalente plastic strain
+			//it is scaled related to the length (based on the direction of the first principal plastic strain)
+			double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
+
+			//calculate the stress
+			rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+			rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+			rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
+        }
+        else
+        {
+			//calculate the stress
+			rEngineeringStress.mEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+			rEngineeringStress.mEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+			rEngineeringStress.mEngineeringStress[2] = (C33*elastStrain[2]);
+         }
+
+/*
+         std::cout << "stress" << std::endl;
+         std::cout << rEngineeringStress.mEngineeringStress[0] << std::endl;
+         std::cout << rEngineeringStress.mEngineeringStress[1] << std::endl;
+         std::cout << rEngineeringStress.mEngineeringStress[2] << std::endl;
+*/
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
+    }
+}
+
+// Engineering stress - Engineering strain /////////////////////////////////////
+//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+//! @param rCauchyStress ... Cauchy stress
+void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+              const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
+{
+    // check if parameters are valid
+    if (this->mParametersValid == false)
+    {
+           //throw an exception giving information related to the wrong parameter
+        CheckParameters();
+        //if there is no exception thrown there is a problem with the source code
+        //since every time a material parameter is changed, the parameters should be checked
+        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
+    }
+
+    const SectionBase* theSection(rElement->GetSection());
+    if (theSection==0)
+        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] No section defined for element.");
+    if (theSection->GetType()==Section::PLANE_STRAIN)
+    {
+        // calculate coefficients of the material matrix
         double C11, C12, C44;
         this->CalculateCoefficients3D(C11, C12, C44);
 
@@ -187,39 +277,41 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
         elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
         elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
-        //calculate scaled equivalent plastic strain (scaled by the element length)
-        double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+        if (mDamage)
+        {
+			//calculate scaled equivalent plastic strain (scaled by the element length)
+			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
 
-        //determine kappaUnscaled, which is a scaling factor related to the fracture energy
-        double kappaD = CalculateKappaD();
+			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
+			double kappaD = CalculateKappaD();
 
-        //calculate damage parameter from the equivalente plastic strain
-        //it is scaled related to the length (based on the direction of the first principal plastic strain)
-        double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
+			//calculate damage parameter from the equivalente plastic strain
+			//it is scaled related to the length (based on the direction of the first principal plastic strain)
+			double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
 
-        //calculate the stress
-        rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-        rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-        rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C44*elastStrain[2]);
+			//calculate the stress
+			rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+			rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+			rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
+			rEngineeringStress.mEngineeringStress[3] = oneMinusOmega*(C44*elastStrain[2]);
+			rEngineeringStress.mEngineeringStress[4] = 0.;
+			rEngineeringStress.mEngineeringStress[5] = 0.;
+        }
+        else
+        {
+			//calculate the stress
+			rEngineeringStress.mEngineeringStress[0] = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
+			rEngineeringStress.mEngineeringStress[1] = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
+			rEngineeringStress.mEngineeringStress[2] = C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]);
+			rEngineeringStress.mEngineeringStress[3] = C44*elastStrain[2];
+			rEngineeringStress.mEngineeringStress[4] = 0.;
+			rEngineeringStress.mEngineeringStress[5] = 0.;
+        }
     }
     else
     {
         throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
     }
-
-}
-
-// Engineering stress - Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rCauchyStress ... Cauchy stress
-void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-              const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 3D.");
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -232,31 +324,58 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
               const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain3D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    // calculate coefficients of the material matrix
-    double C11, C12, C44;
-    this->CalculateCoefficients3D(C11, C12, C44);
-
-    // calculate Engineering stress
-    rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * (engineeringStrain.mEngineeringStrain[1]+engineeringStrain.mEngineeringStrain[2]);
-    rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * (engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[2]);
-    rEngineeringStress.mEngineeringStress[2] = C11 * engineeringStrain.mEngineeringStrain[2] + C12 * (engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[1]);
-    rEngineeringStress.mEngineeringStress[3] = C44 * engineeringStrain.mEngineeringStrain[3] ;
-    rEngineeringStress.mEngineeringStress[4] = C44 * engineeringStrain.mEngineeringStrain[4] ;
-    rEngineeringStress.mEngineeringStress[5] = C44 * engineeringStrain.mEngineeringStrain[5] ;
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Not implemented for 3D.");
 }
+
+//  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 1D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient1D& rDeformationGradient, double& rDamage) const
+{
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetDamage] Not implemented for 1D.");
+}
+
+ //  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 2D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient2D& rDeformationGradient, double& rDamage) const
+{
+    if (mDamage)
+    {
+		//calculate scaled equivalent plastic strain (scaled by the element length)
+		double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+
+		//determine kappaUnscaled, which is a scaling factor related to the fracture energy
+		double kappaD = CalculateKappaD();
+
+		//calculate damage parameter from the equivalente plastic strain
+		//it is scaled related to the length (based on the direction of the first principal plastic strain)
+		rDamage = CalculateDamage(kappa, kappaD);
+    }
+    else
+    	rDamage = 0.;
+}
+
+ //  Damage /////////////////////////////////////
+ //! @brief ... calculate isotropic damage from deformation gradient in 3D
+ //! @param rElement ... element
+ //! @param rIp ... integration point
+ //! @param rDeformationGradient ... deformation gradient
+ //! @param rDamage ... damage variable
+void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int rIp,
+                                   const DeformationGradient3D& rDeformationGradient, double& rDamage) const
+{
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetDamage] Not implemented for 3D.");
+}
+
 
 
 //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
@@ -267,21 +386,9 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 //! @param rTangent ... tangent
 void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient,
-        ConstitutiveTangentLocal1x1& rTangent) const
+        ConstitutiveTangentBase* rTangent) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-
-    // store tangent at the output object
-    rTangent.mTangent = mE;
-    rTangent.SetSymmetry(true);
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticity.");
 }
 
 
@@ -293,15 +400,17 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 //! @param rTangent ... tangent
 void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient,
-        ConstitutiveTangentLocal3x3& rTangent) const
+        ConstitutiveTangentBase* rTangent) const
 {
-    // check if parameters are valid
+	ConstitutiveTangentNonlocal3x3 *tangent(rTangent->AsConstitutiveTangentNonlocal3x3());
+
+	// check if parameters are valid
     if (this->mParametersValid == false)
     {
            //throw an exception giving information related to the wrong parameter
         CheckParameters();
         //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
+        //since every time a material parameter is changed, the parameters should be checked
         throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain] Check the material parameters.");
     }
 
@@ -314,25 +423,161 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
         double C11, C12, C33;
         this->CalculateCoefficients3D(C11, C12, C33);
 
-        // store tangent at the output object
-         rTangent.mTangent[ 0] = C11;
-         rTangent.mTangent[ 1] = C12;
-         rTangent.mTangent[ 2] = 0;
+        Eigen::Matrix<double,4,4> ElasticStiffness;
+		ElasticStiffness << C11, C12, 0.,  C12,
+							C12, C11, 0.,  C12,
+							 0.,  0., C33, 0.,
+							C12, C12, 0.,  C11;
 
-         rTangent.mTangent[ 3] = C12;
-         rTangent.mTangent[ 4] = C11;
-         rTangent.mTangent[ 5] = 0;
+		Eigen::Matrix<double,3,1> unity3;
+		unity3.setOnes(3);
 
-         rTangent.mTangent[ 6] = 0.;
-         rTangent.mTangent[ 7] = 0.;
-         rTangent.mTangent[ 8] = C33;
+        //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
+        //Get previous ip_data
+    	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+
+        if (mDamage)
+        {
+        	tangent->mIsLocal=false;
+
+        	// calculate engineering strain
+			EngineeringStrain2D engineeringStrain;
+			rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+
+			// subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
+			double elastStrain[4];
+			elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+			elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+			elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+			elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
+
+			// calculate Engineering stress
+			Eigen::Matrix<double,3,1> sigmaElast;
+			sigmaElast(0) = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
+			sigmaElast(1) = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
+			sigmaElast(2) = C33 * elastStrain[2] ;
+
+			const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
+
+			//calculate scaled equivalent plastic strain (scaled by the element length)
+			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+
+			//calculate nonlocal plastic strain for the direction of the equivalent length
+			double nonlocalPlasticStrain[4];
+			CalculateNonlocalPlasticStrain(rElement, rIp, nonlocalPlasticStrain);
+
+			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
+			double kappaD = CalculateKappaD();
+
+			//TODO Check for unloading-> simplify the formula, since dkappadEpsilonP is zero in all nonlocal integration points
+
+			//calculate damage parameter from the equivalente plastic strain
+			//it is scaled related to the length (based on the direction of the first principal plastic strain)
+			double dOmegadKappa;
+			double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
+			//std::cout << "omega " << 1.-oneMinusOmega << std::endl;
+
+
+			Eigen::Matrix<double,4,1> dKappadEpsilonP;
+			//calculate derivative of damage parameter with respect to local strains of all nonlocal integration points
+			int totalNonlocalIp(0);
+			for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+			{
+				const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
+
+				//std::cout << weights.size() << " "<< nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints() << std::endl;
+				assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+
+				//Go through all the integration points
+				for (int theNonlocalIP=0; theNonlocalIP<(int)weights.size(); theNonlocalIP++, totalNonlocalIp++)
+				{
+					if (weights[theNonlocalIP]==0.)
+						continue;
+					assert(totalNonlocalIp<tangent->GetNumSubMatrices());
+					double *localStiffData = tangent->mNonlocalMatrices[totalNonlocalIp].mTangent;
+
+					//here the nonlocal delta is relevant
+					const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
+
+					double deltaEpsilonPxx = NonlocalOldStaticData->mTmpEpsilonP[0] - NonlocalOldStaticData->mEpsilonP[0];
+					double deltaEpsilonPyy = NonlocalOldStaticData->mTmpEpsilonP[1] - NonlocalOldStaticData->mEpsilonP[1];
+					double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
+					double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
+
+					Eigen::Matrix<double,4,1> dLdEpsilonP;
+					double eqLength = CalculateDerivativeEquivalentLength2D(nonlocalElements[countNonlocalElement],Eigen::Matrix<double,4,1>::Map(NonlocalOldStaticData->mTmpEpsilonP,4),dLdEpsilonP);
+
+					double EpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
+													0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
+					if (EpsilonPEq>0)
+					{
+						double factor(eqLength/EpsilonPEq);
+						dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
+						dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
+						dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
+						dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
+
+						dKappadEpsilonP -= EpsilonPEq*dLdEpsilonP;
+
+						dKappadEpsilonP /= eqLength*eqLength;
+					}
+					else
+					{
+						dKappadEpsilonP.setZero(4,1);
+					}
+
+					//calculate dOmegadepsilon instead of using transpose, just declare a RowMajor storage
+					Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
+					//std::cout<< "dKappadepsilon analytic" << std::endl << minusdOmegadEpsilon << std::endl;
+
+					minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
+					//std::cout<< "dOmegadepsilon/weight analytic" << std::endl << -minusdOmegadEpsilon/weights[theNonlocalIP] << std::endl;
+					//std::cout << "weight " << weights[theNonlocalIP] << std::endl;
+
+					Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
+
+					if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
+					{
+						const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
+						localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
+						localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
+						localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
+						localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
+						localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
+						localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
+						localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
+						localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
+						localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
+					}
+				}
+			}
+		}
+		else
+		{
+			tangent->mIsLocal=true;
+
+/*			Eigen::Matrix<double,4,1> unity4;
+			unity4.setOnes(4);
+			Eigen::Matrix<double,3,3>::Map(tangent->mNonlocalMatrices[0].mTangent,3, 3) = (ElasticStiffness *
+					(unity4.asDiagonal()-Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4))).block(0,0,3,3);
+*/
+			double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
+			const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
+			localStiffData[0] = C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]);
+			localStiffData[1] = C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1];
+			localStiffData[2] = -C33*tmpdEP[2];
+			localStiffData[3] = -C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]);
+			localStiffData[4] = -C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]);
+			localStiffData[5] = -C33*tmpdEP[6];
+			localStiffData[6] = -C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]);
+			localStiffData[7] = -C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9];
+			localStiffData[8] = C33*(1.-tmpdEP[10]);
+		}
     }
     else
     {
         throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
     }
-
-    rTangent.SetSymmetry(true);
 }
 
 
@@ -344,68 +589,10 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 //! @param rTangent ... tangent
 void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient,
-        ConstitutiveTangentLocal6x6& rTangent) const
+        ConstitutiveTangentBase* rTangent) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-
-    // calculate coefficients of the material matrix
-    double C11, C12, C44;
-    this->CalculateCoefficients3D(C11, C12, C44);
-
-    // store tangent at the output object
-    rTangent.mTangent[ 0] = C11;
-    rTangent.mTangent[ 1] = C12;
-    rTangent.mTangent[ 2] = C12;
-    rTangent.mTangent[ 3] = 0;
-    rTangent.mTangent[ 4] = 0;
-    rTangent.mTangent[ 5] = 0;
-
-    rTangent.mTangent[ 6] = C12;
-    rTangent.mTangent[ 7] = C11;
-    rTangent.mTangent[ 8] = C12;
-    rTangent.mTangent[ 9] = 0;
-    rTangent.mTangent[10] = 0;
-    rTangent.mTangent[11] = 0;
-
-    rTangent.mTangent[12] = C12;
-    rTangent.mTangent[13] = C12;
-    rTangent.mTangent[14] = C11;
-    rTangent.mTangent[15] = 0;
-    rTangent.mTangent[16] = 0;
-    rTangent.mTangent[17] = 0;
-
-    rTangent.mTangent[18] = 0;
-    rTangent.mTangent[19] = 0;
-    rTangent.mTangent[20] = 0;
-    rTangent.mTangent[21] = C44;
-    rTangent.mTangent[22] = 0;
-    rTangent.mTangent[23] = 0;
-
-    rTangent.mTangent[24] = 0;
-    rTangent.mTangent[25] = 0;
-    rTangent.mTangent[26] = 0;
-    rTangent.mTangent[27] = 0;
-    rTangent.mTangent[28] = C44;
-    rTangent.mTangent[29] = 0;
-
-    rTangent.mTangent[30] = 0;
-    rTangent.mTangent[31] = 0;
-    rTangent.mTangent[32] = 0;
-    rTangent.mTangent[33] = 0;
-    rTangent.mTangent[34] = 0;
-    rTangent.mTangent[35] = C44;
-
-    rTangent.SetSymmetry(true);
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticity.");
 }
-
 
 //! @brief ... update static data (history variables) of the constitutive relationship
 //! @param rStructure ... structure
@@ -457,15 +644,16 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
                 rDeltaEqPlasticStrain,
                 rdEpsilonPdEpsilon);
 */
+
+        //Update Stress (it has to be recalculated)
+        EngineeringStress2D stress;
+        GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, stress);
+        Eigen::Matrix<double,4,1>::Map(oldStaticData->mPrevSigma,4,1) = Eigen::Matrix<double,4,1>::Map(stress.mEngineeringStress,4,1);
+
         // update the parts of the static data that are not related to the temporary updates (from the nonlocal calculation)
         oldStaticData->mKappa = oldStaticData->mTmpKappa;
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mEpsilonP,4,1) = Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4,1);;
         Eigen::Matrix<double,3,1>::Map(oldStaticData->mPrevStrain,3,1) = Eigen::Matrix<double,3,1>::Map(engineeringStrain.mEngineeringStrain);
-
-        //TODO Update Stress (store it as tmp in order to avoid new calculation)
-        EngineeringStress2D stress;
-        GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, stress);
-        Eigen::Matrix<double,4,1>::Map(oldStaticData->mPrevSigma,4,1) = Eigen::Matrix<double,4,1>::Map(stress.mEngineeringStress,4,1);
     }
     else
     {
@@ -535,14 +723,54 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
                 rDeltaEqPlasticStrain,
                 rdEpsilonPdEpsilon);
 
+		/*
+		//check rdEpsilonPdEpsilon
+		double rDeltaEqPlasticStrain2;
+		Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon2;
+		Eigen::Matrix<double,4,1> rNewEpsilonP2;
+		Eigen::Matrix<double,4,1> dEpsilonEqdEpsilon;
+		Eigen::Matrix<double,4,1> dOmegadEpsilon;
+		double omega(CalculateDamage(rDeltaEqPlasticStrain,CalculateKappaD()));
+		std::cout << "rdEpsilonPdEpsilon analytic" << std::endl << rdEpsilonPdEpsilon << std::endl;
+		double delta(1e-6);
+		for (int count=0; count<3 ; count++)
+		{
+			engineeringStrain.mEngineeringStrain[count]+=delta;
+
+			// perform return mapping for the plasticity model
+			this->ReturnMapping2D(
+					engineeringStrain,
+					oldStaticData->mEpsilonP,
+					oldStaticData->mPrevStrain,
+					rNewEpsilonP2,
+					rDeltaEqPlasticStrain2,
+					rdEpsilonPdEpsilon2);
+			rdEpsilonPdEpsilon.col(count) = 1./delta*(rNewEpsilonP2-rNewEpsilonP);
+			dEpsilonEqdEpsilon(count) = 1./delta *(rDeltaEqPlasticStrain2-rDeltaEqPlasticStrain);
+			double omega2(CalculateDamage(rDeltaEqPlasticStrain2,CalculateKappaD()));
+			dOmegadEpsilon(count) = 1./delta *(omega2-omega);
+
+
+			engineeringStrain.mEngineeringStrain[count]-=delta;
+		}
+		dEpsilonEqdEpsilon(3) = 0;
+		dOmegadEpsilon(3) = 0.;
+		std::cout << "rdEpsilonPdEpsilon cdf" << std::endl << rdEpsilonPdEpsilon << std::endl;
+		std::cout << "dEpsilonEqdEpsilon cdf" << std::endl << dEpsilonEqdEpsilon << std::endl;
+		std::cout << "dOmegadEpsilon cdf" << std::endl << dOmegadEpsilon << std::endl;
+		*/
         // update the temporary parts of the static data
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;
 
         //determine equivalente length in zz and plane direction
         double rEqLength = CalculateEquivalentLength2D(rElement,rNewEpsilonP);
+//        std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "rEqLength " << rEqLength << std::endl;
+//        std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << std::endl;
+//        std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "rNewEpsilonP " << rNewEpsilonP << std::endl;
 
         oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain/rEqLength;
 
+ //       std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "oldStaticData->mTmpKappa " << oldStaticData->mTmpKappa << std::endl;
         Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4) = rdEpsilonPdEpsilon;
     }
     else
@@ -1030,34 +1258,34 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
 {
 	double l_eq_plane;
 	double l_eq_circ;
-	double l_element(sqrt(rElement->CalculateArea()*0.5));
+	double l_element(sqrt(rElement->CalculateArea()));
     l_eq_plane = mNonlocalRadius;
     l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
 
     bool mixedPlane;
 	double factor = 0.5*(rEpsilonP[0]-rEpsilonP[1]);
     double helpScalar = sqrt(factor*factor+rEpsilonP[2]*rEpsilonP[2]*0.25);
-    double epsilonPNonlocalPlane;
+    double epsilonPPlane;
     double l_eq;
     if ((rEpsilonP[0]+rEpsilonP[1])*0.5-helpScalar>0)
     {
         // principal plastic strains in plane direction are both in tension -> mixed interpolation
-        epsilonPNonlocalPlane = 0.5 * sqrt(4*(rEpsilonP[0]*rEpsilonP[0]+rEpsilonP[1]*rEpsilonP[1])+2*rEpsilonP[2]*rEpsilonP[2]);
+        epsilonPPlane = sqrt(rEpsilonP[0]*rEpsilonP[0]+rEpsilonP[1]*rEpsilonP[1]+0.5*rEpsilonP[2]*rEpsilonP[2]);
         mixedPlane = true;
     }
     else
     {
         // only the largest component is considered
-    	epsilonPNonlocalPlane = (rEpsilonP[0]+rEpsilonP[1])/2.+sqrt(factor*factor+rEpsilonP[2]*rEpsilonP[2]*0.25);
+    	epsilonPPlane = (rEpsilonP[0]+rEpsilonP[1])*0.5+helpScalar;
     	mixedPlane = false;
     }
 
-    if (epsilonPNonlocalPlane >rEpsilonP[3])
+    if (epsilonPPlane >=rEpsilonP[3])
     {
         if (fabs(rEpsilonP[3])>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rEpsilonP[3]/epsilonPNonlocalPlane;
+        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
@@ -1070,10 +1298,10 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
     }
     else
     {
-        if (fabs(epsilonPNonlocalPlane)>1e-10)
+        if (fabs(epsilonPPlane)>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rEpsilonP[3]/epsilonPNonlocalPlane;
+        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
@@ -1084,6 +1312,131 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
         }
     }
     return l_eq;
+//    return l_eq_plane;
+}
+
+//! @brief ... calculate the derivative of the equivalent length of the element in plane coordinates (square root of area) with respect to the plastic strain
+double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP,
+		Eigen::Matrix<double,4,1>& rdLdEpsilonP) const
+{
+    double l_eq_plane;
+	double l_eq_circ;
+	double l_element(sqrt(rElement->CalculateArea()));
+    l_eq_plane = mNonlocalRadius;
+    l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
+
+    bool mixedPlane;
+	double factor = 0.5*(rEpsilonP[0]-rEpsilonP[1]);
+    double helpScalar = sqrt(factor*factor+rEpsilonP[2]*rEpsilonP[2]*0.25);
+    double epsilonPPlane;
+    double l_eq;
+    double d_epsilon_p_max_plane_d_epsilon_p_xx;
+    double d_epsilon_p_max_plane_d_epsilon_p_yy;
+    double d_epsilon_p_max_plane_d_epsilon_p_xy;
+
+    if ((rEpsilonP[0]+rEpsilonP[1])*0.5-helpScalar>0)
+    {
+        // principal plastic strains in plane direction are both in tension -> mixed interpolation
+        epsilonPPlane = sqrt(rEpsilonP[0]*rEpsilonP[0]+rEpsilonP[1]*rEpsilonP[1]+0.5*rEpsilonP[2]*rEpsilonP[2]);
+        mixedPlane = true;
+		d_epsilon_p_max_plane_d_epsilon_p_xx = rEpsilonP(0)/epsilonPPlane;
+		d_epsilon_p_max_plane_d_epsilon_p_yy = rEpsilonP(1)/epsilonPPlane;
+		d_epsilon_p_max_plane_d_epsilon_p_xy = 0.5*rEpsilonP(2)/epsilonPPlane;
+    }
+    else
+    {
+        // only the largest component is considered
+    	epsilonPPlane = (rEpsilonP[0]+rEpsilonP[1])*0.5+helpScalar;
+    	mixedPlane = false;
+
+    	factor=1./(2.*sqrt((rEpsilonP(0)-rEpsilonP(1))*(rEpsilonP(0)-rEpsilonP(1))+rEpsilonP(2)*rEpsilonP(2)));
+		d_epsilon_p_max_plane_d_epsilon_p_xx = 0.5+(rEpsilonP(0)-rEpsilonP(1))*factor;
+		d_epsilon_p_max_plane_d_epsilon_p_yy = 0.5+(rEpsilonP(1)-rEpsilonP(0))*factor;
+		d_epsilon_p_max_plane_d_epsilon_p_xy = rEpsilonP(2)*factor;
+    }
+
+    std::cout<< "epsilonPPlane " << epsilonPPlane << std::endl;
+    std::cout<< "rEpsilonP[3] " << rEpsilonP[3] << std::endl;
+    if (epsilonPPlane >=rEpsilonP[3])
+    {
+        if (fabs(rEpsilonP[3])>1e-10)
+        {
+            //plane and zz-direction in tension
+        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
+            double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
+            double y_s = x_s * tan_beta;
+            l_eq = sqrt(x_s*x_s+y_s*y_s);
+
+            double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
+			double d_tan_beta_d_epsilon_p_zz = 1./epsilonPPlane;
+			double d_tan_beta_d_epsilon_p_max_plane = -rEpsilonP[3]/(epsilonPPlane*epsilonPPlane);
+
+			Eigen::Matrix<double,4,1> d_xs_dEpsilonP;
+			d_xs_dEpsilonP(0) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx;
+			d_xs_dEpsilonP(1) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy;
+			d_xs_dEpsilonP(2) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy;
+			d_xs_dEpsilonP(3) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_zz;
+
+			Eigen::Matrix<double,4,1> d_ys_dEpsilonP;
+			d_ys_dEpsilonP(0) = tan_beta * d_xs_dEpsilonP(0) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx * x_s;
+			d_ys_dEpsilonP(1) = tan_beta * d_xs_dEpsilonP(1) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy * x_s;
+			d_ys_dEpsilonP(2) = tan_beta * d_xs_dEpsilonP(2) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy * x_s;
+			d_ys_dEpsilonP(3) = tan_beta * d_xs_dEpsilonP(3) + d_tan_beta_d_epsilon_p_zz * x_s;
+
+			rdLdEpsilonP(0) = x_s/l_eq * d_xs_dEpsilonP(0) + y_s/l_eq * d_ys_dEpsilonP(0);
+			rdLdEpsilonP(1) = x_s/l_eq * d_xs_dEpsilonP(1) + y_s/l_eq * d_ys_dEpsilonP(1);
+			rdLdEpsilonP(2) = x_s/l_eq * d_xs_dEpsilonP(2) + y_s/l_eq * d_ys_dEpsilonP(2);
+			rdLdEpsilonP(3) = x_s/l_eq * d_xs_dEpsilonP(3) + y_s/l_eq * d_ys_dEpsilonP(3);
+			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdEpsilonP1]" << std::endl << rdLdEpsilonP << std::endl;
+        }
+        else
+        {
+            l_eq = l_eq_plane;
+            rdLdEpsilonP.setZero(4,1);
+        }
+
+    }
+    else
+    {
+        if (fabs(epsilonPPlane)>1e-10)
+        {
+            //plane and zz-direction in tension
+        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
+            double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
+            double y_s = x_s * tan_beta;
+            l_eq = sqrt(x_s*x_s+y_s*y_s);
+
+            double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
+			double d_tan_beta_d_epsilon_p_zz = 1./epsilonPPlane;
+			double d_tan_beta_d_epsilon_p_max_plane = -rEpsilonP[3]/(epsilonPPlane*epsilonPPlane);
+
+			Eigen::Matrix<double,4,1> d_xs_dEpsilonP;
+			d_xs_dEpsilonP(0) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx;
+			d_xs_dEpsilonP(1) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy;
+			d_xs_dEpsilonP(2) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy;
+			d_xs_dEpsilonP(3) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_zz;
+
+			Eigen::Matrix<double,4,1> d_ys_dEpsilonP;
+			d_ys_dEpsilonP(0) = tan_beta * d_xs_dEpsilonP(0) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx * x_s;
+			d_ys_dEpsilonP(1) = tan_beta * d_xs_dEpsilonP(1) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy * x_s;
+			d_ys_dEpsilonP(2) = tan_beta * d_xs_dEpsilonP(2) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy * x_s;
+			d_ys_dEpsilonP(3) = tan_beta * d_xs_dEpsilonP(3) + d_tan_beta_d_epsilon_p_zz;
+
+			rdLdEpsilonP(0) = x_s/l_eq * d_xs_dEpsilonP(0) + y_s/l_eq * d_ys_dEpsilonP(0);
+			rdLdEpsilonP(1) = x_s/l_eq * d_xs_dEpsilonP(1) + y_s/l_eq * d_ys_dEpsilonP(1);
+			rdLdEpsilonP(2) = x_s/l_eq * d_xs_dEpsilonP(2) + y_s/l_eq * d_ys_dEpsilonP(2);
+			rdLdEpsilonP(3) = x_s/l_eq * d_xs_dEpsilonP(3) + y_s/l_eq * d_ys_dEpsilonP(3);
+			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdEpsilonP2]" << std::endl << rdLdEpsilonP << std::endl;
+        }
+        else
+        {
+        	l_eq = l_eq_circ;
+        	rdLdEpsilonP.setZero(4,1);
+        }
+    }
+    return l_eq;
+//    rdLdEpsilonP.setZero(4,1);
+//    return l_eq_plane;
 }
 
 #define ACTIVE true
@@ -1145,6 +1498,8 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     Eigen::Vector4d deltaStrain;
     //! @brief plastic strain increment within the linesearch
     Eigen::Vector4d deltaPlasticStrainLS;
+    //! @brief plastic strain increment between to load steps (internal load splitting)
+    Eigen::Vector4d deltaPlasticStrain;
     //! @brief trial stress of the first iteration
     Eigen::Vector4d initTrialStress;
     //! @brief trial stress in the line search
@@ -1195,7 +1550,6 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     // initialize last plastic strain and last converged stress
     lastPlastStrain << rPrevPlasticStrain[0] , rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,rPrevPlasticStrain[3];
     rDeltaEqPlasticStrain = 0;
-
     //*****************************************************************
     //                  elastic matrix generation                       *
     //*****************************************************************
@@ -1234,6 +1588,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     int numberOfExternalCutbacks(0);
     int numberOfInternalIterations(0);
     int prevNumberOfInternalIterations(0);
+    lastDeltaEqPlasticStrain = 0.;
     while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
     {
     	numberOfExternalCutbacks++;
@@ -1543,218 +1898,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						std::cout << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<std::endl;
 						std::cout << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<std::endl;
 #endif
-						return;
 
-	/*
-						// add damage part
-
-						if (mDamage)
-						{
-							double factor  = (curPlastStrain(0)-curPlastStrain(1))/2.;
-							double help_scalar = sqrt(factor*factor+curPlastStrain(2)*curPlastStrain(2)*0.25);
-							double epsilon_p_max_plane;
-							bool mixed_p_max;
-							if ((curPlastStrain(0)+curPlastStrain(1))*0.5-help_scalar>0)
-							{
-								// mixed interpolation
-								epsilon_p_max_plane = 0.5 * sqrt(4*(curPlastStrain(0)*curPlastStrain(0)+curPlastStrain(1)*curPlastStrain(1))+2*curPlastStrain(2)*curPlastStrain(2));
-								mixed_p_max = true;
-							}
-							else
-							{
-								epsilon_p_max_plane = (curPlastStrain(0)+curPlastStrain(1))/2.+sqrt(factor*factor+curPlastStrain(2)*curPlastStrain(2)*0.25);
-								mixed_p_max = false;
-							}
-
-							double l_eq,x_s,y_s,tan_beta;
-							if (fabs(epsilon_p_max_plane)>1e-10)
-							{
-								tan_beta = curPlastStrain(3)/epsilon_p_max_plane;
-								x_s = sqrt(1./(1./(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
-								y_s = x_s * tan_beta;
-								l_eq = sqrt(x_s*x_s+y_s*y_s);
-							}
-							else
-							{
-								l_eq = l_eq_circ;
-							}
-
-							double kappa_d = kappa_d_unscaled/l_eq;
-							rNewStaticData->mOmega = 1.-exp(-rNewStaticData->mKappa/kappa_d);
-
-							//limit damage variable to a maximal value in order to prevent zero eigenvalues
-							if (rNewStaticData->mOmega>=MAX_OMEGA)
-							{
-								rNewStaticData->mOmega = MAX_OMEGA;
-								if (rStiffness!=0)
-								{
-									// secante
-									*rStiffness *= 1-MAX_OMEGA;
-								}
-								if (rStress!=0)
-									*rStress *= 1-MAX_OMEGA;
-								return;
-							}
-
-
-							if (rStiffness!=0)
-							{
-
-								if (rNewStaticData->mOmega>=(rOldStaticData->mOmega))
-								{
-									Eigen::Matrix<double,4,4> d_epsilon_pl_d_epsilon;
-									d_epsilon_pl_d_epsilon = dElastInv * (dElast - tmpStiffness);
-
-									double d_omega_d_kappa_eq = 1./kappa_d*exp(-rNewStaticData->mKappa/kappa_d);
-
-									Eigen::Matrix<double,4,1> d_kappa_eq_depsilon_p;
-									factor = 1./rNewStaticData->mKappa;
-									d_kappa_eq_depsilon_p(0) = factor * curPlastStrain(0);
-									d_kappa_eq_depsilon_p(1) = factor * curPlastStrain(1);
-									d_kappa_eq_depsilon_p(2) = factor * 0.5*curPlastStrain(2); // w.r.t. gamma
-									d_kappa_eq_depsilon_p[3] = factor * curPlastStrain(3);
-
-									//memcpy(help_matrix,result,16*sizeof(double));
-
-									// derivative w.r.t. kappa_d
-
-									Eigen::Matrix<double,4,1> d_omega_d_epsilon;
-									if (fabs(epsilon_p_max_plane)>1e-10) // same tolerance as above
-									{
-										double d_kappad_d_leq = -kappa_d_unscaled/(l_eq*l_eq);
-										double d_leq_d_xs = x_s/l_eq;
-										double d_leq_d_ys = y_s/l_eq;
-										double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
-										double d_tan_beta_d_epsilon_p_zz = 1./epsilon_p_max_plane;
-										double d_tan_beta_d_epsilon_p_max_plane = -curPlastStrain[3]/(epsilon_p_max_plane*epsilon_p_max_plane);
-										double d_epsilon_p_max_plane_d_epsilon_p_xx, d_epsilon_p_max_plane_d_epsilon_p_yy, d_epsilon_p_max_plane_d_epsilon_p_xy;
-										if (!mixed_p_max)
-										{
-											factor=1./(2.*sqrt((curPlastStrain(0)-curPlastStrain(1))*(curPlastStrain(0)-curPlastStrain(1))+curPlastStrain(2)*curPlastStrain(2)));
-											d_epsilon_p_max_plane_d_epsilon_p_xx = 0.5+(curPlastStrain(0)-curPlastStrain(1))*factor;
-											d_epsilon_p_max_plane_d_epsilon_p_yy = 0.5+(curPlastStrain(1)-curPlastStrain(0))*factor;
-											d_epsilon_p_max_plane_d_epsilon_p_xy = curPlastStrain(2)*factor;
-										}
-										else
-										{
-											d_epsilon_p_max_plane_d_epsilon_p_xx = curPlastStrain(0)/epsilon_p_max_plane;
-											d_epsilon_p_max_plane_d_epsilon_p_yy = curPlastStrain(1)/epsilon_p_max_plane;
-											d_epsilon_p_max_plane_d_epsilon_p_xy = 0.5*curPlastStrain(2)/epsilon_p_max_plane;
-										}
-
-										Eigen::Matrix<double,4,1> d_epsilon_p_max_plane_d_epsilon;
-										d_epsilon_p_max_plane_d_epsilon (0) =
-											d_epsilon_p_max_plane_d_epsilon_p_xx *d_epsilon_pl_d_epsilon(0)+
-											d_epsilon_p_max_plane_d_epsilon_p_yy *d_epsilon_pl_d_epsilon(1)+
-											d_epsilon_p_max_plane_d_epsilon_p_xy *d_epsilon_pl_d_epsilon(2);
-
-										d_epsilon_p_max_plane_d_epsilon (1) =
-											d_epsilon_p_max_plane_d_epsilon_p_xx *d_epsilon_pl_d_epsilon(4)+
-											d_epsilon_p_max_plane_d_epsilon_p_yy *d_epsilon_pl_d_epsilon(5)+
-											d_epsilon_p_max_plane_d_epsilon_p_xy *d_epsilon_pl_d_epsilon(6);
-
-										d_epsilon_p_max_plane_d_epsilon (2) =
-											d_epsilon_p_max_plane_d_epsilon_p_xx *d_epsilon_pl_d_epsilon(8)+
-											d_epsilon_p_max_plane_d_epsilon_p_yy *d_epsilon_pl_d_epsilon(9)+
-											d_epsilon_p_max_plane_d_epsilon_p_xy *d_epsilon_pl_d_epsilon(10);
-
-										d_epsilon_p_max_plane_d_epsilon (3) =
-											d_epsilon_p_max_plane_d_epsilon_p_xx *d_epsilon_pl_d_epsilon(12)+
-											d_epsilon_p_max_plane_d_epsilon_p_yy *d_epsilon_pl_d_epsilon(13)+
-											d_epsilon_p_max_plane_d_epsilon_p_xy *d_epsilon_pl_d_epsilon(14);
-
-										Eigen::Matrix<double,4,1> d_tanbeta_d_epsilon;
-										d_tanbeta_d_epsilon (0) = d_tan_beta_d_epsilon_p_zz*d_epsilon_pl_d_epsilon(3)+
-																  d_tan_beta_d_epsilon_p_max_plane *d_epsilon_p_max_plane_d_epsilon (0);
-										d_tanbeta_d_epsilon (1) = d_tan_beta_d_epsilon_p_zz*d_epsilon_pl_d_epsilon(7)+
-																  d_tan_beta_d_epsilon_p_max_plane *d_epsilon_p_max_plane_d_epsilon (1);
-										d_tanbeta_d_epsilon (2) = d_tan_beta_d_epsilon_p_zz*d_epsilon_pl_d_epsilon(11)+
-																  d_tan_beta_d_epsilon_p_max_plane *d_epsilon_p_max_plane_d_epsilon (2);
-										d_tanbeta_d_epsilon (3) = d_tan_beta_d_epsilon_p_zz*d_epsilon_pl_d_epsilon(15)+
-																  d_tan_beta_d_epsilon_p_max_plane *d_epsilon_p_max_plane_d_epsilon [3];
-
-
-										Eigen::Matrix<double,4,1> d_xs_d_epsilon;
-										d_xs_d_epsilon (0) = d_xs_d_tanbeta * d_tanbeta_d_epsilon(0);
-										d_xs_d_epsilon (1) = d_xs_d_tanbeta * d_tanbeta_d_epsilon(1);
-										d_xs_d_epsilon (2) = d_xs_d_tanbeta * d_tanbeta_d_epsilon(2);
-										d_xs_d_epsilon (3) = d_xs_d_tanbeta * d_tanbeta_d_epsilon(3);
-
-										Eigen::Matrix<double,4,1> d_ys_d_epsilon;
-										d_ys_d_epsilon (0) = d_xs_d_epsilon (0)*tan_beta + x_s * d_tanbeta_d_epsilon(0);
-										d_ys_d_epsilon (1) = d_xs_d_epsilon (1)*tan_beta + x_s * d_tanbeta_d_epsilon(1);
-										d_ys_d_epsilon (2) = d_xs_d_epsilon (2)*tan_beta + x_s * d_tanbeta_d_epsilon(2);
-										d_ys_d_epsilon (3) = d_xs_d_epsilon (3)*tan_beta + x_s * d_tanbeta_d_epsilon(3);
-
-										Eigen::Matrix<double,4,1> d_leq_d_epsilon;
-										d_leq_d_epsilon (0) = d_leq_d_xs*d_xs_d_epsilon (0) + d_leq_d_ys*d_ys_d_epsilon (0);
-										d_leq_d_epsilon (1) = d_leq_d_xs*d_xs_d_epsilon (1) + d_leq_d_ys*d_ys_d_epsilon (1);
-										d_leq_d_epsilon (2) = d_leq_d_xs*d_xs_d_epsilon (2) + d_leq_d_ys*d_ys_d_epsilon (2);
-										d_leq_d_epsilon (3) = d_leq_d_xs*d_xs_d_epsilon (3) + d_leq_d_ys*d_ys_d_epsilon (3);
-
-
-										Eigen::Matrix<double,4,1> d_kappad_d_epsilon;
-										d_kappad_d_epsilon (0) = d_kappad_d_leq * d_leq_d_epsilon (0);
-										d_kappad_d_epsilon (1) = d_kappad_d_leq * d_leq_d_epsilon (1);
-										d_kappad_d_epsilon (2) = d_kappad_d_leq * d_leq_d_epsilon (2);
-										d_kappad_d_epsilon (3) = d_kappad_d_leq * d_leq_d_epsilon (3);
-
-										factor = rNewStaticData->mKappa/(kappa_d*kappa_d)*exp(-rNewStaticData->mKappa/kappa_d);
-										d_omega_d_epsilon (0)=- factor * d_kappad_d_epsilon (0);
-										d_omega_d_epsilon (1)=- factor * d_kappad_d_epsilon (1);
-										d_omega_d_epsilon (2)=- factor * d_kappad_d_epsilon (2);  // w.r.t. gamma
-										d_omega_d_epsilon (3)=- factor * d_kappad_d_epsilon (3);
-									}
-									else
-									{
-										d_omega_d_epsilon.setZero(4);
-									}
-
-									// derivative w.r.t. epsilon_xx
-									d_omega_d_epsilon (0) += d_omega_d_kappa_eq*(
-																 d_kappa_eq_depsilon_p(0)*d_epsilon_pl_d_epsilon(0)+
-																 d_kappa_eq_depsilon_p(1)*d_epsilon_pl_d_epsilon(1)+
-																 d_kappa_eq_depsilon_p(2)*d_epsilon_pl_d_epsilon(2)+
-																 d_kappa_eq_depsilon_p(3)*d_epsilon_pl_d_epsilon(3));
-
-									// derivative w.r.t. epsilon_yy
-									d_omega_d_epsilon (1) += d_omega_d_kappa_eq*(
-																 d_kappa_eq_depsilon_p(0)*d_epsilon_pl_d_epsilon[4]+
-																 d_kappa_eq_depsilon_p(1)*d_epsilon_pl_d_epsilon[5]+
-																 d_kappa_eq_depsilon_p(2)*d_epsilon_pl_d_epsilon[6]+
-																 d_kappa_eq_depsilon_p(3)*d_epsilon_pl_d_epsilon[7]);
-
-									// derivative w.r.t. gamma_xy
-									d_omega_d_epsilon (2) += d_omega_d_kappa_eq*(
-																 d_kappa_eq_depsilon_p(0)*d_epsilon_pl_d_epsilon(8)+
-																 d_kappa_eq_depsilon_p(1)*d_epsilon_pl_d_epsilon(9)+
-																 d_kappa_eq_depsilon_p(2)*d_epsilon_pl_d_epsilon(10)+
-																 d_kappa_eq_depsilon_p[3]*d_epsilon_pl_d_epsilon(11));
-
-									// derivative w.r.t. sigma_zz
-									d_omega_d_epsilon [3] += d_omega_d_kappa_eq*(
-																 d_kappa_eq_depsilon_p(0)*d_epsilon_pl_d_epsilon(12)+
-																 d_kappa_eq_depsilon_p(1)*d_epsilon_pl_d_epsilon(13)+
-																 d_kappa_eq_depsilon_p(2)*d_epsilon_pl_d_epsilon(14)+
-																 d_kappa_eq_depsilon_p(3)*d_epsilon_pl_d_epsilon(15));
-
-									*rStiffness *= 1.-rNewStaticData->mOmega;
-									*rStiffness -= trialStress*d_omega_d_epsilon.transpose().lazy();
-
-								}
-								else
-								{
-									if (rStiffness!=0)
-										*rStiffness *= 1.-rNewStaticData->mOmega;
-								}
-							}
-							if (rStress!=0)
-							{
-								*rStress *= 1.-rNewStaticData->mOmega;
-							}
-						}
-						break; // end of damage_flag
-						*/
 					}
 					else
 					{
@@ -1942,12 +2086,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 		                    deltaGamma = deltaGammaLS;
 							rEpsilonP = epsilonPLS;
 
-							//update equivalente plastic strain
-							rDeltaEqPlasticStrain += sqrt(deltaPlasticStrainLS[0]*deltaPlasticStrainLS(0)+deltaPlasticStrainLS(1)*deltaPlasticStrainLS(1)+
-											0.5 *(deltaPlasticStrainLS(2)*deltaPlasticStrainLS(2))+deltaPlasticStrainLS(3)*deltaPlasticStrainLS(3));
 #ifdef ENABLE_DEBUG
-							double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
-	                        std::cout << std::endl << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << std::endl<< std::endl;
 	                        if (yieldConditionFlag(0)==ACTIVE)
 	                            std::cout << "dF_dsigma[0] at end of line search " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
 	                        if (yieldConditionFlag(1)==ACTIVE)
@@ -1977,7 +2116,16 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #endif
 			prevNumberOfInternalIterations = numberOfInternalIterations;
 
-        	if (cutbackFactorExternal==1.)
+			//update equivalente plastic strain
+			deltaPlasticStrain = rEpsilonP - lastPlastStrain;
+			rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
+							0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
+
+//			double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
+//			std::cout << std::endl << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << std::endl<< std::endl;
+//			std::cout << std::endl << "rEpsilonP " << rEpsilonP << "Norm of epsilonp " << std::endl;
+
+			if (cutbackFactorExternal==1.)
                 convergedExternal=true;
             else
             {
@@ -1993,9 +2141,9 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         }
         else
         {
-#ifdef ENABLE_DEBUG
+//#ifdef ENABLE_DEBUG
             std::cout << "decrease external cutback factor" << std::endl;
-#endif
+//#endif
         	// no convergence in return mapping
         	deltaCutbackFactorExternal*=0.5;
             cutbackFactorExternal-=deltaCutbackFactorExternal;
@@ -2439,19 +2587,17 @@ double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(
 {
 	double nonlocalKappa(0);
 
-	const ConstitutiveBase* constitutive = rElement->GetConstitutiveLaw(rIp);
-	const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements(constitutive));
+	const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
 	for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
 	{
-		const std::vector<double>& weights(nonlocalElements[countNonlocalElement]->GetNonlocalWeights(rIp,countNonlocalElement,constitutive));
+		const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
 
 		assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
 
 		//Go through all the integration points
 		for (int theIP=0; theIP<(int)weights.size(); theIP++)
 		{
-			 //and add up to nonlocal equivalent plastic strain
 			nonlocalKappa+=weights[theIP] * nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain()->mTmpKappa;
 		}
 	}
@@ -2459,14 +2605,73 @@ double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(
 	return nonlocalKappa;
 }
 
+//! @brief ... calculate the nonlocal plastic strain of an integration point
+//! @param rElement Element
+//! @param rIp integration point
+//! @param rNonlocalPlasticStrain nonlocal plastic strain (return value)
+//! @return void
+void NuTo::NonlocalDamagePlasticity::CalculateNonlocalPlasticStrain(const ElementBase* rElement, int rIp, double rNonlocalPlasticStrain[4])const
+{
+	rNonlocalPlasticStrain[0] = 0.;
+	rNonlocalPlasticStrain[1] = 0.;
+	rNonlocalPlasticStrain[2] = 0.;
+	rNonlocalPlasticStrain[3] = 0.;
+
+	const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
+
+	for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+	{
+		const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
+
+		assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+
+		//Go through all the integration points
+		for (int theIP=0; theIP<(int)weights.size(); theIP++)
+		{
+			const double *tmpPtr(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain()->mTmpEpsilonP);
+			rNonlocalPlasticStrain[0]+=weights[theIP] * tmpPtr[0];
+			rNonlocalPlasticStrain[1]+=weights[theIP] * tmpPtr[1];
+			rNonlocalPlasticStrain[2]+=weights[theIP] * tmpPtr[2];
+			rNonlocalPlasticStrain[3]+=weights[theIP] * tmpPtr[3];
+		}
+	}
+	//go through all the elements
+	return;
+}
+
 
 double NuTo::NonlocalDamagePlasticity::CalculateDamage(double rkappa, double rKappaD)const
 {
-    return 1.-exp(-(rkappa)/rKappaD);
+    return 1.-exp(-rkappa/rKappaD);
+}
+
+double NuTo::NonlocalDamagePlasticity::CalculateDerivativeDamage(double rkappa, double rKappaD, double& rdOmegadKappa)const
+{
+    double invKappaD(1./rKappaD);
+    double tmp = exp(-rkappa*invKappaD);
+    rdOmegadKappa = invKappaD * tmp;
+    return 1.-tmp;
 }
 
 
 double NuTo::NonlocalDamagePlasticity::CalculateKappaD()const
 {
     return 15.*mFractureEnergy/(16.*mTensileStrength);
+}
+
+//! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+//! @return ... see brief explanation
+bool NuTo::NonlocalDamagePlasticity::HaveTmpStaticData() const
+{
+    return true;
+}
+
+//! @brief ... returns true, if a material model has is nonlocal (stiffness is of dynamic size, nonlocal averaging)
+//! @return ... see brief explanation
+bool NuTo::NonlocalDamagePlasticity::IsNonlocalModel()const
+{
+	if (mDamage)
+        return true;
+	else
+		return false;
 }

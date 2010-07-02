@@ -8,7 +8,7 @@ NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveIpNonlocal(const
 		const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) :
    NuTo::ElementDataBase::ElementDataBase(), ElementDataConstitutiveBase(), ElementDataNonlocalBase() , ElementDataIpBase(rElement,rIntegrationType,rIpDataType)
 {
-	std::cout << "NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp" << std::endl;
+	//std::cout << "NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveStaticDataNonlocal()" << std::endl;
 }
 
 NuTo::ElementDataConstitutiveIpNonlocal::~ElementDataConstitutiveIpNonlocal()
@@ -33,12 +33,11 @@ void NuTo::ElementDataConstitutiveIpNonlocal::InitializeUpdatedConstitutiveLaw(c
 //! @param rNonlocalElement element of the nonlocal ip
 //! @param rNonlocalIp local ip number of the nonlocal ip
 //! @param rWeight weight
-void NuTo::ElementDataConstitutiveIpNonlocal::SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
+void NuTo::ElementDataConstitutiveIpNonlocal::SetNonlocalWeight(int rLocalIpNumber,	const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
 {
     int oldNumNonlocalElements(mNonlocalElements.size());
 	//search for nonlocal element in existing nonlocal elements (get back local element number)
-	int theNonlocalElement = AddNonlocalElement(rNonlocalElement,rConstitutive);
+	int theNonlocalElement = AddNonlocalElement(rNonlocalElement);
 
 	if (oldNumNonlocalElements!=(int)mNonlocalElements.size())
 	{
@@ -56,10 +55,8 @@ void NuTo::ElementDataConstitutiveIpNonlocal::SetNonlocalWeight(int rLocalIpNumb
 //! @brief gets the nonlocal weights
 //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
 //! @return vector of weights for all integration points of the nonlocal element
-const std::vector<double>& NuTo::ElementDataConstitutiveIpNonlocal::GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const
+const std::vector<double>& NuTo::ElementDataConstitutiveIpNonlocal::GetNonlocalWeights(int rIp, int rNonlocalElement)const
 {
-    assert(rConstitutive==mConstitutive);
-    std::cout<< "rIp " << rIp << "(" << mIpData.size() << ")" << std::endl;
     assert(rIp<(int)mIpData.size());
     return mIpData[rIp].GetNonlocalWeights(rNonlocalElement);
 }

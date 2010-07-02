@@ -225,6 +225,20 @@ void NuTo::ConstitutiveBase::SetParametersValid()
     this->mParametersValid = true;
 }
 
+//! @brief ... avoid dynamic cast
+//! @return ... see brief explanation
+NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain()
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain] Constitutive Law is not of type EngineeringStressStrain.");
+}
+
+//! @brief ... avoid dynamic cast
+//! @return ... see brief explanation
+const NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain] Constitutive Law is not of type EngineeringStressStrain.");
+}
+
 // info routine
 void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel) const
 {

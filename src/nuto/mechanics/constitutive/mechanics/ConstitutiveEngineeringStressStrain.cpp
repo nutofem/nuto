@@ -241,3 +241,16 @@ double NuTo::ConstitutiveEngineeringStressStrain::GetElasticEnergy_EngineeringSt
 			 stress.mEngineeringStress[4]*deltaElasticStrain.mEngineeringStrain[4]+
 			 stress.mEngineeringStress[5]*deltaElasticStrain.mEngineeringStrain[5]);
 }
+//! @brief ... avoid dynamic cast
+//! @return ... see brief explanation
+NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveEngineeringStressStrain::AsConstitutiveEngineeringStressStrain()
+{
+	return this;
+}
+
+//! @brief ... avoid dynamic cast
+//! @return ... see brief explanation
+const NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveEngineeringStressStrain::AsConstitutiveEngineeringStressStrain()const
+{
+	return this;
+}

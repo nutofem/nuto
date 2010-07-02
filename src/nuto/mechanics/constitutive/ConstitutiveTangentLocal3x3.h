@@ -13,7 +13,8 @@
 #include <boost/serialization/array.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocalBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
@@ -22,7 +23,7 @@ class ConstitutiveMisesPlasticity;
 //! @brief ... tangent matrix for local constitutive formulations
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class ConstitutiveTangentLocal3x3: public NuTo::ConstitutiveTangentLocalBase
+class ConstitutiveTangentLocal3x3: public NuTo::ConstitutiveTangentBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -50,9 +51,30 @@ public:
     //! @brief ... pointer to the tangent matrix (column major storage)
     const double* GetData() const;
 
-    //! @brief ... set tangent matrix
-    //! @param rTangentMatrix ... tangent matrix (column major storage)
-    void SetData(const double* rTangentMatrix);
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3()
+	{
+         throw MechanicsException("[NuTo::ConstitutiveTangentLocal3x3::AsConstitutiveTangentNonlocal3x3] data types can not be cast.");
+	}
+
+    //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
+    ConstitutiveTangentLocal1x1* AsConstitutiveTangentLocal1x1()
+	{
+        throw MechanicsException("[NuTo::ConstitutiveTangentLocal3x3::AsConstitutiveTangentLocal1x1] data types can not be cast.");
+ 	}
+
+    //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
+    ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3()
+	{
+        return this;
+	}
+
+    //! @brief reinterpret as ConstitutiveTangentLocal6x6, otherwise throw an exception
+    ConstitutiveTangentLocal6x6* AsConstitutiveTangentLocal6x6()
+	{
+         throw MechanicsException("[NuTo::ConstitutiveTangentLocal3x3::AsConstitutiveTangentLocal6x6] data types can not be cast.");
+	}
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -61,7 +83,7 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveTangentLocalBase)
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveTangentBase)
            & BOOST_SERIALIZATION_NVP(mTangent);
     }
 #endif // ENABLE_SERIALIZATION

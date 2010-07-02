@@ -173,17 +173,11 @@ public:
     // rGlobalDofsColumn global dofs corresponding to the columns of the matrix
     virtual void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const=0;
 
-    //! @brief calculates the engineering strain
-    //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    void GetEngineeringStrain(FullMatrix<double>& rEngineeringStrain)const;
 
-    //! @brief calculates the engineering plastic strain
-    //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    void GetEngineeringPlasticStrain(FullMatrix<double>& rEngineeringPlasticStrain)const;
-
-    //! @brief calculates the engineering stress
-    //! @param rEngineerungStress engineering stress (return value, always 6xnumIp matrix)
-    void GetEngineeringStress(FullMatrix<double>& rEngineeringStress)const;
+    //! @brief calculates the integration point data with the current displacements applied
+    //! @param rIpDataType data type to be stored for each integration point
+    //! @param rIpData return value with dimension (dim of data type) x (numIp)
+    void GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -193,6 +187,11 @@ public:
     //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     void GetIntegrationPointVolume(std::vector<double>& rVolume)const;
 
+    //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
+    const Truss* AsTruss()const;
+
+    //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
+    Truss* AsTruss();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

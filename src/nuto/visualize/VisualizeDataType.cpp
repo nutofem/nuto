@@ -1,5 +1,5 @@
 // $Id$
-
+#include <iostream>
 #include "nuto/visualize/VisualizeDataType.h"
 #include "nuto/visualize/VisualizeException.h"
 

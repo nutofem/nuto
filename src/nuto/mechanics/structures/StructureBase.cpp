@@ -31,7 +31,9 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include "nuto/visualize/VisualizeComponentDamage.h"
 #include "nuto/visualize/VisualizeComponentDisplacement.h"
+#include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
@@ -133,6 +135,12 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStrain());
 }
 
+//! @brief ... Add engineering plastic strain stress to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringPlasticStrain());
+}
+
 //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
 {
@@ -162,6 +170,13 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
     	throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
     }
 }
+
+//! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentDamage()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentDamage());
+}
+
 
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
@@ -193,6 +208,9 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
     {
         switch (itWhat->GetComponentEnum())
         {
+        case NuTo::VisualizeBase::DAMAGE:
+            Visualize.DefineCellDataScalar(itWhat->GetComponentName());
+            break;
         case NuTo::VisualizeBase::DISPLACEMENTS:
             Visualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
@@ -200,6 +218,9 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
             Visualize.DefineCellDataTensor(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
+            Visualize.DefineCellDataTensor(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
             Visualize.DefineCellDataTensor(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
@@ -255,7 +276,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         throw e;
     }
     //update tmpStaticData if required
-    if (mUpdateTmpStaticDataRequired)
+    if (mUpdateTmpStaticDataRequired && mHaveTmpStaticData)
     {
     	this->ElementTotalUpdateTmpStaticData();
     }
@@ -329,7 +350,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
     }
 
     //update tmpStaticData if required
-    if (mHaveTmpStaticData)
+    if (mUpdateTmpStaticDataRequired && mHaveTmpStaticData)
     {
     	this->ElementTotalUpdateTmpStaticData();
     }
@@ -423,7 +444,7 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
     }
 
     //update tmpStaticData if required
-    if (mHaveTmpStaticData)
+    if (mUpdateTmpStaticDataRequired && mHaveTmpStaticData)
     {
     	this->ElementTotalUpdateTmpStaticData();
     }

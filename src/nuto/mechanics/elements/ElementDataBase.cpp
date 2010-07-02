@@ -80,8 +80,7 @@ const NuTo::IntegrationTypeBase* NuTo::ElementDataBase::GetIntegrationType()cons
 //! @param rNonlocalElement element of the nonlocal ip
 //! @param rNonlocalIp local ip number of the nonlocal ip
 //! @param rWeight weight
- void NuTo::ElementDataBase::SetNonlocalWeight(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-		const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
+ void NuTo::ElementDataBase::SetNonlocalWeight(int rLocalIpNumber, const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight)
 {
     throw MechanicsException("[NuTo::ElementDataBase::AddNonlocalIp] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
@@ -89,15 +88,23 @@ const NuTo::IntegrationTypeBase* NuTo::ElementDataBase::GetIntegrationType()cons
 //! @brief gets the nonlocal elements for a constitutive model
 //! @param rConstitutive constitutive model
 //! @return vector to nonlocal elements
-const std::vector<const NuTo::ElementBase*>& NuTo::ElementDataBase::GetNonlocalElements(const ConstitutiveBase* rConstitutive)const
+const std::vector<const NuTo::ElementBase*>& NuTo::ElementDataBase::GetNonlocalElements()const
 {
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalElements] Not implemented for the ElementDataBase class - check the allocated element data type..");
+}
+
+//! @brief gets number of nonlocal elements for a constitutive model
+//! @param rConstitutive constitutive model
+//! @return number of nonlocal elements
+int NuTo::ElementDataBase::GetNumNonlocalElements()const
+{
+    return 0;
 }
 
 //! @brief gets the nonlocal weights
 //! @param rNonlocalElement local element number (should be smaller than GetNonlocalElements().size()
 //! @return vector of weights for all integration points of the nonlocal element
-const std::vector<double>& NuTo::ElementDataBase::GetNonlocalWeights(int rIp, int rNonlocalElement, const ConstitutiveBase* rConstitutive)const
+const std::vector<double>& NuTo::ElementDataBase::GetNonlocalWeights(int rIp, int rNonlocalElement)const
 {
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalWeights] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
