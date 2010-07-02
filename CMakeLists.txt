@@ -5,7 +5,7 @@ PROJECT(NuTo CXX C Fortran)
 # Minimum version for cmake 2.6
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
-SET(CMAKE_VERBOSE_MAKEFILE ON)
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)

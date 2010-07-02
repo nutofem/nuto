@@ -198,7 +198,8 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
         if (mDamage)
         {
 			//calculate scaled equivalent plastic strain (scaled by the element length)
-			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+    		bool unloading(true);
+			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
 
 			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
 			double kappaD = CalculateKappaD();
@@ -280,7 +281,8 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
         if (mDamage)
         {
 			//calculate scaled equivalent plastic strain (scaled by the element length)
-			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+    		bool unloading(true);
+			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp,unloading);
 
 			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
 			double kappaD = CalculateKappaD();
@@ -351,7 +353,8 @@ void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int 
     if (mDamage)
     {
 		//calculate scaled equivalent plastic strain (scaled by the element length)
-		double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
+		bool unloading(true);
+    	double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
 
 		//determine kappaUnscaled, which is a scaling factor related to the fracture energy
 		double kappaD = CalculateKappaD();
@@ -438,8 +441,6 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 
         if (mDamage)
         {
-        	tangent->mIsLocal=false;
-
         	// calculate engineering strain
 			EngineeringStrain2D engineeringStrain;
 			rDeformationGradient.GetEngineeringStrain(engineeringStrain);
@@ -460,94 +461,108 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 			const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
 			//calculate scaled equivalent plastic strain (scaled by the element length)
-			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp);
-
-			//calculate nonlocal plastic strain for the direction of the equivalent length
-			double nonlocalPlasticStrain[4];
-			CalculateNonlocalPlasticStrain(rElement, rIp, nonlocalPlasticStrain);
+			bool unloading(true);
+			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
 
 			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
 			double kappaD = CalculateKappaD();
-
-			//TODO Check for unloading-> simplify the formula, since dkappadEpsilonP is zero in all nonlocal integration points
 
 			//calculate damage parameter from the equivalente plastic strain
 			//it is scaled related to the length (based on the direction of the first principal plastic strain)
 			double dOmegadKappa;
 			double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
 			//std::cout << "omega " << 1.-oneMinusOmega << std::endl;
-
-
-			Eigen::Matrix<double,4,1> dKappadEpsilonP;
-			//calculate derivative of damage parameter with respect to local strains of all nonlocal integration points
-			int totalNonlocalIp(0);
-			for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+			if (unloading)
 			{
-				const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
+				tangent->mIsLocal=true;
+				tangent->SetSymmetry(true);
+				double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
+				localStiffData[0] = oneMinusOmega * C11;
+				localStiffData[1] = oneMinusOmega * C12;
+				localStiffData[2] = 0.;
 
-				//std::cout << weights.size() << " "<< nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints() << std::endl;
-				assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+				localStiffData[3] = localStiffData[1];
+				localStiffData[4] = localStiffData[0];
+				localStiffData[5] = 0.;
 
-				//Go through all the integration points
-				for (int theNonlocalIP=0; theNonlocalIP<(int)weights.size(); theNonlocalIP++, totalNonlocalIp++)
+				localStiffData[6] = 0.;
+				localStiffData[7] = 0.;
+				localStiffData[8] = oneMinusOmega * C33;
+			}
+			else
+			{
+				tangent->mIsLocal=false;
+				//calculate nonlocal plastic strain for the direction of the equivalent length
+				double nonlocalPlasticStrain[4];
+				CalculateNonlocalPlasticStrain(rElement, rIp, nonlocalPlasticStrain);
+
+				Eigen::Matrix<double,4,1> dKappadEpsilonP;
+				//calculate derivative of damage parameter with respect to local strains of all nonlocal integration points
+				int totalNonlocalIp(0);
+				for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
 				{
-					if (weights[theNonlocalIP]==0.)
-						continue;
-					assert(totalNonlocalIp<tangent->GetNumSubMatrices());
-					double *localStiffData = tangent->mNonlocalMatrices[totalNonlocalIp].mTangent;
+					const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
 
-					//here the nonlocal delta is relevant
-					const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
+					//std::cout << weights.size() << " "<< nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints() << std::endl;
+					assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
 
-					double deltaEpsilonPxx = NonlocalOldStaticData->mTmpEpsilonP[0] - NonlocalOldStaticData->mEpsilonP[0];
-					double deltaEpsilonPyy = NonlocalOldStaticData->mTmpEpsilonP[1] - NonlocalOldStaticData->mEpsilonP[1];
-					double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
-					double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
-
-					Eigen::Matrix<double,4,1> dLdEpsilonP;
-					double eqLength = CalculateDerivativeEquivalentLength2D(nonlocalElements[countNonlocalElement],Eigen::Matrix<double,4,1>::Map(NonlocalOldStaticData->mTmpEpsilonP,4),dLdEpsilonP);
-
-					double EpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
-													0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
-					if (EpsilonPEq>0)
+					//Go through all the integration points
+					for (int theNonlocalIP=0; theNonlocalIP<(int)weights.size(); theNonlocalIP++, totalNonlocalIp++)
 					{
-						double factor(eqLength/EpsilonPEq);
-						dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
-						dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
-						dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
-						dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
+						if (weights[theNonlocalIP]==0.)
+							continue;
+						assert(totalNonlocalIp<tangent->GetNumSubMatrices());
+						double *localStiffData = tangent->mNonlocalMatrices[totalNonlocalIp].mTangent;
 
-						dKappadEpsilonP -= EpsilonPEq*dLdEpsilonP;
+						//here the nonlocal delta is relevant
+						const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
 
-						dKappadEpsilonP /= eqLength*eqLength;
-					}
-					else
-					{
-						dKappadEpsilonP.setZero(4,1);
-					}
+						double deltaEpsilonPxx = NonlocalOldStaticData->mTmpEpsilonP[0] - NonlocalOldStaticData->mEpsilonP[0];
+						double deltaEpsilonPyy = NonlocalOldStaticData->mTmpEpsilonP[1] - NonlocalOldStaticData->mEpsilonP[1];
+						double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
+						double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
 
-					//calculate dOmegadepsilon instead of using transpose, just declare a RowMajor storage
-					Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
-					//std::cout<< "dKappadepsilon analytic" << std::endl << minusdOmegadEpsilon << std::endl;
+						Eigen::Matrix<double,4,1> dLdEpsilonP;
+						double eqLength = CalculateDerivativeEquivalentLength2D(nonlocalElements[countNonlocalElement],Eigen::Matrix<double,4,1>::Map(NonlocalOldStaticData->mTmpEpsilonP,4),dLdEpsilonP);
 
-					minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
-					//std::cout<< "dOmegadepsilon/weight analytic" << std::endl << -minusdOmegadEpsilon/weights[theNonlocalIP] << std::endl;
-					//std::cout << "weight " << weights[theNonlocalIP] << std::endl;
+						double deltaEpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
+														0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
+						if (deltaEpsilonPEq>0)
+						{
+							double factor(eqLength/deltaEpsilonPEq);
+							dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
+							dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
+							dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
+							dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
 
-					Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
+							dKappadEpsilonP -= deltaEpsilonPEq*dLdEpsilonP;
 
-					if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
-					{
-						const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-						localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
-						localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
-						localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
-						localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
-						localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
-						localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
-						localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
-						localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
-						localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
+							dKappadEpsilonP /= eqLength*eqLength;
+
+							//calculate dOmegadepsilon instead of using transpose, just declare a RowMajor storage
+							Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
+							//std::cout<< "dKappadepsilon analytic" << std::endl << minusdOmegadEpsilon << std::endl;
+
+							minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
+							//std::cout<< "dOmegadepsilon/weight analytic" << std::endl << -minusdOmegadEpsilon/weights[theNonlocalIP] << std::endl;
+							//std::cout << "weight " << weights[theNonlocalIP] << std::endl;
+
+							Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
+						}
+
+						if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
+						{
+							const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
+							localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
+							localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
+							localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
+							localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
+							localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
+							localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
+							localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
+							localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
+							localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
+						}
 					}
 				}
 			}
@@ -1355,8 +1370,6 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
 		d_epsilon_p_max_plane_d_epsilon_p_xy = rEpsilonP(2)*factor;
     }
 
-    std::cout<< "epsilonPPlane " << epsilonPPlane << std::endl;
-    std::cout<< "rEpsilonP[3] " << rEpsilonP[3] << std::endl;
     if (epsilonPPlane >=rEpsilonP[3])
     {
         if (fabs(rEpsilonP[3])>1e-10)
@@ -2583,12 +2596,13 @@ void NuTo::NonlocalDamagePlasticity::CheckParameters()const
 //! @param rElement Element
 //! @param rIp integration point
 //! @return equivalente plastic strain scaled with length
-double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp)const
+double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp, bool& rUnloading)const
 {
 	double nonlocalKappa(0);
 
 	const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
+	rUnloading = true;
 	for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
 	{
 		const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
@@ -2598,7 +2612,13 @@ double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(
 		//Go through all the integration points
 		for (int theIP=0; theIP<(int)weights.size(); theIP++)
 		{
-			nonlocalKappa+=weights[theIP] * nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain()->mTmpKappa;
+			const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *staticData(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain());
+			nonlocalKappa+=weights[theIP] * staticData->mTmpKappa;
+			if (fabs(staticData->mTmpdEpsilonPdEpsilon[0])>1e-10 ||
+				fabs(staticData->mTmpdEpsilonPdEpsilon[5])>1e-10 ||
+				fabs(staticData->mTmpdEpsilonPdEpsilon[10])>1e-10 ||
+				fabs(staticData->mTmpdEpsilonPdEpsilon[15])>1e-10)
+				rUnloading = false;
 		}
 	}
 	//go through all the elements

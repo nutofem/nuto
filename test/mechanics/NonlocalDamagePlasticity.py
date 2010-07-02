@@ -3,7 +3,7 @@ import sys
 import os
 
 #call of the test file, e.g.
-#/usr/local/bin/python ~/develop/nuto/test/mechanics/Plane2D4N.py Linux x86_64 ~/develop/nuto/test/mechanics
+#/usr/local/bin/python ~/develop/nuto/test/mechanics/NonlocalDamagePlasticity.py Linux x86_64 ~/develop/nuto/test/mechanics
 
 #if set to true, the result will be generated (for later use in the test routine)
 #otherwise, the current result will be compared to the stored result
@@ -32,169 +32,188 @@ error = False
 myStructure = nuto.Structure(2)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,0)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,0)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,0)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,1)))
-myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,1)))
-myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,1)))
-myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,2)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,2)))
-myNode9 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,2)))
+node1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,0)))
+node2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,0)))
+node3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,0)))
+node4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,1)))
+node5 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,1)))
+node6 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,1)))
+node7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,2)))
+node8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,2)))
+node9 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,2)))
 
 #create element
-myElement1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode1,myNode2,myNode5,myNode4)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myElement2 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode2,myNode3,myNode6,myNode5)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myElement3 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode4,myNode5,myNode8,myNode7)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myElement4 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode5,myNode6,myNode9,myNode8)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node1,node2,node5,node4)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+myStructure.ElementSetIntegrationType(element1,"2D4NGauss1Ip","StaticDataNonlocal")
+element2 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node2,node3,node6,node5)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+myStructure.ElementSetIntegrationType(element2,"2D4NGauss4Ip","StaticDataNonlocal")
+element3 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node4,node5,node8,node7)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+myStructure.ElementSetIntegrationType(element3,"2D4NGauss1Ip","StaticDataNonlocal")
+element4 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node5,node6,node9,node8)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+myStructure.ElementSetIntegrationType(element4,"2D4NGauss4Ip","StaticDataNonlocal")
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity")
+myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity")
+myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9)
+myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.25)
+myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,0.7)
+myStructure.ConstitutiveLawSetTensileStrength(myMatDamage,2)
+myStructure.ConstitutiveLawSetCompressiveStrength(myMatDamage,20)
+myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,25)
+myStructure.ConstitutiveLawSetFractureEnergy(myMatDamage,0.2)
+
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
-myStructure.ConstitutiveLawSetNonlocalRadius(myMatLin,0.5)
 
 #create section
 myStructure.SectionCreate("mySection","Plane_Strain")
-myStructure.SectionSetThickness("mySection",1)
+myStructure.SectionSetThickness("mySection",0.5)
 
-#assign constitutive law 
-#myStructure.ElementSetIntegrationType(myElement1,"3D8NGauss1Ip")
-myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
+##assign constitutive law 
 myStructure.ElementTotalSetSection("mySection")
+myStructure.ElementTotalSetConstitutiveLaw(myMatDamage)
 
 #Build nonlocal elements
-myStructure.BuildNonlocalData(myMatLin)
+myStructure.BuildNonlocalData(myMatDamage)
 
-# visualize results
-myStructure.AddVisualizationComponentNonlocalWeights(0,0)
-myStructure.ExportVtkDataFile("PlaneNonlocalWeights.vtk")
-sys.exit()
+#visualize results (nonlocal weights)
+myStructure.AddVisualizationComponentNonlocalWeights(element1,0)
+myStructure.AddVisualizationComponentNonlocalWeights(element2,0)
+myStructure.AddVisualizationComponentNonlocalWeights(element2,1)
+myStructure.AddVisualizationComponentNonlocalWeights(element2,2)
+myStructure.AddVisualizationComponentNonlocalWeights(element2,3)
+
+#calculate linear elastic matrix
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(0,0)
+dispForceVector = nuto.DoubleFullMatrix(0,0)
+
+myStructure.ElementTotalUpdateTmpStaticData()
+myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
+stiffnessMatrix.RemoveZeroEntries(0,1e-14)
+
+fullStiffnessMatrixElastic = nuto.DoubleFullMatrix(stiffnessMatrix)
+if printResult:
+    print "stiffnessMatrix elastic"
+    fullStiffnessMatrixElastic.Info()
+
+displacements = nuto.DoubleFullMatrix(0,0) 
+dependentDofs = nuto.DoubleFullMatrix(0,0)
+intForce	  = nuto.DoubleFullMatrix(0,0)
+intForce2	  = nuto.DoubleFullMatrix(0,0)
+
+#check the stiffness three times
+#loadstep 0 : uniform plastic loading
+#loadstep 1 : unloading to zero
+#loadstep 2 : nonuniform loading, some elements unloading
+for theLoadStep in range(0,3):
+    #apply displacements
+    if theLoadStep==0:
+        rightDisp = 0.5
+    elif theLoadStep==1:
+        rightDisp = 0.0
+    else:
+        rightDisp = 0.6
+
+    matrixRightDisp = nuto.DoubleFullMatrix(2,1)
+    matrixRightDisp.SetValue(0,0,rightDisp)
+    matrixRightDisp.SetValue(1,0,0.)
+
+    myStructure.NodeSetDisplacements(node3,matrixRightDisp)
+    myStructure.NodeSetDisplacements(node6,matrixRightDisp)
+    myStructure.NodeSetDisplacements(node9,matrixRightDisp)
+
+    matrixCenterDisp = nuto.DoubleFullMatrix(2,1)
+    if theLoadStep!=2:
+        matrixCenterDisp.SetValue(0,0,0.5*rightDisp)
+    else:
+        matrixCenterDisp.SetValue(0,0,0.4*rightDisp)
+    matrixCenterDisp.SetValue(1,0,0.)
+
+    myStructure.NodeSetDisplacements(node2,matrixCenterDisp)
+    myStructure.NodeSetDisplacements(node5,matrixCenterDisp)
+    myStructure.NodeSetDisplacements(node8,matrixCenterDisp)
+
+    matrixLeftDisp = nuto.DoubleFullMatrix(2,1)
+    matrixLeftDisp.SetValue(0,0,0.0)
+    matrixLeftDisp.SetValue(1,0,0.)
+
+    myStructure.NodeSetDisplacements(node1,matrixLeftDisp)
+    myStructure.NodeSetDisplacements(node4,matrixLeftDisp)
+    myStructure.NodeSetDisplacements(node7,matrixLeftDisp)
+
+    #nuto.FullMatrix<double>matrixLeftDispNode1(2,1)
+    #matrixLeftDispNode1.SetValue(0,0,0.0)
+    #matrixLeftDispNode1.SetValue(1,0,0.)
+    #myStructure.NodeSetDisplacements(node1,matrixLeftDispNode1)
+
+    myStructure.ElementTotalUpdateTmpStaticData()
+
+    myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
+    stiffnessMatrix.RemoveZeroEntries(0,1e-14)
+
+    fullStiffnessMatrix = nuto.DoubleFullMatrix(stiffnessMatrix)
+
+    if printResult:
+        print "fullStiffnessMatrix analytic"
+        fullStiffnessMatrix.Info()
+
+    myStructure.NodeExtractDofValues(displacements,dependentDofs)
+    myStructure.BuildGlobalGradientInternalPotentialVector(intForce)
+
+    delta = 1e-8
+    stiffnessMatrixCD = nuto.DoubleFullMatrix(displacements.GetNumRows(),displacements.GetNumRows())
+
+    #check with central differences
+    for count2 in range(0,displacements.GetNumRows()):
+        displacements.AddValue(count2,0,delta)
+        myStructure.NodeMergeActiveDofValues(displacements)
+        myStructure.ElementTotalUpdateTmpStaticData()
+        myStructure.BuildGlobalGradientInternalPotentialVector(intForce2)
+        stiffnessMatrixCD.SetColumn(count2,(intForce2-intForce)*(1/delta))
+        displacements.AddValue(count2,0,-delta)
+
+    if printResult:
+        print "stiffness CD"
+        stiffnessMatrixCD.Info()
+    maxerror=(fullStiffnessMatrix-stiffnessMatrixCD).Abs().Max()
+    if (theLoadStep==0):
+        if printResult:
+            print "max difference in stiffness matrix for uniform plastic loading ", maxerror 
+        if (maxerror[0]>1e-6):
+            print '[' + system,sys.argv[0] + '] : stiffness for uniform plastic loading is not correct.'
+            error = True;
+    elif (theLoadStep==1):
+        if printResult:
+            print "max difference in stiffness matrix for unloading " , maxerror 
+        if (maxerror[0]>1e-6):
+            print '[' + system,sys.argv[0] + '] : stiffness after unloading is not correct.'
+            error = True;
+        omega = fullStiffnessMatrix.GetValue(0,0)/fullStiffnessMatrixElastic.GetValue(0,0)
+        maxerror2 = (fullStiffnessMatrix - fullStiffnessMatrixElastic*omega).Abs().Max()
+        #(fullStiffnessMatrixElastic*omega-stiffnessMatrix).Info()
+        if printResult:
+            print "max difference in stiffness matrix for unloading and scaled elastic matrix " , maxerror2 
+        if (maxerror2[0]>1e-6):
+            print '[' + system,sys.argv[0] + '] : stiffness matrix for unloading and scaled elastic matrix are not identical.'
+            error = True;
+    else:
+        if printResult:
+            print "max difference in stiffness matrix for nonuniform plastic loading/unloading " , maxerror
+        if (maxerror[0]>1e-6):
+            print '[' + system,sys.argv[0] + '] :stiffness matrix for nonuniform plastic loading/unloading is not correct.'
+            error = True;
+
+    #update the structure, and then recalculate stiffness
+    myStructure.ElementTotalUpdateStaticData()
 
 
-#set displacements of right node
-myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
-myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
-
-#calculate element stiffness matrix
-Ke = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-colIndex = nuto.IntFullMatrix(0,0)
-myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
-if (printResult):
-    print "Ke"
-    Ke.Info()
-
-#correct stiffness matrix
-if createResult:
-   print pathToResultFiles+"Stiffness.txt"
-   Ke.WriteToFile(pathToResultFiles+"Stiffness.txt"," ","#Correct result","  ")
-else:
-   KeCorrect = nuto.DoubleFullMatrix(24,24)
-   KeCorrect.ReadFromFile(pathToResultFiles+"Stiffness.txt",1," ")
-   if (printResult):
-       print "KeCorrect"
-       KeCorrect.Info()
-   if ((Ke-KeCorrect).Abs().Max()[0]>1e-8):
-       print '[' + system,sys.argv[0] + '] : stiffness is not correct.'
-       error = True;
-
-#calculate internal force vector
-Fi = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
-if (printResult):
-    print "Internal Force"
-    Fi.Info()
-
-#correct resforce vector
-if createResult:
-    print pathToResultFiles+"Internalforce.txt"
-    Fi.WriteToFile(pathToResultFiles+"Internalforce.txt"," ","#Correct result","  ")
-else:
-    FiCorrect = nuto.DoubleFullMatrix(24,1)
-    FiCorrect.ReadFromFile(pathToResultFiles+"Internalforce.txt",1," ")
-    if (printResult):
-        print "FiCorrect"
-        FiCorrect.Info()
-    if ((Fi-FiCorrect).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : internal force is not correct.'
-        error = True;
-
-#check stiffness with internal force vector
-prevDisp = nuto.DoubleFullMatrix(0,0) 
-
-delta=1e-4;
-KeApprox = nuto.DoubleFullMatrix(Ke.GetNumRows(),Ke.GetNumColumns())
-curColumn=0
-for theNode in range(0, Ke.GetNumColumns()/myStructure.GetDimension()):
-   for theDof in range(0,myStructure.GetDimension()):
-      Fi_new = nuto.DoubleFullMatrix(0,0)
-      myStructure.NodeGetDisplacements(theNode,prevDisp)
-      prevDisp.AddValue(theDof,0,delta)
-      myStructure.NodeSetDisplacements(theNode,prevDisp)
-      myStructure.ElementGradientInternalPotential(myElement1,Fi_new,rowIndex)
-      prevDisp.AddValue(theDof,0,-delta)
-      myStructure.NodeSetDisplacements(theNode,prevDisp)
-      KeApprox.SetBlock ( 0, curColumn, (Fi_new-Fi)*(1./delta))
-      curColumn+=1
-
-if (printResult):
-    print "KeApprox with central differences"
-    KeApprox.Info()
-
-
-#check stiffness with internal force vector
-if ((KeApprox-Ke).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : stiffness matrix via central differences and resforces not correct.'
-        error = True;
-
-#calculate engineering strain of myelement1 at all integration points
-#the size the matrix is not important and reallocated within the procedure
-EngineeringStrain = nuto.DoubleFullMatrix(6,1)
-myStructure.ElementGetEngineeringStrain(myElement1, EngineeringStrain)
-
-#correct strain
-EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,4,(
-0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0,
-))
-
-if (printResult):
-    print "EngineeringStrainCorrect"
-    EngineeringStrainCorrect.Info()
-    print "EngineeringStrain"
-    EngineeringStrain.Info()
-
-if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : strain is not correct.'
-        error = True;
-
-#calculate engineering strain of myelement1 at all integration points
-EngineeringStress = nuto.DoubleFullMatrix(6,3)
-myStructure.ElementGetEngineeringStress(myElement1, EngineeringStress)
-#correct stress
-EngineeringStressCorrect = nuto.DoubleFullMatrix(6,4,(
-0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0,
-))
-
-if (printResult):
-    print "EngineeringStressCorrect"
-    EngineeringStressCorrect.Info()
-    print "EngineeringStress"
-    EngineeringStress.Info()
-
-if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : stress is not correct.'
-        error = True;
-
-# visualize results
-myStructure.ExportVtkDataFile("Plane2D4N.vtk","displacements engineering_strain engineering_stress")
+myStructure.AddVisualizationComponentDisplacements()
+myStructure.AddVisualizationComponentEngineeringStrain()
+myStructure.AddVisualizationComponentEngineeringStress()
+myStructure.AddVisualizationComponentDamage()
+myStructure.AddVisualizationComponentEngineeringPlasticStrain()
+myStructure.ExportVtkDataFile("NonlocalDamagePlasticityModel.vtk")
 
 if (error):
     sys.exit(-1)

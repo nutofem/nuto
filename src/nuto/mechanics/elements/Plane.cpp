@@ -128,9 +128,29 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
             {
             	//same as local model, e.g. in the unloading range or
             	areAllIpsSymmetric &= NonlocalTangent.GetSubMatrix(0)->GetSymmetry();
-    	        // calculate element stiffness matrix
-    	        // don't forget to include determinant of the Jacobian and area
-    	        AddDetJBtCB(derivativeShapeFunctionsLocal, NonlocalTangent.GetSubMatrix(0), factor, rCoefficientMatrix);
+				//nonlocal BMatrix of nonlocal other integration point
+				int firstCol(0);
+				const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
+				for (unsigned int theNonlocalElement = 0; theNonlocalElement<nonlocalElements.size(); theNonlocalElement++)
+				{
+					const Plane* nonlocalElement(nonlocalElements[theNonlocalElement]->AsPlane());
+
+					if (nonlocalElement!=this)
+						continue;
+
+					for (int theNonlocalIp = 0; theNonlocalIp < nonlocalElement->GetNumIntegrationPoints(); theNonlocalIp++)
+					{
+						if (theNonlocalIp!= theIP)
+						    continue;
+
+						// calculate element stiffness matrix
+						// don't forget to include determinant of the Jacobian and area
+						AddDetJBtCB(derivativeShapeFunctionsLocal, derivativeShapeFunctionsLocal, NonlocalTangent.GetSubMatrix(0), factor, rCoefficientMatrix, firstCol);
+						break;
+
+					}
+					firstCol+=nonlocalElement->GetNumLocalDofs();
+				}
             }
             else
             {
@@ -260,6 +280,7 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
                               FullMatrix<double>& rCoefficientMatrix)const
 {
+	std::cout << rCoefficientMatrix.GetNumRows() << " " << 2*GetNumShapeFunctions() << " " << rCoefficientMatrix.GetNumColumns() << std::endl;
 	assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rCoefficientMatrix.GetNumColumns()==2*GetNumShapeFunctions());
     assert((int)rDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
     const double *C = rConstitutiveTangent->GetData();

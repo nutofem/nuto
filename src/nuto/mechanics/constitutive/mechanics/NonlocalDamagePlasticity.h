@@ -512,8 +512,9 @@ protected:
     //! @brief ... calculate the nonlocal equivalente plastic strain of an integration point
     //! @param rElement Element
     //! @param rIp integration point
+    //! @param rUnloading true, if all nonlocal integration points are in an unloading state
     //! @return equivalente plastic strain
-    double CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp)const;
+    double CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp, bool& rUnloading)const;
 
     //! @brief ... calculate the nonlocal plastic strain of an integration point
     //! @param rElement Element
