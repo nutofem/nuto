@@ -7,12 +7,12 @@ import os
 
 #if set to true, the result will be generated (for later use in the test routine)
 #otherwise, the current result will be compared to the stored result
-createResult = True
-#createResult = False
+#createResult = True
+createResult = False
 
 #show the results on the screen
-printResult = True
-#printResult = False
+#printResult = True
+printResult = False
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -109,56 +109,16 @@ else:
         print '[' + system,sys.argv[0] + '] : internal force is not correct.'
         error = True;
 
-#check stiffness with internal force vector
-prevDisp = nuto.DoubleFullMatrix(0,0) 
-
-delta=1e-4;
-KeApprox = nuto.DoubleFullMatrix(Ke.GetNumRows(),Ke.GetNumColumns())
-curColumn=0
-for theNode in range(0, Ke.GetNumColumns()/myStructure.GetDimension()):
-   for theDof in range(0,myStructure.GetDimension()):
-      Fi_new1 = nuto.DoubleFullMatrix(0,0)
-      Fi_new2 = nuto.DoubleFullMatrix(0,0)
-      myStructure.NodeGetDisplacements(theNode,prevDisp)
-      prevDisp.AddValue(theDof,0,delta)
-      myStructure.NodeSetDisplacements(theNode,prevDisp)
-      myStructure.ElementGradientInternalPotential(myElement1,Fi_new1,rowIndex)
-      myStructure.ElementGradientInternalPotential(myElement1,Fi_new2,rowIndex)
-      Fi_new = Fi_new1 + Fi_new2
-      Fi_new.Info()
-      prevDisp.AddValue(theDof,0,-delta)
-      myStructure.NodeSetDisplacements(theNode,prevDisp)
-      KeApprox.SetBlock ( 0, curColumn, (Fi_new-Fi)*(1./delta))
-      curColumn+=1
-
-if (printResult):
-    print "KeApprox with central differences"
-    KeApprox.Info()
-
-
-#check stiffness with internal force vector
-if ((KeApprox-Ke).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : stiffness matrix via central differences and resforces not correct.'
-        error = True;
-
 #calculate engineering strain of myelement1 at all integration points
 #the size the matrix is not important and reallocated within the procedure
 EngineeringStrain = nuto.DoubleFullMatrix(6,1)
 myStructure.ElementGetEngineeringStrain(myElement1, EngineeringStrain)
 
-# visualize results
-myStructure.AddVisualizationComponentDisplacements()
-myStructure.AddVisualizationComponentEngineeringStrain()
-myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile("Plane2D3N.vtk")
-
-
 #correct strain
-EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,4,(
+EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,3,(
 0.0,0.1,0,0.05,0,0,
 0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0,
+0.0,0.1,0,0.05,0,0
 ))
 
 if (printResult):
@@ -175,11 +135,10 @@ if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
 EngineeringStress = nuto.DoubleFullMatrix(6,3)
 myStructure.ElementGetEngineeringStress(myElement1, EngineeringStress)
 #correct stress
-EngineeringStressCorrect = nuto.DoubleFullMatrix(6,4,(
+EngineeringStressCorrect = nuto.DoubleFullMatrix(6,3,(
 0.4,1.2,0.4,0.2,0,0,
 0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0,
+0.4,1.2,0.4,0.2,0,0
 ))
 
 if (printResult):
