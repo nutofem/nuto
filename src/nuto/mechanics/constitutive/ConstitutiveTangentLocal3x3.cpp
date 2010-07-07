@@ -1,5 +1,6 @@
 // $Id: ConstitutiveTangentLocal3x3.cpp 102 2009-11-11 10:47:23Z eckardt4 $
 #include <cstring>
+#include <assert.h>
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
 
 // constructor
