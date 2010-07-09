@@ -1,4 +1,5 @@
 # $Id$
+
 # Operators
 ADD_EXECUTABLE(TestOperators TestOperators.cpp)
 TARGET_LINK_LIBRARIES(TestOperators NuToMath NuToBase ${Boost_LIBRARIES})
@@ -53,20 +54,6 @@ IF(MINGW)
   SET_TARGET_PROPERTIES(Brick8N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 
-IF(FALSE)
-# NonlocalDamagePlasticityLocal
-ADD_EXECUTABLE(NonlocalDamagePlasticityLocal NonlocalDamagePlasticityLocal.cpp)
-TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityLocal NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
-IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityLocal NuToVisualize)
-ENDIF (ENABLE_VISUALIZE)
-IF(MUMPS_FOUND)
-  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityLocal ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(MUMPS_FOUND)
-IF(MINGW)
-  SET_TARGET_PROPERTIES(NonlocalDamagePlasticityLocal PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-ENDIF(MINGW)
-
 # NonlocalDamagePlasticityBeam
 ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
 TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
@@ -79,9 +66,8 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(NonlocalDamagePlasticityBeam PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ENDIF(FALSE)
 
-# NonlocalDamagePlasticity
+# NonlocalDamagePlasticityModel
 ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)
 TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
 IF (ENABLE_VISUALIZE)

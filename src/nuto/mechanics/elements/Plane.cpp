@@ -107,6 +107,7 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
         constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
 
         //factor for the numerical integration
+        assert(mSection->GetThickness()>0);
         double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
         if (NumNonlocalElements!=0)
@@ -460,6 +461,7 @@ void NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
                 deformationGradient, engineeringStress);
 
         //add to local resforce vector
+        assert(mSection->GetThickness()>0);
         double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
         AddDetJBtSigma(derivativeShapeFunctionsLocal, engineeringStress, factor, rResult);
     }

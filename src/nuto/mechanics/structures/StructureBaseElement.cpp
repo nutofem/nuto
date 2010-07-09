@@ -39,11 +39,17 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
 		                 NuTo::FullMatrix<int>& rGlobalDofsRow,
 		                 NuTo::FullMatrix<int>& rGlobalDofsColumn)const
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0] First update of tmp static data required.");
+    }
+
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     std::vector<int> globalDofsRow,
     		         globalDofsColumn;
 
-     try
+    try
     {
          bool symmetryFlag;
     	 elementPtr->CalculateCoefficientMatrix_0(rResult, globalDofsRow, globalDofsColumn, symmetryFlag);
@@ -78,6 +84,12 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 		NuTo::FullMatrix<double>& rResult,
 		NuTo::FullMatrix<int>& rGlobalDofsRow)const
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementGradientInternalPotential] First update of tmp static data required.");
+    }
+
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     std::vector<int> globalDofsRow;
 
@@ -506,6 +518,11 @@ void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const
 //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
 void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix<double>& rEngineeringStrain)const
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringStrain] First update of tmp static data required.");
+    }
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
@@ -534,6 +551,11 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
 void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringPlasticStrain)const
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] First update of tmp static data required.");
+    }
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
@@ -562,6 +584,12 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
 //! @param rEngineeringStress engineering stress (return value, always 6xnumIp matrix)
 void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix<double>& rEngineeringStress)const
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringStress] First update of tmp static data required.");
+    }
+
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     try
     {
@@ -587,6 +615,19 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
 //! @brief updates the history data of a all elements
 void NuTo::StructureBase::ElementTotalUpdateStaticData()
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        try
+        {
+            this->ElementTotalUpdateTmpStaticData();
+        }
+        catch (MechanicsException& e)
+        {
+        	e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStress] error building tmp static data.");            throw e;
+        }
+    }
+
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
     for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)

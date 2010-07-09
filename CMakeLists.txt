@@ -9,7 +9,7 @@ SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
-OPTION(ENABLE_MUMPS "enables support for MUMPS solver" FALSE)
+OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" false)
@@ -178,9 +178,11 @@ IF(ENABLE_MUMPS)
     SET(NuTo_DOXYGEN_PREDEFINED "HAVE_MUMPS" ${NuTo_DOXYGEN_PREDEFINED})
     SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DHAVE_MUMPS")
     INCLUDE_DIRECTORIES(${MUMPS_INCLUDE_DIR})
+    message(STATUS "...MUMPS_INCLUDE_DIR = ${MUMPS_INCLUDE_DIR}")
   ENDIF(MUMPS_FOUND)
 ELSE(ENABLE_MUMPS)
   SET(MUMPS_FOUND FALSE)
+  message(STATUS "...MUMPS not switched on")
 ENDIF(ENABLE_MUMPS)
 
 # find Mersenne Twister random number generator

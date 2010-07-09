@@ -181,27 +181,6 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 }
 #endif // ENABLE_SERIALIZATION
 
-// store all elements of a structure in a vector
-void NuTo::Structure::GetElementsTotal(std::vector<const ElementBase*>& rElements) const
-{
-    boost::ptr_map<int,ElementBase>::const_iterator ElementIter = this->mElementMap.begin();
-    while (ElementIter != this->mElementMap.end())
-    {
-        rElements.push_back(ElementIter->second);
-        ElementIter++;
-    }
-}
-
-// store all elements of a structure in a vector
-void NuTo::Structure::GetElementsTotal(std::vector<ElementBase*>& rElements)
-{
-    boost::ptr_map<int,ElementBase>::iterator ElementIter = this->mElementMap.begin();
-    while (ElementIter != this->mElementMap.end())
-    {
-        rElements.push_back(ElementIter->second);
-        ElementIter++;
-    }
-}
 
 // based on the global dofs build submatrices of the global coefficent matrix0
 void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const

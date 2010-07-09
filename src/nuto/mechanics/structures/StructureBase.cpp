@@ -202,6 +202,11 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(const std::string& rGrou
 
 void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName) const
 {
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] First update of tmp static data required.");
+    }
     VisualizeUnstructuredGrid Visualize;
     boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
     while (itWhat != mVisualizeComponents.end())
@@ -263,6 +268,12 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         }
     }
 
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] First update of tmp static data required.");
+    }
+
     // get dof values stored at the nodes
     FullMatrix<double> activeDofValues;
     FullMatrix<double> dependentDofValues;
@@ -274,11 +285,6 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
     {
         e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
         throw e;
-    }
-    //update tmpStaticData if required
-    if (mUpdateTmpStaticDataRequired && mHaveTmpStaticData)
-    {
-    	this->ElementTotalUpdateTmpStaticData();
     }
 
     // resize output objects
@@ -335,6 +341,12 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
             throw e;
         }
     }
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] First update of tmp static data required.");
+    }
+
 
     // get dof values stored at the nodes
     FullMatrix<double> activeDofValues;
@@ -347,12 +359,6 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
     {
         e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
         throw e;
-    }
-
-    //update tmpStaticData if required
-    if (mUpdateTmpStaticDataRequired && mHaveTmpStaticData)
-    {
-    	this->ElementTotalUpdateTmpStaticData();
     }
 
     // resize output objects
@@ -442,12 +448,12 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
             throw e;
         }
     }
-
-    //update tmpStaticData if required
-    if (mUpdateTmpStaticDataRequired && mHaveTmpStaticData)
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
-    	this->ElementTotalUpdateTmpStaticData();
+    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] First update of tmp static data required.");
     }
+
 
     rVector.Resize(this->mNumActiveDofs, 1);
     FullMatrix<double> dependentDofGradientVector(this->mNumDofs - this->mNumActiveDofs,1);

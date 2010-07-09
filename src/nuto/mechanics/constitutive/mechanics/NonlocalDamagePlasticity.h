@@ -397,8 +397,9 @@ public:
             const EngineeringStrain2D& rStrain,
             const double rPrevPlasticStrain[4],
             const double rPrevTotalStrain[3],
+            Eigen::Matrix<double,4,1>& rStress,
             Eigen::Matrix<double,4,1>& rEpsilonP,
-            double& rDeltaEqPlasticStrain,
+                double& rDeltaEqPlasticStrain,
             Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon)const;
 
     //! @brief calculates the rounded rankine yield surface
@@ -501,13 +502,13 @@ protected:
     void CheckFractureEnergy(double rFractureEnergy) const;
 
     //! @brief ... calculate the length of the element in plane coordinates (square root of area)
-    //! @brief ... an interpolation is made based on the principal strains in plane and thickness direction
-    double CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP) const;
+    //! @brief ... an interpolation is made based on the principal elastic stress in plane and thickness direction
+    double CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress) const;
 
     //! @brief ... calculates the derivative of the equivalent length of the element in plane coordinates (square root of area) with respect to the plastic strains
     //! @brief ... an interpolation is made based on the principal strains in plane and thickness direction
-    double CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP,
-    		                    Eigen::Matrix<double,4,1>& rdLdEpsilonP) const;
+    double CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress,
+    		                    Eigen::Matrix<double,4,1>& rdLdStress) const;
 
     //! @brief ... calculate the nonlocal equivalente plastic strain of an integration point
     //! @param rElement Element

@@ -169,7 +169,6 @@ public:
     void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const;
 */
 
-
 //*************************************************
 //************ Element routines     ***************
 //**  defined in structures/StructureGridElement.cpp **

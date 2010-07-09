@@ -175,6 +175,11 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double>& rDisplacements);
 
+    //! @brief sets the displacements of a group of nodes
+    //! @param rIdent node group identifier
+    //! @param rDisplacements matrix (one column) with the displacements
+    void NodeGroupSetDisplacements(const std::string& rIdent, const FullMatrix<double>& rDisplacements);
+
     //! @brief gets the displacements of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
@@ -185,12 +190,29 @@ public:
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     virtual void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const = 0;
 
+    //! @brief calculate the internal force vector for a node
+    //! @param rId ... node id
+    //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
+    void NodeForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const;
+
+    //! @brief calculate the internal force vector for a node group of nodes
+    //! @param rIdent ... group id
+    //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
+    void NodeGroupForce(const std::string& rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
+
+#ifndef SWIG
+    //! @brief calculate the internal force vector for a node
+    //! @param rNodePtr  node for which this has to be calculated
+    //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
+    void NodeForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
+#endif //SWIG
+
 //*************************************************
 //************ Element routines     ***************
 //**  defined in structures/StructureElement.cpp **
 //*************************************************
-    //! @brief returns the number of nodes
-    //! @return number of nodes
+    //! @brief returns the number of elements
+    //! @return number of elements
     virtual int GetNumElements() const =0;
 
 #ifndef SWIG

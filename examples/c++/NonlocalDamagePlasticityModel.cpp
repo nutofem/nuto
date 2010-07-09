@@ -242,7 +242,7 @@ int main()
 		myStructure.ElementTotalUpdateStaticData();
 	}
 
-    myStructure.AddVisualizationComponentDisplacements();
+	myStructure.AddVisualizationComponentDisplacements();
 	myStructure.AddVisualizationComponentEngineeringStrain();
 	myStructure.AddVisualizationComponentEngineeringStress();
 	myStructure.AddVisualizationComponentDamage();

@@ -59,6 +59,12 @@ protected:
 
     //! @brief tmp static data plastic strain
     double mTmpEpsilonP[4];
+
+    //! @brief tmp static data equivalent length
+    double mTmpLeq;
+
+    //! @brief tmp static data derivative of eq length with respect to local strain
+    double mTmpdLeqdEpsilon[4];
 };
 
 }

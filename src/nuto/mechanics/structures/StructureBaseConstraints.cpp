@@ -19,7 +19,8 @@
 //! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
-    //find unused integer id
+	this->mNodeNumberingRequired = true;
+	//find unused integer id
     int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
     while (it!=mConstraintMap.end())
@@ -51,6 +52,7 @@ int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const Nu
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 int  NuTo::StructureBase::ConstraintSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
+	this->mNodeNumberingRequired = true;
     NodeBase* nodePtr;
     try
     {
@@ -76,6 +78,7 @@ int  NuTo::StructureBase::ConstraintSetDisplacementNode(int rIdent, const NuTo::
 //! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
+	this->mNodeNumberingRequired = true;
     //find unused integer id
     int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
@@ -108,6 +111,7 @@ int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGr
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(std::string rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
+	this->mNodeNumberingRequired = true;
     boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintDisplacementNodeGroup] Group with the given identifier does not exist.");
@@ -158,6 +162,7 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
 //!@param rRHS new right hand side
 void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
 {
+	this->mNodeNumberingRequired = true;
     //find unused integer id
     //int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
@@ -171,6 +176,7 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
 // create a constraint equation
 int NuTo::StructureBase::ConstraintEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
+	this->mNodeNumberingRequired = true;
     //find unused integer id
     int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
@@ -190,6 +196,7 @@ int NuTo::StructureBase::ConstraintEquationCreate(int rNode, const std::string& 
 // create a constraint equation
 void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
+	this->mNodeNumberingRequired = true;
     try
     {
         // convert dof string
@@ -210,6 +217,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, c
 // create a constraint equation
 void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS)
 {
+	this->mNodeNumberingRequired = true;
     // check if constraint equation already exists
     if(this->mConstraintMap.find(rConstraint) != this->mConstraintMap.end())
     {
@@ -237,6 +245,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, N
 // add a term to a constraint equation
 void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient)
 {
+	this->mNodeNumberingRequired = true;
     try
     {
         // convert dof string
@@ -257,6 +266,7 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
 // add a term to a constraint equation
 void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
 {
+	this->mNodeNumberingRequired = true;
     // get iterator
     boost::ptr_map<int,ConstraintBase>::iterator it = this->mConstraintMap.find(rConstraint);
     if(it == this->mConstraintMap.end())

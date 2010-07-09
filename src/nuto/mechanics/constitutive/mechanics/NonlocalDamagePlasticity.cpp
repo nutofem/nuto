@@ -522,26 +522,21 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 						double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
 						double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
 
-						Eigen::Matrix<double,4,1> dLdEpsilonP;
-						double eqLength = CalculateDerivativeEquivalentLength2D(nonlocalElements[countNonlocalElement],Eigen::Matrix<double,4,1>::Map(NonlocalOldStaticData->mTmpEpsilonP,4),dLdEpsilonP);
-
 						double deltaEpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
 														0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
 						if (deltaEpsilonPEq>0)
 						{
-							double factor(eqLength/deltaEpsilonPEq);
+							double factor(NonlocalOldStaticData->mTmpLeq/deltaEpsilonPEq);
 							dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
 							dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
 							dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
 							dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
 
-							dKappadEpsilonP -= deltaEpsilonPEq*dLdEpsilonP;
-
-							dKappadEpsilonP /= eqLength*eqLength;
-
-							//calculate dOmegadepsilon instead of using transpose, just declare a RowMajor storage
+							//calculate dOmegadepsilon, instead of using transpose, just declare a RowMajor storage
 							Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
-							//std::cout<< "dKappadepsilon analytic" << std::endl << minusdOmegadEpsilon << std::endl;
+
+							//the second part includes the dependence of leq as a function of the local stress at the nonlocal integration point
+							minusdOmegadEpsilon += Eigen::Matrix<double,3,1>::Map(NonlocalOldStaticData->mTmpdLeqdEpsilon,3)*deltaEpsilonPEq;
 
 							minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
 							//std::cout<< "dOmegadepsilon/weight analytic" << std::endl << -minusdOmegadEpsilon/weights[theNonlocalIP] << std::endl;
@@ -617,7 +612,7 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient) const
 {
-    //no static data required -> empty routine
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Not implemented for 1D.");
 }
 
 
@@ -686,7 +681,7 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
 void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient) const
 {
-       //no static data required -> empty routine
+	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -728,12 +723,14 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
         double rDeltaEqPlasticStrain;
         Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon;
         Eigen::Matrix<double,4,1> rNewEpsilonP;
+        Eigen::Matrix<double,4,1> rNewStress;
 
         // perform return mapping for the plasticity model
         this->ReturnMapping2D(
                 engineeringStrain,
                 oldStaticData->mEpsilonP,
                 oldStaticData->mPrevStrain,
+                rNewStress,
                 rNewEpsilonP,
                 rDeltaEqPlasticStrain,
                 rdEpsilonPdEpsilon);
@@ -778,21 +775,31 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;
 
         //determine equivalente length in zz and plane direction
-        double rEqLength = CalculateEquivalentLength2D(rElement,rNewEpsilonP);
-//        std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "rEqLength " << rEqLength << std::endl;
-//        std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << std::endl;
-//        std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "rNewEpsilonP " << rNewEpsilonP << std::endl;
+        //using the local elastic stress
+        Eigen::Matrix<double,4,1> dLdSigma;
+        oldStaticData->mTmpLeq = CalculateDerivativeEquivalentLength2D(rElement,rNewStress,dLdSigma);
 
-        oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain/rEqLength;
+        oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain*oldStaticData->mTmpLeq;
 
- //       std::cout << "[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain]" << "oldStaticData->mTmpKappa " << oldStaticData->mTmpKappa << std::endl;
         Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4) = rdEpsilonPdEpsilon;
+
+        // calculate coefficients of the linear elastic material matrix
+        double C11, C12, C33;
+        this->CalculateCoefficients3D(C11, C12, C33);
+
+        Eigen::Matrix<double,4,4> ElasticStiffness;
+		ElasticStiffness << C11, C12, 0.,  C12,
+							C12, C11, 0.,  C12,
+							 0.,  0., C33, 0.,
+							C12, C12, 0.,  C11;
+
+        // calculate derivative of eq length with respect to local strain
+		Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,1>::Ones().asDiagonal() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
     }
     else
     {
         throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Only plane strain is implemented.");
     }
-
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -1269,7 +1276,7 @@ void NuTo::NonlocalDamagePlasticity::CheckFractureEnergy(double rFractureEnergy)
 }
 
 //! @brief ... calculate the length of the element in plane coordinates (square root of area)
-double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP) const
+double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress) const
 {
 	double l_eq_plane;
 	double l_eq_circ;
@@ -1278,29 +1285,29 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
     l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
 
     bool mixedPlane;
-	double factor = 0.5*(rEpsilonP[0]-rEpsilonP[1]);
-    double helpScalar = sqrt(factor*factor+rEpsilonP[2]*rEpsilonP[2]*0.25);
-    double epsilonPPlane;
+	double factor = 0.5*(rStress[0]-rStress[1]);
+    double helpScalar = sqrt(factor*factor+rStress[2]*rStress[2]*0.25);
+    double stressPlane;
     double l_eq;
-    if ((rEpsilonP[0]+rEpsilonP[1])*0.5-helpScalar>0)
+    if ((rStress[0]+rStress[1])*0.5-helpScalar>0)
     {
         // principal plastic strains in plane direction are both in tension -> mixed interpolation
-        epsilonPPlane = sqrt(rEpsilonP[0]*rEpsilonP[0]+rEpsilonP[1]*rEpsilonP[1]+0.5*rEpsilonP[2]*rEpsilonP[2]);
+        stressPlane = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+0.5*rStress[2]*rStress[2]);
         mixedPlane = true;
     }
     else
     {
         // only the largest component is considered
-    	epsilonPPlane = (rEpsilonP[0]+rEpsilonP[1])*0.5+helpScalar;
+    	stressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
     	mixedPlane = false;
     }
 
-    if (epsilonPPlane >=rEpsilonP[3])
+    if (stressPlane >=rStress[3])
     {
-        if (fabs(rEpsilonP[3])>1e-10)
+        if (fabs(rStress[3])>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
+        	double tan_beta = rStress[3]/stressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
@@ -1313,10 +1320,10 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
     }
     else
     {
-        if (fabs(epsilonPPlane)>1e-10)
+        if (fabs(stressPlane)>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
+        	double tan_beta = rStress[3]/stressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
@@ -1331,135 +1338,137 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
 }
 
 //! @brief ... calculate the derivative of the equivalent length of the element in plane coordinates (square root of area) with respect to the plastic strain
-double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rEpsilonP,
-		Eigen::Matrix<double,4,1>& rdLdEpsilonP) const
+double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress,
+		Eigen::Matrix<double,4,1>& rdLdStress) const
 {
     double l_eq_plane;
 	double l_eq_circ;
 	double l_element(sqrt(rElement->CalculateArea()));
     l_eq_plane = mNonlocalRadius;
     l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
+    assert(l_eq_plane>0);
+    assert(l_eq_circ>0);
 
     bool mixedPlane;
-	double factor = 0.5*(rEpsilonP[0]-rEpsilonP[1]);
-    double helpScalar = sqrt(factor*factor+rEpsilonP[2]*rEpsilonP[2]*0.25);
-    double epsilonPPlane;
+	double factor = 0.5*(rStress[0]-rStress[1]);
+    double helpScalar = sqrt(factor*factor+rStress[2]*rStress[2]*0.25);
+    double StressPlane;
     double l_eq;
-    double d_epsilon_p_max_plane_d_epsilon_p_xx;
-    double d_epsilon_p_max_plane_d_epsilon_p_yy;
-    double d_epsilon_p_max_plane_d_epsilon_p_xy;
+    double d_stress_max_plane_d_stress_xx;
+    double d_stress_max_plane_d_stress_yy;
+    double d_stress_max_plane_d_stress_xy;
 
-    if ((rEpsilonP[0]+rEpsilonP[1])*0.5-helpScalar>0)
+    if ((rStress[0]+rStress[1])*0.5-helpScalar>0)
     {
         // principal plastic strains in plane direction are both in tension -> mixed interpolation
-        epsilonPPlane = sqrt(rEpsilonP[0]*rEpsilonP[0]+rEpsilonP[1]*rEpsilonP[1]+0.5*rEpsilonP[2]*rEpsilonP[2]);
+        StressPlane = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+0.5*rStress[2]*rStress[2]);
         mixedPlane = true;
-		d_epsilon_p_max_plane_d_epsilon_p_xx = rEpsilonP(0)/epsilonPPlane;
-		d_epsilon_p_max_plane_d_epsilon_p_yy = rEpsilonP(1)/epsilonPPlane;
-		d_epsilon_p_max_plane_d_epsilon_p_xy = 0.5*rEpsilonP(2)/epsilonPPlane;
+		d_stress_max_plane_d_stress_xx = rStress(0)/StressPlane;
+		d_stress_max_plane_d_stress_yy = rStress(1)/StressPlane;
+		d_stress_max_plane_d_stress_xy = 0.5*rStress(2)/StressPlane;
     }
     else
     {
         // only the largest component is considered
-    	epsilonPPlane = (rEpsilonP[0]+rEpsilonP[1])*0.5+helpScalar;
+    	StressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
     	mixedPlane = false;
 
-    	factor=1./(2.*sqrt((rEpsilonP(0)-rEpsilonP(1))*(rEpsilonP(0)-rEpsilonP(1))+rEpsilonP(2)*rEpsilonP(2)));
-		d_epsilon_p_max_plane_d_epsilon_p_xx = 0.5+(rEpsilonP(0)-rEpsilonP(1))*factor;
-		d_epsilon_p_max_plane_d_epsilon_p_yy = 0.5+(rEpsilonP(1)-rEpsilonP(0))*factor;
-		d_epsilon_p_max_plane_d_epsilon_p_xy = rEpsilonP(2)*factor;
+    	factor=1./(2.*sqrt((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+rStress(2)*rStress(2)));
+		d_stress_max_plane_d_stress_xx = 0.5+(rStress(0)-rStress(1))*factor;
+		d_stress_max_plane_d_stress_yy = 0.5+(rStress(1)-rStress(0))*factor;
+		d_stress_max_plane_d_stress_xy = rStress(2)*factor;
     }
 
-    if (epsilonPPlane >=rEpsilonP[3])
+    if (StressPlane >=rStress[3])
     {
-        if (fabs(rEpsilonP[3])>1e-10)
+        if (fabs(rStress[3])>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
+        	double tan_beta = rStress[3]/StressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
 
             double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
-			double d_tan_beta_d_epsilon_p_zz = 1./epsilonPPlane;
-			double d_tan_beta_d_epsilon_p_max_plane = -rEpsilonP[3]/(epsilonPPlane*epsilonPPlane);
+			double d_tan_beta_d_stress_zz = 1./StressPlane;
+			double d_tan_beta_d_stress_max_plane = -rStress[3]/(StressPlane*StressPlane);
 
-			Eigen::Matrix<double,4,1> d_xs_dEpsilonP;
-			d_xs_dEpsilonP(0) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx;
-			d_xs_dEpsilonP(1) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy;
-			d_xs_dEpsilonP(2) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy;
-			d_xs_dEpsilonP(3) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_zz;
+			Eigen::Matrix<double,4,1> d_xs_dStress;
+			d_xs_dStress(0) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx;
+			d_xs_dStress(1) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy;
+			d_xs_dStress(2) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy;
+			d_xs_dStress(3) = d_xs_d_tanbeta *  d_tan_beta_d_stress_zz;
 
-			Eigen::Matrix<double,4,1> d_ys_dEpsilonP;
-			d_ys_dEpsilonP(0) = tan_beta * d_xs_dEpsilonP(0) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx * x_s;
-			d_ys_dEpsilonP(1) = tan_beta * d_xs_dEpsilonP(1) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy * x_s;
-			d_ys_dEpsilonP(2) = tan_beta * d_xs_dEpsilonP(2) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy * x_s;
-			d_ys_dEpsilonP(3) = tan_beta * d_xs_dEpsilonP(3) + d_tan_beta_d_epsilon_p_zz * x_s;
+			Eigen::Matrix<double,4,1> d_ys_dStress;
+			d_ys_dStress(0) = tan_beta * d_xs_dStress(0) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx * x_s;
+			d_ys_dStress(1) = tan_beta * d_xs_dStress(1) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy * x_s;
+			d_ys_dStress(2) = tan_beta * d_xs_dStress(2) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy * x_s;
+			d_ys_dStress(3) = tan_beta * d_xs_dStress(3) + d_tan_beta_d_stress_zz * x_s;
 
-			rdLdEpsilonP(0) = x_s/l_eq * d_xs_dEpsilonP(0) + y_s/l_eq * d_ys_dEpsilonP(0);
-			rdLdEpsilonP(1) = x_s/l_eq * d_xs_dEpsilonP(1) + y_s/l_eq * d_ys_dEpsilonP(1);
-			rdLdEpsilonP(2) = x_s/l_eq * d_xs_dEpsilonP(2) + y_s/l_eq * d_ys_dEpsilonP(2);
-			rdLdEpsilonP(3) = x_s/l_eq * d_xs_dEpsilonP(3) + y_s/l_eq * d_ys_dEpsilonP(3);
-			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdEpsilonP1]" << std::endl << rdLdEpsilonP << std::endl;
+			rdLdStress(0) = x_s/l_eq * d_xs_dStress(0) + y_s/l_eq * d_ys_dStress(0);
+			rdLdStress(1) = x_s/l_eq * d_xs_dStress(1) + y_s/l_eq * d_ys_dStress(1);
+			rdLdStress(2) = x_s/l_eq * d_xs_dStress(2) + y_s/l_eq * d_ys_dStress(2);
+			rdLdStress(3) = x_s/l_eq * d_xs_dStress(3) + y_s/l_eq * d_ys_dStress(3);
+			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdStress1]" << std::endl << rdLdStress << std::endl;
         }
         else
         {
             l_eq = l_eq_plane;
-            rdLdEpsilonP.setZero(4,1);
+            rdLdStress.setZero(4,1);
         }
 
     }
     else
     {
-        if (fabs(epsilonPPlane)>1e-10)
+        if (fabs(StressPlane)>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rEpsilonP[3]/epsilonPPlane;
+        	double tan_beta = rStress[3]/StressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
 
             double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
-			double d_tan_beta_d_epsilon_p_zz = 1./epsilonPPlane;
-			double d_tan_beta_d_epsilon_p_max_plane = -rEpsilonP[3]/(epsilonPPlane*epsilonPPlane);
+			double d_tan_beta_d_stress_zz = 1./StressPlane;
+			double d_tan_beta_d_stress_max_plane = -rStress[3]/(StressPlane*StressPlane);
 
-			Eigen::Matrix<double,4,1> d_xs_dEpsilonP;
-			d_xs_dEpsilonP(0) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx;
-			d_xs_dEpsilonP(1) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy;
-			d_xs_dEpsilonP(2) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy;
-			d_xs_dEpsilonP(3) = d_xs_d_tanbeta *  d_tan_beta_d_epsilon_p_zz;
+			Eigen::Matrix<double,4,1> d_xs_dStress;
+			d_xs_dStress(0) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx;
+			d_xs_dStress(1) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy;
+			d_xs_dStress(2) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy;
+			d_xs_dStress(3) = d_xs_d_tanbeta *  d_tan_beta_d_stress_zz;
 
-			Eigen::Matrix<double,4,1> d_ys_dEpsilonP;
-			d_ys_dEpsilonP(0) = tan_beta * d_xs_dEpsilonP(0) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xx * x_s;
-			d_ys_dEpsilonP(1) = tan_beta * d_xs_dEpsilonP(1) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_yy * x_s;
-			d_ys_dEpsilonP(2) = tan_beta * d_xs_dEpsilonP(2) + d_tan_beta_d_epsilon_p_max_plane * d_epsilon_p_max_plane_d_epsilon_p_xy * x_s;
-			d_ys_dEpsilonP(3) = tan_beta * d_xs_dEpsilonP(3) + d_tan_beta_d_epsilon_p_zz;
+			Eigen::Matrix<double,4,1> d_ys_dStress;
+			d_ys_dStress(0) = tan_beta * d_xs_dStress(0) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx * x_s;
+			d_ys_dStress(1) = tan_beta * d_xs_dStress(1) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy * x_s;
+			d_ys_dStress(2) = tan_beta * d_xs_dStress(2) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy * x_s;
+			d_ys_dStress(3) = tan_beta * d_xs_dStress(3) + d_tan_beta_d_stress_zz;
 
-			rdLdEpsilonP(0) = x_s/l_eq * d_xs_dEpsilonP(0) + y_s/l_eq * d_ys_dEpsilonP(0);
-			rdLdEpsilonP(1) = x_s/l_eq * d_xs_dEpsilonP(1) + y_s/l_eq * d_ys_dEpsilonP(1);
-			rdLdEpsilonP(2) = x_s/l_eq * d_xs_dEpsilonP(2) + y_s/l_eq * d_ys_dEpsilonP(2);
-			rdLdEpsilonP(3) = x_s/l_eq * d_xs_dEpsilonP(3) + y_s/l_eq * d_ys_dEpsilonP(3);
-			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdEpsilonP2]" << std::endl << rdLdEpsilonP << std::endl;
+			rdLdStress(0) = x_s/l_eq * d_xs_dStress(0) + y_s/l_eq * d_ys_dStress(0);
+			rdLdStress(1) = x_s/l_eq * d_xs_dStress(1) + y_s/l_eq * d_ys_dStress(1);
+			rdLdStress(2) = x_s/l_eq * d_xs_dStress(2) + y_s/l_eq * d_ys_dStress(2);
+			rdLdStress(3) = x_s/l_eq * d_xs_dStress(3) + y_s/l_eq * d_ys_dStress(3);
+			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdStress2]" << std::endl << rdLdStress << std::endl;
         }
         else
         {
         	l_eq = l_eq_circ;
-        	rdLdEpsilonP.setZero(4,1);
+        	rdLdStress.setZero(4,1);
         }
     }
     return l_eq;
-//    rdLdEpsilonP.setZero(4,1);
+//    rdLdStress.setZero(4,1);
 //    return l_eq_plane;
 }
 
 #define ACTIVE true
 #define INACTIVE false
-#define toleranceResidual 1e-8      //tolerance to decide whether the Newton iteration has converged
-#define toleranceYieldSurface 1e-10 //tolerance whether a point is on the yield surface or not (multiplied by the YoungsModulus)
-#define toleranceDeterminant 1e-12  //tolerance to decide if a matrix is not invertible (only required in the debugging version)
+#define toleranceResidual 1e-5      //tolerance to decide whether the Newton iteration has converged
+#define toleranceYieldSurface 1e-3  //tolerance whether a point is on the yield surface or not (multiplied by the YoungsModulus)
+#define toleranceDeterminant 1e-20  //tolerance to decide if a matrix is not invertible (only required in the debugging version)
 #define maxSteps 25                 //maximum number of Newton iterations, until it is decided that there is no convergence and a cutback is performed
 #define minCutbackFactor 1e-3       //minimum cutback factor for the application of the total strain in steps
-#define minCutbackFactorLS 1e-3     //minimum cutback factor used for the linesearch in the Newton iteration
+#define minCutbackFactorLS 2e-3     //minimum cutback factor used for the linesearch in the Newton iteration
 //! @brief ... performs the return mapping procedure for the plasticity model
 //! @param rStrain              ... current total strain
 //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
@@ -1472,6 +1481,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         const EngineeringStrain2D& rStrain,
         const double rPrevPlasticStrain[4],
         const double rPrevTotalStrain[3],
+        Eigen::Matrix<double,4,1>& rStress,
         Eigen::Matrix<double,4,1>& rEpsilonP,
         double& rDeltaEqPlasticStrain,
         Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon)const
@@ -1640,7 +1650,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 			//rounded Rankine
 			initYieldCondition(1) = YieldSurfaceRankine2DRounded(initTrialStress, f_ct);
 
-			if (initYieldCondition(0)<-toleranceYieldSurface*e_mod && initYieldCondition(1)<-toleranceYieldSurface*e_mod)
+			if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
 			{
 				//*************************************************
 				//*  thus we have elastic -------------> elastic  *
@@ -1652,6 +1662,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 				if (cutbackFactorExternal==1)
 				{
 					rdEpsilonPdEpsilon.setZero(4,4);
+					rStress = trialStress;
 				}
 #ifdef ENABLE_DEBUG
 				std::cout << "linear elastic step" << std::endl << std::endl;
@@ -1676,7 +1687,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 					std::cout<< "pure Rankine" << std::endl;
 #endif
 					deltaGamma(1) = 0;
-					if (initYieldCondition(1)<-toleranceYieldSurface*e_mod)
+					if (initYieldCondition(1)<-toleranceYieldSurface*f_ct)
 						continue;
 					yieldConditionFlag(0) = INACTIVE;
 					yieldConditionFlag(1) = ACTIVE;
@@ -1686,7 +1697,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #ifdef ENABLE_DEBUG
 					std::cout<< "combined" << std::endl;
 #endif
-					if (initYieldCondition(0)<-toleranceYieldSurface*e_mod || initYieldCondition(1)<-toleranceYieldSurface*e_mod)
+					if (initYieldCondition(0)<-toleranceYieldSurface*f_ct || initYieldCondition(1)<-toleranceYieldSurface*f_ct)
 						continue;
 					yieldConditionFlag(0) = ACTIVE;
 					yieldConditionFlag(1) = ACTIVE;
@@ -1698,7 +1709,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #ifdef ENABLE_DEBUG
 					std::cout<< "pure DP" << std::endl;
 #endif
-					if (initYieldCondition(0)<-toleranceYieldSurface*e_mod)
+					if (initYieldCondition(0)<-toleranceYieldSurface*f_ct)
 						continue;
 					yieldConditionFlag(0) = ACTIVE;
 					yieldConditionFlag(1) = INACTIVE;
@@ -1758,6 +1769,26 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						YieldSurfaceRankine2DRoundedDerivatives(dF_dsigma[1],&(d2F_d2sigma[1]),trialStress);
 #ifdef ENABLE_DEBUG
 						std::cout << "dF_dsigma[1] (Rankine)" <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
+						//check second derivative
+
+						double delta=1e-8;
+						std::cout << "d2F_d2sigma ana" << std::endl << d2F_d2sigma[1] << std::endl << std::endl;;
+						Eigen::Matrix<double,4,4> dF2_dsigmaTmp;
+						Eigen::Matrix<double,4,4> dF2_dsigmaCD;
+						Eigen::Matrix<double,4,1> dF_dsigmaTmp;
+						for (int count=0; count<4; count++)
+						{
+							trialStress(count,0)+=delta;
+							YieldSurfaceRankine2DRoundedDerivatives(dF_dsigmaTmp,&dF2_dsigmaTmp,trialStress);
+							dF2_dsigmaCD.col(count) = (dF_dsigmaTmp - dF_dsigma[1])*(1./delta);
+							trialStress(count,0)-=delta;
+						}
+						std::cout << "d2F_d2sigma cd" << std::endl << dF2_dsigmaCD << std::endl;
+						double max_error((dF2_dsigmaCD-d2F_d2sigma[1]).maxCoeff());
+						std::cout << "max error " << max_error << std::endl;
+
+						if (max_error>1e-6)
+							exit(-1);
 #endif
 					}
 
@@ -1780,11 +1811,10 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #endif
 
 					//this is just for scaling with a relative norm
-					double epsilonEq = curTotalStrain.norm();
-					double absResidual = residual.norm()/epsilonEq;
+					double absResidual = residual.norm()*f_ct/e_mod;
 
 #ifdef ENABLE_DEBUG
-                    std::cout << iteration <<" residual " << absResidual << " yield conditionc " << yieldCondition.transpose() << std::endl << std::endl;
+                    std::cout << iteration <<" residual " << absResidual << " yield condition " << yieldCondition.transpose() << std::endl << std::endl;
 #endif
 
 					// in case of PERFECT PLASTICITY [A] = hessian
@@ -1798,8 +1828,11 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						}
 					}
 
-					assert(fabs(hessian.determinant())>toleranceDeterminant);
+                    assert(fabs(hessian.determinant())>toleranceDeterminant);
 					hessian = hessian.inverse();
+#ifdef ENABLE_DEBUG
+                    std::cout << "determinant of hessian" << hessian.determinant() << std::endl;
+#endif
 
 					// check abs_residual and yieldCondition for active yield surfaces
 					bool convergenceFlagYieldCondition(true);
@@ -1811,7 +1844,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						{
 							if (yieldConditionFlag(count) == INACTIVE)
 								continue;
-							if (fabs(yieldCondition(count)) > toleranceYieldSurface*e_mod)
+							if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
 							{
 								convergenceFlagYieldCondition = false;
 								break;
@@ -1826,7 +1859,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						{
 							if (yieldConditionFlag(count) == INACTIVE)
 							{
-								if (yieldCondition(count) > toleranceYieldSurface*e_mod)
+								if (yieldCondition(count) > toleranceYieldSurface*f_ct)
 								{
 									convergenceFlagYieldCondition = false;
 									iteration=maxSteps;
@@ -1852,69 +1885,78 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #endif
 						}
 					}
-					if (convergedInternal && cutbackFactorExternal==1)
+					if (convergedInternal)
 					{
-						// compute elasto plastic d_matrix
-						// compute G_matrix
-						int curYieldFunction = 0;
-						matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-						vectorN.resize(numYieldSurfaces);
-						for (int count=0; count<numYieldSurfaces; count++)
-						{
-							if (yieldConditionFlag(count)==INACTIVE)
-								continue;
-							int curYieldFunction2 = 0;
-							for (int count2=0; count2<=count; count2++)
+					    if (cutbackFactorExternal==1)
+					    {
+							// compute elasto plastic d_matrix
+							// compute G_matrix
+							int curYieldFunction = 0;
+							matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+							vectorN.resize(numYieldSurfaces);
+							for (int count=0; count<numYieldSurfaces; count++)
 							{
-								if (yieldConditionFlag(count2)==INACTIVE)
+								if (yieldConditionFlag(count)==INACTIVE)
 									continue;
+								int curYieldFunction2 = 0;
+								for (int count2=0; count2<=count; count2++)
+								{
+									if (yieldConditionFlag(count2)==INACTIVE)
+										continue;
 
-								matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2]).lazy()(0);
-								// copy symmetric part
-								if (count!=count2)
-									matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+									matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2]).lazy()(0);
+									// copy symmetric part
+									if (count!=count2)
+										matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
 
-								curYieldFunction2++;
+									curYieldFunction2++;
+								}
+
+								// N
+								vectorN[count] = hessian * dF_dsigma[count];
+								curYieldFunction++;
 							}
 
-							// N
-							vectorN[count] = hessian * dF_dsigma[count];
-							curYieldFunction++;
-						}
+							// solve linearized system of equations for G_inv
+							assert(fabs(matG.determinant())>toleranceDeterminant);
+							matG.computeInverse(&matGInv);
 
-						// solve linearized system of equations for G_inv
-						assert(fabs(matG.determinant())>toleranceDeterminant);
-						matG.computeInverse(&matGInv);
-
-						// compute elasto_plastic matrix
-						tmpStiffness = hessian;
-						curYieldFunction = 0;
-						for (int count=0; count<numYieldSurfaces; count++)
-						{
-							if (yieldConditionFlag(count)==INACTIVE)
-								continue;
-							int curYieldFunction2 = 0;
-							for (int count2=0; count2<numYieldSurfaces; count2++)
+							// compute elasto_plastic matrix
+							tmpStiffness = hessian;
+							curYieldFunction = 0;
+							for (int count=0; count<numYieldSurfaces; count++)
 							{
-								if (yieldConditionFlag(count2)==INACTIVE)
+								if (yieldConditionFlag(count)==INACTIVE)
 									continue;
-								tmpStiffness-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
-								curYieldFunction2++;
+								int curYieldFunction2 = 0;
+								for (int count2=0; count2<numYieldSurfaces; count2++)
+								{
+									if (yieldConditionFlag(count2)==INACTIVE)
+										continue;
+									tmpStiffness-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
+									curYieldFunction2++;
+								}
+								curYieldFunction++;
 							}
-							curYieldFunction++;
-						}
 
-						//update new history variables
-						rdEpsilonPdEpsilon = dElastInv * (dElast - tmpStiffness);
+							//update new history variables
+							rdEpsilonPdEpsilon = dElastInv * (dElast - tmpStiffness);
 
-#ifdef ENABLE_DEBUG
-						std::cout << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<std::endl;
-						std::cout << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<std::endl;
-#endif
+							rStress = trialStress;
 
+	#ifdef ENABLE_DEBUG
+							std::cout << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<std::endl;
+							std::cout << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<std::endl;
+	#endif
+					    }
+					    else
+					    {
+					    	//do nothing and just increase the strain
+					    }
 					}
 					else
 					{
+						//no convergence convergedInternal==false
 						if (iteration<maxSteps)
 						{
 							//compute delta gamma
@@ -1926,7 +1968,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 									continue;
 								int curYieldFunction2 = 0;
 								for (int count2=0; count2<=count; count2++)
-								{
+							    {
 									if (yieldConditionFlag(count2)==INACTIVE)
 										continue;
 
@@ -1946,6 +1988,10 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 
 							// solve linearized system of equations for G_inv
 							assert(fabs(matG.determinant())>toleranceDeterminant);
+#ifdef ENABLE_DEBUG
+							std::cout << "G and determinant" << matG.determinant() << std::endl;
+							std::cout << matG << std::endl;
+#endif
 
 							matG.computeInverse(&matGInv);
 
@@ -1998,6 +2044,9 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 							}
 
 							deltaStress =  hessian * helpVector;
+#ifdef ENABLE_DEBUG
+                            std::cout<<"deltaStress " << deltaStress.transpose()<<std::endl<< std::endl;
+#endif
 							//internal line search convergedExternal
 							double deltaCutbackFactor(1.);
 							double cutbackFactorLS(deltaCutbackFactor);
@@ -2109,6 +2158,21 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						}
 					}
 				} // end of loop
+            	if (convergedInternal==false)
+            	{
+            		std::cout << "     norm Residual " << residual.squaredNorm() << std::endl;
+            		for (int count=0; count<2; count++)
+            		{
+            			if (yieldConditionFlag(count)==ACTIVE)
+            			{
+            				std::cout << "     yield condition "<< count+1 << " " << yieldCondition(count) << " ("<<toleranceYieldSurface*f_ct << ")"<<std::endl;
+            				std::cout << "     deltaGamma "<< count+1 << " " << deltaGamma(count) << std::endl;
+            			}
+            			else
+            				std::cout << "     yield condition "<< count+1 << " " << yieldCondition(count) << std::endl;
+
+            		}
+            	}
             }
         }
         catch (NuTo::MechanicsException& e)
@@ -2144,7 +2208,10 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
             {
 				lastPlastStrain = rEpsilonP;
 				lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
-                cutbackFactorExternal +=deltaCutbackFactorExternal;
+
+				if (numberOfInternalIterations<10)
+					deltaCutbackFactorExternal*=1.5;
+				cutbackFactorExternal +=deltaCutbackFactorExternal;
                 if (cutbackFactorExternal>1)
                 {
                     deltaCutbackFactorExternal -= cutbackFactorExternal -1.;
@@ -2154,12 +2221,12 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         }
         else
         {
-//#ifdef ENABLE_DEBUG
-            std::cout << "decrease external cutback factor" << std::endl;
-//#endif
         	// no convergence in return mapping
         	deltaCutbackFactorExternal*=0.5;
             cutbackFactorExternal-=deltaCutbackFactorExternal;
+            //#ifdef ENABLE_DEBUG
+                        std::cout << "decrease external cutback factor to " << deltaCutbackFactorExternal << std::endl;
+            //#endif
         }
 
     }
@@ -2441,7 +2508,7 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
 					(*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
 					(*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
 					(*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-					(*rd2F_d2Sigma)(3,3) = factor*(rStress(3)*rdF_dSigma(3)-yield);
+					(*rd2F_d2Sigma)(3,3) = factor*(yield-rStress(3)*rdF_dSigma(3));
 			    }
 			}
 			else

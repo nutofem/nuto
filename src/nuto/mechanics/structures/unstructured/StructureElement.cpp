@@ -338,3 +338,27 @@ void NuTo::Structure::ElementDelete(const int rElementNumber)
         this->mElementMap.erase(itElement);
     }
 }
+
+// store all elements of a structure in a vector
+void NuTo::Structure::GetElementsTotal(std::vector<const ElementBase*>& rElements) const
+{
+    rElements.reserve(mElementMap.size());
+	boost::ptr_map<int,ElementBase>::const_iterator ElementIter = this->mElementMap.begin();
+    while (ElementIter != this->mElementMap.end())
+    {
+        rElements.push_back(ElementIter->second);
+        ElementIter++;
+    }
+}
+
+// store all elements of a structure in a vector
+void NuTo::Structure::GetElementsTotal(std::vector<ElementBase*>& rElements)
+{
+    rElements.reserve(mElementMap.size());
+    boost::ptr_map<int,ElementBase>::iterator ElementIter = this->mElementMap.begin();
+    while (ElementIter != this->mElementMap.end())
+    {
+        rElements.push_back(ElementIter->second);
+        ElementIter++;
+    }
+}

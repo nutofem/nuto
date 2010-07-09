@@ -286,6 +286,7 @@ NuTo::FullMatrix<int> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::Full
 
     //return int identifiers of the new nodes as FullMatrix
 	NuTo::FullMatrix<int> ids(idVec);
+
     return ids;
 }
 
@@ -324,6 +325,8 @@ void NuTo::Structure::NodeDelete(const int rNodeNumber)
 
         // delete element from map
         this->mNodeMap.erase(itNode);
+
+        this->mNodeNumberingRequired = true;
     }
 
 }
@@ -404,6 +407,7 @@ void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActive
     {
         throw MechanicsException("[NuTo::Structure::NodeMergeActiceDofValues] invalid dimension of input object (number of active dofs,1).");
     }
+	this->mUpdateTmpStaticDataRequired=true;
 
     // calculate dependent dof values
     FullMatrix<double> dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
