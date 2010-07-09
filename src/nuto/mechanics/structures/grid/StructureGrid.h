@@ -29,6 +29,8 @@ public:
     //! @param mDimension  Structural dimension (1,2 or 3)
     StructureGrid(int rDimension);
 
+    typedef NuTo::SparseMatrixCSRGeneral<double> SparseMat ;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -72,6 +74,15 @@ public:
      //! @brief returns GridDimension
      //! @return GridDimension
     const int* GetGridDimension() const;
+
+     //! @brief Get NumMaterials
+     //! @return NumMaterial
+     const int GetNumMaterials() const;
+
+
+    //! @brief Get LocalCoefficientMatrix0
+    //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
+    const SparseMat* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const;
 
 //*************************************************
 //************ Node routines        ***************
@@ -194,7 +205,7 @@ public:
     //! @param rElementID identifier for the element
     //! @param rElementNumber number of the element
     //! @param rElementType element type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
+    void ElementCreate (int rNumCoefficientMatrix0,int rElementNumber, int rElementID,
     		const std::string& rElementType);
 
     //! @brief Creates an element
@@ -202,7 +213,7 @@ public:
     //! @param rElementNumber number of the element
     //! @param rElementType element type
     //! @param rIpDataType ip type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
+    void ElementCreate (int rNumCoefficientMatrix0,int rElementNumber, int rElementID,
     		const std::string& rElementType, const std::string& rElementDataType, const std::string& rIpDataType);
 
 #ifndef SWIG
@@ -211,13 +222,15 @@ public:
     //! @param rElementNumber number of the element
     //! @param rElementType element type
     //! @param rIpDataType ip type
-    void ElementCreate (NuTo::SparseMatrixCSRGeneral<double>& rCoefficientMatrix0,int rElementNumber, int rElementID,
+    void ElementCreate (int rNumCoefficientMatrix0,int rElementNumber, int rElementID,
     		Element::eElementType rElementType, NuTo::ElementData::eElementDataType rElementDataType, NuTo::IpData::eIpDataType rIpDataType);
 #endif //SWIG
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
     void ElementDelete (const int rElementNumber);
+
+
 
 protected:
     int mNumVoxel;  //number of voxels
@@ -228,6 +241,8 @@ protected:
     boost::ptr_vector<NodeBase> mNodeVec;
     boost::ptr_vector<ElementBase> mElementVec;
     const char* mImageDataFile;
+    int mNumMaterials;
+    std::vector<SparseMat> mLocalCoefficientMatrix0;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer

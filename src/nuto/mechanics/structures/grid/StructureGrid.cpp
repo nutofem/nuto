@@ -211,16 +211,23 @@ const double* NuTo::StructureGrid::GetVoxelSpacing() const
 //! @brief returns GridOrigin
  //! @return GridOrigin
 const double* NuTo::StructureGrid::GetGridOrigin() const
- {
+{
      return mGridOrigin;
- }
+}
 
  //! @brief returns GridDimension
  //! @return GridDimension
 const int* NuTo::StructureGrid::GetGridDimension() const
- {
+{
      return mGridDimension;
- }
+}
+//! @brief Get NumMaterials
+//! @return NumMaterial
+const int NuTo::StructureGrid::GetNumMaterials() const
+{
+    return mNumMaterials;
+}
+
 void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
 {
     try
@@ -300,6 +307,17 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
         throw MechanicsException ( e.what() );
     }
 }
+
+
+//! @brief Get LocalCoefficientMatrix0
+//! @param NumLocalCoefficientMatrix0 number of stiffness matrix
+const NuTo::StructureGrid::SparseMat* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const
+{
+    if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
+        throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
+    return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
+}
+
 void NuTo::StructureGrid::BuildLocalCoefficientMatrix0() const
 {
 // calculate stiffness for given Modulus

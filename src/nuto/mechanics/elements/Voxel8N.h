@@ -29,20 +29,12 @@ class Voxel8N : public Solid
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,unsigned int rElementID,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
+    Voxel8N(NuTo::StructureBase* rStructure,int rElementID,int rNumLocalCoefficientMatrix0,
             NuTo::ElementData::eElementDataType rElementDataType , IpData::eIpDataType rIpDataType):
-            	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType), 
-            	mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0)            	
+            	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
     {
-        mVoxelID = (int) rElementID;
-    }
-    //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,NuTo::SparseMatrixCSRGeneral<double>& rLocalCoefficientMatrix0,
-    		NuTo::ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType):
-        NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType),
-        mLocalCoefficientMatrix0 (rLocalCoefficientMatrix0)
-    {
-        mVoxelID = -1;
+        mVoxelID = rElementID;
+        mNumLocalCoefficientMatrix0 =rNumLocalCoefficientMatrix0;
     }
 
     #ifdef ENABLE_SERIALIZATION
@@ -140,9 +132,9 @@ public:
     //! @brief ... reorder nodes is not possible in gris structure
     void ReorderNodes()
     {
-        throw NuTo::MechanicsException("[NuTo::Voxel8N::ReorderNodes] GridElements do not have nodes for reordering.");
-
+        throw NuTo::MechanicsException("[NuTo::Voxel8N::ReorderNodes] Grid nodes can not be reordered.");
     }
+
     //! @brief calculate list of global dofs related to the entries in the element stiffness matrix
     //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
     //! @param rGlobalDofsColumn global dofs corresponding to the columns of the matrix
@@ -158,7 +150,7 @@ public:
 
 protected:
     int mVoxelID;
-    NuTo::SparseMatrixCSRGeneral<double>& mLocalCoefficientMatrix0;
+    int mNumLocalCoefficientMatrix0;
 };
 }
 #endif //Voxel8N_H
