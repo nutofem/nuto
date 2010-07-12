@@ -109,10 +109,10 @@ int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGr
 //! @param rAttribute displacements, rotations, temperatures
 //! @param rComponent e.g. the first (count from zero) displacement component
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(std::string rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
-    boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintDisplacementNodeGroup] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Nodes)

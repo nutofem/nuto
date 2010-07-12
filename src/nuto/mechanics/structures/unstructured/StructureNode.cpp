@@ -315,7 +315,7 @@ void NuTo::Structure::NodeDelete(const int rNodeNumber)
     	//! Search for node in groups
         //! using a loop over all groups
         //! remove the entry from all groups
-        for(boost::ptr_map<std::string,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
+        for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
         	if(groupIt->second->GetType()==NuTo::Groups::Nodes){
         		if(groupIt->second->Contain(itNode->second)){
         			groupIt->second->RemoveMember(itNode->second);
@@ -495,9 +495,9 @@ void NuTo::Structure::NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>
 //! @brief calculates the internal force vector for a given node group
 //! @param rGroupIdent group identifier
 //! @param rNodeForce return value
-void NuTo::Structure::NodeGroupGetInternalForce(const std::string& rIdentGroup, NuTo::FullMatrix<double>& rNodeForce)const
+void NuTo::Structure::NodeGroupGetInternalForce(int rIdentGroup, NuTo::FullMatrix<double>& rNodeForce)const
 {
-    boost::ptr_map<std::string,GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::NodeGroupGetInternalForce] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=Groups::Nodes)

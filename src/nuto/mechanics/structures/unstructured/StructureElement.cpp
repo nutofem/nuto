@@ -326,7 +326,7 @@ void NuTo::Structure::ElementDelete(const int rElementNumber)
     else
     {
     	// Search for elements in groups: using a loop over all groups
-        for(boost::ptr_map<std::string,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
+        for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
         	if(groupIt->second->GetType()==NuTo::Groups::Elements){
         		if(groupIt->second->Contain(itElement->second)){
         			groupIt->second->RemoveMember(itElement->second);

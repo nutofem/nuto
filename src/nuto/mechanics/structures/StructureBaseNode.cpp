@@ -46,13 +46,13 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 //! @brief sets the displacements of a group of nodes
 //! @param rIdent node group identifier
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeGroupSetDisplacements(const std::string& rGroupIdent, const FullMatrix<double>& rDisplacements)
+void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullMatrix<double>& rDisplacements)
 {
 	this->mUpdateTmpStaticDataRequired=true;
 	if (rDisplacements.GetNumColumns()!=1)
 	     throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] Displacement matrix has to have a single column.");
 
-	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
@@ -172,9 +172,9 @@ void NuTo::StructureBase::NodeForce(int rId, NuTo::FullMatrix<double>& rNodeForc
 //! @brief calculate the internal force vector for a node group of nodes
 //! @param rGroupIdent ... group identifier
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeGroupForce(const std::string& rGroupIdent, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeGroupForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce) const
 {
-	boost::ptr_map<std::string,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupIdent);
+	boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Nodes)

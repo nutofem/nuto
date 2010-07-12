@@ -175,9 +175,9 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
 //! @brief sets the constitutive law of a group of elements
 //! @param rGroupIdent identifier for the group of elements
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(const std::string& rGroupIdent, int rConstitutiveLawIdent)
+void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rConstitutiveLawIdent)
 {
-	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Elements)
@@ -293,9 +293,9 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, const std::string& r
 //! @brief sets the section of a group of elements
 //! @param rGroupIdent identifier for the group of elements
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementGroupSetSection(const std::string& rGroupIdent, const std::string& rSectionIdent)
+void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, const std::string& rSectionIdent)
 {
-	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Elements)
@@ -437,10 +437,10 @@ void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
 //! @brief modifies the integration type of a group of elements
 //! @param rGroupIdent identifier for the group of elements
 //! @param rIntegrationTypeIdent identifier for the integration type
-void NuTo::StructureBase::ElementGroupSetIntegrationType(const std::string& rGroupIdent,
+void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
 		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
-	boost::ptr_map<std::string,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetIntegrationType] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Elements)

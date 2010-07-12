@@ -66,10 +66,10 @@ int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::
 }
 
 // adds a force for a node group
-int NuTo::StructureBase::LoadCreateNodeGroupForce(std::string rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
     // find group in map
-    boost::ptr_map<std::string,GroupBase>::iterator itGroup = this->mGroupMap.find(rGroupIdent);
+    boost::ptr_map<int,GroupBase>::iterator itGroup = this->mGroupMap.find(rGroupIdent);
     if (itGroup == this->mGroupMap.end())
     {
         throw MechanicsException("[NuTo::Structure::LoadCreateNodeGroupForce] Group with the given identifier does not exist.");

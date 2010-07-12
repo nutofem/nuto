@@ -191,7 +191,7 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName) const
     this->ExportVtkDataFile(ElementVec, rFileName);
 }
 
-void NuTo::StructureBase::ElementGroupExportVtkDataFile(const std::string& rGroupIdent, const std::string& rFileName) const
+void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const
 {
     // find group by name
     const Group<ElementBase>* ElementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupIdent));

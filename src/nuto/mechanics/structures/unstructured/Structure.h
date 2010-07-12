@@ -148,7 +148,7 @@ public:
     //! @brief calculates the internal force vector for a given node group
     //! @param rGroupIdent group identifier
     //! @param rNodeForce return value
-    void NodeGroupGetInternalForce(const std::string& rGroupIdent, NuTo::FullMatrix<double>& rNodeForce)const;
+    void NodeGroupGetInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce)const;
 
     //*************************************************
 //************ Element routines     ***************

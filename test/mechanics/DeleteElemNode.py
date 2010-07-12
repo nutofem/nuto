@@ -55,7 +55,7 @@ myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin, PoissonsRatio)
 # create nodes
 nodeCoordinates = nuto.DoubleFullMatrix(3,1)
 #create group of nodes at right boundary
-myStructure.GroupCreate("NodeGroup1","Nodes")
+NodeGroup1 = myStructure.GroupCreate("Nodes")
 node = 0
 for zCount in range (0, NumElementsZ + 1):
     nodeCoordinates.SetValue(2,0, zCount * Height/NumElementsZ)
@@ -65,13 +65,13 @@ for zCount in range (0, NumElementsZ + 1):
             nodeCoordinates.SetValue(0,0, xCount * Length/NumElementsX)
             #print "node: " + str(node) + " coordinates: " + str(nodeCoordinates.GetValue(0,0)) + "," + str(nodeCoordinates.GetValue(1,0)) + "," + str(nodeCoordinates.GetValue(2,0))
             myStructure.NodeCreate(node, "displacements", nodeCoordinates)
-            myStructure.GroupAddNode("NodeGroup1",node)
+            myStructure.GroupAddNode(NodeGroup1,node)
             node += 1
 
 # create elements
 elementIncidence = nuto.IntFullMatrix(8,1)
 element = 0
-myStructure.GroupCreate("ElementGroup1","Elements")
+ElementGroup1 = myStructure.GroupCreate("Elements")
 for zCount in range (0, NumElementsZ):
     for yCount in range(0, NumElementsY):
         for xCount in range(0, NumElementsX):
@@ -88,18 +88,18 @@ for zCount in range (0, NumElementsZ):
             #elementIncidence.Info()
             myStructure.ElementCreate(element, "Brick8N", elementIncidence)
             myStructure.ElementSetConstitutiveLaw(element,myMatLin)
-            myStructure.GroupAddElement("ElementGroup1",element)
+            myStructure.GroupAddElement(ElementGroup1,element)
             element += 1
             
-myStructure.GroupCreate("ElementGroup2","Elements")
-myStructure.GroupAddElement("ElementGroup2",1)
-myStructure.GroupAddElement("ElementGroup2",2)
-myStructure.GroupAddElement("ElementGroup2",3)
+ElementGroup2 = myStructure.GroupCreate("Elements")
+myStructure.GroupAddElement(ElementGroup2,1)
+myStructure.GroupAddElement(ElementGroup2,2)
+myStructure.GroupAddElement(ElementGroup2,3)
 
-myStructure.GroupCreate("NodeGroup2","Nodes")
-myStructure.GroupAddNode("NodeGroup2",1)
-myStructure.GroupAddNode("NodeGroup2",2)
-myStructure.GroupAddNode("NodeGroup2",3)
+NodeGroup2 = myStructure.GroupCreate("Nodes")
+myStructure.GroupAddNode(NodeGroup2,1)
+myStructure.GroupAddNode(NodeGroup2,2)
+myStructure.GroupAddNode(NodeGroup2,3)
 
 myStructure.ElementDelete(0)
 myStructure.NodeDelete(0)

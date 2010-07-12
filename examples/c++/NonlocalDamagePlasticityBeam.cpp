@@ -31,8 +31,8 @@ try
 
 	//create nodes
     NuTo::FullMatrix<double> Coordinates(2,1);
-    myStructure.GroupCreate("LeftSupport","Nodes");
-    myStructure.GroupCreate("RightSupport","Nodes");
+    int LeftSupport = myStructure.GroupCreate("Nodes");
+    int RightSupport = myStructure.GroupCreate("Nodes");
     double posX;
     double posY=0;
     int leftLowerNode;
@@ -49,10 +49,10 @@ try
 				if (posY==0)
 					leftLowerNode = theNode;
 				else
-					myStructure.GroupAddNode("LeftSupport",theNode);
+					myStructure.GroupAddNode(LeftSupport,theNode);
 			}
 			if (posX==lX)
-				myStructure.GroupAddNode("RightSupport",theNode);
+				myStructure.GroupAddNode(RightSupport,theNode);
 		}
 	}
 
@@ -108,12 +108,12 @@ try
 	DirectionY.SetValue(0,0,0.0);
 	DirectionY.SetValue(1,0,1.0);
 
-	myStructure.ConstraintSetDisplacementNodeGroup("LeftSupport",DirectionX, 0);
+	myStructure.ConstraintSetDisplacementNodeGroup(LeftSupport,DirectionX, 0);
 	myStructure.ConstraintSetDisplacementNode(leftLowerNode,DirectionX, 0);
 	myStructure.ConstraintSetDisplacementNode(leftLowerNode,DirectionY, 0);
 
 	// update the RHS of the constrain equation with myStructure.ConstraintSetRHS
-	int ConstraintRHS = myStructure.ConstraintSetDisplacementNodeGroup("RightSupport",DirectionX, 0);
+	int ConstraintRHS = myStructure.ConstraintSetDisplacementNodeGroup(RightSupport,DirectionX, 0);
 
     // start analysis
     double maxDisp(200*fct/YoungsModulus*lX);
@@ -237,7 +237,7 @@ try
 
 			//store residual force
 			NuTo::FullMatrix<double> SupportingForce;
-			myStructure.NodeGroupForce("RightSupport",SupportingForce);
+			myStructure.NodeGroupForce(RightSupport,SupportingForce);
 			NuTo::FullMatrix<double> SinglePlotData(1,6);
 			SinglePlotData(0,0) = curDisp;
 			SinglePlotData(0,1) = SupportingForce(0,0)/(thickness*lY);

@@ -35,33 +35,33 @@ node2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,0)))
 node3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,0)))
 node4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,1)))
 
-myStructure.GroupCreate("NodeGroup1","Nodes")
-myStructure.GroupCreate("NodeGroup2","Nodes")
+NodeGroup1 = myStructure.GroupCreate("Nodes")
+NodeGroup2 = myStructure.GroupCreate("Nodes")
 
-myStructure.GroupAddNode("NodeGroup1",node1)
-myStructure.GroupAddNode("NodeGroup1",node2)
-myStructure.GroupAddNode("NodeGroup1",node3)
-myStructure.GroupAddNode("NodeGroup2",node3)
-myStructure.GroupAddNode("NodeGroup2",node4)
+myStructure.GroupAddNode(NodeGroup1,node1)
+myStructure.GroupAddNode(NodeGroup1,node2)
+myStructure.GroupAddNode(NodeGroup1,node3)
+myStructure.GroupAddNode(NodeGroup2,node3)
+myStructure.GroupAddNode(NodeGroup2,node4)
 
 # union
-myStructure.GroupUnion("NodeGroup1","NodeGroup2","NodeGroupUnion")
-if (myStructure.GroupGetNumMembers("NodeGroupUnion")!=4):
+NodeGroupUnion = myStructure.GroupUnion(NodeGroup1,NodeGroup2)
+if (myStructure.GroupGetNumMembers(NodeGroupUnion)!=4):
     error = True
 
 # difference
-myStructure.GroupDifference("NodeGroup1","NodeGroup2","NodeGroupDifference")
-if (myStructure.GroupGetNumMembers("NodeGroupDifference")!=2):
+NodeGroupDifference = myStructure.GroupDifference(NodeGroup1,NodeGroup2)
+if (myStructure.GroupGetNumMembers(NodeGroupDifference)!=2):
     error = True
 
 # intersection
-myStructure.GroupIntersection("NodeGroup1","NodeGroup2","NodeGroupIntersection")
-if (myStructure.GroupGetNumMembers("NodeGroupIntersection")!=1):
+NodeGroupIntersection = myStructure.GroupIntersection(NodeGroup1,NodeGroup2)
+if (myStructure.GroupGetNumMembers(NodeGroupIntersection)!=1):
     error = True
 
 # symmetric difference
-myStructure.GroupSymmetricDifference("NodeGroup1","NodeGroup2","NodeGroupSymmetricDifference")
-if (myStructure.GroupGetNumMembers("NodeGroupSymmetricDifference")!=3):
+NodeGroupSymmetricDifference = myStructure.GroupSymmetricDifference(NodeGroup1,NodeGroup2)
+if (myStructure.GroupGetNumMembers(NodeGroupSymmetricDifference)!=3):
     error = True
 
 if (printResult):

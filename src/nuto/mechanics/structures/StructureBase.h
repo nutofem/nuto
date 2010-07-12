@@ -99,7 +99,7 @@ public:
     //! @param rGroupIdent ... group ident
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ElementGroupExportVtkDataFile(const std::string& rGroupIdent, const std::string& rFileName) const;
+    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const;
 
 #ifndef SWIG
     //! @brief ... export elements to Vtk data file
@@ -178,7 +178,7 @@ public:
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGroupSetDisplacements(const std::string& rIdent, const FullMatrix<double>& rDisplacements);
+    void NodeGroupSetDisplacements(int rIdent, const FullMatrix<double>& rDisplacements);
 
     //! @brief gets the displacements of a node
     //! @param rIdent node identifier
@@ -198,7 +198,7 @@ public:
     //! @brief calculate the internal force vector for a node group of nodes
     //! @param rIdent ... group id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeGroupForce(const std::string& rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeGroupForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
 
 #ifndef SWIG
     //! @brief calculate the internal force vector for a node
@@ -280,7 +280,7 @@ public:
     //! @brief modifies the constitutive law of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rConstitutiveLawIdent identifier for the material
-    void ElementGroupSetConstitutiveLaw(const std::string& rGroupIdent, int rConstitutiveLawIdent);
+    void ElementGroupSetConstitutiveLaw(int rGroupIdent, int rConstitutiveLawIdent);
 
     //! @brief modifies the constitutive law of a all elements
     //! @param rConstitutiveLawIdent identifier for the material
@@ -301,7 +301,7 @@ public:
     //! @brief modifies the section of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rSectionId identifier for the section
-    void ElementGroupSetSection(const std::string& rGroupIdent, const std::string& rSectionIdent);
+    void ElementGroupSetSection(int rGroupIdent, const std::string& rSectionIdent);
 
     //! @brief modifies the section of a all elements
     //! @param rSectionIdent identifier for the section
@@ -327,7 +327,7 @@ public:
     //! @brief modifies the section of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rSectionId identifier for the section
-    void ElementGroupSetIntegrationType(const std::string& rGroupIdent, const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
+    void ElementGroupSetIntegrationType(int rGroupIdent, const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
 
     //! @brief modifies the section of a all elements
     //! @param rSectionIdent identifier for the section
@@ -396,7 +396,7 @@ public:
     //! @param rAttribute displacements, rotations, temperatures
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintSetDisplacementNodeGroup(std::string rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    int ConstraintSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -482,7 +482,7 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(std::string rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
     //! @brief delete load
     //! @param rIdent ... load identifier
@@ -744,65 +744,65 @@ public:
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
-    virtual std::string GroupGetId(GroupBase* rGroup)const;
+    int GroupGetId(GroupBase* rGroup)const;
 
     //! @brief ... get the pointer to a group from the group identifier
     //! @param rIdent ... group identifier
     //! @return ... pointer to the group
-    GroupBase* GroupGetGroupPtr(const std::string& rIdent);
+    GroupBase* GroupGetGroupPtr(int rIdent);
 
     //! @brief ... get the pointer to a group from the group identifier
     //! @param rIdent ... group identifier
     //! @return ... pointer to the group
-    const GroupBase* GroupGetGroupPtr(const std::string& rIdent) const;
+    const GroupBase* GroupGetGroupPtr(int rIdent) const;
 #endif
 
     //! @brief ... Creates a group for the structure
     //! @param ... rIdent identifier for the group
     //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
-    void GroupCreate(const std::string& rIdent, const std::string& rType);
+    int GroupCreate(const std::string& rType);
 
     //! @brief ... Deletes a group from the structure
     //! @param ... rIdent identifier for the group
-    void GroupDelete(const std::string& rIdent);
+    void GroupDelete(int rIdent);
 
     //! @brief ... Unites two groups and stores the result in a new group
     //! @param ... rIdentGroup1 identifier for the first group
     //! @param ... rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
-    void GroupUnion(const std::string& rIdentGroup1, const std::string& rIdentGroup2, const std::string& rIdentGroupResult);
+    int GroupUnion(int rIdentGroup1, int rIdentGroup2);
     //! @brief ... Difference between two groups and stores the result in a new group
     //! @param ... rIdentGroup1 identifier for the first group
     //! @param ... rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
-    void GroupDifference(const std::string& rIdentGroup1, const std::string& rIdentGroup2, const std::string& rIdentGroupResult);
+    int GroupDifference(int rIdentGroup1, int rIdentGroup2);
 
     //! @brief ... Calculates the intersection between two groups and stores the result in a new group
     //! @param ... rIdentGroup1 identifier for the first group
     //! @param ... rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
-    void GroupIntersection(const std::string& rIdentGroup1, const std::string& rIdentGroup2, const std::string& rIdentGroupResult);
+    int GroupIntersection(int rIdentGroup1, int rIdentGroup2);
 
     //! @brief ... Calculates the symmetric difference between two groups and stores the result in a new group
     //! @param ... rIdentGroup1 identifier for the first group
     //! @param ... rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
-    void GroupSymmetricDifference(const std::string& rIdentGroup1, const std::string& rIdentGroup2, const std::string& rIdentGroupResult);
+    int GroupSymmetricDifference(int rIdentGroup1, int rIdentGroup2);
 
     //! @brief ... Adds a node to a node group
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rIdentNode  identifier for the node
-    void GroupAddNode(const std::string& rIdentGroup, int rIdNode);
+    void GroupAddNode(int rIdentGroup, int rIdNode);
 
     //! @brief ... Adds an element to an element group
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rIdentElement  identifier for the element
-    void GroupAddElement(const std::string& rIdentGroup, int rIdElement);
+    void GroupAddElement(int rIdentGroup, int rIdElement);
 
     //! @brief ... Returns the number of members in a group
     //! @param ... rIdentGroup identifier for the group
     //! @return ... number of members
-    int GroupGetNumMembers(const std::string& rIdentGroup)const;
+    int GroupGetNumMembers(int rIdentGroup)const;
 
     //*************************************************************
     //************ Integration type routines     ******************
@@ -850,7 +850,7 @@ protected:
 
     //! @brief ... map storing the groups and a pointer to the objects
     //! @sa GroupBase
-    boost::ptr_map<std::string,GroupBase> mGroupMap;
+    boost::ptr_map<int,GroupBase> mGroupMap;
 
     //! @brief ... map storing the name and the pointer to the integration types
     //! @sa IntegrationTypeBase

@@ -11,7 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
