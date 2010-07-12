@@ -1463,8 +1463,8 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
 
 #define ACTIVE true
 #define INACTIVE false
-#define toleranceResidual 1e-5      //tolerance to decide whether the Newton iteration has converged
-#define toleranceYieldSurface 1e-3  //tolerance whether a point is on the yield surface or not (multiplied by the YoungsModulus)
+#define toleranceResidual 1e-6      //tolerance to decide whether the Newton iteration has converged
+#define toleranceYieldSurface 1e-6  //tolerance whether a point is on the yield surface or not (multiplied by the YoungsModulus)
 #define toleranceDeterminant 1e-20  //tolerance to decide if a matrix is not invertible (only required in the debugging version)
 #define maxSteps 25                 //maximum number of Newton iterations, until it is decided that there is no convergence and a cutback is performed
 #define minCutbackFactor 1e-3       //minimum cutback factor for the application of the total strain in steps
