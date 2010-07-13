@@ -1,4 +1,4 @@
-#include "nuto/optimize/ConjugateGradient.h"
+#include "nuto/optimize/ConjugateGradientNonLinear.h"
 #define machine_precision 1e-15
 #define tol 1e-8  //sqrt machine_precision
 #define goldenSect 0.38196601125
@@ -7,9 +7,9 @@
 #define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
 #define golden_sec 0.38196601125
 
-// @brief 
+// @brief
 // return reason
-int NuTo::ConjugateGradient::Optimize()
+int NuTo::ConjugateGradientNonLinear::Optimize()
 {
     double objectiveLastRestart,
            beta,
@@ -29,13 +29,13 @@ int NuTo::ConjugateGradient::Optimize()
            normProjection,
            normPrevGradient,
            normGrad;
-    
+
     int numFunctionCalls(0),   // number of function calls
         numGradientCalls(0),   // number of gradient calls
         numHessianCalls(0),    // number of hessian calls
         curIteration(0),       //number of iterations
         curCycle(0);           //number of iterations without restart
-    
+
     optimization_return_attributes returnValue;
 
     bool BrentsMethodConverged;
@@ -49,14 +49,14 @@ int NuTo::ConjugateGradient::Optimize()
     Eigen::VectorXd deltaGradient(GetNumParameters());
     Eigen::VectorXd searchDirectionScaled(GetNumParameters());
     Eigen::VectorXd searchDirectionOrig(GetNumParameters());
-    
+
     bool converged(false);
     double mAccuracyGradientScaled = mAccuracyGradient*sqrt(GetNumParameters());
-     
+
     //check, if callback handler is set
     if (mpCallbackHandler==0)
-        throw OptimizeException("[ConjugateGradient::Optimize] Callback handler not set to determine objective function and derivatives.");
-    
+        throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine objective function and derivatives.");
+
     // calculate objective
     objective = mpCallbackHandler->Objective();
     objectiveLastRestart = objective;
@@ -93,7 +93,7 @@ int NuTo::ConjugateGradient::Optimize()
             // calculate Hessian for scaling
             CalcScalingFactors(numHessianCalls, hessianOrig, scaleFactorsInv);
             if (numHessianCalls>mMaxHessianCalls)
-            {    
+            {
                 converged = true;
                 returnValue = MAXHESSIANCALLS;
                 break;
@@ -101,7 +101,7 @@ int NuTo::ConjugateGradient::Optimize()
             gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
 
             normGrad = gradientScaled.norm();
-                        
+
             //printf("norm Grad %g\n",normGrad);
             if (normGrad<mAccuracyGradientScaled)
             {
@@ -109,7 +109,7 @@ int NuTo::ConjugateGradient::Optimize()
                 returnValue = NORMGRADIENT;
                 break;
             }
-            
+
             searchDirectionScaled = -gradientScaled;
             searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
             if (mVerboseLevel>5 && curCycle>0)
@@ -121,7 +121,7 @@ int NuTo::ConjugateGradient::Optimize()
         {
             //scale gradient
             gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
-            
+
             normProjection = gradientScaled.dot(prevGradientScaled);
             normPrevGradient = prevGradientScaled.dot(prevGradientScaled);
             //Powell-Beale Restarts
@@ -138,7 +138,7 @@ int NuTo::ConjugateGradient::Optimize()
                 }
                 else
                 {
-                    if (fabs(objectiveLastRestart-objective)<mMinDeltaObjBetweenRestarts)   
+                    if (fabs(objectiveLastRestart-objective)<mMinDeltaObjBetweenRestarts)
                     {
                         {
                             converged = true;
@@ -147,8 +147,8 @@ int NuTo::ConjugateGradient::Optimize()
                         }
                     }
                 }
-                
-                //restart with preconditioning    
+
+                //restart with preconditioning
                 //calculate hessian for preconditioning
                 CalcScalingFactors(numHessianCalls, hessianOrig, scaleFactorsInv);
                 if (numHessianCalls>mMaxHessianCalls)
@@ -157,20 +157,20 @@ int NuTo::ConjugateGradient::Optimize()
                     returnValue = MAXHESSIANCALLS;
                     break;
                 }
-                
+
                 //scale gradient
                 gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
- 
+
                 searchDirectionScaled = -gradientScaled;
                 searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
-            
+
                 if (mVerboseLevel>5)
                     std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-objective << std::endl;
 
                 normGrad = gradientScaled.norm()*(double)GetNumParameters();
-                
+
                 objectiveLastRestart = objective;
-                
+
                 if (normGrad<mAccuracyGradientScaled)
                 {
                     converged = true;
@@ -184,21 +184,21 @@ int NuTo::ConjugateGradient::Optimize()
                 //update search direction according to Polak-Ribiere update formular
                 deltaGradient=gradientScaled-prevGradientScaled;
                 beta = deltaGradient.dot(gradientScaled)/normPrevGradient;
-                
+
                 if (beta<0)
                 {
-                    //std::cout<< "Set beta ("<< beta <<") to zero " << std::endl; 
-                    beta=0;   
+                    //std::cout<< "Set beta ("<< beta <<") to zero " << std::endl;
+                    beta=0;
                 }
-                 
+
                  searchDirectionScaled *=beta;
-                 searchDirectionScaled -=gradientScaled;  
+                 searchDirectionScaled -=gradientScaled;
                  searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
                  double normSearch = searchDirectionScaled.norm();
-                 
+
                  if (normSearch<mAccuracyGradientScaled)
                  {
-                     //restart with preconditioning    
+                     //restart with preconditioning
                      //calculate hessian for preconditioning
                      CalcScalingFactors(numHessianCalls, hessianOrig, scaleFactorsInv);
                      if (numHessianCalls>mMaxHessianCalls)
@@ -207,20 +207,20 @@ int NuTo::ConjugateGradient::Optimize()
                          returnValue = MAXHESSIANCALLS;
                          break;
                      }
-                     
+
                      //scale gradient
                      gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
-                     
+
                      searchDirectionScaled = -gradientScaled;
                      searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
-                     
+
                      if (mVerboseLevel>3)
                          std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-objective << std::endl;
-                     
+
                      objectiveLastRestart = objective;
-                     
+
                      normGrad = gradientScaled.norm();
-                     
+
                      if (normGrad<mAccuracyGradientScaled)
                      {
                          converged = true;
@@ -233,51 +233,51 @@ int NuTo::ConjugateGradient::Optimize()
         }
         // store gradient and previous objective for next search
         prevGradientScaled = gradientScaled;
-        
+
         /*
         int precision = 3;
         int width = 10;
         std::cout.precision(precision);
         std::cout << std::setw(width)<< "gradient scaled " ;
         for (int count=0; count<GetNumParameters(); count++)
-        {   
+        {
             std::cout << std::setw(width)<< gradientScaled(count) << "   " ;
         }
         std::cout << std::endl;
         std::cout << std::setw(width)<< "gradient orig " ;
         for (int count=0; count<GetNumParameters(); count++)
-        {   
+        {
             std::cout << std::setw(width)<< gradientOrig(count,0) << "   " ;
         }
         std::cout << std::endl;
         std::cout << std::setw(width)<< "searchDirectionScaled " ;
         for (int count=0; count<GetNumParameters(); count++)
-        {   
+        {
             std::cout << std::setw(width)<< searchDirectionScaled(count) << "   " ;
         }
         std::cout << std::endl;
         std::cout << std::setw(width)<< "searchDirectionOrig " ;
         for (int count=0; count<GetNumParameters(); count++)
-        {   
+        {
             std::cout << std::setw(width)<< searchDirectionOrig(count) << "   " ;
         }
         std::cout << std::endl;
         */
-        
+
         if (mVerboseLevel>1 && curIteration%mShowSteps==0)
-            std::cout<< "Iteration " << curIteration << " with objective " << objective << " and norm grad scaled " << gradientScaled.norm()/sqrt(GetNumParameters()) << std::endl;   
-        
+            std::cout<< "Iteration " << curIteration << " with objective " << objective << " and norm grad scaled " << gradientScaled.norm()/sqrt(GetNumParameters()) << std::endl;
+
         //increase iteration and curCycle
         curCycle++;
         curIteration++;
-        
+
         if (curIteration>mMaxIterations)
         {
             converged = true;
             returnValue = MAXITERATIONS;
             break;
         }
-        
+
         //store previous Parameters and objective for linesearch
         prevAlpha = 0;
         prevObjective = objective;
@@ -292,7 +292,7 @@ int NuTo::ConjugateGradient::Optimize()
 
         //set new parameters in search direction
         mpCallbackHandler->SetParameters(mvParameters);
-        
+
         //calculate objective
         objective = mpCallbackHandler->Objective();
         numFunctionCalls++;
@@ -302,7 +302,7 @@ int NuTo::ConjugateGradient::Optimize()
             returnValue = MAXFUNCTIONCALLS;
             break;
         }
-        
+
         //find first interval with x1<x2<x3 and f(x1)>f(x2) und f(x2)<f(x3)
         int numFunctionCallsBefore(numFunctionCalls);
         if (objective<intermediateObjective)
@@ -363,11 +363,11 @@ int NuTo::ConjugateGradient::Optimize()
         }
         if(mVerboseLevel>3 && curIteration%mShowSteps==0)
             std::cout<< "   Number of iterations to determine interval "<< numFunctionCalls-numFunctionCallsBefore << std::endl;
-        
+
         if (converged)
             break;
         //printf("Optimium is in between %g %g %g with alphas %g %g %g\n",prevObjective,intermediateObjective,objective,prevAlpha,intermediateAlpha,alpha);
-        
+
         //find optimum in interval given by prev_alpha intermediate_alpha alpha, with intermediateObjective smaller than both interval limits
         v =intermediateAlpha;
         w =intermediateAlpha;
@@ -380,7 +380,7 @@ int NuTo::ConjugateGradient::Optimize()
         BrentsMethodConverged=false;
         numFunctionCallsBefore = numFunctionCalls;
         while(!BrentsMethodConverged)
-        {  
+        {
             objective = mpCallbackHandler->Objective();
             numFunctionCalls++;
             if (numFunctionCalls>mMaxFunctionCalls)
@@ -418,10 +418,10 @@ int NuTo::ConjugateGradient::Optimize()
                         v=u;
                         fv = objective;
                     }
-                    
+
                 }
             }
-            
+
             // Done with housekeeping. Back for another iteration
             double tol1, tol2;
             double xm = 0.5*(alpha+prevAlpha);
@@ -437,7 +437,7 @@ int NuTo::ConjugateGradient::Optimize()
             }
             else
             {
-                if (fabs(e) > tol1) 
+                if (fabs(e) > tol1)
                 {
                     // Construct a trial parabolic t.
                     double r=(intermediateAlpha-w)*(intermediateObjective-fv);
@@ -448,7 +448,7 @@ int NuTo::ConjugateGradient::Optimize()
                     {
                         p = -p;
                     }
-                    q=fabs(q);        
+                    q=fabs(q);
                     double etemp=e;
                     e=d;
                     if (fabs(p) >= fabs(0.5*q*etemp) || p <= q*(prevAlpha-intermediateAlpha) || p >= q*(alpha-intermediateAlpha))
@@ -457,15 +457,15 @@ int NuTo::ConjugateGradient::Optimize()
                     }
                     //The above conditions determine the acceptability of the parabolic t. Here we
                     //take the golden section step into the larger of the two segments.
-                    else 
+                    else
                     {
                         d=p/q;  // Take the parabolic step.
                         u=intermediateAlpha+d;
                         if (u-prevAlpha < tol2 || alpha-u < tol2)
                             d=SIGN(tol1,xm-intermediateAlpha);
                     }
-                } 
-                else 
+                }
+                else
                 {
                     d=golden_sec*(e=(intermediateAlpha >= xm ? prevAlpha - intermediateAlpha : alpha - intermediateAlpha));
                 }
@@ -523,13 +523,13 @@ int NuTo::ConjugateGradient::Optimize()
     return returnValue;
 }
 
-void NuTo::ConjugateGradient::CalcScalingFactors(int& numHessianCalls, FullMatrix<double>& hessianOrig, Eigen::VectorXd& scaleFactorsInv)
+void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, FullMatrix<double>& hessianOrig, Eigen::VectorXd& scaleFactorsInv)
 {
     //calculate hessian for preconditioning
     mpCallbackHandler->Hessian(hessianOrig);
     //hessianOrig.Info();
     numHessianCalls++;
-    
+
     //determine scale factors from the diagonal entries of the hessian
     for (int count=0; count<GetNumParameters(); count++)
     {
@@ -548,7 +548,7 @@ void NuTo::ConjugateGradient::CalcScalingFactors(int& numHessianCalls, FullMatri
 //! @brief ... save the object to a file
 //! @param filename ... filename
 //! @param rType ... type of file, either BINARY, XML or TEXT
-void NuTo::ConjugateGradient::Save ( const std::string &filename, std::string rType)const
+void NuTo::ConjugateGradientNonLinear::Save ( const std::string &filename, std::string rType)const
 {
 	try
 	{
@@ -622,7 +622,7 @@ void NuTo::ConjugateGradient::Save ( const std::string &filename, std::string rT
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::ConjugateGradient::Restore ( const std::string &filename,  std::string rType)
+void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  std::string rType)
 {
     try
     {
@@ -635,7 +635,7 @@ void NuTo::ConjugateGradient::Restore ( const std::string &filename,  std::strin
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradient::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -653,7 +653,7 @@ void NuTo::ConjugateGradient::Restore ( const std::string &filename,  std::strin
                 throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradient::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -671,7 +671,7 @@ void NuTo::ConjugateGradient::Restore ( const std::string &filename,  std::strin
                 throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradient::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -703,14 +703,14 @@ void NuTo::ConjugateGradient::Restore ( const std::string &filename,  std::strin
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
 //!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name ConjugateGradient
-std::string NuTo::ConjugateGradient::GetTypeId()const
+//! @return    class name ConjugateGradientNonLinear
+std::string NuTo::ConjugateGradientNonLinear::GetTypeId()const
 {
-    return std::string("ConjugateGradient");
+    return std::string("ConjugateGradientNonLinear");
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::ConjugateGradient::Info () const
+void NuTo::ConjugateGradientNonLinear::Info () const
 {
     NuTo::Optimizer::InfoBase();
 	std::cout<< "AccuracyGradient" << mAccuracyGradient << std::endl;

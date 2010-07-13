@@ -1,5 +1,5 @@
-#ifndef CONJUGATEGRADIENT_H
-#define CONJUGATEGRADIENT_H
+#ifndef CONJUGATEGRADIENT_NONLINEAR_H
+#define CONJUGATEGRADIENT_NONLINEAR_H
 
 #include <vector>
 
@@ -13,13 +13,13 @@ namespace NuTo
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief ... conjugate gradient optimizer
-class ConjugateGradient : public Optimizer
+class ConjugateGradientNonLinear : public Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    ConjugateGradient(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
+    ConjugateGradientNonLinear(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
     {
         mAccuracyGradient = 1e-6;
         mMinDeltaObjBetweenRestarts = 1e-6;
@@ -35,7 +35,7 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {    
+    {
     	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
     	   & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
            & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
@@ -48,27 +48,27 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 	int Optimize();
-     
+
     inline void SetMaxGradientCalls(int rMaxGradientCalls)
     {
         mMaxGradientCalls = rMaxGradientCalls;
     }
-    
+
     inline void SetMaxHessianCalls(int rMaxHessianCalls)
     {
         mMaxHessianCalls = rMaxHessianCalls;
     }
-    
+
     inline void SetMaxIterations(int rMaxIterations)
     {
         mMaxIterations = rMaxIterations;
     }
-    
+
     inline void SetAccuracyGradient(double rAccuracyGradient)
     {
         mAccuracyGradient = rAccuracyGradient;
     }
-    
+
     inline void SetMinDeltaObjBetweenRestarts(double rMinDeltaObjBetweenRestarts)
     {
         mMinDeltaObjBetweenRestarts = rMinDeltaObjBetweenRestarts;
@@ -78,7 +78,7 @@ public:
     {
         mShowSteps = rShowSteps;
     }
-    
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
     //! @param filename ... filename
@@ -102,7 +102,7 @@ public:
 
     protected:
     void CalcScalingFactors(int& numHessianCalls, FullMatrix<double>& hessianOrig, Eigen::VectorXd& scaleFactorsInv);
-        
+
     double mAccuracyGradient;
     double mMinDeltaObjBetweenRestarts;
     int    mMaxGradientCalls;
@@ -111,4 +111,4 @@ public:
     int    mShowSteps;
 };
 } //namespace NuTo
-#endif // CONJUGATEGRADIENT_H
+#endif // CONJUGATEGRADIENT_NONLINEAR_H
