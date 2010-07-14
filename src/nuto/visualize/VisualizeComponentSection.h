@@ -1,12 +1,12 @@
 /*
- * VisualizeComponentDamage.h
+ * VisualizeComponentSection.h
  *
  *  Created on: Jun 30, 2010
  *      Author: unger3
  */
 
-#ifndef VISUALIZECOMPONENTDAMAGE_H_
-#define VISUALIZECOMPONENTDAMAGE_H_
+#ifndef VISUALIZECOMPONENTSECTION_H_
+#define VISUALIZECOMPONENTSECTION_H_
 
 #include "nuto/visualize/VisualizeComponentBase.h"
 
@@ -15,24 +15,24 @@ namespace NuTo
 //! @author Joerg F. Unger
 //! @date Apr 27, 2010
 //! @brief visualize the nonlocal weights for integration point mIp in element mElement
-class VisualizeComponentDamage : public VisualizeComponentBase
+class VisualizeComponentSection : public VisualizeComponentBase
 {
 public:
-	VisualizeComponentDamage() : VisualizeComponentBase::VisualizeComponentBase()
+	VisualizeComponentSection() : VisualizeComponentBase::VisualizeComponentBase()
 	{}
 
     inline NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const
     {
-    	return NuTo::VisualizeBase::DAMAGE;
+    	return NuTo::VisualizeBase::SECTION;
     }
 
     inline std::string GetComponentName()const
     {
-    	return std::string("Damage");
+    	return std::string("Section");
     }
 
 protected:
 };
 }
 
-#endif /* VISUALIZECOMPONENTDAMAGE_H_ */
+#endif /* VISUALIZECOMPONENTSECTION_H_ */

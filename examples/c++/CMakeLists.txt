@@ -1,5 +1,10 @@
 # $Id$
 
+#myExample can be modified locally, but is never supposed to be added to the subversion repository
+#if it is empty, there is just an empty include
+#it is used for adding working examples locally, which should not be exposed to the public
+INCLUDE(myExample.txt OPTIONAL)
+
 # Operators
 ADD_EXECUTABLE(TestOperators TestOperators.cpp)
 TARGET_LINK_LIBRARIES(TestOperators NuToMath NuToBase ${Boost_LIBRARIES})

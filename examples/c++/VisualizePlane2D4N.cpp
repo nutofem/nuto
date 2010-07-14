@@ -69,13 +69,13 @@ int main()
 	    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
 	    // create section
-	    myStructure.SectionCreate("mySection1","PLANE_STRAIN");
-	    myStructure.SectionSetThickness("mySection1",0.01);
+	    int mySection1 = myStructure.SectionCreate("PLANE_STRAIN");
+	    myStructure.SectionSetThickness(mySection1,0.01);
 
 	    // assign material, section and integration type
 	    myStructure.ElementTotalSetIntegrationType("2D4NGauss4Ip","NOIPDATA");
 	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
-	    myStructure.ElementTotalSetSection("mySection1");
+	    myStructure.ElementTotalSetSection(mySection1);
 
             // visualize element
         myStructure.AddVisualizationComponentDisplacements();

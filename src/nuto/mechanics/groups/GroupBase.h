@@ -111,6 +111,10 @@ public:
 	//! @return newly created united group
 	virtual GroupBase* SymmetricDifference (const NuTo::GroupBase* rOther)const=0;
 
+protected:
+    //! @brief ... name of the group
+	std::string mName;
+
 }; //class definition
 }
 #endif //GroupBase_H

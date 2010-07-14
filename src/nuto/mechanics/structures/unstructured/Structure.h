@@ -230,6 +230,25 @@ public:
 
 #endif //SWIG
 
+    //! @brief import from gmsh
+    //! @param rFileName .. file name
+    //! @param rDOFs .. degrees of freedom for the nodes
+    //! @param rElementData .. element data for the elements to be created
+    //! @param rIPData .. ip data for the integration points to be created
+    void ImportFromGmsh (const std::string& rFileName,
+    		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData);
+
+    //! @brief import from gmsh
+    //! @param rFileName .. file name
+    //! @param rDOFs .. degrees of freedom for the nodes
+    //! @param rElementData .. element data for the elements to be created
+    //! @param rIPData .. ip data for the integration points to be created
+    //! @param vector with the created groupes
+    void ImportFromGmsh (const std::string& rFileName,
+    		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
+    		NuTo::FullMatrix<int>& rElementGroupIds);
+
+
     //*************************************************
     //************ Info routine         ***************
     //**  defined in structures/Structure.cpp *********
@@ -273,6 +292,18 @@ protected:
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
     void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
+
+    #ifndef SWIG
+    //! @brief import from gmsh, do the actual work
+    //! @param rFileName .. file name
+    //! @param rDOFs .. degrees of freedom for the nodes
+    //! @param rElementData .. element data for the elements to be created
+    //! @param rIPData .. ip data for the integration points to be created
+    //! @param vector with the created groupes
+    void ImportFromGmshAux (const std::string& rFileName,
+    		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
+    		bool rAddGroups, std::set<int>& rElementGroupIds);
+#endif //SWIG
 
     boost::ptr_map<int,NodeBase> mNodeMap;
     boost::ptr_map<int,ElementBase> mElementMap;

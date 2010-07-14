@@ -99,11 +99,11 @@ int main()
 	myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25);
 
 	//create section
-	myStructure.SectionCreate("mySection","Plane_Strain");
-	myStructure.SectionSetThickness("mySection",0.5);
+	int mySection = myStructure.SectionCreate("Plane_Strain");
+	myStructure.SectionSetThickness(mySection,0.5);
 
 	//assign constitutive law 
-	myStructure.ElementTotalSetSection("mySection");
+	myStructure.ElementTotalSetSection(mySection);
 	myStructure.ElementTotalSetConstitutiveLaw(myMatDamage);
 
 	//Build nonlocal elements

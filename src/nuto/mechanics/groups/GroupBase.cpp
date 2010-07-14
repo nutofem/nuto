@@ -5,7 +5,8 @@
 
 //! @brief Constructor
 NuTo::GroupBase::GroupBase()
-{}
+{
+}
 
 //! @brief Adds a node to the group, is only implemented for Node groups in group.cpp, otherwise throws an exception
 //! @param rNodePtr Node pointer

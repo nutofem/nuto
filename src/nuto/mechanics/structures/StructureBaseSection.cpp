@@ -6,7 +6,7 @@
 #include "nuto/mechanics/sections/SectionPlane.h"
 
 // create a new section
-void NuTo::StructureBase::SectionCreate(const std::string& rIdent, const std::string& rType)
+int NuTo::StructureBase::SectionCreate(const std::string& rType)
 {
     // convert section type string to upper case
     std::string SectionTypeString;
@@ -30,45 +30,46 @@ void NuTo::StructureBase::SectionCreate(const std::string& rIdent, const std::st
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] invalid section type.");
     }
-    this->SectionCreate(rIdent, SectionType);
+    return this->SectionCreate(SectionType);
 }
 
 // create a new section
-void NuTo::StructureBase::SectionCreate(const std::string& rIdent, Section::eSectionType rType)
+int NuTo::StructureBase::SectionCreate(Section::eSectionType rType)
 {
-    // check if section identifier exists
-    boost::ptr_map<std::string,SectionBase>::iterator it = this->mSectionMap.find(rIdent);
-    if (it == this->mSectionMap.end())
+	//find unused integer id
+    int id(0);
+    boost::ptr_map<int,SectionBase>::iterator it = mSectionMap.find(id);
+    while (it!=mSectionMap.end())
     {
-        // create new section
-        SectionBase* SectionPtr;
-        switch (rType)
-        {
-        case Section::TRUSS:
-            SectionPtr = new SectionTruss();
-            break;
-        case Section::PLANE_STRAIN:
-        case Section::PLANE_STRESS:
-            SectionPtr = new SectionPlane(rType);
-            break;
-        default:
-            throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] invalid section type.");
-        }
+        id++;
+        it = mSectionMap.find(id);
+    }
 
-        // add section to map (insert does not allow const keys!!!!)
-        this->mSectionMap.insert(const_cast<std::string&>(rIdent), SectionPtr);
-    }
-    else
-    {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] Section already exists.");
-    }
+    // create new section
+	SectionBase* SectionPtr;
+	switch (rType)
+	{
+	case Section::TRUSS:
+		SectionPtr = new SectionTruss();
+		break;
+	case Section::PLANE_STRAIN:
+	case Section::PLANE_STRESS:
+		SectionPtr = new SectionPlane(rType);
+		break;
+	default:
+		throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] invalid section type.");
+	}
+
+	// add section to map (insert does not allow const keys!!!!)
+	this->mSectionMap.insert(id, SectionPtr);
+	return id;
 }
 
 // delete an existing section
-void NuTo::StructureBase::SectionDelete(const std::string& rIdent)
+void NuTo::StructureBase::SectionDelete(int rId)
 {
     // find section identifier in map
-    boost::ptr_map<std::string,SectionBase>::iterator it = this->mSectionMap.find(rIdent);
+    boost::ptr_map<int,SectionBase>::iterator it = this->mSectionMap.find(rId);
     if (it == this->mSectionMap.end())
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::SectionDelete] Section does not exist.");
@@ -80,9 +81,9 @@ void NuTo::StructureBase::SectionDelete(const std::string& rIdent)
 }
 
 // get section pointer from section identifier
-NuTo::SectionBase* NuTo::StructureBase::SectionGetSectionPtr(const std::string& rIdent)
+NuTo::SectionBase* NuTo::StructureBase::SectionGetSectionPtr(int rId)
 {
-    boost::ptr_map<std::string,SectionBase>::iterator it = this->mSectionMap.find(rIdent);
+    boost::ptr_map<int,SectionBase>::iterator it = this->mSectionMap.find(rId);
     if (it == this->mSectionMap.end())
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::SectionGetSectionPtr] Section does not exist.");
@@ -91,9 +92,9 @@ NuTo::SectionBase* NuTo::StructureBase::SectionGetSectionPtr(const std::string& 
 }
 
 // get section pointer from section identifier
-const NuTo::SectionBase* NuTo::StructureBase::SectionGetSectionPtr(const std::string& rIdent) const
+const NuTo::SectionBase* NuTo::StructureBase::SectionGetSectionPtr(int rId) const
 {
-    boost::ptr_map<std::string,SectionBase>::const_iterator it = this->mSectionMap.find(rIdent);
+    boost::ptr_map<int,SectionBase>::const_iterator it = this->mSectionMap.find(rId);
     if (it == this->mSectionMap.end())
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::SectionGetSectionPtr] Section does not exist.");
@@ -102,9 +103,9 @@ const NuTo::SectionBase* NuTo::StructureBase::SectionGetSectionPtr(const std::st
 }
 
 // get section identifier from section pointer
-std::string NuTo::StructureBase::SectionGetId(const NuTo::SectionBase* rSectionPtr) const
+int NuTo::StructureBase::SectionGetId(const NuTo::SectionBase* rSectionPtr) const
 {
-    for (boost::ptr_map<std::string,SectionBase>::const_iterator it = mSectionMap.begin(); it!= mSectionMap.end(); it++)
+    for (boost::ptr_map<int,SectionBase>::const_iterator it = mSectionMap.begin(); it!= mSectionMap.end(); it++)
     {
         if (it->second == rSectionPtr)
         {
@@ -118,26 +119,26 @@ std::string NuTo::StructureBase::SectionGetId(const NuTo::SectionBase* rSectionP
 void NuTo::StructureBase::SectionInfo(unsigned short rVerboseLevel) const
 {
     std::cout << "Number of sections: " << this->GetNumSections() << std::endl;
-    for (boost::ptr_map<std::string,SectionBase>::const_iterator it = mSectionMap.begin(); it!= mSectionMap.end(); it++)
+    for (boost::ptr_map<int,SectionBase>::const_iterator it = mSectionMap.begin(); it!= mSectionMap.end(); it++)
     {
         std::cout << "  Section: " << it->first << std::endl;
         it->second->Info(rVerboseLevel);
     }
 }
 
-void NuTo::StructureBase::SectionInfo(const std::string& rIdent, unsigned short rVerboseLevel) const
+void NuTo::StructureBase::SectionInfo(int rId, unsigned short rVerboseLevel) const
 {
-    const SectionBase* SectionPtr = this->SectionGetSectionPtr(rIdent);
-    std::cout << "  Section: " << rIdent << std::endl;
+    const SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
+    std::cout << "  Section: " << rId << std::endl;
     SectionPtr->Info(rVerboseLevel);
 }
 
 // set section cross-section area
-void NuTo::StructureBase::SectionSetArea(const std::string& rIdent, double rArea)
+void NuTo::StructureBase::SectionSetArea(int rId, double rArea)
 {
     try
     {
-        SectionBase* SectionPtr = this->SectionGetSectionPtr(rIdent);
+        SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
         SectionPtr->SetArea(rArea);
     }
     catch (NuTo::MechanicsException& e)
@@ -148,12 +149,12 @@ void NuTo::StructureBase::SectionSetArea(const std::string& rIdent, double rArea
 }
 
 // get section cross-section area
-double NuTo::StructureBase::SectionGetArea(const std::string& rIdent) const
+double NuTo::StructureBase::SectionGetArea(int rId) const
 {
     double area;
     try
     {
-        const SectionBase* SectionPtr = this->SectionGetSectionPtr(rIdent);
+        const SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
         area = SectionPtr->GetArea();
     }
     catch (NuTo::MechanicsException& e)
@@ -165,11 +166,11 @@ double NuTo::StructureBase::SectionGetArea(const std::string& rIdent) const
 }
 
 // set section thickness
-void NuTo::StructureBase::SectionSetThickness(const std::string& rIdent, double rThickness)
+void NuTo::StructureBase::SectionSetThickness(int rId, double rThickness)
 {
     try
     {
-        SectionBase* SectionPtr = this->SectionGetSectionPtr(rIdent);
+        SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
         SectionPtr->SetThickness(rThickness);
     }
     catch (NuTo::MechanicsException& e)
@@ -180,12 +181,12 @@ void NuTo::StructureBase::SectionSetThickness(const std::string& rIdent, double 
 }
 
 // get section thickness
-double NuTo::StructureBase::SectionGetThickness(const std::string& rIdent) const
+double NuTo::StructureBase::SectionGetThickness(int rId) const
 {
     double thickness;
     try
     {
-        const SectionBase* SectionPtr = this->SectionGetSectionPtr(rIdent);
+        const SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
         thickness = SectionPtr->GetThickness();
     }
     catch (NuTo::MechanicsException& e)

@@ -52,20 +52,43 @@ int NuTo::StructureBase::GroupCreate(const std::string& rType)
 
     if (GroupTypeString==std::string("ELEMENTS"))
     {
-        mGroupMap.insert(groupNumber, new NuTo::Group<ElementBase>);
+        GroupCreate(groupNumber,NuTo::Groups::Elements);
     }
     else
     {
 		if (GroupTypeString==std::string("NODES"))
 		{
-			mGroupMap.insert(groupNumber, new NuTo::Group<NodeBase>);
+			GroupCreate(groupNumber,NuTo::Groups::Nodes);
 		}
 		else
 		{
 			throw MechanicsException("[NuTo::StructureBase::GroupCreate] Group type not implemented.");
 		}
     }
+
     return groupNumber;
+}
+
+//! @brief ... Creates a group for the structure
+//! @param ... rIdent identifier for the group
+//! @param ... rType  type of the group
+void NuTo::StructureBase::GroupCreate(int id, NuTo::Groups::eGroupId rEnumType)
+{
+	boost::ptr_map<int,GroupBase>::iterator it = mGroupMap.find(id);
+	if (it!=mGroupMap.end())
+		throw MechanicsException("[NuTo::StructureBase::GroupCreate] Group id already exists.");
+
+    switch(rEnumType)
+    {
+    case NuTo::Groups::Elements:
+    	mGroupMap.insert(id, new NuTo::Group<ElementBase>);
+    	break;
+    case NuTo::Groups::Nodes:
+    	mGroupMap.insert(id, new NuTo::Group<NodeBase>);
+    	break;
+    default:
+    	throw MechanicsException("[NuTo::StructureBase::GroupCreate] Group type not implemented.");
+    }
 }
 
 //! @brief ... Deletes a group from the structure

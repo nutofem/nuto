@@ -31,12 +31,14 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include "nuto/visualize/VisualizeComponentConstitutive.h"
 #include "nuto/visualize/VisualizeComponentDamage.h"
 #include "nuto/visualize/VisualizeComponentDisplacement.h"
 #include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
+#include "nuto/visualize/VisualizeComponentSection.h"
 #endif // ENABLE_VISUALIZE
 
 
@@ -147,6 +149,17 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStress());
 }
 
+//! @brief ... Add section to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentSection()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentSection());
+}
+//! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentConstitutive()
+{
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentConstitutive());
+}
+
 //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
 //! @param rElementId ... Element id
 //! @param rIp ... local ip number
@@ -229,6 +242,12 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
             Visualize.DefineCellDataTensor(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+            Visualize.DefineCellDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::SECTION:
+            Visualize.DefineCellDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::CONSTITUTIVE:
             Visualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
         default:

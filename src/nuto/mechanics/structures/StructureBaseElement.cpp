@@ -261,11 +261,11 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
 //! @brief sets the section of a single element
 //! @param rElementIdent identifier for the element
 //! @param rConstitutiveLawIdent identifier for the section
-void NuTo::StructureBase::ElementSetSection(int rElementId, const std::string& rSectionIdent)
+void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
 {
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
-    boost::ptr_map<std::string,SectionBase>::iterator itSection = mSectionMap.find(rSectionIdent);
+    boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
     if (itSection==mSectionMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementSetSection] Section with the given identifier does not exist.");
 
@@ -293,7 +293,7 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, const std::string& r
 //! @brief sets the section of a group of elements
 //! @param rGroupIdent identifier for the group of elements
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, const std::string& rSectionIdent)
+void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId)
 {
 	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
@@ -303,7 +303,7 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, const std::str
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-	boost::ptr_map<std::string,SectionBase>::iterator itSection = mSectionMap.find(rSectionIdent);
+	boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
     if (itSection==mSectionMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Section with the given identifier does not exist.");
 
@@ -333,9 +333,9 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, const std::str
 
 //! @brief sets the section for all elements
 //! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementTotalSetSection(const std::string& rSectionIdent)
+void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
 {
-    boost::ptr_map<std::string,SectionBase>::iterator itSection = mSectionMap.find(rSectionIdent);
+    boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
     if (itSection==mSectionMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Section with the given identifier does not exist.");
 

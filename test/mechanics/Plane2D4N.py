@@ -46,13 +46,13 @@ myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
 #create section
-myStructure.SectionCreate("mySection","Plane_Strain")
-myStructure.SectionSetThickness("mySection",1)
+mySection = myStructure.SectionCreate("Plane_Strain")
+myStructure.SectionSetThickness(mySection,1)
 
 #assign constitutive law 
 #myStructure.ElementSetIntegrationType(myElement1,"3D8NGauss1Ip")
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
-myStructure.ElementSetSection(myElement1,"mySection")
+myStructure.ElementSetSection(myElement1,mySection)
 
 
 #set displacements of right node

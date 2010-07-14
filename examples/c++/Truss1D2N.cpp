@@ -21,8 +21,8 @@ int main()
 	NuTo::Structure myStructure(1);
 
 	// create section
-	myStructure.SectionCreate("Section1","Truss");
-	myStructure.SectionSetArea("Section1", Area);
+	int Section1 = myStructure.SectionCreate("Truss");
+	myStructure.SectionSetArea(Section1, Area);
 
 	// create material law
 	int Material1 = myStructure.ConstitutiveLawCreate("LinearElastic");
@@ -45,7 +45,7 @@ int main()
 		elementIncidence(0, 0) = element;
 		elementIncidence(1, 0) = element + 1;
 		myStructure.ElementCreate(element, "Truss1D2N", elementIncidence);
-		myStructure.ElementSetSection(element,"Section1");
+		myStructure.ElementSetSection(element,Section1);
 		myStructure.ElementSetConstitutiveLaw(element,Material1);
 	}
 

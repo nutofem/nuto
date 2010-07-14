@@ -27,7 +27,7 @@ public:
 
     inline std::string GetComponentName()const
     {
-    	return std::string("ENGINEERING_PLASTIC_STRAIN");
+    	return std::string("EngineeringPlasticStrain");
     }
 
 protected:

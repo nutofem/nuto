@@ -497,7 +497,29 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             }
         }
         break;
-        default:
+        case NuTo::VisualizeBase::CONSTITUTIVE:
+        {
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                int constitutiveId = mStructure->ConstitutiveLawGetId(GetConstitutiveLaw(theIp));
+
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), constitutiveId);
+            }
+        }
+        break;
+        case NuTo::VisualizeBase::SECTION:
+        {
+            int sectionId = mStructure->SectionGetId(GetSection());
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), sectionId);
+            }
+        }
+        break;
+         default:
             throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported datatype for visualization.");
         }
         WhatIter++;

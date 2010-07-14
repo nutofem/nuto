@@ -23,7 +23,7 @@ public:
 
     inline std::string GetComponentName()const
     {
-    	return std::string("ENGINEERING_STRAIN");
+    	return std::string("EngineeringStrain");
     }
 };
 }

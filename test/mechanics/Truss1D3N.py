@@ -45,8 +45,8 @@ myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,3)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 
 #create section
-myStructure.SectionCreate("mySection1","TRUSS")
-myStructure.SectionSetArea("mySection1",0.01)
+mySection1 = myStructure.SectionCreate("TRUSS")
+myStructure.SectionSetArea(mySection1,0.01)
 
 #assign constitutive law and section to elements
 #myStructure.ElementSetIntegrationType("myElement1","1D2NGauss2Ip")
@@ -55,7 +55,7 @@ myStructure.SectionSetArea("mySection1",0.01)
 #myStructure.ElementSetIntegrationType(myElement1,"1D2NConst3Ip")
 #myStructure.ElementSetIntegrationType(myElement1,"1D2NConst100Ip")
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
-myStructure.ElementSetSection(myElement1,"mySection1")
+myStructure.ElementSetSection(myElement1,mySection1)
 
 #set displacements of right node
 myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(1,1,(0.1,)))

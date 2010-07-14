@@ -25,7 +25,7 @@ public:
 
     inline std::string GetComponentName()const
     {
-    	return std::string("DISPLACEMENTS");
+    	return std::string("Displacements");
     }
 
 };

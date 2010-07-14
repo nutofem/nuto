@@ -82,6 +82,12 @@ public:
     //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentEngineeringStress();
 
+    //! @brief ... Add section id to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentSection();
+
+    //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentConstitutive();
+
     //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
     //! @param rElementId ... Element id
     //! @param rIp ... local ip number
@@ -296,16 +302,16 @@ public:
     //! @brief modifies the section of a single element
     //! @param rElementIdent element number
     //! @param rSectionIdent identifier for the section
-    void ElementSetSection(int rElementId, const std::string& rSectionIdent);
+    void ElementSetSection(int rElementId, int rSectionId);
 
     //! @brief modifies the section of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rSectionId identifier for the section
-    void ElementGroupSetSection(int rGroupIdent, const std::string& rSectionIdent);
+    void ElementGroupSetSection(int rGroupIdent, int rSectionId);
 
     //! @brief modifies the section of a all elements
     //! @param rSectionIdent identifier for the section
-    void ElementTotalSetSection(const std::string& rSectionIdent);
+    void ElementTotalSetSection(int rSectionId);
 
 #ifndef SWIG
     //! @brief returns the enum of string identifier for an integration type
@@ -675,31 +681,31 @@ public:
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
-    void SectionCreate(const std::string& rIdent, const std::string& rType);
+    int SectionCreate(const std::string& rType);
 
     //! @brief ... delete an existing section
     //! @param rIdent ... section identifier
-    void SectionDelete(const std::string& rIdent);
+    void SectionDelete(int rId);
 
     //! @brief ... set section cross-section area
     //! @param rIdent ... section identifier
     //! @param rArea ... cross-section area
-    void SectionSetArea(const std::string& rIdent, double rArea);
+    void SectionSetArea(int rId, double rArea);
 
     //! @brief ... get section cross-section area
     //! @param rIdent ... section identifier
     //! @return section cross-section area
-    double SectionGetArea(const std::string& rIdent) const;
+    double SectionGetArea(int rId) const;
 
     //! @brief ... set section thickness
     //! @param rIdent ... section identifier
     //! @param rThickness ... cross-section thickness
-    void SectionSetThickness(const std::string& rIdent, double rThickness);
+    void SectionSetThickness(int rId, double rThickness);
 
     //! @brief ... get section thickness
     //! @param rIdent ... section identifier
     //! @return section thickness
-    double SectionGetThickness(const std::string& rIdent) const;
+    double SectionGetThickness(int rId) const;
 
     //! @brief ... print information about all sections
     //! @param rVerboseLevel ... controls the verbosity of the information
@@ -708,28 +714,28 @@ public:
     //! @brief ... print information of a single section
     //! @param rIdent ... section identifier
     //! @param rVerboseLevel ... controls the verbosity of the information
-    void SectionInfo(const std::string& rIdent, unsigned short rVerboseLevel) const;
+    void SectionInfo(int rId, unsigned short rVerboseLevel) const;
 
 #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
-    void SectionCreate(const std::string& rIdent, Section::eSectionType rType);
+    int SectionCreate(Section::eSectionType rType);
 
     //! @brief ... get the pointer to a section from the section identifier
     //! @param rIdent ... section identifier
     //! @return ... pointer to the section
-    SectionBase* SectionGetSectionPtr(const std::string& rIdent);
+    SectionBase* SectionGetSectionPtr(int rId);
 
     //! @brief ... get the pointer to a section from the section identifier
     //! @param rIdent ... section identifier
     //! @return ... pointer to the section
-    const SectionBase* SectionGetSectionPtr(const std::string& rIdent) const;
+    const SectionBase* SectionGetSectionPtr(int rId) const;
 
     //! @brief ... get the identifier of an section from the pointer to section object
     //! @param rSectionPtr ... pointer to section object
     //! @return ... section identifier
-    std::string SectionGetId(const SectionBase* rSectionPtr) const;
+    int SectionGetId(const SectionBase* rSectionPtr) const;
 #endif
 
     //*************************************************
@@ -761,6 +767,11 @@ public:
     //! @param ... rIdent identifier for the group
     //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
     int GroupCreate(const std::string& rType);
+
+    //! @brief ... Creates a group for the structure
+    //! @param ... rIdent identifier for the group
+    //! @param ... rType  type of the group
+    void GroupCreate(int id, NuTo::Groups::eGroupId rEnumType);
 
     //! @brief ... Deletes a group from the structure
     //! @param ... rIdent identifier for the group
@@ -858,7 +869,7 @@ protected:
 
     //! @brief ... map storing the section name and the pointer to the section object
     //! @sa SectionBase
-    boost::ptr_map<std::string,SectionBase> mSectionMap;
+    boost::ptr_map<int,SectionBase> mSectionMap;
 
     //! @brief ... a mapping from the enums of the predefined integration types to their corresponding string name
     std::vector<std::string> mMappingIntEnum2String;

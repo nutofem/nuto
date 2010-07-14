@@ -31,6 +31,6 @@ int NuTo::VisualizeComponentNonlocalWeight::GetIp()const
 std::string NuTo::VisualizeComponentNonlocalWeight::GetComponentName()const
 {
 	std::stringstream out;
-	out << "NONLOCAL_WEIGHT_ELEM_" << mElementId << "_IP_" << mIp;
+	out << "NonlocalWeight_Element" << mElementId << "_Ip_" << mIp;
 	return out.str();
 }

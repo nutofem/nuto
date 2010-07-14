@@ -33,20 +33,20 @@ error = False
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 structure=nuto.Structure(3)
 
-structure.SectionCreate("Section 1","Truss")
-structure.SectionSetArea("Section 1", 3)
-area = structure.SectionGetArea("Section 1")
+Section1 = structure.SectionCreate("Truss")
+structure.SectionSetArea(Section1, 3)
+area = structure.SectionGetArea(Section1)
 if(printResult):
-    structure.SectionInfo("Section 1", 0)
+    structure.SectionInfo(Section1, 0)
 if(area != 3):
     print '[' + system,sys.argv[0] + '] : cross-section area is not correct.'
     error = True
 
-structure.SectionCreate("Section 2","Plane_Strain")
-structure.SectionSetThickness("Section 2", 5)
-thickness = structure.SectionGetThickness("Section 2")
+Section2 = structure.SectionCreate("Plane_Strain")
+structure.SectionSetThickness(Section2, 5)
+thickness = structure.SectionGetThickness(Section2)
 if(printResult):
-    structure.SectionInfo("Section 2", 0)
+    structure.SectionInfo(Section2, 0)
 if(thickness != 5):
     print '[' + system,sys.argv[0] + '] : section thickness is not correct.'
     error = True

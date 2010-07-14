@@ -84,16 +84,16 @@ try
 
 	//create section
 	double thickness(0.5);
-	myStructure.SectionCreate("mySection","Plane_Strain");
-	myStructure.SectionSetThickness("mySection",thickness);
-	myStructure.SectionCreate("mySectionweak","Plane_Strain");
-	myStructure.SectionSetThickness("mySectionweak",0.99*thickness);
+	int mySection = myStructure.SectionCreate("Plane_Strain");
+	myStructure.SectionSetThickness(mySection,thickness);
+	int mySectionweak = myStructure.SectionCreate("Plane_Strain");
+	myStructure.SectionSetThickness(mySectionweak,0.99*thickness);
 
 	//assign constitutive law 
-	myStructure.ElementTotalSetSection("mySection");
+	myStructure.ElementTotalSetSection(mySection);
 	int weakElement((NumElementX-1)/2);
 	//std::cout << "weak element " << weakElement << std::endl;
-	myStructure.ElementSetSection(weakElement,"mySectionweak");
+	myStructure.ElementSetSection(weakElement,mySectionweak);
 	myStructure.ElementTotalSetConstitutiveLaw(myMatDamage);
 
 	//Build nonlocal elements
@@ -119,7 +119,7 @@ try
     double maxDisp(200*fct/YoungsModulus*lX);
     double deltaMaxDisp(0.5*fct/YoungsModulus*lX);
     double curDisp(0.80*fct/YoungsModulus*lX);
-	char cDummy[100];
+	//char cDummy[100];
 
 	#ifdef ENABLE_VISUALIZE
     myStructure.AddVisualizationComponentDisplacements();
