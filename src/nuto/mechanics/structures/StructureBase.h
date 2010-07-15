@@ -199,18 +199,18 @@ public:
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const;
 
     //! @brief calculate the internal force vector for a node group of nodes
     //! @param rIdent ... group id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeGroupForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeGroupInternalForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
 
 #ifndef SWIG
     //! @brief calculate the internal force vector for a node
     //! @param rNodePtr  node for which this has to be calculated
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
 #endif //SWIG
 
 //*************************************************

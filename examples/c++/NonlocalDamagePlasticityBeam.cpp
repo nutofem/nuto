@@ -237,7 +237,7 @@ try
 
 			//store residual force
 			NuTo::FullMatrix<double> SupportingForce;
-			myStructure.NodeGroupForce(RightSupport,SupportingForce);
+			myStructure.NodeGroupInternalForce(RightSupport,SupportingForce);
 			NuTo::FullMatrix<double> SinglePlotData(1,6);
 			SinglePlotData(0,0) = curDisp;
 			SinglePlotData(0,1) = SupportingForce(0,0)/(thickness*lY);

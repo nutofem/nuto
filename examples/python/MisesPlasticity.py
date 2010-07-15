@@ -164,7 +164,7 @@ for i in range(0, num_steps):
     myStructure.ElementTotalUpdateStaticData()
     
     #boundary force
-    myStructure.NodeGroupGetInternalForce(NodeGroupRightBoundary, boundaryForceVector)
+    myStructure.NodeGroupInternalForce(NodeGroupRightBoundary, boundaryForceVector)
     print "boundary force vector"
     boundaryForceVector.Info()
     print ""

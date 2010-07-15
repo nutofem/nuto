@@ -133,24 +133,7 @@ public:
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
 
-#ifndef SWIG
-    //! @brief calculates the internal force vector for a given node
-    //! @param rNode node pointer
-    //! @param rNodeForce return value
-    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const;
-#endif//
-
-    //! @brief calculates the internal force vector for a given node
-    //! @param rNodeId node id
-    //! @param rNodeForce return value
-    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const;
-
-    //! @brief calculates the internal force vector for a given node group
-    //! @param rGroupIdent group identifier
-    //! @param rNodeForce return value
-    void NodeGroupGetInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce)const;
-
-    //*************************************************
+//*************************************************
 //************ Element routines     ***************
 //**  defined in structures/StructureElement.cpp **
 //*************************************************

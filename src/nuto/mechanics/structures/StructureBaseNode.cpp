@@ -151,12 +151,12 @@ int NuTo::StructureBase::NodeGetNumberActiveDofs()const
 //! @brief calculate the internal force vector for a node
 //! @param rId ... node id
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const
 {
 	try
 	{
         const NodeBase* nodePtr = NodeGetNodePtr(rId);
-        NodeForce(nodePtr,rNodeForce);
+        NodeInternalForce(nodePtr,rNodeForce);
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -172,7 +172,7 @@ void NuTo::StructureBase::NodeForce(int rId, NuTo::FullMatrix<double>& rNodeForc
 //! @brief calculate the internal force vector for a node group of nodes
 //! @param rGroupIdent ... group identifier
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeGroupForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce) const
 {
 	boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
@@ -192,19 +192,19 @@ void NuTo::StructureBase::NodeGroupForce(int rGroupIdent, NuTo::FullMatrix<doubl
     {
 		try
 		{
-			NodeForce(*itNode, nodeForceLocal);
+			NodeInternalForce(*itNode, nodeForceLocal);
 			if (nodeForceLocal.GetNumRows()!=rNodeForce.GetNumRows())
 				throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] The number of displacement components is not equal for all members of the group.");
 			rNodeForce+=nodeForceLocal;
 		}
 		catch(NuTo::MechanicsException & b)
 		{
-			b.AddMessage("[NuTo::StructureBase::NodeGradientInternalPotential] Error getting gradient of internal potential.");
+			b.AddMessage("[NuTo::StructureBase::NodeGroupForce] Error getting gradient of internal potential.");
 			throw b;
 		}
 		catch(...)
 		{
-			throw MechanicsException("[NuTo::StructureBase::NodeGradientInternalPotential] Error getting gradient of internal potential (unspecified exception).");
+			throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] Error getting gradient of internal potential (unspecified exception).");
 		}
     }
 }
@@ -212,7 +212,7 @@ void NuTo::StructureBase::NodeGroupForce(int rGroupIdent, NuTo::FullMatrix<doubl
 //! @brief calculate the internal force vector for a node
 //! @param rNodePtr  node for which this has to be calculated
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const
 {
 	try
 	{
