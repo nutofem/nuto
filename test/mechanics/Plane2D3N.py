@@ -11,8 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-#printResult = True
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -33,129 +32,130 @@ error = False
 myStructure = nuto.Structure(2)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(-1,-1)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(+2,-1)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(+2,+1)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(-1,+1)))
+myStructure.NodesCreate("displacements", nuto.DoubleFullMatrix(2,8,(	 
+ 0 ,  0 ,
+10 ,  0 ,
+ 2 ,  2 ,
+ 8 ,  3 ,
+ 4 ,  7 ,
+ 8 ,  7 ,
+ 0 , 10 ,
+10 , 10	)))
 
 #create element
-myStructure.GroupCreate("ElementGroup","Elements")
-myElement1 = myStructure.ElementCreate("PLANE2D3N",nuto.IntFullMatrix(3,1,(myNode1,myNode2,myNode3)))
-myStructure.GroupAddElement("ElementGroup",myElement1)
-myElement2 = myStructure.ElementCreate("PLANE2D3N",nuto.IntFullMatrix(3,1,(myNode1,myNode3,myNode4)))
-myStructure.GroupAddElement("ElementGroup",myElement2)
+elementIncidence = nuto.IntFullMatrix(3,10,(	
+0,1,3,
+0,2,6,
+0,3,2,
+1,7,3,
+2,4,6,
+2,3,4,
+3,5,4,
+3,7,5,
+4,5,6,
+5,7,6 ))
+myStructure.ElementsCreate("PLANE2D3N", elementIncidence)
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
-myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
+myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.2)
 
 #create section
-myStructure.SectionCreate("mySection","Plane_Strain")
-myStructure.SectionSetThickness("mySection",1)
+mySection = myStructure.SectionCreate("Plane_Strain")
+myStructure.SectionSetThickness(mySection,1)
 
 #assign constitutive law 
-#myStructure.ElementSetIntegrationType(myElement1,"3D8NGauss1Ip")
-myStructure.ElementGroupSetConstitutiveLaw("ElementGroup",myMatLin)
-myStructure.ElementGroupSetSection("ElementGroup","mySection")
-
+myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
+myStructure.ElementTotalSetSection(mySection)
 
 #set displacements of right node
-myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
-myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
+myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+myStructure.ConstraintSetDisplacementNode(6, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+myStructure.ConstraintSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(1,0)), 1.0)
+myStructure.ConstraintSetDisplacementNode(7, nuto.DoubleFullMatrix(2,1,(1,0)), 1.0)
 
-#calculate element stiffness matrix
-Ke = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-colIndex = nuto.IntFullMatrix(0,0)
-myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
-if (printResult):
-    print "Ke"
-    Ke.Info()
+myStructure.SetVerboseLevel(10)
+myStructure.Info()
+# start analysis
+# build global dof numbering
+myStructure.NodeBuildGlobalDofs()
 
-#correct stiffness matrix
-if createResult:
-   print pathToResultFiles+"Stiffness.txt"
-   Ke.WriteToFile(pathToResultFiles+"Stiffness.txt"," ","#Correct result","  ")
-else:
-   KeCorrect = nuto.DoubleFullMatrix(24,24)
-   KeCorrect.ReadFromFile(pathToResultFiles+"Stiffness.txt",1," ")
-   if (printResult):
-       print "KeCorrect"
-       KeCorrect.Info()
-   if ((Ke-KeCorrect).Abs().Max()[0]>1e-8):
-       print '[' + system,sys.argv[0] + '] : stiffness is not correct.'
-       error = True;
+# build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
+dispForceVector = nuto.DoubleFullMatrix()
+myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 
-#calculate internal force vector
-Fi = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
-if (printResult):
-    print "Internal Force"
-    Fi.Info()
+# build global external load vector
+extForceVector = nuto.DoubleFullMatrix()
+myStructure.BuildGlobalExternalLoadVector(extForceVector)
 
-#correct resforce vector
-if createResult:
-    print pathToResultFiles+"Internalforce.txt"
-    Fi.WriteToFile(pathToResultFiles+"Internalforce.txt"," ","#Correct result","  ")
-else:
-    FiCorrect = nuto.DoubleFullMatrix(24,1)
-    FiCorrect.ReadFromFile(pathToResultFiles+"Internalforce.txt",1," ")
-    if (printResult):
-        print "FiCorrect"
-        FiCorrect.Info()
-    if ((Fi-FiCorrect).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : internal force is not correct.'
+# calculate right hand side
+rhsVector = dispForceVector + extForceVector
+
+# solve
+mySolver = nuto.SparseDirectSolverMUMPS()
+displacementVector = nuto.DoubleFullMatrix()
+stiffnessMatrix.SetOneBasedIndexing()
+mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
+
+# write displacements to node
+myStructure.NodeMergeActiveDofValues(displacementVector)
+
+# calculate residual
+intForceVector = nuto.DoubleFullMatrix()
+myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
+residualVector = extForceVector - intForceVector
+if ((residualVector).Abs().Max()[0]>1e-8):
+        print '[' + system,sys.argv[0] + '] : residual force vector is not zero.'
         error = True;
 
 #calculate engineering strain of myelement1 at all integration points
 #the size the matrix is not important and reallocated within the procedure
 EngineeringStrain = nuto.DoubleFullMatrix(6,1)
-myStructure.ElementGetEngineeringStrain(myElement1, EngineeringStrain)
-
 #correct strain
-EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,3,(
-0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0,
-0.0,0.1,0,0.05,0,0
+EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,1,(
+0.1,-0.025,0,0.0,0,0
+))
+EngineeringStress = nuto.DoubleFullMatrix(6,1)
+EngineeringStressCorrect = nuto.DoubleFullMatrix(6,1,(
+1.0416666666666667,0.0,0.2083333333333333,0.0,0.0,0.0
 ))
 
-if (printResult):
-    print "EngineeringStrainCorrect"
-    EngineeringStrainCorrect.Info()
-    print "EngineeringStrain"
-    EngineeringStrain.Info()
+for element in range(0,8):
+ 	myStructure.ElementGetEngineeringStrain(element, EngineeringStrain)
 
-if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : strain is not correct.'
-        error = True;
+	if (printResult):
+	    print "EngineeringStrainCorrect"
+	    EngineeringStrainCorrect.Info()
+	    print "EngineeringStrain"
+	    EngineeringStrain.Info()
 
-#calculate engineering strain of myelement1 at all integration points
-EngineeringStress = nuto.DoubleFullMatrix(6,3)
-myStructure.ElementGetEngineeringStress(myElement1, EngineeringStress)
-#correct stress
-EngineeringStressCorrect = nuto.DoubleFullMatrix(6,3,(
-0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0,
-0.4,1.2,0.4,0.2,0,0
-))
+	if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
+        	print '[' + system,sys.argv[0] + '] : strain is not correct.'
+        	error = True;
 
-if (printResult):
-    print "EngineeringStressCorrect"
-    EngineeringStressCorrect.Info()
-    print "EngineeringStress"
-    EngineeringStress.Info()
+	#calculate engineering strain at all integration points
+	myStructure.ElementGetEngineeringStress(element, EngineeringStress)
+	#correct stress
 
-if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : stress is not correct.'
-        error = True;
+	if (printResult):
+	    print "EngineeringStressCorrect"
+	    EngineeringStressCorrect.Info()
+	    print "EngineeringStress"
+	    EngineeringStress.Info()
+
+	if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
+        	print '[' + system,sys.argv[0] + '] : stress is not correct.'
+        	error = True;
+
 
 # visualize results
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile("Plane2D3N.vtk")
+myStructure.ExportVtkDataFile( "Plane2D3N.vtk")
 
 if (error):
     sys.exit(-1)

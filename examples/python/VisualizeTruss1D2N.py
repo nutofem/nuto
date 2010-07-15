@@ -19,21 +19,24 @@ try:
     myElement2 = myStructure.ElementCreate("Truss1D2N",nuto.IntFullMatrix(2,1,(myNode3,myNode2)))
 
     #create constitutive law
-    myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic")
-    myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",10)
-    myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0.1)
+    myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
+    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 
     #create section
-    myStructure.SectionCreate("mySection1","1D")
-    myStructure.SectionSetArea("mySection1",0.01)
+    mySection1 = myStructure.SectionCreate ("TRUSS")
+    myStructure.SectionSetArea(mySection1,0.01)
 
-    myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip")
-    myStructure.ElementSetConstitutiveLaw(myElement1,"myMatLin")
-    myStructure.ElementSetSection(myElement1,"mySection1")
-    myStructure.ElementSetConstitutiveLaw(myElement2,"myMatLin")
-    myStructure.ElementSetSection(myElement2,"mySection1")
+    myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA")
+    myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
+    myStructure.ElementSetSection(myElement1,mySection1)
+    myStructure.ElementSetConstitutiveLaw(myElement2,myMatLin)
+    myStructure.ElementSetSection(myElement2,mySection1)
 
     #visualize element
-    myStructure.ExportVtkDataFile("Truss1D2N.vtk","displacements engineering_strain engineering_stress")
+    myStructure.AddVisualizationComponentDisplacements()
+    myStructure.AddVisualizationComponentEngineeringStrain()
+    myStructure.AddVisualizationComponentEngineeringStress()
+    myStructure.ExportVtkDataFile("Truss1D2N.vtk")
 except nuto.Exception, e:
     print e.ErrorMessage()

@@ -22,9 +22,9 @@ Force = 1.
 myStructure = nuto.Structure(3)
 
 # create material law
-myStructure.ConstitutiveLawCreate("Material1","LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus("Material1", YoungsModulus)
-myStructure.ConstitutiveLawSetPoissonsRatio("Material1", PoissonsRatio)
+Material1 = myStructure.ConstitutiveLawCreate("LinearElastic")
+myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus)
+myStructure.ConstitutiveLawSetPoissonsRatio(Material1, PoissonsRatio)
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullMatrix(3,1)
@@ -57,7 +57,7 @@ for zCount in range (0, NumElementsZ):
             #print "element: " + str(element) + " incidence: "
             #elementIncidence.Info()
             myStructure.ElementCreate(element, "Brick8N", elementIncidence)
-            myStructure.ElementSetConstitutiveLaw(element,"Material1")
+            myStructure.ElementSetConstitutiveLaw(element,Material1)
             element += 1
 
 # boundary conditions
@@ -161,4 +161,7 @@ residualVector = extForceVector - intForceVector
 print "residual: " + str(residualVector.Norm())
 
 # visualize results
-myStructure.ExportVtkDataFile("Brick8N.vtk","displacements engineering_strain engineering_stress")
+myStructure.AddVisualizationComponentDisplacements()
+myStructure.AddVisualizationComponentEngineeringStrain()
+myStructure.AddVisualizationComponentEngineeringStress()
+myStructure.ExportVtkDataFile("Brick8N.vtk")

@@ -47,7 +47,7 @@ int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints()const
 //! @return weight of integration points
 double NuTo::IntegrationType2D3NGauss3Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    return 1/3.;
+    return 1/6.;
 }
 
 //! @brief returns a string with the identifier of the integration type

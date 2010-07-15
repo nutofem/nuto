@@ -34,7 +34,11 @@ NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)
     if (it!=mNodeMap.end())
         return it->second;
     else
-        throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with the given id does not exist.");
+    {
+    	std::stringstream out;
+    	out << rIdent;
+    	throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
+    }
 }
 
 //! @brief a reference to a node
@@ -46,7 +50,11 @@ const NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)const
     if (it!=mNodeMap.end())
         return it->second;
     else
-        throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with the given id does not exist.");
+    {
+    	std::stringstream out;
+    	out << rIdent;
+    	throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
+    }
 }
 
 //! @brief gives the identifier of a node

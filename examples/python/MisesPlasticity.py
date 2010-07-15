@@ -1,8 +1,10 @@
 import nuto
 import sys
 import os
-import numpy
-import Gnuplot
+#import numpy
+#import Gnuplot
+
+printResult = False
 
 #create structure
 myStructure = nuto.Structure(3)
@@ -18,24 +20,24 @@ myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,( 0, 
 myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1, 0, 0)))
 
 #create element
-myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullMatrix(8,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)),"ConstitutiveLawElement_StaticData")
+myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullMatrix(8,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)),"ConstitutiveLawIp","StaticData")
 
 #create constitutive law
-myStructure.ConstitutiveLawCreate("myMat","MisesPlasticity")
+myMat = myStructure.ConstitutiveLawCreate("MisesPlasticity")
 #myStructure.ConstitutiveLawCreate("myMat","LinearElastic")
 
-myStructure.ConstitutiveLawSetYoungsModulus("myMat",100)
-myStructure.ConstitutiveLawSetPoissonsRatio("myMat",0.0)
-myStructure.ConstitutiveLawSetInitialYieldStrength("myMat",100)
-myStructure.ConstitutiveLawAddYieldStrength("myMat",0.25,150)
-myStructure.ConstitutiveLawAddYieldStrength("myMat",0.3,150)
-#myStructure.ConstitutiveLawSetInitialHardeningModulus("myMat",0)
-#myStructure.ConstitutiveLawAddHardeningModulus("myMat",0.5,0)
-#myStructure.ConstitutiveLawAddHardeningModulus("myMat",0.2,1)
+myStructure.ConstitutiveLawSetYoungsModulus(myMat,100)
+myStructure.ConstitutiveLawSetPoissonsRatio(myMat,0.0)
+myStructure.ConstitutiveLawSetInitialYieldStrength(myMat,100)
+myStructure.ConstitutiveLawAddYieldStrength(myMat,0.25,150)
+myStructure.ConstitutiveLawAddYieldStrength(myMat,0.3,150)
+#myStructure.ConstitutiveLawSetInitialHardeningModulus(myMat,0)
+#myStructure.ConstitutiveLawAddHardeningModulus(myMat,0.5,0)
+#myStructure.ConstitutiveLawAddHardeningModulus(myMat,0.2,1)
 myStructure.ConstitutiveLawInfo(10)
 
 #assign constitutive law 
-myStructure.ElementSetConstitutiveLaw(myElement1,"myMat")
+myStructure.ElementSetConstitutiveLaw(myElement1,myMat)
 
 #apply constraints of left boundary
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
@@ -51,22 +53,22 @@ myStructure.ConstraintSetDisplacementNode(myNode6, direction, 0)
 myStructure.ConstraintSetDisplacementNode(myNode7, direction, 0)
 
 #create group of nodes at right boundary
-myStructure.GroupCreate("NodeGroupRightBoundary","Nodes")
-myStructure.GroupAddNode("NodeGroupRightBoundary",myNode1)
-myStructure.GroupAddNode("NodeGroupRightBoundary",myNode4)
-myStructure.GroupAddNode("NodeGroupRightBoundary",myNode5)
-myStructure.GroupAddNode("NodeGroupRightBoundary",myNode8)
+NodeGroupRightBoundary = myStructure.GroupCreate("Nodes")
+myStructure.GroupAddNode(NodeGroupRightBoundary,myNode1)
+myStructure.GroupAddNode(NodeGroupRightBoundary,myNode4)
+myStructure.GroupAddNode(NodeGroupRightBoundary,myNode5)
+myStructure.GroupAddNode(NodeGroupRightBoundary,myNode8)
 
 #apply displacement at right boundary
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
-constraint_right_side = myStructure.ConstraintSetDisplacementNodeGroup("NodeGroupRightBoundary", direction, 0)
+constraint_right_side = myStructure.ConstraintSetDisplacementNodeGroup(NodeGroupRightBoundary, direction, 0)
 
 #initialize gnuplot
-g = Gnuplot.Gnuplot(debug=1)
-g.title('stress strain curve')   # (optional)
-g("set style line 1 lt 1 lw 1.5 pt 5 ps 0.5 lc rgb 'red'")
-g("set style line 2 lt 1 lw 1.5 pt 7 ps 0.5 lc rgb 'blue'")
-g("set yrange [0:170]")
+#g = Gnuplot.Gnuplot(debug=1)
+#g.title('stress strain curve')   # (optional)
+#g("set style line 1 lt 1 lw 1.5 pt 5 ps 0.5 lc rgb 'red'")
+#g("set style line 2 lt 1 lw 1.5 pt 7 ps 0.5 lc rgb 'blue'")
+#g("set yrange [0:170]")
 
 
 #loop over boundaryDisplacement
@@ -84,6 +86,10 @@ boundaryForceVector = nuto.DoubleFullMatrix()
 numActiveDofs = 0
 plotMatrixLoadDisp = nuto.DoubleFullMatrix(2,1)
 plotVectorLoadDisp = nuto.DoubleFullMatrix(2,1)
+myStructure.AddVisualizationComponentDisplacements()
+myStructure.AddVisualizationComponentEngineeringStrain()
+myStructure.AddVisualizationComponentEngineeringPlasticStrain()
+myStructure.AddVisualizationComponentEngineeringStress()
 for i in range(0, num_steps):
     boundaryDisplacement = max_disp*(i+1)/num_steps
     print "boundary displacement :" + str(boundaryDisplacement)
@@ -151,13 +157,14 @@ for i in range(0, num_steps):
             break
         else:
             print "iteration " + str(iteration)
-            _ = raw_input('More than one iteration required, press enter to continue...') 
+            if printResult:
+	        _ = raw_input('More than one iteration required, press enter to continue...') 
 
     #update static data
     myStructure.ElementTotalUpdateStaticData()
     
     #boundary force
-    myStructure.NodeGroupGetInternalForce("NodeGroupRightBoundary", boundaryForceVector)
+    myStructure.NodeGroupGetInternalForce(NodeGroupRightBoundary, boundaryForceVector)
     print "boundary force vector"
     boundaryForceVector.Info()
     print ""
@@ -168,10 +175,11 @@ for i in range(0, num_steps):
     plotMatrixLoadDisp.AppendColumns(plotVectorLoadDisp)
     plotMatrixLoadDisp.Trans().WriteToFile( "MisesLoadDisp.dat", " ", "#load-disp for mises plasticity", "" )
     
-    g("plot 'MisesLoadDisp.dat' using 1:2 title'training set' with lines linestyle 1")
+    #g("plot 'MisesLoadDisp.dat' using 1:2 title'training set' with lines linestyle 1")
 
     # visualize results
-    myStructure.ExportVtkDataFile("MisesPlasticity.vtk","displacements engineering_strain engineering_stress")
+    myStructure.ExportVtkDataFile("MisesPlasticity.vtk")
     
-_ = raw_input('press enter to continue...') 
+if printResult:
+    _ = raw_input('press enter to continue...') 
 sys.exit(0)

@@ -4,12 +4,12 @@ import nuto
 myStructure = nuto.Structure(1)
 
 # create section
-myStructure.SectionCreate("Section1","1D")
-myStructure.SectionSetArea("Section1", 1)
+Section1 = myStructure.SectionCreate("TRUSS")
+myStructure.SectionSetArea(Section1, 1)
 
 # create material law
-myStructure.ConstitutiveLawCreate("Material1","LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus("Material1", 1)
+Material1 = myStructure.ConstitutiveLawCreate("LinearElastic")
+myStructure.ConstitutiveLawSetYoungsModulus(Material1, 1)
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullMatrix(1,1)
@@ -27,13 +27,13 @@ elementIncidence = nuto.IntFullMatrix(2,1)
 elementIncidence.SetValue(0,0,1)
 elementIncidence.SetValue(1,0,2)
 myStructure.ElementCreate(1, "Truss1D2N", elementIncidence)
-myStructure.ElementSetSection(1,"Section1")
-myStructure.ElementSetConstitutiveLaw(1,"Material1")
+myStructure.ElementSetSection(1,Section1)
+myStructure.ElementSetConstitutiveLaw(1,Material1)
 elementIncidence.SetValue(0,0,3)
 elementIncidence.SetValue(1,0,4)
 myStructure.ElementCreate(2, "Truss1D2N", elementIncidence)
-myStructure.ElementSetSection(2,"Section1")
-myStructure.ElementSetConstitutiveLaw(2,"Material1")
+myStructure.ElementSetSection(2,Section1)
+myStructure.ElementSetConstitutiveLaw(2,Material1)
 
 # set boundary conditions and loads
 direction = nuto.DoubleFullMatrix(1,1,(1,))

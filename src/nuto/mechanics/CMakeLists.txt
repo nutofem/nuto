@@ -69,8 +69,9 @@ elements/IpDataStaticDataBase.cpp
 elements/IpDataStaticDataNonlocal.cpp
 elements/Plane.cpp
 elements/Plane2D.cpp
-elements/Plane2D4N.cpp
 elements/Plane2D3N.cpp
+elements/Plane2D4N.cpp
+elements/Plane2D6N.cpp
 elements/Solid.cpp
 elements/Tetrahedron10N.cpp
 elements/Truss.cpp
@@ -92,6 +93,7 @@ integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp
 integrationtypes/IntegrationType2D.cpp
+integrationtypes/IntegrationType2D3NGauss1Ip.cpp
 integrationtypes/IntegrationType2D3NGauss3Ip.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp

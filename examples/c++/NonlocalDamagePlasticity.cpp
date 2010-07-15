@@ -62,7 +62,7 @@ int main()
 	Incidence(3,0) = node4;
     int myElement1 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 //    myStructure.ElementSetIntegrationType(myElement1,"2D4NGauss1Ip","StaticDataNonlocal");
-		
+
 	Incidence(0,0) = node2;
 	Incidence(1,0) = node3;
 	Incidence(2,0) = node6;
@@ -80,7 +80,7 @@ int main()
 	Incidence(2,0) = node9;
 	Incidence(3,0) = node8;
     int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
-	
+
 	//create constitutive law
 	int myMatLin = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity");
 	myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);

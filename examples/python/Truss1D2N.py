@@ -16,12 +16,12 @@ BoundaryDisplacement = 0.1
 myStructure = nuto.Structure(1)
 
 # create section
-myStructure.SectionCreate("Section1","TRUSS")
-myStructure.SectionSetArea("Section1", Area)
+Section1 = myStructure.SectionCreate("TRUSS")
+myStructure.SectionSetArea(Section1, Area)
 
 # create material law
-myStructure.ConstitutiveLawCreate("Material1","LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus("Material1", YoungsModulus)
+Material1 = myStructure.ConstitutiveLawCreate("LinearElastic")
+myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus)
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullMatrix(1,1)
@@ -37,8 +37,8 @@ for element in range(0, NumElements):
     elementIncidence.SetValue(0, 0, element)
     elementIncidence.SetValue(1, 0, element + 1)
     myStructure.ElementCreate(element, "Truss1D2N", elementIncidence)
-    myStructure.ElementSetSection(element,"Section1")
-    myStructure.ElementSetConstitutiveLaw(element,"Material1")
+    myStructure.ElementSetSection(element,Section1)
+    myStructure.ElementSetConstitutiveLaw(element,Material1)
 
 # set boundary conditions and loads
 direction = nuto.DoubleFullMatrix(1,1,(1,))
@@ -82,4 +82,7 @@ residualVector = extForceVector - intForceVector
 print "residual: " + str(residualVector.Norm())
 
 # visualize results
-myStructure.ExportVtkDataFile("Truss1D2N.vtk","displacements engineering_strain engineering_stress")
+myStructure.AddVisualizationComponentDisplacements()
+myStructure.AddVisualizationComponentEngineeringStrain()
+myStructure.AddVisualizationComponentEngineeringStress()
+myStructure.ExportVtkDataFile("Truss1D2N.vtk")

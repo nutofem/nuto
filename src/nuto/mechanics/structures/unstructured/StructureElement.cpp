@@ -4,6 +4,7 @@
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
+#include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
@@ -276,7 +277,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D6N is a 2D element.");
         }
-        //ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
+        ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
     case NuTo::Element::TETRAHEDRON10N:
         // get the integration type pointer, if not existent, create the integration type

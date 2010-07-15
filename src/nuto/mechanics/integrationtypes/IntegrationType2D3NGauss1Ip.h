@@ -1,6 +1,6 @@
-// $Id$
-#ifndef IntegrationType2D3NGauss3Ip_H
-#define IntegrationType2D3NGauss3Ip_H
+// $Id: IntegrationType2D3NGauss1Ip.h 276 2010-06-30 13:04:32Z arnold2 $
+#ifndef IntegrationType2D3NGauss1Ip_H
+#define IntegrationType2D3NGauss1Ip_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -15,10 +15,10 @@
 
 namespace NuTo
 {
-//! @author Joerg F. Unger
+//! @author Joerg F. Unger, ISM
 //! @date June 2010
 //! @brief ... integration types in 2D with three nodes Gauss integration and 1 integration point
-class IntegrationType2D3NGauss3Ip : public IntegrationType2D
+class IntegrationType2D3NGauss1Ip : public IntegrationType2D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -26,7 +26,7 @@ class IntegrationType2D3NGauss3Ip : public IntegrationType2D
 
 public:
     //! @brief constructor
-    IntegrationType2D3NGauss3Ip();
+    IntegrationType2D3NGauss1Ip();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

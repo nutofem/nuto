@@ -395,10 +395,10 @@ void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<doubl
         int mul2countplus1 = mul2count+1;
         rDerivativeShapeFunctionsLocal[mul2count] =
             rDerivativeShapeFunctionsNatural[mul2count]     *rJacInv[0]+
-            rDerivativeShapeFunctionsNatural[mul2countplus1]*rJacInv[1];
+            rDerivativeShapeFunctionsNatural[mul2countplus1]*rJacInv[2];
 
         rDerivativeShapeFunctionsLocal[mul2countplus1] =
-            rDerivativeShapeFunctionsNatural[mul2count]     *rJacInv[2]+
+            rDerivativeShapeFunctionsNatural[mul2count]     *rJacInv[1]+
             rDerivativeShapeFunctionsNatural[mul2countplus1]*rJacInv[3];
     }
 }
@@ -620,6 +620,11 @@ void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     }
     return;
 }
+
+// these headers are just for test purpose
+//#include <eigen2/Eigen/LU>
+//#include <eigen2/Eigen/Array>
+
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
@@ -628,6 +633,8 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
 	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
     CalculateLocalCoordinates(localNodeCoord);
+
+    //std::cout<< "localNodeCoord " << Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(localNodeCoord[0]),localNodeCoord.size(),1) << std::endl;
 
     //calculate local displacements
     std::vector<double> localNodeDisp(GetNumLocalDofs());
@@ -677,11 +684,14 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
         GetLocalIntegrationPointCoordinates(theIP, naturalIPCoord);
 
         CalculateDerivativeShapeFunctionsNatural(naturalIPCoord, derivativeShapeFunctionsNatural);
+        //std::cout<< "derivativeShapeFunctionsNatural " << Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(derivativeShapeFunctionsNatural[0]),derivativeShapeFunctionsNatural.size(),1) << std::endl;
 
         CalculateJacobian(derivativeShapeFunctionsNatural,localNodeCoord, invJacobian, detJac);
+        //std::cout<< "invJacobian " << Eigen::Matrix<double,2,2>::Map(&(invJacobian[0]),2,2) << std::endl;
 
         CalculateDerivativeShapeFunctionsLocal(derivativeShapeFunctionsNatural,invJacobian,
                                                 derivativeShapeFunctionsLocal);
+        //std::cout<< "derivativeShapeFunctionsLocal " << Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(derivativeShapeFunctionsLocal[0]),derivativeShapeFunctionsLocal.size(),1) << std::endl;
 
         // determine deformation gradient from the local Displacements and the derivative of the shape functions
         // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP

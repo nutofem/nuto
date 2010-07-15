@@ -15,8 +15,8 @@ PoissonsRatio = 0.2
 
 Force = 5
 
-ElementType = "PLANE2D3N"
-#ElementType = "PLANE2D4N"
+#ElementType = "PLANE2D3N"
+ElementType = "PLANE2D4N"
 
 #StressState = "XX"
 StressState = "YY"
@@ -40,8 +40,8 @@ myStructure.ConstitutiveLawSetYoungsModulus(myMatLin, YoungsModulus)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin, PoissonsRatio)
 
 #create section
-myStructure.SectionCreate("mySection","Plane_Strain")
-myStructure.SectionSetThickness("mySection",1)
+mySection = myStructure.SectionCreate("Plane_Strain")
+myStructure.SectionSetThickness(mySection,1)
 
 numNodes=8
 myStructure.NodesCreate("displacements", nuto.DoubleFullMatrix(2,numNodes,(	 0 ,  0 ,
@@ -80,35 +80,35 @@ else:
 
 myStructure.ElementsCreate(ElementType, elementIncidence)
 myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
-myStructure.ElementTotalSetSection("mySection")
+myStructure.ElementTotalSetSection(mySection)
 
-myStructure.GroupCreate("LoadNodesXPos","Nodes")
-myStructure.GroupCreate("LoadNodesXNeg","Nodes")
-myStructure.GroupCreate("LoadNodesYPos","Nodes")
-myStructure.GroupCreate("LoadNodesYNeg","Nodes")
+LoadNodesXPos = myStructure.GroupCreate("Nodes")
+LoadNodesXNeg = myStructure.GroupCreate("Nodes")
+LoadNodesYPos = myStructure.GroupCreate("Nodes")
+LoadNodesYNeg = myStructure.GroupCreate("Nodes")
 directionX = nuto.DoubleFullMatrix(2,1,(1,0))
 directionY = nuto.DoubleFullMatrix(2,1,(0,1))
 if StressState == "XX":
-	myStructure.GroupAddNode("LoadNodesXPos",1)
-	myStructure.GroupAddNode("LoadNodesXPos",7)
+	myStructure.GroupAddNode(LoadNodesXPos,1)
+	myStructure.GroupAddNode(LoadNodesXPos,7)
 	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
 	myStructure.ConstraintSetDisplacementNode(6, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 elif StressState == "YY":
-	myStructure.GroupAddNode("LoadNodesYPos",6)
-	myStructure.GroupAddNode("LoadNodesYPos",7)
+	myStructure.GroupAddNode(LoadNodesYPos,6)
+	myStructure.GroupAddNode(LoadNodesYPos,7)
 	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
 	myStructure.ConstraintSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
 elif StressState == "XY":
-	myStructure.GroupAddNode("LoadNodesXPos",6)
-	myStructure.GroupAddNode("LoadNodesXPos",7)
-	#~ myStructure.GroupAddNode("LoadNodesXNeg",0)
-	myStructure.GroupAddNode("LoadNodesXNeg",1)
-	#~ myStructure.GroupAddNode("LoadNodesYPos",1)
-	myStructure.GroupAddNode("LoadNodesYPos",7)
-	#~ myStructure.GroupAddNode("LoadNodesYNeg",0)
-	myStructure.GroupAddNode("LoadNodesYNeg",6)
+	myStructure.GroupAddNode(LoadNodesXPos,6)
+	myStructure.GroupAddNode(LoadNodesXPos,7)
+	#~ myStructure.GroupAddNode(LoadNodesXNeg,0)
+	myStructure.GroupAddNode(LoadNodesXNeg,1)
+	#~ myStructure.GroupAddNode(LoadNodesYPos,1)
+	myStructure.GroupAddNode(LoadNodesYPos,7)
+	#~ myStructure.GroupAddNode(LoadNodesYNeg,0)
+	myStructure.GroupAddNode(LoadNodesYNeg,6)
 	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
 	myStructure.ConstraintSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
@@ -124,16 +124,16 @@ else:
 if EnableDisplacementControl:
 	print "Displacement control"
 	# boundary displacments
-	myStructure.ConstraintSetDisplacementNodeGroup("LoadNodesXPos", directionX, BoundaryDisplacement)
-	myStructure.ConstraintSetDisplacementNodeGroup("LoadNodesXNeg", directionX, -1.0*BoundaryDisplacement)
-	myStructure.ConstraintSetDisplacementNodeGroup("LoadNodesYPos", directionY, BoundaryDisplacement)
-	myStructure.ConstraintSetDisplacementNodeGroup("LoadNodesYNeg", directionY, -1.0*BoundaryDisplacement)
+	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
+	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesXNeg, directionX, -1.0*BoundaryDisplacement)
+	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesYPos, directionY, BoundaryDisplacement)
+	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesYNeg, directionY, -1.0*BoundaryDisplacement)
 else:
 	print "Load control"
-	myStructure.LoadCreateNodeGroupForce("LoadNodesXPos", directionX, Force)
-	myStructure.LoadCreateNodeGroupForce("LoadNodesXNeg", directionX, -1*Force)
-	myStructure.LoadCreateNodeGroupForce("LoadNodesYPos", directionY, Force)
-	myStructure.LoadCreateNodeGroupForce("LoadNodesYNeg", directionY, -1*Force)
+	myStructure.LoadCreateNodeGroupForce(LoadNodesXPos, directionX, Force)
+	myStructure.LoadCreateNodeGroupForce(LoadNodesXNeg, directionX, -1*Force)
+	myStructure.LoadCreateNodeGroupForce(LoadNodesYPos, directionY, Force)
+	myStructure.LoadCreateNodeGroupForce(LoadNodesYNeg, directionY, -1*Force)
           
 
 # some Infos
@@ -166,7 +166,7 @@ for i in range( 0 , numElements):
 	print "Ke"
 	Ke.Info()
 	
-if ElementType == "PLANE2D4N":
+if ElementType == "PLANE2D4Nb":
 	myStructure.ElementStiffness(2,Ke,rowIndex,colIndex)
 	Stiffness_patchtest_slang = nuto.DoubleFullMatrix(8,8)
 	Stiffness_patchtest_slang.ReadFromFile("Stiffness_patchtest_slang.txt",0," ")

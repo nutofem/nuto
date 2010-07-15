@@ -51,7 +51,7 @@ void NuTo::Plane2D3N::CalculateDerivativeShapeFunctionsNatural(const double rNat
 //! @brief returns the enum of the standard integration type for this element
 NuTo::IntegrationType::eIntegrationType NuTo::Plane2D3N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationType::IntegrationType2D3NGauss3Ip;
+	return NuTo::IntegrationType::IntegrationType2D3NGauss1Ip;
 }
 
 // reorder nodes such that the sign of the length/area/volume of the element changes
