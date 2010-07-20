@@ -49,6 +49,14 @@ public:
     {}
 
     // parameters /////////////////////////////////////////////////////////////
+    //! @brief ... get density
+    //! @return ... density
+    virtual double GetDensity() const;
+
+    //! @brief ... set density
+    //! @param rRho ... density
+    virtual void SetDensity(double rRho);
+
     //! @brief ... get Young's modulus
     //! @return ... Young's modulus
     virtual double GetYoungsModulus() const;

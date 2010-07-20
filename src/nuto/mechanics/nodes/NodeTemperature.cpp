@@ -113,6 +113,38 @@ void NuTo::NodeTemperature::GetGlobalDofValues(FullMatrix<double>& rActiveDofVal
 	}
 }
 
+//! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeTemperature::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	throw MechanicsException("[NuTo::NodeTemperature::SetGlobalDofFirstTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no first time derivative dofs.");
+}
+
+//! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeTemperature::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	throw MechanicsException("[NuTo::NodeTemperature::GetGlobalDofFirstTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no first time derivative dofs.");
+}
+
+//! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeTemperature::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	throw MechanicsException("[NuTo::NodeTemperature::SetGlobalDofSecondTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no second time derivative dofs.");
+}
+
+//! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeTemperature::GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	throw MechanicsException("[NuTo::NodeTemperature::GetGlobalDofSecondTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no second time derivative dofs.");
+}
+
 //! @brief renumber the global dofs according to predefined ordering
 //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
 void NuTo::NodeTemperature::RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)

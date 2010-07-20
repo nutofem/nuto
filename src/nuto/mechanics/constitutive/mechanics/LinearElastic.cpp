@@ -38,6 +38,7 @@ NuTo::LinearElastic::LinearElastic() : ConstitutiveEngineeringStressStrain(), Co
 {
 	mE = 0.;
 	mNu = 0.;
+	mRho = 0.;
 	SetParametersValid();
 }
 
@@ -1205,6 +1206,22 @@ void NuTo::LinearElastic::CalculateCoefficients3D(double& C11, double& C12, doub
 ///////////////////////////////////////////////////////////////////////////
 
 // parameters /////////////////////////////////////////////////////////////
+//! @brief ... get density
+//! @return ... density
+double NuTo::LinearElastic::GetDensity() const
+{
+	return this->mRho;
+}
+
+//! @brief ... set density
+//! @param rRho ... density
+void NuTo::LinearElastic::SetDensity(double rRho)
+{
+    this->CheckDensity(rRho);
+    this->mRho = rRho;
+    this->SetParametersValid();
+}
+
 //! @brief ... get Young's modulus
 //! @return ... Young's modulus
 double NuTo::LinearElastic::GetYoungsModulus() const
@@ -1276,6 +1293,16 @@ bool NuTo::LinearElastic::CheckElementCompatibility(NuTo::Element::eElementType 
         return true;
     default:
         return false;
+    }
+}
+
+//! @brief ... check if density is positive
+//! @param rRho ... density
+void NuTo::LinearElastic::CheckDensity(double rRho) const
+{
+    if (rRho < 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::LinearElastic::CheckDensity] The density must be a positive value.");
     }
 }
 

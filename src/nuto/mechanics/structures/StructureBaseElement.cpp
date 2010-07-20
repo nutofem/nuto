@@ -127,7 +127,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_1(int rElementId,
              NuTo::FullMatrix<int>& rGlobalDofsRow,
              NuTo::FullMatrix<int>& rGlobalDofsColumn)const
 {
-	throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0] To be implemented.");
+	throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_1] To be implemented.");
 }
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
@@ -137,7 +137,42 @@ void NuTo::StructureBase::ElementCoefficientMatrix_2(int rElementId,
              NuTo::FullMatrix<int>& rGlobalDofsRow,
              NuTo::FullMatrix<int>& rGlobalDofsColumn)const
 {
-	throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0] To be implemented.");
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_2] First update of tmp static data required.");
+    }
+
+    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    std::vector<int> globalDofsRow,
+    		         globalDofsColumn;
+
+    try
+    {
+    	 elementPtr->CalculateCoefficientMatrix_2(rResult, globalDofsRow, globalDofsColumn);
+    }
+    catch(NuTo::MechanicsException e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	e.AddMessage("[NuTo::StructureBase::ElementCoefficientMatrix_2] Error building element matrix for element "
+        	+ ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::StructureBase::ElementCoefficientMatrix_2] Error building element matrix for element " + ss.str() + ".");
+    }
+
+    //cast to FullMatrixInt
+    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
+    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
+
+    rGlobalDofsColumn.Resize(globalDofsColumn.size(),1);
+    memcpy(rGlobalDofsColumn.mEigenMatrix.data(),&globalDofsColumn[0],globalDofsColumn.size()*sizeof(int));
 }
 
 //! @brief sets the constitutive law of a single element

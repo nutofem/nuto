@@ -17,6 +17,9 @@
 #include "nuto/mechanics/nodes/NodeCoordinatesTemperature3D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations1D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations3D.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -125,22 +128,44 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
 
     // check all values
     int attributes(1 << Node::COORDINATES);
-    //! bit 0 : coordinates
-    //! bit 1 : displacements
-    //! bit 2 : rotations
-    //! bit 3 : temperatures
-    //! bit 4 : nonlocal data
+    // bit 0 : coordinates
+    // bit 1 : displacements
+    // bit 2 : rotations
+    // bit 3 : temperatures
+    // bit 4 : nonlocal data
+    // bit 5 : velocities
+    // bit 6 : accelerations
     boost::tokenizer<> tok(rDOFs);
     for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
         if (*beg=="DISPLACEMENTS")
+        {
             attributes = attributes | 1 << Node::DISPLACEMENTS;
-        if (*beg=="ROTATIONS")
+        }
+        else if (*beg=="VELOCITIES")
+        {
+            attributes = attributes | 1 << Node::VELOCITIES;
+        }
+        else if (*beg=="ACCELERATIONS")
+        {
+            attributes = attributes | 1 << Node::ACCELERATIONS;
+        }
+        else if (*beg=="ROTATIONS")
+        {
             attributes = attributes | 1 << Node::ROTATIONS;
-        if (*beg=="TEMPERATURES")
+        }
+        else if (*beg=="TEMPERATURES")
+        {
             attributes = attributes | 1 << Node::TEMPERATURES;
-        if (*beg=="NONLOCALDATA")
+        }
+        else if (*beg=="NONLOCALDATA")
+        {
             attributes = attributes | 1 << Node::NONLOCALDATA;
+        }
+        else
+        {
+    		throw MechanicsException("[NuTo::Structure::NodeCreate] invalid dof type: " + *beg +".");
+        }
     }
     if (rCoordinates.GetNumRows()!=mDimension || rCoordinates.GetNumColumns()!=1)
         throw MechanicsException("[NuTo::Structure::NodeCreate]\
@@ -185,6 +210,23 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::VELOCITIES) | (1 << Node::ACCELERATIONS):
+		// coordinates and displacements
+		switch (mDimension)
+		{
+		case 1:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations1D();
+			break;
+		case 2:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations2D();
+			break;
+		case 3:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations3D();
+			break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+		}
+		break;
     case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS):
         // coordinates and displacements
         switch (mDimension)
@@ -441,5 +483,85 @@ void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues,
     for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
         it->second->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+    }
+}
+
+// merge dof first time derivative values
+void NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues)
+{
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    }
+    if ((rActiveDofValues.GetNumRows() != this->mNumActiveDofs) || rActiveDofValues.GetNumColumns() != 1)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues] invalid dimension of input object (number of active dofs,1).");
+    }
+	this->mUpdateTmpStaticDataRequired=true;
+
+    // calculate dependent dof values
+    FullMatrix<double> dependentDofValues = this->mConstraintMatrix * rActiveDofValues;
+
+    // write dof values to the nodes
+    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        it->second->SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, dependentDofValues);
+    }
+}
+
+// extract dof first time derivative values
+void NuTo::Structure::NodeExtractDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeExtractDofFirstTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    }
+    rActiveDofValues.Resize(this->mNumActiveDofs,1);
+    rDependentDofValues.Resize(this->mNumDofs - this->mNumActiveDofs,1);
+
+    // extract dof values from nodes
+    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        it->second->GetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
+    }
+}
+
+// merge dof first time derivative values
+void NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues)
+{
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    }
+    if ((rActiveDofValues.GetNumRows() != this->mNumActiveDofs) || rActiveDofValues.GetNumColumns() != 1)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues] invalid dimension of input object (number of active dofs,1).");
+    }
+	this->mUpdateTmpStaticDataRequired=true;
+
+    // calculate dependent dof values
+    FullMatrix<double> dependentDofValues = this->mConstraintMatrix * rActiveDofValues;
+
+    // write dof values to the nodes
+    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        it->second->SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, dependentDofValues);
+    }
+}
+
+// extract dof first time derivative values
+void NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    }
+    rActiveDofValues.Resize(this->mNumActiveDofs,1);
+    rDependentDofValues.Resize(this->mNumDofs - this->mNumActiveDofs,1);
+
+    // extract dof values from nodes
+    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        it->second->GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 }

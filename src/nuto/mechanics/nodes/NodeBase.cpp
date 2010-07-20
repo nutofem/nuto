@@ -142,6 +142,103 @@ double NuTo::NodeBase::GetDisplacement(short rIndex)const
 	throw MechanicsException("[NuTo::NodeBase::GetDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
 }
 
+// returns the number of velocities of the node
+int NuTo::NodeBase::GetNumVelocities()const
+{
+	return 0;
+}
+
+// gives the global DOF of a velocity component (Note: the velocity dof number is derived from the displacement dof)
+int NuTo::NodeBase::GetDofVelocity(int rComponent)const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDofVelocity] Node of type " + GetNodeTypeStr() + " has no velocities.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetVelocities1D(double rVelocities[1]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetVelocities1D] Node of type " + GetNodeTypeStr() + " has no 1D velocities.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetVelocities1D(const double rVelocities[1])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetVelocities1D] Node of type " + GetNodeTypeStr() + " has no 1D velocities.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetVelocities2D(double rVelocities[2]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetVelocities2D] Node of type " + GetNodeTypeStr() + " has no 2D velocities.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetVelocities2D(const double rVelocities[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetVelocities2D] Node of type " + GetNodeTypeStr() + " has no 2D velocities.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetVelocities3D(double rVelocities[3]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetVelocities3D] Node of type " + GetNodeTypeStr() + " has no 3D velocities.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetVelocities3D(const double rVelocities[3])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetVelocities3D] Node of type " + GetNodeTypeStr() + " has no 3D velocities.");
+}
+
+// returns the number of accelerations of the node
+int NuTo::NodeBase::GetNumAccelerations()const
+{
+	return 0;
+}
+
+// gives the global DOF of a acceleration component (Note: the acceleration dof number is derived from the displacement dof)
+int NuTo::NodeBase::GetDofAcceleration(int rComponent)const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDofAcceleration] Node of type " + GetNodeTypeStr() + " has no accelerations.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetAccelerations1D(double rAccelerations[1]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAccelerations1D] Node of type " + GetNodeTypeStr() + " has no 1D accelerations.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetAccelerations1D(const double rAccelerations[1])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAccelerations1D] Node of type " + GetNodeTypeStr() + " has no 1D accelerations.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetAccelerations2D(double rAccelerations[2]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAccelerations2D] Node of type " + GetNodeTypeStr() + " has no 2D accelerations.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetAccelerations2D(const double rAccelerations[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAccelerations2D] Node of type " + GetNodeTypeStr() + " has no 2D accelerations.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetAccelerations3D(double rAccelerations[3]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAccelerations3D] Node of type " + GetNodeTypeStr() + " has no 3D accelerations.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetAccelerations3D(const double rAccelerations[3])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAccelerations3D] Node of type " + GetNodeTypeStr() + " has no 3D accelerations.");
+}
+
+
 //! @brief returns the number of Rotations of the node
 //! @return number of Rotations
 int NuTo::NodeBase::GetNumRotations()const

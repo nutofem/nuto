@@ -113,6 +113,38 @@ void NuTo::NodeDisplacements1D::GetGlobalDofValues(FullMatrix<double>& rActiveDo
     }
 }
 
+//! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeDisplacements1D::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	throw MechanicsException("[NuTo::NodeDisplacements1D::SetGlobalDofFirstTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no first time derivative (velocity) dofs.");
+}
+
+//! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeDisplacements1D::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	throw MechanicsException("[NuTo::NodeDisplacements1D::GetGlobalDofFirstTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no first time derivative (velocity) dofs.");
+}
+
+//! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeDisplacements1D::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	throw MechanicsException("[NuTo::NodeDisplacements1D::SetGlobalDofSecondTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no second time derivative (acceleration) dofs.");
+}
+
+//! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeDisplacements1D::GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	throw MechanicsException("[NuTo::NodeDisplacements1D::GetGlobalDofSecondTimeDerivativeValues] Node of type " + GetNodeTypeStr() + " has no second time derivative (acceleration) dofs.");
+}
+
 //! @brief renumber the global dofs according to predefined ordering
 //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
 void NuTo::NodeDisplacements1D::RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)

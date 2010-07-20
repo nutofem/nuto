@@ -488,6 +488,14 @@ public:
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
     // parameters /////////////////////////////////////////////////////////////
+    //! @brief ... get density
+    //! @return ... density
+    virtual double GetDensity() const;
+
+    //! @brief ... set density
+    //! @param rRho ... density
+    virtual void SetDensity(double rRho);
+
     //! @brief ... get Young's modulus
     //! @return ... Young's modulus
     double GetYoungsModulus() const;
@@ -547,6 +555,13 @@ protected:
 
     //! @brief ... Poisson's ratio \f$ \nu \f$
     double mNu;
+
+    //! @brief ... density \f$ \rho \f$
+    double mRho;
+
+    //! @brief ... check if density is positive
+    //! @param rRho ... density
+    void CheckDensity(double rRho) const;
 
     //! @brief ... check if Young's modulus is positive
     //! @param rE ... Young's modulus

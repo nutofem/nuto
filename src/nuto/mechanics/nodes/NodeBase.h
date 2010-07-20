@@ -47,6 +47,26 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const = 0;
 
+    //! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    virtual void SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues) = 0;
+
+    //! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    virtual void GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const = 0;
+
+    //! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    virtual void SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues) = 0;
+
+    //! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    virtual void GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const = 0;
+
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering) = 0;
@@ -119,6 +139,72 @@ public:
     //! @brief returns the displacements of the node
     //! @return displacement
     virtual double GetDisplacement(short rIndex)const;
+
+    //! @brief returns the number of velocities of the node
+    //! @return number of velocities
+    virtual int GetNumVelocities()const;
+
+    //! @brief gives the global DOF of a velocity component (Note: the velocity dof number is derived from the displacement dof)
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofVelocity(int rComponent)const;
+
+    //! @brief returns the velocities of the node
+    //! @param rVelocities ... velocities
+    virtual void GetVelocities1D(double rVelocities[1])const;
+
+    //! @brief set the velocities
+    //! @param rVelocities  given velocities
+    virtual void SetVelocities1D(const double rVelocities[1]);
+
+    //! @brief returns the velocities of the node
+    //! @param rVelocities ... velocities
+    virtual void GetVelocities2D(double rVelocities[2])const;
+
+    //! @brief set the velocities
+    //! @param rVelocities  given velocities
+    virtual void SetVelocities2D(const double rVelocities[2]);
+
+    //! @brief returns the velocities of the node
+    //! @param rVelocities ... velocities
+    virtual void GetVelocities3D(double rVelocities[3])const;
+
+    //! @brief set the velocities
+    //! @param rVelocities  given velocities
+    virtual void SetVelocities3D(const double rVelocities[3]);
+
+    //! @brief returns the number of accelerations of the node
+    //! @return number of accelerations
+    virtual int GetNumAccelerations()const;
+
+    //! @brief gives the global DOF of a acceleration component (Note: the acceleration dof number is derived from the displacement dof)
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofAcceleration(int rComponent)const;
+
+    //! @brief returns the accelerations of the node
+    //! @param rAccelerations ... accelerations
+    virtual void GetAccelerations1D(double rAccelerations[1])const;
+
+    //! @brief set the accelerations
+    //! @param rVelocities  given accelerations
+    virtual void SetAccelerations1D(const double rAccelerations[1]);
+
+    //! @brief returns the accelerations of the node
+    //! @param rAccelerations ... accelerations
+    virtual void GetAccelerations2D(double rAccelerations[2])const;
+
+    //! @brief set the accelerations
+    //! @param rVelocities  given accelerations
+    virtual void SetAccelerations2D(const double rAccelerations[2]);
+
+    //! @brief returns the accelerations of the node
+    //! @param rAccelerations ... accelerations
+    virtual void GetAccelerations3D(double rAccelerations[3])const;
+
+    //! @brief set the accelerations
+    //! @param rVelocities  given accelerations
+    virtual void SetAccelerations3D(const double rAccelerations[3]);
 
     //! @brief returns the number of Rotations of the node
     //! @return number of Rotations

@@ -549,6 +549,16 @@ public:
     //! @param rVerboseLevel ... controls the verbosity of the information
     void ConstitutiveLawInfo(int rIdent, unsigned short rVerboseLevel) const;
 
+    //! @brief ... set density
+    //! @param rIdent ... constitutive law identifier
+    //! @param rRho ... density
+    void ConstitutiveLawSetDensity(int rIdent, double rRho);
+
+    //! @brief ... get densuty
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... density
+    double ConstitutiveLawGetDensity(int rIdent) const;
+
     //! @brief ... set Young's modulus
     //! @param rIdent ... constitutive law identifier
     //! @param rE ... Young's modulus

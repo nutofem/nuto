@@ -83,6 +83,38 @@ void NuTo::NodeGrid2D::GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, 
 	//empty since coordinates are no DOFs
 }
 
+//! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeGrid2D::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	//empty since coordinates are no DOFs
+}
+
+//! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeGrid2D::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	//empty since coordinates are no DOFs
+}
+
+//! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeGrid2D::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	//empty since coordinates are no DOFs
+}
+
+//! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeGrid2D::GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	//empty since coordinates are no DOFs
+}
+
 //! @brief renumber the global dofs according to predefined ordering
 //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
 void NuTo::NodeGrid2D::RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)

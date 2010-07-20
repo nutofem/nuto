@@ -131,6 +131,15 @@ nodes/NodeRotations2D.cpp
 nodes/NodeRotations3D.cpp
 nodes/NodeTemperature.cpp
 nodes/NodeNonlocalDataBase.cpp
+nodes/NodeVelocities1D.cpp
+nodes/NodeVelocities2D.cpp
+nodes/NodeVelocities3D.cpp
+nodes/NodeAccelerations1D.cpp
+nodes/NodeAccelerations2D.cpp
+nodes/NodeAccelerations3D.cpp
+nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations1D.cpp
+nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations2D.cpp
+nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations3D.cpp
 )
 
 SET(NuToMechanicsSection_SOURCES

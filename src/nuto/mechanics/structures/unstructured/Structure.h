@@ -133,6 +133,24 @@ public:
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
 
+    //! @brief write first time derivative of dof values (e.g. velocities) to the nodes
+    //! @param rActiveDofValues ... global vector of the first time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
+    void NodeMergeActiveDofFirstTimeDerivativeValues(const NuTo::FullMatrix<double>& rActiveDofValues);
+
+    //! @brief extract first time derivatives of dof values (e.g. velocities) from the nodes
+    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    void NodeExtractDofFirstTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
+
+    //! @brief write second time derivative of dof values (e.g. accelerations) to the nodes
+    //! @param rActiveDofValues ... global vector of the first time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
+    void NodeMergeActiveDofSecondTimeDerivativeValues(const NuTo::FullMatrix<double>& rActiveDofValues);
+
+    //! @brief extract second time derivatives of dof values (e.g. accelerations) from the nodes
+    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    void NodeExtractDofSecondTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
+
 //*************************************************
 //************ Element routines     ***************
 //**  defined in structures/StructureElement.cpp **

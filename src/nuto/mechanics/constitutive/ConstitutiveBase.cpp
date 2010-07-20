@@ -21,6 +21,19 @@ NuTo::ConstitutiveBase::ConstitutiveBase()
     this->mParametersValid = false;
 }
 
+// set density
+void NuTo::ConstitutiveBase::SetDensity(double rRho)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDensity] The constitutive relationship does not have a parameter density.");
+}
+
+// get density
+double NuTo::ConstitutiveBase::GetDensity() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDensity] The constitutive relationship does not have a parameter density.");
+}
+
+
 // set Young's modulus
 void NuTo::ConstitutiveBase::SetYoungsModulus(double rE)
 {

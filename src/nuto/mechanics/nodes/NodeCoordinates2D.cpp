@@ -103,6 +103,38 @@ void NuTo::NodeCoordinates2D::RenumberGlobalDofs(std::vector<int>& rMappingIniti
 	//empty since coordinates are no DOFs
 }
 
+//! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeCoordinates2D::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	//empty since coordinates are no DOFs
+}
+
+//! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeCoordinates2D::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	//empty since coordinates are no DOFs
+}
+
+//! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeCoordinates2D::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+	//empty since coordinates are no DOFs
+}
+
+//! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeCoordinates2D::GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+{
+	//empty since coordinates are no DOFs
+}
+
 //! @brief returns the type of the node
 //! @return type
 std::string NuTo::NodeCoordinates2D::GetNodeTypeStr()const

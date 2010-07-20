@@ -148,6 +148,38 @@ void NuTo::StructureBase::ConstitutiveLawInfo(int rIdent, unsigned short rVerbos
     ConstitutiveLawPtr->Info(rVerboseLevel);
 }
 
+// set density
+void NuTo::StructureBase::ConstitutiveLawSetDensity(int rIdent, double rRho)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetDensity(rRho);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDensity] error setting density.");
+        throw e;
+    }
+}
+
+// get Young's modulus
+double NuTo::StructureBase::ConstitutiveLawGetDensity(int rIdent) const
+{
+    double density;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        density = ConstitutiveLawPtr->GetDensity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDensity] error getting density.");
+        throw e;
+    }
+    return density;
+}
+
 // set Young's modulus
 void NuTo::StructureBase::ConstitutiveLawSetYoungsModulus(int rIdent, double rE)
 {

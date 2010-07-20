@@ -237,10 +237,50 @@ void NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-void NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+void NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
-    throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_2] to be implemented.");
+    //calculate local coordinates
+    std::vector<double> localNodeCoord(this->GetNumLocalDofs());
+    this->CalculateLocalCoordinates(localNodeCoord);
+
+    //allocate space for local shape functions
+    std::vector<double> derivativeShapeFunctions(this->GetLocalDimension()*this->GetNumShapeFunctions());
+    std::vector<double> shapeFunctions(this->GetNumShapeFunctions());
+
+    //allocate and initialize result matrix
+    rCoefficientMatrix.Resize(this->GetNumLocalDofs(),this->GetNumLocalDofs());
+    for (int theIP=0; theIP<this->GetNumIntegrationPoints(); theIP++)
+    {
+    	double localIPCoord;
+        this->GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
+
+        this->CalculateShapeFunctions(localIPCoord, shapeFunctions);
+        this->CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
+
+        //call material law to calculate tangent
+        const ConstitutiveBase* constitutivePtr = this->GetConstitutiveLaw(theIP);
+        if (constitutivePtr==0)
+        {
+            throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_2] Constitutive law can not found at integration point.");
+        }
+        double density = constitutivePtr->GetDensity();
+
+        // calculate local mass matrix
+        // don't forget to include determinant of the Jacobian and area
+        // detJ * area * density * HtH, :
+        double factor (density * this->mSection->GetArea() * this->DetJacobian(derivativeShapeFunctions,localNodeCoord)
+                       *(this->mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+        this->AddDetJHtH(shapeFunctions, factor, rCoefficientMatrix);
+    }
+
+    // eventually blow local matrix to full matrix - only relevant for
+    // truss in 2D and 3D
+    this->BlowLocalMatrixToGlobal(rCoefficientMatrix);
+
+    // calculate list of global dofs related to the entries in the element stiffness matrix
+    this->CalculateGlobalRowDofs(rGlobalDofsRow);
+    this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
 }
 
 //! @brief returns the local coordinates of an integration point
@@ -438,6 +478,23 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
         }
     }
 }
+
+//! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
+//! @param rShapeFunctions ... shape functions
+//! @param rFactor factor including area, determinant of Jacobian, IP weight and, eventually, the density
+//! @param rCoefficientMatrix to be added to
+void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double rFactor, FullMatrix<double>& rCoefficientMatrix)const
+{
+    for (int node1=0; node1<GetNumNodes(); node1++)
+    {
+        for (int node2=0; node2<GetNumNodes(); node2++)
+        {
+            rCoefficientMatrix(node1,node2)+=rFactor*rShapeFunctions[node1]*rShapeFunctions[node2];
+        }
+    }
+}
+
+
 //! @brief adds up the internal force vector
 //! @param derivativeShapeFunctions derivatives of the shape functions
 //! @param rEngineeringStress stress

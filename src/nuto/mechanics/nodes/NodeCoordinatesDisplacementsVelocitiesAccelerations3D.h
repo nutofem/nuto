@@ -1,53 +1,27 @@
-// $Id: $
-#ifndef NodeTemperature_H
-#define NodeTemperature_H
+// $Id$
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+#ifndef NODE_COORDINATES_DISPLACEMENTS_VELOCITIES_ACCELERATIONS_3D_H_
+#define NODE_COORDINATES_DISPLACEMENTS_VELOCITIES_ACCELERATIONS_3D_H_
+
+#include "nuto/mechanics/nodes/NodeCoordinates3D.h"
+#include "nuto/mechanics/nodes/NodeDisplacements3D.h"
+#include "nuto/mechanics/nodes/NodeVelocities3D.h"
+#include "nuto/mechanics/nodes/NodeAccelerations3D.h"
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... standard class for nodes having rotational degrees of freedom
-class NodeTemperature : public virtual NodeBase
+//! @author Stefan Eckardt, IFF
+//! @date July 2010
+//! @brief ... class for nodes having coordinates, displacements, velocities and accelerations
+class NodeCoordinatesDisplacementsVelocitiesAccelerations3D : public NuTo::NodeCoordinates3D, public NuTo::NodeDisplacements3D, public NuTo::NodeVelocities3D, public NuTo::NodeAccelerations3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
 
 public:
-
     //! @brief constructor
-    NodeTemperature();
-
-    //! @brief constructor
-    NodeTemperature (double rTemperature);
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
-
-    //! @brief returns the number of temperatures of the node
-    //! @return number of temperatures
-    int GetNumTemperatures()const;
-
-    //! @brief gives the global DOF of a temperature component
-    //! @param rComponent component
-    //! @return global DOF
-    int GetDofTemperature(int rComponent)const;
-
-    //! @brief set the rotations
-    //! @param rRotations  given rotations
-    void SetTemperature(double rTemperatures);
-
-    //! @brief writes the temperature of a node to the prescribed pointer
-    //! @param rTemperatur temperature
-    void GetTemperature(double& rTemperature)const;
+    NodeCoordinatesDisplacementsVelocitiesAccelerations3D();
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -91,11 +65,20 @@ public:
     //! @return type
     virtual std::string GetNodeTypeStr()const;
 
-protected:
-    double mTemperature;
-    int mDOF;
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinates3D)
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacements3D)
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeVelocities3D)
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeAccelerations3D);
+    }
+#endif  // ENABLE_SERIALIZATION
 };
 
 }
-
-#endif //NodeTemperature_H
+#endif // NODE_COORDINATES_DISPLACEMENTS_VELOCITIES_ACCELERATIONS_3D_H_

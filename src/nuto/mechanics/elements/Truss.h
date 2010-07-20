@@ -207,6 +207,14 @@ public:
 
 protected:
     const SectionBase *mSection;
+
+    //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
+    //! @param rShapeFunctions ... shape functions
+    //! @param rFactor factor including area, determinant of Jacobian, IP weight and density
+    //! @param rCoefficientMatrix to be added to
+    virtual void AddDetJHtH(const std::vector<double>& rShapeFunctions,
+                            double rFactor,
+                            FullMatrix<double>& rCoefficientMatrix)const;
 };
 
 } // namespace NuTo
