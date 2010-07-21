@@ -1337,7 +1337,7 @@ void NuTo::LinearElastic::Info(unsigned short rVerboseLevel) const
     this->ConstitutiveBase::Info(rVerboseLevel);
     std::cout << "    Young's modulus: " << this->mE << std::endl;
     std::cout << "    Poisson's ratio: " << this->mNu << std::endl;
-
+    std::cout << "    Density        : " << this->mRho << std::endl;
 }
 
 // check parameters
@@ -1345,5 +1345,6 @@ void NuTo::LinearElastic::CheckParameters()const
 {
     this->CheckYoungsModulus(this->mE);
     this->CheckPoissonsRatio(this->mNu);
+    this->CheckDensity(this->mRho);
 }
 
