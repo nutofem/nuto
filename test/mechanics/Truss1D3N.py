@@ -43,6 +43,7 @@ myElement1 = myStructure.ElementCreate("Truss1D3N",nuto.IntFullMatrix(3,1,(myNod
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,3)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
+myStructure.ConstitutiveLawSetDensity(myMatLin,0.3)
 
 #create section
 mySection1 = myStructure.SectionCreate("TRUSS")
@@ -184,6 +185,28 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
         print '[' + system,sys.argv[0] + '] : stress is not correct.'
         error = True;
 
+# calculate mass matrix of myelement1 (requires higher integration order)
+myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss3Ip","NOIPDATA")
+
+#calculate element stiffness matrix
+Me = nuto.DoubleFullMatrix(0,0)
+rowIndex = nuto.IntFullMatrix(0,0)
+colIndex = nuto.IntFullMatrix(0,0)
+myStructure.ElementCoefficientMatrix_2(myElement1,Me,rowIndex,colIndex)
+
+#correct stiffness matrix
+MeCorrect = nuto.DoubleFullMatrix(3,3,(8e-4, 4e-4, -2e-4, 4e-4, 32e-4, 4e-4, -2e-4, 4e-4, 8e-4))
+
+if (printResult):
+    print "MeCorrect"
+    MeCorrect.Info()
+    print "Me"
+    Me.Info()
+    
+if ((Me-MeCorrect).Abs().Max()[0]>1e-8):
+    print '[' + system,sys.argv[0] + '] : mass is not correct.'
+    error = True;
+        
 if (error):
     sys.exit(-1)
 else:

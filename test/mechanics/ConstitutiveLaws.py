@@ -36,6 +36,7 @@ structure=nuto.Structure(3)
 Material1 = structure.ConstitutiveLawCreate("LinearElastic")
 structure.ConstitutiveLawSetYoungsModulus(Material1, 20000)
 structure.ConstitutiveLawSetPoissonsRatio(Material1, 0.2)
+structure.ConstitutiveLawSetDensity(Material1, 0.5)
 if(printResult):
     structure.ConstitutiveLawInfo(Material1, 0)
 E = structure.ConstitutiveLawGetYoungsModulus(Material1)
@@ -46,7 +47,11 @@ Nu = structure.ConstitutiveLawGetPoissonsRatio(Material1)
 if(Nu != 0.2):
     print '[' + system,sys.argv[0] + '] : Poisson\'s ratio is not correct.'
     error = True
-
+Rho = structure.ConstitutiveLawGetDensity(Material1)
+if(Rho != 0.5):
+    print '[' + system,sys.argv[0] + '] : Density is not correct.'
+    error = True
+        
 structure.ConstitutiveLawDelete(Material1)
 if(structure.GetNumConstitutiveLaws() != 0):
     print '[' + system,sys.argv[0] + '] : number of constitutive laws is not correct.'
