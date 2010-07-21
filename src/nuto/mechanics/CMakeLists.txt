@@ -92,6 +92,7 @@ integrationtypes/IntegrationType1D.cpp
 integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp
+integrationtypes/IntegrationType1D2NGauss3Ip.cpp
 integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D3NGauss1Ip.cpp
 integrationtypes/IntegrationType2D3NGauss3Ip.cpp

@@ -21,6 +21,7 @@
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
@@ -58,6 +59,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType1D2NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss2Ip]=
         NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss3Ip]=
+        NuTo::IntegrationType1D2NGauss3Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss1Ip]=
         NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss3Ip]=
