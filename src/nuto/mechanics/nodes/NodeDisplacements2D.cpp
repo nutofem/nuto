@@ -11,8 +11,10 @@
 //! @brief constructor
 NuTo::NodeDisplacements2D::NodeDisplacements2D() : NodeBase ()
 {
-    mDisplacements[0]=0;
-    mDisplacements[1]=0;
+    this->mDisplacements[0]=0;
+    this->mDisplacements[1]=0;
+    this->mDOF[0]=-1;
+    this->mDOF[1]=-1;
 }
 
 //! @brief constructor
@@ -20,6 +22,8 @@ NuTo::NodeDisplacements2D::NodeDisplacements2D (const double rDisplacements[2]) 
 {
     mDisplacements[0]= rDisplacements[0];
     mDisplacements[1]= rDisplacements[1];
+    this->mDOF[0]=-1;
+    this->mDOF[1]=-1;
 }
 
 #ifdef ENABLE_SERIALIZATION

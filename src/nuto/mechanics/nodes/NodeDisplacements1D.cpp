@@ -11,13 +11,15 @@
 //! @brief constructor
 NuTo::NodeDisplacements1D::NodeDisplacements1D() : NodeBase ()
 {
-    mDisplacements[0]=0;
+    this->mDisplacements[0]=0;
+    this->mDOF[0]=-1;
 }
 
 //! @brief constructor
 NuTo::NodeDisplacements1D::NodeDisplacements1D (const double rDisplacements[1])  : NodeBase ()
 {
-    mDisplacements[0]= rDisplacements[0];
+    this->mDisplacements[0]= rDisplacements[0];
+    this->mDOF[0]=-1;
 }
 
 #ifdef ENABLE_SERIALIZATION

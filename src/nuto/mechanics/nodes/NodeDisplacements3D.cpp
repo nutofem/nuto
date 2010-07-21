@@ -11,17 +11,23 @@
 //! @brief constructor
 NuTo::NodeDisplacements3D::NodeDisplacements3D() : NodeBase ()
 {
-    mDisplacements[0]=0;
-    mDisplacements[1]=0;
-    mDisplacements[2]=0;
+	this->mDisplacements[0]=0;
+	this->mDisplacements[1]=0;
+	this->mDisplacements[2]=0;
+    this->mDOF[0]=-1;
+    this->mDOF[1]=-1;
+    this->mDOF[2]=-1;
 }
 
 //! @brief constructor
 NuTo::NodeDisplacements3D::NodeDisplacements3D (const double rDisplacements[3])  : NodeBase ()
 {
-    mDisplacements[0]= rDisplacements[0];
-    mDisplacements[1]= rDisplacements[1];
-    mDisplacements[2]= rDisplacements[2];
+	this->mDisplacements[0]= rDisplacements[0];
+	this->mDisplacements[1]= rDisplacements[1];
+	this->mDisplacements[2]= rDisplacements[2];
+    this->mDOF[0]=-1;
+    this->mDOF[1]=-1;
+    this->mDOF[2]=-1;
 }
 
 #ifdef ENABLE_SERIALIZATION

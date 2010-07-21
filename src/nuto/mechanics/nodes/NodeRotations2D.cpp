@@ -11,13 +11,15 @@
 //! @brief constructor
 NuTo::NodeRotations2D::NodeRotations2D()
 {
-	mRotations[0] = 0.;
+	this->mRotations[0] = 0.;
+	this->mDOF[0]=-1;
 }
 
 //! @brief constructor
 NuTo::NodeRotations2D::NodeRotations2D(const double rRotations[1])  : NodeBase ()
 {
-	mRotations[0] = rRotations[0];
+	this->mRotations[0] = rRotations[0];
+	this->mDOF[0]=-1;
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -11,17 +11,23 @@
 //! @brief constructor
 NuTo::NodeRotations3D::NodeRotations3D()
 {
-	mRotations[0] = 0.;
-	mRotations[1] = 0.;
-	mRotations[2] = 0.;
+	this->mRotations[0] = 0.;
+	this->mRotations[1] = 0.;
+	this->mRotations[2] = 0.;
+	this->mDOF[0]=-1;
+	this->mDOF[1]=-1;
+	this->mDOF[2]=-1;
 }
 
 //! @brief constructor
 NuTo::NodeRotations3D::NodeRotations3D(const double rRotations[1])  : NodeBase ()
 {
-	mRotations[0] = rRotations[0];
-	mRotations[1] = rRotations[1];
-	mRotations[2] = rRotations[2];
+	this->mRotations[0] = rRotations[0];
+	this->mRotations[1] = rRotations[1];
+	this->mRotations[2] = rRotations[2];
+	this->mDOF[0]=-1;
+	this->mDOF[1]=-1;
+	this->mDOF[2]=-1;
 }
 
 #ifdef ENABLE_SERIALIZATION

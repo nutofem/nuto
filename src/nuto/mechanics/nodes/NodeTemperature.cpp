@@ -11,13 +11,15 @@
 //! @brief constructor
 NuTo::NodeTemperature::NodeTemperature() : NodeBase ()
 {
-	mTemperature=0;
+	this->mTemperature=0;
+	this->mDOF=-1;
 }
 
 //! @brief constructor
 NuTo::NodeTemperature::NodeTemperature (double rTemperature)  : NodeBase ()
 {
-	mTemperature=rTemperature;
+	this->mTemperature=rTemperature;
+	this->mDOF=-1;
 }
 
 #ifdef ENABLE_SERIALIZATION
