@@ -19,7 +19,8 @@ OPTION(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 OPTION(ENABLE_METAMODEL "enables the metamodel package" TRUE)
 OPTION(ENABLE_OPTIMIZE "enables the optimize package" TRUE)
 OPTION(ENABLE_VISUALIZE "enables the visualization package" TRUE)
-OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
+OPTION(ENABLE_EXAMPLES "enables examples" TRUE)
+OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 
 IF(ENABLE_METAMODEL)
     SET(ENABLE_OPTIMIZE TRUE)
@@ -42,6 +43,10 @@ IF (ENABLE_VERBOSELEVEL)
     SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_VERBOSELEVEL" ${NuTo_DOXYGEN_PREDEFINED})
     SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VERBOSELEVEL")
 ENDIF(ENABLE_VERBOSELEVEL)
+
+IF(ENABLE_SHOW_TIME)
+    ADD_DEFINITIONS("-DSHOW_TIME")
+ENDIF(ENABLE_SHOW_TIME)
 
 # search path for external libraries
 # check if NUTO_EXTERNAL_LIBRARIES_ROOT is set
@@ -233,8 +238,10 @@ ADD_SUBDIRECTORY(src)
 # Documentation
 ADD_SUBDIRECTORY(doc)
 
+
+
 #test Environment
-ENABLE_TESTING()
+INCLUDE(CTest)
 ADD_SUBDIRECTORY(test/math)
 IF(ENABLE_MECHANICS)
   ADD_SUBDIRECTORY(test/mechanics)

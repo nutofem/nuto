@@ -2,28 +2,31 @@
 
 #ifndef SPARSE_DIRECT_SOLVER_H
 #define SPARSE_DIRECT_SOLVER_H
+
+#include "nuto/base/NuToObject.h"
+#include "nuto/math/MathException.h"
+
 namespace NuTo
 {
-class SparseDirectSolver
+class SparseDirectSolver : public NuToObject
 {
 public:
     //! @brief ... default constructor
-    SparseDirectSolver() : mVerboseLevel(0)
+    SparseDirectSolver() : NuToObject()
     {
     }
 
-    //! @brief ... set the verbose level of the solver output
-    //! @param rVerboseLevel ... verbose level
-    inline void SetVerboseLevel(unsigned int rVerboseLevel)
-    {
-        this->mVerboseLevel = rVerboseLevel;
-    }
+	virtual void Save (const std::string &filename, std::string rType )const
+	{
+		throw MathException("NuTo::SparseDirectSolver::Save] To be implemented.");
+	}
 
-    //! @brief ... print informations about the solver
-    virtual void Info() = 0;
+	virtual void Restore (const std::string &filename, std::string rType )
+	{
+		throw MathException("NuTo::SparseDirectSolver::Restore] To be implemented.");
+	}
+
 protected:
-    //! @brief ... controls the verbose level of the solver output (0 ... no output)
-    unsigned int mVerboseLevel;
 };
 } // namespace NuTo
 #endif // SPARSE_DIRECT_SOLVER_H

@@ -1,4 +1,4 @@
-// $Id: Plane2D3N.cpp 276 2010-06-30 13:04:32Z arnold2 $
+// $Id: Plane2D6N.cpp 276 2010-06-30 13:04:32Z arnold2 $
 
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -10,8 +10,8 @@ NuTo::Plane2D6N::Plane2D6N(NuTo::StructureBase* rStructure, std::vector<NuTo::No
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
-	if (rNodes.size()!=3)
-        throw MechanicsException("[NuTo::Plane2D6N::Plane2D6N] Exactly three nodes are required for this type of element.");
+	if (rNodes.size()!=6)
+        throw MechanicsException("[NuTo::Plane2D6N::Plane2D6N] Exactly six nodes are required for this type of element.");
     mNodes[0] = rNodes[0];
     mNodes[1] = rNodes[1];
     mNodes[2] = rNodes[2];

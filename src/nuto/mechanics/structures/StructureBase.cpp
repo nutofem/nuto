@@ -11,6 +11,10 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#ifdef SHOW_TIME
+    #include <ctime>
+#endif
+
 #include <algorithm>
 #include <sstream>
 #include <string>
@@ -76,6 +80,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
 
     mHaveTmpStaticData = false;
     mUpdateTmpStaticDataRequired = true;
+    mToleranceStiffnessEntries = 0.;
 }
 
 int NuTo::StructureBase::GetDimension()
@@ -134,36 +139,90 @@ void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementG
 //! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentDisplacements()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentDisplacement());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStrain());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Add engineering plastic strain stress to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringPlasticStrain());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStress());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Add section to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentSection()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentSection());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentConstitutive()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentConstitutive());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
@@ -171,6 +230,10 @@ void NuTo::StructureBase::AddVisualizationComponentConstitutive()
 //! @param rIp ... local ip number
 void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementId, int rIp)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	try
 	{
 		const ElementBase *elementBase = ElementGetElementPtr(rElementId);
@@ -188,35 +251,76 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
     {
     	throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentDamage()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.push_back(new NuTo::VisualizeComponentDamage());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentDamage] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	mVisualizeComponents.clear();
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ClearVisualizationComponents] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 
 void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName) const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     std::vector<const ElementBase*> ElementVec;
     this->GetElementsTotal(ElementVec);
     this->ExportVtkDataFile(ElementVec, rFileName);
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // find group by name
     const Group<ElementBase>* ElementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupIdent));
     std::vector<const ElementBase*> ElementVec;
     this->GetElementsByGroup(ElementGroup,ElementVec);
     this->ExportVtkDataFile(ElementVec, rFileName);
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName) const
@@ -279,6 +383,11 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
 // build global coefficient matrix0
 void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
     // build global dof numbering if required
     if (this->mNodeNumberingRequired)
     {
@@ -312,8 +421,17 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         throw e;
     }
 
-    // resize output objects
-    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+//    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+   // resize output objects
+    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
+    {
+        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+    }
+    else
+    {
+        rMatrix.SetZeroEntries();
+    }
+
     rVector.Resize(this->mNumActiveDofs, 1);
     if (this->mConstraintMatrix.GetNumEntries() == 0)
     {
@@ -348,11 +466,20 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         // build equivalent load vector
         rVector = (transConstraintMatrix * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - this->mConstraintMatrix * activeDofValues);
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 // build global coefficient matrix0
 void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double>& rVector)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global dof numbering if required
     if (this->mNodeNumberingRequired)
     {
@@ -387,7 +514,15 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
     }
 
     // resize output objects
-    rMatrix.Resize(this->mNumActiveDofs);
+    // resize output objects
+    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
+    {
+        rMatrix.Resize(this->mNumActiveDofs);
+    }
+    else
+    {
+        rMatrix.SetZeroEntries();
+    }
     rVector.Resize(this->mNumActiveDofs, 1);
     if (this->mConstraintMatrix.GetNumEntries() == 0)
     {
@@ -422,11 +557,20 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
         FullMatrix<double> Kdd_Mult_DeltaRHS = coefficientMatrixKK * deltaRHS;
         rVector = this->mConstraintMatrix.TransMult(Kdd_Mult_DeltaRHS) - coefficientMatrixJK * deltaRHS;
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 // build global external load vector
 void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // check dof numbering
     if (this->mNodeNumberingRequired)
     {
@@ -455,11 +599,20 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
     {
         rVector -=  this->mConstraintMatrix.TransMult(dependentDofLoadVector);
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalExternalLoadVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 // build global gradient of the internal potential (e.g. the internal forces)
 void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double>& rVector)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // check dof numbering
     if (this->mNodeNumberingRequired)
     {
@@ -497,4 +650,23 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
     {
         rVector -=  this->mConstraintMatrix.TransMult(dependentDofGradientVector);
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
+//! values smaller than that one will not be added to the global matrix
+void NuTo::StructureBase::SetToleranceStiffnessEntries(double rToleranceStiffnessEntries)
+{
+	mToleranceStiffnessEntries = rToleranceStiffnessEntries;
+}
+
+//! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
+//! values smaller than that one will not be added to the global matrix
+double NuTo::StructureBase::GetToleranceStiffnessEntries()const
+{
+	return mToleranceStiffnessEntries;
 }

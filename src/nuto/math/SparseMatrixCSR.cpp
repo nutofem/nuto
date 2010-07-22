@@ -27,12 +27,71 @@ std::string SparseMatrixCSR<int>::GetTypeId() const
 }
 
 template<>
-void SparseMatrixCSR<int>::RemoveZeroEntries(double rAbsoluteTolerance, double rRelativeTolerance)
+int SparseMatrixCSR<int>::RemoveZeroEntries(double rAbsoluteTolerance, double rRelativeTolerance)
 {
+	   double tolerance =  rAbsoluteTolerance;
+	    if (rRelativeTolerance > 0)
+	    {
+	        double maxValue = 0;
+	        for (unsigned int entryCount = 0; entryCount < this->mValues.size(); entryCount++)
+	        {
+	            if (fabs(this->mValues[entryCount]) > maxValue)
+	            {
+	                maxValue = fabs(this->mValues[entryCount]);
+	            }
+	        }
+	        tolerance += rRelativeTolerance * maxValue;
+	    }
 
+	    int numRemoved(0);
+	    int newPos = 0;
+	    int start = newPos;
+	    if (this->mOneBasedIndexing)
+	    {
+	        for (int row = 0; row < this->GetNumRows(); row++)
+	        {
+	            for (int pos = start; pos < this->mRowIndex[row + 1] -1 ; pos++)
+	            {
+	                if (fabs(this->mValues[pos]) > tolerance)
+	                {
+	                    this->mValues[newPos] = this->mValues[pos];
+	                    this->mColumns[newPos] = this->mColumns[pos];
+	                    newPos++;
+	                }
+	                else
+	                	numRemoved++;
+	            }
+	            start = this->mRowIndex[row + 1] - 1;
+	            this->mRowIndex[row + 1] = newPos + 1;
+
+	        }
+	    }
+	    else
+	    {
+	        for (int row = 0; row < this->GetNumRows(); row++)
+	        {
+	            for (int pos = start; pos < this->mRowIndex[row + 1]; pos++)
+	            {
+	                if (fabs(this->mValues[pos]) > tolerance)
+	                {
+	                    this->mValues[newPos] = this->mValues[pos];
+	                    this->mColumns[newPos] = this->mColumns[pos];
+	                    newPos++;
+	                }
+	                else
+	                 	numRemoved++;
+	            }
+	            start = this->mRowIndex[row + 1];
+	            this->mRowIndex[row + 1] = newPos;
+	        }
+	    }
+	    mValues.resize(mValues.size()-numRemoved);
+	    mColumns.resize(mColumns.size()-numRemoved);
+
+	    return numRemoved;
 }
 template<>
-void SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, double rRelativeTolerance)
+int SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, double rRelativeTolerance)
 {
     double tolerance =  rAbsoluteTolerance;
     if (rRelativeTolerance > 0)
@@ -48,20 +107,23 @@ void SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, doubl
         tolerance += rRelativeTolerance * maxValue;
     }
 
+    int numRemoved(0);
     int newPos = 0;
     int start = newPos;
     if (this->mOneBasedIndexing)
     {
         for (int row = 0; row < this->GetNumRows(); row++)
         {
-            for (int pos = start; pos < this->mRowIndex[row + 1] - 1; pos++)
+            for (int pos = start; pos < this->mRowIndex[row + 1] -1 ; pos++)
             {
-                if (fabs(this->mValues[pos - 1]) > tolerance)
+                if (fabs(this->mValues[pos]) > tolerance)
                 {
-                    this->mValues[newPos - 1] = this->mValues[pos];
-                    this->mColumns[newPos - 1] = this->mColumns[pos];
+                    this->mValues[newPos] = this->mValues[pos];
+                    this->mColumns[newPos] = this->mColumns[pos];
                     newPos++;
                 }
+                else
+                	numRemoved++;
             }
             start = this->mRowIndex[row + 1] - 1;
             this->mRowIndex[row + 1] = newPos + 1;
@@ -80,11 +142,17 @@ void SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, doubl
                     this->mColumns[newPos] = this->mColumns[pos];
                     newPos++;
                 }
+                else
+                 	numRemoved++;
             }
             start = this->mRowIndex[row + 1];
             this->mRowIndex[row + 1] = newPos;
         }
     }
+    mValues.resize(mValues.size()-numRemoved);
+    mColumns.resize(mColumns.size()-numRemoved);
+
+    return numRemoved;
 }
 
 }

@@ -1,3 +1,6 @@
+#ifdef SHOW_TIME
+    #include <ctime>
+#endif
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -10,6 +13,10 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 		NuTo::FullMatrix<int>& rGlobalDofsRow,
 		NuTo::FullMatrix<int>& rGlobalDofsColumn)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	try
 	{
 		ElementCoefficientMatrix_0(rElementId, rResult, rGlobalDofsRow, rGlobalDofsColumn);
@@ -31,6 +38,11 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 		throw MechanicsException("[NuTo::StructureBase::ElementStiffness] Error calculating stiffness of element "
 				+ s + ".");
 	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementStiffness] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
@@ -39,6 +51,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
 		                 NuTo::FullMatrix<int>& rGlobalDofsRow,
 		                 NuTo::FullMatrix<int>& rGlobalDofsColumn)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
@@ -76,6 +92,11 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
 
     rGlobalDofsColumn.Resize(globalDofsColumn.size(),1);
     memcpy(rGlobalDofsColumn.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief calculates the gradient of the internal potential
@@ -84,6 +105,10 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 		NuTo::FullMatrix<double>& rResult,
 		NuTo::FullMatrix<int>& rGlobalDofsRow)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
@@ -117,6 +142,11 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
     rGlobalDofsRow.Resize(globalDofsRow.size(),1);
     memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
 
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGradientInternalPotential] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 
@@ -180,6 +210,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_2(int rElementId,
 //! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstitutiveLawIdent)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
@@ -205,6 +239,11 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
     	throw NuTo::MechanicsException
     	   ("[NuTo::StructureBase::ElementSetConstitutiveLaw] Error setting constitutive law  for element " + ss.str() + ".");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief sets the constitutive law of a group of elements
@@ -212,6 +251,10 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
 //! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rConstitutiveLawIdent)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
@@ -246,12 +289,21 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
         	   ("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Error setting constitutive law for element " + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief sets the constitutive law of a all elements
 //! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIdent)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive==mConstitutiveLawMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Constitutive law with the given identifier does not exist.");
@@ -281,6 +333,11 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
         			   + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief sets the constitutive law of a single element
@@ -298,6 +355,10 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
 //! @param rConstitutiveLawIdent identifier for the section
 void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
@@ -323,6 +384,11 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
     	throw NuTo::MechanicsException
     	   ("[NuTo::StructureBase::ElementSetSection] Error setting section for element " + ss.str() + ".");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementSetSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief sets the section of a group of elements
@@ -330,6 +396,10 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
 //! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
@@ -364,12 +434,21 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
         	   ("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Error setting section for element " + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief sets the section for all elements
 //! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
     if (itSection==mSectionMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Section with the given identifier does not exist.");
@@ -399,6 +478,11 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
         			   + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief modifies the material of a single element
@@ -445,6 +529,10 @@ NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(con
 void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
 		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
@@ -466,6 +554,11 @@ void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
     	throw NuTo::MechanicsException
     	   ("[NuTo::StructureBase::ElementSetIntegrationType] Error setting integration type for element " + ss.str() + ".");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
 }
 
@@ -475,6 +568,10 @@ void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
 void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
 		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetIntegrationType] Group with the given identifier does not exist.");
@@ -505,6 +602,11 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
         	   ("[NuTo::StructureBase::ElementGroupSetIntegrationType] Error setting integration type for element " + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
 }
 
@@ -512,6 +614,10 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
 //! @param rSectionIdent identifier for the section
 void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     NuTo::IpData::eIpDataType ipDataType = ElementGetEnumIntegrationType(rIpDataTypeStr);
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -538,6 +644,11 @@ void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rInt
         			   + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief modifies the integration type of a single element
@@ -553,6 +664,10 @@ void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const
 //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
 void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix<double>& rEngineeringStrain)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
@@ -577,8 +692,13 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
         std::stringstream ss;
         ss << rElementId;
     	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] Error getting engineering strain for element " + ss.str() + ".");
+    	   ("[NuTo::StructureBase::ElementGetEngineeringStrain] Error getting engineering strain for element " + ss.str() + ".");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief calculates the engineering plastic strain
@@ -586,6 +706,10 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
 void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringPlasticStrain)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
@@ -612,6 +736,11 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
     	throw NuTo::MechanicsException
     	   ("[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] Error getting engineering strain for element " + ss.str() + ".");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief calculates the engineering stress
@@ -619,6 +748,10 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
 //! @param rEngineeringStress engineering stress (return value, always 6xnumIp matrix)
 void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix<double>& rEngineeringStress)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
@@ -634,7 +767,7 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
     {
         std::stringstream ss;
         ss << rElementId;
-        e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStrain] Error getting engineering strain for element "
+        e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStress] Error getting engineering strain for element "
         	+ ss.str() + ".");
         throw e;
     }
@@ -643,13 +776,22 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
         std::stringstream ss;
         ss << rElementId;
     	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementSetIntegrationType] Error getting engineering strain for element " + ss.str() + ".");
+    	   ("[NuTo::StructureBase::ElementGetEngineeringStress] Error getting engineering strain for element " + ss.str() + ".");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief updates the history data of a all elements
 void NuTo::StructureBase::ElementTotalUpdateStaticData()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
@@ -659,7 +801,8 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
         }
         catch (MechanicsException& e)
         {
-        	e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStress] error building tmp static data.");            throw e;
+        	e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStress] error building tmp static data.");
+        	throw e;
         }
     }
 
@@ -688,11 +831,20 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
         			   + ss.str() + ".");
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalUpdateStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief updates the history data of a all elements
 void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	if (mHaveTmpStaticData)
 	{
 		std::vector<ElementBase*> elementVector;
@@ -723,4 +875,9 @@ void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 	}
 	//std::cout << "NuTo::StructureBase::ElementTotalUpdateTmpStaticData " << mUpdateTmpStaticDataRequired << std::endl;
 	mUpdateTmpStaticDataRequired = false;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }

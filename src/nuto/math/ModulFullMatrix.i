@@ -6,6 +6,7 @@
 #include "nuto/math/Operator.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 #include <eigen2/Eigen/Array>
 %}
 

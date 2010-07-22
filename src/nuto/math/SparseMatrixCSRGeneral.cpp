@@ -13,6 +13,86 @@
 
 namespace NuTo
 {
+
+template<>
+void SparseMatrixCSRGeneral<double>::AddEntry(int rRow, int rColumn, double rValue)
+{
+	// check for overflow
+    assert(rRow < INT_MAX);
+    assert(rColumn < INT_MAX);
+    assert(rRow >= 0);
+    assert(rColumn >= 0);
+
+    // check bounds
+    if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
+    {
+        throw MathException("[SparseMatrixCSRGeneral::addEntry] row index is out of bounds.");
+    }
+    if (rColumn >= this->mNumColumns || rColumn<0)
+    {
+        throw MathException("[SparseMatrixCSRGeneral::addEntry] column index is out of bounds.");
+    }
+
+    if (this->mOneBasedIndexing)
+    {
+        rColumn++;
+
+        // find position in matrix
+        int pos = this->mRowIndex[rRow] - 1;
+        for (; (pos < this->mRowIndex[rRow + 1] - 1) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
+            ;
+
+        // add value
+        if ((pos == this->mRowIndex[rRow + 1] - 1) || (static_cast<int>(rColumn) != this->mColumns[pos])
+           )
+        {
+        	// insert new value
+            this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
+            this->mValues.insert(this->mValues.begin() + pos, rValue);
+            for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
+            {
+                this->mRowIndex[row_count] += 1;
+            }
+        }
+        else
+        {
+            // add to existing value
+            this->mValues[pos] += rValue;
+        }
+    }
+    else // zero based indexing
+    {
+        // find position in matrix
+        int pos = this->mRowIndex[rRow];
+        for (; (pos < this->mRowIndex[rRow + 1]) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
+            ;
+
+        // add value
+        if ((pos == this->mRowIndex[rRow + 1]) || (static_cast<int>(rColumn) != this->mColumns[pos])
+           )
+        {
+            // insert new value
+            this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
+            this->mValues.insert(this->mValues.begin() + pos, rValue);
+            for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
+            {
+                this->mRowIndex[row_count] += 1;
+            }
+        }
+        else
+        {
+            // add to existing value
+            this->mValues[pos] += rValue;
+        }
+    }
+}
+
+template<>
+void SparseMatrixCSRGeneral<int>::AddEntry(int rRow, int rColumn, int rValue)
+{
+	throw MathException("SparseMatrixCSRGeneral.cpp put this back into header file.");
+}
+
 template<>
 SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(FullMatrix<int>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
 {
@@ -365,4 +445,5 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector
     // renumber columns
     this->ReorderColumns(rMappingInitialToNewOrdering);
 }
+
 }

@@ -251,6 +251,14 @@ protected:
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
 
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<NodeBase*>& rNodes);
+
     //! @brief ... create local coefficient matrix 0 for a voxel and save a pointer to the matrix
     void BuildLocalCoefficientMatrix0() const;
 

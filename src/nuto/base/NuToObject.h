@@ -20,6 +20,11 @@ public:
 	NuToObject()
 	{
 		mVerboseLevel = 0;
+#ifdef SHOW_TIME
+    //! @brief ... show for each executed command the time required for the execution
+        mShowTime = false;
+#endif
+		mVerboseLevel = 0;
 	}
 
 	virtual ~NuToObject()
@@ -38,6 +43,22 @@ public:
 	{
 		return mVerboseLevel;
 	}
+
+#ifdef SHOW_TIME
+	//! @brief ... sets the showtime option
+    //! @param rShowTime ... show time option
+	void SetShowTime(bool rShowTime)
+	{
+		mShowTime=rShowTime;
+	}
+
+    //! @brief ... returns the show time optionl
+    //! @return show time
+	bool GetShowTime()const
+	{
+		return mShowTime;
+	}
+#endif
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 	virtual void Info()const=0;
@@ -238,6 +259,11 @@ public:
 
 protected:
 	unsigned short mVerboseLevel; //!< verbose level between 0 (no output) and 10 (all actions are commented on the console)
+
+#ifdef SHOW_TIME
+    //! @brief ... show for each executed command the time required for the execution
+    bool mShowTime;
+#endif
 };
 }
 #endif //NuToObject_H

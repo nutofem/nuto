@@ -139,7 +139,25 @@ if (printResult):
 #else:
 #    B_sparse_ref = nuto.DoubleSparseMatrixCSRGeneral(0,0)
 #    B_sparse_ref.restore(path_xml_sources+"sparseMatrixCSR_result_4_"+system+".xml",nuto.XML)
+
 ############################################################################
+# sparse matrix vector of vector with one based indexing ###################
+# (interface still uses zero based indexing)
+B2_sparse = nuto.DoubleSparseMatrixCSRVector2General(4,4)
+B_sparse.SetOneBasedIndexing()
+B2_sparse.AddEntry(1,1,3)
+B2_sparse.AddEntry(0,1,8)
+B2_sparse.AddEntry(0,0,2)
+B2_sparse.AddEntry(1,3,3)
+B2_sparse.AddEntry(1,2,5)
+B2_sparse.AddEntry(3,2,1)
+B2_sparse.AddEntry(3,3,7)
+B2_sparse.AddEntry(3,0,9)
+B2_sparse.AddEntry(3,1,4)
+if (printResult):
+    print "matrix B2, compressed storage, vector of vectors, one based indexing"
+    B_sparse.Info()
+    print ""
     
 if (error):
     sys.exit(-1)

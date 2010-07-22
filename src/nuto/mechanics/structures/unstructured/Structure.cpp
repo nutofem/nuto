@@ -57,6 +57,10 @@ void NuTo::Structure::serialize(Archive & ar, const unsigned int version)
 //! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Structure::Save (const std::string &filename, std::string rType )const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     try
     {
         //transform to uppercase
@@ -111,13 +115,23 @@ void NuTo::Structure::Save (const std::string &filename, std::string rType )cons
     {
         throw MechanicsException ( e.what() );
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::Save] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
+
 
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     try
     {
         //transform to uppercase
@@ -181,7 +195,13 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
     {
         throw MechanicsException ( e.what() );
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::Restore] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
+
 #endif // ENABLE_SERIALIZATION
 
 
@@ -192,7 +212,7 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
     assert(rMatrixJJ.IsSymmetric() == false);
     assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
     assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumEntries() == 0);
+//    assert(rMatrixJJ.GetNumEntries() == 0);
     assert(rMatrixJK.IsSymmetric() == false);
     assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
     assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
@@ -221,14 +241,17 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
             {
                 for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
                 {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
+                    if (fabs(elementMatrix(rowCount, colCount))>mToleranceStiffnessEntries)
                     {
-                        rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+						int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
+						if (globalColumnDof < this->mNumActiveDofs)
+						{
+							rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+						}
+						else
+						{
+							rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+						}
                     }
                 }
             }
@@ -505,6 +528,10 @@ void NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullM
 //! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveId);
     if (itConstitutive==mConstitutiveLawMap.end())
         throw MechanicsException("[NuTo::Structure::BuildNonlocalData] Constitutive law with the given identifier does not exist.");
@@ -521,8 +548,13 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
     catch(...)
     {
     	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementSetConstitutiveLaw] Error calculating nonlocal data.");
+    	   ("[NuTo::StructureBase::BuildNonlocalData] Error calculating nonlocal data.");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::BuildNonlocalData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
@@ -680,7 +712,8 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
     }
 
     delete kdTree;
-    annDeallocPts(dataPoints);
+    if (dataPoints!=0)
+        annDeallocPts(dataPoints);
 
     delete [] nnIdx;
     delete [] dists;
@@ -702,6 +735,10 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
 		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     try
     {
     	std::set<int> groupIds;
@@ -717,6 +754,11 @@ void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
     	throw NuTo::MechanicsException
     	   ("[NuTo::Structure::ImportFromGmsh] Error importing from Gmsh.");
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::ImportFromGmsh] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
@@ -787,7 +829,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
 		bool rAddGroups, std::set<int>& rElementGroupIds)
 {
-    const unsigned int num_elm_nodes[20] =
+    const unsigned int num_elm_nodes[21] =
         {
             0,
             2,
@@ -913,7 +955,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         }
 
         // begin element section
-        getline (file, line);
+         getline (file, line);
         if(line != "$Elements")
         {
         	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] $Elements not found.");
@@ -1109,7 +1151,6 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         }
     }
 */
-
     //create the nodes
 	NuTo::FullMatrix<double> coordinates;
 	switch (mDimension)
@@ -1146,7 +1187,16 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
     	case 2:
     		theElementId = ElementCreate("PLANE2D3N",nodeNumbers,rElementData, rIPData);
     		break;
-    	case 8:
+    	case 3:
+    		theElementId = ElementCreate("PLANE2D4N",nodeNumbers,rElementData, rIPData);
+    		break;
+    	case 4:
+    		theElementId = ElementCreate("TETRAHEDRON4N",nodeNumbers,rElementData, rIPData);
+    		break;
+    	case 5:
+    		theElementId = ElementCreate("BRICK8N",nodeNumbers,rElementData, rIPData);
+    		break;
+     	case 9:
     		theElementId = ElementCreate("PLANE2D6N",nodeNumbers,rElementData, rIPData);
     		break;
     	default:

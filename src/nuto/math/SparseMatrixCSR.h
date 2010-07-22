@@ -336,7 +336,17 @@ public:
     //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
-    void RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0);
+    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0);
+
+
+    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
+    void SetZeroEntries()
+    {
+    	for (unsigned int count=0; count<mValues.size(); count++)
+    	{
+    		mValues[count] = 0;
+    	}
+    }
 protected:
     //! @brief value of nonzero matrix entries
     std::vector<T> mValues;

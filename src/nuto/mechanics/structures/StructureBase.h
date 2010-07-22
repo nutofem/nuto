@@ -3,6 +3,8 @@
 #ifndef STRUCTUREBASE_H
 #define STRUCTUREBASE_H
 
+#include <ctime>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
@@ -240,7 +242,7 @@ public:
 
     //! @brief delete element
     //! @param rIdent ... element identifier
-    virtual void ElementDelete(const int rIdent)=0;
+    virtual void ElementDelete(int rIdent)=0;
 
     //! @brief info about the elements in the Structure
     virtual void ElementInfo(int mVerboseLevel)const=0;
@@ -815,6 +817,13 @@ public:
     //! @param ... rIdentNode  identifier for the node
     void GroupAddNode(int rIdentGroup, int rIdNode);
 
+    //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rDirection either 0,1,2 for x,y, or z
+    //! @param ... rMin ... minimum value
+    //! @param ... rMax ... maximum value
+    void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
+
     //! @brief ... Adds an element to an element group
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rIdentElement  identifier for the element
@@ -853,6 +862,13 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const;
 
+    //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
+    //! values smaller than that one will not be added to the global matrix
+    void SetToleranceStiffnessEntries(double rToleranceStiffnessEntries);
+
+    //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
+    //! values smaller than that one will not be added to the global matrix
+    double GetToleranceStiffnessEntries()const;
 
 protected:
     int mDimension;
@@ -908,6 +924,10 @@ protected:
     //! @brief is set to false, if the structure is changed (nodes, elements) or (DOFs at the nodes)
     bool mUpdateTmpStaticDataRequired;
 
+    //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
+    //! values smaller than that one will not be added to the global matrix
+    double mToleranceStiffnessEntries;
+
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     virtual void GetElementsTotal(std::vector<const ElementBase*>& rElements) const = 0;
@@ -915,6 +935,14 @@ protected:
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     virtual void GetElementsTotal(std::vector<ElementBase*>& rElements) = 0;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    virtual void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const = 0;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    virtual void GetNodesTotal(std::vector<NodeBase*>& rNodes) = 0;
 
     //! @brief ... store all elements of a group in a vector
     //! @param rElementGroup ... element group

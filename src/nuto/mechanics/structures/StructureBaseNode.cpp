@@ -10,6 +10,10 @@
 //! @param rDisplacements matrix (one column) with the displacements
 void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<double>& rDisplacements)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	NodeBase* nodePtr=NodeGetNodePtr(rNode);
 	this->mUpdateTmpStaticDataRequired=true;
 
@@ -41,6 +45,11 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 	{
 	    throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements of node (unspecified exception).");
 	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief sets the displacements of a group of nodes
@@ -48,6 +57,10 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 //! @param rDisplacements matrix (one column) with the displacements
 void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullMatrix<double>& rDisplacements)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	this->mUpdateTmpStaticDataRequired=true;
 	if (rDisplacements.GetNumColumns()!=1)
 	     throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] Displacement matrix has to have a single column.");
@@ -89,6 +102,11 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullM
 			throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] Error setting displacements of node (unspecified exception).");
 		}
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief gets the displacements of a node
@@ -96,6 +114,10 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullM
 //! @param rDisplacements matrix (one column) with the displacements
 void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rDisplacements)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	const NodeBase* nodePtr = NodeGetNodePtr(rNode);
 
 	try
@@ -128,24 +150,47 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 	{
 	    throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Error getting displacements of node (unspecified exception).");
 	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief returns the number of global dofs
 //! @return number of global dofs
 int NuTo::StructureBase::NodeGetNumberGlobalDofs()const
 {
-    if (mNodeNumberingRequired)
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+   if (mNodeNumberingRequired)
         throw MechanicsException("[NuTo::StructureBase::NodeGetNumberGlobalDofs] Number the DOF's first.");
     return mNumDofs;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief returns the number of active dofs
 //! @return number of active dofs
 int NuTo::StructureBase::NodeGetNumberActiveDofs()const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     if (mNodeNumberingRequired)
         throw MechanicsException("[NuTo::StructureBase::NodeGetNumberActiveDofs] Number the DOF's first.");
     return mNumActiveDofs;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief calculate the internal force vector for a node
@@ -153,6 +198,10 @@ int NuTo::StructureBase::NodeGetNumberActiveDofs()const
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
 void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	try
 	{
         const NodeBase* nodePtr = NodeGetNodePtr(rId);
@@ -167,6 +216,11 @@ void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& r
 	{
 	    throw MechanicsException("[NuTo::StructureBase::NodeGradientInternalPotential] Error getting gradient of internal potential (unspecified exception).");
 	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief calculate the internal force vector for a node group of nodes
@@ -174,6 +228,10 @@ void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& r
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
 void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce) const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] Group with the given identifier does not exist.");
@@ -207,6 +265,11 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatr
 			throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] Error getting gradient of internal potential (unspecified exception).");
 		}
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief calculate the internal force vector for a node

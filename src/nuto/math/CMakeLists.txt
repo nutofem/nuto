@@ -8,6 +8,8 @@ SET(NuToMath_SOURCES
   SparseMatrixCSR.cpp
   SparseMatrixCSRGeneral.cpp
   SparseMatrixCSRSymmetric.cpp
+  SparseMatrixCSRVector2.cpp
+  SparseMatrixCSRVector2General.cpp
   SparseDirectSolverMKLDSS.cpp
   SparseDirectSolverMKLPardiso.cpp
   SparseDirectSolverMUMPS.cpp

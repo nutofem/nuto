@@ -118,7 +118,7 @@ public:
     //! @param rNodeNumber ... node number
     void NodeDelete(const int rNodeNumber);
 
-   //! @brief info about the nodes in the Structure
+    //! @brief info about the nodes in the Structure
     void NodeInfo(int mVerboseLevel)const;
 
     //! @brief numbers the dofs in the structure
@@ -219,9 +219,17 @@ public:
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
-    void ElementDelete (const int rElementNumber);
+    void ElementDelete (int rElementNumber);
+
+    //! @brief Deletes a group of elements element
+    //! @param rGroupNumber group number
+    void ElementGroupDelete (int rGroupNumber, bool deleteNodes);
 
 #ifndef SWIG
+   //! @brief Deletes an element
+    //! @param rItElement iterator of the map
+    void ElementDeleteInternal(int rElementId);
+
     //! @brief Creates an element
     //! @param rElementNumber element number
     //! @param rElementType element type
@@ -265,6 +273,19 @@ protected:
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<ElementBase*>& rElements);
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<NodeBase*>& rNodes);
+
+    //! @brief deletes a node
+    //! @param rNodeNumber ... node number
+    //! @param checkElements ... check the elements, if set to false, make sure that the node is not part of any element
+    void NodeDelete(int rNodeNumber, bool checkElements);
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)

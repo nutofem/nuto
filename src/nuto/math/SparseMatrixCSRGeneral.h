@@ -76,7 +76,8 @@ public:
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    void AddEntry(int rRow, int rColumn, T rValue)
+    void AddEntry(int rRow, int rColumn, T rValue);
+/*
     {
         // check for overflow
         assert(rRow < INT_MAX);
@@ -106,7 +107,8 @@ public:
             if ((pos == this->mRowIndex[rRow + 1] - 1) || (static_cast<int>(rColumn) != this->mColumns[pos])
                )
             {
-                // insert new value
+                std::cout << "add new value" << std::endl;
+            	// insert new value
                 this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
                 this->mValues.insert(this->mValues.begin() + pos, rValue);
                 for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
@@ -116,6 +118,7 @@ public:
             }
             else
             {
+                std::cout << "add existing value" << std::endl;
                 // add to existing value
                 this->mValues[pos] += rValue;
             }
@@ -146,7 +149,7 @@ public:
             }
         }
     }
-
+*/
     //! @brief ... print info about the object
     void Info() const
     {

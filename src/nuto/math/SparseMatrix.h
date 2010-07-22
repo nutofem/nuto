@@ -99,6 +99,12 @@ public:
     //! @return ... true if the matrix is symmetric, false otherwise
     virtual bool IsSymmetric() const = 0;
 
+    //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
+    //! @param rAbsoluteTolerance ... absolute tolerance
+    //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
+    virtual int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0) = 0;
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

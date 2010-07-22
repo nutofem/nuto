@@ -194,6 +194,27 @@ void NuTo::StructureGrid::GetElementsTotal(std::vector<const ElementBase*>& rEle
     }
 }
 
+//! @brief  store all nodes of a structure in a vector
+void NuTo::StructureGrid::GetNodesTotal(std::vector<NodeBase*>& rNodes)
+{
+    boost::ptr_vector<NodeBase>::iterator NodeIter = this->mNodeVec.begin();
+    while (NodeIter != this->mNodeVec.end())
+    {
+    	rNodes.push_back(&(*NodeIter));
+    	NodeIter++;
+    }
+}
+
+//! @brief  store all nodes of a structure in a vector
+void NuTo::StructureGrid::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
+{
+    boost::ptr_vector<NodeBase>::const_iterator NodeIter = this->mNodeVec.begin();
+    while (NodeIter != this->mNodeVec.end())
+    {
+    	rNodes.push_back(&(*NodeIter));
+    	NodeIter++;
+    }
+}
 //! @brief returns number of Voxels
 //! @return number of Voxels
 int NuTo::StructureGrid::GetNumVoxels() const

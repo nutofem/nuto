@@ -8,6 +8,7 @@
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
+#include "nuto/mechanics/groups/Group.h"
 //! @brief returns the number of nodes
 //! @return number of nodes
 int NuTo::Structure::GetNumElements() const
@@ -315,28 +316,120 @@ NuTo::FullMatrix<int> NuTo::Structure::ElementsCreate (const std::string& rEleme
 
 //! @brief Deletes an element
 //! @param rElementIdent identifier for the element
-void NuTo::Structure::ElementDelete(const int rElementNumber)
+void NuTo::Structure::ElementDelete(int rElementNumber)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+   	ElementDeleteInternal(rElementNumber);
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::ElementDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
 
+//! @brief Deletes a group of elements element
+//! @param rGroupNumber group number
+void NuTo::Structure::ElementGroupDelete (int rGroupNumber, bool deleteNodes)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumber);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupDelete] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    	throw MechanicsException("[NuTo::StructureBase::ElementGroupDelete] Group is not an element group.");
+
+    //the group has to be copied, since the elements are removed from this group, which invalidates the iterators
+    Group<ElementBase> copyOfElementGroup = *(dynamic_cast<Group<ElementBase>*>(itGroup->second));
+
+    std::set<NodeBase*> potentialNodesToBeRemoved;
+    for (Group<ElementBase>::iterator itElement=copyOfElementGroup.begin(); itElement!=copyOfElementGroup.end();itElement++)
+    {
+        try
+        {
+        	//save the nodes, which are eventually to be removed
+        	if (deleteNodes)
+        	{
+        		for (int countNode=0; countNode<(*itElement)->GetNumNodes(); countNode++)
+        		{
+        			NodeBase* nodePtr = (*itElement)->GetNode(countNode);
+        			potentialNodesToBeRemoved.insert(nodePtr);
+
+        		}
+        	}
+        	ElementDeleteInternal((*itElement)->ElementGetId());
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            e.AddMessage("[NuTo::StructureBase::ElementGroupDelete] Error deleting element "
+            	+ ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+        	throw NuTo::MechanicsException
+        	   ("[NuTo::StructureBase::ElementGroupDelete] Error deleting element " + ss.str() + ".");
+        }
+    }
+
+    //check all the other elements and see, if they have one of the potential Nodes To Be Removed as valid node
+    for (boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.begin(); itElement != mElementMap.end(); itElement++)
+    {
+    	for (int countNode=0; countNode<(itElement->second)->GetNumNodes(); countNode++)
+		{
+			NodeBase* nodePtr = (itElement->second)->GetNode(countNode);
+			//int numRemoved = potentialNodesToBeRemoved.erase(nodePtr);
+			potentialNodesToBeRemoved.erase(nodePtr);
+		}
+    }
+
+    for (std::set<NodeBase*>::iterator itNode = potentialNodesToBeRemoved.begin(); itNode != potentialNodesToBeRemoved.end(); itNode++)
+    {
+    	int nodeId(NodeGetId(*itNode));
+    	NodeDelete(nodeId,false);
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief Deletes an element
+//! @param rItElement iterator of the map
+void NuTo::Structure::ElementDeleteInternal(int rElementId)
+{
 	// find element
-	boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.find(rElementNumber);
+	boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.find(rElementId);
     if (itElement == this->mElementMap.end())
     {
-        throw MechanicsException("[NuTo::Structure::ElementDelete] Element does not exist.");
+        throw MechanicsException("[NuTo::Structure::ElementDeleteInternal] Element does not exist.");
     }
     else
     {
-    	// Search for elements in groups: using a loop over all groups
-        for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
-        	if(groupIt->second->GetType()==NuTo::Groups::Elements){
-        		if(groupIt->second->Contain(itElement->second)){
-        			groupIt->second->RemoveMember(itElement->second);
-        		}
-        	}
-        }
+		// Search for elements in groups: using a loop over all groups
+		for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt)
+		{
+			if(groupIt->second->GetType()==NuTo::Groups::Elements)
+			{
+				if(groupIt->second->Contain(itElement->second))
+				{
+					groupIt->second->RemoveMember(itElement->second);
+				}
+			}
+		}
 
-        // delete element from map
-        this->mElementMap.erase(itElement);
+		// delete element from map
+		this->mElementMap.erase(itElement);
     }
 }
 

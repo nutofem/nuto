@@ -20,9 +20,15 @@ public:
     SparseDirectSolverMKLPardiso();
 
     //! @brief ... print information about the class attributes
-    virtual void Info()
+    virtual void Info()const
     {
     }
+
+    std::string GetTypeId()const
+    {
+        return std::string("SparseDirectSolverMKLPardiso");
+    }
+
 #ifdef HAVE_MKL_PARDISO
     //! @brief ... solve system of equations: rMatrix * rSolution = rRhs
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)

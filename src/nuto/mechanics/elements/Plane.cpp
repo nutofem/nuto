@@ -87,7 +87,8 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
     const ConstitutiveEngineeringStressStrain *constitutivePtr;
 
 
-    bool areAllIpsSymmetric=(true);
+    bool areAllIpsSymmetric(true);
+    bool areAllIpsLocal(true);
     for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
     {
         GetLocalIntegrationPointCoordinates(theIP, naturalIPCoord);
@@ -127,7 +128,9 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
 					const Plane* nonlocalElement(nonlocalElements[theNonlocalElement]->AsPlane());
 
 					if (nonlocalElement!=this)
-						continue;
+					{
+						throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_0] The first nonlocal element for an element should always be itself.");
+					}
 
 					for (int theNonlocalIp = 0; theNonlocalIp < nonlocalElement->GetNumIntegrationPoints(); theNonlocalIp++)
 					{
@@ -141,12 +144,14 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
 
 					}
 					firstCol+=nonlocalElement->GetNumLocalDofs();
+					break;
 				}
             }
             else
             {
 				//nonlocal BMatrix of nonlocal other integration point
             	areAllIpsSymmetric = false;
+            	areAllIpsLocal = false;
             	//sum over nonlocal elements and their ips
 				const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
 				int firstCol(0);
@@ -211,7 +216,18 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
 
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofsRow);
-    this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
+    if (areAllIpsLocal)
+    {
+    	// only the first nonlocal matrix has nonzero entries, the rest is zero, so resize the matrix
+    	// to avoid adding unnecessary elements to the global matrix
+    	rCoefficientMatrix = rCoefficientMatrix.GetBlock(0,0,rGlobalDofsRow.size(),rGlobalDofsRow.size());
+    	rGlobalDofsColumn = rGlobalDofsRow;
+        assert((int)rGlobalDofsRow.size()==rCoefficientMatrix.GetNumColumns());
+    }
+    else
+    {
+        this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
+    }
 
     assert((int)rGlobalDofsRow.size()==rCoefficientMatrix.GetNumRows());
     assert((int)rGlobalDofsColumn.size()==rCoefficientMatrix.GetNumColumns());
@@ -271,13 +287,9 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
                               FullMatrix<double>& rCoefficientMatrix)const
 {
-	std::cout << rCoefficientMatrix.GetNumRows() << " " << 2*GetNumShapeFunctions() << " " << rCoefficientMatrix.GetNumColumns() << std::endl;
 	assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rCoefficientMatrix.GetNumColumns()==2*GetNumShapeFunctions());
     assert((int)rDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
     const double *C = rConstitutiveTangent->GetData();
-    std::cout << C[0] << " " << C[3] << " " << C[6] << std::endl;
-    std::cout << C[1] << " " << C[4] << " " << C[7] << std::endl;
-    std::cout << C[2] << " " << C[5] << " " << C[8] << std::endl;
     double x1,x2,y1,y2,x1x2,y2x1,x2y1,y2y1;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {

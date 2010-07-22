@@ -2158,9 +2158,10 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 						}
 					}
 				} // end of loop
+#ifdef ENABLE_DEBUG
             	if (convergedInternal==false)
             	{
-            		std::cout << "     norm Residual " << residual.squaredNorm() << std::endl;
+            		std::cout << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << std::endl;
             		for (int count=0; count<2; count++)
             		{
             			if (yieldConditionFlag(count)==ACTIVE)
@@ -2173,6 +2174,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 
             		}
             	}
+#endif
             }
         }
         catch (NuTo::MechanicsException& e)

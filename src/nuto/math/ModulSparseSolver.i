@@ -4,6 +4,7 @@
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/math/SparseDirectSolver.h"
 #include "nuto/math/SparseDirectSolverMKLDSS.h"
 #include "nuto/math/SparseDirectSolverMKLPardiso.h"

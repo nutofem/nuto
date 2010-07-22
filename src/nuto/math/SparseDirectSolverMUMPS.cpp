@@ -1,5 +1,7 @@
 // $Id$
-#include <ctime>
+#ifdef SHOW_TIME
+    #include <ctime>
+#endif
 
 #ifdef HAVE_MUMPS
 extern "C"
@@ -27,8 +29,10 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
 #ifdef HAVE_MUMPS
 void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
 {
-    // timing
-    clock_t startTime = clock();
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
@@ -124,15 +128,13 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
     {
         throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Analysis and reordering phase: " + this->GetErrorString(solver.info[0]) + ".");
     }
-    if (this->mVerboseLevel > 0)
-    {
-        clock_t endTime = clock();
-        std::cout << "[SparseDirectSolverMUMPS::solve] Time for reordering and symbolic factorization: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
-        startTime = endTime;
-    }
+
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] reordering and symbolic factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
 
     // Numerical factorization.
     solver.job = 2;
@@ -141,15 +143,13 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
     {
         throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Numerical factorization phase: " + this->GetErrorString(solver.info[0]) + ".");
     }
-    if (this->mVerboseLevel > 0)
-    {
-        clock_t endTime = clock();
-        std::cout << "[SparseDirectSolverMUMPS::solve] Time for numerical factorization: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds."
-                  << std::endl;
-        startTime = endTime;
-    }
+
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] numerical factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
 
     // solution
     solver.job = 3;
@@ -162,15 +162,6 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
             throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Solution phase: " + this->GetErrorString(solver.info[0]) + ".");
         }
     }
-    if (this->mVerboseLevel > 0)
-    {
-        clock_t endTime = clock();
-        std::cout << "[SparseDirectSolverMUMPS::solve] Time for solution: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
-        startTime = endTime;
-    }
 
     // Termination and release of memory
     solver.job = -2;
@@ -179,6 +170,11 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
     {
         throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Termination phase: " + this->GetErrorString(solver.info[0]) + ".");
     }
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] Solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const

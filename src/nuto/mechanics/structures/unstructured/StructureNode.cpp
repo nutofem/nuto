@@ -1,4 +1,5 @@
 #include <boost/tokenizer.hpp>
+#include <sstream>
 
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/FullMatrix.h"
@@ -340,9 +341,14 @@ NuTo::FullMatrix<int> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::Full
     return ids;
 }
 
+void NuTo::Structure::NodeDelete(int rNodeNumber)
+{
+	NodeDelete(rNodeNumber,true);
+}
+
 //! @brief Deletes a nodes
 //! @param rNodeNumber identifier for the node
-void NuTo::Structure::NodeDelete(const int rNodeNumber)
+void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 {
     boost::ptr_map<int,NodeBase>::iterator itNode = mNodeMap.find(rNodeNumber);
     if (itNode==this->mNodeMap.end())
@@ -351,16 +357,25 @@ void NuTo::Structure::NodeDelete(const int rNodeNumber)
     }
     else
     {
-    	/// Search for node in elements: using a loop over all elements
-        for(boost::ptr_map<int,ElementBase>::const_iterator elemIt=mElementMap.begin(); elemIt!=mElementMap.end(); ++elemIt){
-        	// loop over all element nodes
-        	for(unsigned short iNode=0; iNode<elemIt->second->GetNumNodes(); ++iNode){
-            	// if the id of the node to be deleted is found, throw an error
-        		if(rNodeNumber == this->NodeGetId(elemIt->second->GetNode(iNode)) ){
-        	        throw MechanicsException( "[NuTo::Structure::NodeDelete] Node with given id is already in use.");
-        		}
-        	}
-        }
+    	if (checkElements)
+    	{
+			/// Search for node in elements: using a loop over all elements
+			for(boost::ptr_map<int,ElementBase>::const_iterator elemIt=mElementMap.begin(); elemIt!=mElementMap.end(); ++elemIt)
+			{
+				// loop over all element nodes
+				for(unsigned short iNode=0; iNode<elemIt->second->GetNumNodes(); ++iNode)
+				{
+					// if the id of the node to be deleted is found, throw an error
+					if(rNodeNumber == this->NodeGetId(elemIt->second->GetNode(iNode)) )
+					{
+						std::stringstream outNode, outElement;
+						outNode << rNodeNumber;
+						outElement << (elemIt->first);
+						throw MechanicsException( "[NuTo::Structure::NodeDelete] Node " + outNode.str() + " is used by element " + outElement.str() + ", delete element first");
+					}
+				}
+			}
+    	}
 
     	//! Search for node in groups
         //! using a loop over all groups
@@ -378,7 +393,6 @@ void NuTo::Structure::NodeDelete(const int rNodeNumber)
 
         this->mNodeNumberingRequired = true;
     }
-
 }
 
 //! @brief number the dofs in the structure
@@ -486,6 +500,30 @@ void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues,
     }
 }
 
+// store all nodes of a structure in a vector
+void NuTo::Structure::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
+{
+	rNodes.reserve(mNodeMap.size());
+	boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
+    while (NodeIter != this->mNodeMap.end())
+    {
+    	rNodes.push_back(NodeIter->second);
+        NodeIter++;
+    }
+}
+
+// store all nodes of a structure in a vector
+void NuTo::Structure::GetNodesTotal(std::vector<NodeBase*>& rNodes)
+{
+	rNodes.reserve(mNodeMap.size());
+    boost::ptr_map<int,NodeBase>::iterator NodeIter = this->mNodeMap.begin();
+    while (NodeIter != this->mNodeMap.end())
+    {
+    	rNodes.push_back(NodeIter->second);
+        NodeIter++;
+    }
+}
+
 // merge dof first time derivative values
 void NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues)
 {
@@ -565,3 +603,4 @@ void NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues(FullMatrix<double
         it->second->GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 }
+

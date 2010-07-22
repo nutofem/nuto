@@ -21,9 +21,16 @@ public:
     SparseDirectSolverMKLDSS();
 
     //! @brief ... print information about the class attributes
-    virtual void Info()
+    virtual void Info()const
     {
     }
+
+    std::string GetTypeId()const
+    {
+        return std::string("SparseDirectSolverMKLDSS");
+    }
+
+
 #ifdef HAVE_MKL_DSS
     //! @brief ... solve the system of equations
     //! @param rMatrix ... sparse coefficient matrix stored in the CSR format
