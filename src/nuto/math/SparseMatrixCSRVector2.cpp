@@ -25,4 +25,88 @@ std::string SparseMatrixCSRVector2<int>::GetTypeId() const
 {
     return std::string("SparseMatrixCSRVector2Int");
 }
+template<>
+int SparseMatrixCSRVector2<int>::RemoveZeroEntries(double rAbsoluteTolerance, double rRelativeTolerance)
+{
+	   double tolerance =  rAbsoluteTolerance;
+	    if (rRelativeTolerance > 0)
+	    {
+	        int maxValue,minValue;
+	        Max(maxValue);
+	        Min(minValue);
+
+	        if (fabs(maxValue)>fabs(minValue))
+	            tolerance += rRelativeTolerance * maxValue;
+	    }
+
+	    int numRemoved(0);
+		for (int row = 0; row < this->GetNumRows(); row++)
+		{
+			int numRemovedPerRow;
+			unsigned int newPos(0);
+			std::vector<int>& thisValueVec(this->mValues[row]);
+			std::vector<int>& thisColumnVec(this->mColumns[row]);
+			for (unsigned int pos = 0; pos < thisColumnVec.size(); pos++)
+			{
+				if (fabs(thisValueVec[pos]) > tolerance)
+				{
+					thisValueVec[newPos] = thisValueVec[pos];
+					thisColumnVec[newPos] = thisColumnVec[pos];
+					newPos++;
+				}
+				else
+				{
+					numRemovedPerRow++;
+				}
+			}
+			thisValueVec.resize(thisValueVec.size()-numRemovedPerRow);
+		    thisColumnVec.resize(thisColumnVec.size()-numRemovedPerRow);
+		    numRemoved+=numRemovedPerRow;
+		}
+
+	    return numRemoved;
+}
+
+template<>
+int SparseMatrixCSRVector2<double>::RemoveZeroEntries(double rAbsoluteTolerance, double rRelativeTolerance)
+{
+   double tolerance =  rAbsoluteTolerance;
+	if (rRelativeTolerance > 0)
+	{
+		double maxValue,minValue;
+		Max(maxValue);
+		Min(minValue);
+
+		if (fabs(maxValue)>fabs(minValue))
+			tolerance += rRelativeTolerance * maxValue;
+	}
+
+	int numRemoved(0);
+	for (int row = 0; row < this->GetNumRows(); row++)
+	{
+		unsigned int numRemovedPerRow(0);
+		unsigned int newPos(0);
+		std::vector<double>& thisValueVec(this->mValues[row]);
+		std::vector<int>& thisColumnVec(this->mColumns[row]);
+		for (unsigned int pos = 0; pos < thisColumnVec.size(); pos++)
+		{
+			if (fabs(thisValueVec[pos]) > tolerance)
+			{
+				thisValueVec[newPos] = thisValueVec[pos];
+				thisColumnVec[newPos] = thisColumnVec[pos];
+				newPos++;
+			}
+			else
+			{
+				numRemovedPerRow++;
+			}
+		}
+		thisValueVec.resize(thisValueVec.size()-numRemovedPerRow);
+		thisColumnVec.resize(thisColumnVec.size()-numRemovedPerRow);
+		numRemoved+=numRemovedPerRow;
+	}
+
+	return numRemoved;
+}
+
 }

@@ -28,6 +28,7 @@
 
 namespace NuTo
 {
+template <class T> class SparseMatrixCSRGeneral;
 //! @author Jörg F. Unger, NU
 //! @date July 2010
 //! @brief ... abstract base class for sparse matrices which are stored in CSR format
@@ -38,6 +39,7 @@ class SparseMatrixCSRVector2 : public SparseMatrix<T>
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
+    friend class NuTo::SparseMatrixCSRGeneral<T>;
 
 public:
     //! @brief ... constructor
@@ -55,7 +57,7 @@ public:
 
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
-    void Resize(int rNumRows_)
+    void Resize(int rNumRows_, int rNumColumns)
     {
         // check for overflow
         assert(rNumRows_ < INT_MAX);
@@ -64,6 +66,8 @@ public:
         //no resize, since the reserved size is only decreased with a copy of a new object
         this->mValues  = std::vector<std::vector<T> >(rNumRows_);
         this->mColumns = std::vector<std::vector<int > >(rNumRows_);
+
+        mNumColumns = rNumColumns;
     }
 
     //! @brief ... reserve memory for non-zero matrix entries
@@ -372,13 +376,24 @@ public:
             }
         }
     }
+
+    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
+    void SetZeroEntries()
+    {
+        for (unsigned int row_count = 0; row_count < this->mColumns.size(); row_count++)
+        {
+            for (unsigned int col_count = 0; col_count < this->mColumns[row_count].size(); col_count++)
+            {
+            	mValues[row_count][col_count]= 0;
+            }
+        }
+    }
+
     //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
-    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0)
-    {
-    	throw MathException("[NuTo::SparseMatrixCSRVector2::RemoveZeroEntries] to be implemented.");
-    }
+    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0);
+
 protected:
     //! @brief value of nonzero matrix entries
     std::vector<std::vector<T> > mValues;

@@ -36,6 +36,8 @@ class ElementBase;
 template <class T> class FullMatrix;
 class NodeBase;
 template<class T> class SparseMatrixCSRSymmetric;
+template <class T> class SparseMatrixCSRVector2General;
+
 class VisualizeComponentBase;
 
 //! @author Jörg F. Unger, ISM
@@ -118,7 +120,7 @@ public:
 #endif // ENABLE_VISUALIZE
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmeetric)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
     void BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
 
@@ -126,6 +128,11 @@ public:
     //! @param rMatrix ... global coefficient matrix (symmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
     void BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    void BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector
@@ -948,6 +955,9 @@ protected:
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer
     void GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const;
+
+    //! @brief ... check for dof numbering and build of tmpStaticData
+    void BuildGlobalCoefficientMatrixCheck();
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)

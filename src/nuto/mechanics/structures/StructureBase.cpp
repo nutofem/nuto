@@ -21,6 +21,7 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
@@ -380,6 +381,29 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
 
 #endif // ENABLE_VISUALIZE
 
+void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
+{
+   // build global dof numbering if required
+	if (this->mNodeNumberingRequired)
+	{
+		try
+		{
+			this->NodeBuildGlobalDofs();
+		}
+		catch (MechanicsException& e)
+		{
+			e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] error building global dof numbering.");
+			throw e;
+		}
+	}
+
+	// build global tmp static data
+	if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+	{
+		throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] First update of tmp static data required.");
+	}
+}
+
 // build global coefficient matrix0
 void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
 {
@@ -387,26 +411,8 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
     std::clock_t start,end;
     start=clock();
 #endif
-
-    // build global dof numbering if required
-    if (this->mNodeNumberingRequired)
-    {
-        try
-        {
-            this->NodeBuildGlobalDofs();
-        }
-        catch (MechanicsException& e)
-        {
-            e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error building global dof numbering.");
-            throw e;
-        }
-    }
-
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] First update of tmp static data required.");
-    }
+    //check for dof numbering and build of tmp static data
+    BuildGlobalCoefficientMatrixCheck();
 
     // get dof values stored at the nodes
     FullMatrix<double> activeDofValues;
@@ -459,7 +465,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
 
         // build global matrix
-        SparseMatrixCSRGeneral<double> transConstraintMatrix = this->mConstraintMatrix.transpose();
+        SparseMatrixCSRGeneral<double> transConstraintMatrix = this->mConstraintMatrix.Transpose();
         rMatrix -= transConstraintMatrix * coefficientMatrixKJ + coefficientMatrixJK * this->mConstraintMatrix;
         rMatrix += transConstraintMatrix * coefficientMatrixKK * this->mConstraintMatrix;
 
@@ -480,25 +486,8 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
     std::clock_t start,end;
     start=clock();
 #endif
-    // build global dof numbering if required
-    if (this->mNodeNumberingRequired)
-    {
-        try
-        {
-            this->NodeBuildGlobalDofs();
-        }
-        catch (MechanicsException& e)
-        {
-            e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error building global dof numbering.");
-            throw e;
-        }
-    }
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] First update of tmp static data required.");
-    }
-
+    //check for dof numbering and build of tmp static data
+    BuildGlobalCoefficientMatrixCheck();
 
     // get dof values stored at the nodes
     FullMatrix<double> activeDofValues;
@@ -563,6 +552,83 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
         std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+// build global coefficient matrix0
+void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    //check for dof numbering and build of tmp static data
+    BuildGlobalCoefficientMatrixCheck();
+
+    // get dof values stored at the nodes
+    FullMatrix<double> activeDofValues;
+    FullMatrix<double> dependentDofValues;
+    try
+    {
+        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+    }
+    catch (MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
+        throw e;
+    }
+
+//    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+   // resize output objects
+    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
+    {
+        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+    }
+    else
+    {
+        rMatrix.SetZeroEntries();
+    }
+
+    rVector.Resize(this->mNumActiveDofs, 1);
+    if (this->mConstraintMatrix.GetNumEntries() == 0)
+    {
+        //std::cout << "non-symmetric, zero constraint matrix" << std::endl;
+
+        // define additional submatrix
+        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
+
+        // build submatrices
+        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+
+        // build equivalent load vector
+        rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
+    }
+    else
+    {
+    	//std::cout << "non-symmetric, non-zero constraint matrix" << std::endl;
+
+        // define additional submatrix
+        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
+        SparseMatrixCSRVector2General<double> coefficientMatrixKJ(this->mNumDofs - this->mNumActiveDofs, this->mNumActiveDofs);
+        SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
+
+        // build submatrices
+        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+
+        // build global matrix
+        SparseMatrixCSRVector2General<double> constraintMatrixVector2 (this->mConstraintMatrix);
+        SparseMatrixCSRVector2General<double> transConstraintMatrixVector2 (constraintMatrixVector2.Transpose());
+        rMatrix -= transConstraintMatrixVector2 * coefficientMatrixKJ + coefficientMatrixJK * constraintMatrixVector2;
+        rMatrix += transConstraintMatrixVector2 * coefficientMatrixKK * constraintMatrixVector2;
+
+        // build equivalent load vector
+        rVector = (transConstraintMatrixVector2 * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - constraintMatrixVector2 * activeDofValues);
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 
 // build global external load vector
 void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector)

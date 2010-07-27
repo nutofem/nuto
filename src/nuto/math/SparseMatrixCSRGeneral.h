@@ -2,857 +2,854 @@
 
 #ifndef SPARSE_MATRIX_CSR_GENERAL_H
 #define SPARSE_MATRIX_CSR_GENERAL_H
+#include "nuto/math/SparseMatrixCSRGeneral_Def.h"
 
-#include "nuto/math/Matrix.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseMatrix.h"
-#include "nuto/math/SparseMatrixCSR.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/math/MathException.h"
 
-namespace NuTo
-{
-//! @author Stefan Eckardt, ISM
-//! @date July 2009
-//! @brief ... class for general sparse matrices which are stored in CSR format
+//! @brief ... constructor
+//! @param rNumRows_ ... number of rows
+//! @param rNumColumns_ ... number of columns
+//! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
 template <class T>
-class SparseMatrixCSRGeneral : public SparseMatrixCSR<T>
+NuTo::SparseMatrixCSRGeneral<T>::SparseMatrixCSRGeneral(int rNumRows_, int rNumColumns_, unsigned int rNumReserveEntries_) : NuTo::SparseMatrixCSR<T>(rNumRows_, rNumReserveEntries_)
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
-public:
-    //! @brief ... constructor
-    //! @param rNumRows_ ... number of rows
-    //! @param rNumColumns_ ... number of columns
-    //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
-    SparseMatrixCSRGeneral(int rNumRows_=0, int rNumColumns_=0, unsigned int rNumReserveEntries_=0) : SparseMatrixCSR<T>(rNumRows_, rNumReserveEntries_)
-    {
-        // check for overflow
-        assert(rNumColumns_ < INT_MAX);
-        assert(rNumColumns_ >= 0);
-        this->mNumColumns = rNumColumns_;
-    }
-
-    //! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a predefined tolerance)
-    //! @param rFullMatrix ... input matrix (full storage)
-    //! @param rAbsoluteTolerance ... absolute tolerance
-    //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRGeneral(FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
-
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const;
-
-    //! @brief ... resize matrix
-    //! @param rNumRows_ ... number of rows
-    //! @param rNumColumns_ ... number of columns
-    void Resize(int rNumRows_, int rNumColumns_)
-    {
-        // check for overflow
-        assert(rNumColumns_ < INT_MAX);
-        assert(rNumColumns_ >= 0);
-
-        // resize
-        SparseMatrixCSR<T>::Resize(rNumRows_);
-        this->mNumColumns = rNumColumns_;
-    }
-
-    //! @brief ... returns whether the matrix is symmetric or unsymmetric
-    //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
-    bool IsSymmetric() const
-    {
-        return false;
-    }
-
-    //! @brief ... returns the number of columns
-    //! @return number of columns
-    int GetNumColumns() const
-    {
-        return this->mNumColumns;
-    }
-
-    //! @brief ... add nonzero entry to matrix
-    //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
-    //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
-    //! @param rValue ... value of the nonzero entry
-    void AddEntry(int rRow, int rColumn, T rValue);
-/*
-    {
-        // check for overflow
-        assert(rRow < INT_MAX);
-        assert(rColumn < INT_MAX);
-        assert(rRow >= 0);
-        assert(rColumn >= 0);
-
-        // check bounds
-        if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
-        {
-            throw MathException("[SparseMatrixCSRGeneral::addEntry] row index is out of bounds.");
-        }
-        if (rColumn >= this->mNumColumns || rColumn<0)
-        {
-            throw MathException("[SparseMatrixCSRGeneral::addEntry] column index is out of bounds.");
-        }
-        if (this->mOneBasedIndexing)
-        {
-            rColumn++;
-
-            // find position in matrix
-            int pos = this->mRowIndex[rRow] - 1;
-            for (; (pos < this->mRowIndex[rRow + 1] - 1) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
-                ;
-
-            // add value
-            if ((pos == this->mRowIndex[rRow + 1] - 1) || (static_cast<int>(rColumn) != this->mColumns[pos])
-               )
-            {
-                std::cout << "add new value" << std::endl;
-            	// insert new value
-                this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
-                this->mValues.insert(this->mValues.begin() + pos, rValue);
-                for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
-                {
-                    this->mRowIndex[row_count] += 1;
-                }
-            }
-            else
-            {
-                std::cout << "add existing value" << std::endl;
-                // add to existing value
-                this->mValues[pos] += rValue;
-            }
-        }
-        else // zero based indexing
-        {
-            // find position in matrix
-            int pos = this->mRowIndex[rRow];
-            for (; (pos < this->mRowIndex[rRow + 1]) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
-                ;
-
-            // add value
-            if ((pos == this->mRowIndex[rRow + 1]) || (static_cast<int>(rColumn) != this->mColumns[pos])
-               )
-            {
-                // insert new value
-                this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
-                this->mValues.insert(this->mValues.begin() + pos, rValue);
-                for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
-                {
-                    this->mRowIndex[row_count] += 1;
-                }
-            }
-            else
-            {
-                // add to existing value
-                this->mValues[pos] += rValue;
-            }
-        }
-    }
-*/
-    //! @brief ... print info about the object
-    void Info() const
-    {
-        std::cout << "number of columns: " << this->mNumColumns << std::endl;
-        SparseMatrixCSR<T>::Info();
-    }
-
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName);
-
-    //! @brief ... write nonzero matrix entries into a full matrix
-    //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const
-    {
-        std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
-        typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
-        if (this->mOneBasedIndexing)
-        {
-            unsigned int row = 0;
-            while (row < this->mRowIndex.size() - 1)
-            {
-                for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
-                {
-                    //rFullMatrix.setValue(row, (*columnIterator) - 1, *valueIterator);
-                    rFullMatrix(row, (*columnIterator) - 1) = *valueIterator;
-                    columnIterator++;
-                    valueIterator++;
-                }
-                row++;
-            }
-        }
-        else
-        {
-            unsigned int row = 0;
-            while (row < this->mRowIndex.size() - 1)
-            {
-                for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
-                {
-                    //rFullMatrix.setValue(row, *columnIterator, *valueIterator);
-                    rFullMatrix(row, *columnIterator) = *valueIterator;
-                    columnIterator++;
-                    valueIterator++;
-                }
-                row++;
-            }
-        }
-    }
-
-
-    //! @brief ... add two matrices
-    //! @param rOther ... general sparse matrix stored in the CSR format
-    //! @return general sparse matrix stored in the CSR format
-    SparseMatrixCSRGeneral<T> operator+ ( const SparseMatrixCSRGeneral<T> &rOther ) const
-    {
-        if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
-        }
-        if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
-        }
-        SparseMatrixCSRGeneral<T> result(this->GetNumRows(), this->GetNumColumns());
-        for (int row = 0; row < this->GetNumRows(); row++)
-        {
-            int thisPos = this->mRowIndex[row];
-            int otherPos = rOther.mRowIndex[row];
-            while ((thisPos < this->mRowIndex[row + 1]) || (otherPos < rOther.mRowIndex[row + 1]))
-            {
-                int thisColumn;
-                if (thisPos < this->mRowIndex[row + 1])
-                {
-                    thisColumn = this->mColumns[thisPos];
-                }
-                else
-                {
-                    // no additional entries in this row (set column to an invalid value)
-                    thisColumn = this->GetNumColumns();
-                }
-
-                int otherColumn;
-                if (otherPos < rOther.mRowIndex[row + 1])
-                {
-                    otherColumn = rOther.mColumns[otherPos];
-                }
-                else
-                {
-                    // no additional entries in this row (set column to an invalid value)
-                    otherColumn = rOther.GetNumColumns();
-                }
-
-                int resultColumn;
-                T resultValue;
-                if (thisColumn < otherColumn)
-                {
-                    resultColumn = thisColumn;
-                    resultValue = this->mValues[thisPos];
-                    thisPos++;
-                }
-                else if (otherColumn < thisColumn)
-                {
-                    resultColumn = otherColumn;
-                    resultValue = rOther.mValues[otherPos];
-                    otherPos++;
-                }
-                else
-                {
-                    resultColumn = thisColumn;
-                    resultValue = this->mValues[thisPos] + rOther.mValues[otherPos];
-                    thisPos++;
-                    otherPos++;
-                }
-                result.mColumns.push_back(resultColumn);
-                result.mValues.push_back(resultValue);
-            }
-            assert(result.mColumns.size() == result.mValues.size());
-            result.mRowIndex[row + 1] = result.mColumns.size();
-        }
-        return result;
-    }
-
-    //! @brief ... subtract two matrices
-    //! @param rOther ... general sparse matrix stored in the CSR format
-    //! @return general sparse matrix stored in the CSR format
-    SparseMatrixCSRGeneral<T> operator- ( const SparseMatrixCSRGeneral<T> &rOther ) const
-    {
-        if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
-        }
-        if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
-        }
-        SparseMatrixCSRGeneral<T> result(this->GetNumRows(), this->GetNumColumns());
-        for (int row = 0; row < this->GetNumRows(); row++)
-        {
-            int thisPos = this->mRowIndex[row];
-            int otherPos = rOther.mRowIndex[row];
-            while ((thisPos < this->mRowIndex[row + 1]) || (otherPos < rOther.mRowIndex[row + 1]))
-            {
-                int thisColumn;
-                if (thisPos < this->mRowIndex[row + 1])
-                {
-                    thisColumn = this->mColumns[thisPos];
-                }
-                else
-                {
-                    // no additional entries in this row (set column to an invalid value)
-                    thisColumn = this->GetNumColumns();
-                }
-
-                int otherColumn;
-                if (otherPos < rOther.mRowIndex[row + 1])
-                {
-                    otherColumn = rOther.mColumns[otherPos];
-                }
-                else
-                {
-                    // no additional entries in this row (set column to an invalid value)
-                    otherColumn = rOther.GetNumColumns();
-                }
-
-                int resultColumn;
-                T resultValue;
-                if (thisColumn < otherColumn)
-                {
-                    resultColumn = thisColumn;
-                    resultValue = this->mValues[thisPos];
-                    thisPos++;
-                }
-                else if (otherColumn < thisColumn)
-                {
-                    resultColumn = otherColumn;
-                    resultValue = rOther.mValues[otherPos];
-                    otherPos++;
-                }
-                else
-                {
-                    resultColumn = thisColumn;
-                    resultValue = this->mValues[thisPos] + rOther.mValues[otherPos];
-                    thisPos++;
-                    otherPos++;
-                }
-                result.mColumns.push_back(resultColumn);
-                result.mValues.push_back(-resultValue);
-            }
-            assert(result.mColumns.size() == result.mValues.size());
-            result.mRowIndex[row + 1] = result.mColumns.size();
-        }
-        return result;
-    }
-
-    //! @brief ... subtract two matrices
-    //! @param rOther ... general sparse matrix stored in the CSR format
-    //! @return reference to this matrix
-    SparseMatrixCSRGeneral<T>& operator-=  ( const SparseMatrixCSRGeneral<T> &rOther )
-    {
-        if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator-=] invalid matrix dimensions.");
-        }
-        if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator-=] both matrices must have zero based indexing.");
-        }
-        for (int row = 0; row < rOther.GetNumRows(); row++)
-        {
-            for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
-            {
-                this->AddEntry(row, rOther.mColumns[pos], - rOther.mValues[pos]);
-            }
-        }
-        return *this;
-    }
-
-
-    //! @brief ... add two matrices
-    //! @param rOther ... general sparse matrix stored in the CSR format
-    //! @return reference to this matrix
-    SparseMatrixCSRGeneral<T>& operator+=  ( const SparseMatrixCSRGeneral<T> &rOther )
-    {
-        if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator+=] invalid matrix dimensions.");
-        }
-        if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator+=] both matrices must have zero based indexing.");
-        }
-        for (int row = 0; row < rOther.GetNumRows(); row++)
-        {
-            for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
-            {
-                this->AddEntry(row, rOther.mColumns[pos], rOther.mValues[pos]);
-            }
-        }
-        return *this;
-    }
-
-    //! @brief ... matrix - matrix multiplication
-    //! @param rOther ... general sparse matrix stored in the CSR format
-    //! @return general sparse matrix stored in the CSR format
-    SparseMatrixCSRGeneral<T> operator* ( const SparseMatrixCSRGeneral<T> &rOther ) const
-    {
-        if (this->GetNumColumns() != rOther.GetNumRows())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
-        }
-        if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator*] both matrices must have zero based indexing.");
-        }
-        SparseMatrixCSRGeneral<T> result(this->GetNumRows(), rOther.GetNumColumns());
-
-        for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
-        {
-            for (int thisPos = this->mRowIndex[thisRow]; thisPos < this->mRowIndex[thisRow + 1]; thisPos++)
-            {
-                unsigned int thisColumn = this->mColumns[thisPos];
-                T thisValue = this->mValues[thisPos];
-
-                for (int otherPos = rOther.mRowIndex[thisColumn]; otherPos < rOther.mRowIndex[thisColumn + 1]; otherPos++)
-                {
-                    unsigned int otherColumn = rOther.mColumns[otherPos];
-                    T otherValue = rOther.mValues[otherPos];
-                    result.AddEntry(thisRow, otherColumn, thisValue * otherValue);
-                }
-            }
-        }
-        return result;
-    }
-
-    //! @brief ... multiplies the matrix with an scalar value
-    //! @param rOther ... scalar value
-    //! @return ... the multiplied matrix (sparse csr storage)
-    SparseMatrixCSRGeneral<T> operator* ( const T &rOther ) const
-    {
-        SparseMatrixCSRGeneral<T> result(*this);
-		BOOST_FOREACH( T &val, result.mValues )
-			val *= rOther;
-        return result;
-    }
-
-    //! @brief ... multiply sparse matrix with a full matrix
-    //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
-    //! @return ... full matrix
-    FullMatrix<T> operator* (const FullMatrix<T> &rMatrix) const
-    {
-        if (this->GetNumColumns() != rMatrix.GetNumRows())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
-        }
-        FullMatrix<T> result(this->GetNumRows(),rMatrix.GetNumColumns());
-        if (this->HasOneBasedIndexing())
-        {
-            // loop over rows
-            for (int row = 0; row < this->GetNumRows(); row++)
-            {
-                // initialize result
-                for (int matrixCol = 0; matrixCol < result.GetNumColumns(); matrixCol++)
-                {
-                    result(row,matrixCol) = 0.0;
-                }
-                // perform multiplication
-                for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
-                {
-                    int column = this->mColumns[pos] - 1;
-                    T value = this->mValues[pos];
-                    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
-                    {
-                        result(row,matrixCol) += value * rMatrix(column,matrixCol);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // loop over rows
-            for (int row = 0; row < this->GetNumRows(); row++)
-            {
-                // initialize result
-                for (int matrixCol = 0; matrixCol < result.GetNumColumns(); matrixCol++)
-                {
-                    result(row,matrixCol) = 0.0;
-                }
-                // perform multiplication
-                for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
-                {
-                    int column = this->mColumns[pos];
-                    T value = this->mValues[pos];
-                    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
-                    {
-                        result(row,matrixCol) += value * rMatrix(column,matrixCol);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    FullMatrix<T> TransMult(const FullMatrix<T>& rMatrix) const
-    {
-        if (this->GetNumRows() != rMatrix.GetNumRows())
-        {
-            throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
-        }
-        FullMatrix<T> result(this->GetNumColumns(),rMatrix.GetNumColumns());
-        if (this->HasOneBasedIndexing())
-        {
-            // loop over columns of transpose
-            for (int column = 0; column < this->GetNumRows(); column++)
-            {
-                // perform multiplication
-                for (int pos = this->mRowIndex[column] - 1; pos < this->mRowIndex[column + 1] - 1; pos++)
-                {
-                    int row = this->mColumns[pos] - 1;
-                    T value = this->mValues[pos];
-                    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
-                    {
-                        result(row,matrixCol) += value * rMatrix(column,matrixCol);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // loop over columns of transpose
-            for (int column = 0; column < this->GetNumRows(); column++)
-            {
-                // perform multiplication
-                for (int pos = this->mRowIndex[column]; pos < this->mRowIndex[column + 1]; pos++)
-                {
-                    int row = this->mColumns[pos];
-                    T value = this->mValues[pos];
-                    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
-                    {
-                        result(row,matrixCol) += value * rMatrix(column,matrixCol);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    //! @brief ... calculate the transpose of the matrix (transpose row and columns)
-    //! @return ... transpose of this matrix (sparse csr storage)
-    SparseMatrixCSRGeneral<T> transpose() const
-    {
-        SparseMatrixCSRGeneral<T> transMatrix(this->GetNumColumns(), this->GetNumRows());
-        if (this->mOneBasedIndexing)
-        {
-            for (int row = 0; row < this->GetNumRows(); row++)
-            {
-                for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
-                {
-                    transMatrix.AddEntry(this->mColumns[pos] - 1, row, this->mValues[pos]);
-                }
-            }
-            transMatrix.SetOneBasedIndexing();
-        }
-        else
-        {
-            for (int row = 0; row < this->GetNumRows(); row++)
-            {
-                for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
-                {
-                    transMatrix.AddEntry(this->mColumns[pos], row, this->mValues[pos]);
-                }
-            }
-        }
-        return transMatrix;
-    }
-
-    //! @brief ... remove entry from matrix
-    //! @param rRow ... row index (zero based indexing!!!)
-    //! @param rColumn ... column index (zero based indexing!!!)
-    void RemoveEntry(int rRow, int rColumn)
-    {
-        // check bounds
-        if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
-        {
-            throw MathException("[SparseMatrixCSRGeneral::RemoveEntry] row index is out of bounds.");
-        }
-        if (rColumn >= this->mNumColumns || rColumn<0)
-        {
-            throw MathException("[SparseMatrixCSRGeneral::RemoveEntry] column index is out of bounds.");
-        }
-        if (this->mOneBasedIndexing)
-        {
-            rColumn++;
-            for (int pos = this->mRowIndex[rRow] - 1; pos < this->mRowIndex[rRow + 1] - 1; pos++)
-            {
-                if (this->mColumns[pos] > rColumn)
-                {
-                    break;
-                }
-                else if (this->mColumns[pos] == rColumn)
-                {
-                    this->mColumns.erase(this->mColumns.begin() + pos);
-                    this->mValues.erase(this->mValues.begin() + pos);
-                    for (unsigned int rowCount = rRow + 1; rowCount < this->mRowIndex.size(); rowCount++)
-                    {
-                        this->mRowIndex[rowCount] -= 1;
-                    }
-                    break;
-                }
-            }
-        }
-        else
-        {
-            for (int pos = this->mRowIndex[rRow]; pos < this->mRowIndex[rRow + 1]; pos++)
-            {
-                if (this->mColumns[pos] > rColumn)
-                {
-                    break;
-                }
-                else if (this->mColumns[pos] == rColumn)
-                {
-                    this->mColumns.erase(this->mColumns.begin() + pos);
-                    this->mValues.erase(this->mValues.begin() + pos);
-                    for (unsigned int rowCount = rRow + 1; rowCount < this->mRowIndex.size(); rowCount++)
-                    {
-                        this->mRowIndex[rowCount] -= 1;
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    //! @brief ... remove columns from the end of the matrix
-    //! @param rNumColumn ... number of colums to be removed
-    void RemoveLastColumns(unsigned int rNumColumns)
-    {
-        if ((unsigned int)this->mNumColumns > rNumColumns)
-        {
-            if (this->mOneBasedIndexing)
-            {
-                for (int row = 0; row < this->GetNumRows(); row++)
-                {
-                    for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
-                    {
-                        if ((unsigned int)this->mColumns[pos] > this->mNumColumns-rNumColumns)
-                        {
-                            this->RemoveEntry(row, this->mColumns[pos] - 1);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                for (int row = 0; row < this->GetNumRows(); row++)
-                {
-                    for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
-                    {
-                        if ((unsigned int)this->mColumns[pos] >=  this->mNumColumns-rNumColumns)
-                        {
-                            this->RemoveEntry(row, this->mColumns[pos]);
-                        }
-                    }
-                }
-            }
-            this->mNumColumns -= rNumColumns;
-        }
-        else
-        {
-            this->Resize(0,0);
-        }
-    }
-
-    //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
-    //! @param rRhs ... right-hand side vector (input and output object)
-    //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
-    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
-    //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(FullMatrix<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
-
-    //! @brief ... reorder columns of the matrix
-    //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
-    void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering)
-    {
-        for (int row = 0; row < this->GetNumRows(); row++)
-        {
-            for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
-            {
-                this->mColumns[pos] = rMappingInitialToNewOrdering[this->mColumns[pos]];
-            }
-
-            // sort columns (simple bubble sort algorithm)
-            int start = this->mRowIndex[row];
-            int end = this->mRowIndex[row + 1] - 1;
-            bool swapFlag;
-            do
-            {
-                swapFlag = false;
-                for (int pos = start; pos < end; pos++)
-                {
-                    if (this->mColumns[pos] > this->mColumns[pos + 1])
-                    {
-                        swapFlag=true;
-                        int tmpInt = this->mColumns[pos];
-                        this->mColumns[pos] = this->mColumns[pos + 1];
-                        this->mColumns[pos + 1] = tmpInt;
-
-                        T tmpDouble = this->mValues[pos];
-                        this->mValues[pos] = this->mValues[pos + 1];
-                        this->mValues[pos + 1] = tmpDouble;
-                    }
-                }
-                end--;
-            }
-            while (swapFlag);
-        }
-
-    }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & boost::serialization::make_nvp("SparseMatrixCSR",boost::serialization::base_object< SparseMatrixCSR<T> >(*this));
-        ar & BOOST_SERIALIZATION_NVP(mNumColumns);
-    }
-
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const
-    {
-        try
-         {
-             //transform to uppercase
-             std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
-
-             // open file
-             std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-             if(! ofs.is_open())
-             {
-                 throw MathException("[NuTo::SparseMatrixCSRGeneral::Save] Error opening file.");
-             }
-
-             // write data to file
-             std::string typeIdString(this->GetTypeId());
-             if (rType=="BINARY")
-             {
-                 boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-                 oba & boost::serialization::make_nvp ("Object_type", typeIdString );
-                 oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-             }
-             else if (rType=="XML")
-             {
-                 boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-                 std::string tmpString(this->GetTypeId());
-                 oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
-                 oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-             }
-             else if (rType=="TEXT")
-             {
-                 boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-                 ota & boost::serialization::make_nvp("Object_type", typeIdString );
-                 ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-             }
-             else
-             {
-                 throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Save] File type not implemented." );
-             }
-
-             // close file
-             ofs.close();
-         }
-         catch ( boost::archive::archive_exception e )
-         {
-             std::string s ( std::string ( "[NuTo::SparseMatrixCSRGeneral::Save]File save exception in boost - " ) + std::string ( e.what() ) );
-             throw MathException ( s );
-         }
-         catch ( MathException &e )
-         {
-             throw e;
-         }
-         catch ( std::exception &e )
-         {
-             throw MathException ( e.what() );
-         }
-    }
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType)
-    {
-        try
-        {
-            //transform to uppercase
-            std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
-
-            // open file
-            std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-            if(! ifs.is_open())
-            {
-                throw MathException("[NuTo::SparseMatrixCSRGeneral::Restore] Error opening file.");
-            }
-
-            std::string typeIdString;
-            if (rType=="BINARY")
-            {
-                boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-                oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
-                if ( typeIdString != this->GetTypeId() )
-                {
-                    throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
-                }
-                oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-            }
-            else if (rType=="XML")
-            {
-                boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-                oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
-                if ( typeIdString != this->GetTypeId() )
-                {
-                    throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
-                }
-                oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-            }
-            else if (rType=="TEXT")
-            {
-                boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-                ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
-                if ( typeIdString != this->GetTypeId() )
-                {
-                    throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
-                }
-                ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-            }
-            else
-            {
-                throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore]File type not implemented" );
-            }
-            // close file
-            ifs.close();
-        }
-        catch ( boost::archive::archive_exception e )
-        {
-            std::string s ( std::string ( "[NuTo::SparseMatrixCSRGeneral::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
-            throw MathException ( s );
-        }
-        catch ( MathException &e )
-        {
-            throw e;
-        }
-        catch ( std::exception &e )
-        {
-            throw MathException ( e.what() );
-        }
-    }
-#endif // ENABLE_SERIALIZATION
-protected:
-    //! @brief ... number of columns
-    int mNumColumns;
-};
+	// check for overflow
+	assert(rNumColumns_ < INT_MAX);
+	assert(rNumColumns_ >= 0);
+	this->mNumColumns = rNumColumns_;
 }
+
+//! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a predefined tolerance)
+//! @param rFullMatrix ... input matrix (full storage)
+//! @param rAbsoluteTolerance ... absolute tolerance
+//! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T>::SparseMatrixCSRGeneral(const NuTo::SparseMatrixCSRVector2General<T>& rCSR2Matrix) : NuTo::SparseMatrixCSR<T>(rCSR2Matrix.GetNumRows(),rCSR2Matrix.GetNumColumns())
+{
+	//allocate space
+	int numEntries = rCSR2Matrix.GetNumEntries();
+	this->mValues.resize(numEntries);
+	this->mColumns.resize(numEntries);
+	this->mRowIndex.resize(rCSR2Matrix.GetNumRows()+1);
+	int globalPos(0);
+	this->mOneBasedIndexing = rCSR2Matrix.HasOneBasedIndexing();
+	for (int row=0; row<rCSR2Matrix.GetNumRows(); row++)
+	{
+		this->mRowIndex[row] = globalPos+this->mOneBasedIndexing;
+		const std::vector<T>& thisValueVec(rCSR2Matrix.mValues[row]);
+		const std::vector<int>& thisColumnVec(rCSR2Matrix.mColumns[row]);
+		for (unsigned int the_entry=0; the_entry < thisValueVec.size(); the_entry++, globalPos++)
+		{
+			this->mValues[globalPos]=thisValueVec[the_entry];
+			this->mColumns[globalPos]=thisColumnVec[the_entry];
+		}
+	}
+	this->mRowIndex[rCSR2Matrix.GetNumRows()] = globalPos+this->mOneBasedIndexing;
+	mNumColumns = rCSR2Matrix.GetNumColumns();
+}
+
+//! @brief ... resize matrix
+//! @param rNumRows_ ... number of rows
+//! @param rNumColumns_ ... number of columns
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::Resize(int rNumRows_, int rNumColumns_)
+{
+	// check for overflow
+	assert(rNumColumns_ < INT_MAX);
+	assert(rNumColumns_ >= 0);
+
+	// resize
+	SparseMatrixCSR<T>::Resize(rNumRows_);
+	this->mNumColumns = rNumColumns_;
+}
+
+//! @brief ... returns whether the matrix is symmetric or unsymmetric
+//! @return true if the matrix is symmetric and false if the matrix is unsymmetric
+template <class T>
+bool NuTo::SparseMatrixCSRGeneral<T>::IsSymmetric() const
+{
+	return false;
+}
+
+//! @brief ... returns the number of columns
+//! @return number of columns
+template <class T>
+int NuTo::SparseMatrixCSRGeneral<T>::GetNumColumns() const
+{
+	return this->mNumColumns;
+}
+
+//! @brief ... add nonzero entry to matrix
+//! @param rRow ... row of the nonzero entry (zero based indexing!!!)
+//! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
+//! @param rValue ... value of the nonzero entry
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::AddEntry(int rRow, int rColumn, T rValue)
+{
+	// check for overflow
+    assert(rRow < INT_MAX);
+    assert(rColumn < INT_MAX);
+    assert(rRow >= 0);
+    assert(rColumn >= 0);
+
+    // check bounds
+    if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
+    {
+        throw MathException("[SparseMatrixCSRGeneral::addEntry] row index is out of bounds.");
+    }
+    if (rColumn >= this->mNumColumns || rColumn<0)
+    {
+        throw MathException("[SparseMatrixCSRGeneral::addEntry] column index is out of bounds.");
+    }
+
+    if (this->mOneBasedIndexing)
+    {
+        rColumn++;
+
+        // find position in matrix
+        int pos = this->mRowIndex[rRow] - 1;
+        for (; (pos < this->mRowIndex[rRow + 1] - 1) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
+            ;
+
+        // add value
+        if ((pos == this->mRowIndex[rRow + 1] - 1) || (static_cast<int>(rColumn) != this->mColumns[pos])
+           )
+        {
+        	// insert new value
+            this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
+            this->mValues.insert(this->mValues.begin() + pos, rValue);
+            for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
+            {
+                this->mRowIndex[row_count] += 1;
+            }
+        }
+        else
+        {
+            // add to existing value
+            this->mValues[pos] += rValue;
+        }
+    }
+    else // zero based indexing
+    {
+        // find position in matrix
+        int pos = this->mRowIndex[rRow];
+        for (; (pos < this->mRowIndex[rRow + 1]) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
+            ;
+
+        // add value
+        if ((pos == this->mRowIndex[rRow + 1]) || (static_cast<int>(rColumn) != this->mColumns[pos])
+           )
+        {
+            // insert new value
+            this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
+            this->mValues.insert(this->mValues.begin() + pos, rValue);
+            for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
+            {
+                this->mRowIndex[row_count] += 1;
+            }
+        }
+        else
+        {
+            // add to existing value
+            this->mValues[pos] += rValue;
+        }
+    }
+}
+
+//! @brief ... print info about the object
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::Info() const
+{
+	std::cout << "number of columns: " << this->mNumColumns << std::endl;
+	SparseMatrixCSR<T>::Info();
+}
+
+//! @brief ... write nonzero matrix entries into a full matrix
+//! @param rFullMatrix ... the full matrix
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToFullMatrix(NuTo::FullMatrix<T>& rFullMatrix) const
+{
+	std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
+	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
+	if (this->mOneBasedIndexing)
+	{
+		unsigned int row = 0;
+		while (row < this->mRowIndex.size() - 1)
+		{
+			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
+			{
+				//rFullMatrix.setValue(row, (*columnIterator) - 1, *valueIterator);
+				rFullMatrix(row, (*columnIterator) - 1) = *valueIterator;
+				columnIterator++;
+				valueIterator++;
+			}
+			row++;
+		}
+	}
+	else
+	{
+		unsigned int row = 0;
+		while (row < this->mRowIndex.size() - 1)
+		{
+			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
+			{
+				//rFullMatrix.setValue(row, *columnIterator, *valueIterator);
+				rFullMatrix(row, *columnIterator) = *valueIterator;
+				columnIterator++;
+				valueIterator++;
+			}
+			row++;
+		}
+	}
+}
+
+
+//! @brief ... add two matrices
+//! @param rOther ... general sparse matrix stored in the CSR format
+//! @return general sparse matrix stored in the CSR format
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator+ (const NuTo::SparseMatrixCSRGeneral<T> &rOther ) const
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
+	}
+	SparseMatrixCSRGeneral<T> result(this->GetNumRows(), this->GetNumColumns());
+	for (int row = 0; row < this->GetNumRows(); row++)
+	{
+		int thisPos = this->mRowIndex[row];
+		int otherPos = rOther.mRowIndex[row];
+		while ((thisPos < this->mRowIndex[row + 1]) || (otherPos < rOther.mRowIndex[row + 1]))
+		{
+			int thisColumn;
+			if (thisPos < this->mRowIndex[row + 1])
+			{
+				thisColumn = this->mColumns[thisPos];
+			}
+			else
+			{
+				// no additional entries in this row (set column to an invalid value)
+				thisColumn = this->GetNumColumns();
+			}
+
+			int otherColumn;
+			if (otherPos < rOther.mRowIndex[row + 1])
+			{
+				otherColumn = rOther.mColumns[otherPos];
+			}
+			else
+			{
+				// no additional entries in this row (set column to an invalid value)
+				otherColumn = rOther.GetNumColumns();
+			}
+
+			int resultColumn;
+			T resultValue;
+			if (thisColumn < otherColumn)
+			{
+				resultColumn = thisColumn;
+				resultValue = this->mValues[thisPos];
+				thisPos++;
+			}
+			else if (otherColumn < thisColumn)
+			{
+				resultColumn = otherColumn;
+				resultValue = rOther.mValues[otherPos];
+				otherPos++;
+			}
+			else
+			{
+				resultColumn = thisColumn;
+				resultValue = this->mValues[thisPos] + rOther.mValues[otherPos];
+				thisPos++;
+				otherPos++;
+			}
+			result.mColumns.push_back(resultColumn);
+			result.mValues.push_back(resultValue);
+		}
+		assert(result.mColumns.size() == result.mValues.size());
+		result.mRowIndex[row + 1] = result.mColumns.size();
+	}
+	return result;
+}
+
+//! @brief ... subtract two matrices
+//! @param rOther ... general sparse matrix stored in the CSR format
+//! @return general sparse matrix stored in the CSR format
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator- (const NuTo::SparseMatrixCSRGeneral<T> &rOther ) const
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
+	}
+	SparseMatrixCSRGeneral<T> result(this->GetNumRows(), this->GetNumColumns());
+	for (int row = 0; row < this->GetNumRows(); row++)
+	{
+		int thisPos = this->mRowIndex[row];
+		int otherPos = rOther.mRowIndex[row];
+		while ((thisPos < this->mRowIndex[row + 1]) || (otherPos < rOther.mRowIndex[row + 1]))
+		{
+			int thisColumn;
+			if (thisPos < this->mRowIndex[row + 1])
+			{
+				thisColumn = this->mColumns[thisPos];
+			}
+			else
+			{
+				// no additional entries in this row (set column to an invalid value)
+				thisColumn = this->GetNumColumns();
+			}
+
+			int otherColumn;
+			if (otherPos < rOther.mRowIndex[row + 1])
+			{
+				otherColumn = rOther.mColumns[otherPos];
+			}
+			else
+			{
+				// no additional entries in this row (set column to an invalid value)
+				otherColumn = rOther.GetNumColumns();
+			}
+
+			int resultColumn;
+			T resultValue;
+			if (thisColumn < otherColumn)
+			{
+				resultColumn = thisColumn;
+				resultValue = this->mValues[thisPos];
+				thisPos++;
+			}
+			else if (otherColumn < thisColumn)
+			{
+				resultColumn = otherColumn;
+				resultValue = -rOther.mValues[otherPos];
+				otherPos++;
+			}
+			else
+			{
+				resultColumn = thisColumn;
+				resultValue = this->mValues[thisPos] - rOther.mValues[otherPos];
+				thisPos++;
+				otherPos++;
+			}
+			result.mColumns.push_back(resultColumn);
+			result.mValues.push_back(-resultValue);
+		}
+		assert(result.mColumns.size() == result.mValues.size());
+		result.mRowIndex[row + 1] = result.mColumns.size();
+	}
+	return result;
+}
+
+//! @brief ... subtract two matrices
+//! @param rOther ... general sparse matrix stored in the CSR format
+//! @return reference to this matrix
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::operator-=  (const NuTo::SparseMatrixCSRGeneral<T> &rOther )
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator-=] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator-=] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[pos], - rOther.mValues[pos]);
+		}
+	}
+	return *this;
+}
+
+
+//! @brief ... add two matrices
+//! @param rOther ... general sparse matrix stored in the CSR format
+//! @return reference to this matrix
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::operator+=  (const NuTo::SparseMatrixCSRGeneral<T> &rOther )
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator+=] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator+=] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[pos], rOther.mValues[pos]);
+		}
+	}
+	return *this;
+}
+
+//! @brief ... matrix - matrix multiplication
+//! @param rOther ... general sparse matrix stored in the CSR format
+//! @return general sparse matrix stored in the CSR format
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (const NuTo::SparseMatrixCSRGeneral<T> &rOther ) const
+{
+	if (this->GetNumColumns() != rOther.GetNumRows())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator*] both matrices must have zero based indexing.");
+	}
+	SparseMatrixCSRGeneral<T> result(this->GetNumRows(), rOther.GetNumColumns());
+
+	for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
+	{
+		for (int thisPos = this->mRowIndex[thisRow]; thisPos < this->mRowIndex[thisRow + 1]; thisPos++)
+		{
+			unsigned int thisColumn = this->mColumns[thisPos];
+			T thisValue = this->mValues[thisPos];
+
+			for (int otherPos = rOther.mRowIndex[thisColumn]; otherPos < rOther.mRowIndex[thisColumn + 1]; otherPos++)
+			{
+				unsigned int otherColumn = rOther.mColumns[otherPos];
+				T otherValue = rOther.mValues[otherPos];
+				result.AddEntry(thisRow, otherColumn, thisValue * otherValue);
+			}
+		}
+	}
+	return result;
+}
+
+//! @brief ... multiplies the matrix with an scalar value
+//! @param rOther ... scalar value
+//! @return ... the multiplied matrix (sparse csr storage)
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (const T &rOther ) const
+{
+	SparseMatrixCSRGeneral<T> result(*this);
+	BOOST_FOREACH( T &val, result.mValues )
+		val *= rOther;
+	return result;
+}
+
+//! @brief ... multiply sparse matrix with a full matrix
+//! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
+//! @return ... full matrix
+template <class T>
+NuTo::FullMatrix<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (const NuTo::FullMatrix<T> &rMatrix) const
+{
+	if (this->GetNumColumns() != rMatrix.GetNumRows())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
+	}
+	FullMatrix<T> result(this->GetNumRows(),rMatrix.GetNumColumns());
+	if (this->HasOneBasedIndexing())
+	{
+		// loop over rows
+		for (int row = 0; row < this->GetNumRows(); row++)
+		{
+			// initialize result
+			for (int matrixCol = 0; matrixCol < result.GetNumColumns(); matrixCol++)
+			{
+				result(row,matrixCol) = 0.0;
+			}
+			// perform multiplication
+			for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
+			{
+				int column = this->mColumns[pos] - 1;
+				T value = this->mValues[pos];
+				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				{
+					result(row,matrixCol) += value * rMatrix(column,matrixCol);
+				}
+			}
+		}
+	}
+	else
+	{
+		// loop over rows
+		for (int row = 0; row < this->GetNumRows(); row++)
+		{
+			// initialize result
+			for (int matrixCol = 0; matrixCol < result.GetNumColumns(); matrixCol++)
+			{
+				result(row,matrixCol) = 0.0;
+			}
+			// perform multiplication
+			for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+			{
+				int column = this->mColumns[pos];
+				T value = this->mValues[pos];
+				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				{
+					result(row,matrixCol) += value * rMatrix(column,matrixCol);
+				}
+			}
+		}
+	}
+	return result;
+}
+
+template <class T>
+NuTo::FullMatrix<T> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullMatrix<T>& rMatrix) const
+{
+	if (this->GetNumRows() != rMatrix.GetNumRows())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
+	}
+	FullMatrix<T> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	if (this->HasOneBasedIndexing())
+	{
+		// loop over columns of transpose
+		for (int column = 0; column < this->GetNumRows(); column++)
+		{
+			// perform multiplication
+			for (int pos = this->mRowIndex[column] - 1; pos < this->mRowIndex[column + 1] - 1; pos++)
+			{
+				int row = this->mColumns[pos] - 1;
+				T value = this->mValues[pos];
+				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				{
+					result(row,matrixCol) += value * rMatrix(column,matrixCol);
+				}
+			}
+		}
+	}
+	else
+	{
+		// loop over columns of transpose
+		for (int column = 0; column < this->GetNumRows(); column++)
+		{
+			// perform multiplication
+			for (int pos = this->mRowIndex[column]; pos < this->mRowIndex[column + 1]; pos++)
+			{
+				int row = this->mColumns[pos];
+				T value = this->mValues[pos];
+				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				{
+					result(row,matrixCol) += value * rMatrix(column,matrixCol);
+				}
+			}
+		}
+	}
+	return result;
+}
+
+//! @brief ... calculate the transpose of the matrix (transpose row and columns)
+//! @return ... transpose of this matrix (sparse csr storage)
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::Transpose() const
+{
+	SparseMatrixCSRGeneral<T> transMatrix(this->GetNumColumns(), this->GetNumRows());
+	if (this->mOneBasedIndexing)
+	{
+		for (int row = 0; row < this->GetNumRows(); row++)
+		{
+			for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
+			{
+				transMatrix.AddEntry(this->mColumns[pos] - 1, row, this->mValues[pos]);
+			}
+		}
+		transMatrix.SetOneBasedIndexing();
+	}
+	else
+	{
+		for (int row = 0; row < this->GetNumRows(); row++)
+		{
+			for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+			{
+				transMatrix.AddEntry(this->mColumns[pos], row, this->mValues[pos]);
+			}
+		}
+	}
+	return transMatrix;
+}
+
+//! @brief ... remove entry from matrix
+//! @param rRow ... row index (zero based indexing!!!)
+//! @param rColumn ... column index (zero based indexing!!!)
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::RemoveEntry(int rRow, int rColumn)
+{
+	// check bounds
+	if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
+	{
+		throw MathException("[SparseMatrixCSRGeneral::RemoveEntry] row index is out of bounds.");
+	}
+	if (rColumn >= this->mNumColumns || rColumn<0)
+	{
+		throw MathException("[SparseMatrixCSRGeneral::RemoveEntry] column index is out of bounds.");
+	}
+	if (this->mOneBasedIndexing)
+	{
+		rColumn++;
+		for (int pos = this->mRowIndex[rRow] - 1; pos < this->mRowIndex[rRow + 1] - 1; pos++)
+		{
+			if (this->mColumns[pos] > rColumn)
+			{
+				break;
+			}
+			else if (this->mColumns[pos] == rColumn)
+			{
+				this->mColumns.erase(this->mColumns.begin() + pos);
+				this->mValues.erase(this->mValues.begin() + pos);
+				for (unsigned int rowCount = rRow + 1; rowCount < this->mRowIndex.size(); rowCount++)
+				{
+					this->mRowIndex[rowCount] -= 1;
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (int pos = this->mRowIndex[rRow]; pos < this->mRowIndex[rRow + 1]; pos++)
+		{
+			if (this->mColumns[pos] > rColumn)
+			{
+				break;
+			}
+			else if (this->mColumns[pos] == rColumn)
+			{
+				this->mColumns.erase(this->mColumns.begin() + pos);
+				this->mValues.erase(this->mValues.begin() + pos);
+				for (unsigned int rowCount = rRow + 1; rowCount < this->mRowIndex.size(); rowCount++)
+				{
+					this->mRowIndex[rowCount] -= 1;
+				}
+				break;
+			}
+		}
+	}
+}
+
+//! @brief ... remove columns from the end of the matrix
+//! @param rNumColumn ... number of colums to be removed
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::RemoveLastColumns(unsigned int rNumColumns)
+{
+	if ((unsigned int)this->mNumColumns > rNumColumns)
+	{
+		if (this->mOneBasedIndexing)
+		{
+			for (int row = 0; row < this->GetNumRows(); row++)
+			{
+				for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
+				{
+					if ((unsigned int)this->mColumns[pos] > this->mNumColumns-rNumColumns)
+					{
+						this->RemoveEntry(row, this->mColumns[pos] - 1);
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int row = 0; row < this->GetNumRows(); row++)
+			{
+				for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+				{
+					if ((unsigned int)this->mColumns[pos] >=  this->mNumColumns-rNumColumns)
+					{
+						this->RemoveEntry(row, this->mColumns[pos]);
+					}
+				}
+			}
+		}
+		this->mNumColumns -= rNumColumns;
+	}
+	else
+	{
+		this->Resize(0,0);
+	}
+}
+
+//! @brief ... reorder columns of the matrix
+//! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering)
+{
+	for (int row = 0; row < this->GetNumRows(); row++)
+	{
+		for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+		{
+			this->mColumns[pos] = rMappingInitialToNewOrdering[this->mColumns[pos]];
+		}
+
+		// sort columns (simple bubble sort algorithm)
+		int start = this->mRowIndex[row];
+		int end = this->mRowIndex[row + 1] - 1;
+		bool swapFlag;
+		do
+		{
+			swapFlag = false;
+			for (int pos = start; pos < end; pos++)
+			{
+				if (this->mColumns[pos] > this->mColumns[pos + 1])
+				{
+					swapFlag=true;
+					int tmpInt = this->mColumns[pos];
+					this->mColumns[pos] = this->mColumns[pos + 1];
+					this->mColumns[pos + 1] = tmpInt;
+
+					T tmpDouble = this->mValues[pos];
+					this->mValues[pos] = this->mValues[pos + 1];
+					this->mValues[pos + 1] = tmpDouble;
+				}
+			}
+			end--;
+		}
+		while (swapFlag);
+	}
+
+}
+
+#ifdef ENABLE_SERIALIZATION
+//! @brief ... save the object to a file
+//! @param filename ... filename
+//! @param rType ... type of file, either BINARY, XML or TEXT
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::Save ( const std::string &filename, std::string rType)const
+{
+	try
+	 {
+		 //transform to uppercase
+		 std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
+
+		 // open file
+		 std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+		 if(! ofs.is_open())
+		 {
+			 throw MathException("[NuTo::SparseMatrixCSRGeneral::Save] Error opening file.");
+		 }
+
+		 // write data to file
+		 std::string typeIdString(this->GetTypeId());
+		 if (rType=="BINARY")
+		 {
+			 boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+			 oba & boost::serialization::make_nvp ("Object_type", typeIdString );
+			 oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+		 }
+		 else if (rType=="XML")
+		 {
+			 boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+			 std::string tmpString(this->GetTypeId());
+			 oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
+			 oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+		 }
+		 else if (rType=="TEXT")
+		 {
+			 boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+			 ota & boost::serialization::make_nvp("Object_type", typeIdString );
+			 ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+		 }
+		 else
+		 {
+			 throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Save] File type not implemented." );
+		 }
+
+		 // close file
+		 ofs.close();
+	 }
+	 catch ( boost::archive::archive_exception e )
+	 {
+		 std::string s ( std::string ( "[NuTo::SparseMatrixCSRGeneral::Save]File save exception in boost - " ) + std::string ( e.what() ) );
+		 throw MathException ( s );
+	 }
+	 catch ( MathException &e )
+	 {
+		 throw e;
+	 }
+	 catch ( std::exception &e )
+	 {
+		 throw MathException ( e.what() );
+	 }
+}
+
+//! @brief ... restore the object from a file
+//! @param filename ... filename
+//! @param aType ... type of file, either BINARY, XML or TEXT
+template <class T>
+void NuTo::SparseMatrixCSRGeneral<T>::Restore ( const std::string &filename,  std::string rType)
+{
+	try
+	{
+		//transform to uppercase
+		std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
+
+		// open file
+		std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+		if(! ifs.is_open())
+		{
+			throw MathException("[NuTo::SparseMatrixCSRGeneral::Restore] Error opening file.");
+		}
+
+		std::string typeIdString;
+		if (rType=="BINARY")
+		{
+			boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+			oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
+			if ( typeIdString != this->GetTypeId() )
+			{
+				throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+			}
+			oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+		}
+		else if (rType=="XML")
+		{
+			boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+			oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
+			if ( typeIdString != this->GetTypeId() )
+			{
+				throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+			}
+			oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+		}
+		else if (rType=="TEXT")
+		{
+			boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+			ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
+			if ( typeIdString != this->GetTypeId() )
+			{
+				throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+			}
+			ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+		}
+		else
+		{
+			throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore]File type not implemented" );
+		}
+		// close file
+		ifs.close();
+	}
+	catch ( boost::archive::archive_exception e )
+	{
+		std::string s ( std::string ( "[NuTo::SparseMatrixCSRGeneral::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
+		throw MathException ( s );
+	}
+	catch ( MathException &e )
+	{
+		throw e;
+	}
+	catch ( std::exception &e )
+	{
+		throw MathException ( e.what() );
+	}
+}
+#endif // SERIALIZATION
 #endif // SPARSE_MATRIX_CSR_GENERAL_H

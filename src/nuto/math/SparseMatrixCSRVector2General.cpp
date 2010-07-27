@@ -1,13 +1,7 @@
 // $Id: SparseMatrixCSRGeneral.cpp 195 2009-12-16 09:13:29Z eckardt4 $
 
-#include <boost/spirit/include/classic_core.hpp>
-#include <fstream>
-#include <iostream>
 #include <string>
 
-#include "nuto/math/Matrix.h"
-#include "nuto/math/SparseMatrix.h"
-#include "nuto/math/SparseMatrixCSR.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/math/MathException.h"
 
