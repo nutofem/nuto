@@ -292,7 +292,7 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
             attributes = attributes |  1 << Node::TEMPERATURES;
     }
 
-    NodeBase* nodePtr;
+    NodeBase* nodePtr(0);
     switch (attributes)
     {
         // the << shifts the 1 bitwise to the left, so 1<<n = 2^n

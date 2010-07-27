@@ -227,7 +227,7 @@ public:
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
-    void ElementDelete (const int rElementNumber);
+    void ElementDelete (int rElementNumber);
 
 
 

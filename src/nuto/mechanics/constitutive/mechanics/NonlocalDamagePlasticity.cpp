@@ -1542,7 +1542,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     //! @brief yield condition
     Eigen::Matrix<double,2,1> yieldCondition;
     //! @brief yield condition in line search
-    Eigen::Matrix<double,2,1> yieldConditionLS;
+    Eigen::Matrix<double,2,1> yieldConditionLS(0,0);
     //! @brief yield condition at the first iteration
     Eigen::Matrix<double,2,1> initYieldCondition;
     //! @brief flag that indicates if a yield function is active or not
@@ -1997,7 +1997,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 
 							// compute deltaGamma
 							Eigen::Matrix<double,4,1> helpVector = hessian * residual;
-							Eigen::Matrix<double,4,1> helpVector2;
+							Eigen::Matrix<double,4,1> helpVector2(0,0,0,0);
 							for (int count=0; count<numYieldSurfaces; count++)
 							{
 								if (yieldConditionFlag(count)==INACTIVE)

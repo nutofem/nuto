@@ -219,7 +219,7 @@ void NuTo::StructureGrid::ElementCreate (int rNumCoefficientMatrix0,int rElement
 
 //! @brief Deletes an element
 //! @param rElementIdent identifier for the element
-void NuTo::StructureGrid::ElementDelete(const int rElementNumber)
+void NuTo::StructureGrid::ElementDelete(int rElementNumber)
 {
 
 	// @TODO [NuTo::StructureGrid::ElementDelete] has to be implemented

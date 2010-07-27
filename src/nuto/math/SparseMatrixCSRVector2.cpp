@@ -42,7 +42,7 @@ int SparseMatrixCSRVector2<int>::RemoveZeroEntries(double rAbsoluteTolerance, do
 	    int numRemoved(0);
 		for (int row = 0; row < this->GetNumRows(); row++)
 		{
-			int numRemovedPerRow;
+			int numRemovedPerRow(0);
 			unsigned int newPos(0);
 			std::vector<int>& thisValueVec(this->mValues[row]);
 			std::vector<int>& thisColumnVec(this->mColumns[row]);
