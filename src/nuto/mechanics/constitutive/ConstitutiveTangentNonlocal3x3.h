@@ -13,6 +13,7 @@
 #include <boost/serialization/vector.hpp>
 #else
 #include <vector>
+#include <assert.h>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveTangentBase.h"

@@ -5,6 +5,8 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#else
+#include <set>
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/ptr_container/ptr_map.hpp>
