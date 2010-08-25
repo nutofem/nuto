@@ -219,6 +219,14 @@ public:
     //! @return a NuTo::FullMatrix<int> containing the element numbers
     NuTo::FullMatrix<int> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int> &rNodeNumbers);
 
+    //! @brief creates multiple elements
+    //! @param rElementType element type
+    //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
+    //! @param rElementDataType Element data for the elements
+    //! @param rIpDataType Integration point data for the elements
+    //! @return a NuTo::FullMatrix<int> containing the element numbers
+    NuTo::FullMatrix<int> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+
     //! @brief Deletes an element
     //! @param rElementNumber element number
     void ElementDelete (int rElementNumber);

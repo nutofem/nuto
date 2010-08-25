@@ -97,14 +97,14 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBa
 void NuTo::NonlocalDamagePlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
-	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+    const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
     // update the temporary parts of the static data
-	rEngineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
-	rEngineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
-	rEngineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
-	rEngineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
-	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+    rEngineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
+    rEngineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
+    rEngineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
+    rEngineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
+    rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
+    rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -176,7 +176,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 
         //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
         //Get previous ip_data
-    	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
 
         // calculate engineering strain
         EngineeringStrain2D engineeringStrain;
@@ -197,36 +197,30 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 */
         if (mDamage)
         {
-			//calculate scaled equivalent plastic strain (scaled by the element length)
-    		bool unloading(true);
-			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
+            //calculate scaled equivalent plastic strain (scaled by the element length)
+            bool unloading(true);
+            double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
 
-			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
-			double kappaD = CalculateKappaD();
+            //determine kappaUnscaled, which is a scaling factor related to the fracture energy
+            double kappaD = CalculateKappaD();
 
-			//calculate damage parameter from the equivalente plastic strain
-			//it is scaled related to the length (based on the direction of the first principal plastic strain)
-			double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
+            //calculate damage parameter from the equivalente plastic strain
+            //it is scaled related to the length (based on the direction of the first principal plastic strain)
+            double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
+            //std::cout << "stress calculation unloading=" << unloading << " omega " << 1.-oneMinusOmega << std::endl;
 
-			//calculate the stress
-			rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-			rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-			rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
+            //calculate the stress
+            rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+            rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+            rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
         }
         else
         {
-			//calculate the stress
-			rEngineeringStress.mEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-			rEngineeringStress.mEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-			rEngineeringStress.mEngineeringStress[2] = (C33*elastStrain[2]);
+            //calculate the stress
+            rEngineeringStress.mEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+            rEngineeringStress.mEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+            rEngineeringStress.mEngineeringStress[2] = (C33*elastStrain[2]);
          }
-
-/*
-         std::cout << "stress" << std::endl;
-         std::cout << rEngineeringStress.mEngineeringStress[0] << std::endl;
-         std::cout << rEngineeringStress.mEngineeringStress[1] << std::endl;
-         std::cout << rEngineeringStress.mEngineeringStress[2] << std::endl;
-*/
     }
     else
     {
@@ -265,7 +259,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 
         //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
         //Get previous ip_data
-    	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
 
         // calculate engineering strain
         EngineeringStrain2D engineeringStrain;
@@ -280,34 +274,34 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 
         if (mDamage)
         {
-			//calculate scaled equivalent plastic strain (scaled by the element length)
-    		bool unloading(true);
-			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp,unloading);
+            //calculate scaled equivalent plastic strain (scaled by the element length)
+            bool unloading(true);
+            double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp,unloading);
 
-			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
-			double kappaD = CalculateKappaD();
+            //determine kappaUnscaled, which is a scaling factor related to the fracture energy
+            double kappaD = CalculateKappaD();
 
-			//calculate damage parameter from the equivalente plastic strain
-			//it is scaled related to the length (based on the direction of the first principal plastic strain)
-			double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
+            //calculate damage parameter from the equivalente plastic strain
+            //it is scaled related to the length (based on the direction of the first principal plastic strain)
+            double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
 
-			//calculate the stress
-			rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-			rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-			rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
-			rEngineeringStress.mEngineeringStress[3] = oneMinusOmega*(C44*elastStrain[2]);
-			rEngineeringStress.mEngineeringStress[4] = 0.;
-			rEngineeringStress.mEngineeringStress[5] = 0.;
+            //calculate the stress
+            rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+            rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+            rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
+            rEngineeringStress.mEngineeringStress[3] = oneMinusOmega*(C44*elastStrain[2]);
+            rEngineeringStress.mEngineeringStress[4] = 0.;
+            rEngineeringStress.mEngineeringStress[5] = 0.;
         }
         else
         {
-			//calculate the stress
-			rEngineeringStress.mEngineeringStress[0] = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
-			rEngineeringStress.mEngineeringStress[1] = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
-			rEngineeringStress.mEngineeringStress[2] = C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]);
-			rEngineeringStress.mEngineeringStress[3] = C44*elastStrain[2];
-			rEngineeringStress.mEngineeringStress[4] = 0.;
-			rEngineeringStress.mEngineeringStress[5] = 0.;
+            //calculate the stress
+            rEngineeringStress.mEngineeringStress[0] = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
+            rEngineeringStress.mEngineeringStress[1] = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
+            rEngineeringStress.mEngineeringStress[2] = C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]);
+            rEngineeringStress.mEngineeringStress[3] = C44*elastStrain[2];
+            rEngineeringStress.mEngineeringStress[4] = 0.;
+            rEngineeringStress.mEngineeringStress[5] = 0.;
         }
     }
     else
@@ -326,7 +320,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
               const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Not implemented for 3D.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain] Not implemented for 3D.");
 }
 
 //  Damage /////////////////////////////////////
@@ -338,7 +332,7 @@ void NuTo::NonlocalDamagePlasticity::GetEngineeringStressFromEngineeringStrain(c
 void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient1D& rDeformationGradient, double& rDamage) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetDamage] Not implemented for 1D.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetDamage] Not implemented for 1D.");
 }
 
  //  Damage /////////////////////////////////////
@@ -352,19 +346,19 @@ void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int 
 {
     if (mDamage)
     {
-		//calculate scaled equivalent plastic strain (scaled by the element length)
-		bool unloading(true);
-    	double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
+        //calculate scaled equivalent plastic strain (scaled by the element length)
+        bool unloading(true);
+        double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
 
-		//determine kappaUnscaled, which is a scaling factor related to the fracture energy
-		double kappaD = CalculateKappaD();
+        //determine kappaUnscaled, which is a scaling factor related to the fracture energy
+        double kappaD = CalculateKappaD();
 
-		//calculate damage parameter from the equivalente plastic strain
-		//it is scaled related to the length (based on the direction of the first principal plastic strain)
-		rDamage = CalculateDamage(kappa, kappaD);
+        //calculate damage parameter from the equivalente plastic strain
+        //it is scaled related to the length (based on the direction of the first principal plastic strain)
+        rDamage = CalculateDamage(kappa, kappaD);
     }
     else
-    	rDamage = 0.;
+        rDamage = 0.;
 }
 
  //  Damage /////////////////////////////////////
@@ -376,7 +370,7 @@ void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int 
 void NuTo::NonlocalDamagePlasticity::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient3D& rDeformationGradient, double& rDamage) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetDamage] Not implemented for 3D.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetDamage] Not implemented for 3D.");
 }
 
 
@@ -391,7 +385,7 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
         const DeformationGradient1D& rDeformationGradient,
         ConstitutiveTangentBase* rTangent) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticity.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticity.");
 }
 
 
@@ -405,9 +399,9 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
         const DeformationGradient2D& rDeformationGradient,
         ConstitutiveTangentBase* rTangent) const
 {
-	ConstitutiveTangentNonlocal3x3 *tangent(rTangent->AsConstitutiveTangentNonlocal3x3());
+    ConstitutiveTangentNonlocal3x3 *tangent(rTangent->AsConstitutiveTangentNonlocal3x3());
 
-	// check if parameters are valid
+    // check if parameters are valid
     if (this->mParametersValid == false)
     {
            //throw an exception giving information related to the wrong parameter
@@ -427,162 +421,173 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
         this->CalculateCoefficients3D(C11, C12, C33);
 
         Eigen::Matrix<double,4,4> ElasticStiffness;
-		ElasticStiffness << C11, C12, 0.,  C12,
-							C12, C11, 0.,  C12,
-							 0.,  0., C33, 0.,
-							C12, C12, 0.,  C11;
+        ElasticStiffness << C11, C12, 0.,  C12,
+                            C12, C11, 0.,  C12,
+                             0.,  0., C33, 0.,
+                            C12, C12, 0.,  C11;
 
-		Eigen::Matrix<double,3,1> unity3;
-		unity3.setOnes(3);
+        Eigen::Matrix<double,3,1> unity3;
+        unity3.setOnes(3);
 
         //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
         //Get previous ip_data
-    	const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
 
         if (mDamage)
         {
-        	// calculate engineering strain
-			EngineeringStrain2D engineeringStrain;
-			rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+            // calculate engineering strain
+            EngineeringStrain2D engineeringStrain;
+            rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
-			// subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
-			double elastStrain[4];
-			elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-			elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-			elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
-			elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
+            // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
+            double elastStrain[4];
+            elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+            elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+            elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+            elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
-			// calculate Engineering stress
-			Eigen::Matrix<double,3,1> sigmaElast;
-			sigmaElast(0) = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
-			sigmaElast(1) = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
-			sigmaElast(2) = C33 * elastStrain[2] ;
+            // calculate Engineering stress
+            Eigen::Matrix<double,3,1> sigmaElast;
+            sigmaElast(0) = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
+            sigmaElast(1) = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
+            sigmaElast(2) = C33 * elastStrain[2] ;
 
-			const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
+            const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
-			//calculate scaled equivalent plastic strain (scaled by the element length)
-			bool unloading(true);
-			double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
+            //calculate scaled equivalent plastic strain (scaled by the element length)
+            bool unloading(true);
+            double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
 
-			//determine kappaUnscaled, which is a scaling factor related to the fracture energy
-			double kappaD = CalculateKappaD();
+            //determine kappaUnscaled, which is a scaling factor related to the fracture energy
+            double kappaD = CalculateKappaD();
 
-			//calculate damage parameter from the equivalente plastic strain
-			//it is scaled related to the length (based on the direction of the first principal plastic strain)
-			double dOmegadKappa;
-			double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
-			//std::cout << "omega " << 1.-oneMinusOmega << std::endl;
-			if (unloading)
-			{
-				tangent->mIsLocal=true;
-				tangent->SetSymmetry(true);
-				double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
-				localStiffData[0] = oneMinusOmega * C11;
-				localStiffData[1] = oneMinusOmega * C12;
-				localStiffData[2] = 0.;
+            //calculate damage parameter from the equivalente plastic strain
+            //it is scaled related to the length (based on the direction of the first principal plastic strain)
+            double dOmegadKappa;
+            double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
+            //std::cout << "omega " << 1.-oneMinusOmega << std::endl;
+            if (unloading)
+            {
+                //std::cout << "unloading local stiffness " << C11 << " "<< C12 << " " << C33 << " omega " << 1.-oneMinusOmega << std::endl;
+                tangent->mIsLocal=true;
+                tangent->SetSymmetry(true);
+                double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
+                localStiffData[0] = oneMinusOmega * C11;
+                localStiffData[1] = oneMinusOmega * C12;
+                localStiffData[2] = 0.;
 
-				localStiffData[3] = localStiffData[1];
-				localStiffData[4] = localStiffData[0];
-				localStiffData[5] = 0.;
+                localStiffData[3] = localStiffData[1];
+                localStiffData[4] = localStiffData[0];
+                localStiffData[5] = 0.;
 
-				localStiffData[6] = 0.;
-				localStiffData[7] = 0.;
-				localStiffData[8] = oneMinusOmega * C33;
-			}
-			else
-			{
-				tangent->mIsLocal=false;
-				//calculate nonlocal plastic strain for the direction of the equivalent length
-				double nonlocalPlasticStrain[4];
-				CalculateNonlocalPlasticStrain(rElement, rIp, nonlocalPlasticStrain);
+                localStiffData[6] = 0.;
+                localStiffData[7] = 0.;
+                localStiffData[8] = oneMinusOmega * C33;
+            }
+            else
+            {
+                //std::cout << "nonlocal stiffness, omega " << 1.-oneMinusOmega << std::endl;
+                tangent->mIsLocal=false;
+                //calculate nonlocal plastic strain for the direction of the equivalent length
+                double nonlocalPlasticStrain[4];
+                CalculateNonlocalPlasticStrain(rElement, rIp, nonlocalPlasticStrain);
 
-				Eigen::Matrix<double,4,1> dKappadEpsilonP;
-				//calculate derivative of damage parameter with respect to local strains of all nonlocal integration points
-				int totalNonlocalIp(0);
-				for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
-				{
-					const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
+                Eigen::Matrix<double,4,1> dKappadEpsilonP;
+                //calculate derivative of damage parameter with respect to local strains of all nonlocal integration points
+                int totalNonlocalIp(0);
+                for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+                {
+                    const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
 
-					//std::cout << weights.size() << " "<< nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints() << std::endl;
-					assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+                    //std::cout << weights.size() << " "<< nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints() << std::endl;
+                    assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
 
-					//Go through all the integration points
-					for (int theNonlocalIP=0; theNonlocalIP<(int)weights.size(); theNonlocalIP++, totalNonlocalIp++)
-					{
-						if (weights[theNonlocalIP]==0.)
-							continue;
-						assert(totalNonlocalIp<tangent->GetNumSubMatrices());
-						double *localStiffData = tangent->mNonlocalMatrices[totalNonlocalIp].mTangent;
+                    //Go through all the integration points
+                    for (int theNonlocalIP=0; theNonlocalIP<(int)weights.size(); theNonlocalIP++, totalNonlocalIp++)
+                    {
+                        if (weights[theNonlocalIP]==0.)
+                            continue;
+                        assert(totalNonlocalIp<tangent->GetNumSubMatrices());
+                        double *localStiffData = tangent->mNonlocalMatrices[totalNonlocalIp].mTangent;
 
-						//here the nonlocal delta is relevant
-						const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
+                        //here the nonlocal delta is relevant
+                        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
 
-						double deltaEpsilonPxx = NonlocalOldStaticData->mTmpEpsilonP[0] - NonlocalOldStaticData->mEpsilonP[0];
-						double deltaEpsilonPyy = NonlocalOldStaticData->mTmpEpsilonP[1] - NonlocalOldStaticData->mEpsilonP[1];
-						double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
-						double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
+                        double deltaEpsilonPxx = NonlocalOldStaticData->mTmpEpsilonP[0] - NonlocalOldStaticData->mEpsilonP[0];
+                        double deltaEpsilonPyy = NonlocalOldStaticData->mTmpEpsilonP[1] - NonlocalOldStaticData->mEpsilonP[1];
+                        double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
+                        double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
 
-						double deltaEpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
-														0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
-						if (deltaEpsilonPEq>0)
-						{
-							double factor(NonlocalOldStaticData->mTmpLeq/deltaEpsilonPEq);
-							dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
-							dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
-							dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
-							dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
+                        double deltaEpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
+                                                        0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
+                        if (deltaEpsilonPEq>0)
+                        {
+                            double factor(NonlocalOldStaticData->mTmpLeq/deltaEpsilonPEq);
+                            dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
+                            dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
+                            dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
+                            dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
+                        }
+                        else
+                        {
+                            double factor(NonlocalOldStaticData->mTmpLeq);
+                            dKappadEpsilonP(0) = factor;
+                            dKappadEpsilonP(1) = factor;
+                            dKappadEpsilonP(2) = factor*0.5;
+                            dKappadEpsilonP(3) = factor;
+                        }
 
-							//calculate dOmegadepsilon, instead of using transpose, just declare a RowMajor storage
-							Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
+                        //calculate dOmegadepsilon, instead of using transpose, just declare a RowMajor storage
+                        Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
 
-							//the second part includes the dependence of leq as a function of the local stress at the nonlocal integration point
-							minusdOmegadEpsilon += Eigen::Matrix<double,3,1>::Map(NonlocalOldStaticData->mTmpdLeqdEpsilon,3)*deltaEpsilonPEq;
+                        //the second part includes the dependence of leq as a function of the local stress at the nonlocal integration point
+                        minusdOmegadEpsilon += Eigen::Matrix<double,3,1>::Map(NonlocalOldStaticData->mTmpdLeqdEpsilon,3)*deltaEpsilonPEq;
 
-							minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
-							//std::cout<< "dOmegadepsilon/weight analytic" << std::endl << -minusdOmegadEpsilon/weights[theNonlocalIP] << std::endl;
-							//std::cout << "weight " << weights[theNonlocalIP] << std::endl;
+                        minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
+                        //std::cout<< "dOmegadepsilon/weight analytic" << std::endl << -minusdOmegadEpsilon/weights[theNonlocalIP] << std::endl;
+                        //std::cout << "weight " << weights[theNonlocalIP] << std::endl;
 
-							Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
-						}
+                        Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
 
-						if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
-						{
-							const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-							localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
-							localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
-							localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
-							localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
-							localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
-							localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
-							localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
-							localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
-							localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
-						}
-					}
-				}
-			}
-		}
-		else
-		{
-			tangent->mIsLocal=true;
+                        if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
+                        {
 
-/*			Eigen::Matrix<double,4,1> unity4;
-			unity4.setOnes(4);
-			Eigen::Matrix<double,3,3>::Map(tangent->mNonlocalMatrices[0].mTangent,3, 3) = (ElasticStiffness *
-					(unity4.asDiagonal()-Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4))).block(0,0,3,3);
+                            const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
+                            localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
+                            localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
+                            localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
+                            localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
+                            localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
+                            localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
+                            localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
+                            localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
+                            localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            tangent->mIsLocal=true;
+
+/*            Eigen::Matrix<double,4,1> unity4;
+            unity4.setOnes(4);
+            Eigen::Matrix<double,3,3>::Map(tangent->mNonlocalMatrices[0].mTangent,3, 3) = (ElasticStiffness *
+                    (unity4.asDiagonal()-Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4))).block(0,0,3,3);
 */
-			double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
-			const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-			localStiffData[0] = C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]);
-			localStiffData[1] = C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1];
-			localStiffData[2] = -C33*tmpdEP[2];
-			localStiffData[3] = -C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]);
-			localStiffData[4] = -C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]);
-			localStiffData[5] = -C33*tmpdEP[6];
-			localStiffData[6] = -C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]);
-			localStiffData[7] = -C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9];
-			localStiffData[8] = C33*(1.-tmpdEP[10]);
-		}
+            double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
+            const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
+            localStiffData[0] = C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]);
+            localStiffData[1] = C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1];
+            localStiffData[2] = -C33*tmpdEP[2];
+            localStiffData[3] = -C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]);
+            localStiffData[4] = -C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]);
+            localStiffData[5] = -C33*tmpdEP[6];
+            localStiffData[6] = -C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]);
+            localStiffData[7] = -C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9];
+            localStiffData[8] = C33*(1.-tmpdEP[10]);
+        }
     }
     else
     {
@@ -601,7 +606,7 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
         const DeformationGradient3D& rDeformationGradient,
         ConstitutiveTangentBase* rTangent) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticity.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticity.");
 }
 
 //! @brief ... update static data (history variables) of the constitutive relationship
@@ -612,7 +617,7 @@ void NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStr
 void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Not implemented for 1D.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Not implemented for 1D.");
 }
 
 
@@ -662,6 +667,7 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
 
         // update the parts of the static data that are not related to the temporary updates (from the nonlocal calculation)
         oldStaticData->mKappa = oldStaticData->mTmpKappa;
+
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mEpsilonP,4,1) = Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4,1);;
         Eigen::Matrix<double,3,1>::Map(oldStaticData->mPrevStrain,3,1) = Eigen::Matrix<double,3,1>::Map(engineeringStrain.mEngineeringStrain);
     }
@@ -681,7 +687,7 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
 void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -690,9 +696,9 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+        const DeformationGradient1D& rDeformationGradient) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -701,7 +707,7 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+        const DeformationGradient2D& rDeformationGradient) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -735,42 +741,44 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
                 rDeltaEqPlasticStrain,
                 rdEpsilonPdEpsilon);
 
-		/*
-		//check rdEpsilonPdEpsilon
-		double rDeltaEqPlasticStrain2;
-		Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon2;
-		Eigen::Matrix<double,4,1> rNewEpsilonP2;
-		Eigen::Matrix<double,4,1> dEpsilonEqdEpsilon;
-		Eigen::Matrix<double,4,1> dOmegadEpsilon;
-		double omega(CalculateDamage(rDeltaEqPlasticStrain,CalculateKappaD()));
-		std::cout << "rdEpsilonPdEpsilon analytic" << std::endl << rdEpsilonPdEpsilon << std::endl;
-		double delta(1e-6);
-		for (int count=0; count<3 ; count++)
-		{
-			engineeringStrain.mEngineeringStrain[count]+=delta;
+/*
+//check rdEpsilonPdEpsilon
+double rDeltaEqPlasticStrain2;
+Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon2;
+Eigen::Matrix<double,4,1> rNewStress2;
+Eigen::Matrix<double,4,1> rNewEpsilonP2;
+Eigen::Matrix<double,4,1> dEpsilonEqdEpsilon;
+Eigen::Matrix<double,4,1> dOmegadEpsilon;
+double omega(CalculateDamage(rDeltaEqPlasticStrain,CalculateKappaD()));
+std::cout << "rdEpsilonPdEpsilon analytic" << std::endl << rdEpsilonPdEpsilon << std::endl;
+double delta(1e-8);
+for (int count=0; count<3 ; count++)
+{
+    engineeringStrain.mEngineeringStrain[count]+=delta;
 
-			// perform return mapping for the plasticity model
-			this->ReturnMapping2D(
-					engineeringStrain,
-					oldStaticData->mEpsilonP,
-					oldStaticData->mPrevStrain,
-					rNewEpsilonP2,
-					rDeltaEqPlasticStrain2,
-					rdEpsilonPdEpsilon2);
-			rdEpsilonPdEpsilon.col(count) = 1./delta*(rNewEpsilonP2-rNewEpsilonP);
-			dEpsilonEqdEpsilon(count) = 1./delta *(rDeltaEqPlasticStrain2-rDeltaEqPlasticStrain);
-			double omega2(CalculateDamage(rDeltaEqPlasticStrain2,CalculateKappaD()));
-			dOmegadEpsilon(count) = 1./delta *(omega2-omega);
+    // perform return mapping for the plasticity model
+    this->ReturnMapping2D(
+            engineeringStrain,
+            oldStaticData->mEpsilonP,
+            oldStaticData->mPrevStrain,
+            rNewStress,
+            rNewEpsilonP2,
+            rDeltaEqPlasticStrain2,
+            rdEpsilonPdEpsilon2);
+    rdEpsilonPdEpsilon.col(count) = 1./delta*(rNewEpsilonP2-rNewEpsilonP);
+    dEpsilonEqdEpsilon(count) = 1./delta *(rDeltaEqPlasticStrain2-rDeltaEqPlasticStrain);
+    double omega2(CalculateDamage(rDeltaEqPlasticStrain2,CalculateKappaD()));
+    dOmegadEpsilon(count) = 1./delta *(omega2-omega);
 
 
-			engineeringStrain.mEngineeringStrain[count]-=delta;
-		}
-		dEpsilonEqdEpsilon(3) = 0;
-		dOmegadEpsilon(3) = 0.;
-		std::cout << "rdEpsilonPdEpsilon cdf" << std::endl << rdEpsilonPdEpsilon << std::endl;
-		std::cout << "dEpsilonEqdEpsilon cdf" << std::endl << dEpsilonEqdEpsilon << std::endl;
-		std::cout << "dOmegadEpsilon cdf" << std::endl << dOmegadEpsilon << std::endl;
-		*/
+    engineeringStrain.mEngineeringStrain[count]-=delta;
+}
+dEpsilonEqdEpsilon(3) = 0;
+dOmegadEpsilon(3) = 0.;
+std::cout << "rdEpsilonPdEpsilon cdf" << std::endl << rdEpsilonPdEpsilon << std::endl;
+std::cout << "dEpsilonEqdEpsilon cdf" << std::endl << dEpsilonEqdEpsilon << std::endl;
+std::cout << "dOmegadEpsilon cdf" << std::endl << dOmegadEpsilon << std::endl;
+*/
         // update the temporary parts of the static data
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;
 
@@ -781,6 +789,7 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
 
         oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain*oldStaticData->mTmpLeq;
 
+        //std::cout << "tmpKappa " << oldStaticData->mTmpKappa << std::endl;
         Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4) = rdEpsilonPdEpsilon;
 
         // calculate coefficients of the linear elastic material matrix
@@ -788,13 +797,13 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
         this->CalculateCoefficients3D(C11, C12, C33);
 
         Eigen::Matrix<double,4,4> ElasticStiffness;
-		ElasticStiffness << C11, C12, 0.,  C12,
-							C12, C11, 0.,  C12,
-							 0.,  0., C33, 0.,
-							C12, C12, 0.,  C11;
+        ElasticStiffness << C11, C12, 0.,  C12,
+                            C12, C11, 0.,  C12,
+                             0.,  0., C33, 0.,
+                            C12, C12, 0.,  C11;
 
         // calculate derivative of eq length with respect to local strain
-		Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,1>::Ones().asDiagonal() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
+        Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,1>::Ones().asDiagonal() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
     }
     else
     {
@@ -808,9 +817,9 @@ void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_Engin
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+        const DeformationGradient3D& rDeformationGradient) const
 {
-	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] 3D is not implemented.");
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] 3D is not implemented.");
 }
 
 //! @brief ... create new static data object for an integration point
@@ -828,8 +837,8 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStatic
         const ElementBase* rElement) const
 {
     if (rElement->GetSection()==0)
-    	throw MechanicsException("[NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Section required to distinguish between plane stress and plane strain and thickness information.");
-	if (rElement->GetSection()->GetType()==NuTo::Section::PLANE_STRESS)
+        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Section required to distinguish between plane stress and plane strain and thickness information.");
+    if (rElement->GetSection()->GetType()==NuTo::Section::PLANE_STRESS)
         throw MechanicsException("[NuTo::NonlocalDamagePlasticity::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Nonlocal damage plasticity model not implemented for plane stress.");
     else
         return new ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain();
@@ -1278,14 +1287,14 @@ void NuTo::NonlocalDamagePlasticity::CheckFractureEnergy(double rFractureEnergy)
 //! @brief ... calculate the length of the element in plane coordinates (square root of area)
 double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress) const
 {
-	double l_eq_plane;
-	double l_eq_circ;
-	double l_element(sqrt(rElement->CalculateArea()));
+    double l_eq_plane;
+    double l_eq_circ;
+    double l_element(sqrt(rElement->CalculateArea()));
     l_eq_plane = mNonlocalRadius;
     l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
 
     bool mixedPlane;
-	double factor = 0.5*(rStress[0]-rStress[1]);
+    double factor = 0.5*(rStress[0]-rStress[1]);
     double helpScalar = sqrt(factor*factor+rStress[2]*rStress[2]*0.25);
     double stressPlane;
     double l_eq;
@@ -1298,8 +1307,8 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
     else
     {
         // only the largest component is considered
-    	stressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
-    	mixedPlane = false;
+        stressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
+        mixedPlane = false;
     }
 
     if (stressPlane >=rStress[3])
@@ -1307,7 +1316,7 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
         if (fabs(rStress[3])>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rStress[3]/stressPlane;
+            double tan_beta = rStress[3]/stressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
@@ -1323,7 +1332,7 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
         if (fabs(stressPlane)>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rStress[3]/stressPlane;
+            double tan_beta = rStress[3]/stressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
@@ -1339,18 +1348,18 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
 
 //! @brief ... calculate the derivative of the equivalent length of the element in plane coordinates (square root of area) with respect to the plastic strain
 double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress,
-		Eigen::Matrix<double,4,1>& rdLdStress) const
+        Eigen::Matrix<double,4,1>& rdLdStress) const
 {
     double l_eq_plane;
-	double l_eq_circ;
-	double l_element(sqrt(rElement->CalculateArea()));
+    double l_eq_circ;
+    double l_element(sqrt(rElement->CalculateArea()));
     l_eq_plane = mNonlocalRadius;
     l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
     assert(l_eq_plane>0);
     assert(l_eq_circ>0);
 
     bool mixedPlane;
-	double factor = 0.5*(rStress[0]-rStress[1]);
+    double factor = 0.5*(rStress[0]-rStress[1]);
     double helpScalar = sqrt(factor*factor+rStress[2]*rStress[2]*0.25);
     double StressPlane;
     double l_eq;
@@ -1363,20 +1372,20 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
         // principal plastic strains in plane direction are both in tension -> mixed interpolation
         StressPlane = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+0.5*rStress[2]*rStress[2]);
         mixedPlane = true;
-		d_stress_max_plane_d_stress_xx = rStress(0)/StressPlane;
-		d_stress_max_plane_d_stress_yy = rStress(1)/StressPlane;
-		d_stress_max_plane_d_stress_xy = 0.5*rStress(2)/StressPlane;
+        d_stress_max_plane_d_stress_xx = rStress(0)/StressPlane;
+        d_stress_max_plane_d_stress_yy = rStress(1)/StressPlane;
+        d_stress_max_plane_d_stress_xy = 0.5*rStress(2)/StressPlane;
     }
     else
     {
         // only the largest component is considered
-    	StressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
-    	mixedPlane = false;
+        StressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
+        mixedPlane = false;
 
-    	factor=1./(2.*sqrt((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+rStress(2)*rStress(2)));
-		d_stress_max_plane_d_stress_xx = 0.5+(rStress(0)-rStress(1))*factor;
-		d_stress_max_plane_d_stress_yy = 0.5+(rStress(1)-rStress(0))*factor;
-		d_stress_max_plane_d_stress_xy = rStress(2)*factor;
+        factor=1./(2.*sqrt((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+rStress(2)*rStress(2)));
+        d_stress_max_plane_d_stress_xx = 0.5+(rStress(0)-rStress(1))*factor;
+        d_stress_max_plane_d_stress_yy = 0.5+(rStress(1)-rStress(0))*factor;
+        d_stress_max_plane_d_stress_xy = rStress(2)*factor;
     }
 
     if (StressPlane >=rStress[3])
@@ -1384,32 +1393,32 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
         if (fabs(rStress[3])>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rStress[3]/StressPlane;
+            double tan_beta = rStress[3]/StressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
 
             double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
-			double d_tan_beta_d_stress_zz = 1./StressPlane;
-			double d_tan_beta_d_stress_max_plane = -rStress[3]/(StressPlane*StressPlane);
+            double d_tan_beta_d_stress_zz = 1./StressPlane;
+            double d_tan_beta_d_stress_max_plane = -rStress[3]/(StressPlane*StressPlane);
 
-			Eigen::Matrix<double,4,1> d_xs_dStress;
-			d_xs_dStress(0) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx;
-			d_xs_dStress(1) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy;
-			d_xs_dStress(2) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy;
-			d_xs_dStress(3) = d_xs_d_tanbeta *  d_tan_beta_d_stress_zz;
+            Eigen::Matrix<double,4,1> d_xs_dStress;
+            d_xs_dStress(0) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx;
+            d_xs_dStress(1) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy;
+            d_xs_dStress(2) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy;
+            d_xs_dStress(3) = d_xs_d_tanbeta *  d_tan_beta_d_stress_zz;
 
-			Eigen::Matrix<double,4,1> d_ys_dStress;
-			d_ys_dStress(0) = tan_beta * d_xs_dStress(0) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx * x_s;
-			d_ys_dStress(1) = tan_beta * d_xs_dStress(1) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy * x_s;
-			d_ys_dStress(2) = tan_beta * d_xs_dStress(2) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy * x_s;
-			d_ys_dStress(3) = tan_beta * d_xs_dStress(3) + d_tan_beta_d_stress_zz * x_s;
+            Eigen::Matrix<double,4,1> d_ys_dStress;
+            d_ys_dStress(0) = tan_beta * d_xs_dStress(0) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx * x_s;
+            d_ys_dStress(1) = tan_beta * d_xs_dStress(1) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy * x_s;
+            d_ys_dStress(2) = tan_beta * d_xs_dStress(2) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy * x_s;
+            d_ys_dStress(3) = tan_beta * d_xs_dStress(3) + d_tan_beta_d_stress_zz * x_s;
 
-			rdLdStress(0) = x_s/l_eq * d_xs_dStress(0) + y_s/l_eq * d_ys_dStress(0);
-			rdLdStress(1) = x_s/l_eq * d_xs_dStress(1) + y_s/l_eq * d_ys_dStress(1);
-			rdLdStress(2) = x_s/l_eq * d_xs_dStress(2) + y_s/l_eq * d_ys_dStress(2);
-			rdLdStress(3) = x_s/l_eq * d_xs_dStress(3) + y_s/l_eq * d_ys_dStress(3);
-			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdStress1]" << std::endl << rdLdStress << std::endl;
+            rdLdStress(0) = x_s/l_eq * d_xs_dStress(0) + y_s/l_eq * d_ys_dStress(0);
+            rdLdStress(1) = x_s/l_eq * d_xs_dStress(1) + y_s/l_eq * d_ys_dStress(1);
+            rdLdStress(2) = x_s/l_eq * d_xs_dStress(2) + y_s/l_eq * d_ys_dStress(2);
+            rdLdStress(3) = x_s/l_eq * d_xs_dStress(3) + y_s/l_eq * d_ys_dStress(3);
+            //std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdStress1]" << std::endl << rdLdStress << std::endl;
         }
         else
         {
@@ -1423,37 +1432,37 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
         if (fabs(StressPlane)>1e-10)
         {
             //plane and zz-direction in tension
-        	double tan_beta = rStress[3]/StressPlane;
+            double tan_beta = rStress[3]/StressPlane;
             double x_s = sqrt(1./(1/(l_eq_plane*l_eq_plane)+tan_beta*tan_beta/(l_eq_circ*l_eq_circ)));
             double y_s = x_s * tan_beta;
             l_eq = sqrt(x_s*x_s+y_s*y_s);
 
             double d_xs_d_tanbeta = -tan_beta*x_s*x_s*x_s/(l_eq_circ*l_eq_circ);
-			double d_tan_beta_d_stress_zz = 1./StressPlane;
-			double d_tan_beta_d_stress_max_plane = -rStress[3]/(StressPlane*StressPlane);
+            double d_tan_beta_d_stress_zz = 1./StressPlane;
+            double d_tan_beta_d_stress_max_plane = -rStress[3]/(StressPlane*StressPlane);
 
-			Eigen::Matrix<double,4,1> d_xs_dStress;
-			d_xs_dStress(0) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx;
-			d_xs_dStress(1) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy;
-			d_xs_dStress(2) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy;
-			d_xs_dStress(3) = d_xs_d_tanbeta *  d_tan_beta_d_stress_zz;
+            Eigen::Matrix<double,4,1> d_xs_dStress;
+            d_xs_dStress(0) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx;
+            d_xs_dStress(1) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy;
+            d_xs_dStress(2) = d_xs_d_tanbeta *  d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy;
+            d_xs_dStress(3) = d_xs_d_tanbeta *  d_tan_beta_d_stress_zz;
 
-			Eigen::Matrix<double,4,1> d_ys_dStress;
-			d_ys_dStress(0) = tan_beta * d_xs_dStress(0) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx * x_s;
-			d_ys_dStress(1) = tan_beta * d_xs_dStress(1) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy * x_s;
-			d_ys_dStress(2) = tan_beta * d_xs_dStress(2) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy * x_s;
-			d_ys_dStress(3) = tan_beta * d_xs_dStress(3) + d_tan_beta_d_stress_zz;
+            Eigen::Matrix<double,4,1> d_ys_dStress;
+            d_ys_dStress(0) = tan_beta * d_xs_dStress(0) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xx * x_s;
+            d_ys_dStress(1) = tan_beta * d_xs_dStress(1) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_yy * x_s;
+            d_ys_dStress(2) = tan_beta * d_xs_dStress(2) + d_tan_beta_d_stress_max_plane * d_stress_max_plane_d_stress_xy * x_s;
+            d_ys_dStress(3) = tan_beta * d_xs_dStress(3) + d_tan_beta_d_stress_zz;
 
-			rdLdStress(0) = x_s/l_eq * d_xs_dStress(0) + y_s/l_eq * d_ys_dStress(0);
-			rdLdStress(1) = x_s/l_eq * d_xs_dStress(1) + y_s/l_eq * d_ys_dStress(1);
-			rdLdStress(2) = x_s/l_eq * d_xs_dStress(2) + y_s/l_eq * d_ys_dStress(2);
-			rdLdStress(3) = x_s/l_eq * d_xs_dStress(3) + y_s/l_eq * d_ys_dStress(3);
-			//std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdStress2]" << std::endl << rdLdStress << std::endl;
+            rdLdStress(0) = x_s/l_eq * d_xs_dStress(0) + y_s/l_eq * d_ys_dStress(0);
+            rdLdStress(1) = x_s/l_eq * d_xs_dStress(1) + y_s/l_eq * d_ys_dStress(1);
+            rdLdStress(2) = x_s/l_eq * d_xs_dStress(2) + y_s/l_eq * d_ys_dStress(2);
+            rdLdStress(3) = x_s/l_eq * d_xs_dStress(3) + y_s/l_eq * d_ys_dStress(3);
+            //std::cout<< "[NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D rdLdStress2]" << std::endl << rdLdStress << std::endl;
         }
         else
         {
-        	l_eq = l_eq_circ;
-        	rdLdStress.setZero(4,1);
+            l_eq = l_eq_circ;
+            rdLdStress.setZero(4,1);
         }
     }
     return l_eq;
@@ -1582,21 +1591,21 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     Eigen::Matrix<double,4,4> dElastInv;
 
     {
-		double factor = e_mod/((1.+nu)*(1.-2.*nu));
-		double oneminusnufactor = (1-nu)*factor;
-		double nufactor = nu*factor;
+        double factor = e_mod/((1.+nu)*(1.-2.*nu));
+        double oneminusnufactor = (1-nu)*factor;
+        double nufactor = nu*factor;
 
-		dElast <<  oneminusnufactor , nufactor         , 0.              , nufactor ,
-				   nufactor         , oneminusnufactor , 0.              , nufactor ,
-				   0.               , 0.               , (0.5-nu)*factor , 0.,
-				   nufactor         , nufactor         , 0.              ,oneminusnufactor;
+        dElast <<  oneminusnufactor , nufactor         , 0.              , nufactor ,
+                   nufactor         , oneminusnufactor , 0.              , nufactor ,
+                   0.               , 0.               , (0.5-nu)*factor , 0.,
+                   nufactor         , nufactor         , 0.              ,oneminusnufactor;
 
-		factor = 1./e_mod;
-		double minusnufactor = -nu*factor;
-		dElastInv   << factor        , minusnufactor , 0.               , minusnufactor,
-					   minusnufactor , factor        , 0.               , minusnufactor,
-					   0.            , 0.            , 2.*factor*(1.+nu), 0.,
-					   minusnufactor , minusnufactor , 0                , factor;
+        factor = 1./e_mod;
+        double minusnufactor = -nu*factor;
+        dElastInv   << factor        , minusnufactor , 0.               , minusnufactor,
+                       minusnufactor , factor        , 0.               , minusnufactor,
+                       0.            , 0.            , 2.*factor*(1.+nu), 0.,
+                       minusnufactor , minusnufactor , 0                , factor;
 
     }
     //! @brief delta load factor for the previous iteration
@@ -1614,7 +1623,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     lastDeltaEqPlasticStrain = 0.;
     while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
     {
-    	numberOfExternalCutbacks++;
+        numberOfExternalCutbacks++;
 
         curTotalStrain(0) = rPrevTotalStrain[0]+cutbackFactorExternal*deltaStrain(0);
         curTotalStrain(1) = rPrevTotalStrain[1]+cutbackFactorExternal*deltaStrain(1);
@@ -1630,550 +1639,578 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         try
         {
             //resize yield condition vector
-        	int numYieldSurfaces=2;
-			yieldCondition.setZero(numYieldSurfaces);
+            int numYieldSurfaces=2;
+            yieldCondition.setZero(numYieldSurfaces);
 
-			//elastic strain, stress and d_matrix
-			elasticStrain = curTotalStrain - lastPlastStrain;
+            //elastic strain, stress and d_matrix
+            elasticStrain = curTotalStrain - lastPlastStrain;
 
-			//TODO just use the upper part for new EigenVersion 3.0
-			//trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
-			initTrialStress = dElast*elasticStrain;
+            //TODO just use the upper part for new EigenVersion 3.0
+            //trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
+            initTrialStress = dElast*elasticStrain;
 #ifdef ENABLE_DEBUG
-			std::cout << "initTrialStress " << std::endl << initTrialStress.transpose() << std::endl << std::endl;
+            std::cout << "initTrialStress " << std::endl << initTrialStress.transpose() << std::endl << std::endl;
 #endif
 
-			//calculate yield condition
-			//Drucker Prager
-			initYieldCondition(0) = YieldSurfaceDruckerPrager2D(initTrialStress, BETA, H_P);
+            //calculate yield condition
+            //Drucker Prager
+            initYieldCondition(0) = YieldSurfaceDruckerPrager2D(initTrialStress, BETA, H_P);
 
-			//rounded Rankine
-			initYieldCondition(1) = YieldSurfaceRankine2DRounded(initTrialStress, f_ct);
+            //rounded Rankine
+            initYieldCondition(1) = YieldSurfaceRankine2DRounded(initTrialStress, f_ct);
 
-			if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
-			{
-				//*************************************************
-				//*  thus we have elastic -------------> elastic  *
-				//*************************************************
-			    convergedInternal = true;
-				rEpsilonP =  lastPlastStrain;
-				rDeltaEqPlasticStrain = 0;
-				trialStress = initTrialStress;
-				if (cutbackFactorExternal==1)
-				{
-					rdEpsilonPdEpsilon.setZero(4,4);
-					rStress = trialStress;
-				}
+            if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+            {
+                //*************************************************
+                //*  thus we have elastic -------------> elastic  *
+                //*************************************************
+                convergedInternal = true;
+                rEpsilonP =  lastPlastStrain;
+                rDeltaEqPlasticStrain = 0;
+                trialStress = initTrialStress;
+                if (cutbackFactorExternal==1)
+                {
+                    rdEpsilonPdEpsilon.setZero(4,4);
+                    rStress = trialStress;
+                }
 #ifdef ENABLE_DEBUG
-				std::cout << "linear elastic step" << std::endl << std::endl;
+                std::cout << "linear elastic step" << std::endl << std::endl;
 #endif
-			}
+            }
 
-			// perform return mapping
+            // perform return mapping
             dF_dsigma.resize(numYieldSurfaces);
             d2F_d2sigma.resize(numYieldSurfaces);
 
             // initialize plastic multiplier
-			deltaGamma.setZero(numYieldSurfaces);
-			delta2Gamma.setZero(numYieldSurfaces);
-			yieldConditionFlag.setZero(numYieldSurfaces);
+            deltaGamma.setZero(numYieldSurfaces);
+            delta2Gamma.setZero(numYieldSurfaces);
+            yieldConditionFlag.setZero(numYieldSurfaces);
 
             for (int fixedYieldConditions=0; fixedYieldConditions<3 && convergedInternal==false; fixedYieldConditions++)
             {
-    			switch(fixedYieldConditions)
-				{
-				case 0:
+                switch(fixedYieldConditions)
+                {
+                case 0:
 #ifdef ENABLE_DEBUG
-					std::cout<< "pure Rankine" << std::endl;
+                    std::cout<< "pure Rankine" << std::endl;
 #endif
-					deltaGamma(1) = 0;
-					if (initYieldCondition(1)<-toleranceYieldSurface*f_ct)
-						continue;
-					yieldConditionFlag(0) = INACTIVE;
-					yieldConditionFlag(1) = ACTIVE;
-					numActiveYieldFunctions = 1;
-					break;
-				case 1:
+                    deltaGamma(1) = 0;
+                    if (initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+                        continue;
+                    yieldConditionFlag(0) = INACTIVE;
+                    yieldConditionFlag(1) = ACTIVE;
+                    numActiveYieldFunctions = 1;
+                    break;
+                case 1:
 #ifdef ENABLE_DEBUG
-					std::cout<< "combined" << std::endl;
+                    std::cout<< "combined" << std::endl;
 #endif
-					if (initYieldCondition(0)<-toleranceYieldSurface*f_ct || initYieldCondition(1)<-toleranceYieldSurface*f_ct)
-						continue;
-					yieldConditionFlag(0) = ACTIVE;
-					yieldConditionFlag(1) = ACTIVE;
-					deltaGamma(0) = 0;
-					deltaGamma(1) = 0;
-					numActiveYieldFunctions = 2;
-					break;
-				case 2:
+                    if (initYieldCondition(0)<-toleranceYieldSurface*f_ct || initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+                        continue;
+                    yieldConditionFlag(0) = ACTIVE;
+                    yieldConditionFlag(1) = ACTIVE;
+                    deltaGamma(0) = 0;
+                    deltaGamma(1) = 0;
+                    numActiveYieldFunctions = 2;
+                    break;
+                case 2:
 #ifdef ENABLE_DEBUG
-					std::cout<< "pure DP" << std::endl;
+                    std::cout<< "pure DP" << std::endl;
 #endif
-					if (initYieldCondition(0)<-toleranceYieldSurface*f_ct)
-						continue;
-					yieldConditionFlag(0) = ACTIVE;
-					yieldConditionFlag(1) = INACTIVE;
-					deltaGamma(0) = 0;
-					numActiveYieldFunctions = 1;
-					break;
-				default:
-					throw MechanicsException("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] programming error - should not happen.");
-				}
+                    if (initYieldCondition(0)<-toleranceYieldSurface*f_ct)
+                        continue;
+                    yieldConditionFlag(0) = ACTIVE;
+                    yieldConditionFlag(1) = INACTIVE;
+                    deltaGamma(0) = 0;
+                    numActiveYieldFunctions = 1;
+                    break;
+                default:
+                    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] programming error - should not happen.");
+                }
 
-            	for (int iteration = 0; iteration < maxSteps && convergedInternal==false; iteration++)
-				{
-            		numberOfInternalIterations++;
-            		if (iteration==0)
-					{
-						rEpsilonP = lastPlastStrain;
-						rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
-						yieldCondition= initYieldCondition;
-						trialStress = initTrialStress;
-					}
-					else
-					{
-						//trial stress is the last stress state from the previous line search
-						if (yieldConditionFlag(0)==ACTIVE)
-							yieldCondition(0) = yieldConditionLS(0);
-						else
-							yieldCondition(0) = YieldSurfaceDruckerPrager2D(trialStress, BETA, H_P);
+                for (int iteration = 0; iteration < maxSteps && convergedInternal==false; iteration++)
+                {
+                    numberOfInternalIterations++;
+                    if (iteration==0)
+                    {
+                        rEpsilonP = lastPlastStrain;
+                        rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
+                        yieldCondition= initYieldCondition;
+                        trialStress = initTrialStress;
+                    }
+                    else
+                    {
+                        //trial stress is the last stress state from the previous line search
+                        if (yieldConditionFlag(0)==ACTIVE)
+                            yieldCondition(0) = yieldConditionLS(0);
+                        else
+                            yieldCondition(0) = YieldSurfaceDruckerPrager2D(trialStress, BETA, H_P);
 
-						if (yieldConditionFlag(1)==ACTIVE)
-							yieldCondition(1) = yieldConditionLS(1);
-						else
-							yieldCondition(1) = YieldSurfaceRankine2DRounded(trialStress, f_ct);
+                        if (yieldConditionFlag(1)==ACTIVE)
+                            yieldCondition(1) = yieldConditionLS(1);
+                        else
+                            yieldCondition(1) = YieldSurfaceRankine2DRounded(trialStress, f_ct);
 
-					}
+                    }
 #ifdef ENABLE_DEBUG
                     std::cout << "trialStress " <<  std::endl << trialStress.transpose() << std::endl << std::endl;
-					std::cout << "yieldCondition " <<  std::endl << yieldCondition.transpose() << std::endl << std::endl;
+                    std::cout << "yieldCondition " <<  std::endl << yieldCondition.transpose() << std::endl << std::endl;
 #endif
 
-					// DP
-					if (yieldConditionFlag(0)==ACTIVE)
-					{
-						if (!YieldSurfaceDruckerPrager2DDerivatives(dF_dsigma[0],&(d2F_d2sigma[0]),trialStress,BETA))
-						{
-							//no convergence, decrease line search step
-							iteration = maxSteps;
-							continue;
-						}
+                    // DP
+                    if (yieldConditionFlag(0)==ACTIVE)
+                    {
+                        if (!YieldSurfaceDruckerPrager2DDerivatives(dF_dsigma[0],&(d2F_d2sigma[0]),trialStress,BETA))
+                        {
+                            //no convergence, decrease line search step
+                            iteration = maxSteps;
+                            continue;
+                        }
 #ifdef ENABLE_DEBUG
-						std::cout << "dF_dsigma[0] (DP) " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
+                        std::cout << "dF_dsigma[0] (DP) " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
 #endif
-					}
+                    }
 
-					// Rounded Rankine
-					if (yieldConditionFlag(1)==ACTIVE)
-					{
-						YieldSurfaceRankine2DRoundedDerivatives(dF_dsigma[1],&(d2F_d2sigma[1]),trialStress);
+                    // Rounded Rankine
+                    if (yieldConditionFlag(1)==ACTIVE)
+                    {
+                        YieldSurfaceRankine2DRoundedDerivatives(dF_dsigma[1],&(d2F_d2sigma[1]),trialStress);
 #ifdef ENABLE_DEBUG
-						std::cout << "dF_dsigma[1] (Rankine)" <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
-						//check second derivative
+                        std::cout << "dF_dsigma[1] (Rankine)" <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
+                        //check second derivative
 
-						double delta=1e-8;
-						std::cout << "d2F_d2sigma ana" << std::endl << d2F_d2sigma[1] << std::endl << std::endl;;
-						Eigen::Matrix<double,4,4> dF2_dsigmaTmp;
-						Eigen::Matrix<double,4,4> dF2_dsigmaCD;
-						Eigen::Matrix<double,4,1> dF_dsigmaTmp;
-						for (int count=0; count<4; count++)
-						{
-							trialStress(count,0)+=delta;
-							YieldSurfaceRankine2DRoundedDerivatives(dF_dsigmaTmp,&dF2_dsigmaTmp,trialStress);
-							dF2_dsigmaCD.col(count) = (dF_dsigmaTmp - dF_dsigma[1])*(1./delta);
-							trialStress(count,0)-=delta;
-						}
-						std::cout << "d2F_d2sigma cd" << std::endl << dF2_dsigmaCD << std::endl;
-						double max_error((dF2_dsigmaCD-d2F_d2sigma[1]).maxCoeff());
-						std::cout << "max error " << max_error << std::endl;
+/*                        double delta=1e-8;
+                        std::cout << "d2F_d2sigma ana" << std::endl << d2F_d2sigma[1] << std::endl << std::endl;;
+                        Eigen::Matrix<double,4,4> dF2_dsigmaTmp;
+                        Eigen::Matrix<double,4,4> dF2_dsigmaCD;
+                        Eigen::Matrix<double,4,1> dF_dsigmaTmp;
+                        for (int count=0; count<4; count++)
+                        {
+                            trialStress(count,0)+=delta;
+                            YieldSurfaceRankine2DRoundedDerivatives(dF_dsigmaTmp,&dF2_dsigmaTmp,trialStress);
+                            dF2_dsigmaCD.col(count) = (dF_dsigmaTmp - dF_dsigma[1])*(1./delta);
+                            trialStress(count,0)-=delta;
+                        }
+                        std::cout << "d2F_d2sigma cd" << std::endl << dF2_dsigmaCD << std::endl;
+                        double max_error((dF2_dsigmaCD-d2F_d2sigma[1]).maxCoeff());
+                        std::cout << "max error " << max_error << std::endl;
 
-						if (max_error>1e-6)
-							exit(-1);
+                        if (max_error>1e-6)
+                            exit(-1);
+*/
 #endif
-					}
+                    }
 
 
-					//************************************************************************
-					// residual
-					//************************************************************************
-					residual = lastPlastStrain-rEpsilonP;
+                    //************************************************************************
+                    // residual
+                    //************************************************************************
+                    residual = lastPlastStrain-rEpsilonP;
 
-					for (int count=0; count<numYieldSurfaces; count++)
-					{
-						if (yieldConditionFlag[count] == ACTIVE)
-						{
-							residual += deltaGamma(count)*dF_dsigma[count];
-						}
-					}
+                    for (int count=0; count<numYieldSurfaces; count++)
+                    {
+                        if (yieldConditionFlag[count] == ACTIVE)
+                        {
+                            residual += deltaGamma(count)*dF_dsigma[count];
+                        }
+                    }
 
 #ifdef ENABLE_DEBUG
                     std::cout << "residual " <<  std::endl << residual.transpose() << std::endl << std::endl;
 #endif
 
-					//this is just for scaling with a relative norm
-					double absResidual = residual.norm()*f_ct/e_mod;
+                    //this is just for scaling with a relative norm
+                    double absResidual = residual.norm()*f_ct/e_mod;
 
 #ifdef ENABLE_DEBUG
                     std::cout << iteration <<" residual " << absResidual << " yield condition " << yieldCondition.transpose() << std::endl << std::endl;
 #endif
 
-					// in case of PERFECT PLASTICITY [A] = hessian
-					hessian = dElastInv;
+                    // in case of PERFECT PLASTICITY [A] = hessian
+                    hessian = dElastInv;
 
-					for (int count=0; count<numYieldSurfaces; count++)
-					{
-						if (yieldConditionFlag(count)==ACTIVE)
-						{
-							hessian+=deltaGamma(count)*d2F_d2sigma[count];
-						}
-					}
+                    for (int count=0; count<numYieldSurfaces; count++)
+                    {
+                        if (yieldConditionFlag(count)==ACTIVE)
+                        {
+#ifdef ENABLE_DEBUG
+                    std::cout << iteration <<" d2F_d2sigma[" << count << "] "<< std::endl << d2F_d2sigma[count] << std::endl << std::endl;
+#endif
+                            hessian+=deltaGamma(count)*d2F_d2sigma[count];
+                        }
+                    }
+#ifdef ENABLE_DEBUG
+                    std::cout << iteration <<" hessian" << std::endl << hessian << std::endl << std::endl;
+
+                    if (fabs(hessian.determinant())<toleranceDeterminant)
+                    {
+                        std::cout << "hessian"<< std::endl << hessian << std::endl;
+                        std::cout << "trialStress"<< std::endl << trialStress << std::endl;
+                        std::cout << "yieldConditionFlag " <<  std::endl << yieldConditionFlag.transpose() << std::endl << std::endl;
+                    }
+#endif
 
                     assert(fabs(hessian.determinant())>toleranceDeterminant);
-					hessian = hessian.inverse();
+                    hessian = hessian.inverse();
 #ifdef ENABLE_DEBUG
                     std::cout << "determinant of hessian" << hessian.determinant() << std::endl;
 #endif
 
-					// check abs_residual and yieldCondition for active yield surfaces
-					bool convergenceFlagYieldCondition(true);
-					if (absResidual > toleranceResidual)
-						convergenceFlagYieldCondition = false;
-					else
-					{
-						for (int count=0; count<numYieldSurfaces; count++)
-						{
-							if (yieldConditionFlag(count) == INACTIVE)
-								continue;
-							if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
-							{
-								convergenceFlagYieldCondition = false;
-								break;
-							}
-						}
-					}
+                    // check abs_residual and yieldCondition for active yield surfaces
+                    bool convergenceFlagYieldCondition(true);
+                    if (absResidual > toleranceResidual)
+                        convergenceFlagYieldCondition = false;
+                    else
+                    {
+                        for (int count=0; count<numYieldSurfaces; count++)
+                        {
+                            if (yieldConditionFlag(count) == INACTIVE)
+                                continue;
+                            if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+                            {
+                                convergenceFlagYieldCondition = false;
+                                break;
+                            }
+                        }
+                    }
 
-					if (convergenceFlagYieldCondition==true)
-					{
-						// convergence is achieved - now check of the deltaGamma is nonnegative and all other yield surfaces are valid
-						for (int count=0; count<numYieldSurfaces; count++)
-						{
-							if (yieldConditionFlag(count) == INACTIVE)
-							{
-								if (yieldCondition(count) > toleranceYieldSurface*f_ct)
-								{
-									convergenceFlagYieldCondition = false;
-									iteration=maxSteps;
-								    break;
-								}
-							}
-							else
-							{
-								if (deltaGamma(count)<0)
-							    {
-									convergenceFlagYieldCondition = false;
-									iteration=maxSteps;
-								    break;
-							    }
-							}
-						}
+                    if (convergenceFlagYieldCondition==true)
+                    {
+                        // convergence is achieved - now check of the deltaGamma is nonnegative and all other yield surfaces are valid
+                        for (int count=0; count<numYieldSurfaces; count++)
+                        {
+                            if (yieldConditionFlag(count) == INACTIVE)
+                            {
+                                if (yieldCondition(count) > toleranceYieldSurface*f_ct)
+                                {
+                                    convergenceFlagYieldCondition = false;
+                                    iteration=maxSteps;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (deltaGamma(count)<0)
+                                {
+                                    convergenceFlagYieldCondition = false;
+                                    iteration=maxSteps;
+                                    break;
+                                }
+                            }
+                        }
 
-						if (convergenceFlagYieldCondition)
-						{
-							convergedInternal = true;
+                        if (convergenceFlagYieldCondition)
+                        {
+                            convergedInternal = true;
 #ifdef ENABLE_DEBUG
-							std::cout << "convergence after " << iteration << " iterations" << std::endl << std::endl;
+                            std::cout << "convergence after " << iteration << " iterations" << std::endl << std::endl;
 #endif
-						}
-					}
-					if (convergedInternal)
-					{
-					    if (cutbackFactorExternal==1)
-					    {
-							// compute elasto plastic d_matrix
-							// compute G_matrix
-							int curYieldFunction = 0;
-							matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-							vectorN.resize(numYieldSurfaces);
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<=count; count2++)
-								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
+                        }
+                    }
+                    if (convergedInternal)
+                    {
+                        if (cutbackFactorExternal==1)
+                        {
+                            // compute elasto plastic d_matrix
+                            // compute G_matrix
+                            int curYieldFunction = 0;
+                            matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+                            vectorN.resize(numYieldSurfaces);
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<=count; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
 
-									matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2]).lazy()(0);
-									// copy symmetric part
-									if (count!=count2)
-										matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+                                    matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2]).lazy()(0);
+                                    // copy symmetric part
+                                    if (count!=count2)
+                                        matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
 
-									curYieldFunction2++;
-								}
+                                    curYieldFunction2++;
+                                }
 
-								// N
-								vectorN[count] = hessian * dF_dsigma[count];
-								curYieldFunction++;
-							}
-
-							// solve linearized system of equations for G_inv
-							assert(fabs(matG.determinant())>toleranceDeterminant);
-							matG.computeInverse(&matGInv);
-
-							// compute elasto_plastic matrix
-							tmpStiffness = hessian;
-							curYieldFunction = 0;
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<numYieldSurfaces; count2++)
-								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-									tmpStiffness-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
-									curYieldFunction2++;
-								}
-								curYieldFunction++;
-							}
-
-							//update new history variables
-							rdEpsilonPdEpsilon = dElastInv * (dElast - tmpStiffness);
-
-							rStress = trialStress;
-
-	#ifdef ENABLE_DEBUG
-							std::cout << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<std::endl;
-							std::cout << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<std::endl;
-	#endif
-					    }
-					    else
-					    {
-					    	//do nothing and just increase the strain
-					    }
-					}
-					else
-					{
-						//no convergence convergedInternal==false
-						if (iteration<maxSteps)
-						{
-							//compute delta gamma
-							int curYieldFunction = 0;
-							matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<=count; count2++)
-							    {
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-
-									matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose()*hessian*dF_dsigma[count2])(0);
-									// copy symmetric part
-									if (count!=count2)
-									{
-										matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
-									}
-
-									curYieldFunction2++;
-								}
-
-								curYieldFunction++;
-							}
-							assert(curYieldFunction==numActiveYieldFunctions);
-
-							// solve linearized system of equations for G_inv
-							assert(fabs(matG.determinant())>toleranceDeterminant);
+                                // N
+                                vectorN[count] = hessian * dF_dsigma[count];
 #ifdef ENABLE_DEBUG
-							std::cout << "G and determinant" << matG.determinant() << std::endl;
-							std::cout << matG << std::endl;
+                                std::cout << "vectorN[ " << count <<"]" << std::endl << vectorN[count] <<std::endl<< std::endl;
 #endif
+                                curYieldFunction++;
+                            }
 
-							matG.computeInverse(&matGInv);
-
-							// compute deltaGamma
-							Eigen::Matrix<double,4,1> helpVector = hessian * residual;
-							Eigen::Matrix<double,4,1> helpVector2(0,0,0,0);
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-
-								helpVector2(count) = yieldCondition(count) - dF_dsigma[count].dot(helpVector);
-							}
-
-							curYieldFunction = 0;
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								delta2Gamma(count) = 0.;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<numYieldSurfaces; count2++)
-								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-
-									delta2Gamma(count) += matGInv(curYieldFunction,curYieldFunction2)*helpVector2(count2);
-
-									curYieldFunction2++;
-								}
-								curYieldFunction++;
-							}
+                            // solve linearized system of equations for G_inv
+                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            matG.computeInverse(&matGInv);
 
 #ifdef ENABLE_DEBUG
-							std::cout << "delta2Gamma " << delta2Gamma.transpose() << std::endl<< std::endl;
+                        std::cout << "matG " << std::endl << matG <<std::endl<< std::endl;
+                        std::cout << "matGInv " << std::endl << matGInv <<std::endl<< std::endl;
+                        std::cout << "hessian " << std::endl << hessian <<std::endl<< std::endl;
 #endif
-							//******************************************************************
-							// compute increments for stress
-							//******************************************************************
-							helpVector = residual;
+                            // compute elasto_plastic matrix
+                            tmpStiffness = hessian;
+                            curYieldFunction = 0;
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<numYieldSurfaces; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
+                                    tmpStiffness-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
+                                    curYieldFunction2++;
+                                }
+                                curYieldFunction++;
+                            }
 
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
+                            //update new history variables
+                            rdEpsilonPdEpsilon = dElastInv * (dElast - tmpStiffness);
+#ifdef ENABLE_DEBUG
+                        std::cout << "rdEpsilonPdEpsilon " << std::endl << rdEpsilonPdEpsilon <<std::endl<< std::endl;
+                        std::cout << "dElastInv " << std::endl << dElastInv <<std::endl<< std::endl;
+                        std::cout << "dElast " << std::endl << dElast <<std::endl<< std::endl;
+                        std::cout << "tmpStiffness " << std::endl << tmpStiffness <<std::endl<< std::endl;
+#endif
+
+                            rStress = trialStress;
+
+    #ifdef ENABLE_DEBUG
+                            std::cout << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<std::endl;
+                            std::cout << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<std::endl;
+    #endif
+                        }
+                        else
+                        {
+                            //do nothing and just increase the strain
+                        }
+                    }
+                    else
+                    {
+                        //no convergence convergedInternal==false
+                        if (iteration<maxSteps)
+                        {
+                            //compute delta gamma
+                            int curYieldFunction = 0;
+                            matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<=count; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
+
+                                    matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose()*hessian*dF_dsigma[count2])(0);
+                                    // copy symmetric part
+                                    if (count!=count2)
+                                    {
+                                        matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+                                    }
+
+                                    curYieldFunction2++;
+                                }
+
+                                curYieldFunction++;
+                            }
+                            assert(curYieldFunction==numActiveYieldFunctions);
+
+                            // solve linearized system of equations for G_inv
+                            assert(fabs(matG.determinant())>toleranceDeterminant);
+#ifdef ENABLE_DEBUG
+                            std::cout << "G and determinant" << matG.determinant() << std::endl;
+                            std::cout << matG << std::endl;
+#endif
+
+                            matG.computeInverse(&matGInv);
+
+                            // compute deltaGamma
+                            Eigen::Matrix<double,4,1> helpVector = hessian * residual;
+                            Eigen::Matrix<double,4,1> helpVector2(0,0,0,0);
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+
+                                helpVector2(count) = yieldCondition(count) - dF_dsigma[count].dot(helpVector);
+                            }
+
+                            curYieldFunction = 0;
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                delta2Gamma(count) = 0.;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<numYieldSurfaces; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
+
+                                    delta2Gamma(count) += matGInv(curYieldFunction,curYieldFunction2)*helpVector2(count2);
+
+                                    curYieldFunction2++;
+                                }
+                                curYieldFunction++;
+                            }
+
+#ifdef ENABLE_DEBUG
+                            std::cout << "delta2Gamma " << delta2Gamma.transpose() << std::endl<< std::endl;
+#endif
+                            //******************************************************************
+                            // compute increments for stress
+                            //******************************************************************
+                            helpVector = residual;
+
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
 #ifdef ENABLE_DEBUG
                                 std::cout<<"dfdsigma " << dF_dsigma[count].transpose()<<std::endl<< std::endl;
 #endif
-								helpVector += delta2Gamma(count)*dF_dsigma[count];
-							}
+                                helpVector += delta2Gamma(count)*dF_dsigma[count];
+                            }
 
-							deltaStress =  hessian * helpVector;
+                            deltaStress =  hessian * helpVector;
 #ifdef ENABLE_DEBUG
                             std::cout<<"deltaStress " << deltaStress.transpose()<<std::endl<< std::endl;
 #endif
-							//internal line search convergedExternal
-							double deltaCutbackFactor(1.);
-							double cutbackFactorLS(deltaCutbackFactor);
-							bool convergedLS(false);
+                            //internal line search convergedExternal
+                            double deltaCutbackFactor(1.);
+                            double cutbackFactorLS(deltaCutbackFactor);
+                            bool convergedLS(false);
 
-							//norm of the residual in the local Newton iteration, used as convergence indicator
-							// in the local iteration, the unknowns are deltaSigma and delta2Gamma
-							// whereas the residuals are the difference between (total -elastic) and (plastic strain)
-							// and the yield conditions
-		                    double normInit = residual.squaredNorm();
-		                    for (int count=0; count<numYieldSurfaces; count++)
-		                    {
-		                        if (yieldConditionFlag(count)==INACTIVE)
-		                            continue;
-		                        normInit +=yieldCondition(count)*yieldCondition(count);
-	                        }
-		                    int numberOfLinesearchSteps(0);
-		                    while (!convergedLS)
-							{
-		                    	numberOfLinesearchSteps++;
-		                    	convergedLS = true;
+                            //norm of the residual in the local Newton iteration, used as convergence indicator
+                            // in the local iteration, the unknowns are deltaSigma and delta2Gamma
+                            // whereas the residuals are the difference between (total -elastic) and (plastic strain)
+                            // and the yield conditions
+                            double normInit = residual.squaredNorm();
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                normInit +=yieldCondition(count)*yieldCondition(count);
+                            }
+                            int numberOfLinesearchSteps(0);
+                            while (!convergedLS)
+                            {
+                                numberOfLinesearchSteps++;
+                                convergedLS = true;
 
-								deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
-		                        deltaPlasticStrainLS = cutbackFactorLS * (dElastInv * deltaStress);
-								epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
-								stressLS = trialStress - cutbackFactorLS*deltaStress;
+                                deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
+                                deltaPlasticStrainLS = cutbackFactorLS * (dElastInv * deltaStress);
+                                epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
+                                stressLS = trialStress - cutbackFactorLS*deltaStress;
 
 #ifdef ENABLE_DEBUG
-		                    	std::cout << "delta2Gamma " << delta2Gamma.transpose() << std::endl<< std::endl;
-		                        std::cout << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << std::endl<< std::endl;
-		                        std::cout << "epsilonPLS " << epsilonPLS.transpose() << std::endl<< std::endl;
-		                		std::cout << "stressLS " << stressLS.transpose() << std::endl<< std::endl;
+                                std::cout << "delta2Gamma " << delta2Gamma.transpose() << std::endl<< std::endl;
+                                std::cout << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << std::endl<< std::endl;
+                                std::cout << "epsilonPLS " << epsilonPLS.transpose() << std::endl<< std::endl;
+                                std::cout << "stressLS " << stressLS.transpose() << std::endl<< std::endl;
 #endif
 
 
-								//* calculate yield condition and yield condition flag (active or not)
-								//* Drucker Prager
-								if (yieldConditionFlag(0)==ACTIVE)
-								{
-								    yieldConditionLS(0) = YieldSurfaceDruckerPrager2D(stressLS, BETA, H_P);
-									if (!YieldSurfaceDruckerPrager2DDerivatives(dF_dsigma[0],0,stressLS,BETA))
-									{
-										//no convergence, decrease line search step
-										convergedLS =false;
-									}
+                                //* calculate yield condition and yield condition flag (active or not)
+                                //* Drucker Prager
+                                if (yieldConditionFlag(0)==ACTIVE)
+                                {
+                                    yieldConditionLS(0) = YieldSurfaceDruckerPrager2D(stressLS, BETA, H_P);
+                                    if (!YieldSurfaceDruckerPrager2DDerivatives(dF_dsigma[0],0,stressLS,BETA))
+                                    {
+                                        //no convergence, decrease line search step
+                                        convergedLS =false;
+                                    }
 #ifdef ENABLE_DEBUG
-									std::cout << "dF_dsigma[0] " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
+                                    std::cout << "dF_dsigma[0] " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
 #endif
-								}
+                                }
 
-								// Rounded Rankine
-								if (yieldConditionFlag(1)==ACTIVE)
-								{
-								    yieldConditionLS(1) = YieldSurfaceRankine2DRounded(stressLS, f_ct);
-									YieldSurfaceRankine2DRoundedDerivatives(dF_dsigma[1],0,stressLS);
+                                // Rounded Rankine
+                                if (yieldConditionFlag(1)==ACTIVE)
+                                {
+                                    yieldConditionLS(1) = YieldSurfaceRankine2DRounded(stressLS, f_ct);
+                                    YieldSurfaceRankine2DRoundedDerivatives(dF_dsigma[1],0,stressLS);
 #ifdef ENABLE_DEBUG
-									std::cout << "dF_dsigma[1] " <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
+                                    std::cout << "dF_dsigma[1] " <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
 #endif
-								}
+                                }
 
-								// residual in line search
-								residualLS = lastPlastStrain-epsilonPLS;
+                                // residual in line search
+                                residualLS = lastPlastStrain-epsilonPLS;
 
-								for (int count=0; count<numYieldSurfaces; count++)
-								{
-									if (yieldConditionFlag[count] == ACTIVE)
-									{
-										residualLS += deltaGammaLS(count)*dF_dsigma[count];
-									}
-								}
+                                for (int count=0; count<numYieldSurfaces; count++)
+                                {
+                                    if (yieldConditionFlag[count] == ACTIVE)
+                                    {
+                                        residualLS += deltaGammaLS(count)*dF_dsigma[count];
+                                    }
+                                }
 
 #ifdef ENABLE_DEBUG
-			                    std::cout << "residual linesearch" <<  std::endl << residualLS.transpose() << std::endl << std::endl;
+                                std::cout << "residual linesearch" <<  std::endl << residualLS.transpose() << std::endl << std::endl;
 #endif
-			                    double normCurr = residualLS.squaredNorm();
-			                    for (int count=0; count<numYieldSurfaces; count++)
-			                    {
-			                        if (yieldConditionFlag(count)==INACTIVE)
-			                            continue;
-			                        normCurr +=yieldConditionLS(count)*yieldConditionLS(count);
-		                        }
+                                double normCurr = residualLS.squaredNorm();
+                                for (int count=0; count<numYieldSurfaces; count++)
+                                {
+                                    if (yieldConditionFlag(count)==INACTIVE)
+                                        continue;
+                                    normCurr +=yieldConditionLS(count)*yieldConditionLS(count);
+                                }
 #ifdef ENABLE_DEBUG
-			                    std::cout << "normInit " << normInit << "normCurr " << normCurr<<std::endl<< std::endl;
+                                std::cout << "normInit " << normInit << "normCurr " << normCurr<<std::endl<< std::endl;
 #endif
 
-			                    // check of relative norm of residual is sufficiently decreasing or if it is almost zero
-			                    if ((normCurr/normInit)*(normCurr/normInit)>1-0.5*cutbackFactorLS && normCurr>toleranceResidual*toleranceResidual)
-    	                        	convergedLS = false;
-		                        if (cutbackFactorLS<=minCutbackFactorLS)
-		                        	convergedLS = true;
+                                // check of relative norm of residual is sufficiently decreasing or if it is almost zero
+                                if ((normCurr/normInit)*(normCurr/normInit)>1-0.5*cutbackFactorLS && normCurr>toleranceResidual*toleranceResidual)
+                                    convergedLS = false;
+                                if (cutbackFactorLS<=minCutbackFactorLS)
+                                    convergedLS = true;
 
-		                        if (!convergedLS)
-		                        {
-		                        	deltaCutbackFactor*=0.5;
-		                        	cutbackFactorLS-=deltaCutbackFactor;
-		                        }
-							}
-		                    trialStress = stressLS;
-		                    deltaGamma = deltaGammaLS;
-							rEpsilonP = epsilonPLS;
+                                if (!convergedLS)
+                                {
+                                    deltaCutbackFactor*=0.5;
+                                    cutbackFactorLS-=deltaCutbackFactor;
+                                }
+                            }
+                            trialStress = stressLS;
+                            deltaGamma = deltaGammaLS;
+                            rEpsilonP = epsilonPLS;
 
 #ifdef ENABLE_DEBUG
-	                        if (yieldConditionFlag(0)==ACTIVE)
-	                            std::cout << "dF_dsigma[0] at end of line search " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
-	                        if (yieldConditionFlag(1)==ACTIVE)
-	                            std::cout << "dF_dsigma[1] at end of line search " <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
-	                        std::cout << "numberOfLinesearchSteps " << numberOfLinesearchSteps << std::endl;
+                            if (yieldConditionFlag(0)==ACTIVE)
+                                std::cout << "dF_dsigma[0] at end of line search " <<  std::endl << dF_dsigma[0].transpose() << std::endl << std::endl;
+                            if (yieldConditionFlag(1)==ACTIVE)
+                                std::cout << "dF_dsigma[1] at end of line search " <<  std::endl << dF_dsigma[1].transpose() << std::endl << std::endl;
+                            std::cout << "numberOfLinesearchSteps " << numberOfLinesearchSteps << std::endl;
 #endif
-						}
-					}
-				} // end of loop
+                        }
+                    }
+                } // end of loop
 #ifdef ENABLE_DEBUG
-            	if (convergedInternal==false)
-            	{
-            		std::cout << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << std::endl;
-            		for (int count=0; count<2; count++)
-            		{
-            			if (yieldConditionFlag(count)==ACTIVE)
-            			{
-            				std::cout << "     yield condition "<< count+1 << " " << yieldCondition(count) << " ("<<toleranceYieldSurface*f_ct << ")"<<std::endl;
-            				std::cout << "     deltaGamma "<< count+1 << " " << deltaGamma(count) << std::endl;
-            			}
-            			else
-            				std::cout << "     yield condition "<< count+1 << " " << yieldCondition(count) << std::endl;
+                if (convergedInternal==false)
+                {
+                    std::cout << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << std::endl;
+                    for (int count=0; count<2; count++)
+                    {
+                        if (yieldConditionFlag(count)==ACTIVE)
+                        {
+                            std::cout << "     yield condition "<< count+1 << " " << yieldCondition(count) << " ("<<toleranceYieldSurface*f_ct << ")"<<std::endl;
+                            std::cout << "     deltaGamma "<< count+1 << " " << deltaGamma(count) << std::endl;
+                        }
+                        else
+                            std::cout << "     yield condition "<< count+1 << " " << yieldCondition(count) << std::endl;
 
-            		}
-            	}
+                    }
+                }
 #endif
             }
         }
@@ -2190,30 +2227,32 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         if (convergedInternal)
         {
 #ifdef ENABLE_DEBUG
-			std::cout << "numberOfInternalIterations " << numberOfInternalIterations -  prevNumberOfInternalIterations<< "(" << numberOfInternalIterations << ")" << std::endl;
+            std::cout << "numberOfInternalIterations " << numberOfInternalIterations -  prevNumberOfInternalIterations<< "(" << numberOfInternalIterations << ")" << std::endl;
             std::cout << "convergence for external cutback factor" << std::endl;
 #endif
-			prevNumberOfInternalIterations = numberOfInternalIterations;
+            prevNumberOfInternalIterations = numberOfInternalIterations;
 
-			//update equivalente plastic strain
-			deltaPlasticStrain = rEpsilonP - lastPlastStrain;
-			rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
-							0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
+            //update equivalente plastic strain
+            deltaPlasticStrain = rEpsilonP - lastPlastStrain;
+            rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
+                            0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
 
-//			double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
-//			std::cout << std::endl << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << std::endl<< std::endl;
-//			std::cout << std::endl << "rEpsilonP " << rEpsilonP << "Norm of epsilonp " << std::endl;
+//            double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
+//            std::cout << std::endl << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << std::endl<< std::endl;
+//            std::cout << std::endl << "rEpsilonP " << rEpsilonP << "Norm of epsilonp " << std::endl;
 
-			if (cutbackFactorExternal==1.)
+            if (cutbackFactorExternal==1.)
+            {
                 convergedExternal=true;
+            }
             else
             {
-				lastPlastStrain = rEpsilonP;
-				lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
+                lastPlastStrain = rEpsilonP;
+                lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
 
-				if (numberOfInternalIterations<10)
-					deltaCutbackFactorExternal*=1.5;
-				cutbackFactorExternal +=deltaCutbackFactorExternal;
+                if (numberOfInternalIterations<10)
+                    deltaCutbackFactorExternal*=1.5;
+                cutbackFactorExternal +=deltaCutbackFactorExternal;
                 if (cutbackFactorExternal>1)
                 {
                     deltaCutbackFactorExternal -= cutbackFactorExternal -1.;
@@ -2223,8 +2262,8 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         }
         else
         {
-        	// no convergence in return mapping
-        	deltaCutbackFactorExternal*=0.5;
+            // no convergence in return mapping
+            deltaCutbackFactorExternal*=0.5;
             cutbackFactorExternal-=deltaCutbackFactorExternal;
             //#ifdef ENABLE_DEBUG
                         std::cout << "decrease external cutback factor to " << deltaCutbackFactorExternal << std::endl;
@@ -2247,89 +2286,89 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 //! @return yield condition
 double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matrix<double,4,1>& rStress, double rFct)const
 {
-	double value_sum  = 0.5*(rStress(0)+rStress(1));
-	double help_scalar = (rStress(0)-rStress(1));
-	double value_sqrt = sqrt(help_scalar*help_scalar+4.*rStress(2)*rStress(2));
-	double sigma_1(value_sum+0.5*value_sqrt);
-	double sigma_2(value_sum-0.5*value_sqrt);
-	//* (rounded) Rankine
+    double value_sum  = 0.5*(rStress(0)+rStress(1));
+    double help_scalar = (rStress(0)-rStress(1));
+    double value_sqrt = sqrt(help_scalar*help_scalar+4.*rStress(2)*rStress(2));
+    double sigma_1(value_sum+0.5*value_sqrt);
+    double sigma_2(value_sum-0.5*value_sqrt);
+    //* (rounded) Rankine
 #ifdef ENABLE_DEBUG
-	std::cout << "p1 " << sigma_1 << " p2 " << sigma_2 << " p3 " << rStress[3] << std::endl << std::endl;
+    std::cout << "p1 " << sigma_1 << " p2 " << sigma_2 << " p3 " << rStress[3] << std::endl << std::endl;
 #endif
-	if (rStress[3]<0)
-	{
-		//sigma_3 is negative
-		if (sigma_1<0)
-		{
-			// sigma_1 is negative and as a consequence sigma_2 is also negative
-			if (rStress[3]>sigma_1)
-			{
+    if (rStress[3]<0)
+    {
+        //sigma_3 is negative
+        if (sigma_1<0)
+        {
+            // sigma_1 is negative and as a consequence sigma_2 is also negative
+            if (rStress[3]>sigma_1)
+            {
 #ifdef ENABLE_DEBUG
-				std::cout << std::endl << " all negative f1" << std::endl;
+                std::cout << std::endl << " all negative f1" << std::endl;
 #endif
-				return rStress[3]-rFct;
-			}
-			else
-			{
+                return rStress[3]-rFct;
+            }
+            else
+            {
 #ifdef ENABLE_DEBUG
-				std::cout << std::endl << " all negative f3" << std::endl;
+                std::cout << std::endl << " all negative f3" << std::endl;
 #endif
-				return sigma_1-rFct;
-			}
-		}
-		else
-		{
-			//sigma_1 is positive
-			if (sigma_2<0)
-			{
-				//sigma_2 is negative
+                return sigma_1-rFct;
+            }
+        }
+        else
+        {
+            //sigma_1 is positive
+            if (sigma_2<0)
+            {
+                //sigma_2 is negative
 #ifdef ENABLE_DEBUG
-				std::cout << std::endl << " f1" << std::endl;
+                std::cout << std::endl << " f1" << std::endl;
 #endif
-				return sigma_1 - rFct;
-			}
-			else
-			{
-				//sigma_2 is positive
+                return sigma_1 - rFct;
+            }
+            else
+            {
+                //sigma_2 is positive
 #ifdef ENABLE_DEBUG
-				std::cout << std::endl << " f1,f2" << std::endl;
+                std::cout << std::endl << " f1,f2" << std::endl;
 #endif
-				return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2)-rFct;
-			}
-		}
-	}
-	else
-	{
-		//sigma_3 is positive
-		if (sigma_1<0)
-		{
-			// sigma_1 is negative and as a consequence sigma_2 is also negative
+                return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2)-rFct;
+            }
+        }
+    }
+    else
+    {
+        //sigma_3 is positive
+        if (sigma_1<0)
+        {
+            // sigma_1 is negative and as a consequence sigma_2 is also negative
 #ifdef ENABLE_DEBUG
-			std::cout << std::endl << " f3" << std::endl;
+            std::cout << std::endl << " f3" << std::endl;
 #endif
-			return rStress[3]-rFct;
-		}
-		else
-		{
-		    //sigma_1 is positive
-			if (sigma_2<0)
-			{
-				//sigma_2 is negative
+            return rStress[3]-rFct;
+        }
+        else
+        {
+            //sigma_1 is positive
+            if (sigma_2<0)
+            {
+                //sigma_2 is negative
 #ifdef ENABLE_DEBUG
-				std::cout << std::endl << " f1,f3" << std::endl;
+                std::cout << std::endl << " f1,f3" << std::endl;
 #endif
-				return sqrt(sigma_1*sigma_1 + rStress[3] * rStress[3]) - rFct;
-			}
-			else
-			{
-				//sigma_2 is positive
+                return sqrt(sigma_1*sigma_1 + rStress[3] * rStress[3]) - rFct;
+            }
+            else
+            {
+                //sigma_2 is positive
 #ifdef ENABLE_DEBUG
-				std::cout << std::endl << " f1,f2,f3" << std::endl;
+                std::cout << std::endl << " f1,f2,f3" << std::endl;
 #endif
-				return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2 + rStress[3] * rStress[3])-rFct;
-			}
-		}
-	}
+                return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2 + rStress[3] * rStress[3])-rFct;
+            }
+        }
+    }
 }
 
 //! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
@@ -2338,215 +2377,285 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
 //! @param rStress current stress
 //! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm 0.5*value_sqrt$
 void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eigen::Matrix<double,4,1>& rdF_dSigma,Eigen::Matrix<double,4,4>* rd2F_d2Sigma,
-		Eigen::Matrix<double,4,1>& rStress)const
+        Eigen::Matrix<double,4,1>& rStress)const
 {
-	double value_sum  = 0.5*(rStress(0)+rStress(1));
-	double help_scalar = (rStress(0)-rStress(1));
-	double value_sqrt = sqrt(help_scalar*help_scalar+4.*rStress(2)*rStress(2));
-	double sigma_1(value_sum+0.5*value_sqrt);
-	double sigma_2(value_sum-0.5*value_sqrt);
+    double value_sum  = 0.5*(rStress(0)+rStress(1));
+    double help_diff = (rStress(0)-rStress(1));
+    double value_sqrt = sqrt(help_diff*help_diff+4.*rStress(2)*rStress(2));
+    double sigma_1(value_sum+0.5*value_sqrt);
+    double sigma_2(value_sum-0.5*value_sqrt);
 
-	double factor;
-	if (rStress[3]<0)
-	{
-		//sigma_3 is negative
-		if (sigma_1<0)
-		{
-			// sigma_1 is negative and as a consequence sigma_2 is also negative
-			if (rStress[3]>sigma_1)
-			{
-		        rdF_dSigma(0) = 0.;
-		        rdF_dSigma(1) = 0.;
-		        rdF_dSigma(2) = 0.;
-		        rdF_dSigma(3) = 1.;
-		        //second derivatives are not required
-			}
-			else
-			{
-			    // f = f(sigma_1)
-				if (value_sqrt<1e-12)
-			        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded] value_sqrt<1e-12 should not happen, since sigma_1>0 and sigma_2<0");
+    double factor;
+    if (rStress[3]<0)
+    {
+        //sigma_3 is negative
+        if (sigma_1<0)
+        {
+            // sigma_1 is negative and as a consequence sigma_2 is also negative
+            if (rStress[3]>sigma_1)
+            {
+                rdF_dSigma(0) = 0.;
+                rdF_dSigma(1) = 0.;
+                rdF_dSigma(2) = 0.;
+                rdF_dSigma(3) = 1.;
+                //second derivatives are not required
+            }
+            else
+            {
+                // f = f(sigma_1)
+                if (value_sqrt<1e-12)
+                    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded] value_sqrt<1e-12 should not happen, since sigma_1>0 and sigma_2<0");
 
-			    rdF_dSigma(0) = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
-			    rdF_dSigma(1) = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
-			    rdF_dSigma(2) = 2*rStress(2)/value_sqrt;
-			    rdF_dSigma(3) = 0.;
-			    //second derivatives are not required
-			}
-		}
-		else
-		{
-			//sigma_1 is positive
-			if (sigma_2<0)
-			{
-			    // f = f(sigma_1)
-				if (value_sqrt<1e-12)
-			        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded] value_sqrt<1e-12 should not happen, since sigma_1>0 and sigma_2<0");
+                double yield = sqrt(sigma_1*sigma_1 + rStress(3)*rStress(3));
+                factor = 1./yield;
+                double dsigma1_dx = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
+                double dsigma1_dy = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
+                double dsigma1_dxy = 2.*rStress(2)/value_sqrt;
 
-			    rdF_dSigma(0) = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
-			    rdF_dSigma(1) = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
-			    rdF_dSigma(2) = 2*rStress(2)/value_sqrt;
-			    rdF_dSigma(3) = 0.;
+                rdF_dSigma(0) = factor*sigma_1*dsigma1_dx;
+                rdF_dSigma(1) = factor*sigma_1*dsigma1_dy;
+                rdF_dSigma(2) = factor*sigma_1*dsigma1_dxy;
+                rdF_dSigma(3) = factor*rStress(3);
+                //second derivatives are not required
+            }
+        }
+        else
+        {
+            //sigma_1 is positive
+            if (sigma_2<0)
+            {
+                // f = f(sigma_1)
+                if (value_sqrt<1e-12)
+                    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded] value_sqrt<1e-12 should not happen, since sigma_1>0 and sigma_2<0");
 
-			    // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-			    if (rd2F_d2Sigma!=0)
-			    {
-					double factor = 1./(value_sqrt*value_sqrt*value_sqrt);
-					(*rd2F_d2Sigma)(0,0) = factor*2.*rStress[2]*rStress[2];
-					(*rd2F_d2Sigma)(0,1) = factor*(-2.)*rStress[2]*rStress[2];
-					(*rd2F_d2Sigma)(0,2) = factor*(2.)*(rStress[1]-rStress[0])*rStress[2];
-					(*rd2F_d2Sigma)(0,3) = 0;
-					(*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-					(*rd2F_d2Sigma)(1,1) = factor*2.*rStress[2]*rStress[2];
-					(*rd2F_d2Sigma)(1,2) = factor*(2.)*(rStress[0]-rStress[1])*rStress[2];
-					(*rd2F_d2Sigma)(1,3) = 0;
-					(*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-					(*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-					(*rd2F_d2Sigma)(2,2) = factor*(2.)*(rStress[0]-rStress[1])*(rStress[0]-rStress[1]);
-					(*rd2F_d2Sigma)(2,3) = 0.;
-					(*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-					(*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-					(*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-					(*rd2F_d2Sigma)(3,3) = 0.;
-			    }
-			}
-			else
-			{
-				// f = f(sigma_1, sigma_2)
-				//sigma_2 is positive
-		        factor = 1./sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+
-		                         2*rStress[2]*rStress[2]);
-		        rdF_dSigma(0) = rStress[0]*factor;
-		        rdF_dSigma(1) = rStress[1]*factor;
-		        rdF_dSigma(2) = 2.*rStress[2]*factor;
-		        rdF_dSigma(3) = 0.;
+                rdF_dSigma(0) = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
+                rdF_dSigma(1) = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
+                rdF_dSigma(2) = 2*rStress(2)/value_sqrt;
+                rdF_dSigma(3) = 0.;
 
-			    if (rd2F_d2Sigma!=0)
-			    {
-					// store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-					factor = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+2*rStress[2]*rStress[2]);
-					factor = 1./(factor*factor*factor);
+                // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
+                if (rd2F_d2Sigma!=0)
+                {
+                    double factor = 1./(value_sqrt*value_sqrt*value_sqrt);
+                    (*rd2F_d2Sigma)(0,0) = factor*2.*rStress[2]*rStress[2];
+                    (*rd2F_d2Sigma)(0,1) = factor*(-2.)*rStress[2]*rStress[2];
+                    (*rd2F_d2Sigma)(0,2) = factor*(2.)*(rStress[1]-rStress[0])*rStress[2];
+                    (*rd2F_d2Sigma)(0,3) = 0;
+                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
+                    (*rd2F_d2Sigma)(1,1) = factor*2.*rStress[2]*rStress[2];
+                    (*rd2F_d2Sigma)(1,2) = factor*(2.)*(rStress[0]-rStress[1])*rStress[2];
+                    (*rd2F_d2Sigma)(1,3) = 0;
+                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
+                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
+                    (*rd2F_d2Sigma)(2,2) = factor*(2.)*(rStress[0]-rStress[1])*(rStress[0]-rStress[1]);
+                    (*rd2F_d2Sigma)(2,3) = 0.;
+                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
+                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
+                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
+                    (*rd2F_d2Sigma)(3,3) = 0.;
+                }
+            }
+            else
+            {
+                // f = f(sigma_1, sigma_2)
+                //sigma_2 is positive
+                factor = 1./sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+
+                                 2*rStress[2]*rStress[2]);
+                rdF_dSigma(0) = rStress[0]*factor;
+                rdF_dSigma(1) = rStress[1]*factor;
+                rdF_dSigma(2) = 2.*rStress[2]*factor;
+                rdF_dSigma(3) = 0.;
 
-					(*rd2F_d2Sigma)(0,0) = factor*(rStress[1]*rStress[1]+2.*rStress[2]*rStress[2]);
-					(*rd2F_d2Sigma)(0,1) = -factor*rStress[0]*rStress[1];
-					(*rd2F_d2Sigma)(0,2) = (-2.)*factor*(rStress[0]*rStress[2]);
-					(*rd2F_d2Sigma)(0,3) = 0;
-					(*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-					(*rd2F_d2Sigma)(1,1) = factor*(rStress[0]*rStress[0]+2.*rStress[2]*rStress[2]);
-					(*rd2F_d2Sigma)(1,2) = (-2.)*factor*(rStress[1]*rStress[2]);
-					(*rd2F_d2Sigma)(1,3) = 0;
-					(*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-					(*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-					(*rd2F_d2Sigma)(2,2) = (2.)*factor*(rStress[0]*rStress[0]+rStress[1]*rStress[1]);
-					(*rd2F_d2Sigma)(2,3) = 0.;
-					(*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-					(*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-					(*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-					(*rd2F_d2Sigma)(3,3) = 0.;
-			    }
-			}
-		}
-	}
-	else
-	{
-		//sigma_3 is positive
-		if (sigma_1<0)
-		{
-			// sigma_1 is negative and as a consequence sigma_2 is also negative
-			// f = f(sigma_3)
-	        rdF_dSigma(0) = 0.;
-	        rdF_dSigma(1) = 0.;
-	        rdF_dSigma(2) = 0.;
-	        rdF_dSigma(3) = 1.;
+                if (rd2F_d2Sigma!=0)
+                {
+                    // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
+                    factor = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+2*rStress[2]*rStress[2]);
+                    factor = 1./(factor*factor*factor);
 
-		    if (rd2F_d2Sigma!=0)
-		    {
-		    	(*rd2F_d2Sigma).setZero(4,4);
-		    }
-		}
-		else
-		{
-			//sigma_1 is positive
-			if (sigma_2<0)
-			{
-				//sigma_2 is negative
-				//f = f( sigma_1,sigma_3)
+                    (*rd2F_d2Sigma)(0,0) = factor*(rStress[1]*rStress[1]+2.*rStress[2]*rStress[2]);
+                    (*rd2F_d2Sigma)(0,1) = -factor*rStress[0]*rStress[1];
+                    (*rd2F_d2Sigma)(0,2) = (-2.)*factor*(rStress[0]*rStress[2]);
+                    (*rd2F_d2Sigma)(0,3) = 0;
+                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
+                    (*rd2F_d2Sigma)(1,1) = factor*(rStress[0]*rStress[0]+2.*rStress[2]*rStress[2]);
+                    (*rd2F_d2Sigma)(1,2) = (-2.)*factor*(rStress[1]*rStress[2]);
+                    (*rd2F_d2Sigma)(1,3) = 0;
+                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
+                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
+                    (*rd2F_d2Sigma)(2,2) = (2.)*factor*(rStress[0]*rStress[0]+rStress[1]*rStress[1]);
+                    (*rd2F_d2Sigma)(2,3) = 0.;
+                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
+                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
+                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
+                    (*rd2F_d2Sigma)(3,3) = 0.;
+                }
+            }
+        }
+    }
+    else
+    {
+        //sigma_3 is positive
+        if (sigma_1<0)
+        {
+            // sigma_1 is negative and as a consequence sigma_2 is also negative
+            // f = f(sigma_3)
+            rdF_dSigma(0) = 0.;
+            rdF_dSigma(1) = 0.;
+            rdF_dSigma(2) = 0.;
+            rdF_dSigma(3) = 1.;
 
-				double yield = sqrt(sigma_1*sigma_1 + rStress(3)*rStress(3));
-				factor = 1./yield;
-				rdF_dSigma(0) = factor*sigma_1*(0.5+0.5*(rStress(0)-rStress(1))/value_sqrt);
-		        rdF_dSigma(1) = factor*sigma_1*(0.5+0.5*(rStress(1)-rStress(0))/value_sqrt);
-		        rdF_dSigma(2) = factor*sigma_1*(2.*rStress(2)/value_sqrt);
-		        rdF_dSigma(3) = factor*rStress(3);
+            if (rd2F_d2Sigma!=0)
+            {
+                (*rd2F_d2Sigma).setZero(4,4);
+            }
+        }
+        else
+        {
+            //sigma_1 is positive
+            if (sigma_2<0)
+            {
+                //sigma_2 is negative
+                //f = f( sigma_1,sigma_3)
 
-			    if (rd2F_d2Sigma!=0)
-			    {
-					factor *= factor;
-					double dsigma1_dx = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
-					double dsigma1_dy = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
-					double dsigma1_dxy = 2.*rStress(2)/value_sqrt;
+                double yield = sqrt(sigma_1*sigma_1 + rStress(3)*rStress(3));
+                factor = 1./yield;
+                double dsigma1_dx = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
+                double dsigma1_dy = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
+                double dsigma1_dxy = 2.*rStress(2)/value_sqrt;
 
-					double factor2 = 1./(value_sqrt*value_sqrt*value_sqrt);
-					double dsigma1_dx2    = 2.*rStress(2)*rStress(2)*factor2;
-					double dsigma1_dxdy   = -dsigma1_dx2;
-					double dsigma1_dxdxy  = 2.*(rStress(1)-rStress(0))*rStress(2)*factor2;
-					double dsigma1_dy2    = dsigma1_dx2;
-					double dsigma1_dydxy  = 2.*(rStress(0)-rStress(1))*rStress(2)*factor2;
-					double dsigma1_dxy2   = 2.*(rStress(0)-rStress(1))*(rStress(0)-rStress(1))*factor2;
+                rdF_dSigma(0) = factor*sigma_1*dsigma1_dx;
+                rdF_dSigma(1) = factor*sigma_1*dsigma1_dy;
+                rdF_dSigma(2) = factor*sigma_1*dsigma1_dxy;
+                rdF_dSigma(3) = factor*rStress(3);
 
-					// store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-					(*rd2F_d2Sigma)(0,0) = factor*((dsigma1_dx*dsigma1_dx +sigma_1*dsigma1_dx2  )*yield-sigma_1*dsigma1_dx*rdF_dSigma(0));
-					(*rd2F_d2Sigma)(0,1) = factor*((dsigma1_dx*dsigma1_dy +sigma_1*dsigma1_dxdy )*yield-sigma_1*dsigma1_dx*rdF_dSigma(1));
-					(*rd2F_d2Sigma)(0,2) = factor*((dsigma1_dx*dsigma1_dxy+sigma_1*dsigma1_dxdxy)*yield-sigma_1*dsigma1_dx*rdF_dSigma(2));
-					(*rd2F_d2Sigma)(0,3) = factor*rStress(3)*rdF_dSigma(0);
-					(*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-					(*rd2F_d2Sigma)(1,1) = factor*((dsigma1_dy*dsigma1_dy +sigma_1*dsigma1_dy2  )*yield-sigma_1*dsigma1_dy*rdF_dSigma(1));
-					(*rd2F_d2Sigma)(1,2) = factor*((dsigma1_dy*dsigma1_dxy+sigma_1*dsigma1_dydxy)*yield-sigma_1*dsigma1_dy*rdF_dSigma(2));
-					(*rd2F_d2Sigma)(1,3) = factor*rStress(3)*rdF_dSigma(1);
-					(*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-					(*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-					(*rd2F_d2Sigma)(2,2) = factor*((dsigma1_dxy*dsigma1_dxy +sigma_1*dsigma1_dxy2  )*yield-sigma_1*dsigma1_dxy*rdF_dSigma(2));
-					(*rd2F_d2Sigma)(2,3) = factor*rStress(3)*rdF_dSigma(2);
-					(*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-					(*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-					(*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-					(*rd2F_d2Sigma)(3,3) = factor*(yield-rStress(3)*rdF_dSigma(3));
-			    }
-			}
-			else
-			{
-				//sigma_2 is positive
-				//f = f( sigma_1,sigma_2, sigma_3)
-				factor = 1./sqrt(rStress(0)*rStress(0) + rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
-				rdF_dSigma(0) = factor*rStress(0);
-		        rdF_dSigma(1) = factor*rStress(1);
-		        rdF_dSigma(2) = factor*2.*rStress(2);
-		        rdF_dSigma(3) = factor*rStress(3);
+                if (rd2F_d2Sigma!=0)
+                {
+/*
+                    std::cout << "active yieldsurfaces : p1, p3 " << rd2F_d2Sigma << std::endl;
+                    std::cout << "yield " << yield << std::endl;
+                    std::cout << "d_sigma_1 dsigma_i " << dsigma1_dx << " " << dsigma1_dy << " " << dsigma1_dxy << std::endl;
+                    std::cout << "rdF_dSigma " << std::endl << rdF_dSigma << std::endl;
+*/
+                    double factor2 = 1./(value_sqrt*value_sqrt*value_sqrt);
+                    double dsigma1_dx2    = 2.*rStress(2)*rStress(2)*factor2;
+                    double dsigma1_dxdy   = -dsigma1_dx2;
+                    double dsigma1_dxdxy  = 2.*rStress(2)*(rStress(1)-rStress(0))*factor2;
+                    double dsigma1_dy2    = dsigma1_dx2;
+                    double dsigma1_dydxy  = 2.*rStress(2)*(rStress(0)-rStress(1))*factor2;
+                    double dsigma1_dxy2   = 2.*help_diff*help_diff*factor2;
 
-			    if (rd2F_d2Sigma!=0)
-			    {
+//                    std::cout << "d2_sigma_1 d2sigma_i " << dsigma1_dx2 << " " << dsigma1_dxdy << " " << dsigma1_dxdxy << " " << dsigma1_dy2 << " " << dsigma1_dydxy << " " << dsigma1_dxy2 << std::endl;
 
-			    	factor*=factor*factor;
-			    	(*rd2F_d2Sigma)(0,0) = factor * (rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
-			    	(*rd2F_d2Sigma)(0,1) = -factor * rStress(1) * rStress(0);
-			    	(*rd2F_d2Sigma)(0,2) = -2.*factor * rStress(2) * rStress(0);
-			    	(*rd2F_d2Sigma)(0,3) = -factor * rStress(3) * rStress(0);
-			    	(*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-			    	(*rd2F_d2Sigma)(1,1) = factor * (rStress(0)*rStress(0) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
-			    	(*rd2F_d2Sigma)(1,2) = -2.*factor * rStress(2) * rStress(1);
-			    	(*rd2F_d2Sigma)(1,3) = -factor * rStress(3) * rStress(1);
-			    	(*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-			    	(*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-			    	(*rd2F_d2Sigma)(2,2) = 2.*factor*(rStress(0)*rStress(0) + rStress(1)*rStress(1) + rStress(3)*rStress(3));
-			    	(*rd2F_d2Sigma)(2,3) = -2.*factor * rStress(3) * rStress(2);
-			    	(*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-			    	(*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-			    	(*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-			    	(*rd2F_d2Sigma)(3,3) = factor * (rStress(0)*rStress(0) + rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2));
-			    }
-			}
-		}
-	}
+                    factor *= factor;
+                    // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
+                    (*rd2F_d2Sigma)(0,0) = factor*((dsigma1_dx*dsigma1_dx +sigma_1*dsigma1_dx2  )*yield-sigma_1*dsigma1_dx*rdF_dSigma(0));
+                    (*rd2F_d2Sigma)(0,1) = factor*((dsigma1_dx*dsigma1_dy +sigma_1*dsigma1_dxdy )*yield-sigma_1*dsigma1_dx*rdF_dSigma(1));
+                    (*rd2F_d2Sigma)(0,2) = factor*((dsigma1_dx*dsigma1_dxy+sigma_1*dsigma1_dxdxy)*yield-sigma_1*dsigma1_dx*rdF_dSigma(2));
+                    (*rd2F_d2Sigma)(0,3) = -factor*rStress(3)*rdF_dSigma(0);
+                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
+                    (*rd2F_d2Sigma)(1,1) = factor*((dsigma1_dy*dsigma1_dy +sigma_1*dsigma1_dy2  )*yield-sigma_1*dsigma1_dy*rdF_dSigma(1));
+                    (*rd2F_d2Sigma)(1,2) = factor*((dsigma1_dy*dsigma1_dxy+sigma_1*dsigma1_dydxy)*yield-sigma_1*dsigma1_dy*rdF_dSigma(2));
+                    (*rd2F_d2Sigma)(1,3) = -factor*rStress(3)*rdF_dSigma(1);
+                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
+                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
+                    (*rd2F_d2Sigma)(2,2) = factor*((dsigma1_dxy*dsigma1_dxy +sigma_1*dsigma1_dxy2  )*yield-sigma_1*dsigma1_dxy*rdF_dSigma(2));
+                    (*rd2F_d2Sigma)(2,3) = -factor*rStress(3)*rdF_dSigma(2);
+                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
+                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
+                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
+                    (*rd2F_d2Sigma)(3,3) = factor*(yield-rStress(3)*rdF_dSigma(3));
+
+//                    std::cout << "rd2F_d2Sigma " << std::endl << *rd2F_d2Sigma << dsigma1_dxy2 << std::endl;
+                }
+            }
+            else
+            {
+                //sigma_2 is positive
+                //f = f( sigma_1,sigma_2, sigma_3)
+                factor = 1./sqrt(rStress(0)*rStress(0) + rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
+                rdF_dSigma(0) = factor*rStress(0);
+                rdF_dSigma(1) = factor*rStress(1);
+                rdF_dSigma(2) = factor*2.*rStress(2);
+                rdF_dSigma(3) = factor*rStress(3);
+
+                if (rd2F_d2Sigma!=0)
+                {
+
+                    factor*=factor*factor;
+                    (*rd2F_d2Sigma)(0,0) = factor * (rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
+                    (*rd2F_d2Sigma)(0,1) = -factor * rStress(1) * rStress(0);
+                    (*rd2F_d2Sigma)(0,2) = -2.*factor * rStress(2) * rStress(0);
+                    (*rd2F_d2Sigma)(0,3) = -factor * rStress(3) * rStress(0);
+                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
+                    (*rd2F_d2Sigma)(1,1) = factor * (rStress(0)*rStress(0) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
+                    (*rd2F_d2Sigma)(1,2) = -2.*factor * rStress(2) * rStress(1);
+                    (*rd2F_d2Sigma)(1,3) = -factor * rStress(3) * rStress(1);
+                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
+                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
+                    (*rd2F_d2Sigma)(2,2) = 2.*factor*(rStress(0)*rStress(0) + rStress(1)*rStress(1) + rStress(3)*rStress(3));
+                    (*rd2F_d2Sigma)(2,3) = -2.*factor * rStress(3) * rStress(2);
+                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
+                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
+                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
+                    (*rd2F_d2Sigma)(3,3) = factor * (rStress(0)*rStress(0) + rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2));
+                }
+            }
+        }
+    }
+
+#ifdef ENABLE_DEBUG
+    //check the calculation
+    double delta(1e-9);
+    if (rd2F_d2Sigma!=0 && rStress(0)>1.96)
+    {
+        //std::cout << std::endl << "check yield surface and derivatives" << std::endl;
+        //std::cout << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+        Eigen::Matrix<double,4,1> rdF_dSigma1, rdF_dSigma2,rdF_dSigmaCDF;
+        Eigen::Matrix<double,4,4> rd2F_d2SigmaCDF;
+        double fct(0.);
+        double f1 = YieldSurfaceRankine2DRounded(rStress, fct);
+        YieldSurfaceRankine2DRoundedDerivatives(rdF_dSigma1, 0, rStress);
+        for (int count=0; count<4; count++)
+        {
+            rStress(count)+= delta;
+            double f2 = YieldSurfaceRankine2DRounded(rStress, fct);
+            rdF_dSigmaCDF(count) = (f2-f1)/delta;
+
+            YieldSurfaceRankine2DRoundedDerivatives(rdF_dSigma2, 0, rStress);
+            rd2F_d2SigmaCDF.row(count) = (rdF_dSigma2-rdF_dSigma1)/delta;
+
+            rStress(count)-=delta;
+        }
+
+        if ((rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff()>1e-1)
+        {
+            std::cout << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+            std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff() << std::endl;
+
+            std::cout<< "rdF_dSigma " << std::endl << rdF_dSigma << std::endl<< std::endl;
+            std::cout<< "rdF_dSigmaCDF " << std::endl << rdF_dSigmaCDF << std::endl<< std::endl;
+            throw MechanicsException("[NuTo::Mechanics::NonlocalDamagePlasticity] Error calculating first derivative of yield function.");
+        }
+
+        // fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
+        if (fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+        {
+            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+            {
+                std::cout << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+                std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff() << std::endl;
+
+                std::cout<< "rd2F_d2SigmaCDF " << std::endl << rd2F_d2SigmaCDF << std::endl<< std::endl;
+                std::cout<< "rd2F_d2Sigma " << std::endl << (*rd2F_d2Sigma) << std::endl<< std::endl;
+                throw MechanicsException("[NuTo::Mechanics::NonlocalDamagePlasticity] Error calculating second derivative of yield function.");
+            }
+        }
+        else
+        {
+            std::cout << "principal stresses close to zero, stiffness matrix is not reliable" << std::endl;
+        }
+    }
+#endif
 }
 
 //! @brief calculates the first and second derivative of the second Rankine yield surface with respect to the stress
@@ -2556,30 +2665,30 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
 //! @return yield condition
 double NuTo::NonlocalDamagePlasticity::YieldSurfaceDruckerPrager2D(Eigen::Matrix<double,4,1>& rStress, double rBeta, double rHP)const
 {
-	double invariante_1 = rStress(0)+rStress(1)+rStress(3);
+    double invariante_1 = rStress(0)+rStress(1)+rStress(3);
 
-	//*******************************************************************
-	//*    second invariante                                                 *
-	//*******************************************************************
-	double invariante_2 = ((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+
-							(rStress(1)-rStress(3))*(rStress(1)-rStress(3))+
-							(rStress(0)-rStress(3))*(rStress(0)-rStress(3)))/6.+
-							 rStress(2)*rStress(2);
+    //*******************************************************************
+    //*    second invariante                                                 *
+    //*******************************************************************
+    double invariante_2 = ((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+
+                            (rStress(1)-rStress(3))*(rStress(1)-rStress(3))+
+                            (rStress(0)-rStress(3))*(rStress(0)-rStress(3)))/6.+
+                             rStress(2)*rStress(2);
 
-	//*******************************************************************
-	//*    F_DEV:    term of stress-deviator with/without kinematic hard.    *
-	//*******************************************************************
-	double F_DEV = sqrt( invariante_2 ) ;
+    //*******************************************************************
+    //*    F_DEV:    term of stress-deviator with/without kinematic hard.    *
+    //*******************************************************************
+    double F_DEV = sqrt( invariante_2 ) ;
 
-	//*******************************************************************
-	//*    check yield first time                                            *
-	//*******************************************************************
-	double F_BETA = invariante_1 * rBeta/3. ;
-	double F_FLOW = -rHP;
+    //*******************************************************************
+    //*    check yield first time                                            *
+    //*******************************************************************
+    double F_BETA = invariante_1 * rBeta/3. ;
+    double F_FLOW = -rHP;
 
-	//* calculate yield condition and yield condition flag (active or not)
-	//* Drucker Prager
-	return F_BETA + F_DEV + F_FLOW;
+    //* calculate yield condition and yield condition flag (active or not)
+    //* Drucker Prager
+    return F_BETA + F_DEV + F_FLOW;
 }
 
 //! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
@@ -2591,15 +2700,15 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceDruckerPrager2D(Eigen::Matrix
 bool NuTo::NonlocalDamagePlasticity::YieldSurfaceDruckerPrager2DDerivatives(Eigen::Matrix<double,4,1>& rdF_dSigma,Eigen::Matrix<double,4,4>* rd2F_d2Sigma,
         Eigen::Matrix<double,4,1>& rStress, double rBETA)const
 {
-	//*******************************************************************
-	//*    second invariante                                                 *
-	//*******************************************************************
-	double invariante_2 = ((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+
-							(rStress(1)-rStress(3))*(rStress(1)-rStress(3))+
-							(rStress(0)-rStress(3))*(rStress(0)-rStress(3)))/6.+
-							 rStress(2)*rStress(2);
+    //*******************************************************************
+    //*    second invariante                                                 *
+    //*******************************************************************
+    double invariante_2 = ((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+
+                            (rStress(1)-rStress(3))*(rStress(1)-rStress(3))+
+                            (rStress(0)-rStress(3))*(rStress(0)-rStress(3)))/6.+
+                             rStress(2)*rStress(2);
 
-	if (fabs(invariante_2)<1e-12)
+    if (fabs(invariante_2)<1e-12)
         return false;
     double factor = 1./(sqrt(invariante_2)*6.);
 
@@ -2611,25 +2720,25 @@ bool NuTo::NonlocalDamagePlasticity::YieldSurfaceDruckerPrager2DDerivatives(Eige
     if (rd2F_d2Sigma!=0)
     {
 
-		//TODO store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-		factor = 1./(invariante_2*sqrt(invariante_2)*12.);
-		(*rd2F_d2Sigma)(0,0) = factor * (rStress[1]*rStress[1]-2.*rStress[1]*rStress[3]+rStress[3]*rStress[3]+4.*rStress[2]*rStress[2]);
-		(*rd2F_d2Sigma)(0,1) = factor * (-rStress[0]*rStress[1]+rStress[0]*rStress[3]+rStress[1]*rStress[3]-rStress[3]*rStress[3]-2.*rStress[2]*rStress[2]);
-		(*rd2F_d2Sigma)(0,2) = factor * (-2.*rStress[2]*(2.*rStress[0]-rStress[1]-rStress[3]));
-		(*rd2F_d2Sigma)(0,3) = factor * (rStress[0]*rStress[1]-rStress[0]*rStress[3]-rStress[1]*rStress[1]+rStress[1]*rStress[3]-2.*rStress[2]*rStress[2]);
-		(*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-		(*rd2F_d2Sigma)(1,1) = factor * (rStress[0]*rStress[0]-2.*rStress[0]*rStress[3]+rStress[3]*rStress[3]+4.*rStress[2]*rStress[2]);
-		(*rd2F_d2Sigma)(1,2) = factor * (2.*rStress[2]*(rStress[0]-2.*rStress[1]+rStress[3]));
-		(*rd2F_d2Sigma)(1,3) = factor * (-rStress[0]*rStress[0]+rStress[0]*rStress[1]+rStress[0]*rStress[3]-rStress[1]*rStress[3]-2.*rStress[2]*rStress[2]);
-		(*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-		(*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-		(*rd2F_d2Sigma)(2,2) = factor * 4.*(rStress[0]*rStress[0]-rStress[0]*rStress[1]-rStress[0]*rStress[3]+
-										rStress[1]*rStress[1]-rStress[1]*rStress[3]+rStress[3]*rStress[3]);
-		(*rd2F_d2Sigma)(2,3) = factor * 2. *(rStress[0]+rStress[1]-2.*rStress[3])*rStress[2];
-		(*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-		(*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-		(*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-		(*rd2F_d2Sigma)(3,3) = factor * (rStress[0]*rStress[0]-2*rStress[0]*rStress[1]+rStress[1]*rStress[1]+4.*rStress[2]*rStress[2]);
+        //TODO store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
+        factor = 1./(invariante_2*sqrt(invariante_2)*12.);
+        (*rd2F_d2Sigma)(0,0) = factor * (rStress[1]*rStress[1]-2.*rStress[1]*rStress[3]+rStress[3]*rStress[3]+4.*rStress[2]*rStress[2]);
+        (*rd2F_d2Sigma)(0,1) = factor * (-rStress[0]*rStress[1]+rStress[0]*rStress[3]+rStress[1]*rStress[3]-rStress[3]*rStress[3]-2.*rStress[2]*rStress[2]);
+        (*rd2F_d2Sigma)(0,2) = factor * (-2.*rStress[2]*(2.*rStress[0]-rStress[1]-rStress[3]));
+        (*rd2F_d2Sigma)(0,3) = factor * (rStress[0]*rStress[1]-rStress[0]*rStress[3]-rStress[1]*rStress[1]+rStress[1]*rStress[3]-2.*rStress[2]*rStress[2]);
+        (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
+        (*rd2F_d2Sigma)(1,1) = factor * (rStress[0]*rStress[0]-2.*rStress[0]*rStress[3]+rStress[3]*rStress[3]+4.*rStress[2]*rStress[2]);
+        (*rd2F_d2Sigma)(1,2) = factor * (2.*rStress[2]*(rStress[0]-2.*rStress[1]+rStress[3]));
+        (*rd2F_d2Sigma)(1,3) = factor * (-rStress[0]*rStress[0]+rStress[0]*rStress[1]+rStress[0]*rStress[3]-rStress[1]*rStress[3]-2.*rStress[2]*rStress[2]);
+        (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
+        (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
+        (*rd2F_d2Sigma)(2,2) = factor * 4.*(rStress[0]*rStress[0]-rStress[0]*rStress[1]-rStress[0]*rStress[3]+
+                                        rStress[1]*rStress[1]-rStress[1]*rStress[3]+rStress[3]*rStress[3]);
+        (*rd2F_d2Sigma)(2,3) = factor * 2. *(rStress[0]+rStress[1]-2.*rStress[3])*rStress[2];
+        (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
+        (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
+        (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
+        (*rd2F_d2Sigma)(3,3) = factor * (rStress[0]*rStress[0]-2*rStress[0]*rStress[1]+rStress[1]*rStress[1]+4.*rStress[2]*rStress[2]);
     }
     return true;
 }
@@ -2667,31 +2776,31 @@ void NuTo::NonlocalDamagePlasticity::CheckParameters()const
 //! @return equivalente plastic strain scaled with length
 double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp, bool& rUnloading)const
 {
-	double nonlocalKappa(0);
+    double nonlocalKappa(0);
 
-	const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
+    const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
-	rUnloading = true;
-	for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
-	{
-		const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
+    rUnloading = true;
+    for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+    {
+        const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
 
-		assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+        assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
 
-		//Go through all the integration points
-		for (int theIP=0; theIP<(int)weights.size(); theIP++)
-		{
-			const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *staticData(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain());
-			nonlocalKappa+=weights[theIP] * staticData->mTmpKappa;
-			if (fabs(staticData->mTmpdEpsilonPdEpsilon[0])>1e-10 ||
-				fabs(staticData->mTmpdEpsilonPdEpsilon[5])>1e-10 ||
-				fabs(staticData->mTmpdEpsilonPdEpsilon[10])>1e-10 ||
-				fabs(staticData->mTmpdEpsilonPdEpsilon[15])>1e-10)
-				rUnloading = false;
-		}
-	}
-	//go through all the elements
-	return nonlocalKappa;
+        //Go through all the integration points
+        for (int theIP=0; theIP<(int)weights.size(); theIP++)
+        {
+            const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *staticData(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain());
+            nonlocalKappa+=weights[theIP] * staticData->mTmpKappa;
+            if (fabs(staticData->mTmpdEpsilonPdEpsilon[0])>1e-10 ||
+                fabs(staticData->mTmpdEpsilonPdEpsilon[5])>1e-10 ||
+                fabs(staticData->mTmpdEpsilonPdEpsilon[10])>1e-10 ||
+                fabs(staticData->mTmpdEpsilonPdEpsilon[15])>1e-10)
+                rUnloading = false;
+        }
+    }
+    //go through all the elements
+    return nonlocalKappa;
 }
 
 //! @brief ... calculate the nonlocal plastic strain of an integration point
@@ -2701,31 +2810,31 @@ double NuTo::NonlocalDamagePlasticity::CalculateNonlocalEquivalentPlasticStrain(
 //! @return void
 void NuTo::NonlocalDamagePlasticity::CalculateNonlocalPlasticStrain(const ElementBase* rElement, int rIp, double rNonlocalPlasticStrain[4])const
 {
-	rNonlocalPlasticStrain[0] = 0.;
-	rNonlocalPlasticStrain[1] = 0.;
-	rNonlocalPlasticStrain[2] = 0.;
-	rNonlocalPlasticStrain[3] = 0.;
+    rNonlocalPlasticStrain[0] = 0.;
+    rNonlocalPlasticStrain[1] = 0.;
+    rNonlocalPlasticStrain[2] = 0.;
+    rNonlocalPlasticStrain[3] = 0.;
 
-	const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
+    const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
-	for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
-	{
-		const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
+    for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
+    {
+        const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
 
-		assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
+        assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
 
-		//Go through all the integration points
-		for (int theIP=0; theIP<(int)weights.size(); theIP++)
-		{
-			const double *tmpPtr(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain()->mTmpEpsilonP);
-			rNonlocalPlasticStrain[0]+=weights[theIP] * tmpPtr[0];
-			rNonlocalPlasticStrain[1]+=weights[theIP] * tmpPtr[1];
-			rNonlocalPlasticStrain[2]+=weights[theIP] * tmpPtr[2];
-			rNonlocalPlasticStrain[3]+=weights[theIP] * tmpPtr[3];
-		}
-	}
-	//go through all the elements
-	return;
+        //Go through all the integration points
+        for (int theIP=0; theIP<(int)weights.size(); theIP++)
+        {
+            const double *tmpPtr(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain()->mTmpEpsilonP);
+            rNonlocalPlasticStrain[0]+=weights[theIP] * tmpPtr[0];
+            rNonlocalPlasticStrain[1]+=weights[theIP] * tmpPtr[1];
+            rNonlocalPlasticStrain[2]+=weights[theIP] * tmpPtr[2];
+            rNonlocalPlasticStrain[3]+=weights[theIP] * tmpPtr[3];
+        }
+    }
+    //go through all the elements
+    return;
 }
 
 
@@ -2759,8 +2868,8 @@ bool NuTo::NonlocalDamagePlasticity::HaveTmpStaticData() const
 //! @return ... see brief explanation
 bool NuTo::NonlocalDamagePlasticity::IsNonlocalModel()const
 {
-	if (mDamage)
+    if (mDamage)
         return true;
-	else
-		return false;
+    else
+        return false;
 }

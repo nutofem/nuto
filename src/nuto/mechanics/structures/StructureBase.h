@@ -267,6 +267,37 @@ public:
                                     NuTo::FullMatrix<int>& rGlobalDofsRow,
                                     NuTo::FullMatrix<int>& rGlobalDofsColumn)const;
 
+    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+    //! and compares it to the matrix using central differences
+    //! for a mechanical problem, this corresponds to the stiffness matrix
+    //! @param rElementId element
+    //! @param rDelta  delta step for finite differences
+    //! @return maximum difference between analytical and central difference method
+    double ElementCoefficientMatrix_0_Check(int rElementId, double rDelta, NuTo::FullMatrix<double>& rDifference);
+
+#ifndef SWIG
+    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation using central differences
+    //! @param rElementPtr element
+    //! @param rDelta  delta step for finite differences
+    //! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
+    //! @return maximum difference between analytical and central difference method
+    void ElementCoefficientMatrix_0_Resforce(ElementBase* rElementPtr, double rDelta, NuTo::FullMatrix<double>& stiffnessCDF);
+#endif //SWIG
+
+    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+    //! @param rElementId elementId
+    //! @param rDelta  delta step for finite differences
+    //! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
+    //! @return maximum difference between analytical and central difference method
+    void ElementCoefficientMatrix_0_Resforce(int rElementId, double rDelta, NuTo::FullMatrix<double>& stiffnessCDF);
+
+    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+    //! and compares it to the matrix using central differences
+    //! for a mechanical problem, this corresponds to the stiffness matrix
+    //! @param rDelta  delta step for finite differences
+    //! @return element with maximum error
+    int ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double>& rDifference);
+
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
     void ElementCoefficientMatrix_1(int rElementId,
@@ -876,6 +907,11 @@ public:
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
     double GetToleranceStiffnessEntries()const;
+
+    //! @brief returns the number of degrees of freedom
+    //! @return ... number of degrees of freedom
+    int GetNumDofs()const;
+
 
 protected:
     int mDimension;

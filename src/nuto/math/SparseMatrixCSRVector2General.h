@@ -192,9 +192,9 @@ void NuTo::SparseMatrixCSRVector2General<T>::WriteEntriesToFullMatrix(FullMatrix
 	}
 	else
 	{
-		for (unsigned int row=0; row<this->mValues.size(); row++)
+		for (unsigned int row=0; row<this->mColumns.size(); row++)
 		{
-			for (unsigned int col_count=0; col_count<this->mColumns.size(); col_count++)
+			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
 				rFullMatrix(row, this->mColumns[row][col_count]) = this->mValues[row][col_count];
 			}

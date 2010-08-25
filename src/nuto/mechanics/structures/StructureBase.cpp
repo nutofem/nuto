@@ -736,3 +736,14 @@ double NuTo::StructureBase::GetToleranceStiffnessEntries()const
 {
 	return mToleranceStiffnessEntries;
 }
+
+//! @brief returns the number of degrees of freedom
+//! @return ... number of degrees of freedom
+int NuTo::StructureBase::GetNumDofs()const
+{
+    if (this->mNodeNumberingRequired)
+    {
+            throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
+    }
+	return mNumDofs;
+}

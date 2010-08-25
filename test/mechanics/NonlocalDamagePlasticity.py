@@ -191,7 +191,9 @@ for theLoadStep in range(0,3):
             error = True;
         omega = fullStiffnessMatrix.GetValue(0,0)/fullStiffnessMatrixElastic.GetValue(0,0)
         maxerror2 = (fullStiffnessMatrix - fullStiffnessMatrixElastic*omega).Abs().Max()
-        #(fullStiffnessMatrixElastic*omega-stiffnessMatrix).Info()
+        if printResult:
+            print "difference in stiffness matrix for unloading and scaled elastic matrix"
+            (fullStiffnessMatrixElastic*omega-fullStiffnessMatrix).Info()
         if printResult:
             print "max difference in stiffness matrix for unloading and scaled elastic matrix " , maxerror2 
         if (maxerror2[0]>1e-6):

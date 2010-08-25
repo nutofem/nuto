@@ -55,7 +55,7 @@ int main()
 	int node9 = myStructure.NodeCreate("displacements",Coordinates);
 
 	//create elements
-        NuTo::FullMatrix<int> Incidence(4,1);
+    NuTo::FullMatrix<int> Incidence(4,1);
 	Incidence(0,0) = node1;
 	Incidence(1,0) = node2;
 	Incidence(2,0) = node5;
@@ -77,18 +77,33 @@ int main()
     int myElement3 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement3,"2D4NGauss1Ip","StaticDataNonlocal");
 		
-	Incidence(0,0) = node5;
+/*	Incidence(0,0) = node5;
 	Incidence(1,0) = node6;
 	Incidence(2,0) = node9;
 	Incidence(3,0) = node8;
     int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement4,"2D4NGauss4Ip","StaticDataNonlocal");
+*/
+    NuTo::FullMatrix<int> Incidence3(3,1);
+
+    Incidence3(0,0) = node5;
+   	Incidence3(1,0) = node6;
+   	Incidence3(2,0) = node9;
+   	int myElement4 = myStructure.ElementCreate("PLANE2D3N",Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    myStructure.ElementSetIntegrationType(myElement4,"2D3NGauss1Ip","StaticDataNonlocal");
+
+    Incidence3(0,0) = node5;
+   	Incidence3(1,0) = node9;
+   	Incidence3(2,0) = node8;
+   	int myElement5 = myStructure.ElementCreate("PLANE2D3N",Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    myStructure.ElementSetIntegrationType(myElement5,"2D3NGauss1Ip","StaticDataNonlocal");
+
 
 	//create constitutive law
 	int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity");
 	myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9);
 	myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.25);
-	myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,0.7);
+	myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,2.);
 	myStructure.ConstitutiveLawSetTensileStrength(myMatDamage,2);
 	myStructure.ConstitutiveLawSetCompressiveStrength(myMatDamage,20);
 	myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,25);
@@ -100,7 +115,7 @@ int main()
 
 	//create section
 	int mySection = myStructure.SectionCreate("Plane_Strain");
-	myStructure.SectionSetThickness(mySection,0.5);
+	myStructure.SectionSetThickness(mySection,5);
 
 	//assign constitutive law 
 	myStructure.ElementTotalSetSection(mySection);
@@ -214,6 +229,8 @@ int main()
 			//intForce2.Info();
 			stiffnessMatrixCD.SetColumn(count2,(intForce2-intForce)*(1/delta));
 			displacements(count2,0) = displacements(count2,0) - delta;
+			myStructure.NodeMergeActiveDofValues(displacements);
+			myStructure.ElementTotalUpdateTmpStaticData();
 		}
 		std::cout << "stiffnessMatrixCD" << std::endl;
 		stiffnessMatrixCD.Info();

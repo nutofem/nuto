@@ -120,7 +120,7 @@ int main()
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement4,2);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement4,3);
 	myStructure.ExportVtkDataFile("PlaneNonlocalWeights.vtk");
-        
+
 	//apply displacements
 	double rightDisp(1);
 	NuTo::FullMatrix<double>matrixRightDisp(2,1);

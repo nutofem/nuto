@@ -6,6 +6,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 //! @brief calls ElementCoefficientMatrix_0,
 //! renaming only for clarification in mechanical problems for the end user
@@ -44,6 +45,315 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
         std::cout<<"[NuTo::StructureBase::ElementStiffness] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+//! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+//! and compares it to the matrix using central differences
+//! for a mechanical problem, this corresponds to the stiffness matrix
+//! @param rDelta  delta step for finite differences
+//! @return element with maximum error
+int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double>& rDifference)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    std::vector<ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    NuTo::FullMatrix<double> tmpDifference;
+    double maxError(0);
+    int maxElement(-1);
+	std::vector<int> globalDofsRow,globalDofsColumn;
+	NuTo::FullMatrix<double> stiffnessAnalytic;
+	NuTo::FullMatrix<double> stiffnessCDF;
+	bool symmetryFlag;
+    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+    {
+        try
+        {
+        	//std::cout << "Element Id " << this->ElementGetId(elementVector[countElement]) << std::endl << std::endl;
+
+        	elementVector[countElement]->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
+        	//std::cout << "stiffnessAnalytic " << std::endl << stiffnessAnalytic << std::endl << std::endl;
+
+        	stiffnessCDF.Resize(stiffnessAnalytic.GetNumRows(),stiffnessAnalytic.GetNumColumns());
+        	this->ElementCoefficientMatrix_0_Resforce(elementVector[countElement],rDelta,stiffnessCDF);
+        	//std::cout << "stiffnessCDF " << std::endl << stiffnessCDF << std::endl << std::endl;
+
+        	//check the maximum error
+        	tmpDifference = (stiffnessCDF-stiffnessAnalytic)*(1./stiffnessAnalytic.Abs().Max());
+        	//std::cout << "difference "<< std::endl << tmpDifference <<std::endl << std::endl;
+        	double curError =  tmpDifference.Abs().Max();
+        	if (curError>maxError)
+        	{
+        		maxError = curError;
+        		maxElement = countElement;
+        		rDifference = tmpDifference;
+        	}
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[countElement]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check] Error checking stiffness for "
+            		+ ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[countElement]);
+        	throw NuTo::MechanicsException
+        	   ("[NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check] Error checking stiffness for "
+        			   + ss.str() + ".");
+        }
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+    return this->ElementGetId(elementVector[maxElement]);
+}
+
+//! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+//! and compares it to the matrix using central differences
+//! for a mechanical problem, this corresponds to the stiffness matrix
+//! @param rElementId element
+//! @param rDelta  delta step for finite differences
+//! @return maximum difference between analytical and central difference method
+double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, double rDelta, NuTo::FullMatrix<double>& rDifference)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] First update of tmp static data required.");
+    }
+
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    double maxError;
+
+    try
+    {
+    	std::vector<int> globalDofsRow,globalDofsColumn;
+    	NuTo::FullMatrix<double> stiffnessAnalytic;
+    	NuTo::FullMatrix<double> stiffnessCDF;
+    	bool symmetryFlag;
+    	elementPtr->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
+    	//std::cout << "stiffnessAnalytic " << std::endl << stiffnessAnalytic << std::endl << std::endl;
+
+    	stiffnessCDF.Resize(stiffnessAnalytic.GetNumRows(),stiffnessAnalytic.GetNumColumns());
+    	this->ElementCoefficientMatrix_0_Resforce(elementPtr,rDelta,stiffnessCDF);
+    	//std::cout << "stiffnessCDF " << std::endl << stiffnessCDF << std::endl << std::endl;
+
+    	//check the maximum error
+    	rDifference = (stiffnessCDF-stiffnessAnalytic)*(1./stiffnessAnalytic.Abs().Max());
+    	//std::cout << "rDifference "<< std::endl << rDifference <<std::endl << std::endl;
+        maxError =  rDifference.Abs().Max();
+    }
+    catch(NuTo::MechanicsException e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	e.AddMessage("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Error checking element matrix for element "
+        	+ ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Error checking element matrix for element " + ss.str() + ".");
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+    return maxError;
+}
+
+//! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+//! @param rElementId elementId
+//! @param rDelta  delta step for finite differences
+//! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
+//! @return maximum difference between analytical and central difference method
+void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(int rElementId, double rDelta, NuTo::FullMatrix<double>& stiffnessCDF)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    ElementCoefficientMatrix_0_Resforce(elementPtr,rDelta,stiffnessCDF);
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
+//! @param rElementPtr element
+//! @param rDelta  delta step for finite differences
+//! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
+//! @return maximum difference between analytical and central difference method
+void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElementPtr, double rDelta, NuTo::FullMatrix<double>& stiffnessCDF)
+{
+	NuTo::FullMatrix<double> resforce1;
+	NuTo::FullMatrix<double> resforce2;
+
+	// if other DOFs than displacements are implemented, a routine should be implemented for all elements, that
+	// specifies wich DOFs are used
+
+	int numNonlocalElements = rElementPtr->GetNumNonlocalElements();
+	std::vector<const NuTo::ElementBase*>  nonlocalElements;
+	if (numNonlocalElements==0 || stiffnessCDF.GetNumRows()==stiffnessCDF.GetNumColumns())
+	{
+		//local formulation
+		nonlocalElements.push_back(rElementPtr);
+	}
+	else
+	{
+		nonlocalElements = rElementPtr->GetNonlocalElements();
+	}
+
+	//determine the initial trial resforce vector
+	// if stiffnessAnalytic is square with nonlocal!=0, then all ips are elastic
+	std::vector<int> globalDofsRow;
+	//update tmpstatic data of all nonlocal elements
+	if (mHaveTmpStaticData)
+	{
+		for (unsigned int countElement2=0; countElement2<nonlocalElements.size(); countElement2++)
+		{
+            const_cast<NuTo::ElementBase*>(nonlocalElements[countElement2])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+		}
+	}
+	rElementPtr->CalculateGradientInternalPotential(resforce1,globalDofsRow);
+
+	int curCol(0);
+
+	for (unsigned int countElement=0; countElement<nonlocalElements.size(); countElement++)
+	{
+		for (int countNode=0; countNode<nonlocalElements[countElement]->GetNumNodes(); countNode++)
+		{
+			NodeBase *theNode=const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->GetNode(countNode);
+			double disp[3];
+			assert(theNode->GetNumDisplacements()<=3);
+			for (int countDisp=0; countDisp<theNode->GetNumDisplacements(); countDisp++)
+			{
+				switch (theNode->GetNumDisplacements())
+				{
+				case 1:
+					theNode->GetDisplacements1D(disp);
+					break;
+				case 2:
+					theNode->GetDisplacements2D(disp);
+					break;
+				case 3:
+					theNode->GetDisplacements3D(disp);
+					break;
+				default:
+					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Only nodes with 1,2 or 3 displacement components considered.");
+				}
+				disp[countDisp]+=rDelta;
+				switch (theNode->GetNumDisplacements())
+				{
+				case 1:
+					theNode->SetDisplacements1D(disp);
+					break;
+				case 2:
+					theNode->SetDisplacements2D(disp);
+					break;
+				case 3:
+					theNode->SetDisplacements3D(disp);
+					break;
+				default:
+					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Only nodes with 1,2 or 3 displacement components considered.");
+				}
+
+				//update tmpstatic data of nonlocal elements
+				if (mHaveTmpStaticData)
+				{
+                     const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+				}
+
+				if (nonlocalElements[countElement]==rElementPtr)
+				{
+					//calculate new residual vector and afterwards reset the displacements
+					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
+
+					disp[countDisp]-=rDelta;
+					switch (theNode->GetNumDisplacements())
+					{
+					case 1:
+						theNode->SetDisplacements1D(disp);
+						break;
+					case 2:
+						theNode->SetDisplacements2D(disp);
+						break;
+					case 3:
+						theNode->SetDisplacements3D(disp);
+						break;
+					default:
+						throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Only nodes with 1,2 or 3 displacement components considered.");
+					}
+					//update tmpstatic data of nonlocal elements
+					if (mHaveTmpStaticData)
+					{
+						const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+					}
+				}
+				else
+				{
+					//reset the displacements and then calculate the resforce and the reset the tmp static data
+					disp[countDisp]-=rDelta;
+					switch (theNode->GetNumDisplacements())
+					{
+					case 1:
+						theNode->SetDisplacements1D(disp);
+						break;
+					case 2:
+						theNode->SetDisplacements2D(disp);
+						break;
+					case 3:
+						theNode->SetDisplacements3D(disp);
+						break;
+					default:
+						throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Only nodes with 1,2 or 3 displacement components considered.");
+					}
+
+					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
+
+					//update tmpstatic data of nonlocal elements
+					if (mHaveTmpStaticData)
+					{
+						const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+					}
+
+				}
+
+				//assemble the matrix
+				if (curCol>=stiffnessCDF.GetNumColumns())
+				{
+					std::cout << "num nonlocal elements " << nonlocalElements.size() << std::endl;
+					std::cout << "cur col " << curCol << " size of matrix " << stiffnessCDF.GetNumColumns() << std::endl;
+					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Allocated matrix for calculation of stiffness with finite differences has illegal size.");
+				}
+				stiffnessCDF.SetColumn(curCol,((resforce2-resforce1)*(1./rDelta)));
+				curCol++;
+			}
+		}
+	}
+}
+
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
 void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,

@@ -5,7 +5,7 @@ w = 100;
 //height of the bounding box
 h = 100;
 //mesh size
-lc = 10;
+lc = 1;
 
 //define points
 Point(1) = { 0.0, 0.0 , 0.0 , lc};
@@ -16,7 +16,7 @@ Point(4) = { 0.0, h , 0.0 , lc};
 //define ellipsoides
 //neight and width
 he = 50;
-we = 20;
+we = 50;
 
 Point(5) = { w/2, h/2 , 0.0 , lc};
 Point(6) = { w/2, h/2+he/2 , 0.0 , lc};
