@@ -3,7 +3,6 @@
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
@@ -36,11 +35,11 @@ public:
 
     //! @brief set the coordinates
     //! @param rCoordinates  given coordinates
-    virtual void SetCoordinates2D(const double rCoordinates[1]);
+    virtual void SetCoordinates2D(const double rCoordinates[2]);
 
     //! @brief writes the coordinates of a node to the prescribed pointer
     //! @param rCoordinates coordinates
-    virtual void GetCoordinates2D(double rCoordinates[1])const;
+    virtual void GetCoordinates2D(double rCoordinates[2])const;
 
     //! @brief returns the coordinate of a given direction of the node
     //! @param rIndex index of the direction
@@ -93,5 +92,122 @@ protected:
     double mCoordinates[2];
 
 };
+
+class less_XCoordinate2D : public std::binary_function<NodeCoordinates2D*, NodeCoordinates2D* , bool>
+{
+public:
+
+    //! @brief sorts the nodes in increasing x-direction with a shift, that is subtracted
+    //! and if its less than zero, it is added right to the maximum coordinates
+    //! this actually corresponds to sorting the nodes according to their x value,
+    //! and then cutting at a certain position (shift) and move all the previous nodes at the end
+    //! while keeping their order
+    //! if shift is set to zero (and maxcoordinate any value), the standard ordering is obtained
+    less_XCoordinate2D(double rShift, double rMaxCoordinate)
+    {
+        mShift  = rShift;
+        //use factor two. in order to make sure that the shiftes nodes have a higher node value than the nonshifted ones
+        m2MaxCoordinate = 2.*rMaxCoordinate;
+    }
+
+    bool operator()(NodeCoordinates2D* nodePtr1, NodeBase* nodePtr2)
+    {
+        double coord1[2], coord2[2];
+        nodePtr1->GetCoordinates2D(coord1);
+        nodePtr2->GetCoordinates2D(coord2);
+        coord1[0]-=mShift;
+        coord2[0]-=mShift;
+        if(coord1[0]<0)
+            coord1[0]+=m2MaxCoordinate;
+        if(coord2[0]<0)
+            coord2[0]+=m2MaxCoordinate;
+        return coord1[0] < coord2[0];
+    }
+protected:
+    double mShift, m2MaxCoordinate;
+};
+
+class greater_XCoordinate2D : public std::binary_function<NodeCoordinates2D*, NodeCoordinates2D* , bool>
+{
+public:
+    greater_XCoordinate2D(double rShift, double rMaxCoordinate)
+    {
+        mShift  = rShift;
+        //use factor two. in order to make sure that the shiftes nodes have a higher node value than the nonshifted ones
+        m2MaxCoordinate = 2.*rMaxCoordinate;
+    }
+
+    bool operator()(NodeCoordinates2D* nodePtr1, NodeBase* nodePtr2)
+    {
+        double coord1[2], coord2[2];
+        nodePtr1->GetCoordinates2D(coord1);
+        nodePtr2->GetCoordinates2D(coord2);
+        coord1[0]-=mShift;
+        coord2[0]-=mShift;
+        if(coord1[0]<0)
+            coord1[0]+=m2MaxCoordinate;
+        if(coord2[0]<0)
+            coord2[0]+=m2MaxCoordinate;
+        return coord1[0] > coord2[0];
+    }
+protected:
+    double mShift, m2MaxCoordinate;
+};
+
+class less_YCoordinate2D : public std::binary_function<NodeCoordinates2D*, NodeCoordinates2D* , bool>
+{
+public:
+    less_YCoordinate2D(double rShift, double rMaxCoordinate)
+    {
+        mShift  = rShift;
+        //use factor two. in order to make sure that the shiftes nodes have a higher node value than the nonshifted ones
+        m2MaxCoordinate = 2.*rMaxCoordinate;
+    }
+
+    bool operator()(NodeCoordinates2D* nodePtr1, NodeBase* nodePtr2)
+    {
+        double coord1[2], coord2[2];
+        nodePtr1->GetCoordinates2D(coord1);
+        nodePtr2->GetCoordinates2D(coord2);
+        coord1[1]-=mShift;
+        coord2[1]-=mShift;
+        if(coord1[1]<0)
+            coord1[1]+=m2MaxCoordinate;
+        if(coord2[1]<0)
+            coord2[1]+=m2MaxCoordinate;
+        return coord1[1] < coord2[1];
+    }
+protected:
+    double mShift, m2MaxCoordinate;
+};
+
+class greater_YCoordinate2D : public std::binary_function<NodeCoordinates2D*, NodeCoordinates2D* , bool>
+{
+public:
+    greater_YCoordinate2D(double rShift, double rMaxCoordinate)
+    {
+        mShift  = rShift;
+        //use factor two. in order to make sure that the shiftes nodes have a higher node value than the nonshifted ones
+        m2MaxCoordinate = 2.*rMaxCoordinate;
+    }
+
+    bool operator()(NodeCoordinates2D* nodePtr1, NodeBase* nodePtr2)
+    {
+        double coord1[2], coord2[2];
+        nodePtr1->GetCoordinates2D(coord1);
+        nodePtr2->GetCoordinates2D(coord2);
+        coord1[1]-=mShift;
+        coord2[1]-=mShift;
+        if(coord1[1]<0)
+            coord1[1]+=m2MaxCoordinate;
+        if(coord2[1]<0)
+            coord2[1]+=m2MaxCoordinate;
+
+        return coord1[1] > coord2[1];
+    }
+protected:
+    double mShift, m2MaxCoordinate;
+};
+
 }//namespace NuTo
 #endif //NODE_COORDINATES_2D_H

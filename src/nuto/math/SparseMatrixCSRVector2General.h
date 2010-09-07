@@ -63,11 +63,11 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(const NuTo
     this->mNumColumns = rCSRMatrix.GetNumColumns();
     this->mColumns.resize(rCSRMatrix.GetNumRows());
     this->mValues.resize(rCSRMatrix.GetNumRows());
+    std::vector<int>::const_iterator startIteratorColumns(rCSRMatrix.mColumns.begin());
+    typename std::vector<T>::const_iterator startIteratorValues(rCSRMatrix.mValues.begin());
     int numEntries;
     for (unsigned int row = 0; row < this->mColumns.size(); row++)
     {
-    	typename std::vector<T>::const_iterator startIteratorColumns;
-    	std::vector<int>::const_iterator startIteratorValues;
    	    numEntries = rCSRMatrix.mRowIndex[row+1]-rCSRMatrix.mRowIndex[row];
     	this->mColumns[row].resize(numEntries);
     	this->mValues[row].resize(numEntries);

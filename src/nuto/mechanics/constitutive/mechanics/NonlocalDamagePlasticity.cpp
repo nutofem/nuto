@@ -2605,7 +2605,7 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
 
 #ifdef ENABLE_DEBUG
     //check the calculation
-    double delta(1e-9);
+    double delta(1e-8);
     if (rd2F_d2Sigma!=0 && rStress(0)>1.96)
     {
         //std::cout << std::endl << "check yield surface and derivatives" << std::endl;
@@ -2629,7 +2629,8 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
 
         if ((rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff()>1e-1)
         {
-            std::cout << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+            std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+            std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << std::endl;
             std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff() << std::endl;
 
             std::cout<< "rdF_dSigma " << std::endl << rdF_dSigma << std::endl<< std::endl;
@@ -2642,7 +2643,8 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
         {
             if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
             {
-                std::cout << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+                std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << std::endl;
+                std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << std::endl;
                 std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff() << std::endl;
 
                 std::cout<< "rd2F_d2SigmaCDF " << std::endl << rd2F_d2SigmaCDF << std::endl<< std::endl;

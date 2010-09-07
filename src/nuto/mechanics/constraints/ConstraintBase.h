@@ -43,7 +43,11 @@ public:
 
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
-    virtual void SetRHS(double rRHS)=0;
+    virtual void SetRHS(double rRHS);
+
+    //!@brief set the strain of the periodic boundary conditions
+    //!@param rStrain strain (e_xx,e_yy,gamma_xy)
+    virtual void SetStrain(const NuTo::FullMatrix<double>& rStrain);
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)

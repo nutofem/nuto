@@ -329,7 +329,12 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector
                 double factor = -this->mValues[pos];
                 for (int tmpPos = this->mRowIndex[column]; tmpPos < this->mRowIndex[column + 1]; tmpPos++)
                 {
+                    unsigned int oldsize = mValues.size();
                     this->AddEntry(row, this->mColumns[tmpPos], factor * this->mValues[tmpPos]);
+                    //this is a dirty trick to check, if an element has been inserted in a previous row, which means, the position of the current value is
+                    // shifted by one
+                    if (oldsize != mValues.size())
+                        tmpPos++;
                 }
                 for (int rhsCount = 0; rhsCount < rRhs.GetNumColumns(); rhsCount++)
                 {

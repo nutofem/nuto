@@ -4,6 +4,7 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/constraints/ConstraintDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintEquation.h"
 #include "nuto/mechanics/constraints/ConstraintNodeDisplacements1D.h"
 #include "nuto/mechanics/constraints/ConstraintNodeDisplacements2D.h"
@@ -153,8 +154,16 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
     {
         itConstraint->second->AddToConstraintMatrix(curConstraintEquations, rConstraintMatrix, rRHS);
     }
+
+    NuTo::FullMatrix<double> tmp(rConstraintMatrix);
+    std::cout << "constraintMatrix " << std::endl << tmp << std::endl;
+
     if (curConstraintEquations!=numConstraintEquations)
+    {
+        std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
+        std::cout << "numConstraintEquations " << numConstraintEquations << std::endl;
         throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] Internal error, there is something wrong with the constraint equations.");
+    }
 }
 
 //!@brief sets/modifies the right hand side of the constraint equations
@@ -173,6 +182,19 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     it->second->SetRHS(rRHS);
 }
 
+//!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
+//!@param rConstraintEquation id of the constraint equation
+//!@param rRHS new strain
+void NuTo::StructureBase::ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
+    if (it==mConstraintMap.end())
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetRHS] Constraint equation does not exist.");
+    }
+    it->second->SetStrain(rStrain);
+}
 // create a constraint equation
 int NuTo::StructureBase::ConstraintEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
@@ -361,3 +383,78 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] invalid dof string.");
     }
 }
+//! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
+//! @param  rAngle... angle in deg
+//! @param  rStrain... average strain to be applied (epsilon_xx, epsilon_yy, gamma_xy)
+//! @param  rNodeGroupUpper... all nodes on the upper boundary
+//! @param  rNodeGrouplower... all nodes on the lower boundary
+//! @param  rNodeGroupLeft... all nodes on the left boundary
+//! @param  rNodeGroupRight...  all nodes on the right boundary
+int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double> rStrain,
+        int rNodeGroupUpperId, int rNodeGroupLowerId, int rNodeGroupLeftId, int rNodeGroupRightId)
+{
+    //check dimension of the structure
+    if (mDimension!=2)
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] only implemented for 2D");
+    this->mNodeNumberingRequired = true;
+
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it != mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rNodeGroupUpperId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of upper nodes with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of upper nodes is not a node group.");
+    Group<NodeBase> *nodeGroupUpperPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroupUpperPtr!=0);
+
+     itGroup = mGroupMap.find(rNodeGroupLowerId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of lower nodes with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of lower nodes is not a node group.");
+    Group<NodeBase> *nodeGroupLowerPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroupLowerPtr!=0);
+
+    itGroup = mGroupMap.find(rNodeGroupLeftId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of left nodes with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of left nodes is not a node group.");
+    Group<NodeBase> *nodeGroupLeftPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroupLeftPtr!=0);
+
+    itGroup = mGroupMap.find(rNodeGroupRightId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of right nodes with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of right nodes is not a node group.");
+    Group<NodeBase> *nodeGroupRightPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroupRightPtr!=0);
+
+    try
+    {
+        // create new constraint equation term
+        ConstraintBase* constraintPtr = new NuTo::ConstraintDisplacementsPeriodic2D(this, rAngle, rStrain, nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
+
+        // insert constraint equation into map
+        this->mConstraintMap.insert(id, constraintPtr);
+    }
+    catch(NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] error creating periodic boundary conditions in 2D");
+        throw e;
+    }
+
+    // return integer id
+    return id;
+
+}
+

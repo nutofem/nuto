@@ -159,28 +159,18 @@ public:
     virtual void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const=0;
 
-    //! @brief calculates the total internal elastic energy of the system
-//   virtual double ElasticEnergy()=0;
-
-    //! @brief calculates the total internal inelastic energy of the system
-//   virtual double InElasticEnergy()=0;
-
-/*    //! @brief calculates the engineering strain
-    //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    virtual void GetEngineeringStrain(FullMatrix<double>& rEngineeringStrain)const=0;
-
-    //! @brief calculates the engineering plastic strain
-    //! @param rEngineerungPlsticStrain engineering strain (return value, always 6xnumIp matrix)
-    virtual void GetEngineeringPlasticStrain(FullMatrix<double>& rEngineeringPlasticStrain)const=0;
-
-    //! @brief calculates the engineering strain
-    //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    virtual void GetEngineeringStress(FullMatrix<double>& rEngineeringStress)const=0;
-*/
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
     virtual void GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const=0;
+
+    //! @brief integrates the stress over the element
+    //! @param rStress integrated stress
+    void GetIntegratedStress(FullMatrix<double>& rStress)const;
+
+    //! @brief integrates the strain over the element
+    //! @param rStrain integrated strain
+    void GetIntegratedStrain(FullMatrix<double>& rStress)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -311,7 +301,7 @@ protected:
     //! @param rGlobalColumnDofs ... vector of global column dofs
     virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const = 0;
 
-    //the base class of the elements must not contain any data apart from a const pointer to the structure
+    //the base class of the elements must not contain any data apart from a const pointer to the structure and a data pointer
     const StructureBase* mStructure;
 
     //the base class of the elements data

@@ -409,6 +409,40 @@ public:
     //! its is a const function, since only mutuable data (instead of const) is updated (kind of temporary data)
     void ElementTotalUpdateTmpStaticData();
 
+    //! @brief calculates the average stress
+    //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+    //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
+    //! @param rEngineeringStress  average stress (return value)
+    void ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const;
+
+    //! @brief calculates the average stress
+    //! @param rGroupId  group number
+    //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+    //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
+    //! @param rEngineeringStress  average stress (return value)
+    void ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const;
+
+    //! @brief calculates the average strain
+    //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+    //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
+    //! @param rEngineeringStrain  average strain (return value)
+    void ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const;
+
+    //! @brief calculates the average strain
+    //! @param rGroupId  group number
+    //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+    //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
+    //! @param rEngineeringStrain  average strain (return value)
+    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const;
+
+    //! @brief calculates the total energy of the system
+    //! @return total energy
+    double ElementTotalGetTotalEnergy()const;
+
+    //! @brief calculates the elastic energy of the system
+    //! @return elastic energy
+    double ElementTotalGetElasticEnergy()const;
+
     //*************************************************
     //************ Constraint routines     ***************
     //**  defined in StructureBaseConstraints.cpp **
@@ -459,6 +493,11 @@ public:
     //!@param rRHS new right hand side
     void ConstraintSetRHS(int rConstraintEquation, double rRHS);
 
+    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
+    //!@param rConstraintEquation id of the constraint equation
+    //!@param rRHS new strain
+    void ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain);
+
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term
     //! @param rDof ... dof in the first constraint equation term (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
@@ -493,7 +532,17 @@ public:
     //! @param rCoefficient ... weight factor of this term
     void ConstraintEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient);
 
-#ifndef SWIG
+    //! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
+    //! @param  rAngle... angle in deg
+    //! @param  rStrain... average strain to be applied (epsilon_xx, epsilon_yy, gamma_xy)
+    //! @param  rNodeGroupUpper... all nodes on the upper boundary
+    //! @param  rNodeGrouplower... all nodes on the lower boundary
+    //! @param  rNodeGroupLeft... all nodes on the left boundary
+    //! @param  rNodeGroupRight...  all nodes on the right boundary
+    int ConstraintDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double> rStrain,
+            int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
+
+    #ifndef SWIG
     //! @brief ... add a term to a constraint equation
     //! @param rConstraint ... constraint id
     //! @param rNode ... node id

@@ -562,6 +562,40 @@ int NuTo::ElementBase::GetNumNonlocalElements()const
 	return this->mElementData->GetNumNonlocalElements();
 }
 
+//! @brief integrates the stress over the element
+//! @param rStress integrated stress
+void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)const
+{
+    NuTo::FullMatrix<double> rIpStress;
+    this->GetIpData(NuTo::IpData::ENGINEERING_STRESS, rIpStress);
+    //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
+    std::vector<double> ipVolume;
+    this->GetIntegrationPointVolume(ipVolume);
+
+    rStress.Resize(rIpStress.GetNumRows(),1);
+    for (int countIP=0; countIP<rIpStress.GetNumColumns(); countIP++)
+    {
+        rStress+=rIpStress.GetColumn(countIP)*(ipVolume[countIP]);
+    }
+}
+
+//! @brief integrates the strain over the element
+//! @param rStrain integrated strain
+void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)const
+{
+    NuTo::FullMatrix<double> rIpStrain;
+    this->GetIpData(NuTo::IpData::ENGINEERING_STRAIN, rIpStrain);
+    //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
+    std::vector<double> ipVolume;
+    this->GetIntegrationPointVolume(ipVolume);
+
+    rStrain.Resize(rIpStrain.GetNumRows(),1);
+    for (int countIP=0; countIP<rIpStrain.GetNumColumns(); countIP++)
+    {
+        rStrain+=rIpStrain.GetColumn(countIP)*(ipVolume[countIP]);
+    }
+}
+
 //! @brief cast the base pointer to a Plane, otherwise throws an exception
 const NuTo::Plane* NuTo::ElementBase::AsPlane()const
 {

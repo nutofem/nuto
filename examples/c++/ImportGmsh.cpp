@@ -8,6 +8,7 @@
 #define MAXNUMNEWTONITERATIONS 20
 //#define MAXNORMRHS 100
 #define PRINTRESULT true
+#define MIN_DELTA_DISP 1e-7
 
 // there is still an error at the very end of the calculation
 // uncomment at the end of void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives
@@ -126,8 +127,9 @@ try
 
     // start analysis
     double maxDisp(30*fct/YoungsModulusDamage*lX);
-    double deltaDisp(0.02*fct/YoungsModulusDamage*lX);
-    double curDisp(0.02*fct/YoungsModulusDamage*lX);
+    double deltaDisp(0.05*fct/YoungsModulusDamage*lX);
+    double maxDeltaDisp(0.2*fct/YoungsModulusDamage*lX);
+    double curDisp(0.5*fct/YoungsModulusDamage*lX);
 
     //update displacement of boundary (disp controlled)
 	myStructure.ConstraintSetRHS(ConstraintRHS,curDisp);
@@ -291,7 +293,11 @@ try
 			myStructure.ExportVtkDataFile("ImportGmsh.vtk");
 #endif
 			if (numNewtonIterations<MAXNUMNEWTONITERATIONS/3)
+			{
 				deltaDisp*=1.5;
+			}
+            if (deltaDisp>maxDeltaDisp)
+                deltaDisp =  maxDeltaDisp;
 
 			//increase displacement
 			curDisp+=deltaDisp;
@@ -299,9 +305,9 @@ try
 				curDisp=maxDisp;
 
 			//old stiffness matrix is used in first step of next load increment in order to prevent spurious problems at the boundary
-			std::cout << "press enter to next load increment" << std::endl;
-			char cDummy[100]="";
-			std::cin.getline(cDummy, 100);;
+			std::cout << "press enter to next load increment, delta disp " << deltaDisp << " max delta disp " <<  maxDeltaDisp << std::endl << std::endl;
+			//char cDummy[100]="";
+			//std::cin.getline(cDummy, 100);;
 		}
 		else
 		{
@@ -330,12 +336,12 @@ try
 			curDisp+=deltaDisp;
 
 			//check for minimum delta (this mostly indicates an error in the software
-			if (deltaDisp<1e-7)
+			if (deltaDisp<MIN_DELTA_DISP)
 				throw NuTo::MechanicsException("Example ImportGmsh : No convergence, delta disp < 1e-7");
 
 			std::cout << "press enter to reduce load increment" << std::endl;
-			char cDummy[100]="";
-			std::cin.getline(cDummy, 100);;
+			//char cDummy[100]="";
+			//std::cin.getline(cDummy, 100);;
 		}
 		//update new displacement of RHS
 		myStructure.ConstraintSetRHS(ConstraintRHS,curDisp);
@@ -360,7 +366,13 @@ try
 		myStructure.ElementTotalUpdateTmpStaticData();
     }
 	if (PRINTRESULT)
+	{
         std::cout<< "numerical fracture energy "<< externalEnergy/(thickness*lY) << std::endl;
+        //Get Average Stress
+        NuTo::FullMatrix<double> averageStress;
+        myStructure.ElementTotalGetAverageStress(lX*lY,averageStress);
+        std::cout << "average stress " << std::endl << averageStress << std::endl;
+	}
 }
 catch (NuTo::Exception& e)
 {

@@ -34,3 +34,17 @@ void NuTo::ConstraintBase::serialize(Archive & ar, const unsigned int version)
 {
 }
 #endif // ENABLE_SERIALIZATION
+
+//!@brief sets/modifies the right hand side of the constraint equations
+//!@param rRHS new right hand side
+void NuTo::ConstraintBase::SetRHS(double rRHS)
+{
+    throw MechanicsException("[NuTo::ConstraintBase] Set right hand side for this type of constraints not implemented.");
+}
+
+//!@brief set the strain of the periodic boundary conditions
+//!@param rStrain strain (e_xx,e_yy,gamma_xy)
+void NuTo::ConstraintBase::SetStrain(const NuTo::FullMatrix<double>& rStrain)
+{
+    throw MechanicsException("[NuTo::ConstraintBase] Set strain for this type of constraints not implemented.");
+}

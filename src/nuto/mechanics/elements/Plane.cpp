@@ -748,6 +748,10 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
     case NuTo::IpData::DAMAGE:
            rIpData.Resize(1,GetNumIntegrationPoints());
     break;
+    case NuTo::IpData::ELASTIC_ENERGY:
+    case NuTo::IpData::TOTAL_ENERGY:
+        rIpData.Resize(2,GetNumIntegrationPoints());
+    break;
     default:
         throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
     }
@@ -790,6 +794,22 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
         break;
         case NuTo::IpData::DAMAGE:
             constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+        break;
+        case NuTo::IpData::ELASTIC_ENERGY:
+        {
+            rIpData.mEigenMatrix(0,theIP) = constitutivePtr->GetElasticEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+            assert(mSection->GetThickness()>0);
+            double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+            rIpData.mEigenMatrix(1,theIP) = factor;
+        }
+        break;
+        case NuTo::IpData::TOTAL_ENERGY:
+        {
+            rIpData.mEigenMatrix(0,theIP) = constitutivePtr->GetTotalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+            assert(mSection->GetThickness()>0);
+            double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+            rIpData.mEigenMatrix(1,theIP) = factor;
+        }
         break;
         default:
             throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");

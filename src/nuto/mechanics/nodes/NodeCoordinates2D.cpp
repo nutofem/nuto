@@ -53,7 +53,7 @@ void NuTo::NodeCoordinates2D::SetCoordinates2D(const double rCoordinates[2])
 //! @param rCoordinates coordinates
 void NuTo::NodeCoordinates2D::GetCoordinates2D(double rCoordinates[2])const
 {
-	rCoordinates[0] = mCoordinates[0];
+    rCoordinates[0] = mCoordinates[0];
 	rCoordinates[1] = mCoordinates[1];
 }
 

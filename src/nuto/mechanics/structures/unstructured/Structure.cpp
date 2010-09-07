@@ -267,7 +267,7 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
     assert(rMatrixJJ.IsSymmetric() == false);
     assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
     assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumEntries() == 0);
+    //assert(rMatrixJJ.GetNumEntries() == 0);
     assert(rMatrixJK.IsSymmetric() == false);
     assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
     assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);

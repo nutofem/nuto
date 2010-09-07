@@ -41,6 +41,7 @@ constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
 
 SET(NuToMechanicsConstraint_SOURCES
 constraints/ConstraintBase.cpp
+constraints/ConstraintDisplacementsPeriodic2D.cpp
 constraints/ConstraintEquation.cpp
 constraints/ConstraintEquationTerm.cpp
 constraints/ConstraintNode.cpp

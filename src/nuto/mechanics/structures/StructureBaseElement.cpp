@@ -1191,3 +1191,299 @@ void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
         std::cout<<"[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+//! @brief calculates the average stress
+//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+//! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
+//! @param rEngineeringStress  average stress (return value)
+void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    NuTo::FullMatrix<double> elementEngineeringStress;
+    rEngineeringStress.Resize(6,1);
+
+    std::vector<const ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+    {
+        try
+        {
+            elementVector[elementCount]->GetIntegratedStress(elementEngineeringStress);
+            rEngineeringStress+=elementEngineeringStress;
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalGetAverageStress] Error calculating integrated stress  for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalGetAverageStress] Error calculating integrated stress  for element " + ss.str() + ".");
+        }
+    }
+    rEngineeringStress*=1./rVolume;
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief calculates the average stress
+//! @param rGroupId  group number
+//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+//! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
+//! @param rEngineeringStress  average stress (return value)
+void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStress] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStress] Group is not an element group.");
+    const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
+    assert(elementGroup!=0);
+
+    NuTo::FullMatrix<double> elementEngineeringStress;
+    rEngineeringStress.Resize(6,1);
+
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    {
+        try
+        {
+            (*itElement)->GetIntegratedStress(elementEngineeringStress);
+            rEngineeringStress+=elementEngineeringStress;
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            e.AddMessage("[NuTo::StructureBase::ElementGroupGetAverageStress] Error calculating integrated stress  for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementGroupGetAverageStress] Error calculating integrated stress  for element " + ss.str() + ".");
+        }
+    }
+    rEngineeringStress*=(1./rVolume);
+
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
+//! @brief calculates the average strain
+//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+//! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
+//! @param rEngineeringStraiu  average strain (return value)
+void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    NuTo::FullMatrix<double> elementEngineeringStrain;
+    rEngineeringStrain.Resize(6,1);
+
+    std::vector<const ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+    {
+        try
+        {
+            elementVector[elementCount]->GetIntegratedStrain(elementEngineeringStrain);
+            rEngineeringStrain+=elementEngineeringStrain;
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalGetAverageStrain] Error calculating integrated strain  for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalGetAverageStrain] Error calculating integrated strain  for element " + ss.str() + ".");
+        }
+    }
+    rEngineeringStrain*=1./rVolume;
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief calculates the average strain
+//! @param rGroupId  group number
+//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
+//! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
+//! @param rEngineeringStrain  average strain (return value)
+void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStrain] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStrain] Group is not an element group.");
+    const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
+    assert(elementGroup!=0);
+
+    NuTo::FullMatrix<double> elementEngineeringStrain;
+    rEngineeringStrain.Resize(6,1);
+
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    {
+        try
+        {
+            (*itElement)->GetIntegratedStrain(elementEngineeringStrain);
+            rEngineeringStrain+=elementEngineeringStrain;
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            e.AddMessage("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error calculating integrated strain  for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error calculating integrated strain  for element " + ss.str() + ".");
+        }
+    }
+    rEngineeringStrain*=(1./rVolume);
+
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+//! @brief calculates the total energy of the system
+//! @return total energy
+double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    double totalEnergy(0);
+    NuTo::FullMatrix<double> ipEnergy;
+
+    std::vector<const ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+    {
+        try
+        {
+            elementVector[elementCount]->GetIpData(NuTo::IpData::TOTAL_ENERGY,ipEnergy);
+            for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
+            {
+                totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
+            }
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalGetAverageStrain] Error calculating integrated strain  for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalGetAverageStrain] Error calculating integrated strain  for element " + ss.str() + ".");
+        }
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+    return totalEnergy;
+}
+
+//! @brief calculates the elastic energy of the system
+//! @return elastic energy
+double NuTo::StructureBase::ElementTotalGetElasticEnergy()const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    double elasticEnergy(0);
+    NuTo::FullMatrix<double> ipEnergy;
+
+    std::vector<const ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+    {
+        try
+        {
+            elementVector[elementCount]->GetIpData(NuTo::IpData::ELASTIC_ENERGY,ipEnergy);
+            for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
+            {
+                elasticEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
+            }
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalGetAverageStrain] Error calculating integrated strain  for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalGetAverageStrain] Error calculating integrated strain  for element " + ss.str() + ".");
+        }
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetElasticEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+    return elasticEnergy;
+}
