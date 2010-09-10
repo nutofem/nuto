@@ -155,9 +155,6 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
         itConstraint->second->AddToConstraintMatrix(curConstraintEquations, rConstraintMatrix, rRHS);
     }
 
-    NuTo::FullMatrix<double> tmp(rConstraintMatrix);
-    std::cout << "constraintMatrix " << std::endl << tmp << std::endl;
-
     if (curConstraintEquations!=numConstraintEquations)
     {
         std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;

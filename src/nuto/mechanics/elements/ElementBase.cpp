@@ -9,6 +9,8 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
+#include <eigen2/Eigen/QR>
+
 #ifdef ENABLE_VISUALIZE
     #include "nuto/visualize/VisualizeException.h"
 #endif
@@ -437,6 +439,32 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 //std::cout<<"[NuTo::ElementBase::VisualizeEngineeringStressTensor]" << EngineeringStressTensor[0] << EngineeringStressTensor[1] << std::endl;
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStressTensor);
+            }
+        }
+        break;
+        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
+        {
+            FullMatrix<double> EngineeringStress;
+            this->GetIpData(NuTo::IpData::ENGINEERING_STRESS,EngineeringStress);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                const double* EngineeringStressVector = &(EngineeringStress.mEigenMatrix.data()[theIp*6]);
+                Eigen::Matrix<double,3,3>  EngineeringStressTensor;
+
+                EngineeringStressTensor(0,0) = EngineeringStressVector[0];
+                EngineeringStressTensor(1,0) = EngineeringStressVector[3];
+                EngineeringStressTensor(2,0) = EngineeringStressVector[5];
+                EngineeringStressTensor(0,1) = EngineeringStressVector[3];
+                EngineeringStressTensor(1,1) = EngineeringStressVector[1];
+                EngineeringStressTensor(2,1) = EngineeringStressVector[4];
+                EngineeringStressTensor(0,2) = EngineeringStressVector[5];
+                EngineeringStressTensor(1,2) = EngineeringStressVector[4];
+                EngineeringStressTensor(2,2) = EngineeringStressVector[2];
+
+                //std::cout<<"[NuTo::ElementBase::VisualizeEngineeringStressTensor]" << EngineeringStressTensor[0] << EngineeringStressTensor[1] << std::endl;
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataVector(CellId, WhatIter->GetComponentName(), EngineeringStressTensor.part<Eigen::SelfAdjoint>().eigenvalues().data());
             }
         }
         break;

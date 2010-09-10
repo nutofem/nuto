@@ -99,6 +99,12 @@ public:
     //! @param rData ... scalar data
     void SetCellDataScalar(unsigned int rCellIndex, const std::string& rDataIdent, double rData);
 
+    //! @brief ... set vector cell data
+    //! @param rPointIndex ... cell index
+    //! @param rDataIdent ... data identifier
+    //! @param rData ... vector data
+    void SetCellDataVector(unsigned int rCellIndex, const std::string& rDataIdent, double rData[3]);
+
     //! @brief ... set tensor cell data
     //! @param rPointIndex ... cell index
     //! @param rDataIdent ... data identifier

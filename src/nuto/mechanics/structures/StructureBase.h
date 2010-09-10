@@ -92,6 +92,9 @@ public:
     //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentConstitutive();
 
+    //! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentPrincipalEngineeringStress();
+
     //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
     //! @param rElementId ... Element id
     //! @param rIp ... local ip number

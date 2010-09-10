@@ -45,6 +45,7 @@
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
+#include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentSection.h"
 #endif // ENABLE_VISUALIZE
 
@@ -274,7 +275,20 @@ void NuTo::StructureBase::AddVisualizationComponentDamage()
 #endif
 }
 
-
+//! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentPrincipalEngineeringStress());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef SHOW_TIME
@@ -360,6 +374,9 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
             break;
         case NuTo::VisualizeBase::CONSTITUTIVE:
             Visualize.DefineCellDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
+            Visualize.DefineCellDataVector(itWhat->GetComponentName());
             break;
         default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] invalid data description.");

@@ -62,6 +62,11 @@ public:
     //! @param rData ... tensor data
     void SetDataScalar(unsigned int rDataIndex, double rData);
 
+    //! @brief ... set vector data
+    //! @param rDataIndex ... data index
+    //! @param rData ... tensor data
+    void SetDataVector (unsigned int rDataIndex, double rData[3]);
+
     //! @brief ... add field data
     //! @param rDataIndex ... index in data vector (zero based indexing)
     //! @param rNumData ... number of data

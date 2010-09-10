@@ -100,6 +100,20 @@ void NuTo::CellBase::SetDataTensor(unsigned int rDataIndex, double rData[9])
     this->mData[rDataIndex].SetData(rData);
 }
 
+// set vector data
+void NuTo::CellBase::SetDataVector(unsigned int rDataIndex, double rData[3])
+{
+    if (rDataIndex >= this->mData.size())
+    {
+        throw NuTo::VisualizeException("[NuTo::CellBase::SetDataVector] invalid data index.");
+    }
+    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::VECTOR)
+    {
+        throw NuTo::VisualizeException("[NuTo::CellBase::SetDataVector] invalid data type.");
+    }
+    this->mData[rDataIndex].SetData(rData);
+}
+
 // add field data
 void NuTo::CellBase::AddDataField(unsigned int rDataIndex, unsigned int rNumData)
 {

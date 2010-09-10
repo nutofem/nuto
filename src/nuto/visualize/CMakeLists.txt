@@ -14,6 +14,7 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentNonlocalWeight.cpp
   VisualizeComponentEngineeringStrain.cpp
   VisualizeComponentEngineeringStress.cpp
+  VisualizeComponentPrincipalEngineeringStress.cpp
   VisualizeDataBase.cpp
   VisualizeDataField.cpp
   VisualizeDataScalar.cpp

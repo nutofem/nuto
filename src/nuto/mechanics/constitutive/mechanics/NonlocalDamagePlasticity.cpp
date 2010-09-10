@@ -40,6 +40,7 @@
 #include "nuto/mechanics/sections/SectionEnum.h"
 
 #define sqrt3 1.732050808
+#define MAX_OMEGA 0.999
 //#define ENABLE_DEBUG
 
 NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEngineeringStressStrain()
@@ -2842,15 +2843,28 @@ void NuTo::NonlocalDamagePlasticity::CalculateNonlocalPlasticStrain(const Elemen
 
 double NuTo::NonlocalDamagePlasticity::CalculateDamage(double rkappa, double rKappaD)const
 {
-    return 1.-exp(-rkappa/rKappaD);
+    double omega = 1.-exp(-rkappa/rKappaD);
+    if (omega>MAX_OMEGA)
+    {
+        omega = MAX_OMEGA;
+    }
+    return omega;
 }
 
 double NuTo::NonlocalDamagePlasticity::CalculateDerivativeDamage(double rkappa, double rKappaD, double& rdOmegadKappa)const
 {
     double invKappaD(1./rKappaD);
     double tmp = exp(-rkappa*invKappaD);
-    rdOmegadKappa = invKappaD * tmp;
-    return 1.-tmp;
+    if (1.-tmp>MAX_OMEGA)
+    {
+        rdOmegadKappa = 0.;
+        return MAX_OMEGA;
+    }
+    else
+    {
+        rdOmegadKappa = invKappaD * tmp;
+        return 1.-tmp;
+    }
 }
 
 

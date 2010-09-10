@@ -441,6 +441,17 @@ void NuTo::VisualizeUnstructuredGrid::SetCellDataScalar(unsigned int rCellIndex,
     this->mCells[rCellIndex].SetDataScalar(CellDataIndex, rData);
 }
 
+// set vector cell data
+void NuTo::VisualizeUnstructuredGrid::SetCellDataVector(unsigned int rCellIndex, const std::string& rDataIdent, double rData[3])
+{
+    if (rCellIndex >= this->mCells.size())
+    {
+        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetCellDataTensor] invalid cell index.");
+    }
+    unsigned int CellDataIndex = this->GetCellDataIndex(rDataIdent);
+    this->mCells[rCellIndex].SetDataVector(CellDataIndex, rData);
+}
+
 // set tensor cell data
 void NuTo::VisualizeUnstructuredGrid::SetCellDataTensor(unsigned int rCellIndex, const std::string& rDataIdent, double rData[9])
 {

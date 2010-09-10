@@ -23,7 +23,8 @@ public:
         DAMAGE,                    //!< visualize damage
         ENGINEERING_PLASTIC_STRAIN,//!< visualize engineering plastic strain
         CONSTITUTIVE,              //!< visualize constitutive id
-        SECTION                    //!< visualize section id
+        SECTION,                    //!< visualize section id
+        PRINCIPAL_ENGINEERING_STRESS //!< visualize principal stresses
     };
 
     //! @brief ... export to Vtk datafile
