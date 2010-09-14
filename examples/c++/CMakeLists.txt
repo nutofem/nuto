@@ -59,6 +59,21 @@ IF(MINGW)
   SET_TARGET_PROPERTIES(Brick8N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 
+# Concurrent multiscale model - periodic boundary conditions
+ADD_EXECUTABLE(ConcurrentMultiscale ConcurrentMultiscale)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ConcurrentMultiscale.msh
+    ${CMAKE_CURRENT_BINARY_DIR}/ConcurrentMultiscale.msh COPYONLY)
+TARGET_LINK_LIBRARIES(ConcurrentMultiscale NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(ConcurrentMultiscale NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MUMPS_FOUND)
+  TARGET_LINK_LIBRARIES(ConcurrentMultiscale ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(MUMPS_FOUND)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(ConcurrentMultiscale PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+
 # NonlocalDamagePlasticityBeam
 ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
 TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})

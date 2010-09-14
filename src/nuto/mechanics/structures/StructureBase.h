@@ -498,8 +498,14 @@ public:
 
     //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
     //!@param rConstraintEquation id of the constraint equation
-    //!@param rRHS new strain
+    //!@param rStrain new strain
     void ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain);
+
+    //!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
+    //!@param rConstraintEquation id of the constraint equation
+    //!@param rCrackOpening new crack opening (x,y)
+    void ConstraintPeriodicSetCrackOpening(int rConstraintEquation,
+            NuTo::FullMatrix<double> rCrackOpeningdouble);
 
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term
@@ -543,6 +549,7 @@ public:
     //! @param  rNodeGroupLeft... all nodes on the left boundary
     //! @param  rNodeGroupRight...  all nodes on the right boundary
     int ConstraintDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double> rStrain,
+            NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
             int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
 
     #ifndef SWIG

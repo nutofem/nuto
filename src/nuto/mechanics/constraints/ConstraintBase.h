@@ -49,6 +49,10 @@ public:
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
     virtual void SetStrain(const NuTo::FullMatrix<double>& rStrain);
 
+    //!@brief set the strain of the periodic boundary conditions
+    //!@param rStrain strain (e_xx,e_yy,gamma_xy)
+    virtual void SetCrackOpening(const NuTo::FullMatrix<double>& rStrain);
+
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)

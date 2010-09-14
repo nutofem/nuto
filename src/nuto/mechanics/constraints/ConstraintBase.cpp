@@ -48,3 +48,10 @@ void NuTo::ConstraintBase::SetStrain(const NuTo::FullMatrix<double>& rStrain)
 {
     throw MechanicsException("[NuTo::ConstraintBase] Set strain for this type of constraints not implemented.");
 }
+
+//!@brief set the crack opening of the periodic boundary conditions
+//!@param rCrackOpening (x,y)
+void NuTo::ConstraintBase::SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening)
+{
+    throw MechanicsException("[NuTo::ConstraintBase] Set crack opening for this type of constraints not implemented.");
+}

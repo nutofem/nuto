@@ -16,6 +16,10 @@ class NodeCoordinatesDisplacements2D;
 //! @author Joerg F. Unger
 //! @date August 2010
 //! @brief ... class for all displacement constraints periodic boundary conditions in 2D
+//! in order to avoid free floating of the body, the lower left corner should be additionally fixed (to zero or any other value) in both directions
+//! the general idea is a decomposition of the periodic boundary conditions into a homogeneous part (mStrain) and a discontinuous part (mCrackOpening)
+//! for a crack with an angle between 45 and 235 degrees (for other angles the values are automatically adjusted by +-180
+//! attention: for a tension test with a horizontal crack, either specify angle=180 and uy or angle=0 and -uy
 class ConstraintDisplacementsPeriodic2D : public ConstraintBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -27,6 +31,7 @@ public:
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
     ConstraintDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, NuTo::FullMatrix<double> rStrain,
+            NuTo::FullMatrix<double> crackOpening, double rRadiusToCrackWithoutConstraints,
             const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
             const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight);
 
@@ -37,6 +42,10 @@ public:
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
     void SetStrain(const NuTo::FullMatrix<double>& rStrain);
+
+    //!@brief sets/modifies the average strain applied to the boundary
+    //!@param rAngle angle in deg
+    void SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening);
 
     //!@brief calculate the border vectors in counterclockwise direction
     void SetBoundaryVectors();
@@ -75,6 +84,12 @@ protected:
 
     //! @brief average strain applied to the boundaries (epsilon_xx, epsilon_yy, gamma_xy)
     double mStrain[3];
+
+    //! @brief crack opening in x and y-direction
+    double mCrackOpening[2];
+
+    //! @brief radius close to the crack, where constraints are not applied
+    double mRadiusToCrackWithoutConstraints;
 
     //! @brief boundary groups (upper, lower, left and right), corner nodes are supposed to be in two groups
     const Group<NodeBase>* mGroupTop;

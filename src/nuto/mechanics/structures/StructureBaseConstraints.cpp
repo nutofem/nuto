@@ -179,19 +179,34 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     it->second->SetRHS(rRHS);
 }
 
+//!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
+//!@param rConstraintEquation id of the constraint equation
+//!@param rCrackOpening new crack opening (x,y)
+void NuTo::StructureBase::ConstraintPeriodicSetCrackOpening(int rConstraintEquation, NuTo::FullMatrix<double> rCrackOpening)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
+    if (it==mConstraintMap.end())
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetCrackOpening] Constraint equation does not exist.");
+    }
+    it->second->SetCrackOpening(rCrackOpening);
+}
+
 //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
 //!@param rConstraintEquation id of the constraint equation
-//!@param rRHS new strain
+//!@param rStrain new strain
 void NuTo::StructureBase::ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain)
 {
     this->mNodeNumberingRequired = true;
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
     if (it==mConstraintMap.end())
     {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetRHS] Constraint equation does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Constraint equation does not exist.");
     }
     it->second->SetStrain(rStrain);
 }
+
 // create a constraint equation
 int NuTo::StructureBase::ConstraintEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
@@ -388,6 +403,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
 //! @param  rNodeGroupLeft... all nodes on the left boundary
 //! @param  rNodeGroupRight...  all nodes on the right boundary
 int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double> rStrain,
+        NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         int rNodeGroupUpperId, int rNodeGroupLowerId, int rNodeGroupLeftId, int rNodeGroupRightId)
 {
     //check dimension of the structure
@@ -439,7 +455,8 @@ int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuT
     try
     {
         // create new constraint equation term
-        ConstraintBase* constraintPtr = new NuTo::ConstraintDisplacementsPeriodic2D(this, rAngle, rStrain, nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
+        ConstraintBase* constraintPtr = new NuTo::ConstraintDisplacementsPeriodic2D(this, rAngle, rStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
+                   nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
 
         // insert constraint equation into map
         this->mConstraintMap.insert(id, constraintPtr);
