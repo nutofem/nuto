@@ -33,8 +33,10 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+        std::cout << "start serialization of Plane2D6N" << std::endl;
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Plane2D)
            & BOOST_SERIALIZATION_NVP(mNodes);
+        std::cout << "finish serialization of Plane2D6N" << std::endl;
     }
 #endif  // ENABLE_SERIALIZATION
 

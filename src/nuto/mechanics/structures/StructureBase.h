@@ -7,10 +7,12 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
+
 #include <string>
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -1030,9 +1032,13 @@ protected:
     //! values smaller than that one will not be added to the global matrix
     double mToleranceStiffnessEntries;
 
+    //! @brief ... standard constructor just for the serialization routine
+    StructureBase()
+    {}
+
     //! @brief ... store all elements of a structure in a vector
-    //! @param rElements ... vector of element pointer
-    virtual void GetElementsTotal(std::vector<const ElementBase*>& rElements) const = 0;
+     //! @param rElements ... vector of element pointer
+     virtual void GetElementsTotal(std::vector<const ElementBase*>& rElements) const = 0;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
@@ -1087,6 +1093,7 @@ protected:
 #ifndef SWIG
 #include <boost/serialization/assume_abstract.hpp>
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
+BOOST_CLASS_EXPORT_KEY(NuTo::StructureBase)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
 #endif // STRUCTUREBASE_H

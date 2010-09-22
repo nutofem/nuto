@@ -5,6 +5,7 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
@@ -39,8 +40,15 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief just for serialization
+    ConstraintNode(){};
     const NodeBase* mNode;
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNode)
+#endif // ENABLE_SERIALIZATION
+
 #endif //CONSTRAINTNODE_H
 

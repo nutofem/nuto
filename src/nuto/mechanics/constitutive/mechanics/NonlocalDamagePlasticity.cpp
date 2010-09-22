@@ -64,7 +64,10 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
     template<class Archive>
     void NuTo::NonlocalDamagePlasticity::serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
+#ifdef DEBUG_SERIALIZATION
+       std::cout << "start serialize NonlocalDamagePlasticity" << std::endl;
+#endif
+       ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
            & BOOST_SERIALIZATION_NVP(mE)
            & BOOST_SERIALIZATION_NVP(mNu)
            & BOOST_SERIALIZATION_NVP(mNonlocalRadius)
@@ -74,7 +77,11 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
            & BOOST_SERIALIZATION_NVP(mFractureEnergy)
            & BOOST_SERIALIZATION_NVP(mYieldSurface)
            & BOOST_SERIALIZATION_NVP(mDamage);
+#ifdef DEBUG_SERIALIZATION
+       std::cout << "finish serialize NonlocalDamagePlasticity" << std::endl;
+#endif
     }
+    BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NonlocalDamagePlasticity)
 #endif // ENABLE_SERIALIZATION
 
 //  Engineering strain /////////////////////////////////////

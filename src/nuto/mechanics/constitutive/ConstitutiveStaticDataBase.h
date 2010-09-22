@@ -4,7 +4,7 @@
 #define CONSTITUTIVESTATICDATABASE_H_
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_SERIALIZATION
@@ -54,5 +54,8 @@ public:
 };
 
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataBase)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVESTATICDATABASE_H_ 

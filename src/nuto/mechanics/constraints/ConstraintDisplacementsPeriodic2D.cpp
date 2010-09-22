@@ -730,8 +730,15 @@ template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive:
 template<class Archive>
 void NuTo::ConstraintDisplacementsPeriodic2D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintDisplacementsPeriodic2D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-    & BOOST_SERIALIZATION_NVP(mAngle)
-    & BOOST_SERIALIZATION_NVP(mStrain);
+       & BOOST_SERIALIZATION_NVP(mAngle)
+       & BOOST_SERIALIZATION_NVP(mStrain);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintDisplacementsPeriodic2D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintDisplacementsPeriodic2D)
 #endif // ENABLE_SERIALIZATION

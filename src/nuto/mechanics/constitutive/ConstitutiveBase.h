@@ -5,6 +5,7 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -208,7 +209,7 @@ public:
     virtual ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain();
 
 
-    #ifdef ENABLE_SERIALIZATION
+#ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
@@ -227,5 +228,8 @@ protected:
 };
 
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveBase)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVEBASE_H_ 

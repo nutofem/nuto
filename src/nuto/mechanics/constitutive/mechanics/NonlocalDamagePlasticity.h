@@ -4,6 +4,7 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
@@ -18,7 +19,7 @@ class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
 //! @brief ...
-class NonlocalDamagePlasticity : public ConstitutiveEngineeringStressStrain
+class NonlocalDamagePlasticity : public virtual ConstitutiveEngineeringStressStrain
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -542,4 +543,9 @@ protected:
     double CalculateKappaD()const;
 };
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NonlocalDamagePlasticity)
+#endif // ENABLE_SERIALIZATION
+
 #endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

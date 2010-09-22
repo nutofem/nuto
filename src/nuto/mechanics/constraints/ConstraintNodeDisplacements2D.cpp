@@ -60,8 +60,9 @@ void NuTo::ConstraintNodeDisplacements2D::AddToConstraintMatrix(int& curConstrai
     curConstraintEquation++;
 }
 
+
 #ifdef ENABLE_SERIALIZATION
-// serialize
+// serializes the class
 template void NuTo::ConstraintNodeDisplacements2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintNodeDisplacements2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintNodeDisplacements2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
@@ -71,8 +72,15 @@ template void NuTo::ConstraintNodeDisplacements2D::serialize(boost::archive::tex
 template<class Archive>
 void NuTo::ConstraintNodeDisplacements2D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintNodeDisplacements2D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode)
-    & BOOST_SERIALIZATION_NVP(mValue)
-    & BOOST_SERIALIZATION_NVP(mDirection);
+       & BOOST_SERIALIZATION_NVP(mValue)
+       & BOOST_SERIALIZATION_NVP(mDirection);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintNodeDisplacements2D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeDisplacements2D)
 #endif // ENABLE_SERIALIZATION

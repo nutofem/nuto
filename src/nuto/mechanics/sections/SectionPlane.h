@@ -4,12 +4,8 @@
 #define SectionPlane_H_
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/sections/SectionBase.h"
@@ -50,20 +46,20 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase)
-           & BOOST_SERIALIZATION_NVP(this->mThickness)
-           & BOOST_SERIALIZATION_NVP(this->mSectionType);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 private:
+    //! @brief just for serialization
+    SectionPlane(){};
     //! @brief ... section thickness
     double        mThickness;
     Section::eSectionType   mSectionType;
 };
 
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::SectionPlane)
+#endif // ENABLE_SERIALIZATION
 
 #endif // SectionPlane_H_

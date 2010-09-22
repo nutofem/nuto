@@ -43,19 +43,24 @@ NuTo::LinearElastic::LinearElastic() : ConstitutiveEngineeringStressStrain(), Co
 }
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void NuTo::LinearElastic::serialize(Archive & ar, const unsigned int version)
-    {
-        std::cout << "start serialization of linear elastic" << std::endl;
-    	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
-    	   & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutivePiolaKirchhoffIIGreenLagrange)
-           & BOOST_SERIALIZATION_NVP(mE)
-           & BOOST_SERIALIZATION_NVP(mNu);
-        std::cout << "finish serialization of linear elastic" << std::endl;
-    }
+//! @brief serializes the class
+//! @param ar         archive
+//! @param version    version
+template<class Archive>
+void NuTo::LinearElastic::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+   std::cout << "start serialize LinearElastic" << std::endl;
+#endif
+   ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
+      & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutivePiolaKirchhoffIIGreenLagrange)
+      & BOOST_SERIALIZATION_NVP(mE)
+      & BOOST_SERIALIZATION_NVP(mNu);
+#ifdef DEBUG_SERIALIZATION
+   std::cout << "finish serialize LinearElastic" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearElastic)
 #endif // ENABLE_SERIALIZATION
 
 //  Engineering strain /////////////////////////////////////

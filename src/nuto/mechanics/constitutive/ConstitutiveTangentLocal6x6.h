@@ -4,13 +4,8 @@
 #define CONSTITUTIVETANGENTLOCAL_6x6_H
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/array.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveTangentBase.h"
@@ -79,11 +74,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveTangentBase)
-           & BOOST_SERIALIZATION_NVP(mTangent);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 private:
     //! @brief ... tangent matrix
@@ -91,5 +82,9 @@ private:
 };
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveTangentLocal6x6)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVETANGENTLOCAL_6x6_H

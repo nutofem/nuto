@@ -1,3 +1,13 @@
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#endif // ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 //! @brief constructor
 NuTo::IntegrationTypeBase::IntegrationTypeBase()
@@ -60,3 +70,24 @@ void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates3D(int rIpNum
     throw MechanicsException("[NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates] This integration type does not support 3D coordinates.");
 }
 
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::IntegrationTypeBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationTypeBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationTypeBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationTypeBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationTypeBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationTypeBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::IntegrationTypeBase::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationTypeBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationTypeBase" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationTypeBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IntegrationTypeBase)
+#endif // ENABLE_SERIALIZATION

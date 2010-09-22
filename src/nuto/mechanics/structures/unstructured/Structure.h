@@ -5,9 +5,8 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
-#else
-#include <set>
 #endif // ENABLE_SERIALIZATION
+#include <set>
 
 #include <boost/ptr_container/ptr_map.hpp>
 
@@ -35,11 +34,13 @@ public:
     Structure(int mDimension);
 
 #ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+#endif//SWIG
 
     //! @brief ... save the object to a file
     //! @param filename ... filename
@@ -276,6 +277,10 @@ public:
     void Info()const;
 
 protected:
+    //! @brief ... standard constructor just for the serialization routine
+    Structure()
+    {}
+
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
@@ -325,7 +330,7 @@ protected:
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
     void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
 
-    #ifndef SWIG
+#ifndef SWIG
     //! @brief import from gmsh, do the actual work
     //! @param rFileName .. file name
     //! @param rDOFs .. degrees of freedom for the nodes
@@ -343,8 +348,9 @@ protected:
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Structure)
+BOOST_CLASS_EXPORT_KEY(NuTo::Structure)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
+
+
 #endif // STRUCTURE_H

@@ -2,11 +2,15 @@
 #ifndef VISUALIZECOMPONENTDISPLACEMENT_H_
 #define VISUALIZECOMPONENTDISPLACEMENT_H_
 
-#include <boost/serialization/vector.hpp>
 #include <string>
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif // ENABLE_SERIALIZATION
+
 #include "nuto/visualize/VisualizeComponentBase.h"
-#include "nuto/visualize/VisualizeComponentBase.h"
+
 
 namespace NuTo
 {
@@ -15,6 +19,9 @@ namespace NuTo
 //! @brief ...
 class VisualizeComponentDisplacement : public VisualizeComponentBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
 public:
 	VisualizeComponentDisplacement();
 
@@ -28,6 +35,16 @@ public:
     	return std::string("Displacements");
     }
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif // ENABLE_SERIALIZATION
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponentDisplacement)
+#endif // ENABLE_SERIALIZATION
 #endif /* VISUALIZECOMPONENTDISPLACEMENT_H_ */

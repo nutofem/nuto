@@ -24,9 +24,12 @@ template void NuTo::ConstitutiveStaticDataBase::serialize(boost::archive::text_i
 template<class Archive>
 void NuTo::ConstitutiveStaticDataBase::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize constitutive static data base" << std::endl;
     std::cout << "finish serialize constitutive static data base" << std::endl;
+#endif
 }
+//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveStaticDataBase)
 #endif // ENABLE_SERIALIZATION
 
 //!@ brief reinterpret as nonlocal damage2d static data
@@ -40,3 +43,4 @@ const NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::C
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsNonlocalDamagePlasticity2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
+

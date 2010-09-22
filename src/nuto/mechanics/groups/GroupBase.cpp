@@ -51,3 +51,25 @@ bool NuTo::GroupBase::Contain(ElementBase* rElementPtr)
 {
 	throw MechanicsException("[NuTo::GroupBase::Contain] looking for an element is only allowed for element groups.");
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::GroupBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::GroupBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::GroupBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::GroupBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::GroupBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::GroupBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::GroupBase::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize GroupBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize GroupBase" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::GroupBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::GroupBase)
+#endif // ENABLE_SERIALIZATION

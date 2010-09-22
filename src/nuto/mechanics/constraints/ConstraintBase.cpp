@@ -22,7 +22,7 @@ NuTo::ConstraintBase::~ConstraintBase()
 }
 
 #ifdef ENABLE_SERIALIZATION
-// serialize
+// serializes the class
 template void NuTo::ConstraintBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
@@ -32,8 +32,17 @@ template void NuTo::ConstraintBase::serialize(boost::archive::text_iarchive & ar
 template<class Archive>
 void NuTo::ConstraintBase::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintBase" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintBase)
 #endif // ENABLE_SERIALIZATION
+
 
 //!@brief sets/modifies the right hand side of the constraint equations
 //!@param rRHS new right hand side

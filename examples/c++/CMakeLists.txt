@@ -59,8 +59,8 @@ IF(MINGW)
   SET_TARGET_PROPERTIES(Brick8N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 
-# Concurrent multiscale model - periodic boundary conditions
-ADD_EXECUTABLE(ConcurrentMultiscale ConcurrentMultiscale)
+# Concurrent multiscale model
+ADD_EXECUTABLE(ConcurrentMultiscale ConcurrentMultiscale.cpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ConcurrentMultiscale.msh
     ${CMAKE_CURRENT_BINARY_DIR}/ConcurrentMultiscale.msh COPYONLY)
 TARGET_LINK_LIBRARIES(ConcurrentMultiscale NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
@@ -114,6 +114,23 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(ImportGmsh PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
+
+
+# Periodic boundary conditions
+ADD_EXECUTABLE(PeriodicBoundaryConditions PeriodicBoundaryConditions.cpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/PeriodicBoundaryConditions.msh
+    ${CMAKE_CURRENT_BINARY_DIR}/PeriodicBoundaryConditions.msh COPYONLY)
+TARGET_LINK_LIBRARIES(PeriodicBoundaryConditions NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(PeriodicBoundaryConditions NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MUMPS_FOUND)
+  TARGET_LINK_LIBRARIES(PeriodicBoundaryConditions ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(MUMPS_FOUND)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(PeriodicBoundaryConditions PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+
 
 # Plane2D4N
 ADD_EXECUTABLE(VisualizePlane2D4N VisualizePlane2D4N.cpp)

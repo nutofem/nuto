@@ -5,6 +5,7 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
@@ -71,6 +72,9 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief just for serialization
+    ConstraintDisplacementsPeriodic2D(){};
+
     //! @brief calculate weighting function for first master node (linear interpolation between master nodes
     //! @param rCoordinateCurMaster
     double CalculateWeightFunction(double rCoordinateCurMaster, double rCoordinateNextMaster, double rCoordinateSlave)const;
@@ -110,4 +114,9 @@ protected:
     const StructureBase* mStructure;
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintDisplacementsPeriodic2D)
+#endif // ENABLE_SERIALIZATION
+
 #endif //CONSTRAINTDISPLACEMENTS2PERIODIC2D_H

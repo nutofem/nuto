@@ -270,8 +270,14 @@ template void NuTo::ConstitutiveBase::serialize(boost::archive::text_iarchive & 
 template<class Archive>
 void NuTo::ConstitutiveBase::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize constitutive Base" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_NVP(mParametersValid);
+#ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Constitutive Base" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveBase)
 #endif // ENABLE_SERIALIZATION

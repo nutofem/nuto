@@ -99,15 +99,13 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveTangentBase)
-           & BOOST_SERIALIZATION_NVP(mNonlocalMatrices)
-           & BOOST_SERIALIZATION_NVP(mIsLocal);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 private:
+    //! @brief ... just for serialize
+    ConstitutiveTangentNonlocal3x3(){};
+
     //! @brief ... vector of local tangents for nonlocal material model
     std::vector<ConstitutiveTangentLocal3x3> mNonlocalMatrices;
     //! @brief ... in case the nonlocal material model is only local (e.g. initial linear elastic part, unloading etc., only in mNonlocalMatrices[0] the current tangent is stored
@@ -115,5 +113,9 @@ private:
 };
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveTangentNonlocal3x3)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVETANGENTNONLOCAL3x3_H

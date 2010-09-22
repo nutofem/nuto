@@ -12,13 +12,15 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementBase.h"
+//#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 namespace NuTo
 {
 // forward declarations
 class StructureBase;
 class ElementBase;
+class ConstitutiveStaticDataBase;
 class ConstitutiveTangentLocal1x1;
 class ConstitutiveTangentLocal3x3;
 class ConstitutiveTangentLocal6x6;
@@ -38,14 +40,8 @@ class ConstitutivePiolaKirchhoffIIGreenLagrange : virtual public ConstitutiveBas
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    enum eConstitutiveType
-    {
-        LINEAR_ELASTIC    //!< linear-elastic behavior
-    };
-
     //! @brief ... constructor
-    ConstitutivePiolaKirchhoffIIGreenLagrange() : ConstitutiveBase()
-    {}
+    ConstitutivePiolaKirchhoffIIGreenLagrange();
 
     // Second PiolaKirchhoff Stress - Green Lagrange Strains /////////////////////////////////////
     //! @brief ... calculate second Piola-Kirchhoff stress from GreenLagrangeStrains (which is calculated from the deformation gradient)
@@ -197,15 +193,16 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 protected:
 
 };
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutivePiolaKirchhoffIIGreenLagrange)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVEPIOLAKIRCHHOFFIIGREENLAGRANGE_H_

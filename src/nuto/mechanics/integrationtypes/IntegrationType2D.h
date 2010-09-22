@@ -3,13 +3,9 @@
 #define IntegrationType2D_H
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif //ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
@@ -33,8 +29,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {}
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the dimension of the integration type
@@ -54,5 +49,9 @@ protected:
 
 };
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D)
+#endif // ENABLE_SERIALIZATION
 
 #endif //IntegrationType2D_H

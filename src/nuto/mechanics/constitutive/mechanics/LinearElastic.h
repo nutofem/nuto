@@ -5,6 +5,7 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
@@ -58,7 +59,7 @@ namespace NuTo
  */
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class LinearElastic: public ConstitutiveEngineeringStressStrain, public ConstitutivePiolaKirchhoffIIGreenLagrange
+class LinearElastic: public virtual ConstitutiveEngineeringStressStrain, public virtual ConstitutivePiolaKirchhoffIIGreenLagrange
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -573,5 +574,9 @@ protected:
 };
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LinearElastic)
+#endif // ENABLE_SERIALIZATION
 
 #endif // LINEARELASTIC_H_

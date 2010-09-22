@@ -9,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/ptr_container/serialize_ptr_map.hpp>
+#include <boost/ptr_container/serialize_ptr_list.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #ifdef SHOW_TIME
@@ -100,17 +101,30 @@ template void NuTo::StructureBase::serialize(boost::archive::text_iarchive & ar,
 template<class Archive>
 void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of structure base" << std::endl;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
-    ar & BOOST_SERIALIZATION_NVP(mDimension);
-    //ar & boost::serialization::make_nvp("constitutiveLawMap", mConstitutiveLawMap);
-//       & boost::serialization::make_nvp("constraintMap", mConstraintMap)
-//       & boost::serialization::make_nvp("loadMap", mLoadMap)
-//       & boost::serialization::make_nvp("groupMap", mGroupMap)
-//       & boost::serialization::make_nvp("integrationTypeMap", mIntegrationTypeMap)
-//       & boost::serialization::make_nvp("sectionMap", mSectionMap);
-//         mVisualizeComponents ifdef VISUALIZATION
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
+       & BOOST_SERIALIZATION_NVP(mDimension)
+       & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap)
+       & BOOST_SERIALIZATION_NVP(mConstraintMap)
+       & BOOST_SERIALIZATION_NVP(mLoadMap)
+       & BOOST_SERIALIZATION_NVP(mGroupMap)
+       & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
+       & BOOST_SERIALIZATION_NVP(mSectionMap)
+       & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
+       & BOOST_SERIALIZATION_NVP(mNumDofs)
+       & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
+       & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)
+       & BOOST_SERIALIZATION_NVP(mConstraintMatrix)
+       & BOOST_SERIALIZATION_NVP(mConstraintRHS)
+       & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData)
+       & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired)
+       & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries)
+       & BOOST_SERIALIZATION_NVP(mVisualizeComponents);
+#ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structure base" << std::endl;
+#endif
 }
 #endif  // ENABLE_SERIALIZATION
 
@@ -764,3 +778,9 @@ int NuTo::StructureBase::GetNumDofs()const
     }
 	return mNumDofs;
 }
+
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::StructureBase)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION

@@ -7,6 +7,7 @@ constitutive/ConstitutiveTangentLocal3x3.cpp
 constitutive/ConstitutiveTangentLocal6x6.cpp
 constitutive/ConstitutiveTangentNonlocal3x3.cpp
 constitutive/mechanics/ConstitutiveEngineeringStressStrain.cpp
+constitutive/mechanics/ConstitutivePiolaKirchhoffIIGreenLagrange.cpp
 constitutive/mechanics/ConstitutiveMisesPlasticity.cpp
 constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.cpp
 constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
@@ -162,6 +163,8 @@ structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
+structures/unstructured/StructureIp.cpp
+structures/unstructured/StructureIpConstitutive.cpp
 structures/unstructured/StructureNode.cpp
 structures/grid/StructureGrid.cpp
 structures/grid/StructureGridNode.cpp

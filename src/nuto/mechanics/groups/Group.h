@@ -1,16 +1,21 @@
 #ifndef GROUP_H
 #define GROUP_H
-#include <set>
 #include <algorithm>
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/set.hpp>
+#else
+#include <set>
+#endif // ENABLE_SERIALIZATION
+
 
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/MechanicsException.h"
@@ -37,8 +42,16 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {    
-//        ar & BOOST_SERIALIZATION_NVP(mMembers);
+    {
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize Group<T>" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
+        std::cout << "intermediate serialize Group<T>" << std::endl;
+        boost::serialization::base_object<std::set<T*> >(*this);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize Group<T>" << std::endl;
+#endif
     }
 #endif // ENABLE_SERIALIZATION
     
@@ -140,5 +153,6 @@ public:
 
 };
 }//namespace NuTo
+
 #endif //GROUP_H
 

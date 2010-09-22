@@ -1,5 +1,7 @@
+
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
@@ -67,3 +69,10 @@ void Group<ElementBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStr
 }
 
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_GUID(NuTo::Group<NuTo::NodeBase>, "NuToGroupNodeBase")
+BOOST_CLASS_EXPORT_GUID(std::set<NuTo::NodeBase*>, "stdSetNodeBase")
+BOOST_CLASS_EXPORT_GUID(NuTo::Group<NuTo::ElementBase>, "NuToGroupElementBase")
+BOOST_CLASS_EXPORT_GUID(std::set<NuTo::ElementBase*>, "stdSetElementBase")
+#endif // ENABLE_SERIALIZATION
