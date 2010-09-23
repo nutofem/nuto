@@ -7,6 +7,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeDisplacements2D.h"
+#include "nuto/math/FullMatrix.h"
 
 //! @brief constructor
 NuTo::NodeDisplacements2D::NodeDisplacements2D() : NodeBase ()
@@ -27,15 +28,27 @@ NuTo::NodeDisplacements2D::NodeDisplacements2D (const double rDisplacements[2]) 
 }
 
 #ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
+// serializes the class
+template void NuTo::NodeDisplacements2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::NodeDisplacements2D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NodeDisplacements2D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
-       & BOOST_SERIALIZATION_NVP(mDisplacements);
+       & BOOST_SERIALIZATION_NVP(mDisplacements)
+       & BOOST_SERIALIZATION_NVP(mDOF);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NodeDisplacements2D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeDisplacements2D)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief returns the number of displacements of the node

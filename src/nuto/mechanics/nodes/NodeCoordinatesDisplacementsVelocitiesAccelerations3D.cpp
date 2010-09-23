@@ -1,5 +1,6 @@
 // $Id$
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations3D.h"
 
 // constructor

@@ -10,7 +10,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates and Temperature
-class NodeCoordinatesTemperature2D : public  NodeCoordinates2D, public NodeTemperature
+class NodeCoordinatesTemperature2D : public NodeCoordinates2D, public NodeTemperature
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

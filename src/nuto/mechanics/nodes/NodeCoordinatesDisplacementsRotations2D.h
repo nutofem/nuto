@@ -11,7 +11,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates, displacements and rotations
-class NodeCoordinatesDisplacementsRotations2D : public  NodeCoordinates2D,public NodeDisplacements2D, public NodeRotations2D
+class NodeCoordinatesDisplacementsRotations2D : public NodeCoordinates2D,public NodeDisplacements2D, public NodeRotations2D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

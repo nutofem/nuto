@@ -1,10 +1,10 @@
 #ifndef NODE_COORDINATES_2D_H
 #define NODE_COORDINATES_2D_H
 
-#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 namespace NuTo
 {
+template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for 2D reference nodes
@@ -13,6 +13,7 @@ class NodeCoordinates2D : public virtual NodeBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
+
 public:
 
     //! @brief constructor
@@ -31,20 +32,20 @@ public:
 
     //! @brief returns the number of coordinates of the node
     //! @return number of coordinates
-    virtual int GetNumCoordinates()const;
+    int GetNumCoordinates()const;
 
     //! @brief set the coordinates
     //! @param rCoordinates  given coordinates
-    virtual void SetCoordinates2D(const double rCoordinates[2]);
+    void SetCoordinates2D(const double rCoordinates[2]);
 
     //! @brief writes the coordinates of a node to the prescribed pointer
     //! @param rCoordinates coordinates
-    virtual void GetCoordinates2D(double rCoordinates[2])const;
+    void GetCoordinates2D(double rCoordinates[2])const;
 
     //! @brief returns the coordinate of a given direction of the node
     //! @param rIndex index of the direction
     //! @return coordinate
-    virtual double GetCoordinate(short rIndex)const;
+    double GetCoordinate(short rIndex)const;
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -160,4 +161,11 @@ public:
 };
 
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeCoordinates2D)
+#endif // ENABLE_SERIALIZATION
+
 #endif //NODE_COORDINATES_2D_H
+
+

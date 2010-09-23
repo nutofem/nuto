@@ -3,11 +3,11 @@
 #ifndef NODE_DISPLACEMENTS_2D_H
 #define NODE_DISPLACEMENTS_2D_H
 
-#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 namespace NuTo
 {
+template <class T> class FullMatrix;
 //! @author Daniel Arnold, ISM
 //! @date June 2010
 //! @brief ... standard class for nodes having displacement degrees of freedom
@@ -52,41 +52,41 @@ public:
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
-    virtual void SetGlobalDofs(int& rDOF);
+    void SetGlobalDofs(int& rDOF);
 
     //! @brief write dof values to the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
+    void SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
+    void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
 
     //! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
+    void SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
 
     //! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
+    void GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
 
     //! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
+    void SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
 
     //! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
+    void GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
+    void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
 
     //! @brief returns the type of the node
     //! @return type
@@ -98,4 +98,9 @@ protected:
 
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeDisplacements2D)
+#endif // ENABLE_SERIALIZATION
+
 #endif //NODE_DISPLACEMENTS_2D_H

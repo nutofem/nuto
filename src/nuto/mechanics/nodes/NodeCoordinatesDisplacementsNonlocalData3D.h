@@ -10,7 +10,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates and displacements
-class NodeCoordinatesDisplacementsNonlocalData3D : public  NodeCoordinatesDisplacements3D, public NodeNonlocalDataBase
+class NodeCoordinatesDisplacementsNonlocalData3D : public NodeCoordinatesDisplacements3D, public NodeNonlocalDataBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

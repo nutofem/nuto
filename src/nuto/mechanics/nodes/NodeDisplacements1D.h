@@ -1,11 +1,11 @@
 #ifndef NODE_DISPLACEMENTS_1D_H
 #define NODE_DISPLACEMENTS_1D_H
 
-#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 namespace NuTo
 {
+template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for nodes having displacement degrees of freedom

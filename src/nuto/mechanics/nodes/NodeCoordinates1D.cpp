@@ -9,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeCoordinates1D.h"
+#include "nuto/math/FullMatrix.h"
 
 //! @brief constructor
 NuTo::NodeCoordinates1D::NodeCoordinates1D()

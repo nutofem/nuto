@@ -1,3 +1,6 @@
+
+#include <sstream>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -7,11 +10,13 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeCoordinates2D.h"
+#include "nuto/math/FullMatrix.h"
 
 //! @brief constructor
 NuTo::NodeCoordinates2D::NodeCoordinates2D()
 {
 	mCoordinates[0] = 0.;
+    mCoordinates[1] = 0.;
 }
 
 //! @brief constructor
@@ -21,16 +26,29 @@ NuTo::NodeCoordinates2D::NodeCoordinates2D(const double rCoordinates[2])  : Node
 	mCoordinates[1] = rCoordinates[1];
 }
 
+
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void NuTo::NodeCoordinates2D::serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
-           & BOOST_SERIALIZATION_NVP(mCoordinates);
-     }
+// serializes the class
+template void NuTo::NodeCoordinates2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::NodeCoordinates2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::NodeCoordinates2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::NodeCoordinates2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NodeCoordinates2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NodeCoordinates2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::NodeCoordinates2D::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NodeCoordinates2D" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
+       & BOOST_SERIALIZATION_NVP(mCoordinates);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NodeCoordinates2D" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeCoordinates2D)
+BOOST_CLASS_TRACKING(NuTo::NodeCoordinates2D, track_always)
 #endif // ENABLE_SERIALIZATION
 
 

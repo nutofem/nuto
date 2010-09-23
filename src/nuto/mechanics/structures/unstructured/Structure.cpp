@@ -50,9 +50,9 @@ void NuTo::Structure::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of structure" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
        //& boost::serialization::make_nvp ("elementMap", mElementMap)
-       //& boost::serialization::make_nvp ("nodeMap", mNodeMap);
+       & boost::serialization::make_nvp ("nodeMap", mNodeMap);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structure" << std::endl;
 #endif

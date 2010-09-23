@@ -1,4 +1,4 @@
-
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations1D.h"
 
 // constructor

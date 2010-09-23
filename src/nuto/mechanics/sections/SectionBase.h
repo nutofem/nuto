@@ -5,8 +5,6 @@
 
 #include <iostream>
 
-#include <boost/utility.hpp>
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -19,7 +17,7 @@ namespace NuTo
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
 //! @brief ... standard abstract base class for sections
-class SectionBase : boost::noncopyable
+class SectionBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

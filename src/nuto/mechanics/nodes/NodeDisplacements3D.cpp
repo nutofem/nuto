@@ -7,6 +7,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeDisplacements3D.h"
+#include "nuto/math/FullMatrix.h"
 
 //! @brief constructor
 NuTo::NodeDisplacements3D::NodeDisplacements3D() : NodeBase ()

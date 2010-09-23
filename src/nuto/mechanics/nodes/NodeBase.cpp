@@ -10,15 +10,31 @@
 
 //! @brief constructor
 NuTo::NodeBase::NodeBase()
-{}
+{
+    std::cout<<"call NodeBase constructor" << std::endl;
+}
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void NuTo::NodeBase::serialize(Archive & ar, const unsigned int version)
-    {}
+// serializes the class
+template void NuTo::NodeBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::NodeBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::NodeBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::NodeBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NodeBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NodeBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::NodeBase::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NodeBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NodeBase" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::NodeBase)
+BOOST_CLASS_TRACKING(NuTo::NodeBase, track_always)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief returns the number of coordinates of the node

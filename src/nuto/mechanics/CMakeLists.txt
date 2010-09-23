@@ -124,6 +124,8 @@ nodes/NodeBase.cpp
 nodes/NodeCoordinates1D.cpp
 nodes/NodeCoordinates2D.cpp
 nodes/NodeCoordinates3D.cpp
+nodes/NodeCoordinatesDisplacements2D.cpp
+nodes/NodeCoordinatesDisplacementsNonlocalData2D.cpp
 nodes/NodeDisplacements1D.cpp
 nodes/NodeDisplacements2D.cpp
 nodes/NodeDisplacements3D.cpp

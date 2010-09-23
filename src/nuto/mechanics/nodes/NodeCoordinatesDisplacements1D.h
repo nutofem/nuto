@@ -10,7 +10,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates and displacements
-class NodeCoordinatesDisplacements1D : public NodeCoordinates1D, public NodeDisplacements1D
+class NodeCoordinatesDisplacements1D : public virtual NodeCoordinates1D, public virtual NodeDisplacements1D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

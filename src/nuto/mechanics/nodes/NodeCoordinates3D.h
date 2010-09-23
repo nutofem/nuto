@@ -1,11 +1,11 @@
 #ifndef NODE_COORDINATES_3D_H
 #define NODE_COORDINATES_3D_H
 
-#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 namespace NuTo
 {
+template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for 3D reference nodes
@@ -20,7 +20,7 @@ public:
     NodeCoordinates3D();
 
     //! @brief constructor
-    NodeCoordinates3D(const double rCoordinates[1]);
+    NodeCoordinates3D(const double rCoordinates[3]);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -1,3 +1,5 @@
+#include <sstream>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -7,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeCoordinates3D.h"
+#include "nuto/math/FullMatrix.h"
 
 //! @brief constructor
 NuTo::NodeCoordinates3D::NodeCoordinates3D()
@@ -17,7 +20,7 @@ NuTo::NodeCoordinates3D::NodeCoordinates3D()
 }
 
 //! @brief constructor
-NuTo::NodeCoordinates3D::NodeCoordinates3D(const double rCoordinates[1])  : NodeBase ()
+NuTo::NodeCoordinates3D::NodeCoordinates3D(const double rCoordinates[3])  : NodeBase ()
 {
 	mCoordinates[0] = rCoordinates[0];
 	mCoordinates[1] = rCoordinates[1];

@@ -13,7 +13,8 @@ namespace NuTo
 //! @author Stefan Eckardt, IFF
 //! @date July 2010
 //! @brief ... class for nodes having coordinates, displacements, velocities and accelerations
-class NodeCoordinatesDisplacementsVelocitiesAccelerations3D : public NuTo::NodeCoordinates3D, public NuTo::NodeDisplacements3D, public NuTo::NodeVelocities3D, public NuTo::NodeAccelerations3D
+class NodeCoordinatesDisplacementsVelocitiesAccelerations3D : public NuTo::NodeCoordinates3D,
+    public NuTo::NodeDisplacements3D, public NuTo::NodeVelocities3D, public NuTo::NodeAccelerations3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

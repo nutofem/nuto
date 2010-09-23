@@ -1,10 +1,7 @@
 #ifndef NODE_NONLOCALDATABASE_H
 #define NODE_NONLOCALDATABASE_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif  // ENABLE_SERIALIZATION
-
+#include <boost/serialization/vector.hpp>
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
@@ -59,4 +56,7 @@ protected:
     const ConstitutiveBase* mConstitutive;    //!< this is based on the assumption of a nonlocal formulation for a single material, for more, just make a map of mNodes and mWeights for each constituent
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeNonlocalDataBase)
+#endif // ENABLE_SERIALIZATION
 #endif //NODE_NONLOCALDATABASE_H
