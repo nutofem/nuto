@@ -60,7 +60,6 @@ void NuTo::StructureIp::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialization of structureIp" << std::endl;
 #endif
 }
-#endif //SERIALIZATION
 
 //! @brief ... save the object to a file
 //! @param filename ... filename
@@ -212,7 +211,6 @@ void NuTo::StructureIp::Restore (const std::string &filename, std::string rType 
 #endif
 }
 
-#ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::StructureIp)
 #endif // SWIG

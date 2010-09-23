@@ -103,9 +103,10 @@ try
 	//top right node
     int GrpNodes_BottomLeftNode = myStructureFineScale.GroupIntersection(GrpNodes_Bottom,GrpNodes_Left);
 
-
+#ifdef ENABLE_SERIALIZATION
     myStructureFineScale.Save("myStructureFineScale.xml","XML");
     myStructureFineScale.Restore("myStructureFineScale.xml","XML");
+#endif // ENABLE_SERIALIZATION
     /*
 
 

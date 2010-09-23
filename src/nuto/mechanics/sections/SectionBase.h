@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include <boost/utility.hpp>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
