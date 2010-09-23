@@ -10,7 +10,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates and displacements
-class NodeCoordinatesDisplacements1D : public virtual NodeCoordinates1D, public virtual NodeDisplacements1D
+class NodeCoordinatesDisplacements1D : public NodeCoordinates1D, public NodeDisplacements1D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -19,19 +19,14 @@ class NodeCoordinatesDisplacements1D : public virtual NodeCoordinates1D, public 
 public:
 
     //! @brief constructor
-    NodeCoordinatesDisplacements1D() : NodeCoordinates1D (), NodeDisplacements1D()
-    {}
+    NodeCoordinatesDisplacements1D();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinates1D)
-           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacements1D);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief sets the global dofs
@@ -112,5 +107,14 @@ public:
     }
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeCoordinatesDisplacements1D)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::NodeCoordinates1D, NuTo::NodeCoordinatesDisplacements1D>: public mpl::true_ {};
+template<>
+struct is_virtual_base_of<NuTo::NodeDisplacements1D, NuTo::NodeCoordinatesDisplacements1D>: public mpl::true_ {};
+}
+#endif // ENABLE_SERIALIZATION
 
 #endif //NodeCoordinatesDisplacements_H

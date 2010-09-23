@@ -29,7 +29,7 @@ class EngineeringStrain3D;
 //! @brief ... base class for the mechanical constitutive relationship using engineering stress and strains
 //! @author Jörg F. Unger, ISM
 //! @date December 2009
-class ConstitutiveEngineeringStressStrain : virtual public ConstitutiveBase
+class ConstitutiveEngineeringStressStrain : public virtual ConstitutiveBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

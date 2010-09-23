@@ -49,6 +49,7 @@ void NuTo::NodeDisplacements2D::serialize(Archive & ar, const unsigned int versi
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeDisplacements2D)
+BOOST_CLASS_TRACKING(NuTo::NodeDisplacements2D, track_always)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief returns the number of displacements of the node

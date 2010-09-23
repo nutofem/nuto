@@ -96,4 +96,7 @@ protected:
 
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeDisplacements3D)
+#endif // ENABLE_SERIALIZATION
 #endif //NODE_DISPLACEMENTS_3D_H

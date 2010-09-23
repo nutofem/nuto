@@ -19,7 +19,7 @@ class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
 //! @brief ...
-class NonlocalDamagePlasticity : public virtual ConstitutiveEngineeringStressStrain
+class NonlocalDamagePlasticity : public ConstitutiveEngineeringStressStrain
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -546,6 +546,11 @@ protected:
 
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::NonlocalDamagePlasticity)
+//this is due to the diamond structure (virtual public derivative)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::ConstitutiveEngineeringStressStrain, NuTo::NonlocalDamagePlasticity>: public mpl::true_ {};
+}
 #endif // ENABLE_SERIALIZATION
 
 #endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

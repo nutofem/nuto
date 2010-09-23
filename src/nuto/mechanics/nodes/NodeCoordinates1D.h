@@ -94,4 +94,7 @@ protected:
 
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeCoordinates1D)
+#endif // ENABLE_SERIALIZATION
 #endif //NODE_COORDINATES_1D_H

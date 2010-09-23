@@ -16,7 +16,6 @@ NuTo::NodeCoordinatesDisplacements2D::NodeCoordinatesDisplacements2D():
 #ifdef ENABLE_SERIALIZATION
     boost::serialization::void_cast_register<NodeCoordinatesDisplacements2D, NodeBase>(0,0);
 #endif
-    std::cout<<"call NodeCoordinatesDisplacements2D constructor" << std::endl;
 }
 
 
@@ -34,8 +33,8 @@ void NuTo::NodeCoordinatesDisplacements2D::serialize(Archive & ar, const unsigne
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize NodeCoordinatesDisplacements2D" << std::endl;
 #endif
-//    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinates2D)
-//       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacements2D);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinates2D)
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacements2D);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize NodeCoordinatesDisplacements2D" << std::endl;
 #endif

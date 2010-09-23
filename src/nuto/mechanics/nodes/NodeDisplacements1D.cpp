@@ -24,15 +24,28 @@ NuTo::NodeDisplacements1D::NodeDisplacements1D (const double rDisplacements[1]) 
 }
 
 #ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
+// serializes the class
+template void NuTo::NodeDisplacements1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements1D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements1D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements1D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NodeDisplacements1D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::NodeDisplacements1D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NodeDisplacements1D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
-       & BOOST_SERIALIZATION_NVP(mDisplacements);
+       & BOOST_SERIALIZATION_NVP(mDisplacements)
+       & BOOST_SERIALIZATION_NVP(mDOF);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NodeDisplacements1D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeDisplacements1D)
+BOOST_CLASS_TRACKING(NuTo::NodeDisplacements1D, track_always)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief returns the number of displacements of the node
