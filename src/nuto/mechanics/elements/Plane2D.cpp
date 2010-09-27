@@ -126,5 +126,6 @@ void NuTo::Plane2D::serialize(Archive & ar, const unsigned int version)
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Plane2D)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Plane2D)
 #endif // ENABLE_SERIALIZATION
 

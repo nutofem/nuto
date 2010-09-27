@@ -1051,5 +1051,6 @@ void NuTo::Plane::serialize(Archive & ar, const unsigned int version)
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Plane)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Plane)
 #endif // ENABLE_SERIALIZATION
 

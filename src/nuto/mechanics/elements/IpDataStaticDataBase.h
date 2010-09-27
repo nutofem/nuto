@@ -2,7 +2,6 @@
 #ifndef IPDATASTATICDATABASE_H_
 #define IPDATASTATICDATABASE_H_
 
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 
 namespace NuTo
