@@ -2,15 +2,6 @@
 #ifndef Truss1D_H
 #define Truss1D_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/elements/Truss.h"
 namespace NuTo
 {
@@ -32,10 +23,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Truss);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the global dimension of the element
@@ -78,6 +66,9 @@ public:
     void InterpolateDisplacementsFrom1D(double rLocalCoordinates, double rGlobalDisplacements[3]) const;
 
 protected:
+    //! @brief ... just for serialization
+    Truss1D(){}
+
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length is negative)
     void CheckElement();
 
@@ -92,4 +83,7 @@ protected:
 
 };
 } // namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Truss1D)
+#endif // ENABLE_SERIALIZATION
 #endif //Truss1D_H

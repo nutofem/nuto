@@ -2,15 +2,6 @@
 #ifndef PLANE2D3N_H
 #define PLANE2D3N_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <vector>
 #include "nuto/mechanics/elements/Plane2D.h"
 
@@ -31,11 +22,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Plane2D)
-           & BOOST_SERIALIZATION_NVP(mNodes);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)
@@ -108,19 +95,13 @@ public:
     }
 
 
-    //! @brief calculate list of global dofs related to the entries in the element stiffness matrix
-    //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    //! @param rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
-    {
-        throw MechanicsException("[NuTo::Plane2D3N::CalculateGlobalDofs] to be implemented.");
-    }
-
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
 
 protected:
+    //! @brief ... just for serialization
+    Plane2D3N(){};
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes();
 
@@ -128,4 +109,8 @@ protected:
     NodeBase* mNodes[3];
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Plane2D3N)
+#endif // ENABLE_SERIALIZATION
+
 #endif //PLANE2D3N_H

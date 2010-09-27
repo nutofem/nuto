@@ -1,9 +1,18 @@
 // $Id: $
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
 
 NuTo::Tetrahedron10N::Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
@@ -151,3 +160,28 @@ void NuTo::Tetrahedron10N::ReorderNodes()
     this->mNodes[8] = this->mNodes[9];
     this->mNodes[9] = tmp;
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::Tetrahedron10N::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron10N::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron10N::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron10N::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron10N::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron10N::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Tetrahedron10N::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Tetrahedron10N" << std::endl;
+#endif
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Solid)
+           & BOOST_SERIALIZATION_NVP(mNodes);
+    }
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Tetrahedron10N" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Tetrahedron10N)
+#endif // ENABLE_SERIALIZATION

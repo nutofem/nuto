@@ -3,11 +3,7 @@
 #ifndef CONSTRAINTEQUATION_H_
 #define CONSTRAINTEQUATION_H_
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif  // ENABLE_SERIALIZATION
 #include <vector>
-
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -18,11 +14,15 @@ namespace NuTo
 template<class T> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 class NodeBase;
+class ConstraintEquationTerm;
 //! @brief ... constraint equations
 //! @author Stefan Eckardt, ISM
 //! @date 16.12.2009
 class ConstraintEquation : public NuTo::ConstraintBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
     //! @param rNode ... node pointer
@@ -61,12 +61,18 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
-private:
+protected:
+    //! @brief ... just for serialize
+    ConstraintEquation(){};
+
     std::vector<ConstraintEquationTerm> mTerms;  //!< terms of the constraint equation
     double mRhsValue;       //!< right-hand-side value of the constraint equation
 };
 
 }
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintEquation)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTRAINTEQUATION_H_

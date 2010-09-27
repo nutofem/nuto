@@ -2,16 +2,11 @@
 #define ELEMENT_DATA_BASE_H
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
 #include <vector>
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
@@ -36,7 +31,7 @@ public:
 
     //! @brief constructor
     virtual ~ElementDataBase();
-    
+
     //! @brief sets the constitutive law for all integration points of the element
     //! @param rConstitutiveLaw constitutive law
     virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
@@ -83,16 +78,6 @@ public:
     //! @return pointer to integration type
     virtual const IntegrationTypeBase* GetIntegrationType()const;
 
-/*    //! @brief update the information related to a modification of the integration type, e.g. reallocation of the static data
-    //! @param rElement pointer to element
-    //! @param rIp integration point
-    virtual void UpdateForModifiedIntegrationType(const ElementBase* rElement)=0;
-
-    //! @brief update the information related to a modification of the constitutive law, e.g. reallocation of the static data, ip data
-    //! @param rElement pointer to element
-    //! @param rIp integration point
-    virtual void UpdateForModifiedConstitutiveLaw(const ElementBase* rElement)=0;
-*/
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
     //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
@@ -121,13 +106,14 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {    
-        //ar & BOOST_SERIALIZATION_NVP(mIntegrationType);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
-    
-protected:
+
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataBase)
+#endif // ENABLE_SERIALIZATION
+
 #endif //ELEMENT_DATA_BASE_H
+

@@ -13,6 +13,9 @@ class ConstitutiveStaticDataBase;
 //! @brief ...
 class IpDataStaticDataBase : public virtual IpDataBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
 public:
 	IpDataStaticDataBase();
 
@@ -45,4 +48,7 @@ protected:
 	ConstitutiveStaticDataBase* mStaticData;
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IpDataStaticDataBase)
+#endif // ENABLE_SERIALIZATION
 #endif /* IPDATASTATICDATABASE_H_ */

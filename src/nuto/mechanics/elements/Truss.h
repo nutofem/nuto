@@ -2,17 +2,7 @@
 #ifndef TRUSS_H
 #define TRUSS_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
@@ -198,14 +188,13 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementBase)
-        & BOOST_SERIALIZATION_NVP(mSection);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief ... just for serialization
+    Truss(){}
+
     const SectionBase *mSection;
 
     //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
@@ -218,5 +207,8 @@ protected:
 };
 
 } // namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Truss)
+#endif // ENABLE_SERIALIZATION
 
 #endif //TRUSS_H

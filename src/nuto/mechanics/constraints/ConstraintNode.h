@@ -3,12 +3,6 @@
 #ifndef CONSTRAINTNODE_H
 #define CONSTRAINTNODE_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 
 namespace NuTo
@@ -42,6 +36,7 @@ public:
 protected:
     //! @brief just for serialization
     ConstraintNode(){};
+
     const NodeBase* mNode;
 };
 }//namespace NuTo

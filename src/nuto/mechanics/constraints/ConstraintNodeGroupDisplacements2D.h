@@ -3,11 +3,6 @@
 #ifndef CONSTRAINTNODEGROUPDISPLACEMENTS2D_H
 #define CONSTRAINTNODEGROUPDISPLACEMENTS2D_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
 
 namespace NuTo
@@ -53,11 +48,17 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief ... just for serialize
+    ConstraintNodeGroupDisplacements2D(){};
+
     //! @brief prescribed displacement of the node
     double mValue;
     //! @brief direction of the applied constraint (normalized)
     double mDirection[2];
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeGroupDisplacements2D)
+#endif // ENABLE_SERIALIZATION
 #endif //CONSTRAINTNODEGROUPDISPLACEMENTS2D_H
 

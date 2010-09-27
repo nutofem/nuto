@@ -1,5 +1,16 @@
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include <assert.h>
+
 #include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
 NuTo::ElementDataBase::ElementDataBase()
@@ -108,3 +119,25 @@ const std::vector<double>& NuTo::ElementDataBase::GetNonlocalWeights(int rIp, in
 {
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalWeights] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::ElementDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::ElementDataBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::ElementDataBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::ElementDataBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ElementDataBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ElementDataBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::ElementDataBase::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ElementDataBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ElementDataBase" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataBase)
+#endif // ENABLE_SERIALIZATION

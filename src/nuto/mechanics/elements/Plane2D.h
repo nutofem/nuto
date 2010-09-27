@@ -2,15 +2,6 @@
 #ifndef PLANE2D_H
 #define PLANE2D_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/elements/Plane.h"
 namespace NuTo
 {
@@ -32,10 +23,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Plane);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the global dimension of the element
@@ -72,6 +60,9 @@ public:
     double CalculateArea()const;
 
 protected:
+    //! @brief ... just for serialization
+    Plane2D(){};
+
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
     void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const;
@@ -83,4 +74,7 @@ protected:
 
 };
 } // namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Plane2D)
+#endif // ENABLE_SERIALIZATION
 #endif //PLANE2D_H

@@ -1,17 +1,7 @@
 // $Id: $
-#ifndef ElementDataConstitutiveIpData_H
-#define ElementDataConstitutiveIpData_H
+#ifndef ElementDataConstitutiveIp_H
+#define ElementDataConstitutiveIp_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-#include <boost/ptr_container/ptr_vector.hpp>
 #include "nuto/mechanics/elements/ElementDataConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -43,15 +33,22 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataConstitutiveBase)
-           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataIpBase);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief ...just for serialization
+    ElementDataConstitutiveIp(){}
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIp)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::ElementDataConstitutiveBase, NuTo::ElementDataConstitutiveIp>: public mpl::true_ {};
+template<>
+struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataConstitutiveIp>: public mpl::true_ {};
+}
+#endif // ENABLE_SERIALIZATION
 
-#endif //ElementDataConstitutiveIpData_H
+#endif //ElementDataConstitutiveIp_H

@@ -2,27 +2,20 @@
 #define ELEMENT_BASE_H
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-
-#include <boost/ptr_container/ptr_list.hpp>
 
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
 namespace NuTo
@@ -36,6 +29,8 @@ class Plane;
 class SectionBase;
 template<class T>
 class SparseMatrix;
+template<class T>
+class FullMatrix;
 class Solid;
 class StructureBase;
 class Truss;
@@ -47,7 +42,6 @@ class VisualizeComponentBase;
 //! @brief ... standard abstract class for all groups
 class ElementBase
 {
-
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
@@ -277,16 +271,16 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-//        ar & BOOST_SERIALIZATION_NVP();
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 #endif // ENABLE_VISUALIZE
 protected:
+    //! @brief ... just for serialization
+    ElementBase(){};
+
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes() = 0;
 
@@ -309,4 +303,7 @@ protected:
 
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementBase)
+#endif // ENABLE_SERIALIZATION
 #endif //ELEMENT_BASE_H

@@ -2,17 +2,8 @@
 #ifndef Voxel8N_H
 #define Voxel8N_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-#include <vector>
 #include "nuto/mechanics/elements/Solid.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
@@ -37,15 +28,12 @@ public:
         mNumLocalCoefficientMatrix0 =rNumLocalCoefficientMatrix0;
     }
 
-    #ifdef ENABLE_SERIALIZATION
+#ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    template<class Archive> void serialize(Archive & ar,
-                                           const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Solid);
-    }
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)
@@ -135,22 +123,19 @@ public:
         throw NuTo::MechanicsException("[NuTo::Voxel8N::ReorderNodes] Grid nodes can not be reordered.");
     }
 
-    //! @brief calculate list of global dofs related to the entries in the element stiffness matrix
-    //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    //! @param rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow,
-                              std::vector<int>& rGlobalDofsColumn) const
-    {
-        throw MechanicsException("[NuTo::Voxel8N::CalculateGlobalDofs] to be implemented.");
-    }
-
 
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
 protected:
+    //! @brief ... just for serialization
+    Voxel8N(){};
+
     int mVoxelID;
     int mNumLocalCoefficientMatrix0;
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Voxel8N)
+#endif // ENABLE_SERIALIZATION
 #endif //Voxel8N_H

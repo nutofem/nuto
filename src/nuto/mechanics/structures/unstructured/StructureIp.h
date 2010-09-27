@@ -5,11 +5,11 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
-#else
-#endif // ENABLE_SERIALIZATION
-#include <set>
+#endif //Serialize
 
 #include <boost/ptr_container/ptr_map.hpp>
+
+#include <set>
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"

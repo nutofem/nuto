@@ -2,6 +2,11 @@
 #ifndef IPDATABASE_H_
 #define IPDATABASE_H_
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include <vector>
 
 namespace NuTo
@@ -14,6 +19,9 @@ class ElementBase;
 //! @brief ...
 class IpDataBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
 public :
 
 	virtual ~IpDataBase();
@@ -37,6 +45,18 @@ public :
     virtual const ConstitutiveStaticDataBase* GetStaticData()const;
 
     virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
+
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IpDataBase)
+#endif // ENABLE_SERIALIZATION
 #endif /* IPDATABASE_H_ */

@@ -75,7 +75,14 @@ template void NuTo::ConstraintEquation::serialize(boost::archive::xml_iarchive &
 template void NuTo::ConstraintEquation::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive> void NuTo::ConstraintEquation::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintEquation" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_NVP(mTerms)
-    & BOOST_SERIALIZATION_NVP(mRhsValue);
+       & BOOST_SERIALIZATION_NVP(mRhsValue);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintEquation" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintEquation)
 #endif // ENABLE_SERIALIZATION

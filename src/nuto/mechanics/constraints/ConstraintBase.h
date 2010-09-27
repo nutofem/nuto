@@ -8,8 +8,6 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/MechanicsException.h"
-
 namespace NuTo
 {
 template<class T> class FullMatrix;

@@ -1,6 +1,16 @@
 // $ld: $ 
 // IpDataBase.cpp
 // created Apr 29, 2010 by Joerg F. Unger
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -46,3 +56,25 @@ void NuTo::IpDataBase::SetStaticData(ConstitutiveStaticDataBase* rStaticData)
 {
 	throw NuTo::MechanicsException("[IpDataBase::SetStaticData] This Ip data type has no static data.");
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::IpDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::IpDataBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::IpDataBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::IpDataBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::IpDataBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::IpDataBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::IpDataBase::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IpDataBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IpDataBase" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IpDataBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IpDataBase)
+#endif // ENABLE_SERIALIZATION

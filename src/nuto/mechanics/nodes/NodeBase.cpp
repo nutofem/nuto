@@ -11,7 +11,6 @@
 //! @brief constructor
 NuTo::NodeBase::NodeBase()
 {
-    std::cout<<"call NodeBase constructor" << std::endl;
 }
 
 #ifdef ENABLE_SERIALIZATION

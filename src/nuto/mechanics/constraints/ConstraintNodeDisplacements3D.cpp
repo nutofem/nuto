@@ -74,8 +74,16 @@ template void NuTo::ConstraintNodeDisplacements3D::serialize(boost::archive::tex
 template<class Archive>
 void NuTo::ConstraintNodeDisplacements3D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintNodeDisplacements3D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode)
-    & BOOST_SERIALIZATION_NVP(mValue)
-    & BOOST_SERIALIZATION_NVP(mDirection);
+       & BOOST_SERIALIZATION_NVP(mValue)
+       & BOOST_SERIALIZATION_NVP(mDirection);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintNodeDisplacements3D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeDisplacements3D)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNodeDisplacements3D)
 #endif // ENABLE_SERIALIZATION

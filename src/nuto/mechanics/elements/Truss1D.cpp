@@ -1,5 +1,14 @@
 // $Id: $
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Truss1D.h"
@@ -159,3 +168,25 @@ void NuTo::Truss1D::CheckElement()
     }
 }
 
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::Truss1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Truss1D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Truss1D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Truss1D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Truss1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Truss1D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Truss1D::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Truss1D" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Truss);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Truss1D" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Truss1D)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Truss1D)
+#endif // ENABLE_SERIALIZATION

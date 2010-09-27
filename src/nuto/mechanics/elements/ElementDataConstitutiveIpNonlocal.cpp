@@ -1,7 +1,18 @@
 // $Id: $
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include <assert.h>
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
+#include "nuto/mechanics/elements/IpDataBase.h"
 
 
 NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveIpNonlocal(const ElementBase *rElement,
@@ -60,3 +71,27 @@ const std::vector<double>& NuTo::ElementDataConstitutiveIpNonlocal::GetNonlocalW
     assert(rIp<(int)mIpData.size());
     return mIpData[rIp].GetNonlocalWeights(rNonlocalElement);
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::ElementDataConstitutiveIpNonlocal::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ElementDataConstitutiveIpNonlocal" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataConstitutiveBase)
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataIpBase)
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataNonlocalBase);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ElementDataConstitutiveIpNonlocal" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataConstitutiveIpNonlocal)
+#endif // ENABLE_SERIALIZATION

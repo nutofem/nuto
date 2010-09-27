@@ -1,5 +1,14 @@
 // $Id$
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeDisplacements3D.h"
 #include "nuto/mechanics/groups/Group.h"
@@ -71,8 +80,15 @@ template void NuTo::ConstraintNodeGroupDisplacements3D::serialize(boost::archive
 template<class Archive>
 void NuTo::ConstraintNodeGroupDisplacements3D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintNodeGroupDisplacements3D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
     & BOOST_SERIALIZATION_NVP(mValue)
     & BOOST_SERIALIZATION_NVP(mDirection);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintNodeGroupDisplacements3D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeGroupDisplacements3D)
 #endif // ENABLE_SERIALIZATION

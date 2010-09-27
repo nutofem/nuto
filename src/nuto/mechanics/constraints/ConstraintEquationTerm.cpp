@@ -109,9 +109,16 @@ template void NuTo::ConstraintEquationTerm::serialize(boost::archive::xml_iarchi
 template void NuTo::ConstraintEquationTerm::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive> void NuTo::ConstraintEquationTerm::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintEquationTerm" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(this->mNode))
     & BOOST_SERIALIZATION_NVP(mDofType)
     & BOOST_SERIALIZATION_NVP(mDofComponent)
     & BOOST_SERIALIZATION_NVP(mCoefficient);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintEquationTerm" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintEquationTerm)
 #endif // ENABLE_SERIALIZATION

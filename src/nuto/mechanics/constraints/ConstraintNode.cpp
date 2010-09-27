@@ -9,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
 

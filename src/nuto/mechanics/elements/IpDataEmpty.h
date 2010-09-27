@@ -9,15 +9,30 @@ namespace NuTo
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...
-class IpDataEmpty : public IpDataBase
+class IpDataEmpty : public virtual IpDataBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
 public:
-	IpDataEmpty() : IpDataBase()
-	{}
+	IpDataEmpty();
 
-	void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
-	{}
+	void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive);
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IpDataEmpty)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::IpDataBase, NuTo::IpDataEmpty>: public mpl::true_ {};
+}
+#endif // ENABLE_SERIALIZATION
 #endif /* IPDATAEMPTY_H_ */

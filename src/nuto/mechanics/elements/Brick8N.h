@@ -12,6 +12,7 @@
 #endif // ENABLE_SERIALIZATION
 #include <vector>
 #include "nuto/mechanics/elements/Solid.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
@@ -35,11 +36,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive> void serialize(Archive & ar,
-                                           const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Solid)
-        & BOOST_SERIALIZATION_NVP(mNodes);
-    }
+                                           const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)
@@ -113,19 +110,13 @@ public:
         mNodes[rLocalNodeNumber] = rNode;
     }
 
-    //! @brief calculate list of global dofs related to the entries in the element stiffness matrix
-    //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    //! @param rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow,
-                             std::vector<int>& rGlobalDofsColumn) const
-    {
-        throw MechanicsException("[NuTo::Brick8N::CalculateGlobalDofs] to be implemented.");
-    }
 
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
 protected:
+    //! @brief just for serialization
+    Brick8N(){}
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes();
 
@@ -133,4 +124,7 @@ protected:
     NodeBase* mNodes[8];
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Brick8N)
+#endif // ENABLE_SERIALIZATION
 #endif //Brick8N_H

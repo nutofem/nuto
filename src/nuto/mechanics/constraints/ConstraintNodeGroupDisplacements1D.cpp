@@ -20,14 +20,6 @@
 NuTo::ConstraintNodeGroupDisplacements1D::ConstraintNodeGroupDisplacements1D(const Group<NodeBase>* rGroup, double rDirection, double rValue) :
         ConstraintNodeGroup(rGroup)
 {
-    // set direction
-    if (fabs(rDirection) < 1e-14)
-    {
-        throw MechanicsException("[NuTo::ConstraintNodeGroupDisplacements1D::ConstraintNodeGroupDisplacements1D] Length of the direction vector is zero");
-    }
-    // set normalized direction
-    this->mDirection = rDirection / fabs(rDirection);
-
     // set value
     mValue = rValue;
 }
@@ -58,7 +50,7 @@ void NuTo::ConstraintNodeGroupDisplacements1D::AddToConstraintMatrix(int& curCon
         {
             throw MechanicsException("[NuTo::ConstraintNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }
-        rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(0),this->mDirection);
+        rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(0),1);
 
         // increase constraint equation number
         curConstraintEquation++;
@@ -77,8 +69,14 @@ template void NuTo::ConstraintNodeGroupDisplacements1D::serialize(boost::archive
 template<class Archive>
 void NuTo::ConstraintNodeGroupDisplacements1D::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintNodeGroupDisplacements1D" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
-    & BOOST_SERIALIZATION_NVP(mValue)
-    & BOOST_SERIALIZATION_NVP(mDirection);
+       & BOOST_SERIALIZATION_NVP(mValue);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintNodeGroupDisplacements1D" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeGroupDisplacements1D)
 #endif // ENABLE_SERIALIZATION

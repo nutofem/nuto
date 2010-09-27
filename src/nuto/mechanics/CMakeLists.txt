@@ -65,6 +65,7 @@ elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
 elements/ElementDataNonlocalBase.cpp
 elements/IpDataBase.cpp
+elements/IpDataEmpty.cpp
 elements/IpDataNonlocalBase.cpp
 elements/IpDataStaticData.cpp
 elements/IpDataStaticDataBase.cpp

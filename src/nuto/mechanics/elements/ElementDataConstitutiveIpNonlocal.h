@@ -2,19 +2,9 @@
 #ifndef ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_
 #define ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/elements/ElementDataConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementDataNonlocalBase.h"
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
-#include "nuto/mechanics/elements/IpDataBase.h"
 
 namespace NuTo
 {
@@ -57,16 +47,24 @@ public:
 	//! @param ar         archive
 	//! @param version    version
 	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version)
-	{
-		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataConstitutiveBase)
-		   & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataIpBase)
-		   & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataNonlocalBase);
-	}
+	void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
 protected:
-
+	//! @brief ... just for serialization
+	ElementDataConstitutiveIpNonlocal(){};
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIpNonlocal)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::ElementDataConstitutiveBase, NuTo::ElementDataConstitutiveIpNonlocal>: public mpl::true_ {};
+template<>
+struct is_virtual_base_of<NuTo::ElementDataNonlocalBase, NuTo::ElementDataConstitutiveIpNonlocal>: public mpl::true_ {};
+template<>
+struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataConstitutiveIpNonlocal>: public mpl::true_ {};
+}
+#endif // ENABLE_SERIALIZATION
+
 #endif /* ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_ */

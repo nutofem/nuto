@@ -3,11 +3,6 @@
 #ifndef CONSTRAINTNODEGROUP_H
 #define CONSTRAINTNODEGROUP_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 
 namespace NuTo
@@ -42,8 +37,13 @@ public:
 
 
 protected:
+    //! @brief just for serialization
+    ConstraintNodeGroup(){};
     const Group<NodeBase>* mGroup;
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeGroup)
+#endif // ENABLE_SERIALIZATION
 #endif //CONSTRAINTNODEGROUP_H
 

@@ -1,4 +1,17 @@
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+#include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/Tetrahedron4N.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 NuTo::Tetrahedron4N::Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
@@ -72,3 +85,28 @@ void NuTo::Tetrahedron4N::ReorderNodes()
     this->mNodes[1] = this->mNodes[2];
     this->mNodes[2] = tmp;
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::Tetrahedron4N::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron4N::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron4N::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron4N::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron4N::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Tetrahedron4N::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Tetrahedron4N::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Tetrahedron4N" << std::endl;
+#endif
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Solid)
+           & BOOST_SERIALIZATION_NVP(mNodes);
+    }
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Tetrahedron4N" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Tetrahedron4N)
+#endif // ENABLE_SERIALIZATION

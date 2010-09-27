@@ -12,6 +12,9 @@ namespace NuTo
 //! @brief ...
 class IpDataNonlocalBase : public virtual IpDataBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
 public:
 	IpDataNonlocalBase() : IpDataBase()
 	{}
@@ -31,9 +34,20 @@ public:
 	//! @return nonlocal weights
 	virtual const std::vector<double>& GetNonlocalWeights(int rNonlocalElement)const;
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
+
 protected:
     //! @brief for each nonlocal element (local number stored at the element level) the nonlocal weights (for each integration point of the nonlocal element)
 	std::vector<std::vector<double> > mNonlocalWeights;
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IpDataNonlocalBase)
+#endif // ENABLE_SERIALIZATION
 #endif /* IPDATANONLOCALBASE_H_ */

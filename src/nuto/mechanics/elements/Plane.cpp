@@ -1,3 +1,13 @@
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif // ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
@@ -306,7 +316,7 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFu
                               const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
                               FullMatrix<double>& rCoefficientMatrix, int rFirstCol)const
 {
-    assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rFirstCol + rNonlocalDerivativeShapeFunctionsLocal.size()<=rCoefficientMatrix.GetNumColumns());
+    assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rFirstCol + (int)rNonlocalDerivativeShapeFunctionsLocal.size()<=rCoefficientMatrix.GetNumColumns());
     assert((int)rLocalDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
     const double *C = rConstitutiveTangent->GetData();
     double x1,x2,y1,y2,x1x2,y2x1,x2y1,y2y1;
@@ -1019,3 +1029,27 @@ NuTo::Plane* NuTo::Plane::AsPlane()
 {
     return this;
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::Plane::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Plane::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Plane::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Plane::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Plane::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Plane::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Plane::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Plane" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementBase)
+       & BOOST_SERIALIZATION_NVP(mSection);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Plane" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Plane)
+#endif // ENABLE_SERIALIZATION
+

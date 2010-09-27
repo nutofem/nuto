@@ -23,6 +23,7 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/math/FullMatrix.h"
 
 NuTo::ConstitutiveMisesPlasticity::ConstitutiveMisesPlasticity() : ConstitutiveEngineeringStressStrain()
 {

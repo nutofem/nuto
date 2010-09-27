@@ -2,15 +2,6 @@
 #ifndef SOLID_H
 #define SOLID_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/elements/ElementBase.h"
 
 namespace NuTo
@@ -160,11 +151,6 @@ public:
                         double factor,
                         FullMatrix<double>& rResult)const;
 
-    // calculate list of global dofs related to the entries in the element stiffness matrix
-    // rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    // rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    virtual void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const=0;
-
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
@@ -199,13 +185,13 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementBase);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief just for serialization
+    Solid(){}
+
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element volume is negative)
     void CheckElement();
 
@@ -219,5 +205,8 @@ protected:
 };
 
 } // namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Solid)
+#endif // ENABLE_SERIALIZATION
 
 #endif //SOLID_H

@@ -12,6 +12,9 @@ class ConstitutiveStaticData;
 //! @brief ...
 class IpDataStaticData : public IpDataStaticDataBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
 public:
 	IpDataStaticData();
 
@@ -30,4 +33,11 @@ public:
 protected:
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IpDataStaticData)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::IpDataStaticDataBase, NuTo::IpDataStaticData>: public mpl::true_ {};
+}
+#endif // ENABLE_SERIALIZATION
 #endif /* IPDATASTATICDATA_H_ */

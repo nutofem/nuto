@@ -1,3 +1,14 @@
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
@@ -787,3 +798,27 @@ NuTo::Solid* NuTo::Solid::AsSolid()
 	return this;
 }
 
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::Solid::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Solid::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Solid::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Solid::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Solid::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Solid::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Solid::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Solid" << std::endl;
+#endif
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementBase);
+    }
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Solid" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Solid)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Solid)
+#endif // ENABLE_SERIALIZATION

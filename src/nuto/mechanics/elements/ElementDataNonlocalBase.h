@@ -2,22 +2,9 @@
 #ifndef ELEMENTDATANONLOCALBASE_H_
 #define ELEMENTDATANONLOCALBASE_H_
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/elements/ElementDataBase.h"
 
-#ifdef ENABLE_SERIALIZATION
-   #include <boost/serialization/vector.hpp>
-#else
-   #include <vector>
-#endif  // ENABLE_SERIALIZATION
+#include <vector>
 
 namespace NuTo
 {
@@ -56,24 +43,14 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase)
-           & BOOST_SERIALIZATION_NVP(mNonlocalElements);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
-
-    //! @brief adds the nonlocal weight to an integration point
-    //! @param rLocalIpNumber local Ip
-    //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
-    //! @param rNonlocalElement element of the nonlocal ip
-    //! @param rNonlocalIp local ip number of the nonlocal ip
-    //! @param rWeight weight
-//    virtual void AddNonlocalIp(int rLocalIpNumber, const ConstitutiveBase* rConstitutive,
-//    		const ElementWithDataBase* rNonlocalElement, int rNonlocalIp, double rWeight);
 
 protected:
     std::vector<const ElementBase*> mNonlocalElements;
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataNonlocalBase)
+#endif // ENABLE_SERIALIZATION
 #endif /* ELEMENTDATANONLOCALBASE_H_ */

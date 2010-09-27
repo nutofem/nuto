@@ -6,12 +6,24 @@
 
 namespace NuTo
 {
+class NodeBase;
 class Tetrahedron4N : public Solid
 {
 public:
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
     Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
     virtual ~Tetrahedron4N();
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)
     //! @return enum
@@ -84,18 +96,12 @@ public:
         mNodes[rLocalNodeNumber] = rNode;
     }
 
-    //! @brief calculate list of global dofs related to the entries in the element stiffness matrix
-    //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    //! @param rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow,
-                             std::vector<int>& rGlobalDofsColumn) const
-    {
-        throw MechanicsException("[NuTo::Brick8N::CalculateGlobalDofs] to be implemented.");
-    }
-
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 protected:
+    //! @brief ... just for serialization
+    Tetrahedron4N(){};
+
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes();
 
@@ -104,5 +110,8 @@ protected:
 };
 
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Tetrahedron4N)
+#endif // ENABLE_SERIALIZATION
 
 #endif /*TETRAHEDRON4N_H_*/

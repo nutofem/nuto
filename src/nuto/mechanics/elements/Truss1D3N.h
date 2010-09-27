@@ -2,16 +2,6 @@
 #ifndef Truss1D3N_H
 #define Truss1D3N_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
-#include <vector>
 #include "nuto/mechanics/elements/Truss1D.h"
 
 namespace NuTo
@@ -31,11 +21,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Truss1D)
-           & BOOST_SERIALIZATION_NVP(mNodes);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)
@@ -120,10 +106,16 @@ public:
 
 
 protected:
+    //! @brief ... just for serialization
+    Truss1D3N(){}
+
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes();
 
     NodeBase* mNodes[3];
 };
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Truss1D3N)
+#endif // ENABLE_SERIALIZATION
 #endif //Truss1D3N_H

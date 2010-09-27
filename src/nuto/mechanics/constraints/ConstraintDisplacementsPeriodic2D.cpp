@@ -1,4 +1,14 @@
 // $Id: ConstraintNodeGroupDisplacements2D.cpp 265 2010-06-08 08:47:00Z arnold2 $
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include <math.h>
 
 #include "nuto/math/FullMatrix.h"

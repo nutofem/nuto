@@ -5,12 +5,14 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
-#include "nuto/mechanics/nodes/NodeBase.h"
+
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 namespace NuTo
 {
+class NodeBase;
 template<class T> class SparseMatrixCSRGeneral;
 
 //! @brief ... term in a constraint equation
@@ -53,5 +55,8 @@ protected:
 
 }
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintEquationTerm)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTRAINTEQUATIONTERM_H_

@@ -3,13 +3,7 @@
 #ifndef CONSTRAINTDISPLACEMENTS2PERIODIC2D_H
 #define CONSTRAINTDISPLACEMENTS2PERIODIC2D_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 
 namespace NuTo
 {

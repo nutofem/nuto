@@ -10,6 +10,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
 NuTo::ConstraintBase::ConstraintBase()

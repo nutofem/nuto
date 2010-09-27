@@ -1,5 +1,14 @@
 // $Id: $
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif //ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include <assert.h>
 
@@ -150,3 +159,25 @@ void NuTo::IntegrationType2D4NGauss4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(3);
 }
 #endif // ENABLE_VISUALIZE
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::IntegrationType2D4NGauss4Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D4NGauss4Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D4NGauss4Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D4NGauss4Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D4NGauss4Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D4NGauss4Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::IntegrationType2D4NGauss4Ip::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationType2D4NGauss4Ip" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationType2D4NGauss4Ip" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType2D4NGauss4Ip)
+#endif // ENABLE_SERIALIZATION

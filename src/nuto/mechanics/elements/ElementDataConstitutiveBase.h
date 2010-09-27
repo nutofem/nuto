@@ -1,23 +1,7 @@
-/*
- * ElementDataConstitutiveBase.h
- *
- *  Created on: Apr 16, 2010
- *      Author: Joerg F. Unger
- */
 
 #ifndef ELEMENTDATACONSTITUTIVEBASE_H_
 #define ELEMENTDATACONSTITUTIVEBASE_H_
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 
 namespace NuTo
@@ -55,16 +39,16 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase)
-           & BOOST_SERIALIZATION_NVP(mConstitutiveLaw);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
 protected:
     ConstitutiveBase* mConstitutiveLaw;
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveBase)
+#endif // ENABLE_SERIALIZATION
 
 #endif /* ELEMENTDATACONSTITUTIVEBASE_H_ */

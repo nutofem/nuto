@@ -9,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
@@ -39,7 +40,15 @@ template void NuTo::ConstraintNodeGroup::serialize(boost::archive::text_iarchive
 template<class Archive>
 void NuTo::ConstraintNodeGroup::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintNodeGroup" << std::endl;
+#endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-    & BOOST_SERIALIZATION_NVP(const_cast<Group<NodeBase>*&>(mGroup));
+       & BOOST_SERIALIZATION_NVP(mGroup);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintNodeGroup" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeGroup)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNodeGroup)
 #endif // ENABLE_SERIALIZATION

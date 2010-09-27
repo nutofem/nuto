@@ -3,10 +3,6 @@
 #ifndef CONSTRAINTNODEDISPLACEMENTS3D_H
 #define CONSTRAINTNODEDISPLACEMENTS3D_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/constraints/ConstraintNode.h"
 
 namespace NuTo
@@ -49,11 +45,17 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief ... just for serialize
+    ConstraintNodeDisplacements3D(){};
+
     //! @brief prescribed displacement of the node
     double mValue;
     //! @brief direction of the applied constraint (normalized)
     double mDirection[3];
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeDisplacements3D)
+#endif // ENABLE_SERIALIZATION
 #endif //CONSTRAINTNODEDISPLACEMENTS3D_H
 

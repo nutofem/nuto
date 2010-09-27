@@ -28,6 +28,18 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
 {
     if (rDimension!=2)
         throw MechanicsException("[NuTo::StructureIp::StructureIp] The concurrent multiscale model is only implemented for 2D.");
+    mCrackAngle[0] = 0.;
+    mCrackAngle[1] = 0.;
+    mCrackAngle[2] = 0.;
+    mDOFCrackAngle[0] = -1;
+    mDOFCrackAngle[1] = -1;
+    mDOFCrackAngle[2] = -1;
+    mCrackOpening[0] = 0.;
+    mCrackOpening[1] = 0.;
+    mCrackOpening[2] = 0.;
+    mDOFCrackOpening[0] = -1;
+    mDOFCrackOpening[1] = -1;
+    mDOFCrackOpening[2] = -1;
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
