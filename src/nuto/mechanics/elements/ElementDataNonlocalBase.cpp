@@ -85,6 +85,5 @@ void NuTo::ElementDataNonlocalBase::serialize(Archive & ar, const unsigned int v
     std::cout << "finish serialize ElementDataNonlocalBase" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataNonlocalBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataNonlocalBase)
 #endif // ENABLE_SERIALIZATION

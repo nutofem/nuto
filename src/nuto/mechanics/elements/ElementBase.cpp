@@ -71,7 +71,7 @@ template<class Archive>
 void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ElementBase" << std::endl;
+    std::cout << "start serialize ElementBase " << mStructure->ElementGetId(this) <<std::endl;
 #endif
     ar & BOOST_SERIALIZATION_NVP(mStructure)
        & BOOST_SERIALIZATION_NVP(mElementData);
@@ -79,8 +79,7 @@ void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize ElementBase" << std::endl;
 #endif
 }
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementBase)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief returns the id number of the element

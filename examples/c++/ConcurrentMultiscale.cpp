@@ -103,21 +103,6 @@ try
 	//top right node
     int GrpNodes_BottomLeftNode = myStructureFineScale.GroupIntersection(GrpNodes_Bottom,GrpNodes_Left);
 
-#ifdef ENABLE_SERIALIZATION
-    myStructureFineScale.Save("myStructureFineScale.xml","XML");
-    myStructureFineScale.Restore("myStructureFineScale.xml","XML");
-#endif // ENABLE_SERIALIZATION
-    /*
-
-
-
-
-
-
-
-
-
-
     // applied strain and angle of boundary conditions
 #define PI 3.14159265359
     //double angle(atan(1./3.)*180/PI);
@@ -183,6 +168,10 @@ try
 	//update conre mat
 	myStructureFineScale.NodeBuildGlobalDofs();
 
+#ifdef ENABLE_SERIALIZATION
+    myStructureFineScale.Save("myStructureFineScale.bin","binary");
+    exit(0);
+#endif
 	//update tmpstatic data with zero displacements
 	myStructureFineScale.ElementTotalUpdateTmpStaticData();
 
@@ -326,6 +315,12 @@ try
 #ifdef ENABLE_VISUALIZE
             myStructureFineScale.ExportVtkDataFile("ConcurrentMultiscale.vtk");
 #endif
+#ifdef ENABLE_SERIALIZATION
+    //myStructureFineScale.Save("myStructureFineScale.bin","BINARY");
+    //myStructureFineScale.Restore("myStructureFineScale.bin","BINARY");
+    myStructureFineScale.Save("myStructureFineScale.xml","XML");
+    exit(0);
+#endif // ENABLE_SERIALIZATION
  			//store result/plot data
 			NuTo::FullMatrix<double> SinglePlotData(1,9);
 			SinglePlotData(0,0) = curStrain(0,0);
@@ -449,7 +444,6 @@ try
 	{
         std::cout<< "numerical fracture energy "<< externalEnergy/(thickness*lY) << std::endl;
 	}
-*/
 }
 catch (NuTo::Exception& e)
 {

@@ -1093,7 +1093,6 @@ protected:
 #ifndef SWIG
 #include <boost/serialization/assume_abstract.hpp>
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
-BOOST_CLASS_EXPORT_KEY(NuTo::StructureBase)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
 #endif // STRUCTUREBASE_H

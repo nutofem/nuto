@@ -70,6 +70,5 @@ void NuTo::ElementDataConstitutiveBase::serialize(Archive & ar, const unsigned i
     std::cout << "finish serialize ElementDataConstitutiveBase" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataConstitutiveBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataConstitutiveBase)
 #endif // ENABLE_SERIALIZATION

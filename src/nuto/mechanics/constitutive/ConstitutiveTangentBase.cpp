@@ -35,5 +35,5 @@ void NuTo::ConstitutiveTangentBase::serialize(Archive & ar, const unsigned int v
     std::cout << "finish serialize ConstitutiveTangentBase" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveTangentBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveTangentBase)
 #endif // ENABLE_SERIALIZATION

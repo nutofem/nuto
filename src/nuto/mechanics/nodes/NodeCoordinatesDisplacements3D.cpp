@@ -14,7 +14,7 @@ NuTo::NodeCoordinatesDisplacements3D::NodeCoordinatesDisplacements3D():
     NuTo::NodeCoordinates3D::NodeCoordinates3D (), NuTo::NodeDisplacements3D::NodeDisplacements3D()
 {
 #ifdef ENABLE_SERIALIZATION
-    boost::serialization::void_cast_register<NodeCoordinatesDisplacements3D, NodeBase>(0,0);
+//    boost::serialization::void_cast_register<NodeCoordinatesDisplacements3D, NodeBase>(0,0);
 #endif
 }
 

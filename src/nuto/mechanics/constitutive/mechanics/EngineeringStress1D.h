@@ -4,12 +4,8 @@
 #define ENGINEERINGSTRESS1D_H_
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 namespace NuTo
@@ -41,6 +37,9 @@ public:
     //! @brief ... constructor
     EngineeringStress1D();
 
+    //! @brief ... constructor
+    virtual ~EngineeringStress1D(){};
+
     //! @brief ... get number of components stored in this object
     //! @return ... number of components stored in this object
     unsigned int GetNumberOfComponents() const;
@@ -59,10 +58,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_NVP(this->mEngineeringStress);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 private:
@@ -74,5 +70,8 @@ private:
 };
 
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::EngineeringStress1D)
+#endif // ENABLE_SERIALIZATION
 
 #endif // ENGINEERINGSTRESS1D_H_

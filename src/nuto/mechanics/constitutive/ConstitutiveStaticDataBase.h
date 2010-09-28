@@ -4,18 +4,9 @@
 #define CONSTITUTIVESTATICDATABASE_H_
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 
 //! @brief ... base class, storing the static data (history variables) of a constitutive relationship
 //! @author Stefan Eckardt, ISM
@@ -54,8 +45,5 @@ public:
 };
 
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataBase)
-#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVESTATICDATABASE_H_ 

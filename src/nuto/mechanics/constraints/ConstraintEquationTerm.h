@@ -55,8 +55,4 @@ protected:
 
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintEquationTerm)
-#endif // ENABLE_SERIALIZATION
-
 #endif // CONSTRAINTEQUATIONTERM_H_

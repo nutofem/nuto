@@ -2,11 +2,6 @@
 #ifndef CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_
 #define CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 

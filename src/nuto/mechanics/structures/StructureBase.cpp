@@ -781,7 +781,6 @@ int NuTo::StructureBase::GetNumDofs()const
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::StructureBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION

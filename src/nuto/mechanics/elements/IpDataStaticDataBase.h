@@ -47,7 +47,4 @@ protected:
 	ConstitutiveStaticDataBase* mStaticData;
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IpDataStaticDataBase)
-#endif // ENABLE_SERIALIZATION
 #endif /* IPDATASTATICDATABASE_H_ */

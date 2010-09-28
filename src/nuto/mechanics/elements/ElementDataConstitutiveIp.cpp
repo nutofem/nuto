@@ -58,5 +58,5 @@ void NuTo::ElementDataConstitutiveIp::serialize(Archive & ar, const unsigned int
     std::cout << "finish serialize ElementDataConstitutiveIp" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataConstitutiveIp)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataConstitutiveIp)
 #endif // ENABLE_SERIALIZATION

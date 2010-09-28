@@ -21,7 +21,7 @@ public:
     SparseDirectSolverMKLDSS();
 
     //! @brief ... print information about the class attributes
-    virtual void Info()const
+    void Info()const
     {
     }
 

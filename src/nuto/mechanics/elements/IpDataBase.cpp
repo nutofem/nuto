@@ -75,6 +75,5 @@ void NuTo::IpDataBase::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize IpDataBase" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IpDataBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IpDataBase)
 #endif // ENABLE_SERIALIZATION

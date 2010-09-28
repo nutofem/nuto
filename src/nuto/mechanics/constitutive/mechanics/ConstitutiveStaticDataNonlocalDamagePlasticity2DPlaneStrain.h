@@ -3,15 +3,6 @@
 #ifndef CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY2DPLANESTRAIN_H
 #define CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY2DPLANESTRAIN_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
 
 //! @brief ... base class, storing the static data (history variables) of a constitutive relationship
@@ -68,5 +59,8 @@ protected:
 };
 
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVESTATICDATANONLOCALDAMAGEPLASTICITY3D_H

@@ -112,11 +112,15 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        std::cout << "start serialize of SparseMatrix" << std::endl;
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialization of SparseMatrix" << std::endl;
+#endif
         ar & boost::serialization::make_nvp("Matrix",boost::serialization::base_object< Matrix<T> >(*this));
         ar & BOOST_SERIALIZATION_NVP(mOneBasedIndexing)
-        & BOOST_SERIALIZATION_NVP(mPositiveDefinite);
-        std::cout << "finish serialize of SparseMatrix" << std::endl;
+           & BOOST_SERIALIZATION_NVP(mPositiveDefinite);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialization of SparseMatrix" << std::endl;
+#endif
     }
 #endif // ENABLE_SERIALIZATION
 

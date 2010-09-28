@@ -479,18 +479,6 @@ int myElement8 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLa
                 std::cout << "averageStrain "<< averageStrain.Trans() << std::endl;
                 std::cout << "curStrain "<< curStrain.Trans() << std::endl;
                 std::cout << "applied strain is not identical to average strain, check your source code";
-/* just for test purpose */
-/*                bool oldShowTime=myStructure.GetShowTime();
-                myStructure.SetShowTime(false);
-                for (int count=0; count<myStructure.GetNumNodes(); count++)
-                {
-                    NuTo::FullMatrix<double> disp;
-                    myStructure.NodeGetDisplacements(count,disp);
-                    std::cout << "node " << count << "  " << disp.Trans() << std::endl;
-                }
-                myStructure.SetShowTime(oldShowTime);
-                exit(0);
-
             }
 */
             if (curStrainFactor==1)

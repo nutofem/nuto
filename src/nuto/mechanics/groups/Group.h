@@ -47,7 +47,6 @@ public:
         std::cout << "start serialize Group<T>" << std::endl;
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
-        std::cout << "intermediate serialize Group<T>" << std::endl;
         boost::serialization::base_object<std::set<T*> >(*this);
 #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize Group<T>" << std::endl;

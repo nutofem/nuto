@@ -3,16 +3,6 @@
 #ifndef CONSTITUTIVEPIOLAKIRCHHOFFIIGREENLAGRANGE_H_
 #define CONSTITUTIVEPIOLAKIRCHHOFFIIGREENLAGRANGE_H_
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
-//#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 namespace NuTo

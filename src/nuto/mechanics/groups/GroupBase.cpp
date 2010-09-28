@@ -66,10 +66,10 @@ void NuTo::GroupBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize GroupBase" << std::endl;
 #endif
+    ar & BOOST_SERIALIZATION_NVP(mName);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize GroupBase" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::GroupBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::GroupBase)
 #endif // ENABLE_SERIALIZATION

@@ -3,15 +3,6 @@
 #ifndef ConstitutiveMisesPlasticity_H
 #define ConstitutiveMisesPlasticity_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
@@ -402,4 +393,13 @@ protected:
     double GetHardeningModulus(double rEpsilonPEq, double& rDHDEpsilonP)const;
 };
 }  //namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveMisesPlasticity)
+
+//this is due to the diamond structure (virtual public derivative)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::ConstitutiveEngineeringStressStrain, NuTo::ConstitutiveMisesPlasticity>: public mpl::true_ {};
+}
+#endif // ENABLE_SERIALIZATION
 #endif // ConstitutiveMisesPlasticity_H_

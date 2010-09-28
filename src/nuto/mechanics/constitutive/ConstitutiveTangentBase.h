@@ -80,8 +80,5 @@ private:
 };
 
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveTangentBase)
-#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVETANGENTBASE_H_ 

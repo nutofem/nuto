@@ -1,5 +1,15 @@
 // $Id: ConstitutiveMisesPlasticity.cpp 112 2009-11-17 16:43:15Z unger3 $
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/utility.hpp>
+#endif // ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
@@ -35,18 +45,31 @@ NuTo::ConstitutiveMisesPlasticity::ConstitutiveMisesPlasticity() : ConstitutiveE
 }
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void NuTo::ConstitutiveMisesPlasticity::serialize(Archive & ar, const unsigned int version)
-    {
-    	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
-           & BOOST_SERIALIZATION_NVP(mE)
-           & BOOST_SERIALIZATION_NVP(mNu)
-           & BOOST_SERIALIZATION_NVP(mSigma)
-           & BOOST_SERIALIZATION_NVP(mH);
-    }
+//! @brief serializes the class
+//! @param ar         archive
+//! @param version    version
+template void NuTo::ConstitutiveMisesPlasticity::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::ConstitutiveMisesPlasticity::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::ConstitutiveMisesPlasticity::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::ConstitutiveMisesPlasticity::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ConstitutiveMisesPlasticity::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ConstitutiveMisesPlasticity::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::ConstitutiveMisesPlasticity::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstitutiveMisesPlasticity" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
+       & BOOST_SERIALIZATION_NVP(mE)
+       & BOOST_SERIALIZATION_NVP(mNu)
+       & BOOST_SERIALIZATION_NVP(mSigma)
+       & BOOST_SERIALIZATION_NVP(mH);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstitutiveMisesPlasticity" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveMisesPlasticity)
 #endif // ENABLE_SERIALIZATION
 
 //  Engineering strain /////////////////////////////////////

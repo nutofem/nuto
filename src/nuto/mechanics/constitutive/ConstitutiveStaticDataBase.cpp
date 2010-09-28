@@ -29,7 +29,7 @@ void NuTo::ConstitutiveStaticDataBase::serialize(Archive & ar, const unsigned in
     std::cout << "finish serialize constitutive static data base" << std::endl;
 #endif
 }
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveStaticDataBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveStaticDataBase)
 #endif // ENABLE_SERIALIZATION
 
 //!@ brief reinterpret as nonlocal damage2d static data

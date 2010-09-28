@@ -50,7 +50,4 @@ protected:
     std::vector<const ElementBase*> mNonlocalElements;
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataNonlocalBase)
-#endif // ENABLE_SERIALIZATION
 #endif /* ELEMENTDATANONLOCALBASE_H_ */

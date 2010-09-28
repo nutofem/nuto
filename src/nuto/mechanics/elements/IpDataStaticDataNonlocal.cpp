@@ -11,6 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::IpDataBase() ,

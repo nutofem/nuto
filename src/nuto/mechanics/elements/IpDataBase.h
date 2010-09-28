@@ -56,7 +56,4 @@ public :
 
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IpDataBase)
-#endif // ENABLE_SERIALIZATION
 #endif /* IPDATABASE_H_ */

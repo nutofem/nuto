@@ -73,6 +73,5 @@ void NuTo::IpDataNonlocalBase::serialize(Archive & ar, const unsigned int versio
     std::cout << "finish serialize IpDataNonlocalBase" << std::endl;
 #endif
 }
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IpDataNonlocalBase)
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IpDataNonlocalBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IpDataNonlocalBase)
 #endif // ENABLE_SERIALIZATION

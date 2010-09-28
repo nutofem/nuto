@@ -3,15 +3,6 @@
 #ifndef CONSTITUTIVESTATICDATAMISESPLASTICITYWITHENERGY3D_H
 #define CONSTITUTIVESTATICDATAMISESPLASTICITYWITHENERGY3D_H
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMisesPlasticity3D.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.h"
 
@@ -46,7 +37,9 @@ public:
 
 protected:
 };
-
 }
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVESTATICDATAMISESPLASTICITYWITHENERGY3D_H

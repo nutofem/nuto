@@ -228,8 +228,5 @@ protected:
 };
 
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveBase)
-#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVEBASE_H_ 

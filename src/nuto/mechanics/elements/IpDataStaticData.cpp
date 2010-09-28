@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
 NuTo::IpDataStaticData::IpDataStaticData() : IpDataBase()
 {

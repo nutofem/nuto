@@ -133,6 +133,5 @@ void NuTo::ElementDataIpBase::serialize(Archive & ar, const unsigned int version
     std::cout << "finish serialize ElementDataIpBase" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataIpBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataIpBase)
 #endif // ENABLE_SERIALIZATION

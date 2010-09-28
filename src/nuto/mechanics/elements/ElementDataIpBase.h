@@ -63,7 +63,4 @@ protected:
     boost::ptr_vector<IpDataBase> mIpData;
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataIpBase)
-#endif // ENABLE_SERIALIZATION
 #endif /* ELEMENTDATAIPBASE_H_ */

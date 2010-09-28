@@ -303,7 +303,4 @@ protected:
 
 };
 }//namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementBase)
-#endif // ENABLE_SERIALIZATION
 #endif //ELEMENT_BASE_H

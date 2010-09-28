@@ -278,6 +278,5 @@ void NuTo::ConstitutiveBase::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize Constitutive Base" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveBase)
 #endif // ENABLE_SERIALIZATION

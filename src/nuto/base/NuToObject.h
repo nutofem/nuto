@@ -70,9 +70,13 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+#ifdef DEBUG_SERIALIZATION
         std::cout << "start serialization of NuToObject" << std::endl;
+#endif
         ar & BOOST_SERIALIZATION_NVP(mVerboseLevel);
+#ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialization of NuToObject" << std::endl;
+#endif
     }
 
     //! @brief ... save the object to a file

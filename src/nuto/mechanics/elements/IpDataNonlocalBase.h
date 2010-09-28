@@ -47,7 +47,4 @@ protected:
 	std::vector<std::vector<double> > mNonlocalWeights;
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IpDataNonlocalBase)
-#endif // ENABLE_SERIALIZATION
 #endif /* IPDATANONLOCALBASE_H_ */

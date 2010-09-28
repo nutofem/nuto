@@ -25,7 +25,7 @@ public:
 	{
 		throw MathException("NuTo::SparseDirectSolver::Restore] To be implemented.");
 	}
-
+	virtual void Info()const=0;
 protected:
 };
 } // namespace NuTo
