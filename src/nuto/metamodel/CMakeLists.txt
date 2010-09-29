@@ -3,6 +3,7 @@ SET(NuToMetamodel_SOURCES
   MetamodelException.cpp
   NeuralNetwork.cpp
   TransferFunction.cpp
+  Transformation.cpp
   MinMaxTransformation.cpp
   ZeroMeanUnitVarianceTransformation.cpp
   SupportPoints.cpp

@@ -1,19 +1,33 @@
 // $Id$
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif //ENABLE_SERIALIZATION
 
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/metamodel/ZeroMeanUnitVarianceTransformation.h"
 
 // constructor
-NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation(unsigned int rCoordinate) : Transformation()
+NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation(unsigned int rCoordinate):
+Transformation(),
+mCoordinate(rCoordinate),
+mMean(0.0),
+mStandardDeviation(0.0)
 {
-    if(rCoordinate < 0)
-    {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation] coordinate must be a positive value.");
-    }
-    this->mCoordinate = rCoordinate; 
-    this->mMean = 0.0;
-    this->mStandardDeviation = 0.0;
 }
+
+// copy constructor
+NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation(const ZeroMeanUnitVarianceTransformation &other)
+{
+    mCoordinate = other.mCoordinate;
+    mMean = other.mMean;
+    mStandardDeviation = other.mStandardDeviation;
+}
+
 
 // build transformation
 void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double>& rCoordinates)
@@ -98,3 +112,28 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(FullMatrix<doub
         dataPtr+=rCoordinates.GetNumRows();
 	}
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::ZeroMeanUnitVarianceTransformation::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::ZeroMeanUnitVarianceTransformation::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::ZeroMeanUnitVarianceTransformation::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::ZeroMeanUnitVarianceTransformation::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ZeroMeanUnitVarianceTransformation::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ZeroMeanUnitVarianceTransformation::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::ZeroMeanUnitVarianceTransformation::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ZeroMeanUnitVarianceTransformation" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Transformation)
+       & BOOST_SERIALIZATION_NVP(mCoordinate)
+       & BOOST_SERIALIZATION_NVP(mMean)
+       & BOOST_SERIALIZATION_NVP(mStandardDeviation);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ZeroMeanUnitVarianceTransformation" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ZeroMeanUnitVarianceTransformation)
+#endif  // ENABLE_SERIALIZATION

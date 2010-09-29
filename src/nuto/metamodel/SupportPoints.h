@@ -1,3 +1,5 @@
+// $Id$
+
 /*******************************************************************************
 Bauhaus-Universität Weimar
 Author: Joerg F. Unger,  Septermber 2009
@@ -8,10 +10,11 @@ Author: Joerg F. Unger,  Septermber 2009
 #define SUPPORTPOINTS_H
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/ptr_container/serialize_ptr_list.hpp>
-#else
-#include <boost/ptr_container/ptr_list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
+#include <boost/ptr_container/ptr_list.hpp>
+
 #include "nuto/metamodel/Transformation.h"
 #include "nuto/math/FullMatrix.h"
 
@@ -28,8 +31,9 @@ class SupportPoints
 #endif  // ENABLE_SERIALIZATION
 
 public:
-
+	//! @brief constructor
     SupportPoints();
+    //! @brief destructor
     ~SupportPoints();
 
 #ifdef ENABLE_SERIALIZATION
@@ -37,17 +41,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {    
-        ar & BOOST_SERIALIZATION_NVP(mSPOrigInput)
-           & BOOST_SERIALIZATION_NVP(mSPOrigOutput)
-           & BOOST_SERIALIZATION_NVP(mSPTransInput)
-           & BOOST_SERIALIZATION_NVP(mSPTransOutput) 
-           & BOOST_SERIALIZATION_NVP(mWeight)      
-           & BOOST_SERIALIZATION_NVP(mlTransformationInput)
-           & BOOST_SERIALIZATION_NVP(mlTransformationOutput)
-           & BOOST_SERIALIZATION_NVP(mTransformationBuild);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief clear support points
@@ -166,5 +160,5 @@ private:
 
 };
 } // namespace nuto
-
+BOOST_CLASS_EXPORT_KEY(NuTo::SupportPoints)
 #endif /* SUPPORTPOINTS_H */

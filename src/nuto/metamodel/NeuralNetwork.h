@@ -1,7 +1,14 @@
+// $Id$
+
 #ifndef NEURALNETWORK_H
 #define NEURALNETWORK_H
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include <string>
 
 #include "nuto/metamodel/Metamodel.h"
@@ -13,14 +20,14 @@
 
 namespace NuTo
 {
- 
- 
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief ... standard abstract class for all metamodels in NuTo
 class NeuralNetwork : public virtual Metamodel, public virtual CallbackHandler
 {
+#ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
 public:
 enum eTransferFunctions {
        Empty=0,
@@ -33,29 +40,9 @@ enum eTransferFunctions {
 	   TanSig,
 	   PosLin};
 
-    NeuralNetwork (const FullMatrix<int>& rvNumNeurons) : Metamodel(),CallbackHandler()
-    {
-        if (rvNumNeurons.GetNumColumns()!=1 && rvNumNeurons.GetNumRows()!=0)
-        {
-            throw MetamodelException("NuTo::NeuralNetwork::NeuralNetwork - The matrix for the number of neurons per hidden layer should have only a single column.");
-        }
-        mvNumNeurons.resize(rvNumNeurons.GetNumRows());
-        memcpy(&(mvNumNeurons[0]),rvNumNeurons.mEigenMatrix.data(),mvNumNeurons.size()*sizeof(int));
-		mNumLayers = mvNumNeurons.size()+1;
-		mvNumNeurons.resize(mNumLayers);  //output layer is included
-		mvNumNeurons.insert(mvNumNeurons.begin(),0);         //input layer is included
-		mvTransferFunction.resize(mNumLayers,0);
-		mBayesian = true;
-        mUseDiagHessian = true;         
-        mInitAlpha = 1e-5;
-        mAccuracyGradient = 0;  
-        mMinObjective = 0;        
-        mMinDeltaObjectiveBetweenRestarts = 1e-6;
-        mMinDeltaObjectiveBayesianIteration = 1e-3;
-        mMaxFunctionCalls = INT_MAX;     
-        mShowSteps = 100;
-        mMaxBayesianIterations = INT_MAX;
-    }
+	//! @brief constructor
+	//! @param rvNumNeurons ... number of neurons in each hidden layer
+    NeuralNetwork (const FullMatrix<int>& rvNumNeurons);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -267,6 +254,12 @@ protected:
     int                               mShowSteps;
     //! @brief maximum number of iterations for the optimization of the hyperparameters
     int                               mMaxBayesianIterations;
+
+    //! @brief constructor required for serialization
+    NeuralNetwork ();
 };
 } //namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NeuralNetwork)
+#endif  // ENABLE_SERIALIZATION
 #endif // NEURALNETWORK_H

@@ -1,14 +1,44 @@
+// $Id$
+
 /*******************************************************************************
 Bauhaus-Universitaet Weimar
 Author: Joerg F. Unger,  Septermber 2009
 *******************************************************************************/
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif // ENABLE_SERIALIZATION
 
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/metamodel/MinMaxTransformation.h"
 
-using namespace NuTo;
 
-void MinMaxTransformation::Build(const FullMatrix<double>& rCoordinates)
+// constructor
+NuTo::MinMaxTransformation::MinMaxTransformation(unsigned int rCoordinate, double rLb, double rUb) :
+	NuTo::Transformation(),
+	mCoordinate(rCoordinate),
+	mMin(0.0),
+	mMax(0.0),
+	mUb(rUb),
+	mLb(rLb)
+{
+}
+
+NuTo::MinMaxTransformation::MinMaxTransformation(const MinMaxTransformation &rOther)
+{
+    mCoordinate = rOther.mCoordinate;
+    mLb = rOther.mLb;
+    mUb = rOther.mUb;
+    mMin = rOther.mMin;
+    mMax = rOther.mMax;
+}
+
+
+void NuTo::MinMaxTransformation::Build(const FullMatrix<double>& rCoordinates)
 {
     if ( rCoordinates.GetNumColumns() == 0)
 	{
@@ -34,7 +64,7 @@ void MinMaxTransformation::Build(const FullMatrix<double>& rCoordinates)
 	}
 }
 
-void MinMaxTransformation::TransformForward(FullMatrix<double>& rCoordinates)const
+void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double>& rCoordinates)const
 {
     if ( rCoordinates.GetNumColumns() == 0)
     {
@@ -64,7 +94,7 @@ void MinMaxTransformation::TransformForward(FullMatrix<double>& rCoordinates)con
 	}
 }
 
-void MinMaxTransformation::TransformBackward(FullMatrix<double>& rCoordinates)  const
+void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double>& rCoordinates)  const
 {
     if ( rCoordinates.GetNumColumns() == 0)
     {
@@ -93,3 +123,30 @@ void MinMaxTransformation::TransformBackward(FullMatrix<double>& rCoordinates)  
 	    *theptr = mMin + (*theptr-mLb)/deltaBound*deltaValue;
 	}
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::MinMaxTransformation::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::MinMaxTransformation::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::MinMaxTransformation::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::MinMaxTransformation::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::MinMaxTransformation::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::MinMaxTransformation::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::MinMaxTransformation::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize MinMaxTransformation" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Transformation)
+       & BOOST_SERIALIZATION_NVP(mCoordinate)
+       & BOOST_SERIALIZATION_NVP(mMin)
+       & BOOST_SERIALIZATION_NVP(mMax)
+       & BOOST_SERIALIZATION_NVP(mUb)
+       & BOOST_SERIALIZATION_NVP(mLb);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize MinMaxTransformation" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::MinMaxTransformation)
+#endif // ENABLE_SERIALIZATION
