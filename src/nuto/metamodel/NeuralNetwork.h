@@ -260,6 +260,8 @@ protected:
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(NuTo::NeuralNetwork)
+#endif //SWIG
 #endif  // ENABLE_SERIALIZATION
 #endif // NEURALNETWORK_H

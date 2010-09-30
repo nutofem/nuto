@@ -75,11 +75,9 @@ public:
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(NuTo::CallbackHandler)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackHandler)
-#ifndef SWIG
-//#include <boost/serialization/assume_abstract.hpp>
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackHandler)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 #endif // CALLBACKHANDLER_H

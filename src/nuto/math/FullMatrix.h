@@ -116,8 +116,8 @@ public:
             mEigenMatrix.resize ( rows,cols );
     }
 
-    template <class F>
-    friend std::ostream& operator<<(std::ostream& os, const FullMatrix<F>& r);
+//    template <class F>
+//    friend std::ostream& operator<<(std::ostream& os, const FullMatrix<F>& r);
 
     FullMatrix<T> operator+ ( const FullMatrix<T> &other ) const
     {
@@ -953,8 +953,10 @@ return os;
 
 } //NAMESPACE NUTO
 #ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(NuTo::FullMatrix<double>)
 BOOST_CLASS_EXPORT_KEY(NuTo::FullMatrix<int>)
+#endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
 #endif // FULL_MATRIX_H
