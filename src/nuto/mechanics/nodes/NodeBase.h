@@ -48,7 +48,10 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const = 0;
 
-    //! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
+    //! @brief extract all dof numbers from the node (based on global dof number)
+    virtual int* GetGlobalDofs();
+
+    		//! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
     virtual void SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues) = 0;

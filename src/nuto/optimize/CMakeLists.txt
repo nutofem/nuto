@@ -1,7 +1,10 @@
 SET(NuToOptimize_SOURCES
+  ConjugateGradientLinear.cpp  
   ConjugateGradientNonLinear.cpp
   CallbackHandlerPython.cpp
+  CallbackHandlerGrid.cpp
   OptimizeException.cpp
+  SolveGridStructure.cpp
 )
 
 SET(NuToOptimize_SWIG_MODULES
@@ -17,6 +20,8 @@ ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
 # install shared library
 INSTALL(TARGETS NuToOptimize ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
 
+#TARGET_LINK_LIBRARIES(NuToMechanics)
+
 # build python modules
 CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/optimize)
@@ -24,7 +29,7 @@ FOREACH(NuToOptimize_SWIG_MODULE ${NuToOptimize_SWIG_MODULES})
   SET_SOURCE_FILES_PROPERTIES(${NuToOptimize_SWIG_MODULE}.i PROPERTIES CPLUSPLUS ON)
   SET_SOURCE_FILES_PROPERTIES(${NuToOptimize_SWIG_MODULE}.i PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
   SWIG_ADD_MODULE(${NuToOptimize_SWIG_MODULE} python ${NuToOptimize_SWIG_MODULE}.i)
-  SWIG_LINK_LIBRARIES(${NuToOptimize_SWIG_MODULE} NuToOptimize NuToMath NuToBase ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+  SWIG_LINK_LIBRARIES(${NuToOptimize_SWIG_MODULE} NuToOptimize NuToMechanics NuToVisualize NuToMath NuToBase ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
   # check for unresolved symbols
   IF( NOT CYGWIN AND NOT WIN32 )
     SET_TARGET_PROPERTIES(${SWIG_MODULE_${NuToOptimize_SWIG_MODULE}_REAL_NAME} PROPERTIES LINK_FLAGS -Wl,-z,defs)

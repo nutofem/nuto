@@ -1,4 +1,15 @@
 // $Id$
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
+#include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -12,13 +23,22 @@
 
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
+#include "nuto/mechanics/elements/Voxel8N.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
 
+
 NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
 {
+	mVoxelLocation = 0;
+}
+
+NuTo::StructureGrid::~StructureGrid()
+{
+	if(!mVoxelLocation)
+		delete mVoxelLocation;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -330,12 +350,93 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
 }
 
 
+//! @brief Get voxel number and location for all elements
+//! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
+NuTo::FullMatrix<int>* NuTo::StructureGrid::GetVoxelNumAndLocMatrix()
+{
+// EXIST matrix ?
+// yes: return pointer
+// no: allocate matrix, calculate matrix and return pointer
+	if (mVoxelLocation) return mVoxelLocation;
+	else {
+		mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),4);
+		CalculateVoxelNumAndLocMatrix(*mVoxelLocation);
+		return mVoxelLocation;
+	}
+}
+
+//! @brief Calculate VoxeLNumAndLocMatrix
+//! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
+void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> &rVoxelLocation)
+{
+    std::cout<<__FILE__<<" "<<__LINE__<<"in GetVoxelNumAndLocMatrix()"<<std::endl;
+	NuTo::ElementBase* actElem;
+	NuTo::Voxel8N* thisElement;
+	int actElemNum =0;
+	int numElems = GetNumElements();
+	std::cout<<__FILE__<<" "<<__LINE__<<" numElems"<< numElems <<std::endl;
+	int loc[4];
+	for(int dim2 =0; dim2<mGridDimension[2];dim2++)
+	{
+		loc[3]=dim2;
+
+		for(int dim1 =0; dim1<mGridDimension[1];dim1++)
+		{
+			loc[2]=dim1;
+			for(int dim0 =0; dim0<mGridDimension[0];dim0++)
+			{
+				loc[1]=dim0;
+				loc[0]=(dim0+1)+((dim1*mGridDimension[0])+1)+((dim2*mGridDimension[0]*mGridDimension[1])+1) -3;
+				actElem = ElementGetElementPtr(actElemNum);
+				thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(actElemNum));
+				//std::cout<<__FILE__<<" "<<__LINE__<<" numElem - Voxel - ber voxel "<< actElemNum <<"  "<<thisElement->GetVoxelID() <<" "<<loc[0]<<std::endl;
+				if (thisElement->GetVoxelID() == loc[0])
+				{
+				    for (int count=0; count<4; ++count)
+					{
+						rVoxelLocation(actElemNum,count) = loc[count];
+					}
+					actElemNum++;
+				}
+			}
+		}
+	}
+
+}
+
+//! @brief Get voxels corner numbers from bottom to top counter-clockwise
+//! @return array of number of corners with corner numbers
+void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int *corners)
+{
+	if (mDimension != 3)
+        throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
+ //   int corners[8];
+	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<rVoxLoc[3]<<" "  <<rVoxLoc[2]<<"  " <<  rVoxLoc[1]<<"  "<<rVoxLoc[0]<<std::endl;
+
+   corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
+   corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
+//	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]<<"  "<<std::endl;
+
+   corners[2] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1] +1;
+   corners[3] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
+
+   corners[4] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
+   corners[5] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
+   corners[6] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1]+1;
+   corners[7] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
+	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
+	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
+}
+
 //! @brief Get LocalCoefficientMatrix0
 //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-const NuTo::StructureGrid::SparseMat* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const
+NuTo::SparseMatrixCSRGeneral<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0)
 {
-    if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
+ 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<"  "<<std::endl;
+	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
+ 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
+// 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
 }
 

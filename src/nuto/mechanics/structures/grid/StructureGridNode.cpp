@@ -1,3 +1,15 @@
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
+#include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
+
 #include <boost/tokenizer.hpp>
 #include <sstream>
 
@@ -40,21 +52,21 @@ const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent) const
 //! @brief a reference to a node
 //! @param node GridNum
 //! @return reference to a node
-NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
+NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
 {
     int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
     if (rNodeGridNum<0 || rNodeGridNum>=numGridNodes)
          throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Grid Node number is not valid.");
     int nodeNumber(0);
-    boost::ptr_vector<NodeBase>::const_iterator it;
+    boost::ptr_vector<NodeGrid3D>::const_iterator it;
     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
     {
         if (it->GetNodeGridNum()==rNodeGridNum)
-            break;
+       	   return &mNodeVec[nodeNumber];
     }
     if (it== mNodeVec.end())
         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
-    return &mNodeVec[nodeNumber];
+    return 0;
 }
 
 //! @brief a reference to a node
@@ -292,7 +304,7 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
             attributes = attributes |  1 << Node::TEMPERATURES;
     }
 
-    NodeBase* nodePtr(0);
+    NodeGrid3D* nodePtr(0);
     switch (attributes)
     {
         // the << shifts the 1 bitwise to the left, so 1<<n = 2^n
@@ -302,10 +314,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
         {
         case 1:
-            nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
+            //nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
             break;
         case 2:
-            nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
+            //nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
             break;
         case 3:
             nodePtr = new NuTo::NodeGrid3D(rNodeGridNum);
@@ -318,10 +330,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
          {
          case 1:
-             nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
+         //    nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
              break;
          case 2:
-             nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
+          //   nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
              break;
          case 3:
              nodePtr = new NuTo::NodeGridDisplacements3D(rNodeGridNum);
@@ -345,7 +357,6 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
 
 }
 
-
 //! @brief Deletes a node
 //! @param rElementIdent identifier for the node
 void NuTo::StructureGrid::NodeDelete(const int rNodeNumber)
@@ -362,7 +373,7 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
 {
     // build initial node numbering
     this->mNumDofs = 0;
-    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->SetGlobalDofs(this->mNumDofs);
     }
@@ -370,7 +381,7 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
     // build constraint matrix
     this->mNodeNumberingRequired = false;
     this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
-    this->mNodeNumberingRequired = true;
+    //this->mNodeNumberingRequired = true;
 
     // perform gauss algorithm
     std::vector<int> mappingInitialToNewOrdering;
@@ -414,12 +425,11 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
     this->mConstraintMatrix.RemoveLastColumns(numDependentDofs);
 
     // renumber dofs
-    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->RenumberGlobalDofs(mappingInitialToNewOrdering);
     }
-
-    mNodeNumberingRequired = false;
+   mNodeNumberingRequired = false;
 }
 
 // merge dof values
@@ -438,7 +448,7 @@ void NuTo::StructureGrid::NodeMergeActiveDofValues(const NuTo::FullMatrix<double
     NuTo::FullMatrix<double> dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
 
     // write dof values to the nodes
-    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->SetGlobalDofValues(rActiveDofValues, dependentDofValues);
     }
@@ -464,13 +474,14 @@ void NuTo::StructureGrid::NodeExtractDofValues(NuTo::FullMatrix<double>& rActive
     rDependentDofValues.Resize(this->mNumDofs - this->mNumActiveDofs,1);
 
     // extract dof values from nodes
-    for (boost::ptr_vector<NodeBase>::const_iterator it = this->mNodeVec.begin(); it!= this->mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::const_iterator it = this->mNodeVec.begin(); it!= this->mNodeVec.end(); it++)
     {
         it->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 }
+
 /*
-void NuTo::StructureGrid::NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const
+void NuTo::StructureGrid::NodeGetInternalForce(const NodeGrid3D* rNode, NuTo::FullMatrix<double>& rNodeForce)const
 {
    // define variables storing the element contribution outside the loop
     NuTo::FullMatrix<double> elementVector;
@@ -519,7 +530,7 @@ void NuTo::StructureGrid::NodeGetInternalForce(const NodeBase* rNode, NuTo::Full
 //! @param rNodeForce return value
 void NuTo::StructureGrid::NodeGetInternalForce(int rNodeId, FullMatrix<double>& rNodeForce)const
 {
-    const NodeBase* node_ptr(NodeGetNodePtr(rNodeId));
+    const NodeGrid3D* node_ptr(NodeGetNodePtr(rNodeId));
 
     // initialize matrix
     rNodeForce.Resize(node_ptr->GetNumDisplacements(),1);

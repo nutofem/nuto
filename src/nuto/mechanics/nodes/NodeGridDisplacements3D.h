@@ -20,8 +20,8 @@ public:
 
     //! @brief constructor
     NodeGridDisplacements3D(int rNodeId) : NodeGrid3D (rNodeId), NodeDisplacements3D()
-    {}
-
+    {
+    }
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -110,9 +110,9 @@ public:
     {
     	return std::string("NodeGridDisplacements3D");
     }
-
-protected:
-    int mDof[3];
+//raus, weil steht in NodeDisplacements3D
+//protected:
+  //  int mDof[3];
 };
 }//namespace NuTo
 

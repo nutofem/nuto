@@ -108,6 +108,11 @@ int NuTo::NodeBase::GetDofDisplacement(int rComponent)const
 	throw MechanicsException("[NuTo::NodeBase::GetDofDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
 }
 
+//! @brief extract all dof numbers from the node (based on global dof number)
+int* NuTo::NodeBase::GetGlobalDofs()
+{
+	throw MechanicsException("[NuTo::NodeBase::GetGlobalDofs] Node of type " + GetNodeTypeStr() + " dofs.");
+}
 //! @brief returns the displacements of the node
 //! @return displacement
 void NuTo::NodeBase::GetDisplacements1D(double rCoordinates[1])const

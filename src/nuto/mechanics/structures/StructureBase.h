@@ -72,6 +72,11 @@ public:
     //! @return Structural dimension (1,2 or 3)
     int GetDimension();
 
+//    int GetNumVoxels() const
+//    {
+//    	return 10;
+//    }
+
 #ifdef ENABLE_VISUALIZE
     //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentDamage();

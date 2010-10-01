@@ -40,6 +40,10 @@ public:
     //! @return global DOF
     int GetDofDisplacement(int rComponent)const;
 
+    //! @brief extract dof numbers from the node (based on global dof number)
+    int* GetGlobalDofs();
+
+
     //! @brief set the displacements
     //! @param rDisplacements  given displacements
     void SetDisplacements3D(const double rDisplacements[3]);
@@ -84,7 +88,7 @@ public:
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
+    void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
 
     //! @brief returns the type of the node
     //! @return type

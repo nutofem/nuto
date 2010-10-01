@@ -1,3 +1,15 @@
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
+#include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
+
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/Voxel8N.h"
@@ -78,9 +90,18 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
                 {
                     //set youngsModulus and add on material on counter
                     youngsModulus[numCoeffMat]=rColorToMaterialData(imageValues(countVoxels,0),0);
+                    rBaseCoefficientMatrix0.Info();
+                    std::cout<<__FILE__<<" " <<__LINE__<<" "<<"  "<<youngsModulus[numCoeffMat]<<std::endl;
                     stiffnessMatrixHelp = rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat];
-                    this->mLocalCoefficientMatrix0.push_back(stiffnessMatrixHelp);
+                    //std::cout<<__FILE__<<" " <<__LINE__<<" "<< stiffnessMatrixHelp <<std::endl;
+                   this->mLocalCoefficientMatrix0.push_back(stiffnessMatrixHelp);
                     NuTo::StructureGrid::ElementCreate(numCoeffMat,numElements,countVoxels,rElementType);//element number, element id, attr.
+                /*
+                    int elemVoxel[2];
+                    elemVoxel[0]=numElements;
+                    elemVoxel[1]=countVoxels;
+                    mElemVoxelMap.insert(numElements,countVoxels);
+                */
                     numElements++;
                     numCoeffMat++;
                     this->mNumMaterials = numCoeffMat;
@@ -113,7 +134,6 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
             matFlag=1; //initialize matFlag for next step
       }
     }
-
 }
 //! @TODO ElementCreate without elementNumber
 
@@ -226,3 +246,5 @@ void NuTo::StructureGrid::ElementDelete(int rElementNumber)
     throw MechanicsException("[NuTo::StructureGrid::ElementDelete] Not implemented yet!!!");
 
 }
+
+

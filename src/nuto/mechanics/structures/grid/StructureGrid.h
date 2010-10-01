@@ -1,20 +1,36 @@
 #ifndef STRUCTUREGRID_H
 #define STRUCTUREGRID_H
 
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/ptr_container/serialize_ptr_vector.hpp>
-#else
-#include <boost/ptr_container/ptr_vector.hpp>
-#endif //ENABLE_SERIALIZATION
+//#include "nuto/mechanics/structures/StructureBase.h"
+//#include "nuto/mechanics/elements/ElementDataEnum.h"
+//#include "nuto/mechanics/elements/ElementEnum.h"
+//#include "nuto/mechanics/elements/IpDataEnum.h"
+//#include "nuto/mechanics/MechanicsException.h"
+//
+//#ifdef ENABLE_SERIALIZATION
+//#include <boost/ptr_container/serialize_ptr_vector.hpp>
+//#else
+//#include <boost/ptr_container/ptr_vector.hpp>
+//#endif //ENABLE_SERIALIZATION
 
 namespace NuTo
 {
+
+//! @brief forward declaration to speed up compilation time
+class StructureBase;
+class ElementDataEnum;
+class ElementEnum;
+class NodeGrid3D;
+class IpDataEnum;
+class MechanicsException;
+
+#ifdef ENABLE_SERIALIZATION
+class serialize_ptr_vector;
+#else
+class ptr_vector;
+#endif //ENABLE_SERIALIZATION
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... regular structure e.g. from pixel/voxel data
@@ -28,6 +44,8 @@ public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
     StructureGrid(int rDimension);
+
+    ~StructureGrid();
 
     typedef NuTo::SparseMatrixCSRGeneral<double> SparseMat ;
 
@@ -82,9 +100,20 @@ public:
 
     //! @brief Get LocalCoefficientMatrix0
     //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-    const SparseMat* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const;
+    NuTo::SparseMatrixCSRGeneral<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
 
-//*************************************************
+    //! @brief Get VoxeLNumAndLocMatrix
+    //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
+    FullMatrix<int>* GetVoxelNumAndLocMatrix();
+
+    //! @brief Calculate VoxeLNumAndLocMatrix
+    void CalculateVoxelNumAndLocMatrix(FullMatrix<int> &rVoxelLocation);
+
+    //! @brief Get voxels corner numbers from bottom to top counter-clockwise
+    //! @return array of number of corners with corner numbers
+    void GetCornersOfVoxel(int rElementNumber,int *rVoxLoc,int *corners);
+
+ //*************************************************
 //************ Node routines        ***************
 //***  defined in structures/StructureGridNode.cpp  ***
 //*************************************************
@@ -106,7 +135,7 @@ public:
     //! @brief a reference to a node
     //! @param node GridNum
     //! @return reference to a node
-    NodeBase* NodeGetNodePtrFromGridNum(int rNodeGridNum);
+    NuTo::NodeGrid3D* NodeGetNodePtrFromGridNum(int rNodeGridNum);
 
     //! @brief a reference to a node
     //! @param node GridNum
@@ -229,6 +258,15 @@ public:
     //! @param rElementNumber element number
     void ElementDelete (int rElementNumber);
 
+    //! @brief Get node numbers of the element
+    //! @param rElementNumber element number
+    //! @return all node numbers of the element
+    int* GetNodeNum(int rElementNumber,FullMatrix<int> rVoxelLocation)
+	{
+    	throw MechanicsException("[NuTo::StructureGrid::GetNodNum] not implemented here.");
+
+	}
+
 
 
 protected:
@@ -237,11 +275,12 @@ protected:
     double mVoxelSpacing[3]; //spacing between center of neighbor voxels / dimension of each voxel
     int mGridDimension[3]; //dimension of the voxel model
     double mGridOrigin[3];// origin of the model , in the center of the first voxel
-    boost::ptr_vector<NodeBase> mNodeVec;
+    boost::ptr_vector<NodeGrid3D> mNodeVec;
     boost::ptr_vector<ElementBase> mElementVec;
     const char* mImageDataFile;
     int mNumMaterials;
     std::vector<SparseMat> mLocalCoefficientMatrix0;
+    NuTo::FullMatrix<int>* mVoxelLocation;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer

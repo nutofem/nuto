@@ -98,6 +98,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Voxel8N::GetStandardIntegrationTyp
     return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
 }
 
+int NuTo::Voxel8N::GetNumLocalStiffnessMatrix()
+{
+	return mNumLocalCoefficientMatrix0;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Voxel8N::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
