@@ -198,6 +198,24 @@ void NuTo::StructureBase::ConstraintPeriodicSetCrackOpening(int rConstraintEquat
 //!@param rStrain new strain
 void NuTo::StructureBase::ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain)
 {
+    if (rStrain.GetNumColumns()==1)
+        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Matrix has to have exactly one column");
+    if (rStrain.GetNumRows()==3)
+    {
+        EngineeringStrain2D engineeringStrain;
+        engineeringStrain.SetData(rStrain.mEigenMatrix.data());
+        ConstraintPeriodicSetStrain2D(rConstraintEquation,engineeringStrain);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Matrix has to have exactly three rows");
+    }
+}
+    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
+    //!@param rConstraintEquation id of the constraint equation
+    //!@param rStrain new strain
+void NuTo::StructureBase::ConstraintPeriodicSetStrain2D(int rConstraintEquation, const NuTo::EngineeringStrain2D& rStrain)
+{
     this->mNodeNumberingRequired = true;
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
     if (it==mConstraintMap.end())
@@ -455,7 +473,12 @@ int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuT
     try
     {
         // create new constraint equation term
-        ConstraintBase* constraintPtr = new NuTo::ConstraintDisplacementsPeriodic2D(this, rAngle, rStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
+        if (rStrain.GetNumRows()!=3 || rStrain.GetNumColumns()!=1)
+            throw MechanicsException("[NuTo::ConstraintNodeDisplacementsPeriodic2D::ConstraintNodeDisplacementsPeriodic2D] the strain is matrix (3,1) with (e_xx, e_yy, gamma_xy)");
+
+        EngineeringStrain2D engineeringStrain;
+        engineeringStrain.SetData(rStrain.mEigenMatrix.data());
+        ConstraintBase* constraintPtr = new NuTo::ConstraintDisplacementsPeriodic2D(this, rAngle, engineeringStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
                    nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
 
         // insert constraint equation into map

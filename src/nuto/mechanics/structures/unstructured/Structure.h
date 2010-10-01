@@ -35,12 +35,21 @@ public:
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-    //! @brief serializes the class
+    //! @brief serializes the class, this is the load routine
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif//SWIG
+    void load(Archive & ar, const unsigned int version);
+
+    //! @brief serializes the class, this is the save routine
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const;
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+#endif// SWIG
 
     //! @brief ... save the object to a file
     //! @param filename ... filename

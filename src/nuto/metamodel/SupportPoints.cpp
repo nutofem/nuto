@@ -158,5 +158,4 @@ void NuTo::SupportPoints::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize SupportPoints" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SupportPoints)
 #endif // ENABLE_SERIALIZATION

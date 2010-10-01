@@ -160,5 +160,4 @@ private:
 
 };
 } // namespace nuto
-BOOST_CLASS_EXPORT_KEY(NuTo::SupportPoints)
 #endif /* SUPPORTPOINTS_H */

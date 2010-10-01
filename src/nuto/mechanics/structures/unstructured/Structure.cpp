@@ -17,6 +17,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementDataBase.h"
 
 #include <ANN/ANN.h>
 #include <set>
@@ -36,25 +37,55 @@ void NuTo::Structure::Info()const
 }
 
 #ifdef ENABLE_SERIALIZATION
-template void NuTo::Structure::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+// serializes the class
 template void NuTo::Structure::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
 template void NuTo::Structure::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
 template void NuTo::Structure::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::Structure::serialize(Archive & ar, const unsigned int version)
+void NuTo::Structure::load(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of structure" << std::endl;
 #endif
+    std::vector<ElementDataBase*> elementDataVector;
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
        & boost::serialization::make_nvp ("elementMap", mElementMap)
-       & boost::serialization::make_nvp ("nodeMap", mNodeMap);
+       & boost::serialization::make_nvp ("nodeMap", mNodeMap)
+       & BOOST_SERIALIZATION_NVP(elementDataVector);
+    std::vector<ElementDataBase*>::iterator itElementData = elementDataVector.begin();
+    for (boost::ptr_map<int,ElementBase>::iterator itElement=mElementMap.begin(); itElement!=mElementMap.end(); itElement++,itElementData++)
+    {
+        itElement->second->SetDataPtr(*itElementData);
+    }
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structure" << std::endl;
 #endif
 }
+
+template void NuTo::Structure::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Structure::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Structure::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Structure::save(Archive & ar, const unsigned int version)const
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialization of structure" << std::endl;
+#endif
+    std::vector<ElementDataBase*> elementDataVector(mElementMap.size());
+    std::vector<ElementDataBase*>::iterator itElementData = elementDataVector.begin();
+    for (boost::ptr_map<int,ElementBase>::const_iterator itElement=mElementMap.begin(); itElement!=mElementMap.end(); itElement++,itElementData++)
+    {
+        *itElementData = itElement->second->GetDataPtr();
+    }
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
+       & boost::serialization::make_nvp ("elementMap", mElementMap)
+       & boost::serialization::make_nvp ("nodeMap", mNodeMap)
+       & BOOST_SERIALIZATION_NVP(elementDataVector);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialization of structure" << std::endl;
+#endif
+}
+
 
 //! @brief ... save the object to a file
 //! @param filename ... filename

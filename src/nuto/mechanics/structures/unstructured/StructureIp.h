@@ -318,10 +318,21 @@ protected:
     StructureIp()
     {}
 
+    //! @brief ... solve for equilibrium using the new boundary conditions
+    void Solve(NuTo::EngineeringStrain2D rEngineeringStrain, double tolerance);
+
     double mCrackAngle[3];
     int mDOFCrackAngle[3];
     double mCrackOpening[3];
     int mDOFCrackOpening[3];
+    int mConstraintPeriodic;
+    int mConstraintTranslation;
+    double mlX,mlY;
+    bool mSolveForLocalization;
+    std::string mIPName;
+
+    //! @brief ... previous total strain at the last update
+    double mPrevStrain[3];
 };
 }
 #ifdef ENABLE_SERIALIZATION

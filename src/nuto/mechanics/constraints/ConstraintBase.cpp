@@ -54,7 +54,7 @@ void NuTo::ConstraintBase::SetRHS(double rRHS)
 
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-void NuTo::ConstraintBase::SetStrain(const NuTo::FullMatrix<double>& rStrain)
+void NuTo::ConstraintBase::SetStrain(const NuTo::EngineeringStrain2D& rStrain)
 {
     throw MechanicsException("[NuTo::ConstraintBase] Set strain for this type of constraints not implemented.");
 }

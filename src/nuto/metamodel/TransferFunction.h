@@ -347,7 +347,6 @@ public:
 }  // namespace surrogate
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::TransferFunction)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::TransferFunction)
 BOOST_CLASS_EXPORT_KEY(NuTo::EmptyTransferFunction)
 BOOST_CLASS_EXPORT_KEY(NuTo::HardLimTransferFunction)
