@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #undef Truss1D2N_H
 #ifndef Truss1D2N_H
 #define Truss1D2N_H

@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 
 #ifndef NuToObject_H
 #define NuToObject_H

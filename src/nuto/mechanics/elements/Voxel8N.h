@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef Voxel8N_H
 #define Voxel8N_H
 

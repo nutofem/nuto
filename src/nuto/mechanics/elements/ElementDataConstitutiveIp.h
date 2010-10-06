@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef ElementDataConstitutiveIp_H
 #define ElementDataConstitutiveIp_H
 

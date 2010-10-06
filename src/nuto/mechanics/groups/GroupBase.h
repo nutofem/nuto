@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef GroupBase_H
 #define GroupBase_H
 

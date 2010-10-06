@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 #ifndef IntegrationType2D_H
 #define IntegrationType2D_H
 

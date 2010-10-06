@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef NodeCoordinatesTemperatures1D_H
 #define NodeCoordinatesTemperatures1D_H
 
