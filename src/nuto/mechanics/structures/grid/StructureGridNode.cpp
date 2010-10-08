@@ -35,7 +35,7 @@ int NuTo::StructureGrid::GetNumNodes() const
 NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent)
 {
     if (rIdent<0 || rIdent>=GetNumNodes())
-         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Conversion from string to int did not yield valid node number.");
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Node number does not exist.");
      return &mNodeVec[rIdent];
 }
 
@@ -45,7 +45,7 @@ NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent)
 const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent) const
 {
     if (rIdent<0 || rIdent>=GetNumNodes())
-        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Conversion from string to int did not yield valid node number.");
+        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Node number does not exist.");
     return &mNodeVec[rIdent];
  }
 
@@ -65,8 +65,10 @@ NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNu
        	   return &mNodeVec[nodeNumber];
     }
     if (it== mNodeVec.end())
-        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
-    return 0;
+    {
+        std::cout<<__FILE__<<" "<<__LINE__<<" node number "<<nodeNumber<<std::endl;
+    	throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
+    }
 }
 
 //! @brief a reference to a node
@@ -155,7 +157,7 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
     NuTo::FullMatrix<int> imageValues (numVoxel,1);
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
     for (int countNodes =0; countNodes<numGridNodes;countNodes++)//countNodes correspond to nodeID
-        {
+    {
          //get coincident voxels for each node, check if one voxel has material, then create node
          TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(countNodes);
          int flag=0;
@@ -177,7 +179,7 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
              NuTo::StructureGrid::NodeCreate(numMatNodes,countNodes,rDOFs);//node number, node id, attr.
              numMatNodes++;
          }
-     }
+    }
 }
 
 //! @brief get coincident Voxels from one node in following order: against the clock, first bottom voxels, first voxel BSW = BottomSouthWest
@@ -196,10 +198,8 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
 NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVoxelIDs(int rNodeID)
 {
     TCoincidentVoxelList coincidentVoxels(8);
-    int numDim2;
-    int numDim3;
-    numDim3=rNodeID/((mGridDimension[0]+1)*(mGridDimension[1]+1));
-    numDim2=(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3)/(mGridDimension[0]+1);
+    int numDim3=rNodeID/((mGridDimension[0]+1)*(mGridDimension[1]+1));
+    int numDim2=(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3)/(mGridDimension[0]+1);
 
     // for all nodes
     coincidentVoxels[0]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0]-1 -mGridDimension[0]*mGridDimension[1]);
@@ -224,24 +224,21 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
         for (int count =4;count<8;count++)
             coincidentVoxels[count]=-1;
     }
-    if(rNodeID == 0)
-        coincidentVoxels[7]=-1;
-
-    // for nodes with dim0=mGridDimension[0]!!!
-    else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==0 )
-    {
-         coincidentVoxels[1]=-1;
-         coincidentVoxels[2]=-1;
-         coincidentVoxels[5]=-1;
-         coincidentVoxels[6]=-1;
-    }
-    // for nodes with dim0=0
-    else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==1 )
+    // for nodes with dim0=0!!!
+    if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==0 )
     {
          coincidentVoxels[0]=-1;
          coincidentVoxels[3]=-1;
          coincidentVoxels[4]=-1;
          coincidentVoxels[7]=-1;
+    }
+    // for nodes with dim0=dimension[0]
+    else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==mGridDimension[0] )
+    {
+         coincidentVoxels[1]=-1;
+         coincidentVoxels[2]=-1;
+         coincidentVoxels[5]=-1;
+         coincidentVoxels[6]=-1;
     }
     // for node with dim1=0
     if (numDim2==0)
@@ -259,12 +256,12 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
         coincidentVoxels[6]=-1;
         coincidentVoxels[7]=-1;
     }
-/*
-    std::cout<<"Knoten"<<rNodeID<< "Voxels:"<<std::endl;
+
+    std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: "<<std::endl;
     for (int count=0;count<8;count++)
         std::cout<< coincidentVoxels[count]<<" ";
     std::cout<<" "<<std::endl;
- */
+
     return coincidentVoxels;
 }
 //! @brief creates a node
