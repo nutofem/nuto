@@ -281,16 +281,13 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
 	//check if mvParamters is initialized
 	if (!&mvParameters)
  		throw OptimizeException("[ConjugateGradientLinear::GetStartGradient] mvParameters not initialized.");
-	std::cout<<__FILE__<<" "<<__LINE__<<" else"<<std::endl;
 	//set search direction equal mVParameters
 	FullMatrix<double>searchDirection=mvParameters;
 
     int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
     voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
-//    std::cout<<__FILE__<<" "<<__LINE__<<" VoxelLocationmatrix2: \n"<<*voxelLoc<<std::endl;
 
-    std::cout<<__FILE__<<" "<<__LINE__<<" "<< std::endl;
     int thisvoxelLocation[4]={0};
     int corners[8]={0};
     int dofs[24]={0};
@@ -300,8 +297,7 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
     //std::map<int> globtoloc;
     Voxel8N* thisElement=0;
    	thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(0));
-	FullMatrix<double> localStart(thisElement->GetNumDofs(),1);
-	FullMatrix<double> localReturn(thisElement->GetNumDofs(),1);
+	std::vector<double> start;
 	int dofsElem=thisElement->GetNumDofs();
 
    for (int elementNumber=0;elementNumber<numElems;elementNumber++)
@@ -313,39 +309,28 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
         	thisvoxelLocation[count]= voxelLoc->GetValue(elementNumber,count);
 
         mpGrid->GetCornersOfVoxel(elementNumber, thisvoxelLocation, corners);
-        std::cout<< __FILE__<<" "<<__LINE__<<"corners "<<*corners<<std::endl;
 
         int numStiff = thisElement->GetNumLocalStiffnessMatrix();
-        std::cout<< __FILE__<<" "<<__LINE__<<"numSiff "<<numStiff<<std::endl;
-        //welcher matrix typ
-        NuTo::FullMatrix<double> *matrix;
-        NuTo::SparseMatrixCSRGeneral<double> *helpmatrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
-        //helpmatrix->WriteEntriesToFullMatrix(matrix);
+        NuTo::FullMatrix<double> *matrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
 
-        std::cout<< __FILE__<<" "<<__LINE__<<" "<<std::endl;
-
-        matrix->Info();
         //count active dofs
     	int localdofs=0;
 		// count over all local dofs
 		int dof=0;
 
 		//vector of numbers od active dofs of element
-		std::vector<int> *activeDofs=0;
+		std::vector<int> activeDofs;
 
 		//loop over all nodes of one element
         for (int node=0;node<thisElement->GetNumNodes();++node)
         {
-			std::cout<< __FILE__<<" "<<__LINE__<<" "<<std::endl;
+			std::cout<< __FILE__<<" "<<__LINE__<<"node number "<< node<<" of element "<<elementNumber<< std::endl;
 			//get pointer to this gridNum node
-        	NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
+			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 			//which DOFs belonging to this element
 //		    std::cout<< __FILE__<<" "<<__LINE__<<" "<<(thisNode->GetGlobalDofs())[0]<< " " <<(thisNode->GetGlobalDofs())[1]<< std::endl;
         	for (int disp = 0;disp<numDofs;++disp)
         		dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
-        	std::cout<< __FILE__<<" "<<__LINE__<<" "<<node <<" " << numDofs <<" "<<*(thisNode->GetGlobalDofs())<<std::endl;
-		    std::cout<< __FILE__<<" "<<__LINE__<<" "<<dofs[node*numDofs+1]<< std::endl;
-		    std::cout<< __FILE__<<" "<<__LINE__<<"dof "<<dofs[node*numDofs]<<" dof number "<< node*numDofs<<" "<<dofs[node*numDofs+1]<< std::endl;
 
 			//has to be added when dofs flexible,
 			//numDofs = thisNode->GetNumDisplacements();
@@ -355,61 +340,53 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
 			//write for this dofs values to local vector
 			for (int disp = 0;disp<numDofs;++disp)
 			{
-				std::cout<< __FILE__<<" "<<__LINE__<<" "<< disp<< std::endl;
-				std::cout<< __FILE__<<" "<<__LINE__<<" "<< (thisNode->GetGlobalDofs())[disp]<< std::endl;
-				std::cout<< __FILE__<<" "<<__LINE__<<" "<< dofs[node*numDofs+disp]<< std::endl;
-
 				if (dofs[node*numDofs+disp]<mpGrid->NodeGetNumberActiveDofs())
 				{
-					std::cout<< __FILE__<<" "<<__LINE__<<" "<< searchDirection(dofs[node*numDofs+disp],0)<<" "<< std::endl;
-					std::cout<< __FILE__<<" "<<__LINE__<<" localdofs  "<< localdofs<<std::endl;
-
-					localStart(localdofs,0)=searchDirection(dofs[node*numDofs+disp],0);
-					activeDofs->push_back(dof++);
+					start.push_back(searchDirection(dofs[node*numDofs+disp],0));
+					activeDofs.push_back(dof++);
 					++localdofs;
 				}
 				else
 				{
 					dof++;
-//					for (int count=0;count<matrix->GetNumRows();++count)
-//						matrix->RemoveEntry(localdofs,count);
-//					for (int count=0;count<matrix->GetNumColumns();++count)
-//						matrix.RemoveEntry(count,localdofs);
-//					matrix->Info();
-					std::cout<< __FILE__<<" "<<__LINE__<<" gehalten "<< std::endl;
 				}
 			}
-			//reduce matrix for element with dependant dofs
-			//neue routine
-			//create map with pair int (mat nbr, bit active/non-> stiffnessmatrix)
-			if (localdofs<24)
-			{
-				//element matrix with active dofs
-				NuTo::FullMatrix<double>locMatrix(localdofs,localdofs);
-				for (std::vector<int>::const_iterator it = activeDofs->begin();it!=activeDofs->end();++it)
-				{
-					//std::cout<<__FILE__<<" "<<__LINE__<<" "<<it<<" " <<*it<<std::endl;
-					for (std::vector<int>::const_iterator it2 = activeDofs->begin();it2!=activeDofs->end();++it2)
-					{
-						//locMatrix(it,it2);
-						//locMatrix.
-
-					}
-
-				}
-
-				localReturn= locMatrix.operator *(localStart);
-			}
+        }
+       //reduce matrix for element with dependant dofs
+		//@TODO create map with pair int (mat nbr, bit active/non-> stiffnessmatrix)
+		NuTo::FullMatrix<double>locMatrix(localdofs,localdofs);
+		if (localdofs<24)
+		{
+			//element matrix with active dofs
+			if (activeDofs.size()==0)
+				throw OptimizeException("[ConjugateGradientLinear::] activeDofs = 0.");
 			else
 			{
-				//matrix*localStart
-				localReturn= matrix->operator *(localStart);
+				int count1=0;
+				for (std::vector<int>::iterator it = activeDofs.begin();it!=activeDofs.end();++it)
+				{
+					int count2=0;
+					for (std::vector<int>::iterator it2 = activeDofs.begin();it2!=activeDofs.end();++it2)
+					{
+						locMatrix(count1,count2)=matrix->GetValue(*it,*it2);
+						++count2;
+					}
+					++count1;
+				}
 			}
+		}
+		else
+		{
+			locMatrix=*matrix;
+		}
 
-        }
-		std::cout<<__FILE__<<" "<<__LINE__<<" "<<matrix->GetNumColumns()<<std::endl;
-		localStart.Info();
-		std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
+		FullMatrix<double> localStart(localdofs,1);
+		FullMatrix<double> localReturn(localdofs,1);
+
+		for (int count = 0; count< localdofs; ++count)
+			localStart(count,0)= start[count];
+
+		localReturn= locMatrix.operator *(localStart);
 
 	    if (startSolution)
 	    {
@@ -423,18 +400,9 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
 			for (int countDof=0; countDof<dofsElem; ++countDof)
 				returnVector(dofs[countDof],0) = localReturn(countDof,0);
 	    }
-
     }
 
-    std::cout<<__FILE__<<" "<<__LINE__<<" in Routine EBE"<<std::endl;
-
-
-    if (startSolution)
-    {
-        //f-Ku
-    }
-
-
+			std::cout<<__FILE__<<" "<<__LINE__<<"end "<<std::endl;
 }
 
 //! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step

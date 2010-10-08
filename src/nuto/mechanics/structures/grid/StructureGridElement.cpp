@@ -75,7 +75,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
     int numElements=0;       //counter for created elements
     NuTo::FullMatrix<int> imageValues (mNumVoxel,1);         //Color value for each voxel
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
-    NuTo::StructureGrid::SparseMat stiffnessMatrixHelp ;
+    NuTo::StructureGrid::FullMat stiffnessMatrixHelp ;
     int numCoeffMat=0;   //material counter
     std::vector<double> youngsModulus(1);
     youngsModulus[0]=0;
@@ -84,7 +84,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
     {
         for(int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
         {
-            if (rColorToMaterialData(imageValues(countVoxels,0),0)>0.1) //if Modul is> zero
+            if (rColorToMaterialData(imageValues(countVoxels,0),0)>0) //if Modul is> zero
             {
                 if (youngsModulus[0]==0) //no coefficient matrix yet
                 {

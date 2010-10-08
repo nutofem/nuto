@@ -47,7 +47,7 @@ public:
 
     ~StructureGrid();
 
-    typedef NuTo::SparseMatrixCSRGeneral<double> SparseMat ;
+    typedef NuTo::FullMatrix<double> FullMat ;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -100,7 +100,7 @@ public:
 
     //! @brief Get LocalCoefficientMatrix0
     //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-    NuTo::SparseMatrixCSRGeneral<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
+    NuTo::FullMatrix<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
 
     //! @brief Get VoxeLNumAndLocMatrix
     //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
@@ -279,7 +279,7 @@ protected:
     boost::ptr_vector<ElementBase> mElementVec;
     const char* mImageDataFile;
     int mNumMaterials;
-    std::vector<SparseMat> mLocalCoefficientMatrix0;
+    std::vector<FullMat> mLocalCoefficientMatrix0;
     NuTo::FullMatrix<int>* mVoxelLocation;
 
     //! @brief ... store all elements of a structure in a vector

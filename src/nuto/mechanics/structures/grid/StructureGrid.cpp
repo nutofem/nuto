@@ -411,7 +411,7 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
  //   int corners[8];
-	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<rVoxLoc[3]<<" "  <<rVoxLoc[2]<<"  " <<  rVoxLoc[1]<<"  "<<rVoxLoc[0]<<std::endl;
+	std::cout<<__FILE__<<" "<<__LINE__<<"  " <<  rVoxLoc[1]<<" "  <<rVoxLoc[2]<<"  "<<rVoxLoc[3]<<" "<<rVoxLoc[0]<<std::endl;
 
    corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
    corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
@@ -430,12 +430,11 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
 
 //! @brief Get LocalCoefficientMatrix0
 //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-NuTo::SparseMatrixCSRGeneral<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0)
+NuTo::FullMatrix<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0)
 {
- 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<"  "<<std::endl;
-	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
+ 	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
- 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
+// 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
 // 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
 }
