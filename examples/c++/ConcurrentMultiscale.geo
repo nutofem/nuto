@@ -5,7 +5,7 @@ w = 100;
 //height of the bounding box
 h = 100;
 //mesh size
-lc = 4;
+lc = 10;
 
 //define points
 Point(1) = { 0.0, 0.0 , 0.0 , lc};

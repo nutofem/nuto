@@ -1,5 +1,11 @@
+// $Id$
+
 #ifndef METAMODEL_H
 #define METAMODEL_H
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif  // ENABLE_SERIALIZATION
 
 #include <string>
 #include <time.h>
@@ -26,22 +32,15 @@ class Metamodel : public virtual NuToObject
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Metamodel() : NuToObject()
-    {
-        // init random number generator with milliseconds from ..
-        dsfmt_init_gen_rand(&mRandomNumberGenerator, time (NULL));
-    }
+	//! @brief constructor
+    Metamodel();
     
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {    
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-           & BOOST_SERIALIZATION_NVP(mSupportPoints);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     void Build();
@@ -78,7 +77,7 @@ public:
     void Solve(const FullMatrix<double>& rInputCoordinates, FullMatrix<double>& rOutputCoordinates)const;
     void SolveConfidenceInterval(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates, 
                                                     NuTo::FullMatrix<double>& rOutputCoordinatesMin, NuTo::FullMatrix<double>& rOutputCoordinatesMax)const;
-                                                    virtual void SolveTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates)const=0;    
+    virtual void SolveTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates)const=0;
     virtual void SolveConfidenceIntervalTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates, 
                                             NuTo::FullMatrix<double>& rOutputCoordinatesMin, NuTo::FullMatrix<double>& rOutputCoordinatesMax)const
     {
@@ -92,7 +91,7 @@ protected:
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
+BOOST_CLASS_EXPORT_KEY(NuTo::Metamodel)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Metamodel)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION

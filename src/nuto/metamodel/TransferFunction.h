@@ -1,3 +1,5 @@
+// $Id$
+
 /*******************************************************************************
  Bauhaus-Universitaet Weimar
  Author: Joerg F. Unger,  September 2009
@@ -5,14 +7,10 @@
 
 #ifndef TRANSFER_FUNCTION_H
 #define TRANSFER_FUNCTION_H
+
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 namespace NuTo
@@ -48,7 +46,7 @@ public:
     //! @param ar         archive
     //! @param version    version
 	template<class Archive>
-    void serialize(Archive & ar, const unsigned int version){}
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
     virtual eTransferFunction get_enum()const=0;
@@ -349,8 +347,16 @@ public:
 }  // namespace surrogate
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::TransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::EmptyTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::HardLimTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::HardLimsTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::PureLinTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::SatLinTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::SatLinsTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::LogSigTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::TanSigTransferFunction)
+BOOST_CLASS_EXPORT_KEY(NuTo::PosLinTransferFunction)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 #endif // TRANSFER_FUNCTION_H

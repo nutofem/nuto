@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef NodeCoordinatesDisplacementsRotations3D_H
 #define NodeCoordinatesDisplacementsRotations3D_H
 

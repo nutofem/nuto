@@ -1,14 +1,10 @@
+// $Id$
+
 #ifndef CALLBACKHANDLER_H
 #define CALLBACKHANDLER_H
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
@@ -37,10 +33,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-    	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 	virtual void SetParameters(const NuTo::FullMatrix<double>& rParameters)
@@ -83,7 +76,7 @@ public:
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
+BOOST_CLASS_EXPORT_KEY(NuTo::CallbackHandler)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackHandler)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION

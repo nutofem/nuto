@@ -27,6 +27,8 @@ class EngineeringStrain2D
     friend class ConstitutiveMisesPlasticity;
     friend class NonlocalDamagePlasticity;
     friend class ConstitutiveEngineeringStressStrain;
+    friend class ConstraintDisplacementsPeriodic2D;
+    friend class StructureIp;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure
@@ -36,6 +38,9 @@ public:
 
     //! @brief ... copy constructor
     EngineeringStrain2D(const DeformationGradient2D& rDeformationGradient);
+
+    //! @brief ... copy constructor
+    EngineeringStrain2D(const EngineeringStrain2D& rEngineeringStrain2D);
 
     //! @brief ... get number of strain components
     //! @return ... number of strain components

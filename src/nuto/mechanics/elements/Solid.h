@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef SOLID_H
 #define SOLID_H
 

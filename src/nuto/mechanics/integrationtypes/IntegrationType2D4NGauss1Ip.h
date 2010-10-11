@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 #ifndef IntegrationType2D4NGauss1Ip_H
 #define IntegrationType2D4NGauss1Ip_H
 

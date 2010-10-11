@@ -25,6 +25,13 @@ NuTo::EngineeringStrain2D::EngineeringStrain2D(const DeformationGradient2D& rDef
     mEngineeringStrain[2] = rDeformationGradient.GetDeformationGradient2D()[1]+rDeformationGradient.GetDeformationGradient2D()[2];
 }
 
+NuTo::EngineeringStrain2D::EngineeringStrain2D(const EngineeringStrain2D& rEngineeringStrain)
+{
+    mEngineeringStrain[0] = rEngineeringStrain.mEngineeringStrain[0];
+    mEngineeringStrain[1] = rEngineeringStrain.mEngineeringStrain[1];
+    mEngineeringStrain[2] = rEngineeringStrain.mEngineeringStrain[2];;
+}
+
 //! @brief ... get number of strain components
 //! @return ... number of strain components
 unsigned int NuTo::EngineeringStrain2D::GetNumberOfComponents() const

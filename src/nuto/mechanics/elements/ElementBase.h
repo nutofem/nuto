@@ -32,6 +32,7 @@ class SparseMatrix;
 template<class T>
 class FullMatrix;
 class Solid;
+class Structure;
 class StructureBase;
 class Truss;
 class VisualizeComponentBase;
@@ -45,6 +46,7 @@ class ElementBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
+    friend class NuTo::Structure;
 
 public:
     //! @brief constructor
@@ -277,6 +279,17 @@ public:
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 #endif // ENABLE_VISUALIZE
+private:
+    //! @brief returns the Element Data Vector
+    //! this was necessary due to recursive problems for serialization (nonlocal data)
+    //! this method should only be called from the serialization routine of the structure
+    NuTo::ElementDataBase* GetDataPtr()const;
+
+    //! @brief sets the Element Data Vector
+    //! this was necessary due to recursive problems for serialization (nonlocal data)
+    //! this method should only be called from the serialization routine of the structure
+    void SetDataPtr(NuTo::ElementDataBase* rElementData);
+
 protected:
     //! @brief ... just for serialization
     ElementBase(){};

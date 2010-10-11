@@ -10,6 +10,7 @@
 
 namespace NuTo
 {
+class EngineeringStrain2D;
 template<class T> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 
@@ -46,7 +47,7 @@ public:
 
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-    virtual void SetStrain(const NuTo::FullMatrix<double>& rStrain);
+    virtual void SetStrain(const EngineeringStrain2D& rStrain);
 
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)

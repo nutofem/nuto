@@ -1,3 +1,16 @@
+// $Id$
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+
 #include <stdio.h>
 #include <vector>
 #include "nuto/metamodel/NeuralNetwork.h"
@@ -10,7 +23,54 @@
 // import most common Eigen types
 USING_PART_OF_NAMESPACE_EIGEN
 
-//namespace NuTo
+// constructor
+NuTo::NeuralNetwork::NeuralNetwork (const FullMatrix<int>& rvNumNeurons) :
+	Metamodel(),
+	CallbackHandler(),
+	mBayesian(true),
+	mUseDiagHessian(true),
+	mInitAlpha(1e-5),
+	mAccuracyGradient(0.0),
+	mMinObjective(0.0),
+	mMinDeltaObjectiveBetweenRestarts(1e-6),
+	mMinDeltaObjectiveBayesianIteration(1e-3),
+	mMaxFunctionCalls(INT_MAX),
+	mShowSteps(100),
+	mMaxBayesianIterations(INT_MAX)
+{
+    if (rvNumNeurons.GetNumColumns()!=1 && rvNumNeurons.GetNumRows()!=0)
+    {
+        throw MetamodelException("NuTo::NeuralNetwork::NeuralNetwork - The matrix for the number of neurons per hidden layer should have only a single column.");
+    }
+    mvNumNeurons.resize(rvNumNeurons.GetNumRows());
+    memcpy(&(mvNumNeurons[0]),rvNumNeurons.mEigenMatrix.data(),mvNumNeurons.size()*sizeof(int));
+	mNumLayers = mvNumNeurons.size()+1;
+	mvNumNeurons.resize(mNumLayers);  //output layer is included
+	mvNumNeurons.insert(mvNumNeurons.begin(),0);         //input layer is included
+	mvTransferFunction.resize(mNumLayers,0);
+}
+
+//! constructor required for serialization (private)
+NuTo::NeuralNetwork::NeuralNetwork () :
+	Metamodel(),
+	CallbackHandler(),
+	mBayesian(true),
+	mUseDiagHessian(true),
+	mInitAlpha(1e-5),
+	mAccuracyGradient(0.0),
+	mMinObjective(0.0),
+	mMinDeltaObjectiveBetweenRestarts(1e-6),
+	mMinDeltaObjectiveBayesianIteration(1e-3),
+	mMaxFunctionCalls(INT_MAX),
+	mShowSteps(100),
+	mMaxBayesianIterations(INT_MAX)
+{
+	mNumLayers = 1;
+	mvNumNeurons.resize(mNumLayers);  //output layer is included
+	mvNumNeurons.insert(mvNumNeurons.begin(),0);         //input layer is included
+	mvTransferFunction.resize(mNumLayers,0);
+}
+
 
 double NuTo::NeuralNetwork::Objective()const
 {
@@ -1125,35 +1185,7 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 			oba & boost::serialization::make_nvp ( "Object_type", tmpString );
 			if ( tmpString!=GetTypeId() )
 				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-			int numRows, numColumns;
-			std::vector<double> vCovarianceInv;
-			oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( Metamodel );
-			oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-			oba & BOOST_SERIALIZATION_NVP ( mNumLayers )
-		        & BOOST_SERIALIZATION_NVP ( mBayesian )
-				& BOOST_SERIALIZATION_NVP ( mUseDiagHessian )
-				& BOOST_SERIALIZATION_NVP ( mvTransferFunction )
-				& BOOST_SERIALIZATION_NVP ( mvNumNeurons )
-				& BOOST_SERIALIZATION_NVP ( mvWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumBiases )
-				& BOOST_SERIALIZATION_NVP ( mvBias )
-				& BOOST_SERIALIZATION_NVP ( vCovarianceInv )
-                & BOOST_SERIALIZATION_NVP ( numRows )
-                & BOOST_SERIALIZATION_NVP ( numColumns )
-				& BOOST_SERIALIZATION_NVP ( mvAlpha )
-				& BOOST_SERIALIZATION_NVP ( mInitAlpha )
-				& BOOST_SERIALIZATION_NVP ( mAccuracyGradient )
-				& BOOST_SERIALIZATION_NVP ( mMinObjective )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBetweenRestarts )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBayesianIteration )
-				& BOOST_SERIALIZATION_NVP ( mMaxFunctionCalls )
-				& BOOST_SERIALIZATION_NVP ( mShowSteps )
-				& BOOST_SERIALIZATION_NVP ( mMaxBayesianIterations );
-
-			mvCovarianceInv.resize(numRows,numColumns);
-			memcpy ( mvCovarianceInv.data(), & ( vCovarianceInv[0] ),numRows * numColumns *sizeof ( double ) );
+            oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
 		}
 		else if (rType=="XML")
 		{
@@ -1161,39 +1193,7 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 			oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
 			if ( tmpString!=GetTypeId() )
 				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-			oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
-			if ( tmpString!=GetTypeId() )
-				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-			int numRows, numColumns;
-			std::vector<double> vCovarianceInv;
-			oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( Metamodel );
-			oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-			oxa & BOOST_SERIALIZATION_NVP ( mNumLayers )
-		        & BOOST_SERIALIZATION_NVP ( mBayesian )
-				& BOOST_SERIALIZATION_NVP ( mUseDiagHessian )
-				& BOOST_SERIALIZATION_NVP ( mvTransferFunction )
-				& BOOST_SERIALIZATION_NVP ( mvNumNeurons )
-				& BOOST_SERIALIZATION_NVP ( mvWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumBiases )
-				& BOOST_SERIALIZATION_NVP ( mvBias )
-				& BOOST_SERIALIZATION_NVP ( vCovarianceInv )
-                & BOOST_SERIALIZATION_NVP ( numRows )
-                & BOOST_SERIALIZATION_NVP ( numColumns )
-				& BOOST_SERIALIZATION_NVP ( mvAlpha )
-				& BOOST_SERIALIZATION_NVP ( mInitAlpha )
-				& BOOST_SERIALIZATION_NVP ( mAccuracyGradient )
-				& BOOST_SERIALIZATION_NVP ( mMinObjective )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBetweenRestarts )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBayesianIteration )
-				& BOOST_SERIALIZATION_NVP ( mMaxFunctionCalls )
-				& BOOST_SERIALIZATION_NVP ( mShowSteps )
-				& BOOST_SERIALIZATION_NVP ( mMaxBayesianIterations );
-
-			mvCovarianceInv.resize(numRows,numColumns);
-			memcpy ( mvCovarianceInv.data(), & ( vCovarianceInv[0] ),numRows * numColumns *sizeof ( double ) );
+            oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
 		}
 		else if (rType=="TEXT")
 		{
@@ -1201,40 +1201,7 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 			ota & boost::serialization::make_nvp ( "Object_type", tmpString );
 			if ( tmpString!=GetTypeId() )
 				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-			ota & boost::serialization::make_nvp ( "Object_type", tmpString );
-			if ( tmpString!=GetTypeId() )
-				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-			int numRows, numColumns;
-			std::vector<double> vCovarianceInv;
-			ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( Metamodel );
-			ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-			ota & BOOST_SERIALIZATION_NVP ( mNumLayers )
-			    & BOOST_SERIALIZATION_NVP ( mNumLayers )
-		        & BOOST_SERIALIZATION_NVP ( mBayesian )
-				& BOOST_SERIALIZATION_NVP ( mUseDiagHessian )
-				& BOOST_SERIALIZATION_NVP ( mvTransferFunction )
-				& BOOST_SERIALIZATION_NVP ( mvNumNeurons )
-				& BOOST_SERIALIZATION_NVP ( mvWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumBiases )
-				& BOOST_SERIALIZATION_NVP ( mvBias )
-				& BOOST_SERIALIZATION_NVP ( vCovarianceInv )
-                & BOOST_SERIALIZATION_NVP ( numRows )
-                & BOOST_SERIALIZATION_NVP ( numColumns )
-				& BOOST_SERIALIZATION_NVP ( mvAlpha )
-				& BOOST_SERIALIZATION_NVP ( mInitAlpha )
-				& BOOST_SERIALIZATION_NVP ( mAccuracyGradient )
-				& BOOST_SERIALIZATION_NVP ( mMinObjective )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBetweenRestarts )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBayesianIteration )
-				& BOOST_SERIALIZATION_NVP ( mMaxFunctionCalls )
-				& BOOST_SERIALIZATION_NVP ( mShowSteps )
-				& BOOST_SERIALIZATION_NVP ( mMaxBayesianIterations );
-
-			mvCovarianceInv.resize(numRows,numColumns);
-			memcpy ( mvCovarianceInv.data(), & ( vCovarianceInv[0] ),numRows * numColumns *sizeof ( double ) );
+            ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
 		}
 		else
 		{
@@ -1271,97 +1238,19 @@ void NuTo::NeuralNetwork::Save (const std::string &filename, std::string rType )
 		{
 			boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
 			oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
-			int numRows = mvCovarianceInv.rows(),
-				numColumns = mvCovarianceInv.cols();
-			std::vector<double> vCovarianceInv(numRows*numColumns);
-			memcpy ( & ( vCovarianceInv[0] ),mvCovarianceInv.data(),numRows * numColumns *sizeof ( double ) );
-			oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( Metamodel );
-			oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-			oba & BOOST_SERIALIZATION_NVP ( mNumLayers )
-		        & BOOST_SERIALIZATION_NVP ( mBayesian )
-				& BOOST_SERIALIZATION_NVP ( mUseDiagHessian )
-				& BOOST_SERIALIZATION_NVP ( mvTransferFunction )
-				& BOOST_SERIALIZATION_NVP ( mvNumNeurons )
-				& BOOST_SERIALIZATION_NVP ( mvWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumBiases )
-				& BOOST_SERIALIZATION_NVP ( mvBias )
-				& BOOST_SERIALIZATION_NVP ( vCovarianceInv )
-                & BOOST_SERIALIZATION_NVP ( numRows )
-                & BOOST_SERIALIZATION_NVP ( numColumns )
-				& BOOST_SERIALIZATION_NVP ( mvAlpha )
-				& BOOST_SERIALIZATION_NVP ( mInitAlpha )
-				& BOOST_SERIALIZATION_NVP ( mAccuracyGradient )
-				& BOOST_SERIALIZATION_NVP ( mMinObjective )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBetweenRestarts )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBayesianIteration )
-				& BOOST_SERIALIZATION_NVP ( mMaxFunctionCalls )
-				& BOOST_SERIALIZATION_NVP ( mShowSteps )
-				& BOOST_SERIALIZATION_NVP ( mMaxBayesianIterations );
+			oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
 		}
 		else if (rType=="XML")
 		{
 			boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
 			oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
-			int numRows = mvCovarianceInv.rows(),
-				numColumns = mvCovarianceInv.cols();
-			std::vector<double> vCovarianceInv(numRows*numColumns);
-			memcpy ( & ( vCovarianceInv[0] ),mvCovarianceInv.data(),numRows * numColumns *sizeof ( double ) );
-			oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( Metamodel );
-			oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-			oxa & BOOST_SERIALIZATION_NVP ( mNumLayers )
-		        & BOOST_SERIALIZATION_NVP ( mBayesian )
-				& BOOST_SERIALIZATION_NVP ( mUseDiagHessian )
-				& BOOST_SERIALIZATION_NVP ( mvTransferFunction )
-				& BOOST_SERIALIZATION_NVP ( mvNumNeurons )
-				& BOOST_SERIALIZATION_NVP ( mvWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumBiases )
-				& BOOST_SERIALIZATION_NVP ( mvBias )
-				& BOOST_SERIALIZATION_NVP ( vCovarianceInv )
-                & BOOST_SERIALIZATION_NVP ( numRows )
-                & BOOST_SERIALIZATION_NVP ( numColumns )
-				& BOOST_SERIALIZATION_NVP ( mvAlpha )
-				& BOOST_SERIALIZATION_NVP ( mInitAlpha )
-				& BOOST_SERIALIZATION_NVP ( mAccuracyGradient )
-				& BOOST_SERIALIZATION_NVP ( mMinObjective )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBetweenRestarts )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBayesianIteration )
-				& BOOST_SERIALIZATION_NVP ( mMaxFunctionCalls )
-				& BOOST_SERIALIZATION_NVP ( mShowSteps )
-				& BOOST_SERIALIZATION_NVP ( mMaxBayesianIterations );
+			oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
 		}
 		else if (rType=="TEXT")
 		{
 			boost::archive::text_oarchive ota ( ofs, std::ios::binary );
 			ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
-			int numRows = mvCovarianceInv.rows(),
-				numColumns = mvCovarianceInv.cols();
-			std::vector<double> vCovarianceInv(numRows*numColumns);
-			memcpy ( & ( vCovarianceInv[0] ),mvCovarianceInv.data(),numRows * numColumns *sizeof ( double ) );
-			ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( Metamodel );
-			ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-			ota & BOOST_SERIALIZATION_NVP ( mNumLayers )
-		        & BOOST_SERIALIZATION_NVP ( mBayesian )
-				& BOOST_SERIALIZATION_NVP ( mUseDiagHessian )
-				& BOOST_SERIALIZATION_NVP ( mvTransferFunction )
-				& BOOST_SERIALIZATION_NVP ( mvNumNeurons )
-				& BOOST_SERIALIZATION_NVP ( mvWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumWeights )
-				& BOOST_SERIALIZATION_NVP ( mNumBiases )
-				& BOOST_SERIALIZATION_NVP ( mvBias )
-				& BOOST_SERIALIZATION_NVP ( vCovarianceInv )
-                & BOOST_SERIALIZATION_NVP ( numRows )
-                & BOOST_SERIALIZATION_NVP ( numColumns )
-				& BOOST_SERIALIZATION_NVP ( mvAlpha )
-				& BOOST_SERIALIZATION_NVP ( mInitAlpha )
-				& BOOST_SERIALIZATION_NVP ( mAccuracyGradient )
-				& BOOST_SERIALIZATION_NVP ( mMinObjective )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBetweenRestarts )
-				& BOOST_SERIALIZATION_NVP ( mMinDeltaObjectiveBayesianIteration )
-				& BOOST_SERIALIZATION_NVP ( mMaxFunctionCalls )
-				& BOOST_SERIALIZATION_NVP ( mShowSteps )
-				& BOOST_SERIALIZATION_NVP ( mMaxBayesianIterations );
+			ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
 		}
 		else
 		{
@@ -1391,14 +1280,20 @@ void NuTo::NeuralNetwork::Save (const std::string &filename, std::string rType )
 //! @brief serializes the class, this is the load routine
 //! @param ar         archive
 //! @param version    version
+template void NuTo::NeuralNetwork::load(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NeuralNetwork::load(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NeuralNetwork::load(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::NeuralNetwork::load(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NeuralNetwork (load)" << std::endl;
+#endif
 	std::vector<double> vCovarianceInv;
     int numRows, numColumns;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Metamodel)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CallbackHandler)
-       & BOOST_SERIALIZATION_NVP(mNumLayers)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Metamodel);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CallbackHandler);
+    ar & BOOST_SERIALIZATION_NVP(mNumLayers)
        & BOOST_SERIALIZATION_NVP(mBayesian)
        & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
        & BOOST_SERIALIZATION_NVP(mvTransferFunction)
@@ -1422,21 +1317,32 @@ void NuTo::NeuralNetwork::load(Archive & ar, const unsigned int version)
 
     mvCovarianceInv.resize(numRows,numColumns);
 	memcpy ( mvCovarianceInv.data(),&(vCovarianceInv[0]),numRows * numColumns *sizeof ( double ) );
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NeuralNetwork (load)" << std::endl;
+#endif
 }
 
 //! @brief serializes the class, this is the save routine
 //! @param ar         archive
 //! @param version    version
+template void NuTo::NeuralNetwork::save(boost::archive::binary_oarchive & ar, const unsigned int version) const;
+template void NuTo::NeuralNetwork::save(boost::archive::xml_oarchive & ar, const unsigned int version) const;
+template void NuTo::NeuralNetwork::save(boost::archive::text_oarchive & ar, const unsigned int version) const;
 template<class Archive>
 void NuTo::NeuralNetwork::save(Archive & ar, const unsigned int version) const
 {
-
-	int numRows = mvCovarianceInv.rows(),
-	    numColumns = mvCovarianceInv.cols();
-	std::vector<double> vCovarianceInv (numRows*numColumns);
-	memcpy ( & ( vCovarianceInv[0] ),mvCovarianceInv.data(),numRows*numColumns *sizeof ( double ) );
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Metamodel)
-       & BOOST_SERIALIZATION_NVP(mNumLayers)
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NeuralNetwork (save)" << std::endl;
+#endif
+    // copy covariance matrix
+	int numRows = mvCovarianceInv.rows();
+	int	numColumns = mvCovarianceInv.cols();
+	std::vector<double> vCovarianceInv(numRows*numColumns);
+	memcpy ( & ( vCovarianceInv[0] ),mvCovarianceInv.data(),numRows * numColumns *sizeof ( double ) );
+	// start serialization
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Metamodel);
+	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
+    ar & BOOST_SERIALIZATION_NVP(mNumLayers)
        & BOOST_SERIALIZATION_NVP(mBayesian)
        & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
        & BOOST_SERIALIZATION_NVP(mvTransferFunction)
@@ -1457,7 +1363,11 @@ void NuTo::NeuralNetwork::save(Archive & ar, const unsigned int version) const
        & BOOST_SERIALIZATION_NVP(mMaxFunctionCalls)
        & BOOST_SERIALIZATION_NVP(mShowSteps)
        & BOOST_SERIALIZATION_NVP(mMaxBayesianIterations);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NeuralNetwork (save)" << std::endl;
+#endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NeuralNetwork)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file

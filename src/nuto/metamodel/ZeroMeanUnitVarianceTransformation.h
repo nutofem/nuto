@@ -3,6 +3,11 @@
 #ifndef ZEROMEANUNITVARIANCETRANSFORMATION_H
 #define ZEROMEANUNITVARIANCETRANSFORMATION_H
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 #include "nuto/metamodel/Transformation.h"
 
 namespace NuTo
@@ -24,11 +29,9 @@ public:
     ZeroMeanUnitVarianceTransformation(unsigned int rCoordinate);
 	
     //! @brief copy constructor
-    ZeroMeanUnitVarianceTransformation(const ZeroMeanUnitVarianceTransformation &other)
-	{
-	    mCoordinate = other.mCoordinate;
-	}
-    
+    //! @param other ... other object
+    ZeroMeanUnitVarianceTransformation(const ZeroMeanUnitVarianceTransformation &other);
+
     //! @brief destructor
 	~ZeroMeanUnitVarianceTransformation()
 	{}
@@ -38,13 +41,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Transformation)
-           & BOOST_SERIALIZATION_NVP(mCoordinate)
-           & BOOST_SERIALIZATION_NVP(mMean)
-           & BOOST_SERIALIZATION_NVP(mStandardDeviation);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief build the transformation using the given Points
@@ -63,9 +60,15 @@ protected:
     int  mCoordinate;     //!< coordinate within the point coordinates (0<=entry<dim)
     double  mMean;        //!< mean value of given coordinates
     double  mStandardDeviation; //!< standard deviation of given coordinates
+
+    //! @brief default constructor required by serialize
+    ZeroMeanUnitVarianceTransformation(){}
 };
 
 
 } // namespace nuto
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ZeroMeanUnitVarianceTransformation)
+#endif  // ENABLE_SERIALIZATION
 
 #endif // ZEROMEANUNITVARIANCETRANSFORMATION_H

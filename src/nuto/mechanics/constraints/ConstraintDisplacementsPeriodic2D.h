@@ -4,6 +4,7 @@
 #define CONSTRAINTDISPLACEMENTS2PERIODIC2D_H
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 
 namespace NuTo
 {
@@ -25,7 +26,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, NuTo::FullMatrix<double> rStrain,
+    ConstraintDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, const EngineeringStrain2D& rStrain,
             NuTo::FullMatrix<double> crackOpening, double rRadiusToCrackWithoutConstraints,
             const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
             const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight);
@@ -36,7 +37,7 @@ public:
 
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
-    void SetStrain(const NuTo::FullMatrix<double>& rStrain);
+    void SetStrain(const EngineeringStrain2D& rStrain);
 
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
@@ -81,7 +82,7 @@ protected:
     double mAngle;
 
     //! @brief average strain applied to the boundaries (epsilon_xx, epsilon_yy, gamma_xy)
-    double mStrain[3];
+    EngineeringStrain2D mStrain;
 
     //! @brief crack opening in x and y-direction
     double mCrackOpening[2];

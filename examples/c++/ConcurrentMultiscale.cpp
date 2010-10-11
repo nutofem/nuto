@@ -35,7 +35,7 @@ try
     double YoungsModulusDamage(20000);
     myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatDamage,YoungsModulusDamage);
     myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.2);
-    double nonlocalRadius(10);
+    double nonlocalRadius(1);
     myStructureFineScale.ConstitutiveLawSetNonlocalRadius(myMatDamage,nonlocalRadius);
     double fct(2);
     myStructureFineScale.ConstitutiveLawSetTensileStrength(myMatDamage,fct);

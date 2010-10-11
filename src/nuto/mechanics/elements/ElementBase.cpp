@@ -71,9 +71,11 @@ template<class Archive>
 void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ElementBase " << mStructure->ElementGetId(this) <<std::endl;
+    std::cout << "start serialize ElementBase " << mStructure->ElementGetId(this)  << " ptr " << mStructure <<std::endl;
 #endif
     ar & BOOST_SERIALIZATION_NVP(mStructure)
+    // the element data has to be saved on the main structure due to problems with a recursion on the stack (nonlocal data contains ptr to elements)
+    // the idea is to first serialize all the elements in the table, and afterwards update the pointers of the element data in the element data routine
        & BOOST_SERIALIZATION_NVP(mElementData);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ElementBase" << std::endl;
@@ -692,5 +694,21 @@ const NuTo::Truss* NuTo::ElementBase::AsTruss()const
 NuTo::Truss* NuTo::ElementBase::AsTruss()
 {
 	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
+}
+
+//! @brief returns the Element Data Vector
+//! this was necessary due to recursive problems for serialization (nonlocal data)
+//! this method should only be called from the serialization routine of the structure
+NuTo::ElementDataBase* NuTo::ElementBase::GetDataPtr()const
+{
+    return mElementData;
+}
+
+//! @brief sets the Element Data Vector
+//! this was necessary due to recursive problems for serialization (nonlocal data)
+//! this method should only be called from the serialization routine of the structure
+void NuTo::ElementBase::SetDataPtr(NuTo::ElementDataBase* rElementData)
+{
+    mElementData = rElementData;
 }
 

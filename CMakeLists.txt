@@ -5,13 +5,13 @@ PROJECT(NuTo CXX C Fortran)
 # Minimum version for cmake 2.6
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
-SET(CMAKE_VERBOSE_MAKEFILE Off)
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
 OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 OPTION(ENABLE_DEBUG "enables debug information" FALSE)
-OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" true)
+OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" false)
 OPTION(ENABLE_SERIALIZATION "enables serialization" true)

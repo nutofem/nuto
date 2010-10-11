@@ -13,6 +13,8 @@
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -114,8 +116,8 @@ public:
             mEigenMatrix.resize ( rows,cols );
     }
 
-    template <class F>
-    friend std::ostream& operator<<(std::ostream& os, const FullMatrix<F>& r);
+//    template <class F>
+//    friend std::ostream& operator<<(std::ostream& os, const FullMatrix<F>& r);
 
     FullMatrix<T> operator+ ( const FullMatrix<T> &other ) const
     {
@@ -392,6 +394,9 @@ public:
     template<class Archive>
     void load(Archive & ar, const unsigned int version)
     {
+#ifdef DEBUG_SERIALIZATION
+    	std::cout << "start serialize FullMatrix (load)" << std::endl;
+#endif
         std::vector<T> dataVec;
         int numRows, numColumns;
         ar & boost::serialization::make_nvp ("Matrix",boost::serialization::base_object< Matrix<T> > ( *this ) )
@@ -401,6 +406,9 @@ public:
 
         Resize(numRows,numColumns);
         memcpy ( mEigenMatrix.data(),&(dataVec[0]),numRows * numColumns *sizeof ( T ) );
+#ifdef DEBUG_SERIALIZATION
+    	std::cout << "finish serialize FullMatrix (load)" << std::endl;
+#endif
     }
 
     //! @brief serializes the class, this is the save routine
@@ -409,6 +417,9 @@ public:
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
+#ifdef DEBUG_SERIALIZATION
+    	std::cout << "start serialize FullMatrix (save)" << std::endl;
+#endif
         std::vector<T> dataVec ( GetNumRows() *GetNumColumns());
         memcpy ( & ( dataVec[0] ),mEigenMatrix.data(),GetNumRows() *GetNumColumns() *sizeof ( T ) );
         int numRows = mEigenMatrix.rows(),
@@ -417,6 +428,9 @@ public:
         & BOOST_SERIALIZATION_NVP(dataVec)
         & BOOST_SERIALIZATION_NVP(numRows)
         & BOOST_SERIALIZATION_NVP(numColumns);
+#ifdef DEBUG_SERIALIZATION
+    	std::cout << "finish serialize FullMatrix (save)" << std::endl;
+#endif
     }
 
 
@@ -938,4 +952,11 @@ return os;
 }
 
 } //NAMESPACE NUTO
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_KEY(NuTo::FullMatrix<double>)
+BOOST_CLASS_EXPORT_KEY(NuTo::FullMatrix<int>)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION
+
 #endif // FULL_MATRIX_H

@@ -1,3 +1,5 @@
+// $Id$
+
 /*******************************************************************************
 Bauhaus-Universit�t Weimar
 Author: Joerg F. Unger,  Septermber 2009
@@ -6,6 +8,11 @@ Author: Joerg F. Unger,  Septermber 2009
 
 #ifndef MINMAXTRANSFORMATION_H
 #define MINMAXTRANSFORMATION_H
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif  // ENABLE_SERIALIZATION
 
 #include "nuto/metamodel/Transformation.h"
 
@@ -22,21 +29,17 @@ class MinMaxTransformation : public Transformation
 #endif  // ENABLE_SERIALIZATION
 
 public:
-
-    MinMaxTransformation(unsigned int rCoordinate, double rLb, double rUb) : Transformation()
-	{
-	    mCoordinate = rCoordinate;
-	    mLb = rLb;
-	    mUb = rUb;
-	}
+	//! @brief constructor
+	//! @param rCoordinate ... coordinate within the point coordinates (0<=entry<dim)
+	//! @param rLb ... lower bound after the transformation
+	//! @param rUb ... upper bound after the transformation
+    MinMaxTransformation(unsigned int rCoordinate, double rLb, double rUb);
 	
-    MinMaxTransformation(const MinMaxTransformation &other)
-	{
-	    mCoordinate = other.mCoordinate;
-	    mLb = other.mLb;
-	    mUb = other.mUb;
-	}
-    
+    //! @brief copy constructor
+    //! @param rOther ... object which is copied
+    MinMaxTransformation(const MinMaxTransformation &rOther);
+
+    //! @brief destructor
 	~MinMaxTransformation()
 	{}
 
@@ -45,24 +48,19 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Transformation)
-           & BOOST_SERIALIZATION_NVP(mCoordinate)
-           & BOOST_SERIALIZATION_NVP(mMin)
-           & BOOST_SERIALIZATION_NVP(mMax)
-           & BOOST_SERIALIZATION_NVP(mUb)
-           & BOOST_SERIALIZATION_NVP(mLb);
-    }
+    void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief build the transformation using the given Points
+    //! @param rCoordinates ... input point coordinates
     virtual void Build(const FullMatrix<double>& rCoordinates);
 
     //! @brief transform the given points in forward direction x = f(x) 
+    //! @brief rCoordinates ... input point coordinates
     virtual void TransformForward(FullMatrix<double>& rCoordinates)const;
 
     //! @brief transform the given points in backward direction x = f^(-1)(x)
+    //! @brief rCoordinates ... input point coordinates
     virtual void TransformBackward(FullMatrix<double>& rCoordinates)const;
 
 protected:
@@ -71,9 +69,15 @@ protected:
     double  mMax;        //!< max value of given coordinates
     double  mUb;         //!< upper bound after the transformation
     double  mLb;         //!< lower bound after the transformation
+
+    // default constructor required by serialize
+    MinMaxTransformation() : Transformation(){}
 };
-
-
 } // namespace nuto
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_KEY(NuTo::MinMaxTransformation)
+#endif // SWIG
+#endif  // ENABLE_SERIALIZATION
 
 #endif /* MINMAXTRANSFORMATION_H */

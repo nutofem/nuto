@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef NodeGridDisplacements_1d_H
 #define NodeGridDisplacements_1d_H
 

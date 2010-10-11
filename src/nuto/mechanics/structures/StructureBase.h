@@ -39,6 +39,7 @@ template <class T> class FullMatrix;
 class NodeBase;
 template<class T> class SparseMatrixCSRSymmetric;
 template <class T> class SparseMatrixCSRVector2General;
+class EngineeringStrain2D;
 
 class VisualizeComponentBase;
 
@@ -507,6 +508,13 @@ public:
     //!@param rConstraintEquation id of the constraint equation
     //!@param rStrain new strain
     void ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain);
+
+#ifndef SWIG
+    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
+    //!@param rConstraintEquation id of the constraint equation
+    //!@param rStrain new strain
+    void ConstraintPeriodicSetStrain2D(int rConstraintEquation, const NuTo::EngineeringStrain2D& rStrain);
+#endif
 
     //!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
     //!@param rConstraintEquation id of the constraint equation

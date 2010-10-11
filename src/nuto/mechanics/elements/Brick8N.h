@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 #ifndef Brick8N_H
 #define Brick8N_H
 
