@@ -11,6 +11,7 @@
 
 #include "nuto/metamodel/Transformation.h"
 
+#ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Transformation::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::Transformation::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
@@ -30,3 +31,4 @@ void NuTo::Transformation::serialize(Archive & ar, const unsigned int version)
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Transformation)
+#endif // ENABLE_SERIALIZATION
