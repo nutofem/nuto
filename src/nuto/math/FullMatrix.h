@@ -135,9 +135,10 @@ public:
 
     FullMatrix<T> operator* ( const FullMatrix<T> &other ) const
     {
-        if ( mEigenMatrix.cols() !=other.mEigenMatrix.rows() )
-            throw MathException ( std::string ( "[FullMatrix::operator*] Number of columns of the first matrix must be identical to the number of rows of the second matrix." ) );
-        return FullMatrix<T> ( mEigenMatrix*other.mEigenMatrix );
+    	if ( mEigenMatrix.cols() !=other.mEigenMatrix.rows() )
+        	throw MathException ( std::string ( "[FullMatrix::operator*] Number of columns of the first matrix must be identical to the number of rows of the second matrix." ) );
+
+    	return FullMatrix<T> ( mEigenMatrix*other.mEigenMatrix );
     }
 
     FullMatrix<T> operator* ( const T &other ) const

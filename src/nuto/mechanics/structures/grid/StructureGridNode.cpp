@@ -69,6 +69,7 @@ NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNu
         std::cout<<__FILE__<<" "<<__LINE__<<" node number "<<nodeNumber<<std::endl;
     	throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
     }
+    return 0;
 }
 
 //! @brief a reference to a node
@@ -256,12 +257,13 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
         coincidentVoxels[6]=-1;
         coincidentVoxels[7]=-1;
     }
-
-    std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: "<<std::endl;
-    for (int count=0;count<8;count++)
-        std::cout<< coincidentVoxels[count]<<" ";
-    std::cout<<" "<<std::endl;
-
+    if (mVerboseLevel>3)
+    {
+    	std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: ";
+    	for (int count=0;count<8;count++)
+    		std::cout<< coincidentVoxels[count]<<" ";
+    	std::cout<<" "<<std::endl;
+    }
     return coincidentVoxels;
 }
 //! @brief creates a node

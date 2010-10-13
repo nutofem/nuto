@@ -38,8 +38,8 @@ int NuTo::ConjugateGradientLinear::Optimize()
 
 	optimization_return_attributes returnValue;
 
-	FullMatrix<double> gradientOrig;
-	FullMatrix<double> hessianOrig;
+	FullMatrix<double> gradientOrig(GetNumParameters(),1);
+	FullMatrix<double> hessianOrig(GetNumParameters(),1);
 	Eigen::VectorXd prevParameters;
 	Eigen::VectorXd gradientScaled;
 	Eigen::VectorXd scaleFactorsInv(GetNumParameters());
@@ -298,7 +298,7 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
     Voxel8N* thisElement=0;
    	thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(0));
 	std::vector<double> start;
-	int dofsElem=thisElement->GetNumDofs();
+//	int dofsElem=thisElement->GetNumDofs();
 
    for (int elementNumber=0;elementNumber<numElems;elementNumber++)
     {
@@ -324,17 +324,13 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
 		//loop over all nodes of one element
         for (int node=0;node<thisElement->GetNumNodes();++node)
         {
-			std::cout<< __FILE__<<" "<<__LINE__<<"node number "<< node<<" of element "<<elementNumber<< std::endl;
 			//get pointer to this gridNum node
 			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 			//which DOFs belonging to this element
-//		    std::cout<< __FILE__<<" "<<__LINE__<<" "<<(thisNode->GetGlobalDofs())[0]<< " " <<(thisNode->GetGlobalDofs())[1]<< std::endl;
-        	for (int disp = 0;disp<numDofs;++disp)
+       	for (int disp = 0;disp<numDofs;++disp)
         		dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
 
 			//has to be added when dofs flexible,
-			//numDofs = thisNode->GetNumDisplacements();
-
 
 			//loop over all dofs of one node
 			//write for this dofs values to local vector
@@ -390,19 +386,19 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
 
 	    if (startSolution)
 	    {
-			std::cout<<__FILE__<<" "<<__LINE__<<"vector r "<<std::endl;
-	    	//forceVector-localReturn;
+			//std::cout<<__FILE__<<" "<<__LINE__<<"vector r "<<std::endl;
+	    	//! @TODO forceVector-localReturn;
+
+			for (int countDof=0; countDof<localdofs; ++countDof)
+				returnVector(activeDofs[countDof],0) += localReturn(countDof,0);
 	    }
 	    else
 	    {
-			std::cout<<__FILE__<<" "<<__LINE__<<"vector h "<<std::endl;
-
-			for (int countDof=0; countDof<dofsElem; ++countDof)
-				returnVector(dofs[countDof],0) = localReturn(countDof,0);
+			//std::cout<<__FILE__<<" "<<__LINE__<<"vector h "<<std::endl;
+			for (int countDof=0; countDof<localdofs; ++countDof)
+				returnVector(activeDofs[countDof],0) += localReturn(countDof,0);
 	    }
     }
-
-			std::cout<<__FILE__<<" "<<__LINE__<<"end "<<std::endl;
 }
 
 //! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
@@ -586,6 +582,5 @@ void NuTo::ConjugateGradientLinear::Info () const
 	std::cout<< "MaxHessianCalls" << mMaxHessianCalls << std::endl;
 	std::cout<< "MaxIterations" << mMaxIterations << std::endl;
 	std::cout<< "ShowSteps" << mShowSteps << std::endl;
-	std::cout<< "AccuracyGradient" << mAccuracyGradient << std::endl;
 }
 
