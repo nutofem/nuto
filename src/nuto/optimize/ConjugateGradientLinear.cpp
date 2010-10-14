@@ -14,8 +14,10 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
+#include "nuto/mechanics/elements/Voxel8N.h"
 #define machine_precision 1e-15
 //sqrt machine_precision
+
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 #define tol 1e-8
@@ -90,8 +92,11 @@ int NuTo::ConjugateGradientLinear::Optimize()
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction"<<std::endl;
 			CalculateStartGradient(gradientOrig);
 			gradientOrig.Info();
+			std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
 			gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
 			normGradient = gradientScaled.norm();
+			if (mVerboseLevel>4)
+				std::cout<<__FILE__<<" "<<__LINE__<<" normGradient "<<normGradient<< std::endl;
 
 			//printf("norm Grad %g\n",normGrad);
 			if (normGradient<mAccuracyGradientScaled)
@@ -267,13 +272,89 @@ void NuTo::ConjugateGradientLinear::CalcScalingFactors(int& numHessianCalls,NuTo
 //! @brief ... calculate start gradient in element-by-element way
 void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
 {
-    bool bStartSolution = true;
-    std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
-    CalculateMatrixVectorEBE(bStartSolution,gradientOrig);
-    std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
+    int numElems=mpGrid->GetNumElements();
+    NuTo::FullMatrix<int> *voxelLoc;
+    voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
+
+    int thisvoxelLocation[4]={0};
+    int corners[8]={0};
+	//array with global dof number of each dof of this element
+    int dofs[24]={0};
+    //! @TODO replace static_cast
+    int numDofs=3; //for dofs array needed
+      //! @TODO replace static_cast
+    //std::map<int> globtoloc;
+
+   	//move all this in element loop
+	Voxel8N* thisElement;
+    thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(0));
+	int dofsElem=thisElement->GetNumDofs();
+	// return vector with all dofs of one element
+	FullMatrix<double> locReturn(dofsElem,1);
+	// array of all three nodal displacements for all element nodes
+	FullMatrix<double> displacements(dofsElem,1);
+	// return vector of active dofs
+	std::vector<double> activeReturn;
+	// global external force vector (active dofs)
+	FullMatrix<double>  force(mpGrid->NodeGetNumberActiveDofs(),1);
+
+	//loop over all elements
+	for (int elementNumber=0;elementNumber<numElems;elementNumber++)
+    {
+    	//get pointer to each element
+		thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementNumber));
+
+        std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
+        //get grid location and number of corresponding voxel
+        for (int count = 0;count<4;++count)
+        	thisvoxelLocation[count]= voxelLoc->GetValue(elementNumber,count);
+
+        //get grid corners of the voxel
+        mpGrid->GetCornersOfVoxel(elementNumber, thisvoxelLocation, corners);
+
+        //get the number of the material
+        int numStiff = thisElement->GetNumLocalStiffnessMatrix();
+        //get the local stiffness matrix
+        NuTo::FullMatrix<double> *matrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
+
+ 		//loop over all nodes of one element
+        for (int node=0;node<thisElement->GetNumNodes();++node)
+        {
+			//get pointer to this gridNum node
+//			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
+			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
+
+			double locDispValues[3]={0};
+			//get displacements of one node
+			thisNode->GetDisplacements3D(locDispValues);
+			//which DOFs belonging to this node of this element
+			for (int disp = 0;disp<numDofs;++disp)
+			{
+				//save global dof number in local ordering
+				dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
+				//save diplacements of all dofs
+				displacements(node*numDofs+disp,0)=locDispValues[disp];
+			}
+        }
+        //calculate local return vector with all dofs: r=Ku
+        locReturn = matrix->operator *(displacements);
+        //reduce return vector for element with dependant dofs
+        for (int count =0; count <numDofs;++count)
+        {
+			//when global dof is active
+        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+        		//subtract (r=f-Ku) locReturn for active dofs
+        		gradientOrig(dofs[count],0) -= locReturn(count,0);
+       }
+
+        //get global external force vector
+        mpGrid->BuildGlobalExternalLoadVector(force);
+        //add global external force vector
+        gradientOrig+=force;
+
+    }
 }
-#include "nuto/mechanics/elements/Voxel8N.h"
-#include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
+
 //! @brief ... calculate matix-vector product in element-by-element way
 //! @brief ... multiply each element matrix with search direction
 void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector)
@@ -281,123 +362,85 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
 	//check if mvParamters is initialized
 	if (!&mvParameters)
  		throw OptimizeException("[ConjugateGradientLinear::GetStartGradient] mvParameters not initialized.");
-	//set search direction equal mVParameters
-	FullMatrix<double>searchDirection=mvParameters;
 
-    int numElems=mpGrid->GetNumElements();
+	//set search direction equal mvParameters
+	FullMatrix<double>origSearchDirection=mvParameters;
+
+	//new: multiply each time hole element stiffness matrix, reduce instead return vector
+	Voxel8N* thisElement=0;
+   	thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(0));
+	int dofsElem=thisElement->GetNumDofs();
+
+	int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
     voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
 
     int thisvoxelLocation[4]={0};
     int corners[8]={0};
+	//array with global dof number of each dof of this element
     int dofs[24]={0};
-    //! @TODO replace static_cast
     int numDofs=3; //for dofs array needed
-      //! @TODO replace static_cast
-    //std::map<int> globtoloc;
-    Voxel8N* thisElement=0;
-   	thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(0));
-	std::vector<double> start;
-//	int dofsElem=thisElement->GetNumDofs();
 
-   for (int elementNumber=0;elementNumber<numElems;elementNumber++)
+ 	FullMatrix<double> locReturn(dofsElem,1);
+	std::vector<double> activeReturn;
+	FullMatrix<double> origLocSearch(dofsElem,1);
+
+	//loop over all elements
+	for (int elementNumber=0;elementNumber<numElems;elementNumber++)
     {
-    	thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementNumber));
+    	//get pointer to each element
+		thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementNumber));
 
         std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
+        //get grid location and number of corresponding voxel
         for (int count = 0;count<4;++count)
         	thisvoxelLocation[count]= voxelLoc->GetValue(elementNumber,count);
 
+        //get grid corners of the voxel
         mpGrid->GetCornersOfVoxel(elementNumber, thisvoxelLocation, corners);
 
+        //get the number of the material
         int numStiff = thisElement->GetNumLocalStiffnessMatrix();
+        //get the local stiffness matrix
         NuTo::FullMatrix<double> *matrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
 
-        //count active dofs
-    	int localdofs=0;
-		// count over all local dofs
-		int dof=0;
-
-		//vector of numbers od active dofs of element
-		std::vector<int> activeDofs;
-
-		//loop over all nodes of one element
+ 		//loop over all nodes of one element
         for (int node=0;node<thisElement->GetNumNodes();++node)
         {
 			//get pointer to this gridNum node
-			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
-			//which DOFs belonging to this element
-       	for (int disp = 0;disp<numDofs;++disp)
-        		dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
+//			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
+			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 
-			//has to be added when dofs flexible,
-
-			//loop over all dofs of one node
-			//write for this dofs values to local vector
+			//which DOFs belonging to this node of this element
 			for (int disp = 0;disp<numDofs;++disp)
-			{
-				if (dofs[node*numDofs+disp]<mpGrid->NodeGetNumberActiveDofs())
-				{
-					start.push_back(searchDirection(dofs[node*numDofs+disp],0));
-					activeDofs.push_back(dof++);
-					++localdofs;
-				}
-				else
-				{
-					dof++;
-				}
-			}
+				//save global dof number in local ordering
+				//! TODO save global dofs number of each element?!
+				dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
         }
-       //reduce matrix for element with dependant dofs
-		//@TODO create map with pair int (mat nbr, bit active/non-> stiffnessmatrix)
-		NuTo::FullMatrix<double>locMatrix(localdofs,localdofs);
-		if (localdofs<24)
-		{
-			//element matrix with active dofs
-			if (activeDofs.size()==0)
-				throw OptimizeException("[ConjugateGradientLinear::] activeDofs = 0.");
-			else
-			{
-				int count1=0;
-				for (std::vector<int>::iterator it = activeDofs.begin();it!=activeDofs.end();++it)
-				{
-					int count2=0;
-					for (std::vector<int>::iterator it2 = activeDofs.begin();it2!=activeDofs.end();++it2)
-					{
-						locMatrix(count1,count2)=matrix->GetValue(*it,*it2);
-						++count2;
-					}
-					++count1;
-				}
-			}
-		}
-		else
-		{
-			locMatrix=*matrix;
-		}
+        //loop over all dofs of one element
+        for (int count=0;count<dofsElem;++count)
+        {
+			//when global dof is active
+        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+				//then write value of this dof to local vector
+        		origLocSearch(count,0)=origSearchDirection(dofs[count],0);
+        	//else global dof is dependent
+        	else
+        		//fill value of local (orig.) search direction vector with zero
+        		origLocSearch(count,0)=0;
+        }
 
-		FullMatrix<double> localStart(localdofs,1);
-		FullMatrix<double> localReturn(localdofs,1);
-
-		for (int count = 0; count< localdofs; ++count)
-			localStart(count,0)= start[count];
-
-		localReturn= locMatrix.operator *(localStart);
-
-	    if (startSolution)
-	    {
-			//std::cout<<__FILE__<<" "<<__LINE__<<"vector r "<<std::endl;
-	    	//! @TODO forceVector-localReturn;
-
-			for (int countDof=0; countDof<localdofs; ++countDof)
-				returnVector(activeDofs[countDof],0) += localReturn(countDof,0);
-	    }
-	    else
-	    {
-			//std::cout<<__FILE__<<" "<<__LINE__<<"vector h "<<std::endl;
-			for (int countDof=0; countDof<localdofs; ++countDof)
-				returnVector(activeDofs[countDof],0) += localReturn(countDof,0);
-	    }
+        //calculate local return vector with all dofs: r=Ku
+        locReturn = matrix->operator *(origLocSearch);
+        //add result to return vector for active dofs only
+        //important: do not take dependent dofs, because they are also calculated (not zero) in order to simplify the routine
+        for (int count =0; count <numDofs;++count)
+        {
+			//when global dof is active
+        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+        		//add locReturn for active dofs
+        		returnVector(dofs[count],0) += locReturn(count,0);
+        }
     }
 }
 
