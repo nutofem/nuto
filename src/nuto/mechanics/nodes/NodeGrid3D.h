@@ -15,6 +15,10 @@ class NodeGrid3D : public virtual NodeBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
+private:
+    //! @brief constructor
+     NodeGrid3D(){}
+
 public:
    //! @brief constructor
     NodeGrid3D(int rNodeGridNum);
@@ -93,4 +97,8 @@ protected:
 
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeGrid3D)
+#endif // ENABLE_SERIALIZATION
+
 #endif //NODE_GRID_3D_H

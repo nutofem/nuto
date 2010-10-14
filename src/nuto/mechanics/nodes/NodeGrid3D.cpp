@@ -5,6 +5,7 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeGrid3D.h"
 
@@ -15,14 +16,25 @@ NuTo::NodeGrid3D::NodeGrid3D(int rNodeGridNum)  : NodeBase ()
 }
 
 #ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::NodeGrid3D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::NodeGrid3D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::NodeGrid3D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::NodeGrid3D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NodeGrid3D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NodeGrid3D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    template<class Archive>
-    void NuTo::NodeGrid3D::serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase);
-    }
+void NuTo::NodeGrid3D::serialize(Archive & ar, const unsigned int version)
+{
+	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
+	& BOOST_SERIALIZATION_NVP(mNodeGridNum);
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeGrid3D)
+BOOST_CLASS_TRACKING(NuTo::NodeGrid3D, track_always)
+
 #endif // ENABLE_SERIALIZATION
 
 
