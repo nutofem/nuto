@@ -75,7 +75,7 @@ int NuTo::NodeDisplacements3D::GetDofDisplacement(int rComponent)const
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-void NuTo::NodeDisplacements3D::SetDisplacements3D(const double rDisplacements[1])
+void NuTo::NodeDisplacements3D::SetDisplacements3D(const double rDisplacements[3])
 {
     mDisplacements[0] = rDisplacements[0];
     mDisplacements[1] = rDisplacements[1];
@@ -84,7 +84,7 @@ void NuTo::NodeDisplacements3D::SetDisplacements3D(const double rDisplacements[1
 
 //! @brief writes the displacements of a node to the prescribed pointer
 //! @param rDisplacements displacements
-void NuTo::NodeDisplacements3D::GetDisplacements3D(double rDisplacements[1])const
+void NuTo::NodeDisplacements3D::GetDisplacements3D(double rDisplacements[3])const
 {
     rDisplacements[0] = mDisplacements[0];
     rDisplacements[1] = mDisplacements[1];
