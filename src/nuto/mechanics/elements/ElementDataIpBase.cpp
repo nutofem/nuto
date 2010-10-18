@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // ElementDataIpDataBase.cpp
 // created Apr 28, 2010 by Joerg F. Unger
 

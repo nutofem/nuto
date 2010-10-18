@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // VisualizeComponentDamage.cpp
 // created Apr 27, 2010 by Joerg F. Unger
 

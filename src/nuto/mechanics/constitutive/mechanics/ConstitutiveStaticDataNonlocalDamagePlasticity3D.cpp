@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
 // created May 6, 2010 by Joerg F. Unger
 

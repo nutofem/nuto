@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // IntegrationType2D.cpp
 // created Apr 30, 2010 by Joerg F. Unger
 #ifdef ENABLE_SERIALIZATION

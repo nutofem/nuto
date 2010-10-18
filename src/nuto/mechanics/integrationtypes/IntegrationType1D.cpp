@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // IntegrationType1D.cpp
 // created Apr 30, 2010 by Joerg F. Unger
 

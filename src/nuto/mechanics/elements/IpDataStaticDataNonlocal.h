@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef IPDATASTATICDATANONLOCAL_H_
 #define IPDATASTATICDATANONLOCAL_H_
 

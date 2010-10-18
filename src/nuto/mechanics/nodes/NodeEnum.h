@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef NODEENUM_H_
 #define NODEENUM_H_
 

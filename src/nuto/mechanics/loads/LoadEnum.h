@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef LOADENUM_H_
 #define LOADENUM_H_
 

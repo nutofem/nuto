@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef CONSTITUTIVEENUM_H_
 #define CONSTITUTIVEENUM_H_
 

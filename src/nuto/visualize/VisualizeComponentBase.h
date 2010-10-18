@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef VISUALIZECOMPONENTBASE_H_
 #define VISUALIZECOMPONENTBASE_H_
 

@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef ELEMENTDATANONLOCALBASE_H_
 #define ELEMENTDATANONLOCALBASE_H_
 
