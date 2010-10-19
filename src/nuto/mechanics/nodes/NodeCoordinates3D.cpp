@@ -1,3 +1,5 @@
+// $Id$
+
 #include <sstream>
 
 #ifdef ENABLE_SERIALIZATION
