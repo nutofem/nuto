@@ -81,7 +81,7 @@ int NuTo::ConjugateGradientLinear::Optimize()
 			  // initialize search direction with steepest descent
 			// calculate Hessian for scaling
 			std::cout<<__FILE__<<" "<<__LINE__<<" test"<<std::endl;
-			//CalcScalingFactors(numHessianCalls,hessianOrig,scaleFactorsInv);
+			CalcScalingFactors(numHessianCalls,hessianOrig,scaleFactorsInv);
 			if (numHessianCalls>mMaxHessianCalls)
 			{
 				converged = true;
@@ -91,12 +91,15 @@ int NuTo::ConjugateGradientLinear::Optimize()
 			//calculate gradient as a start solution
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction"<<std::endl;
 			CalculateStartGradient(gradientOrig);
-			gradientOrig.Info();
 			std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
+			gradientOrig.Info();
 			gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
+
+			std::cout<<__FILE__<<" "<<__LINE__<<"scaled grad: "<<gradientScaled<<std::endl;
 			normGradient = gradientScaled.norm();
 			if (mVerboseLevel>4)
-				std::cout<<__FILE__<<" "<<__LINE__<<" normGradient "<<normGradient<< std::endl;
+				std::cout<<__FILE__<<" "<<__LINE__<<" normGradient "<<std::endl;
+
 
 			//printf("norm Grad %g\n",normGrad);
 			if (normGradient<mAccuracyGradientScaled)
@@ -249,8 +252,7 @@ int NuTo::ConjugateGradientLinear::Optimize()
 
 void NuTo::ConjugateGradientLinear::CalcScalingFactors(int& numHessianCalls,NuTo::FullMatrix<double>& hessianOrig,Eigen::VectorXd& scaleFactorsInv)
 {
-	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine calcscalingfactors"<<std::endl;
-    //calculate hessian for preconditioning
+   //calculate hessian for preconditioning
     mpCallbackHandler->Hessian(hessianOrig);
     //hessianOrig.Info();
     numHessianCalls++;
@@ -272,6 +274,7 @@ void NuTo::ConjugateGradientLinear::CalcScalingFactors(int& numHessianCalls,NuTo
 //! @brief ... calculate start gradient in element-by-element way
 void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
 {
+	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateStartGradient"<<std::endl;
     int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
     voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
@@ -304,7 +307,6 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
     	//get pointer to each element
 		thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementNumber));
 
-        std::cout<<__FILE__<<" "<<__LINE__<<" "<<std::endl;
         //get grid location and number of corresponding voxel
         for (int count = 0;count<4;++count)
         	thisvoxelLocation[count]= voxelLoc->GetValue(elementNumber,count);
@@ -339,7 +341,7 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
         //calculate local return vector with all dofs: r=Ku
         locReturn = matrix->operator *(displacements);
         //reduce return vector for element with dependant dofs
-        for (int count =0; count <numDofs;++count)
+       for (int count =0; count <numDofs;++count)
         {
 			//when global dof is active
         	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())

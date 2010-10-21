@@ -373,8 +373,6 @@ void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> &rVoxelL
 	NuTo::ElementBase* actElem;
 	NuTo::Voxel8N* thisElement;
 	int actElemNum =0;
-	int numElems = GetNumElements();
-	std::cout<<__FILE__<<" "<<__LINE__<<" numElems"<< numElems <<std::endl;
 	int loc[4];
 	for(int dim2 =0; dim2<mGridDimension[2];dim2++)
 	{
@@ -411,21 +409,25 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
  //   int corners[8];
-	std::cout<<__FILE__<<" "<<__LINE__<<"  " <<  rVoxLoc[1]<<" "  <<rVoxLoc[2]<<"  "<<rVoxLoc[3]<<" "<<rVoxLoc[0]<<std::endl;
+	if (mVerboseLevel>4)
+		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<  rVoxLoc[1]<<" "  <<rVoxLoc[2]<<"  "<<rVoxLoc[3]<<" "<<rVoxLoc[0]<<std::endl;
 
-   corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
-   corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-//	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]<<"  "<<std::endl;
+	corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
+	corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
+	//	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]<<"  "<<std::endl;
 
-   corners[2] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1] +1;
-   corners[3] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
+	corners[2] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1] +1;
+	corners[3] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
 
-   corners[4] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
-   corners[5] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-   corners[6] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-   corners[7] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
-	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
-	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
+	corners[4] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
+	corners[5] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
+	corners[6] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1]+1;
+	corners[7] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
+	if (mVerboseLevel>4)
+	{
+	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
+	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
+	}
 }
 
 //! @brief Get LocalCoefficientMatrix0

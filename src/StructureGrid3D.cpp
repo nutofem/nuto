@@ -225,6 +225,11 @@ int main()
             direction(0,0)= 1;
             direction(1,0)= 0;
             direction(2,0)= 0;
+            NuTo::FullMatrix<double> displacements(3,1);
+            displacements(0,0)= 0.1;
+            displacements(1,0)= 0;
+            displacements(2,0)= 0;
+
              for(int zCount = 0; zCount < NumElementsZ + 1; zCount++)
             {
                 //std::cout << zCount << std::endl;
@@ -243,7 +248,8 @@ int main()
                         flag=1;
                     }
                    if(flag==0)
-                        myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
+                        myGrid.NodeSetDisplacements(myNodeNumber, displacements);
+                        //myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
                 }
             }
          }
@@ -327,6 +333,7 @@ int main()
         for(int ii=0;ii<myGrid.NodeGetNumberActiveDofs(); ii++)
             startVector(ii,0)=0;
 
+        myOptimizer.SetVerboseLevel(3);
         myOptimizer.SetParameters(startVector);
         std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set"<<std::endl;
         myOptimizer.SetGridStrucuture(&myGrid);
