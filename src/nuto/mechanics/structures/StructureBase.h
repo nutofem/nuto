@@ -981,6 +981,9 @@ public:
     //! @return ... number of degrees of freedom
     int GetNumDofs()const;
 
+    //! @brief returns the number of active degrees of freedom
+    //! @return ... number of active degrees of freedom
+    int GetNumActiveDofs()const;
 
 protected:
     int mDimension;
