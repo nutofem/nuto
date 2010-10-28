@@ -1,3 +1,5 @@
+// $Id$
+
 #include "nuto/optimize/ConjugateGradientNonLinear.h"
 #define machine_precision 1e-15
 #define tol 1e-8  //sqrt machine_precision

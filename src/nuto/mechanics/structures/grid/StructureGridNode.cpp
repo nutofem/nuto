@@ -1,3 +1,4 @@
+// $Id$
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -313,10 +314,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
         {
         case 1:
-            //nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
+            nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
             break;
         case 2:
-            //nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
+            nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
             break;
         case 3:
             nodePtr = new NuTo::NodeGrid3D(rNodeGridNum);
@@ -329,10 +330,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
          {
          case 1:
-         //    nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
+             nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
              break;
          case 2:
-          //   nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
+             nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
              break;
          case 3:
              nodePtr = new NuTo::NodeGridDisplacements3D(rNodeGridNum);
@@ -355,6 +356,7 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
 
 
 }
+
 
 //! @brief Deletes a node
 //! @param rElementIdent identifier for the node
@@ -380,7 +382,7 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
     // build constraint matrix
     this->mNodeNumberingRequired = false;
     this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
-    //this->mNodeNumberingRequired = true;
+    this->mNodeNumberingRequired = true;
 
     // perform gauss algorithm
     std::vector<int> mappingInitialToNewOrdering;
@@ -428,7 +430,8 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
     {
         it->RenumberGlobalDofs(mappingInitialToNewOrdering);
     }
-   mNodeNumberingRequired = false;
+
+    mNodeNumberingRequired = false;
 }
 
 // merge dof values
@@ -478,7 +481,6 @@ void NuTo::StructureGrid::NodeExtractDofValues(NuTo::FullMatrix<double>& rActive
         it->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 }
-
 /*
 void NuTo::StructureGrid::NodeGetInternalForce(const NodeGrid3D* rNode, NuTo::FullMatrix<double>& rNodeForce)const
 {

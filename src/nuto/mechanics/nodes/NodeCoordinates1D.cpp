@@ -1,3 +1,5 @@
+// $Id$
+
 #include <iostream>
 
 #ifdef ENABLE_SERIALIZATION

@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef ELEMENTENUM_H_
 #define ELEMENTENUM_H_
 

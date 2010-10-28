@@ -783,10 +783,10 @@ int NuTo::StructureBase::GetNumDofs()const
 //! @return ... number of active degrees of freedom
 int NuTo::StructureBase::GetNumActiveDofs()const
 {
-    if (this->mNodeNumberingRequired)
-    {
-            throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
-    }
+	if (this->mNodeNumberingRequired)
+	{
+		  throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
+	}
 	return mNumActiveDofs;
 }
 

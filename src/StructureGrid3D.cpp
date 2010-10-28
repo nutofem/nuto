@@ -54,7 +54,7 @@ int main()
         //RB
         //double Force = 1.;
         bool EnableDisplacementControl = true;
-        double BoundaryDisplacement = 0.1;
+        double BoundaryDisplacement = .5;
 
         //calculate one element stiffness matrix with E=1
         NuTo::Structure myHelpStruc(3);
@@ -148,9 +148,12 @@ int main()
         for(count=0;count<131;count++)
             myMapColorModul(count,0)=0;
         for(count=131;count<161;count++)
-            myMapColorModul(count,0)=8300.;
+            //myMapColorModul(count,0)=8300.;
+            myMapColorModul(count,0)=1000.;
         for (count=161;count<255;count++)
-            myMapColorModul(count,0)=11500.;
+            //myMapColorModul(count,0)=11500.;
+            myMapColorModul(count,0)=1000.;
+
         //myMapColorModul.WriteToFile("$HOME/develop/nuto/MapColorModul.txt"," ");
         //generiert Knoten, Freiheitsgrade noch nicht gesetzt
 
@@ -226,7 +229,7 @@ int main()
             direction(1,0)= 0;
             direction(2,0)= 0;
             NuTo::FullMatrix<double> displacements(3,1);
-            displacements(0,0)= 0.1;
+            displacements(0,0)= BoundaryDisplacement;
             displacements(1,0)= 0;
             displacements(2,0)= 0;
 
@@ -248,8 +251,10 @@ int main()
                         flag=1;
                     }
                    if(flag==0)
-                        myGrid.NodeSetDisplacements(myNodeNumber, displacements);
-                        //myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
+                   {
+						myGrid.NodeSetDisplacements(myNodeNumber, displacements);
+                        myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
+                   }
                 }
             }
          }
@@ -307,7 +312,7 @@ int main()
         // start analysis
         std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
         // build global dof numbering
-        myGrid.SetVerboseLevel(3);
+        myGrid.SetVerboseLevel(5);
         myGrid.NodeBuildGlobalDofs();
 
         std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.NodeGetNumberGlobalDofs()<<std::endl;
@@ -345,9 +350,14 @@ int main()
         //this works, because Neural network has been derived from CallbackHandler of the optimization module
         myOptimizer.SetCallback(dynamic_cast<NuTo::CallbackHandler*>(&myCallback));
         myOptimizer.Optimize();
-        return 0;
-
         std::cout<<__FILE__<<" "<<__LINE__<<"  optimiert"<<std::endl;
+        // visualize element
+		return 0;
+        myGrid.AddVisualizationComponentDisplacements();
+		myGrid.AddVisualizationComponentEngineeringStrain();
+		myGrid.AddVisualizationComponentEngineeringStress();
+		myGrid.ExportVtkDataFile("Grid3D.vtk");
+
         std::cout<<"numpar "<<myOptimizer.GetNumParameters()<<std::endl;
         /*
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values

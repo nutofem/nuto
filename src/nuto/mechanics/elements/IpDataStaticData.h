@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef IPDATASTATICDATA_H_
 #define IPDATASTATICDATA_H_
 

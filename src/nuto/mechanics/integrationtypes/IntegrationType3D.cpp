@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // IntegrationType3D.cpp
 // created Apr 30, 2010 by Joerg F. Unger
 

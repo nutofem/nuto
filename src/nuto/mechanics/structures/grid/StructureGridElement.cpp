@@ -1,3 +1,4 @@
+// $Id$
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -96,12 +97,6 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
                     //std::cout<<__FILE__<<" " <<__LINE__<<" "<< stiffnessMatrixHelp <<std::endl;
                    this->mLocalCoefficientMatrix0.push_back(stiffnessMatrixHelp);
                     NuTo::StructureGrid::ElementCreate(numCoeffMat,numElements,countVoxels,rElementType);//element number, element id, attr.
-                /*
-                    int elemVoxel[2];
-                    elemVoxel[0]=numElements;
-                    elemVoxel[1]=countVoxels;
-                    mElemVoxelMap.insert(numElements,countVoxels);
-                */
                     numElements++;
                     numCoeffMat++;
                     this->mNumMaterials = numCoeffMat;

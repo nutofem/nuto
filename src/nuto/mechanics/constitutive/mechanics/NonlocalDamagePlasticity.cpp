@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // NonlocalDamagePlasticity.cpp
 // created Apr 26, 2010 by Joerg F. Unger
 #ifdef ENABLE_SERIALIZATION

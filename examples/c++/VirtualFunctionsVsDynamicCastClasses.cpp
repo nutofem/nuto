@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 // VirtualFunctionsVsDynamicCastClasses.cpp
 // created May 10, 2010 by Joerg F. Unger
 

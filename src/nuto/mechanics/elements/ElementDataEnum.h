@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$
 #ifndef ELEMENTDATAENUM_H_
 #define ELEMENTDATAENUM_H_
 

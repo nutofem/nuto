@@ -1,4 +1,4 @@
-// $ld: $ 
+// $Id$ 
 #ifndef GROUPENUM_H_
 #define GROUPENUM_H_
 
