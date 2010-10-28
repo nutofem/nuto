@@ -32,6 +32,7 @@ public:
         mMaxHessianCalls = INT_MAX,
         mMaxIterations = INT_MAX;
         mShowSteps = 1;
+       	mUseDiagHessian =true;
 	}
 
 #ifdef ENABLE_SERIALIZATION
@@ -48,7 +49,8 @@ public:
            & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
            & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
-           & BOOST_SERIALIZATION_NVP(mShowSteps);
+           & BOOST_SERIALIZATION_NVP(mShowSteps)
+           & BOOST_SERIALIZATION_NVP(mUseDiagHessian);
     }
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
@@ -89,6 +91,9 @@ public:
     {
     	mpGrid = rpGrid;
     }
+
+    void Hessian(NuTo::FullMatrix<double>&  rHessian)const;
+    void HessianDiag(NuTo::FullMatrix<double>&  rHessian)const;
 
     #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
@@ -131,6 +136,7 @@ protected:
 	int    mMaxHessianCalls;
 	int    mMaxIterations;
 	int    mShowSteps;
+    bool   mUseDiagHessian;
 
 };
 } // namespace NuTo

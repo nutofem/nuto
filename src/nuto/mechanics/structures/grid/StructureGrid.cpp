@@ -410,12 +410,10 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
         throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
  //   int corners[8];
 	if (mVerboseLevel>4)
-		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<  rVoxLoc[1]<<" "  <<rVoxLoc[2]<<"  "<<rVoxLoc[3]<<" "<<rVoxLoc[0]<<std::endl;
+		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<  rVoxLoc[1]<<" "  <<rVoxLoc[2]<<" "<<rVoxLoc[3]<<" "<<rVoxLoc[0]<<std::endl;
 
 	corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
 	corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-	//	std::cout<<__FILE__<<" "<<__LINE__<<"  "<<rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]<<"  "<<std::endl;
-
 	corners[2] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1] +1;
 	corners[3] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
 

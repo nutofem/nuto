@@ -30,7 +30,6 @@ public:
     	& BOOST_SERIALIZATION_NVP(mCallbackObjective)
     	& BOOST_SERIALIZATION_NVP(mCallbackGradient)
     	& BOOST_SERIALIZATION_NVP(mCallbackHessian);
-;
     	mCallbackSetParameters = 0;
     	mCallbackObjective = 0;
     	mCallbackGradient = 0;
