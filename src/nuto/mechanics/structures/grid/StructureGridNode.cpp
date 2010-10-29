@@ -314,10 +314,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
         {
         case 1:
-            nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
+            //nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
             break;
         case 2:
-            nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
+            //nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
             break;
         case 3:
             nodePtr = new NuTo::NodeGrid3D(rNodeGridNum);
@@ -330,10 +330,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
          {
          case 1:
-             nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
+             //nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
              break;
          case 2:
-             nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
+             //nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
              break;
          case 3:
              nodePtr = new NuTo::NodeGridDisplacements3D(rNodeGridNum);
