@@ -83,7 +83,7 @@ public:
     //! @param precision ... number of digits after the comma
     //! @param width ... total width
     //! @return string ... representation of the entry
-    std::string Convert2String(T value, bool scientific, int precision, int width);
+    std::string Convert2String(T value, bool scientific, int precision, int width) const;
 
     //! @brief ... convert a string to an entries of the matrix (for file import)
     //! @param s ...  string to convert
