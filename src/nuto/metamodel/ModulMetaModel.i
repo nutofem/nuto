@@ -3,6 +3,7 @@
 %{
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/metamodel/NeuralNetwork.h"
+#include "nuto/metamodel/MultipleLinearRegression.h"
 %}
 
 // convert python string to std::string
@@ -14,3 +15,4 @@
 
 %include "nuto/metamodel/Metamodel.h"
 %include "nuto/metamodel/NeuralNetwork.h"
+%include "nuto/metamodel/MultipleLinearRegression.h"

@@ -179,10 +179,10 @@ void NuTo::Metamodel::SolveConfidenceInterval(const FullMatrix<double>& rInputCo
 }
 void NuTo::Metamodel::Build()
 {
-    if (mSupportPoints.GetDimOutput()<=0)
+    if (mSupportPoints.GetDimOutput()<1)
         throw MetamodelException("NuTo::Metamodel::Build - number of outputs must be positive - set training data first.");
     
-    if (mSupportPoints.GetDimInput()<=0)
+    if (mSupportPoints.GetDimInput()<1)
         throw MetamodelException("NuTo::Metamodel::Build - number of inputs must be positive - set training data first.");
 
     if (!mSupportPoints.IsTransformationBuild())

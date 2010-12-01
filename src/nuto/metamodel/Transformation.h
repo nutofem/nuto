@@ -49,8 +49,10 @@ protected:
 
 } // namespace nuto
 #ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(NuTo::Transformation)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Transformation)
+#endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
 #endif /* TRANSFORMATION_H */
