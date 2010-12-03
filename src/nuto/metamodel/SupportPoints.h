@@ -194,14 +194,14 @@ public:
     //! @brief calculate the confidence interval on Pearson's correlation coefficient using original support point coordinates
     //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
-	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
+	//! @param rMaxCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
     void GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 
     //! @brief calculate the confidence interval on Pearson's correlation coefficient using transformed support point coordinates
     //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
-	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
+	//! @param rMaxCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
     void GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 private:

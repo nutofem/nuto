@@ -504,7 +504,11 @@ void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const FullMatrix<dou
 
 // calculate the confidence interval on the coefficients of Pearson's correlation matrix
 /*!
- *
+ * The (1-\f$\alpha\f$) confidence interval on Pearson's correlation coefficient \f$\rho\f$ is defined as
+ * \f[
+ *  \tanh \left( \text{arctanh} (\rho) - \dfrac{Z_{0.5\alpha}}{\sqrt{n-3}} \right) \leq \rho \leq \tanh \left( \text{arctanh} (\rho) + \dfrac{Z_{0.5\alpha}}{\sqrt{n-3}} \right),
+ * \f]
+ * where \f$Z_{0.5\alpha}\f$ is the \f$(1-0.5\alpha)\f$-quantil of the standard normal distribution, and \f$n\f$ is the number of support points.
  */
 void NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha ) const
 {

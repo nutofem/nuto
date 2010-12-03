@@ -1650,11 +1650,11 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		// extract reduced support point input
 		const NuTo::FullMatrix<double>& fullSupportPointInput = this->mSupportPoints.GetTransformedSupportPointsInput();
 		NuTo::FullMatrix<double> reducedSupportPointInput(0, this->mSupportPoints.GetNumSupportPoints());
-		for(int coefficient = 0; coefficient < rTestCoefficients.GetNumRows(); coefficient++)
+		for(int coefficient = 1; coefficient < this->mCoefficients.GetNumRows(); coefficient++)
 		{
 			if(coefficientFlag[coefficient] == true)
 			{
-				reducedSupportPointInput.AppendRows(fullSupportPointInput.GetRow(coefficient));
+				reducedSupportPointInput.AppendRows(fullSupportPointInput.GetRow(coefficient-1));
 			}
 		}
 		// create reduced model
@@ -1676,21 +1676,39 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		double SSrReduced = 0.0;
 		if(rTransformedFlag)
 		{
+			// get data
 			const double* reducedModelOutputData = reducedModelOutput.mEigenMatrix.data();
 			const double* supportPointOutputData = this->mSupportPoints.GetTransformedSupportPointsOutput().mEigenMatrix.data();
+
+			// calculate sums
+			double sum1 = 0.0;
+			double sum2 = 0.0;
 			for(int sample = 0; sample < numSamples; sample++)
 			{
-				SSrReduced = reducedModelOutputData[sample] * supportPointOutputData[sample];
+				sum1 += supportPointOutputData[sample] * reducedModelOutputData[sample];
+				sum2 += supportPointOutputData[sample];
 			}
+
+			// calculate regression sum of squares
+			SSrReduced = sum1 - sum2 * sum2 / static_cast<double>(numSamples);
 		}
 		else
 		{
+			// get data
 			const double* reducedModelOutputData = reducedModelOutput.mEigenMatrix.data();
 			const double* supportPointOutputData = this->mSupportPoints.GetOrigSupportPointsOutput().mEigenMatrix.data();
+
+			// calculate sums
+			double sum1 = 0.0;
+			double sum2 = 0.0;
 			for(int sample = 0; sample < numSamples; sample++)
 			{
-				SSrReduced = reducedModelOutputData[sample] * supportPointOutputData[sample];
+				sum1 += supportPointOutputData[sample] * reducedModelOutputData[sample];
+				sum2 += supportPointOutputData[sample];
 			}
+
+			// calculate regression sum of squares
+			SSrReduced = sum1 - sum2 * sum2 / static_cast<double>(numSamples);
 		}
 
 		// calculate statistics
