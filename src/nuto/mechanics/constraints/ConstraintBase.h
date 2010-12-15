@@ -8,9 +8,14 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constraints/ConstraintEnum.h"
+
 namespace NuTo
 {
 class EngineeringStrain2D;
+class NodeBase;
+class ConstraintLinear;
+class ConstraintLagrange;
 template<class T> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 
@@ -24,13 +29,6 @@ class ConstraintBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    enum eAttributes
-    {
-        COORDINATES=0,
-        DISPLACEMENTS,
-        ROTATIONS,
-        TEMPERATURES
-    };
     //! @brief constructor
     ConstraintBase();
 
@@ -39,7 +37,23 @@ public:
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    virtual int GetNumConstraintEquations()const=0;
+    virtual int GetNumLinearConstraints()const;
+
+    //! @brief returns the number of constraint equations
+    //! @return number of constraints
+    virtual int GetNumLagrangeMultipliers()const;
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    virtual ConstraintLinear* AsConstraintLinear();
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    virtual const ConstraintLinear* AsConstraintLinear()const;
+
+    //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
+    virtual ConstraintLagrange* AsConstraintLagrange();
+
+    //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
+    virtual const ConstraintLagrange* AsConstraintLagrange()const;
 
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
@@ -53,13 +67,9 @@ public:
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
     virtual void SetCrackOpening(const NuTo::FullMatrix<double>& rStrain);
 
-    //! @brief adds the constraint equations to the matrix
-    //! @param curConstraintEquation (is incremented during the function call)
-    //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    //! @param rRHS right hand side of the constraint equation
-    virtual void AddToConstraintMatrix(int& curConstraintEquation,
-                                       NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-                                       NuTo::FullMatrix<double>& rRHS)const=0;
+    //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+    virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr){};
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -71,7 +81,6 @@ public:
 
 
 protected:
-
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

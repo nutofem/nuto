@@ -149,7 +149,7 @@ void NuTo::NodeBase::GetDisplacements3D(double rCoordinates[3])const
 //! @param rDisplacements  given displacements
 void NuTo::NodeBase::SetDisplacements3D(const double rDisplacements[3])
 {
-	throw MechanicsException("[NuTo::NodeBase::SetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
+	throw MechanicsException("[NuTo::NodeBase::SetDofDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
 }
 
 //! @brief returns the displacements of the node
@@ -157,6 +157,35 @@ void NuTo::NodeBase::SetDisplacements3D(const double rDisplacements[3])
 double NuTo::NodeBase::GetDisplacement(short rIndex)const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
+}
+
+//! @brief returns the number of displacements of the node
+//! @return number of displacements
+int NuTo::NodeBase::GetNumFineScaleDisplacements()const
+{
+    return 0;
+}
+
+//! @brief gives the global DOF of a displacement component
+//! @param rComponent component
+//! @return global DOF
+int NuTo::NodeBase::GetDofFineScaleDisplacement(int rComponent)const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetDofFineScaleDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
+}
+
+//! @brief set the displacements
+//! @param rDisplacements  given displacements
+void NuTo::NodeBase::SetFineScaleDisplacements2D(const double rDisplacements[2])
+{
+    throw MechanicsException("[NuTo::NodeBase::SetFineScaleDisplacements2D] Node of type " + GetNodeTypeStr() + " has no fine scale displacements.");
+}
+
+//! @brief writes the displacements of a node to the prescribed pointer
+//! @param rDisplacements displacements
+void NuTo::NodeBase::GetFineScaleDisplacements2D(double rDisplacements[2])const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetFineScaleDisplacements2D] Node of type " + GetNodeTypeStr() + " has no fine scale displacements.");
 }
 
 // returns the number of velocities of the node

@@ -4,6 +4,8 @@
 #define CONSTITUTIVESTATICDATAPrevEngineeringStressStrain2D_H
 
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 
 //! @brief ... class, storing the static data for the Mises plasticity3D including energy updates
 //! this is only required, if the energy should be calculated, otherwise the base class ConstitutiveStaticDataMisesPlasticity3D
@@ -30,19 +32,19 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! brief set the previous stress
-    void SetPrevStress(const double rPrevSigma[4]);
+    void SetPrevStress(const EngineeringStress2D& rPrevSigma);
 
     //! brief returns the previous stress
-    inline const double* GetPrevStress()const
+    inline const EngineeringStress2D& GetPrevStress()const
     {
-        return  mPrevSigma;
+        return mPrevSigma;
     }
 
     //! brief set the previous stress
-    void SetPrevStrain(const double rPrevStrain[3]);
+    void SetPrevStrain(const EngineeringStrain2D& rPrevStrain);
 
     //! brief returns the previous stress
-    inline const double* GetPrevStrain()const
+    inline const EngineeringStrain2D& GetPrevStrain()const
     {
         return  mPrevStrain;
     }
@@ -73,10 +75,10 @@ public:
 
 protected:
     //! @brief previous stress
-    double mPrevSigma[4];
+    EngineeringStress2D mPrevSigma;
 
     //! @brief previous strain
-    double mPrevStrain[3];
+    EngineeringStrain2D mPrevStrain;
 
     //! @brief previous total energy
     double mPrevTotalEnergy;

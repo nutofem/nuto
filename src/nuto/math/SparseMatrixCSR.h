@@ -244,7 +244,16 @@ public:
         return *this;
     }
 
+    //! @brief Calculate the largest matrix entry
+    //! @param rResultOutput ... largest matrix entry
+    virtual T Max()
+    {
+        T max;
+        Max(max);
+        return max;
+    }
 
+#ifndef SWIG
     //! @brief Determine the largest matrix entry
     //! @param rResultOutput ... largest matrix entry
     void Max(T& rResultOutput)
@@ -261,7 +270,18 @@ public:
             }
         }
     }
+#endif
 
+    //! @brief Calculate the smallest matrix entry
+    //! @param rResultOutput ... smallest matrix entry
+    virtual T Min()
+    {
+        T min;
+        Min(min);
+        return min;
+    }
+
+#ifndef SWIG
     //! @brief Calculate the smallest matrix entry
     //! @param rResultOutput ... smallest matrix entry
     virtual void Min(T& rResultOutput)
@@ -278,6 +298,7 @@ public:
             }
         }
     }
+#endif
 
     //! @brief Calculate the maximum matrix entry
     //! @param rRowOutput ... row index of the maximum matrix entry

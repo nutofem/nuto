@@ -10,7 +10,8 @@ enum eIpDataType
 {
     NOIPDATA,            //!< no additional ip data
     STATICDATA,          //!< static data
-    STATICDATANONLOCAL   //!< nonlocal and static data
+    STATICDATANONLOCAL,  //!< nonlocal and static data
+    MULTISCALE           //!< multiscale - a full structure on the fine scale whose average values are used
 };
 
 //! @brief covers all ip data (not only static data) that is dependent on the current iteration state

@@ -1,0 +1,58 @@
+// $Id: ConstraintLinear.h 328 2010-10-01 14:39:32Z unger3 $
+
+#ifndef CONSTRAINTLINEAR_H
+#define CONSTRAINTLINEAR_H
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+#include "nuto/mechanics/constraints/ConstraintEnum.h"
+
+namespace NuTo
+{
+class ConstraintLagrange;
+template<class T> class FullMatrix;
+template<class T> class SparseMatrixCSRGeneral;
+
+//! @author Jörg F. Unger, ISM
+//! @date October 2009
+//! @brief ... standard abstract class for all constraint equations
+class ConstraintLinear
+{
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
+public:
+    //! @brief constructor
+    ConstraintLinear();
+
+    //! @brief destructor
+    ~ConstraintLinear();
+
+    //! @brief adds the constraint equations to the matrix
+    //! @param curConstraintEquation (is incremented during the function call)
+    //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+    //! @param rRHS right hand side of the constraint equation
+    virtual void AddToConstraintMatrix(int& curConstraintEquation,
+                                       NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
+                                       NuTo::FullMatrix<double>& rRHS)const=0;
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif // ENABLE_SERIALIZATION
+
+protected:
+};
+}//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinear)
+#endif // ENABLE_SERIALIZATION
+#endif //CONSTRAINTLINEAR_H
+

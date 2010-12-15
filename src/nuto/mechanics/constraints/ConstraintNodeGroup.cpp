@@ -19,14 +19,6 @@
 NuTo::ConstraintNodeGroup::ConstraintNodeGroup(const Group<NodeBase>* rGroup) :
         ConstraintBase(), mGroup(rGroup)
 {
-
-}
-
-//! @brief returns the number of constraint equations
-//! @return number of constraints
-int NuTo::ConstraintNodeGroup::GetNumConstraintEquations()const
-{
-    return mGroup->GetNumMembers();
 }
 
 #ifdef ENABLE_SERIALIZATION

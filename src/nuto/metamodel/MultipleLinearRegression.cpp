@@ -707,7 +707,7 @@ double NuTo::MultipleLinearRegression::Objective()const
 		// get support point input
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numCoefficients = dimInput + 1;
-		assert(this->mCoefficients.size() == numCoefficients);
+		//assert(this->mCoefficients.size() == numCoefficients);
 		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().mEigenMatrix.data();
 
 		// get number of samples
@@ -776,7 +776,7 @@ void NuTo::MultipleLinearRegression::Gradient(NuTo::FullMatrix<double>& rGradien
 		// get support point input
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numCoefficients = dimInput + 1;
-		assert(this->mCoefficients.size() == numCoefficients);
+//		assert(this->mCoefficients.size() == numCoefficients);
 		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().mEigenMatrix.data();
 
 		// get number of samples
@@ -892,7 +892,7 @@ void NuTo::MultipleLinearRegression::Hessian(NuTo::FullMatrix<double>&  rHessian
 		// get support point input
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numCoefficients = dimInput + 1;
-		assert(this->mCoefficients.size() == numCoefficients);
+//		assert(this->mCoefficients.size() == numCoefficients);
 		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().mEigenMatrix.data();
 
 		// get number of samples

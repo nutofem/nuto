@@ -661,6 +661,140 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
 	rElement->SetConstitutiveLaw(rConstitutive);
 }
 
+//! @brief sets the constitutive law of a single element
+//! @param rElementIdent identifier for the element
+//! @param rConstitutiveLawIdent identifier for the material
+void NuTo::StructureBase::ElementIpSetFineScaleModel(int rElementId, int rIp, std::string rFileName)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    if (elementPtr->GetNumIntegrationPoints()>=rIp)
+        throw MechanicsException("[NuTo::StructureBase::ElementIpSetFineScaleModel] Integration point number is higher than total number of integration points.");
+
+    try
+    {
+        ElementIpSetFineScaleModel(elementPtr,rIp,rFileName);
+    }
+    catch(NuTo::MechanicsException e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        e.AddMessage("[NuTo::StructureBase::ElementIpSetFineScaleModel] Error setting fine scale model for element "
+            + ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        throw NuTo::MechanicsException
+           ("[NuTo::StructureBase::ElementIpSetFineScaleModel] Error setting fine scale model for element " + ss.str() + ".");
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementIpSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief sets the constitutive law of a group of elements
+//! @param rGroupIdent identifier for the group of elements
+//! @param rConstitutiveLawIdent identifier for the material
+void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::string rFileName)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Group is not an element group.");
+    Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
+    assert(elementGroup!=0);
+
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    {
+        try
+        {
+            for (int theIp=0; theIp<(*itElement)->GetNumIntegrationPoints(); theIp++)
+                ElementIpSetFineScaleModel(*itElement, theIp, rFileName);
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Error setting fine scale model for element "
+                + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Error setting fine scale model for element " + ss.str() + ".");
+        }
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief sets the constitutive law of a all elements
+//! @param rConstitutiveLawIdent identifier for the material
+void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    std::vector<ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+    {
+        try
+        {
+            for (int theIp=0; theIp<elementVector[countElement]->GetNumIntegrationPoints(); theIp++)
+                 ElementIpSetFineScaleModel(elementVector[countElement], theIp, rFileName);
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[countElement]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
+                    + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[countElement]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
+                       + ss.str() + ".");
+        }
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief sets the constitutive law of a single element
+//! @param rElement element pointer
+//! @param rConstitutive material pointer
+void NuTo::StructureBase::ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName)
+{
+    rElement->SetFineScaleModel(rIp, rFileName);
+}
 
 //! @brief sets the section of a single element
 //! @param rElementIdent identifier for the element
@@ -763,7 +897,7 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
 #endif
     boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
     if (itSection==mSectionMap.end())
-        throw MechanicsException("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Section with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::ElementTotalSetSection] Section with the given identifier does not exist.");
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -777,7 +911,7 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Error setting section  for element "
+            e.AddMessage("[NuTo::StructureBase::ElementTotalSetSection] Error setting section  for element "
             		+ ss.str() + ".");
             throw e;
         }
@@ -786,14 +920,14 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
         	throw NuTo::MechanicsException
-        	   ("[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] Error setting section for element "
+        	   ("[NuTo::StructureBase::ElementTotalSetSection] Error setting section for element "
         			   + ss.str() + ".");
         }
     }
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
 

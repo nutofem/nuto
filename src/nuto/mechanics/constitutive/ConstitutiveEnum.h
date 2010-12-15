@@ -10,7 +10,8 @@ enum eConstitutiveType
 {
     LINEAR_ELASTIC,            //!< linear-elastic behavior
     MISES_PLASTICITY,          //!< mises plasticity with isotropic and kinematic hardening
-    NONLOCAL_DAMAGE_PLASTICITY //!< nonlocal damage model with plasticity in the effective stress space
+    NONLOCAL_DAMAGE_PLASTICITY,//!< nonlocal damage model with plasticity in the effective stress space
+    MULTISCALE                 //!< multiscale model, where the average stress is calculated from a full fine scale model
 };
 
 enum eNonlocalDamageYieldSurface

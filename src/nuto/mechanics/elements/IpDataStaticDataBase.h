@@ -34,6 +34,8 @@ public:
 	{
         mStaticData = rStaticData;
 	}
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleModel(std::string rFileName);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

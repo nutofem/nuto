@@ -41,6 +41,9 @@ public:
     //! @param rIp integration point
     virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleModel(int rIp, std::string rFileName);
+
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
     virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement)=0;

@@ -162,3 +162,10 @@ std::string NuTo::NodeTemperature::GetNodeTypeStr()const
 {
 	return std::string("NodeTemperature");
 }
+
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeTemperature::GetNodeType()const
+{
+    return Node::NodeTemperature;
+}

@@ -176,3 +176,10 @@ std::string NuTo::NodeDisplacements1D::GetNodeTypeStr()const
 {
 	return std::string("NodeDisplacements1D");
 }
+
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeDisplacements1D::GetNodeType()const
+{
+    return Node::NodeDisplacements1D;
+}

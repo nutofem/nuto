@@ -70,11 +70,11 @@ myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 myStructure.ElementTotalSetSection(mySection)
 
 #set displacements of right node
-myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
-myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
-myStructure.ConstraintSetDisplacementNode(6, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
-myStructure.ConstraintSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(1,0)), 1.0)
-myStructure.ConstraintSetDisplacementNode(7, nuto.DoubleFullMatrix(2,1,(1,0)), 1.0)
+myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(6, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(1,0)), 1.0)
+myStructure.ConstraintLinearSetDisplacementNode(7, nuto.DoubleFullMatrix(2,1,(1,0)), 1.0)
 
 myStructure.SetVerboseLevel(10)
 myStructure.Info()
@@ -133,6 +133,11 @@ for element in range(0,8):
 	    EngineeringStrain.Info()
 
 	if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
+	        if (not printResult):
+	            print "EngineeringStrainCorrect"
+	            EngineeringStrainCorrect.Info()
+	            print "EngineeringStrain"
+	            EngineeringStrain.Info()
         	print '[' + system,sys.argv[0] + '] : strain is not correct.'
         	error = True;
 
@@ -147,6 +152,11 @@ for element in range(0,8):
 	    EngineeringStress.Info()
 
 	if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
+	        if (not printResult):
+                    print "EngineeringStressCorrect"
+	            EngineeringStressCorrect.Info()
+	            print "EngineeringStress"
+	            EngineeringStress.Info()
         	print '[' + system,sys.argv[0] + '] : stress is not correct.'
         	error = True;
 

@@ -36,6 +36,7 @@ class Structure;
 class StructureBase;
 class Truss;
 class VisualizeComponentBase;
+class IpDataBase;
 
 
 //! @author Jörg F. Unger, ISM
@@ -84,6 +85,10 @@ public:
     //! @return pointer to the node
     virtual const NodeBase* GetNode(int rLocalNodeNumber)const=0;
 
+    //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+    virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)=0;
+
     //! @brief sets the constitutive law for an element
     //! @param rConstitutiveLaw Pointer to constitutive law entry
     virtual void SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw);
@@ -97,6 +102,9 @@ public:
     //! @param integration point number (counting from zero)
     //! @return pointer to constitutive law
     ConstitutiveBase* GetConstitutiveLaw(int rIp);
+
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleModel(int rIp, std::string rFileName);
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -292,7 +300,10 @@ private:
 
 protected:
     //! @brief ... just for serialization
-    ElementBase(){};
+    ElementBase()
+    {
+        mElementData = 0;
+    };
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes() = 0;

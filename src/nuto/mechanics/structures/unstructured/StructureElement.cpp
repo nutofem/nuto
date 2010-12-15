@@ -193,7 +193,7 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
    	{
 		elementDataType = NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
    	}
-	else
+    else
 	{
 		throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist.");
 	}
@@ -217,7 +217,7 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
    	}
 	else
 	{
-		throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseIpDataType +" does not exist.");
+		throw MechanicsException("[NuTo::Structure::ElementCreate] Ip data type "+upperCaseIpDataType +" does not exist.");
 	}
 
     // create element

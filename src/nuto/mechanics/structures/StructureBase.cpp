@@ -458,6 +458,8 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         throw e;
     }
 
+    std::cout << "active " << mNumActiveDofs << " dependent " << mNumDofs-mNumActiveDofs << std::endl;
+
 //    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
    // resize output objects
     if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
@@ -772,22 +774,40 @@ double NuTo::StructureBase::GetToleranceStiffnessEntries()const
 //! @return ... number of degrees of freedom
 int NuTo::StructureBase::GetNumDofs()const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     if (this->mNodeNumberingRequired)
     {
             throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
     }
 	return mNumDofs;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GetNumDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief returns the number of active degrees of freedom
 //! @return ... number of active degrees of freedom
 int NuTo::StructureBase::GetNumActiveDofs()const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	if (this->mNodeNumberingRequired)
 	{
-		  throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
+		  throw MechanicsException("[NuTo::StructureBase::GetNumActiveDofs] Build global Dofs first.");
 	}
 	return mNumActiveDofs;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GetNumActiveDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 #ifdef ENABLE_SERIALIZATION

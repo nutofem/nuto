@@ -173,3 +173,10 @@ std::string NuTo::NodeRotations3D::GetNodeTypeStr()const
 {
 	return std::string("NodeRotations3D");
 }
+
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeRotations3D::GetNodeType()const
+{
+    return Node::NodeRotations3D;
+}

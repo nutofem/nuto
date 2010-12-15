@@ -183,7 +183,10 @@ public:
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
     Truss* AsTruss();
 
-#ifdef ENABLE_SERIALIZATION
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    void SetFineScaleModel(int rIp, std::string rFileName);
+
+    #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version

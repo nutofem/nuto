@@ -10,6 +10,8 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/constraints/ConstraintLagrange.h"
+#include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
@@ -20,6 +22,44 @@ NuTo::ConstraintBase::ConstraintBase()
 // destructor
 NuTo::ConstraintBase::~ConstraintBase()
 {
+}
+
+//! @brief returns the number of constraint equations
+//! @return number of constraints
+int NuTo::ConstraintBase::GetNumLinearConstraints()const
+{
+    return 0;
+}
+
+//! @brief returns the number of constraint equations
+//! @return number of constraints
+int NuTo::ConstraintBase::GetNumLagrangeMultipliers()const
+{
+    return 0;
+}
+
+//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+NuTo::ConstraintLinear* NuTo::ConstraintBase::AsConstraintLinear()
+{
+    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLinear] Constraint is not linear.");
+}
+
+//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+const NuTo::ConstraintLinear* NuTo::ConstraintBase::AsConstraintLinear()const
+{
+    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLinear] Constraint is not linear.");
+}
+
+//! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
+NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()
+{
+    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLagrange] Constraint has no Lagrange multipliers.");
+}
+
+//! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
+const NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()const
+{
+    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLagrange] Constraint has no Lagrange multipliers.");
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -65,3 +105,5 @@ void NuTo::ConstraintBase::SetCrackOpening(const NuTo::FullMatrix<double>& rCrac
 {
     throw MechanicsException("[NuTo::ConstraintBase] Set crack opening for this type of constraints not implemented.");
 }
+
+

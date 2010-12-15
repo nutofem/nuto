@@ -1,5 +1,5 @@
 #include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -10,10 +10,6 @@
 #define PRINTRESULT true
 #define MIN_DELTA_STRAIN_FACTOR 1e-7
 
-// there is still an error at the very end of the calculation
-// uncomment at the end of void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives
-// the check for the derivatives of the yield surface to see the problem
-
 int main()
 {
 try
@@ -23,101 +19,53 @@ try
     double lY(100);
 
     //create structure
-    NuTo::StructureIp myStructureFineScale(2);
-    myStructureFineScale.SetShowTime(true);
+    NuTo::Structure myStructureCoarseScale(2);
+    myStructureCoarseScale.SetShowTime(true);
 
     NuTo::FullMatrix<int> createdGroupIds;
-    //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
-    myStructureFineScale.ImportFromGmsh("ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    myStructureCoarseScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIp", "StaticData",createdGroupIds);
+    //myStructureCoarseScale.ImportFromGmsh("ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticData",createdGroupIds);
 
-    //create constitutive law nonlocal damage
-    int myMatDamage = myStructureFineScale.ConstitutiveLawCreate("NonlocalDamagePlasticity");
-    double YoungsModulusDamage(20000);
-    myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatDamage,YoungsModulusDamage);
-    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.2);
-    double nonlocalRadius(1);
-    myStructureFineScale.ConstitutiveLawSetNonlocalRadius(myMatDamage,nonlocalRadius);
-    double fct(2);
-    myStructureFineScale.ConstitutiveLawSetTensileStrength(myMatDamage,fct);
-    myStructureFineScale.ConstitutiveLawSetCompressiveStrength(myMatDamage,fct*10);
-    myStructureFineScale.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,fct*12.5);
-    myStructureFineScale.ConstitutiveLawSetFractureEnergy(myMatDamage,.1);
 
-    //create constitutive law linear elastic (finally not used, since the elements are deleted)
-    int myMatLinear = myStructureFineScale.ConstitutiveLawCreate("LinearElastic");
-    double YoungsModulusLE(20000);
-    myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatLinear,YoungsModulusLE);
-    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.2);
+    //create constitutive law from fine scale model
+    int myMatCoarseScale = myStructureCoarseScale.ConstitutiveLawCreate("Multiscale");
 
     //create section
-    double thickness(100);
-    int mySectionParticle = myStructureFineScale.SectionCreate("Plane_Strain");
-    myStructureFineScale.SectionSetThickness(mySectionParticle,thickness);
+    double thickness(1);
+    int mySectionCoarseScale = myStructureCoarseScale.SectionCreate("Plane_Strain");
+    myStructureCoarseScale.SectionSetThickness(mySectionCoarseScale,thickness);
 
-    int mySectionMatrix = myStructureFineScale.SectionCreate("Plane_Strain");
-    myStructureFineScale.SectionSetThickness(mySectionMatrix,thickness);
+    myStructureCoarseScale.ElementTotalSetSection(mySectionCoarseScale);
+	myStructureCoarseScale.ElementTotalSetConstitutiveLaw(myMatCoarseScale);
 
-    //assign constitutive law
-//    myStructureFineScale.ElementGroupSetSection(101,mySectionParticle);
-//    myStructureFineScale.ElementGroupSetSection(102,mySectionMatrix);
-//    myStructureFineScale.ElementGroupSetConstitutiveLaw(101,myMatLinear);
-//    myStructureFineScale.ElementGroupSetConstitutiveLaw(102,myMatDamage);
-//    bool deleteNodes=true;
-//    myStructureFineScale.ElementGroupDelete(101,deleteNodes);
+	//set fine scale model as ip data for all integration points
+	//myStructureCoarseScale.ElementTotalSetFineScaleModel("myStructureFineScale.bin");
+    myStructureCoarseScale.ElementTotalSetFineScaleModel("/home/unger3/develop/nuto_build/examples/c++/myStructureFineScale.bin");
 
-    myStructureFineScale.ElementTotalSetSection(mySectionMatrix);
-	myStructureFineScale.ElementTotalSetConstitutiveLaw(myMatDamage);
-
-    //Build nonlocal elements
-    myStructureFineScale.BuildNonlocalData(myMatDamage);
-
-	//Create groups to apply the periodic boundary conditions
+	//Create groups to apply the boundary conditions
 	//left boundary
-	int GrpNodes_Left = myStructureFineScale.GroupCreate("Nodes");
+	int GrpNodesLeftBoundary = myStructureCoarseScale.GroupCreate("Nodes");
 	int direction = 0; //either 0,1,2
 	double min(0.);
 	double max(0.);
-	myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Left,direction,min,max);
+	myStructureCoarseScale.GroupAddNodeCoordinateRange(GrpNodesLeftBoundary,direction,min,max);
 
     //right boundary
-    int GrpNodes_Right = myStructureFineScale.GroupCreate("Nodes");
+    int GrpNodesRightBoundary = myStructureCoarseScale.GroupCreate("Nodes");
     direction = 0; //either 0,1,2
     min=lX;
     max=lX;
-    myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Right,direction,min,max);
-
-    //top boundary
-	int GrpNodes_Top = myStructureFineScale.GroupCreate("Nodes");
-	direction=1;
-	min=lY;
-	max=lY;
-	myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Top,direction,min,max);
+    myStructureCoarseScale.GroupAddNodeCoordinateRange(GrpNodesRightBoundary,direction,min,max);
 
     //bottom boundary
-    int GrpNodes_Bottom = myStructureFineScale.GroupCreate("Nodes");
+    int GrpNodesBottomBoundary = myStructureCoarseScale.GroupCreate("Nodes");
     direction=1;
     min=0;
     max=0;
-    myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Bottom,direction,min,max);
+    myStructureCoarseScale.GroupAddNodeCoordinateRange(GrpNodesBottomBoundary,direction,min,max);
 
-	//top right node
-    int GrpNodes_BottomLeftNode = myStructureFineScale.GroupIntersection(GrpNodes_Bottom,GrpNodes_Left);
-
-    // applied strain and angle of boundary conditions
-#define PI 3.14159265359
-    //double angle(atan(1./3.)*180/PI);
-    double angle(170);
-    std::cout << "angle " <<  angle << std::endl;
-    NuTo::FullMatrix<double> maxStrain(3,1);
-    NuTo::FullMatrix<double> maxCrackOpening(2,1);
-//    maxStrain(0,0) = 50.*fct/YoungsModulusDamage;
-//    maxStrain(1,0) = 50.*fct/YoungsModulusDamage;
-//    maxStrain(2,0) = -100*fct/YoungsModulusDamage;
-    maxStrain(0,0) = 0.*fct/YoungsModulusDamage;
-    maxStrain(1,0) = 0.*fct/YoungsModulusDamage;
-    maxStrain(2,0) = 0.*fct/YoungsModulusDamage;
-    maxCrackOpening(0,0) =  0.;
-    maxCrackOpening(1,0) =  1;
+    //left lower node
+    int GrpNodesBottomLeftNodeBoundary = myStructureCoarseScale.GroupIntersection(GrpNodesBottomBoundary,GrpNodesLeftBoundary);
 
     //fix bottom left corner node
 	NuTo::FullMatrix<double> DirectionX(2,1);
@@ -128,52 +76,40 @@ try
 	DirectionY.SetValue(0,0,0.0);
 	DirectionY.SetValue(1,0,1.0);
 
-    //myStructureFineScale.ConstraintSetDisplacementNodeGroup(GrpNodes_Bottom,DirectionY, 0);
-    //myStructureFineScale.ConstraintSetDisplacementNodeGroup(GrpNodes_Left,DirectionX, 0);
-
-    myStructureFineScale.ConstraintSetDisplacementNodeGroup(GrpNodes_BottomLeftNode,DirectionX, 0);
-    myStructureFineScale.ConstraintSetDisplacementNodeGroup(GrpNodes_BottomLeftNode,DirectionY, 0);
-
+    myStructureCoarseScale.ConstraintLinearSetDisplacementNodeGroup(GrpNodesLeftBoundary ,DirectionX, 0);
+    int ConstraintRHS = myStructureCoarseScale.ConstraintLinearSetDisplacementNodeGroup(GrpNodesRightBoundary,DirectionX, 0);
+    myStructureCoarseScale.ConstraintLinearSetDisplacementNodeGroup(GrpNodesBottomLeftNodeBoundary,DirectionY, 0);
+/*
 #ifdef ENABLE_VISUALIZE
-    myStructureFineScale.AddVisualizationComponentSection();
-    myStructureFineScale.AddVisualizationComponentConstitutive();
-    myStructureFineScale.AddVisualizationComponentDisplacements();
-    myStructureFineScale.AddVisualizationComponentEngineeringStrain();
-    myStructureFineScale.AddVisualizationComponentEngineeringStress();
-    myStructureFineScale.AddVisualizationComponentDamage();
-    myStructureFineScale.AddVisualizationComponentEngineeringPlasticStrain();
-    myStructureFineScale.AddVisualizationComponentPrincipalEngineeringStress();
-	myStructureFineScale.ElementTotalUpdateTmpStaticData();
-    myStructureFineScale.ExportVtkDataFile("ConcurrentMultiscale.vtk");
+    myStructureCoarseScale.AddVisualizationComponentSection();
+    myStructureCoarseScale.AddVisualizationComponentConstitutive();
+    myStructureCoarseScale.AddVisualizationComponentDisplacements();
+    myStructureCoarseScale.AddVisualizationComponentEngineeringStrain();
+    myStructureCoarseScale.AddVisualizationComponentEngineeringStress();
+    myStructureCoarseScale.AddVisualizationComponentDamage();
+    myStructureCoarseScale.AddVisualizationComponentEngineeringPlasticStrain();
+    myStructureCoarseScale.AddVisualizationComponentPrincipalEngineeringStress();
+	myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
+    myStructureCoarseScale.ExportVtkDataFile("ConcurrentMultiscale.vtk");
 #endif
-
+*/
     // init some result data
     NuTo::FullMatrix<double> PlotData(1,9);
-    double externalEnergy(0.);
 
     // start analysis
+    double maxDisp(1);
+    double deltaDispFactor(0.0005);
+    double maxDeltaDispFactor(0.05);
+    double curDispFactor(0.00025);
 
-    double deltaStrainFactor(0.0005);
-    double maxDeltaStrainFactor(0.05);
-    double curStrainFactor(0.00025);
-
-    NuTo::FullMatrix<double> curStrain(maxStrain*curStrainFactor);
-    NuTo::FullMatrix<double> curCrackOpening(maxCrackOpening*curStrainFactor);
-
-    //update displacement of boundary (disp controlled)
-    double radiusToCrackWithoutConstraints(nonlocalRadius*0.0);
-    int constraintPeriodic = myStructureFineScale.ConstraintDisplacementsSetPeriodic2D(angle, curStrain,
-            curCrackOpening, radiusToCrackWithoutConstraints, GrpNodes_Top, GrpNodes_Bottom, GrpNodes_Left,GrpNodes_Right);
+    double curDisp(maxDisp*curDispFactor);
+    myStructureCoarseScale.ConstraintSetRHS(ConstraintRHS,curDisp);
 
 	//update conre mat
-	myStructureFineScale.NodeBuildGlobalDofs();
+	myStructureCoarseScale.NodeBuildGlobalDofs();
 
-#ifdef ENABLE_SERIALIZATION
-    myStructureFineScale.Save("myStructureFineScale.bin","binary");
-    exit(0);
-#endif
 	//update tmpstatic data with zero displacements
-	myStructureFineScale.ElementTotalUpdateTmpStaticData();
+	myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 
 	//init some auxiliary variables
 	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
@@ -187,10 +123,10 @@ try
 	mySolver.SetShowTime(true);
 
     //calculate stiffness
-	myStructureFineScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+	myStructureCoarseScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 
 	// build global external load vector and RHS vector
-	myStructureFineScale.BuildGlobalExternalLoadVector(extForceVector);
+	myStructureCoarseScale.BuildGlobalExternalLoadVector(extForceVector);
 	rhsVector = extForceVector + dispForceVector;
 
 	//calculate absolute tolerance for matrix entries to be not considered as zero
@@ -200,7 +136,7 @@ try
 	std::cout << "min and max " << minValue << " , " << maxValue << std::endl;
 
 	ToleranceZeroStiffness = (1e-14) * (fabs(maxValue)>fabs(minValue) ?  fabs(maxValue) : fabs(minValue));
-	myStructureFineScale.SetToleranceStiffnessEntries(ToleranceZeroStiffness);
+	myStructureCoarseScale.SetToleranceStiffnessEntries(ToleranceZeroStiffness);
 	int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
 	int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
 	std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
@@ -209,9 +145,9 @@ try
 	{
 	    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
 	    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-	    myStructureFineScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-	    myStructureFineScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-	    myStructureFineScale.ElementTotalUpdateTmpStaticData();
+	    myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+	    myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+	    myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 	}
 
 	//repeat until max displacement is reached
@@ -254,7 +190,7 @@ try
 			mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
 
 			// write displacements to node
-			myStructureFineScale.NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
+			myStructureCoarseScale.NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
 
 			//perform a linesearch
 			alpha = 1.;
@@ -262,11 +198,11 @@ try
 			{
 				//add new displacement state
 				displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
-				myStructureFineScale.NodeMergeActiveDofValues(displacementsActiveDOFs);
-				myStructureFineScale.ElementTotalUpdateTmpStaticData();
+				myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFs);
+				myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 
 				// calculate residual
-				myStructureFineScale.BuildGlobalGradientInternalPotentialVector(intForceVector);
+				myStructureCoarseScale.BuildGlobalGradientInternalPotentialVector(intForceVector);
 				rhsVector = extForceVector - intForceVector;
 				normResidual = rhsVector.Norm();
 				std::cout << "alpha " << alpha << ", normResidual " << normResidual << ", normResidualInit "<< normRHS << ", normRHS*(1-0.5*alpha) " << normRHS*(1-0.5*alpha) << std::endl;
@@ -290,7 +226,7 @@ try
 			{
 				if (PRINTRESULT)
 		    	{
-					std::cout << "Convergence after " << numNewtonIterations << " Newton iterations, curStrainFactor " << curStrainFactor << ", deltaStrainFactor "<< deltaStrainFactor << std::endl<< std::endl;
+					std::cout << "Convergence after " << numNewtonIterations << " Newton iterations, curdispFactor " << curDispFactor << ", deltaDispFactor "<< deltaDispFactor << std::endl<< std::endl;
 		    	}
 				convergenceStatus=1;
 				break;
@@ -298,37 +234,35 @@ try
 
 			//convergence status == 0 (continue Newton iteration)
 			//build new stiffness matrix
-			myStructureFineScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+			myStructureCoarseScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 			int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
 			int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
 			std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 		}
 
-		if (deltaStrainFactor==0)
+		if (deltaDispFactor==0)
 		    throw NuTo::MechanicsException("Example ConcurrentMultiscale : No convergence, delta strain factor < 1e-7");
 
 		if (convergenceStatus==1)
 		{
-			myStructureFineScale.ElementTotalUpdateStaticData();
+			myStructureCoarseScale.ElementTotalUpdateStaticData();
 
             // visualize results
 #ifdef ENABLE_VISUALIZE
-            myStructureFineScale.ExportVtkDataFile("ConcurrentMultiscale.vtk");
+            myStructureCoarseScale.ExportVtkDataFile("ConcurrentMultiscale.vtk");
 #endif
 #ifdef ENABLE_SERIALIZATION
-    //myStructureFineScale.Save("myStructureFineScale.bin","BINARY");
-    //myStructureFineScale.Restore("myStructureFineScale.bin","BINARY");
-    myStructureFineScale.Save("myStructureFineScale.xml","XML");
+    //myStructureCoarseScale.Save("myStructureCoarseScale.bin","BINARY");
+    //myStructureCoarseScale.Restore("myStructureCoarseScale.bin","BINARY");
+    myStructureCoarseScale.Save("myStructureCoarseScale.xml","XML");
     exit(0);
 #endif // ENABLE_SERIALIZATION
  			//store result/plot data
 			NuTo::FullMatrix<double> SinglePlotData(1,9);
-			SinglePlotData(0,0) = curStrain(0,0);
-            SinglePlotData(0,1) = curStrain(1,0);
-            SinglePlotData(0,2) = curStrain(2,0);
+			SinglePlotData(0,0) = curDisp;
             //Get Average Stress
             NuTo::FullMatrix<double> averageStress;
-	        myStructureFineScale.ElementTotalGetAverageStress(lX*lY,averageStress);
+	        myStructureCoarseScale.ElementTotalGetAverageStress(lX*lY,averageStress);
             SinglePlotData(0,3) = averageStress(0,0);
             SinglePlotData(0,4) = averageStress(1,0);
             SinglePlotData(0,5) = averageStress(2,0);
@@ -337,37 +271,35 @@ try
             SinglePlotData(0,8) = averageStress(5,0);
 
             std::cout << "average stress " << std::endl << averageStress << std::endl;
-            std::cout << "current Strain " << std::endl << curStrain << std::endl;
+            std::cout << "current Strain " << std::endl << curDisp << std::endl;
 
-			externalEnergy+=averageStress(0,0)*curStrain(0,0)+averageStress(1,0)*curStrain(1,0)+averageStress(2,0)*curStrain(2,0);
+//			externalEnergy+=averageStress(0,0)*curStrain(0,0)+averageStress(1,0)*curStrain(1,0)+averageStress(2,0)*curStrain(2,0);
 
 			PlotData.AppendRows(SinglePlotData);
 		    PlotData.WriteToFile("ConcurrentMultiscaleLoadDisp.txt"," ","#load displacement curve, disp, stress, force, sxx in center element, syy in center element","  ");
 
-            if (curStrainFactor==1)
+            if (curDispFactor==1)
                 convergenceStatusLoadSteps=true;
             else
             {
                 //eventually increase load step
                 if (numNewtonIterations<MAXNUMNEWTONITERATIONS/3)
                 {
-                    deltaStrainFactor*=1.5;
+                    deltaDispFactor*=1.5;
                 }
 
                 //increase displacement
-                curStrainFactor+=deltaStrainFactor;
-                if (curStrainFactor>1)
+                curDispFactor+=deltaDispFactor;
+                if (curDispFactor>1)
                 {
-                    deltaStrainFactor -= curStrainFactor -1.;
-                    curStrainFactor=1;
+                    deltaDispFactor -= curDispFactor -1.;
+                    curDispFactor=1;
                 }
 
-                curStrain = maxStrain*curStrainFactor;
-                curCrackOpening = maxCrackOpening*curStrainFactor;
-
+                curDisp = maxDisp*curDispFactor;
 
                 //old stiffness matrix is used in first step of next load increment in order to prevent spurious problems at the boundary
-                std::cout << "press enter to next load increment, delta strain factor " << deltaStrainFactor << " max delta strain factor " <<  maxDeltaStrainFactor << std::endl << std::endl;
+                std::cout << "press enter to next load increment, delta disp factor " << deltaDispFactor << " max delta disp factor " <<  maxDeltaDispFactor << std::endl << std::endl;
                 //char cDummy[100]="";
                 //std::cin.getline(cDummy, 100);
             }
@@ -378,34 +310,32 @@ try
 			//calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
 			//this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
 			//otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
-			curStrainFactor-=deltaStrainFactor;
-            curStrain = maxStrain*curStrainFactor;
-            curCrackOpening = maxCrackOpening*curStrainFactor;
+			curDispFactor-=deltaDispFactor;
+            curDisp = maxDisp*curDispFactor;
 
-			myStructureFineScale.ConstraintPeriodicSetStrain(constraintPeriodic,curStrain);
-            myStructureFineScale.ConstraintPeriodicSetCrackOpening(constraintPeriodic,curCrackOpening);
+            myStructureCoarseScale.ConstraintSetRHS(ConstraintRHS,curDisp);
 
 			// build global dof numbering
-			myStructureFineScale.NodeBuildGlobalDofs();
+			myStructureCoarseScale.NodeBuildGlobalDofs();
 
 			//set previous converged displacements
 			NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
 			NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-			myStructureFineScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-			myStructureFineScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-			myStructureFineScale.ElementTotalUpdateTmpStaticData();
+			myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+			myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+			myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 
 			// calculate previous residual (should be almost zero)
-			myStructureFineScale.BuildGlobalGradientInternalPotentialVector(intForceVector);
+			myStructureCoarseScale.BuildGlobalGradientInternalPotentialVector(intForceVector);
 
 			//decrease load step
-			deltaStrainFactor*=0.5;
-			curStrainFactor+=deltaStrainFactor;
+			deltaDispFactor*=0.5;
+			curDispFactor+=deltaDispFactor;
 
 			//check for minimum delta (this mostly indicates an error in the software
-			if (deltaStrainFactor<MIN_DELTA_STRAIN_FACTOR)
+			if (deltaDispFactor<MIN_DELTA_STRAIN_FACTOR)
 			{
-			    deltaStrainFactor = 0;
+			    deltaDispFactor = 0;
 			    //throw NuTo::MechanicsException("Example ConcurrentMultiscale : No convergence, delta strain factor < 1e-7");
 			}
 
@@ -417,14 +347,13 @@ try
 		if (!convergenceStatusLoadSteps)
 		{
             //update new displacement of RHS
-            myStructureFineScale.ConstraintPeriodicSetStrain(constraintPeriodic,curStrain);
-            myStructureFineScale.ConstraintPeriodicSetCrackOpening(constraintPeriodic,curCrackOpening);
+		    myStructureCoarseScale.ConstraintSetRHS(ConstraintRHS,curDisp);
 
             // build global dof numbering
-            myStructureFineScale.NodeBuildGlobalDofs();
+            myStructureCoarseScale.NodeBuildGlobalDofs();
 
             //update stiffness in order to calculate new dispForceVector
-            myStructureFineScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+            myStructureCoarseScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
             int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
             int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
             std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
@@ -435,14 +364,15 @@ try
             //update displacements of all nodes according to the new conre mat
             NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
             NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-            myStructureFineScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-            myStructureFineScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-            myStructureFineScale.ElementTotalUpdateTmpStaticData();
+            myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+            myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+            myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 		}
     }
+
 	if (PRINTRESULT)
 	{
-        std::cout<< "numerical fracture energy "<< externalEnergy/(thickness*lY) << std::endl;
+//        std::cout<< "numerical fracture energy "<< externalEnergy/(thickness*lY) << std::endl;
 	}
 }
 catch (NuTo::Exception& e)

@@ -23,11 +23,14 @@ class EngineeringStrain2D
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class LinearElastic;
     friend class ConstitutiveMisesPlasticity;
-    friend class NonlocalDamagePlasticity;
     friend class ConstitutiveEngineeringStressStrain;
-    friend class ConstraintDisplacementsPeriodic2D;
+    friend class ConstraintLinearGlobalCrackAngle;
+    friend class ConstraintLinearDisplacementsPeriodic2D;
+    friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
+    friend class LinearElastic;
+    friend class Multiscale;
+    friend class NonlocalDamagePlasticity;
     friend class StructureIp;
 public:
     //! @brief ... constructor
@@ -50,6 +53,33 @@ public:
     //! @return ... Engineering Strain (exx,eyy,gxy)
     //! @sa mDeformationGradient
     const double* GetData() const;
+
+    EngineeringStrain2D operator+ ( const EngineeringStrain2D &other ) const
+    {
+        EngineeringStrain2D result;
+        result.mEngineeringStrain[0] = mEngineeringStrain[0] + other.mEngineeringStrain[0];
+        result.mEngineeringStrain[1] = mEngineeringStrain[1] + other.mEngineeringStrain[1];
+        result.mEngineeringStrain[2] = mEngineeringStrain[2] + other.mEngineeringStrain[2];
+        return result;
+    }
+
+    EngineeringStrain2D operator- ( const EngineeringStrain2D &other ) const
+     {
+         EngineeringStrain2D result;
+         result.mEngineeringStrain[0] = mEngineeringStrain[0] - other.mEngineeringStrain[0];
+         result.mEngineeringStrain[1] = mEngineeringStrain[1] - other.mEngineeringStrain[1];
+         result.mEngineeringStrain[2] = mEngineeringStrain[2] - other.mEngineeringStrain[2];
+         return result;
+     }
+
+    EngineeringStrain2D operator* ( double scalar ) const
+     {
+         EngineeringStrain2D result;
+         result.mEngineeringStrain[0] = scalar*mEngineeringStrain[0];
+         result.mEngineeringStrain[1] = scalar*mEngineeringStrain[1];
+         result.mEngineeringStrain[2] = scalar*mEngineeringStrain[2];
+         return result;
+     }
 
     //! @brief ... set Engineering Strain
     //! @return ... Engineering Strain (exx,eyy,gxy)

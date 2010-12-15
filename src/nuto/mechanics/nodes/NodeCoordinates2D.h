@@ -1,5 +1,5 @@
-#ifndef NODE_COORDINATES_2D_H
-#define NODE_COORDINATES_2D_H
+#ifndef NODE_HOM_CRACK_2D_H
+#define NODE_HOM_CRACK_2D_H
 
 #include "nuto/mechanics/nodes/NodeBase.h"
 namespace NuTo
@@ -89,6 +89,10 @@ public:
     //! @return type
     virtual std::string GetNodeTypeStr()const;
 
+    //! @brief returns the type of node as an enum (all the data stored at the node)
+    //! @return enum
+    virtual Node::eNodeType GetNodeType()const;
+
 protected:
     double mCoordinates[2];
 
@@ -166,6 +170,6 @@ public:
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeCoordinates2D)
 #endif // ENABLE_SERIALIZATION
 
-#endif //NODE_COORDINATES_2D_H
+#endif //NODE_HOM_CRACK_2D_H
 
 

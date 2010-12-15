@@ -4,6 +4,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElastic.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveMisesPlasticity.h"
+#include "nuto/mechanics/constitutive/mechanics/Multiscale.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
 
 // create a new constitutive law
@@ -26,6 +27,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "NONLOCALDAMAGEPLASTICITY")
     {
         ConstitutiveLawType = Constitutive::NONLOCAL_DAMAGE_PLASTICITY;
+    }
+    else if (ConstitutiveLawTypeString == "MULTISCALE")
+    {
+        ConstitutiveLawType = Constitutive::MULTISCALE;
     }
     else
     {
@@ -64,6 +69,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY:
             ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticity();
+            break;
+        case NuTo::Constitutive::MULTISCALE:
+            ConstitutiveLawPtr = new NuTo::Multiscale();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");

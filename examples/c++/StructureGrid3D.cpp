@@ -167,18 +167,18 @@ int main()
                     flag=1;
                 }
                 if(flag==0)
-                     myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, 0.0);
+                     myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
             }
         }
         direction(0,0)= 0;
         direction(1,0)= 0;
         direction(2,0)= 1;
-        myGrid.ConstraintSetDisplacementNode(0, direction, 0.0);
-        myGrid.ConstraintSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0);
+        myGrid.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+        myGrid.ConstraintLinearSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0);
         direction(0,0)= 0;
         direction(1,0)= 1;
         direction(2,0)= 0;
-        myGrid.ConstraintSetDisplacementNode(0, direction, 0.0);
+        myGrid.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
 
         // apply nodes
         if(EnableDisplacementControl)
@@ -206,7 +206,7 @@ int main()
                         flag=1;
                     }
                    if(flag==0)
-                        myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
+                        myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
                 }
             }
          }
@@ -265,8 +265,8 @@ int main()
         std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
         // build global dof numbering
         myGrid.NodeBuildGlobalDofs();
-        std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs"<<myGrid.NodeGetNumberGlobalDofs()<<std::endl;
-        std::cout<<__FILE__<<" "<<__LINE__<<" active dofs"<<myGrid.NodeGetNumberActiveDofs()<<std::endl;
+        std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs"<<myGrid.GetNumDofs()<<std::endl;
+        std::cout<<__FILE__<<" "<<__LINE__<<" active dofs"<<myGrid.GetNumActiveDofs()<<std::endl;
 /*
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
         NuTo::SparseMatrixCSRGeneral<double> globStiffnessMatrix;

@@ -400,66 +400,97 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 //! @brief number the dofs in the structure
 void NuTo::Structure::NodeBuildGlobalDofs()
 {
-    // build initial node numbering
-    this->mNumDofs = 0;
-    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    try
     {
-        it->second->SetGlobalDofs(this->mNumDofs);
-    }
+        // build initial node numbering
+        this->mNumDofs = 0;
 
-    // build constraint matrix
-    this->mNodeNumberingRequired = false;
-    this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
-    this->mNodeNumberingRequired = true;
+        //call routine that includes non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
+        //mNumDofs is also increased
+        NumberAdditionalGlobalDofs();
 
-    // perform gauss algorithm
-    std::vector<int> mappingInitialToNewOrdering;
-    std::vector<int> mappingNewToInitialOrdering;
-    this->mConstraintMatrix.Gauss(this->mConstraintRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
+        //number Lagrange multipliers in constraint equations defined in StructureBase
+        ConstraintNumberGlobalDofs(this->mNumDofs);
 
-    // move dependent dofs at the end
-    // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
-    unsigned int numDependentDofs = this->mConstraintMatrix.GetNumRows();
-    this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
-    std::vector<int> tmpMapping;
-    for (unsigned int dependentDofCount = 0; dependentDofCount < numDependentDofs; dependentDofCount++)
-    {
-        tmpMapping.push_back(this->mNumActiveDofs + dependentDofCount);
-        mappingInitialToNewOrdering[mappingNewToInitialOrdering[dependentDofCount]] += this->mNumActiveDofs;
-    }
-    for (int activeDofCount = numDependentDofs; activeDofCount < this->mNumDofs; activeDofCount++)
-    {
-        tmpMapping.push_back(activeDofCount - numDependentDofs);
-        mappingInitialToNewOrdering[mappingNewToInitialOrdering[activeDofCount]] -= numDependentDofs;
-    }
-    mappingNewToInitialOrdering.clear();
-
-    // reorder columns
-    this->mConstraintMatrix.ReorderColumns(tmpMapping);
-
-    // remove columns of dependent dofs
-    // check if the submatrix which is removed is a diagonal matrix
-    const std::vector<int>& constraintMatrixRowIndex = this->mConstraintMatrix.GetRowIndex();
-    const std::vector<int>& constraintMatrixColumns = this->mConstraintMatrix.GetColumns();
-    for (int row = 0; row < this->mConstraintMatrix.GetNumRows(); row++)
-    {
-        for (int pos = constraintMatrixRowIndex[row]; pos < constraintMatrixRowIndex[row + 1]; pos++)
+        for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
         {
-            if ((constraintMatrixColumns[pos] > this->mNumActiveDofs) && (constraintMatrixColumns[pos] != row + this->mNumActiveDofs))
+            it->second->SetGlobalDofs(this->mNumDofs);
+        }
+
+        // build constraint matrix
+        this->mNodeNumberingRequired = false;
+        this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
+        this->mNodeNumberingRequired = true;
+
+        // perform gauss algorithm
+        std::vector<int> mappingInitialToNewOrdering;
+        std::vector<int> mappingNewToInitialOrdering;
+        this->mConstraintMatrix.Gauss(this->mConstraintRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
+
+        // move dependent dofs at the end
+        // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
+        unsigned int numDependentDofs = this->mConstraintMatrix.GetNumRows();
+        this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
+        std::vector<int> tmpMapping;
+        for (unsigned int dependentDofCount = 0; dependentDofCount < numDependentDofs; dependentDofCount++)
+        {
+            tmpMapping.push_back(this->mNumActiveDofs + dependentDofCount);
+            mappingInitialToNewOrdering[mappingNewToInitialOrdering[dependentDofCount]] += this->mNumActiveDofs;
+        }
+        for (int activeDofCount = numDependentDofs; activeDofCount < this->mNumDofs; activeDofCount++)
+        {
+            tmpMapping.push_back(activeDofCount - numDependentDofs);
+            mappingInitialToNewOrdering[mappingNewToInitialOrdering[activeDofCount]] -= numDependentDofs;
+        }
+        mappingNewToInitialOrdering.clear();
+
+        // reorder columns
+        this->mConstraintMatrix.ReorderColumns(tmpMapping);
+
+        // remove columns of dependent dofs
+        // check if the submatrix which is removed is a diagonal matrix
+        const std::vector<int>& constraintMatrixRowIndex = this->mConstraintMatrix.GetRowIndex();
+        const std::vector<int>& constraintMatrixColumns = this->mConstraintMatrix.GetColumns();
+        for (int row = 0; row < this->mConstraintMatrix.GetNumRows(); row++)
+        {
+            for (int pos = constraintMatrixRowIndex[row]; pos < constraintMatrixRowIndex[row + 1]; pos++)
             {
-                throw MechanicsException("[NuTo::Structure::NodeBuildGlobalDofs] invalid matrix structure.");
+                if ((constraintMatrixColumns[pos] > this->mNumActiveDofs) && (constraintMatrixColumns[pos] != row + this->mNumActiveDofs))
+                {
+                    throw MechanicsException("[NuTo::Structure::NodeBuildGlobalDofs] invalid matrix structure.");
+                }
             }
         }
-    }
-    this->mConstraintMatrix.RemoveLastColumns(numDependentDofs);
+        this->mConstraintMatrix.RemoveLastColumns(numDependentDofs);
 
-    // renumber dofs
-    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+        //call routine that includes non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
+        ReNumberAdditionalGlobalDofs(mappingInitialToNewOrdering);
+
+        //renumber DOFS in constraints (Lagrange multiplier)
+        ConstraintRenumberGlobalDofs(mappingInitialToNewOrdering);
+
+        // renumber dofs
+        for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+        {
+            it->second->RenumberGlobalDofs(mappingInitialToNewOrdering);
+        }
+
+        mNodeNumberingRequired = false;
+    }
+    catch (MechanicsException& e)
     {
-        it->second->RenumberGlobalDofs(mappingInitialToNewOrdering);
+        e.AddMessage("[NuTo::Structure::NodeBuildGlobalDofs] error building global dof numbering.");
+        throw e;
     }
-
-    mNodeNumberingRequired = false;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::NodeBuildGlobalDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 // merge dof values
@@ -483,6 +514,12 @@ void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActive
     {
         it->second->SetGlobalDofValues(rActiveDofValues, dependentDofValues);
     }
+
+    //write the dof values of the Lagrange multipliers
+    ConstraintMergeGlobalDofValues(rActiveDofValues, dependentDofValues);
+
+    //write dof values of additional DOFs
+    NodeMergeAdditionalGlobalDofValues(rActiveDofValues,dependentDofValues);
 }
 
 // extract dof values
@@ -500,6 +537,11 @@ void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues,
     {
         it->second->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
+    //extract dof values of Lagrange multipliers
+    ConstraintExtractGlobalDofValues(rActiveDofValues,rDependentDofValues);
+
+    //extract dof values of additional DOFs
+    NodeExtractAdditionalGlobalDofValues(rActiveDofValues,rDependentDofValues);
 }
 
 // store all nodes of a structure in a vector
@@ -604,5 +646,43 @@ void NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues(FullMatrix<double
     {
         it->second->GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
+}
+
+//! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+//! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+void NuTo::Structure::NodeExchangePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
+{
+    //in node map
+    //find it
+    int nodeId = NodeGetId(rOldPtr);
+    if (mNodeMap.erase(nodeId)!=1)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeExchangePtr] Pointer to node (to exchange) does not exist.");
+    }
+    mNodeMap.insert(nodeId,rNewPtr);
+
+    //in elements
+    for (boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.begin(); itElement!= mElementMap.end(); itElement++)
+    {
+        itElement->second->ExchangeNodePtr(rOldPtr, rNewPtr);
+    }
+
+    //in groups
+    for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt)
+    {
+        if(groupIt->second->GetType()==NuTo::Groups::Nodes)
+        {
+            groupIt->second->ExchangePtr(rOldPtr, rNewPtr);
+        }
+    }
+
+    //in constraints
+    //in groups
+    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=mConstraintMap.begin();constraintIt!=mConstraintMap.end(); ++constraintIt)
+    {
+        constraintIt->second->ExchangeNodePtr(rOldPtr, rNewPtr);
+    }
+
+
 }
 

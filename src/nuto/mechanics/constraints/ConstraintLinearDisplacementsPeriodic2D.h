@@ -4,10 +4,14 @@
 #define CONSTRAINTDISPLACEMENTS2PERIODIC2D_H
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 
 namespace NuTo
 {
+class StructureBase;
+class NodeBase;
+template<class T> class Group;
 class NodeCoordinatesDisplacements2D;
 //! @author Joerg F. Unger
 //! @date August 2010
@@ -16,7 +20,7 @@ class NodeCoordinatesDisplacements2D;
 //! the general idea is a decomposition of the periodic boundary conditions into a homogeneous part (mStrain) and a discontinuous part (mCrackOpening)
 //! for a crack with an angle between 45 and 235 degrees (for other angles the values are automatically adjusted by +-180
 //! attention: for a tension test with a horizontal crack, either specify angle=180 and uy or angle=0 and -uy
-class ConstraintDisplacementsPeriodic2D : public ConstraintBase
+class ConstraintLinearDisplacementsPeriodic2D : public ConstraintBase, public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -26,10 +30,20 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, const EngineeringStrain2D& rStrain,
+    ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, const EngineeringStrain2D& rStrain,
             NuTo::FullMatrix<double> crackOpening, double rRadiusToCrackWithoutConstraints,
             const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
             const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight);
+
+    //! @brief returns the number of constraint equations
+    //! @return number of constraints
+    int GetNumLinearConstraints()const;
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    ConstraintLinear* AsConstraintLinear();
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    const ConstraintLinear* AsConstraintLinear()const;
 
     //!@brief sets/modifies angle of the boundary condition
     //!@param rAngle angle in deg
@@ -46,9 +60,8 @@ public:
     //!@brief calculate the border vectors in counterclockwise direction
     void SetBoundaryVectors();
 
-    //! @brief returns the number of constraint equations
-    //! @return number of constraints
-    int GetNumConstraintEquations()const;
+    //!@brief calculates all the nodes on the boundary
+    std::vector<NodeBase*> GetBoundaryNodes();
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -68,7 +81,7 @@ public:
 
 protected:
     //! @brief just for serialization
-    ConstraintDisplacementsPeriodic2D(){};
+    ConstraintLinearDisplacementsPeriodic2D(){};
 
     //! @brief calculate weighting function for first master node (linear interpolation between master nodes
     //! @param rCoordinateCurMaster
@@ -111,7 +124,7 @@ protected:
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintDisplacementsPeriodic2D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearDisplacementsPeriodic2D)
 #endif // ENABLE_SERIALIZATION
 
 #endif //CONSTRAINTDISPLACEMENTS2PERIODIC2D_H

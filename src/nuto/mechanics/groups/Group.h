@@ -86,6 +86,20 @@ public:
         else							       	return true;
     }
 
+    //! @brief replaces a ptr by another one
+    //! @param rOldPtr
+    //! @param rNewPtr
+    void ExchangePtr(T* rOldMember, T* rNewMember)
+    {
+        if (this->erase(rOldMember))
+        {
+            if (this->insert(rNewMember).second==false)
+            {
+                throw MechanicsException("[Group::ExchangePtr] New group member can not be inserted.");
+            }
+        }
+    }
+
     //! @brief joins two groups
     //! @return group
     GroupBase* Unite (const NuTo::GroupBase* rOther)const

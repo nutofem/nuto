@@ -1030,6 +1030,15 @@ NuTo::Plane* NuTo::Plane::AsPlane()
 {
     return this;
 }
+//! @brief sets the fine scale model (deserialization from a binary file)
+void NuTo::Plane::SetFineScaleModel(int rIp, std::string rFileName)
+{
+    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+    {
+        mElementData->SetFineScaleModel(rIp,rFileName);
+    }
+
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

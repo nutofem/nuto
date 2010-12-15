@@ -4,6 +4,7 @@
 #define CONSTRAINTNODE_H
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
 {
@@ -20,10 +21,6 @@ class ConstraintNode : public ConstraintBase
 public:
     //! @brief constructor
     ConstraintNode(const NodeBase* rNode);
-
-    //! @brief returns the number of constraint equations
-    //! @return number of constraints
-    int GetNumConstraintEquations()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

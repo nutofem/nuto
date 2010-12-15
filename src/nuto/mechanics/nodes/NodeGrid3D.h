@@ -85,6 +85,10 @@ public:
     //! @return type
     virtual std::string GetNodeTypeStr()const;
 
+    //! @brief returns the type of node as an enum (all the data stored at the node)
+    //! @return enum
+    virtual Node::eNodeType GetNodeType()const;
+
 protected:
     //! @brief stores the grid number of the node
     //! @param grid number of the node

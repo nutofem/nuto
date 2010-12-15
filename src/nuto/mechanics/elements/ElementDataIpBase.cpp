@@ -56,6 +56,15 @@ NuTo::ElementDataIpBase::~ElementDataIpBase()
     //std::cout << "NuTo::ElementDataBase::~ElementDataBase()" << std::endl;
 }
 
+//! @brief sets the fine scale model (deserialization from a binary file)
+void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName)
+{
+    for (int theIp=0; theIp<mIntegrationType->GetNumIntegrationPoints();theIp++)
+    {
+        mIpData[rIp].SetFineScaleModel(rFileName);
+    }
+}
+
 //! @brief sets the integration type of an element
 //! implemented with an exception for all elements, reimplementation required for those elements
 //! which actually need an integration type

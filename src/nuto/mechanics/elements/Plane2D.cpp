@@ -52,8 +52,16 @@ void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) con
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
         const NodeBase *nodePtr = this->GetNode(nodeCount);
-        rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
-        rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+        if (nodePtr->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        {
+            rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofFineScaleDisplacement(0);
+            rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofFineScaleDisplacement(1);
+        }
+        else
+        {
+            rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
+            rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+        }
     }
 }
 
@@ -79,8 +87,16 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
         	for (int nodeCount = 0; nodeCount < nonlocalElement->GetNumNodes(); nodeCount++)
             {
                 const NodeBase *nodePtr = nonlocalElement->GetNode(nodeCount);
-                rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
-                rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+                if (nodePtr->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+                {
+                    rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofFineScaleDisplacement(0);
+                    rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofFineScaleDisplacement(1);
+                }
+                else
+                {
+                    rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
+                    rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+                }
             }
             shift+=2*nonlocalElement->GetNumNodes();
         }

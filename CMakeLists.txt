@@ -10,7 +10,7 @@ SET(CMAKE_VERBOSE_MAKEFILE OFF)
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
 OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
-OPTION(ENABLE_DEBUG "enables debug information" FALSE)
+OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" false)
@@ -47,6 +47,7 @@ ENDIF(ENABLE_VERBOSELEVEL)
 
 IF(ENABLE_SHOW_TIME)
     ADD_DEFINITIONS("-DSHOW_TIME")
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DSHOW_TIME")
 ENDIF(ENABLE_SHOW_TIME)
 
 # search path for external libraries

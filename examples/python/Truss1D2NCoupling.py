@@ -37,9 +37,9 @@ myStructure.ElementSetConstitutiveLaw(2,Material1)
 
 # set boundary conditions and loads
 direction = nuto.DoubleFullMatrix(1,1,(1,))
-myStructure.ConstraintSetDisplacementNode(1, direction, 0.0)
-id = myStructure.ConstraintEquationCreate(2, "x_displacement", 1, 0)
-myStructure.ConstraintEquationAddTerm(id, 3, "x_displacement", -1)
+myStructure.ConstraintLinearSetDisplacementNode(1, direction, 0.0)
+id = myStructure.ConstraintLinearEquationCreate(2, "x_displacement", 1, 0)
+myStructure.ConstraintLinearEquationAddTerm(id, 3, "x_displacement", -1)
 myStructure.LoadCreateNodeForce(4, direction, 1)
 
 # start analysis

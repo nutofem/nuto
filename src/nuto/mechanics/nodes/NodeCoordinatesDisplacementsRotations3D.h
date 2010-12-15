@@ -121,6 +121,13 @@ public:
     {
     	return std::string("NodeCoordinatesDisplacementsRotations3D");
     }
+
+    //! @brief returns the type of node as an enum (all the data stored at the node)
+    //! @return enum
+    virtual Node::eNodeType GetNodeType()const
+    {
+        return Node::NodeCoordinatesDisplacementsRotations3D;
+    }
 };
 }
 

@@ -6,7 +6,6 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutivePiolaKirchhoffIIGreenLagrange.h"
 
 namespace NuTo
 {
@@ -392,7 +391,7 @@ public:
     void ReturnMapping2D(
             const EngineeringStrain2D& rStrain,
             const double rPrevPlasticStrain[4],
-            const double rPrevTotalStrain[3],
+            const EngineeringStrain2D& rPrevTotalStrain,
             Eigen::Matrix<double,4,1>& rStress,
             Eigen::Matrix<double,4,1>& rEpsilonP,
                 double& rDeltaEqPlasticStrain,

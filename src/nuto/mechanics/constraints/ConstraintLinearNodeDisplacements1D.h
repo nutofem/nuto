@@ -1,18 +1,17 @@
 // $Id$
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS2D_H
-#define CONSTRAINTNODEDISPLACEMENTS2D_H
+#ifndef CONSTRAINTNODEDISPLACEMENTS1D_H
+#define CONSTRAINTNODEDISPLACEMENTS1D_H
 
+#include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
 
 namespace NuTo
 {
-template <class T>
-class FullMatrix;
-//! @author Daniel Arnold, ISM
-//! @date June 2010
-//! @brief ... abstract class for all constraints applied to a single node
-class ConstraintNodeDisplacements2D : public ConstraintNode
+//! @author Jörg F. Unger, ISM
+//! @date October 2009
+//! @brief ... class for all constraints with displacements applied to a single node in 1D
+class ConstraintLinearNodeDisplacements1D : public ConstraintNode, public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -20,9 +19,20 @@ class ConstraintNodeDisplacements2D : public ConstraintNode
 
 public:
     //! @brief constructor
+    //! @param rNode ... node pointer
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintNodeDisplacements2D(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    ConstraintLinearNodeDisplacements1D(const NodeBase* rNode, double rDirection, double rValue);
+
+    //! @brief returns the number of constraint equations
+    //! @return number of constraints
+    int GetNumLinearConstraints()const;
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    NuTo::ConstraintLinear* AsConstraintLinear();
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    const NuTo::ConstraintLinear* AsConstraintLinear()const;
 
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
@@ -45,18 +55,17 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief just for serialization
-    ConstraintNodeDisplacements2D(){};
+    //! @brief ... just for serialize
+    ConstraintLinearNodeDisplacements1D(){};
+
     //! @brief prescribed displacement of the node
     double mValue;
     //! @brief direction of the applied constraint (normalized)
-    double mDirection[2];
+    double mDirection;
 };
 }//namespace NuTo
-
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeDisplacements2D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeDisplacements1D)
 #endif // ENABLE_SERIALIZATION
-
-#endif //CONSTRAINTNODEDISPLACEMENTS2D_H
+#endif //CONSTRAINTNODEDISPLACEMENTS1D_H
 

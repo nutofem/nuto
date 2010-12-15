@@ -5,6 +5,7 @@
 
 #include <vector>
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
@@ -18,7 +19,7 @@ class ConstraintEquationTerm;
 //! @brief ... constraint equations
 //! @author Stefan Eckardt, ISM
 //! @date 16.12.2009
-class ConstraintEquation : public NuTo::ConstraintBase
+class ConstraintLinearEquation :  public NuTo::ConstraintBase, public NuTo::ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -30,7 +31,7 @@ public:
     //! @param rDofComponent ... which dof is constrained (e.g. 0 - displacement in x-direction) (first term only)
     //! @param rCoefficient ... weighting of this term in the constraint equation (first term only)
     //! @param rRhsValue ... right-hand-side value of the constraint equation
-    ConstraintEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue);
+    ConstraintLinearEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue);
 
     //! @brief add term to constraint
     //! @param rNode ... node pointer
@@ -47,12 +48,17 @@ public:
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    int GetNumConstraintEquations()const;
+    int GetNumLinearConstraints()const;
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    NuTo::ConstraintLinear* AsConstraintLinear();
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    const NuTo::ConstraintLinear* AsConstraintLinear()const;
 
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
     void SetRHS(double rRHS);
-
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -63,7 +69,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 protected:
     //! @brief ... just for serialize
-    ConstraintEquation(){};
+    ConstraintLinearEquation(){};
 
     std::vector<ConstraintEquationTerm> mTerms;  //!< terms of the constraint equation
     double mRhsValue;       //!< right-hand-side value of the constraint equation
@@ -72,7 +78,7 @@ protected:
 }
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintEquation)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearEquation)
 #endif // ENABLE_SERIALIZATION
 
 #endif // CONSTRAINTEQUATION_H_

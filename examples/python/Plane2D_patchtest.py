@@ -91,15 +91,15 @@ directionY = nuto.DoubleFullMatrix(2,1,(0,1))
 if StressState == "XX":
 	myStructure.GroupAddNode(LoadNodesXPos,1)
 	myStructure.GroupAddNode(LoadNodesXPos,7)
-	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
-	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
-	myStructure.ConstraintSetDisplacementNode(6, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(6, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 elif StressState == "YY":
 	myStructure.GroupAddNode(LoadNodesYPos,6)
 	myStructure.GroupAddNode(LoadNodesYPos,7)
-	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
-	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
-	myStructure.ConstraintSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
 elif StressState == "XY":
 	myStructure.GroupAddNode(LoadNodesXPos,6)
 	myStructure.GroupAddNode(LoadNodesXPos,7)
@@ -109,9 +109,9 @@ elif StressState == "XY":
 	myStructure.GroupAddNode(LoadNodesYPos,7)
 	#~ myStructure.GroupAddNode(LoadNodesYNeg,0)
 	myStructure.GroupAddNode(LoadNodesYNeg,6)
-	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
-	myStructure.ConstraintSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
-	myStructure.ConstraintSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
+	myStructure.ConstraintLinearSetDisplacementNode(1, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
 else:
 	print 'Wrong stressstate given'
 	error = True;
@@ -124,10 +124,10 @@ else:
 if EnableDisplacementControl:
 	print "Displacement control"
 	# boundary displacments
-	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
-	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesXNeg, directionX, -1.0*BoundaryDisplacement)
-	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesYPos, directionY, BoundaryDisplacement)
-	myStructure.ConstraintSetDisplacementNodeGroup(LoadNodesYNeg, directionY, -1.0*BoundaryDisplacement)
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, -1.0*BoundaryDisplacement)
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYPos, directionY, BoundaryDisplacement)
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYNeg, directionY, -1.0*BoundaryDisplacement)
 else:
 	print "Load control"
 	myStructure.LoadCreateNodeGroupForce(LoadNodesXPos, directionX, Force)

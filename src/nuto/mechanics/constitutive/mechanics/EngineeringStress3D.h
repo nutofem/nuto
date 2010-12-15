@@ -47,6 +47,7 @@ class EngineeringStress3D
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class NonlocalDamagePlasticity;
+    friend class Multiscale;
 public:
     //! @brief ... constructor
     EngineeringStress3D();

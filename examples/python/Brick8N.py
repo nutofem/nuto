@@ -66,15 +66,15 @@ for zCount in range (0, NumElementsZ + 1):
     for yCount in range (0, NumElementsY + 1):
         node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1)
         #print "node: " + str(node)
-        myStructure.ConstraintSetDisplacementNode(node, direction, 0.0)
+        myStructure.ConstraintLinearSetDisplacementNode(node, direction, 0.0)
 
 direction = nuto.DoubleFullMatrix(3,1,(0,0,1))
-myStructure.ConstraintSetDisplacementNode(0, direction, 0.0)
-myStructure.ConstraintSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0)
 #print "node: " + str(NumElementsY * (NumElementsX + 1))
 
 direction = nuto.DoubleFullMatrix(3,1,(0,1,0))
-myStructure.ConstraintSetDisplacementNode(0, direction, 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 
 if EnableDisplacementControl:
     print "Displacement control"
@@ -84,7 +84,7 @@ if EnableDisplacementControl:
         for yCount in range (0, NumElementsY + 1):
             node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX
             #print "node: " + str(node)
-            myStructure.ConstraintSetDisplacementNode(node, direction, BoundaryDisplacement)
+            myStructure.ConstraintLinearSetDisplacementNode(node, direction, BoundaryDisplacement)
 else:
     #load
     print "Load control"

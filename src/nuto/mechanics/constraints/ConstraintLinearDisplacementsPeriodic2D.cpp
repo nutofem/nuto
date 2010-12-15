@@ -17,14 +17,33 @@
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
 #include "nuto/mechanics/nodes/NodeDisplacements2D.h"
 #include "nuto/mechanics/groups/Group.h"
-#include "nuto/mechanics/constraints/ConstraintDisplacementsPeriodic2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
-//! @brief constructor
-NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle,
+//! @brief returns the number of constraint equations
+//! @return number of constraints
+int NuTo::ConstraintLinearDisplacementsPeriodic2D::GetNumLinearConstraints()const
+{
+    return 2*(mSlaveNodesRightBoundary.size()+mSlaveNodesTopBoundary.size());
+}
+
+//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+NuTo::ConstraintLinear* NuTo::ConstraintLinearDisplacementsPeriodic2D::AsConstraintLinear()
+{
+    return this;
+}
+
+//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+const NuTo::ConstraintLinear* NuTo::ConstraintLinearDisplacementsPeriodic2D::AsConstraintLinear()const
+{
+    return this;
+}
+
+ //! @brief constructor
+NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle,
         const EngineeringStrain2D& rStrain,NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
-        const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintBase()
+        const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintBase(), ConstraintLinear()
 {
     mStructure = rStructure,
 
@@ -42,44 +61,44 @@ NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D(const
     //determine the corner nodes
     Group<NodeBase>* newGroup = dynamic_cast<Group<NodeBase>*>(rGroupTop->Intersection (rGroupLeft));
     if (newGroup->GetNumMembers()!=1)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Top left corner node can not be determined.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Top left corner node can not be determined.");
     mLeftUpperCorner = *(newGroup->begin());
     delete newGroup;
 
     newGroup = dynamic_cast<Group<NodeBase>*>(rGroupTop->Intersection (rGroupRight));
     if (newGroup->GetNumMembers()!=1)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Top right corner node can not be determined.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Top right corner node can not be determined.");
     mRightUpperCorner = *(newGroup->begin());
     delete newGroup;
 
     newGroup = dynamic_cast<Group<NodeBase>*>(rGroupBottom->Intersection (rGroupLeft));
     if (newGroup->GetNumMembers()!=1)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Bottom left corner node can not be determined.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Bottom left corner node can not be determined.");
     mLeftLowerCorner = *(newGroup->begin());
     delete newGroup;
 
     newGroup = dynamic_cast<Group<NodeBase>*>(rGroupBottom->Intersection (rGroupRight));
     if (newGroup->GetNumMembers()!=1)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Bottom right corner node can not be determined.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Bottom right corner node can not be determined.");
     mRightLowerCorner = *(newGroup->begin());
     delete newGroup;
 
     //get box coordinates
     double LeftUpperCoordinates[2], RightUpperCoordinates[2], LeftLowerCoordinates[2], RightLowerCoordinates[2];
     if (mLeftUpperCorner->GetNumCoordinates()!=2)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Upper left node does not have 2 coordinates.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Upper left node does not have 2 coordinates.");
     mLeftUpperCorner->GetCoordinates2D(LeftUpperCoordinates);
 
     if (mRightUpperCorner->GetNumCoordinates()!=2)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Upper right node does not have 2 coordinates.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Upper right node does not have 2 coordinates.");
     mRightUpperCorner->GetCoordinates2D(RightUpperCoordinates);
 
     if (mLeftLowerCorner->GetNumCoordinates()!=2)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Lower left node does not have 2 coordinates.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Lower left node does not have 2 coordinates.");
     mLeftLowerCorner->GetCoordinates2D(LeftLowerCoordinates);
 
     if (mRightLowerCorner->GetNumCoordinates()!=2)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Lower right node does not have 2 coordinates.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Lower right node does not have 2 coordinates.");
     mRightLowerCorner->GetCoordinates2D(RightLowerCoordinates);
 
     if (mStructure->GetVerboseLevel()>0)
@@ -95,22 +114,22 @@ NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D(const
     {
         std::cout << "LeftUpperCoordinates " << LeftUpperCoordinates[0] << " " << LeftUpperCoordinates[1] << std::endl;
         std::cout << "LeftLowerCoordinates " << LeftLowerCoordinates[0] << " " << LeftLowerCoordinates[1] << std::endl;
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Left boundary is not correct - check your node groups.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Left boundary is not correct - check your node groups.");
     }
     if (RightUpperCoordinates[0]!=RightLowerCoordinates[0])
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] Right boundary is not correct - check your node groups.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Right boundary is not correct - check your node groups.");
 
     if (RightUpperCoordinates[0]<=LeftUpperCoordinates[0])
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] left boundary coordinate is larger than right boundary coordinate.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] left boundary coordinate is larger than right boundary coordinate.");
 
     if (LeftUpperCoordinates[1]!=RightUpperCoordinates[1])
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] upper boundary is not correct - check your node groups.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] upper boundary is not correct - check your node groups.");
 
     if (LeftLowerCoordinates[0]!=RightLowerCoordinates[1])
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] lower boundary is not correct - check your node groups.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] lower boundary is not correct - check your node groups.");
 
     if (LeftUpperCoordinates[1]<=LeftLowerCoordinates[1])
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D] upper boundary coordinate is larger than lower boundary coordinate.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] upper boundary coordinate is larger than lower boundary coordinate.");
 
 
     SetAngle(rAngle);
@@ -118,7 +137,7 @@ NuTo::ConstraintDisplacementsPeriodic2D::ConstraintDisplacementsPeriodic2D(const
 
 //!@brief set the angle of the periodic boundary conditions
 //!@param rRHS new right hand side
-void NuTo::ConstraintDisplacementsPeriodic2D::SetAngle(double rAngle)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetAngle(double rAngle)
 {
     mAngle = rAngle;
     while (mAngle>225 || mAngle<45)
@@ -141,17 +160,17 @@ void NuTo::ConstraintDisplacementsPeriodic2D::SetAngle(double rAngle)
 
 //!@brief sets/modifies the average strain applied to the boundary
 //!@param rAngle angle in deg
-void NuTo::ConstraintDisplacementsPeriodic2D::SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening)
 {
     if (rCrackOpening.GetNumRows()!=2 || rCrackOpening.GetNumColumns()!=1)
-        throw MechanicsException("[NuTo::ConstraintDisplacementsPeriodic2D::SetCrackOpening] crack opening should be a (2,1) matrix.");
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening] crack opening should be a (2,1) matrix.");
     mCrackOpening[0] = rCrackOpening(0,0);
     mCrackOpening[1] = rCrackOpening(1,0);
 }
 
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-void NuTo::ConstraintDisplacementsPeriodic2D::SetStrain(const EngineeringStrain2D& rStrain)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetStrain(const EngineeringStrain2D& rStrain)
 {
     mStrain = rStrain;
 }
@@ -159,7 +178,7 @@ void NuTo::ConstraintDisplacementsPeriodic2D::SetStrain(const EngineeringStrain2
 #define PI 3.14159265359
 
 //!@brief calculate the border vectors in counterclockwise direction
-void NuTo::ConstraintDisplacementsPeriodic2D::SetBoundaryVectors()
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
 {
     double LeftUpperCoordinates[2], LeftLowerCoordinates[2];
     mLeftUpperCorner->GetCoordinates2D(LeftUpperCoordinates);
@@ -304,7 +323,7 @@ void NuTo::ConstraintDisplacementsPeriodic2D::SetBoundaryVectors()
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 //! @param rRHS right hand side of the constraint equation
 #define MIN_CONSTRAINT 1e-6
-void NuTo::ConstraintDisplacementsPeriodic2D::AddToConstraintMatrix(int& curConstraintEquation,
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& curConstraintEquation,
         NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
         NuTo::FullMatrix<double>& rRHS)const
 {
@@ -700,47 +719,60 @@ void NuTo::ConstraintDisplacementsPeriodic2D::AddToConstraintMatrix(int& curCons
     }
 }
 
-//! @brief returns the number of constraint equations
-//! @return number of constraints
-int NuTo::ConstraintDisplacementsPeriodic2D::GetNumConstraintEquations()const
-{
-    return 2*(mSlaveNodesRightBoundary.size()+mSlaveNodesTopBoundary.size());
-}
-
 //calculate weighting function for each master node
-double NuTo::ConstraintDisplacementsPeriodic2D::CalculateWeightFunction(double rCoordinateCurMaster, double rCoordinateNextMaster, double rCoordinateSlave)const
+double NuTo::ConstraintLinearDisplacementsPeriodic2D::CalculateWeightFunction(double rCoordinateCurMaster, double rCoordinateNextMaster, double rCoordinateSlave)const
 {
     assert(rCoordinateNextMaster!=rCoordinateCurMaster);
     return 1.-(rCoordinateSlave-rCoordinateCurMaster)/(rCoordinateNextMaster-rCoordinateCurMaster);
 }
 
 //calculate delta displacement in x and y direction from the applied strain and the nodal position
-void NuTo::ConstraintDisplacementsPeriodic2D::CalculateDeltaDisp(double rCoordinates[2], double rDeltaDisp[2])const
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::CalculateDeltaDisp(double rCoordinates[2], double rDeltaDisp[2])const
 {
     rDeltaDisp[0] = mStrain.mEngineeringStrain[0]*rCoordinates[0] + mStrain.mEngineeringStrain[2]*rCoordinates[1];
     rDeltaDisp[1] = mStrain.mEngineeringStrain[1]*rCoordinates[1] + mStrain.mEngineeringStrain[2]*rCoordinates[0];
 }
 
+//!@brief calculates all the nodes on the boundary
+std::vector<NuTo::NodeBase*> NuTo::ConstraintLinearDisplacementsPeriodic2D::GetBoundaryNodes()
+{
+    Group<NodeBase> boundaryNodes;
+    boundaryNodes.insert(mGroupTop->begin(),mGroupTop->end());
+    boundaryNodes.insert(mGroupBottom->begin(),mGroupBottom->end());
+    boundaryNodes.insert(mGroupLeft->begin(),mGroupLeft->end());
+    boundaryNodes.insert(mGroupRight->begin(),mGroupRight->end());
+
+    //write in a vector
+    std::vector<NodeBase* > returnVector(boundaryNodes.GetNumMembers());
+    int theNode(0);
+    for (Group<NodeBase>::iterator itNode=boundaryNodes.begin(); itNode!=boundaryNodes.end();itNode++, theNode++)
+    {
+        returnVector[theNode] = (*itNode);
+    }
+    return returnVector;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serialize
-template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintDisplacementsPeriodic2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::ConstraintDisplacementsPeriodic2D::serialize(Archive & ar, const unsigned int version)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ConstraintDisplacementsPeriodic2D" << std::endl;
+    std::cout << "start serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
        & BOOST_SERIALIZATION_NVP(mAngle)
        & BOOST_SERIALIZATION_NVP(mStrain);
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize ConstraintDisplacementsPeriodic2D" << std::endl;
+    std::cout << "finish serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintDisplacementsPeriodic2D)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearDisplacementsPeriodic2D)
 #endif // ENABLE_SERIALIZATION

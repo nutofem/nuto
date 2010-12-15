@@ -16,13 +16,7 @@
 
 //! @brief constructor
 NuTo::ConstraintNode::ConstraintNode(const NodeBase* rNode) : ConstraintBase(), mNode(rNode)
-{}
-
-//! @brief returns the number of constraint equations
-//! @return number of constraints
-int NuTo::ConstraintNode::GetNumConstraintEquations()const
 {
-    return 1;
 }
 
 #ifdef ENABLE_SERIALIZATION

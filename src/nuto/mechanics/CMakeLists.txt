@@ -9,10 +9,11 @@ constitutive/ConstitutiveTangentNonlocal3x3.cpp
 constitutive/mechanics/ConstitutiveEngineeringStressStrain.cpp
 constitutive/mechanics/ConstitutivePiolaKirchhoffIIGreenLagrange.cpp
 constitutive/mechanics/ConstitutiveMisesPlasticity.cpp
-constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.cpp
-constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataMisesPlasticity3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D
+constitutive/mechanics/ConstitutiveStaticDataMultiscale2DPlaneStrain.cpp
+constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.cpp
+constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.cpp
 constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.cpp
 constitutive/mechanics/EngineeringStress1D.cpp
@@ -31,6 +32,7 @@ constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
 constitutive/mechanics/LinearElastic.cpp
+constitutive/mechanics/Multiscale.cpp
 constitutive/mechanics/NonlocalDamagePlasticity.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements1D.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
@@ -42,17 +44,24 @@ constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
 
 SET(NuToMechanicsConstraint_SOURCES
 constraints/ConstraintBase.cpp
-constraints/ConstraintDisplacementsPeriodic2D.cpp
-constraints/ConstraintEquation.cpp
 constraints/ConstraintEquationTerm.cpp
+constraints/ConstraintLagrange.cpp
+constraints/ConstraintLagrangeNodeGroupDisplacements1D.cpp
+constraints/ConstraintLagrangeNodeGroupDisplacements2D.cpp
+constraints/ConstraintLinear.cpp
+constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
+constraints/ConstraintLinearGlobalCrackAngle.cpp
+constraints/ConstraintLinearEquation.cpp
+constraints/ConstraintLinearNodeDisplacements1D.cpp
+constraints/ConstraintLinearNodeDisplacements2D.cpp
+constraints/ConstraintLinearNodeDisplacements3D.cpp
+constraints/ConstraintLinearNodeFineScaleDisplacements2D.cpp
+constraints/ConstraintLinearNodeGroupDisplacements1D.cpp
+constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
+constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
+constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.cpp
 constraints/ConstraintNode.cpp
-constraints/ConstraintNodeDisplacements1D.cpp
-constraints/ConstraintNodeDisplacements2D.cpp
-constraints/ConstraintNodeDisplacements3D.cpp
 constraints/ConstraintNodeGroup.cpp
-constraints/ConstraintNodeGroupDisplacements1D.cpp
-constraints/ConstraintNodeGroupDisplacements2D.cpp
-constraints/ConstraintNodeGroupDisplacements3D.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES
@@ -127,10 +136,12 @@ nodes/NodeCoordinates2D.cpp
 nodes/NodeCoordinates3D.cpp
 nodes/NodeCoordinatesDisplacements1D.cpp
 nodes/NodeCoordinatesDisplacements2D.cpp
+nodes/NodeCoordinatesDisplacementsMultiscale2D.cpp
 nodes/NodeCoordinatesDisplacements3D.cpp
 nodes/NodeCoordinatesDisplacementsNonlocalData2D.cpp
 nodes/NodeDisplacements1D.cpp
 nodes/NodeDisplacements2D.cpp
+nodes/NodeDisplacementsMultiscale2D.cpp
 nodes/NodeDisplacements3D.cpp
 nodes/NodeGrid1D.cpp
 nodes/NodeGrid2D.cpp
@@ -169,7 +180,6 @@ structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
 structures/unstructured/StructureIp.cpp
-structures/unstructured/StructureIpConstitutive.cpp
 structures/unstructured/StructureNode.cpp
 structures/grid/StructureGrid.cpp
 structures/grid/StructureGridNode.cpp

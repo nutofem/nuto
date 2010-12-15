@@ -110,6 +110,13 @@ public:
     {
     	return std::string("NodeGridDisplacements2D");
     }
+
+    //! @brief returns the type of node as an enum (all the data stored at the node)
+    //! @return enum
+    virtual Node::eNodeType GetNodeType()const
+    {
+        return Node::NodeGridDisplacements2D;
+    }
 };
 }
 

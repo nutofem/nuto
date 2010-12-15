@@ -23,6 +23,13 @@ NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 {
 }
 
+//! @brief sets the fine scale model (deserialization from a binary file)
+void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName)
+{
+    mStaticData->SetFineScaleModel(rFileName);
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::IpDataStaticDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

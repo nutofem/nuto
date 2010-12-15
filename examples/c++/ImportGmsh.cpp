@@ -103,11 +103,11 @@ try
 	DirectionY.SetValue(0,0,0.0);
 	DirectionY.SetValue(1,0,1.0);
 
-	myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_LeftBoundary,DirectionX, 0);
-	myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_LowerLeftNode,DirectionY, 0);
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_LeftBoundary,DirectionX, 0);
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_LowerLeftNode,DirectionY, 0);
 
 	// update the RHS of the constrain equation with myStructure.ConstraintSetRHS
-	int ConstraintRHS = myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_RightBoundary,DirectionX, 0);
+	int ConstraintRHS = myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_RightBoundary,DirectionX, 0);
 
 #ifdef ENABLE_VISUALIZE
     myStructure.AddVisualizationComponentSection();

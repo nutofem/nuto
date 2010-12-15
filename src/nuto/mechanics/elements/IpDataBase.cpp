@@ -24,6 +24,13 @@ NuTo::IpDataBase::~IpDataBase()
 	//std::cout << "call Desctructor [NuTo::IpDataBase::~IpDataBase]." << std::endl;
 }
 
+//! @brief sets the fine scale model (deserialization from a binary file)
+void NuTo::IpDataBase::SetFineScaleModel(std::string rFileName)
+{
+    throw NuTo::MechanicsException("[NuTo::IpDataBase::IpDataBaseSetFineScaleModel] This Ip data type has no fine scale model.");
+
+}
+
 //! @brief adds the weight to an integration point, eventually reallocates the data
 //! @param rNonlocalElement the Element (local number from the nonlocal elements)
 //! @param rNonlocalIp integration point of the nonlocal element
@@ -31,7 +38,7 @@ NuTo::IpDataBase::~IpDataBase()
 //! @param rWeight nonlocal weight
 void NuTo::IpDataBase::SetNonlocalWeight(int rElement,int rNonlocalIp,int rNumIps, double rWeight)
 {
-	throw NuTo::MechanicsException("[IpDataBase::SetNonlocalWeight] This Ip data type cannot store nonlocal weights - check the ip data type.");
+	throw NuTo::MechanicsException("[NuTo::IpDataBase::SetNonlocalWeight] This Ip data type cannot store nonlocal weights - check the ip data type.");
 }
 
 //! @brief return the nonlocal weights
@@ -39,22 +46,22 @@ void NuTo::IpDataBase::SetNonlocalWeight(int rElement,int rNonlocalIp,int rNumIp
 //! @return nonlocal weights
 const std::vector<double>& NuTo::IpDataBase::GetNonlocalWeights(int rNonlocalElement)const
 {
-	throw NuTo::MechanicsException("[IpDataBase::GetNonlocalWeights] This Ip data type cannot store nonlocal weights - check the ip data type.");
+	throw NuTo::MechanicsException("[NuTo::IpDataBase::GetNonlocalWeights] This Ip data type cannot store nonlocal weights - check the ip data type.");
 }
 
 NuTo::ConstitutiveStaticDataBase* NuTo::IpDataBase::GetStaticData()
 {
-	throw NuTo::MechanicsException("[IpDataBase::GetStaticData] This Ip data type has no static data.");
+	throw NuTo::MechanicsException("[NuTo::IpDataBase::GetStaticData] This Ip data type has no static data.");
 }
 
 const NuTo::ConstitutiveStaticDataBase* NuTo::IpDataBase::GetStaticData()const
 {
-	throw NuTo::MechanicsException("[IpDataBase::GetStaticData] This Ip data type has no static data.");
+	throw NuTo::MechanicsException("[NuTo::IpDataBase::GetStaticData] This Ip data type has no static data.");
 }
 
 void NuTo::IpDataBase::SetStaticData(ConstitutiveStaticDataBase* rStaticData)
 {
-	throw NuTo::MechanicsException("[IpDataBase::SetStaticData] This Ip data type has no static data.");
+	throw NuTo::MechanicsException("[NuTo::IpDataBase::SetStaticData] This Ip data type has no static data.");
 }
 
 #ifdef ENABLE_SERIALIZATION

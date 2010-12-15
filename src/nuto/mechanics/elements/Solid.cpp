@@ -799,6 +799,12 @@ NuTo::Solid* NuTo::Solid::AsSolid()
 	return this;
 }
 
+//! @brief sets the fine scale model (deserialization from a binary file)
+void NuTo::Solid::SetFineScaleModel(int rIp, std::string rFileName)
+{
+    throw MechanicsException("[NuTo::Solid::SetFineScaleModel] Not implemented for 3D elements.");
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Solid::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

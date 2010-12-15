@@ -671,13 +671,14 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
         //Update Stress (it has to be recalculated)
         EngineeringStress2D stress;
         GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, stress);
-        Eigen::Matrix<double,4,1>::Map(oldStaticData->mPrevSigma,4,1) = Eigen::Matrix<double,4,1>::Map(stress.mEngineeringStress,4,1);
+
+        oldStaticData->mPrevSigma = stress;
 
         // update the parts of the static data that are not related to the temporary updates (from the nonlocal calculation)
         oldStaticData->mKappa = oldStaticData->mTmpKappa;
 
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mEpsilonP,4,1) = Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4,1);;
-        Eigen::Matrix<double,3,1>::Map(oldStaticData->mPrevStrain,3,1) = Eigen::Matrix<double,3,1>::Map(engineeringStrain.mEngineeringStrain);
+        oldStaticData->mPrevStrain = engineeringStrain;
     }
     else
     {
@@ -1497,7 +1498,7 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
 void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
         const EngineeringStrain2D& rStrain,
         const double rPrevPlasticStrain[4],
-        const double rPrevTotalStrain[3],
+        const EngineeringStrain2D& rPrevTotalStrain,
         Eigen::Matrix<double,4,1>& rStress,
         Eigen::Matrix<double,4,1>& rEpsilonP,
         double& rDeltaEqPlasticStrain,
@@ -1582,9 +1583,9 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     int numActiveYieldFunctions;
 
     // for the application of strains in steps, calculate the total strain increment to be applied
-    deltaStrain(0) = rStrain.mEngineeringStrain[0]-rPrevTotalStrain[0];
-    deltaStrain(1) = rStrain.mEngineeringStrain[1]-rPrevTotalStrain[1];
-    deltaStrain(2) = rStrain.mEngineeringStrain[2]-rPrevTotalStrain[2];
+    deltaStrain(0) = rStrain.mEngineeringStrain[0]-rPrevTotalStrain.mEngineeringStrain[0];
+    deltaStrain(1) = rStrain.mEngineeringStrain[1]-rPrevTotalStrain.mEngineeringStrain[1];
+    deltaStrain(2) = rStrain.mEngineeringStrain[2]-rPrevTotalStrain.mEngineeringStrain[2];
     deltaStrain(3) = 0;
 
     // initialize last plastic strain and last converged stress
@@ -1633,9 +1634,9 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     {
         numberOfExternalCutbacks++;
 
-        curTotalStrain(0) = rPrevTotalStrain[0]+cutbackFactorExternal*deltaStrain(0);
-        curTotalStrain(1) = rPrevTotalStrain[1]+cutbackFactorExternal*deltaStrain(1);
-        curTotalStrain(2) = rPrevTotalStrain[2]+cutbackFactorExternal*deltaStrain(2);
+        curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
+        curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[1]+cutbackFactorExternal*deltaStrain(1);
+        curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[2]+cutbackFactorExternal*deltaStrain(2);
         curTotalStrain(3) = 0.;
 
 #ifdef ENABLE_DEBUG
