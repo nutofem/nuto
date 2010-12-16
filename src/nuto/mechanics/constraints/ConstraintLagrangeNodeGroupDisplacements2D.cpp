@@ -153,7 +153,7 @@ const NuTo::ConstraintLagrange* NuTo::ConstraintLagrangeNodeGroupDisplacements2D
 void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateCoefficientMatrix_0(NuTo::SparseMatrixCSRVector2Symmetric<double>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
-    //Lagrange mult + AuxLagrange + disp Dofs of all nodes
+    //Lagrange mult + disp Dofs of all nodes
     int dof(3*mLagrangeDOF.size());
     rResult.Resize(dof,dof);
     rGlobalDofs.resize(dof,1);
@@ -161,19 +161,72 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateCoefficientMatri
     int theNode(0);
     for (Group<NodeBase>::iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=3, theNode++)
     {
+        double disp[1];
         int dofx((*itNode)->GetDofDisplacement(0));
         int dofy((*itNode)->GetDofDisplacement(1));
+        (*itNode)->GetDisplacements2D(disp);
 
         rGlobalDofs[curNodeEntry] = mLagrangeDOF[theNode];
         rGlobalDofs[curNodeEntry+1] = dofx;
         rGlobalDofs[curNodeEntry+2] = dofy;
 
-        //derivative with respect to ux and lambda
-        rResult.AddEntry(curNodeEntry,curNodeEntry+1,mDirection[0]);
-
-        //derivative with respect to uy and lambda
-        rResult.AddEntry(curNodeEntry,curNodeEntry+2,mDirection[1]);
-
+        switch(mEquationSign)
+        {
+        case NuTo::Constraint::EQUAL:
+            //derivative with respect to ux and lambda
+            rResult.AddEntry(curNodeEntry,curNodeEntry+1,mDirection[0]);
+            //derivative with respect to uy and lambda
+            rResult.AddEntry(curNodeEntry,curNodeEntry+2,mDirection[1]);
+            //derivative with respect to ux^2
+            rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
+            //derivative with respect to ux and uy
+            rResult.AddEntry(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
+            //derivative with respect to uy^2
+            rResult.AddEntry(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
+        break;
+        case NuTo::Constraint::SMALLER:
+            if (disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS>-mLagrangeValue[theNode]/mPenalty)
+            {
+                //derivative with respect to ux and lambda
+                rResult.AddEntry(curNodeEntry,curNodeEntry+1,mDirection[0]);
+                //derivative with respect to uy and lambda
+                rResult.AddEntry(curNodeEntry,curNodeEntry+2,mDirection[1]);
+                //derivative with respect to ux^2
+                rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
+                //derivative with respect to ux and uy
+                rResult.AddEntry(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
+                //derivative with respect to uy^2
+                rResult.AddEntry(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
+            }
+            else
+            {
+                //derivative with respect to lambda^2
+                rResult.AddEntry(curNodeEntry,curNodeEntry,-1./mPenalty);
+            }
+        break;
+        case NuTo::Constraint::GREATER:
+            if (mRHS-disp[0]*mDirection[0]-disp[1]*mDirection[1]>-mLagrangeValue[theNode]/mPenalty)
+            {
+                //derivative with respect to ux and lambda
+                rResult.AddEntry(curNodeEntry,curNodeEntry+1,-mDirection[0]);
+                //derivative with respect to uy and lambda
+                rResult.AddEntry(curNodeEntry,curNodeEntry+2,-mDirection[1]);
+                //derivative with respect to ux^2
+                rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
+                //derivative with respect to ux and uy
+                rResult.AddEntry(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
+                //derivative with respect to uy^2
+                rResult.AddEntry(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
+            }
+            else
+            {
+                //derivative with respect to lambda^2
+                rResult.AddEntry(curNodeEntry,curNodeEntry,-1./mPenalty);
+            }
+        break;
+        default:
+            throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatrix_0] equation sign should be either EQUAL, SMALLER or GREAER.");
+        }
     }
 }
 
@@ -189,20 +242,60 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateGradientInternal
     int theNode(0);
     for (Group<NodeBase>::iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=3, theNode++)
     {
-        double disp[2];
+        double disp[1];
         int dofx((*itNode)->GetDofDisplacement(0));
         int dofy((*itNode)->GetDofDisplacement(1));
         (*itNode)->GetDisplacements2D(disp);
 
-        //derivative with respect to lambda
-        rResult(curNodeEntry,0)=disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS;
         rGlobalDofs[curNodeEntry] = mLagrangeDOF[theNode];
-
-        //derivative with respect to displacements
-        rResult(curNodeEntry+1,0)=(mLagrangeValue[theNode]+mPenalty)*mDirection[0];
         rGlobalDofs[curNodeEntry+1] = dofx;
-        rResult(curNodeEntry+2,0)=(mLagrangeValue[theNode]+mPenalty)*mDirection[1];
         rGlobalDofs[curNodeEntry+2] = dofy;
+
+        switch(mEquationSign)
+        {
+        case NuTo::Constraint::EQUAL:
+            //derivative with respect to lambda
+            rResult(curNodeEntry,0)=disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS;
+            //derivative with respect to ux
+            rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]*mDirection[0]+mPenalty*mDirection[0]*(disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS);
+            //derivative with respect to uy
+            rResult(curNodeEntry+2,0)=mLagrangeValue[theNode]*mDirection[1]+mPenalty*mDirection[1]*(disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS);
+        break;
+        case NuTo::Constraint::SMALLER:
+            if (disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS>-mLagrangeValue[theNode]/mPenalty)
+            {
+                //derivative with respect to lambda
+                rResult(curNodeEntry,0)=disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS;
+                //derivative with respect to ux
+                rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]*mDirection[0]+mPenalty*mDirection[0]*(disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS);
+                //derivative with respect to uy
+                rResult(curNodeEntry+2,0)=mLagrangeValue[theNode]*mDirection[1]+mPenalty*mDirection[1]*(disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS);
+            }
+            else
+            {
+                //derivative with respect to lambda
+                rResult(curNodeEntry,0)=-mLagrangeValue[theNode]/mPenalty;
+            }
+        break;
+        case NuTo::Constraint::GREATER:
+            if (mRHS-disp[0]*mDirection[0]-disp[1]*mDirection[1]>-mLagrangeValue[theNode]/mPenalty)
+            {
+                //derivative with respect to lambda
+                rResult(curNodeEntry,0)=mRHS - disp[0]*mDirection[0] - disp[1]*mDirection[1];
+                //derivative with respect to ux
+                rResult(curNodeEntry+1,0)=-mLagrangeValue[theNode]*mDirection[0]+mPenalty*mDirection[0]*(disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS);
+                //derivative with respect to uy
+                rResult(curNodeEntry+2,0)=-mLagrangeValue[theNode]*mDirection[1]+mPenalty*mDirection[1]*(disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS);
+            }
+            else
+            {
+                //derivative with respect to lambda
+                rResult(curNodeEntry,0)=-mLagrangeValue[theNode]/mPenalty;
+            }
+        break;
+        default:
+            throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatrix_0] equation sign should be either EQUAL, SMALLER or GREAER.");
+        }
     }
 }
 

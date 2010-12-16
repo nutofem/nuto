@@ -92,6 +92,19 @@ IF(MINGW)
   SET_TARGET_PROPERTIES(ConcurrentMultiscaleCreateFineScale PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 
+# Test ConstraintsLagrange1D
+ADD_EXECUTABLE(ConstraintsLagrange1D ConstraintsLagrange1D)
+TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MUMPS_FOUND)
+  TARGET_LINK_LIBRARIES(ConstraintsLagrange1D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(MUMPS_FOUND)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(ConstraintsLagrange1D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+
 # NonlocalDamagePlasticityBeam
 ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
 TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
