@@ -81,7 +81,7 @@ ENDIF(MINGW)
 ADD_EXECUTABLE(ConcurrentMultiscaleCreateFineScale ConcurrentMultiscaleCreateFineScale.cpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ConcurrentMultiscaleFineScale.msh
     ${CMAKE_CURRENT_BINARY_DIR}/ConcurrentMultiscale.msh COPYONLY)
-TARGET_LINK_LIBRARIES(ConcurrentMultiscaleCreateFineScale NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${ANN_LIBRARIES})
+TARGET_LINK_LIBRARIES(ConcurrentMultiscaleCreateFineScale NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
 IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(ConcurrentMultiscaleCreateFineScale NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)
