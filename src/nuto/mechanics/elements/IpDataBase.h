@@ -7,6 +7,7 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <string>
 #include <vector>
 
 namespace NuTo

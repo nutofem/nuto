@@ -3,6 +3,8 @@
 #ifndef CONSTITUTIVESTATICDATABASE_H_
 #define CONSTITUTIVESTATICDATABASE_H_
 
+#include <string>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>

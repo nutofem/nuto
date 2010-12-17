@@ -6,6 +6,7 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <string>
 #include <vector>
 #include "nuto/mechanics/elements/IpDataEnum.h"
 

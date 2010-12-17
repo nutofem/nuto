@@ -89,6 +89,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
 
     std::string typeIdString;
 
+#ifdef DEBUG_SERIALIZATION
     boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
     oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
     if ( typeIdString != mStructure->GetTypeId() )
@@ -98,6 +99,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     oba & boost::serialization::make_nvp(typeIdString.c_str(), *mStructure);
     if (mStructure->GetDimension()!=2)
         throw MechanicsException ( "[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Read in structure should have dimension 2");
+#endif //DEBUG_SERIALIZATION
 
     //check all the sections of the elements to a plane strain section
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
