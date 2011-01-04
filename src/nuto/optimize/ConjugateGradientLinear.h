@@ -87,7 +87,7 @@ public:
         mShowSteps = rShowSteps;
     }
 
-    inline void SetGridStrucuture(NuTo::StructureGrid* rpGrid)
+    inline void SetGridStructure(NuTo::StructureGrid* rpGrid)
     {
     	mpGrid = rpGrid;
     }
