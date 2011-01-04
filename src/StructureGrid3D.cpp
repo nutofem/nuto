@@ -341,7 +341,7 @@ int main()
         myOptimizer.SetVerboseLevel(3);
         myOptimizer.SetParameters(startVector);
         std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set"<<std::endl;
-        myOptimizer.SetGridStrucuture(&myGrid);
+        myOptimizer.SetGridStructure(&myGrid);
         std::cout<<__FILE__<<" "<<__LINE__<<"  Grid set"<<std::endl;
 
         NuTo::FullMatrix<double> returnVector(myGrid.NodeGetNumberActiveDofs(),1);
