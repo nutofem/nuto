@@ -217,7 +217,14 @@ int NuTo::ConjugateGradientLinear::Optimize()
 			std::cout << std::setw(width)<< searchDirectionOrig(count) << "   " ;
 		}
 		std::cout << std::endl;
-		std::cout << std::setw(width)<< "alpha "<<alpha<< "beta "<<beta << std::endl;
+		std::cout << std::setw(width)<< "displacements " ;
+		for (int count=0; count<GetNumParameters(); count++)
+		{
+			std::cout << std::setw(width)<<mvParameters.mEigenMatrix(count,0) << "   " ;
+		}
+		std::cout << std::endl;
+
+std::cout << std::setw(width)<< "alpha "<<alpha<< "beta "<<beta << std::endl;
 
 
 		if (mVerboseLevel>1 && curIteration%mShowSteps==0)
@@ -281,6 +288,16 @@ int NuTo::ConjugateGradientLinear::Optimize()
 				std::cout<< "Unknown convergence criterion." << std::endl;
 		}
 		std::cout << std::endl;
+		int precision = 3;
+		int width = 10;
+		std::cout.precision(precision);
+		std::cout << std::setw(width)<< "displacements " ;
+		for (int count=0; count<GetNumParameters(); count++)
+		{
+			std::cout << std::setw(width)<<mvParameters.mEigenMatrix(count,0) << "   " ;
+		}
+		std::cout << std::endl;
+
 	}
 	return returnValue;
 }
@@ -364,7 +381,7 @@ void NuTo::ConjugateGradientLinear::HessianDiag(NuTo::FullMatrix<double>& rHessi
         {
 			//get pointer to this gridNum node
 //			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
-        	std::cout<<" node num "<<node<<" corner "<<corners[node]<<std::endl;
+        	std::cout<<__FILE__<<" "<<__LINE__<<" node num "<<node<<" corner "<<corners[node]<<std::endl;
 			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 			//which DOFs belonging to this node of this element
 			for (int disp = 0;disp<numDofs;++disp)
@@ -451,8 +468,9 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
         }
         //calculate local return vector with all dofs: r=Ku
         locReturn = matrix->operator *(displacements);
-        //reduce return vector for element with dependant dofs
-       for (int count =0; count <numDofs;++count)
+
+        //update gradient vector for undependant dofs
+        for (int count =0; count <dofsElem;++count)
         {
 			//when global dof is active
         	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
