@@ -157,42 +157,6 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 #endif
 }
 
-//! @brief returns the number of global dofs
-//! @return number of global dofs
-int NuTo::StructureBase::NodeGetNumberGlobalDofs()const
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-   if (mNodeNumberingRequired)
-        throw MechanicsException("[NuTo::StructureBase::NodeGetNumberGlobalDofs] Number the DOF's first.");
-    return mNumDofs;
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-}
-
-//! @brief returns the number of active dofs
-//! @return number of active dofs
-int NuTo::StructureBase::NodeGetNumberActiveDofs()const
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    if (mNodeNumberingRequired)
-        throw MechanicsException("[NuTo::StructureBase::NodeGetNumberActiveDofs] Number the DOF's first.");
-    return mNumActiveDofs;
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-}
-
 //! @brief calculate the internal force vector for a node
 //! @param rId ... node id
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)

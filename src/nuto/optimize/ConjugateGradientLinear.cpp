@@ -427,7 +427,7 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
 	// return vector of active dofs
 	std::vector<double> activeReturn;
 	// global external force vector (active dofs)
-	FullMatrix<double>  force(mpGrid->NodeGetNumberActiveDofs(),1);
+	FullMatrix<double>  force(mpGrid->GetNumActiveDofs(),1);
 
 	//loop over all elements
 	for (int elementNumber=0;elementNumber<numElems;elementNumber++)
@@ -473,7 +473,7 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
         for (int count =0; count <dofsElem;++count)
         {
 			//when global dof is active
-        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+        	if (dofs[count]<mpGrid->GetNumActiveDofs())
         		//subtract (r=f-Ku) locReturn for active dofs
         		gradientOrig(dofs[count],0) -= locReturn(count,0);
        }
@@ -552,7 +552,7 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
         for (int count=0;count<dofsElem;++count)
         {
 			//when global dof is active
-        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+        	if (dofs[count]<mpGrid->GetNumActiveDofs())
 				//then write value of this dof to local vector
         		origLocSearch(count,0)=origSearchDirection(dofs[count],0);
         	//else global dof is dependent
@@ -568,7 +568,7 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
         for (int count =0; count <numDofs;++count)
         {
 			//when global dof is active
-        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+        	if (dofs[count]<mpGrid->GetNumActiveDofs())
         		//add locReturn for active dofs
         		returnVector(dofs[count],0) += locReturn(count,0);
         }
@@ -631,7 +631,7 @@ void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::Vector
 					//save global dof number in local ordering
 					dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
 					//save local search direction
-				  	if (dofs[node*numDofs+disp]<mpGrid->NodeGetNumberActiveDofs())
+				  	if (dofs[node*numDofs+disp]<mpGrid->GetNumActiveDofs())
 					      searchDirectionLocal[node*numDofs+disp] = searchDirectionScaled(dofs[node*numDofs+disp]);
 				  	else
 				  		searchDirectionLocal[node*numDofs+disp] = 0;
@@ -643,7 +643,7 @@ void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::Vector
 	        for (int count =0; count <dofsElem;++count)
 	        {
 				//when global dof is active
-	        	if (dofs[count]<mpGrid->NodeGetNumberActiveDofs())
+	        	if (dofs[count]<mpGrid->GetNumActiveDofs())
 	        		//subtract (r=f-Ku) locReturn for active dofs
 	        		activeReturn(dofs[count],0) += locReturn(count,0);
 	       }

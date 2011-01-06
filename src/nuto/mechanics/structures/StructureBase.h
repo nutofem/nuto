@@ -183,14 +183,6 @@ public:
     //! @brief numbers the dofs in the structure
     virtual void NodeBuildGlobalDofs()=0;
 
-    //! @brief returns the number of global dofs
-    //! @return number of global dofs
-    int NodeGetNumberGlobalDofs()const;
-
-    //! @brief returns the number of active dofs
-    //! @return number of active dofs
-    int NodeGetNumberActiveDofs()const;
-
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
