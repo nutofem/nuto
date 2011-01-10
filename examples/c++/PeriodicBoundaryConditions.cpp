@@ -262,8 +262,8 @@ int myElement8 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLa
     //myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_Bottom,DirectionY, 0);
     //myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_Left,DirectionX, 0);
 
-    myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_BottomLeftNode,DirectionX, 0);
-    myStructure.ConstraintSetDisplacementNodeGroup(GrpNodes_BottomLeftNode,DirectionY, 0);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_BottomLeftNode,DirectionX, 0);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_BottomLeftNode,DirectionY, 0);
 
 #ifdef ENABLE_VISUALIZE
     myStructure.AddVisualizationComponentSection();
@@ -293,7 +293,7 @@ int myElement8 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLa
 
     //update displacement of boundary (disp controlled)
     double radiusToCrackWithoutConstraints(nonlocalRadius*0.0);
-    int constraintPeriodic = myStructure.ConstraintDisplacementsSetPeriodic2D(angle, curStrain,
+    int constraintPeriodic = myStructure.ConstraintLinearDisplacementsSetPeriodic2D(angle, curStrain,
             curCrackOpening, radiusToCrackWithoutConstraints, GrpNodes_Top, GrpNodes_Bottom, GrpNodes_Left,GrpNodes_Right);
 
 	//update conre mat

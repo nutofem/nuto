@@ -41,6 +41,12 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int 
 	throw MechanicsException("[NuTo::ElementDataBase::SetConstitutiveLaw] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
+//! @brief sets the fine scale model (deserialization from a binary file)
+void NuTo::ElementDataBase::SetFineScaleModel(int rIp, std::string rFileName)
+{
+    throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleModel] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data

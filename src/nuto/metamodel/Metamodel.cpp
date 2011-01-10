@@ -179,10 +179,10 @@ void NuTo::Metamodel::SolveConfidenceInterval(const FullMatrix<double>& rInputCo
 }
 void NuTo::Metamodel::Build()
 {
-    if (mSupportPoints.GetDimOutput()<=0)
+    if (mSupportPoints.GetDimOutput()<1)
         throw MetamodelException("NuTo::Metamodel::Build - number of outputs must be positive - set training data first.");
     
-    if (mSupportPoints.GetDimInput()<=0)
+    if (mSupportPoints.GetDimInput()<1)
         throw MetamodelException("NuTo::Metamodel::Build - number of inputs must be positive - set training data first.");
 
     if (!mSupportPoints.IsTransformationBuild())
@@ -194,6 +194,160 @@ void NuTo::Metamodel::Build()
 void NuTo::Metamodel::Info()const
 {
 	mSupportPoints.Info();
+}
+
+// calculate the sample mean for each support point using original support point coordinates
+void NuTo::Metamodel::GetOriginalSupportPointsMeanValue(NuTo::FullMatrix<double>& rInputMean, NuTo::FullMatrix<double>& rOutputMean) const
+{
+	try
+	{
+		this->mSupportPoints.GetMeanValueOriginalInput(rInputMean);
+		this->mSupportPoints.GetMeanValueOriginalOutput(rOutputMean);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetOriginalSupportPointsMeanValue] error calculating sample means.");
+		throw myException;
+	}
+}
+
+// calculate the sample mean for each support point using transformed support point coordinates
+void NuTo::Metamodel::GetTransformedSupportPointsMeanValue(NuTo::FullMatrix<double>& rInputMean, NuTo::FullMatrix<double>& rOutputMean) const
+{
+	try
+	{
+		this->mSupportPoints.GetMeanValueTransformedInput(rInputMean);
+		this->mSupportPoints.GetMeanValueTransformedOutput(rOutputMean);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetTransformedSupportPointsMeanValue] error calculating sample means.");
+		throw myException;
+	}
+}
+
+// calculate the sample variance for each support point using original support point coordinates
+void NuTo::Metamodel::GetOriginalSupportPointsVariance(NuTo::FullMatrix<double>& rInputVariance, NuTo::FullMatrix<double>& rOutputVariance) const
+{
+	try
+	{
+		this->mSupportPoints.GetVarianceOriginalInput(rInputVariance);
+		this->mSupportPoints.GetVarianceOriginalOutput(rOutputVariance);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetOriginalSupportPointsVariance] error calculating sample variance.");
+		throw myException;
+	}
+}
+
+// calculate the sample variance for each support point using transformed support point coordinates
+void NuTo::Metamodel::GetTransformedSupportPointsVariance(NuTo::FullMatrix<double>& rInputVariance, NuTo::FullMatrix<double>& rOutputVariance) const
+{
+	try
+	{
+		this->mSupportPoints.GetVarianceTransformedInput(rInputVariance);
+		this->mSupportPoints.GetVarianceTransformedOutput(rOutputVariance);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetTransformedSupportPointsVariance] error calculating sample variance.");
+		throw myException;
+	}
+}
+
+// calculate the covariance matrix of the support points using original support point coordinates
+void NuTo::Metamodel::GetOriginalSupportPointsCovarianceMatrix(NuTo::FullMatrix<double>& rCovarianceMatrix) const
+{
+	try
+	{
+		this->mSupportPoints.GetCovarianceMatrixOriginal(rCovarianceMatrix);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetOriginalSupportPointsCovarianceMatrix] error calculating covariance matrix.");
+		throw myException;
+	}
+}
+
+// calculate the covariance matrix of the support points using transformed support point coordinates
+void NuTo::Metamodel::GetTransformedSupportPointsCovarianceMatrix(NuTo::FullMatrix<double>& rCovarianceMatrix) const
+{
+	try
+	{
+		this->mSupportPoints.GetCovarianceMatrixTransformed(rCovarianceMatrix);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetTransformedSupportPointsCovarianceMatrix] error calculating covariance matrix.");
+		throw myException;
+	}
+}
+
+// calculate Pearson's correlation matrix of the support points using original support point coordinates
+void NuTo::Metamodel::GetOriginalSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double>& rCorrelationMatrix) const
+{
+	try
+	{
+		this->mSupportPoints.GetPearsonCorrelationMatrixOriginal(rCorrelationMatrix);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetOriginalSupportPointsPearsonCorrelationMatrix] error calculating Pearson's correlation matrix.");
+		throw myException;
+	}
+}
+
+// calculate Pearson's correlation matrix of the support points using transformed support point coordinates
+void NuTo::Metamodel::GetTransformedSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double>& rCorrelationMatrix) const
+{
+	try
+	{
+		this->mSupportPoints.GetPearsonCorrelationMatrixTransformed(rCorrelationMatrix);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetTransformedSupportPointsPearsonCorrelationMatrix] error calculating Pearson's correlation matrix.");
+		throw myException;
+	}
+}
+
+// calculate confidence interval on the coefficients of Pearson's correlation matrix using original support point coordinates
+void NuTo::Metamodel::GetOriginalSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha) const
+{
+	try
+	{
+		this->mSupportPoints.GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(rCorrelationMatrix, rMinCorrelationMatrix, rMaxCorrelationMatrix, rAlpha);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetOriginalSupportPointsPearsonCorrelationMatrixConfidenceInterval] error calculating confidence interval on the coefficients of Pearson's correlation matrix.");
+		throw myException;
+	}
+}
+
+// calculate confidence interval on the coefficients of Pearson's correlation matrix using transformed support point coordinates
+void NuTo::Metamodel::GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha) const
+{
+	try
+	{
+		this->mSupportPoints.GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(rCorrelationMatrix, rMinCorrelationMatrix, rMaxCorrelationMatrix, rAlpha);
+	}
+	catch(NuTo::Exception& e)
+	{
+		NuTo::MetamodelException myException(e.ErrorMessage());
+		myException.AddMessage("[NuTo::Metamodel::GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval] error calculating confidence interval on the coefficients of Pearson's correlation matrix.");
+		throw myException;
+	}
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -103,6 +103,13 @@ int NuTo::Voxel8N::GetNumLocalStiffnessMatrix()
 	return mNumLocalCoefficientMatrix0;
 }
 
+//! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+//! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+void NuTo::Voxel8N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
+{
+    //Nodes are not exchanged, because they are not stored at the element level
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Voxel8N::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

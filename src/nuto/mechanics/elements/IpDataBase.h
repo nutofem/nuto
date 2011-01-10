@@ -7,6 +7,7 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <string>
 #include <vector>
 
 namespace NuTo
@@ -45,6 +46,9 @@ public :
     virtual const ConstitutiveStaticDataBase* GetStaticData()const;
 
     virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
+
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleModel(std::string rFileName);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

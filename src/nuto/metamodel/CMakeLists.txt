@@ -1,6 +1,7 @@
 SET(NuToMetamodel_SOURCES
   Metamodel.cpp
   MetamodelException.cpp
+  MultipleLinearRegression.cpp
   NeuralNetwork.cpp
   TransferFunction.cpp
   Transformation.cpp
@@ -28,7 +29,7 @@ FOREACH(NuToMetamodel_SWIG_MODULE ${NuToMetamodel_SWIG_MODULES})
   SET_SOURCE_FILES_PROPERTIES(${NuToMetamodel_SWIG_MODULE}.i PROPERTIES CPLUSPLUS ON)
   SET_SOURCE_FILES_PROPERTIES(${NuToMetamodel_SWIG_MODULE}.i PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
   SWIG_ADD_MODULE(${NuToMetamodel_SWIG_MODULE} python ${NuToMetamodel_SWIG_MODULE}.i)
-  SWIG_LINK_LIBRARIES(${NuToMetamodel_SWIG_MODULE} NuToMetamodel NuToOptimize NuToMath NuToBase ${MERSENNE_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+  SWIG_LINK_LIBRARIES(${NuToMetamodel_SWIG_MODULE} NuToMetamodel NuToOptimize NuToMath NuToBase ${MERSENNE_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${PYTHON_LIBRARIES})
   # check for unresolved symbols
   IF( NOT CYGWIN AND NOT WIN32 )
     SET_TARGET_PROPERTIES(${SWIG_MODULE_${NuToMetamodel_SWIG_MODULE}_REAL_NAME} PROPERTIES LINK_FLAGS -Wl,-z,defs)

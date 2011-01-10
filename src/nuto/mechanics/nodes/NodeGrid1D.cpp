@@ -130,3 +130,10 @@ std::string NuTo::NodeGrid1D::GetNodeTypeStr()const
 {
 	return std::string("NodeGrid1D");
 }
+
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeGrid1D::GetNodeType()const
+{
+    return Node::NodeGrid1D;
+}

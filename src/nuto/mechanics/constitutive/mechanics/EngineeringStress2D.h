@@ -42,7 +42,10 @@ class EngineeringStress2D
     friend class LinearElastic;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
+    friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
     friend class NonlocalDamagePlasticity;
+    friend class StructureIp;
+    friend class Multiscale;
 public:
     //! @brief ... constructor
     EngineeringStress2D();
@@ -55,6 +58,33 @@ public:
     //! @return ... components of the Engineering stress tensor (stored in an array)
     //! @sa mEngineeringStress
     const double* GetData() const;
+
+    EngineeringStress2D operator+ ( const EngineeringStress2D &other ) const
+    {
+        EngineeringStress2D result;
+        result.mEngineeringStress[0] = mEngineeringStress[0] + other.mEngineeringStress[0];
+        result.mEngineeringStress[1] = mEngineeringStress[1] + other.mEngineeringStress[1];
+        result.mEngineeringStress[2] = mEngineeringStress[2] + other.mEngineeringStress[2];
+        return result;
+    }
+
+    EngineeringStress2D operator- ( const EngineeringStress2D &other ) const
+     {
+         EngineeringStress2D result;
+         result.mEngineeringStress[0] = mEngineeringStress[0] - other.mEngineeringStress[0];
+         result.mEngineeringStress[1] = mEngineeringStress[1] - other.mEngineeringStress[1];
+         result.mEngineeringStress[2] = mEngineeringStress[2] - other.mEngineeringStress[2];
+         return result;
+     }
+
+    EngineeringStress2D operator* ( double scalar ) const
+     {
+         EngineeringStress2D result;
+         result.mEngineeringStress[0] = scalar*mEngineeringStress[0];
+         result.mEngineeringStress[1] = scalar*mEngineeringStress[1];
+         result.mEngineeringStress[2] = scalar*mEngineeringStress[2];
+         return result;
+     }
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

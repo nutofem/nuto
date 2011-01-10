@@ -85,6 +85,16 @@ public:
     //! @return TRUE if rMember is in the group, FALSE otherwise
 	virtual bool Contain(ElementBase* rElementPtr);
 
+    //! @brief replaces a ptr by another one
+    //! @param rOldPtr
+    //! @param rNewPtr
+    virtual void ExchangePtr(ElementBase* rOldElementPtr, ElementBase* rNewElementPtr);
+
+    //! @brief replaces a ptr by another one
+    //! @param rOldPtr
+    //! @param rNewPtr
+    virtual void ExchangePtr(NodeBase* rOldNodePtr, NodeBase* rNewNodePtr);
+
 	//! @brief Unites two groups
 	//! @param rOther other group
 	//! @return newly created united group

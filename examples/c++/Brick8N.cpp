@@ -104,18 +104,18 @@ int main()
             {
                 int node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1);
                 //std::cout << "node: " << node << std::endl;
-                myStructure.ConstraintSetDisplacementNode(node, direction, 0.0);
+                myStructure.ConstraintLinearSetDisplacementNode(node, direction, 0.0);
             }
         }
         direction(0,0)= 0;
         direction(1,0)= 0;
         direction(2,0)= 1;
-        myStructure.ConstraintSetDisplacementNode(0, direction, 0.0);
-        myStructure.ConstraintSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0);
+        myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+        myStructure.ConstraintLinearSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0);
         direction(0,0)= 0;
         direction(1,0)= 1;
         direction(2,0)= 0;
-        myStructure.ConstraintSetDisplacementNode(0, direction, 0.0);
+        myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
 
         // apply nodes
         if(EnableDisplacementControl)
@@ -132,7 +132,7 @@ int main()
                 {
                     int node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX;
                     //std::cout << "node: " << node << std::endl;
-                    myStructure.ConstraintSetDisplacementNode(node, direction, BoundaryDisplacement);
+                    myStructure.ConstraintLinearSetDisplacementNode(node, direction, BoundaryDisplacement);
                 }
             }
         }

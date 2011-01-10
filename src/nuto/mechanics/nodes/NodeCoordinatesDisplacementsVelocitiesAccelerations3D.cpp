@@ -152,3 +152,10 @@ std::string NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations3D::GetNode
 {
 	return std::string("NodeCoordinatesDisplacementsVelocitiesAccelerations3D");
 }
+
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations3D::GetNodeType()const
+{
+    return Node::NodeCoordinatesDisplacementsVelocitiesAccelerations3D;
+}

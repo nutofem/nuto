@@ -232,7 +232,17 @@ public:
         return *this;
     }
 
+    //! @brief Calculate the largest matrix entry
+    //! @param rResultOutput ... largest matrix entry
+    virtual T Max()
+    {
+        T max;
+        Max(max);
+        return max;
+    }
 
+
+#ifndef SWIG
     //! @brief Determine the largest matrix entry
     //! @param rResultOutput ... largest matrix entry
     void Max(T& rResultOutput)
@@ -260,7 +270,18 @@ public:
             }
         }
     }
+#endif
 
+    //! @brief Calculate the smallest matrix entry
+    //! @param rResultOutput ... smallest matrix entry
+    virtual T Min()
+    {
+        T min;
+        Min(min);
+        return min;
+    }
+
+#ifndef SWIG
     //! @brief Calculate the smallest matrix entry
     //! @param rResultOutput ... smallest matrix entry
     virtual void Min(T& rResultOutput)
@@ -288,6 +309,7 @@ public:
             }
         }
     }
+#endif
 
     //! @brief Calculate the maximum matrix entry
     //! @param rRowOutput ... row index of the maximum matrix entry
@@ -393,6 +415,20 @@ public:
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
     int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0);
+
+    // @brief ... returns the data values to allow other methods to loop over the nonzero entries
+    // @return mValues
+    const std::vector<std::vector<T> >& GetValues()const
+    {
+        return  mValues;
+    }
+
+    // @brief ... returns the data values to allow other methods to loop over the nonzero entries
+    // @return mValues
+    const std::vector<std::vector<int> >& GetColumns()const
+    {
+        return  mColumns;
+    }
 
 protected:
     //! @brief value of nonzero matrix entries

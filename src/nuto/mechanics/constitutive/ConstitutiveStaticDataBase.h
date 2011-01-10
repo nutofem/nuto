@@ -3,6 +3,8 @@
 #ifndef CONSTITUTIVESTATICDATABASE_H_
 #define CONSTITUTIVESTATICDATABASE_H_
 
+#include <string>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -14,6 +16,7 @@
 namespace NuTo
 {
 class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
+class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 
 class ConstitutiveStaticDataBase
 {
@@ -29,11 +32,20 @@ public:
     virtual ~ConstitutiveStaticDataBase()
     {};
 
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleModel(std::string rFileName);
+
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain();
 
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain()const;
+
+    //!@ brief reinterpret as nonlocal damage2d static data
+    virtual ConstitutiveStaticDataMultiscale2DPlaneStrain* AsMultiscale2DPlaneStrain();
+
+    //!@ brief reinterpret as nonlocal damage2d static data
+    virtual const ConstitutiveStaticDataMultiscale2DPlaneStrain* AsMultiscale2DPlaneStrain()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

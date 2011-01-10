@@ -52,11 +52,11 @@ int main()
 	// set boundary conditions and loads
 	NuTo::FullMatrix<double> direction(1,1);
 	direction(0,0) = 1;
-	myStructure.ConstraintSetDisplacementNode(0, direction, 0.0);
+	myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
 	if(EnableDisplacementControl)
 	{
 		std::cout << "Displacement control" << std::endl;
-		myStructure.ConstraintSetDisplacementNode(NumElements, direction, BoundaryDisplacement);
+		myStructure.ConstraintLinearSetDisplacementNode(NumElements, direction, BoundaryDisplacement);
 	}
 	else
 	{

@@ -92,7 +92,11 @@ public:
 
     //! @brief returns the type of the node
     //! @return type
-    std::string GetNodeTypeStr()const;
+    virtual std::string GetNodeTypeStr()const;
+
+    //! @brief returns the type of node as an enum (all the data stored at the node)
+    //! @return enum
+    virtual Node::eNodeType GetNodeType()const;
 
 protected:
     double mDisplacements[3];

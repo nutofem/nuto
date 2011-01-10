@@ -203,6 +203,10 @@ public:
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     virtual void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const = 0;
 
+    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues)=0;
+
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
@@ -337,7 +341,30 @@ public:
     void ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive);
 #endif //SWIG
 
-    //! @brief modifies the section of a single element
+     //! @brief modifies the fine scale model at an ip for a multiscale approach
+     //! @param rElementIdent identifier for the element
+     //! @param rIp integration point
+     //! @param rFileName binary file to be deserialize the structure from
+     void ElementIpSetFineScaleModel(int rElementId, int rIp, std::string rFileName);
+
+     //! @brief modifies the fine scale model for a group of elements for a multiscale approach
+     //! @param rGroupIdent identifier for the group of elements
+     //! @param rFileName binary file to be deserialize the structure from
+     void ElementGroupSetFineScaleModel(int rGroupIdent, std::string rFileName);
+
+     //  @brief modifies the fine scale model for all element ips for a multiscale approach
+     //! @param rFileName binary file to be deserialize the structure from
+     void ElementTotalSetFineScaleModel(std::string rFileName);
+
+ #ifndef SWIG
+     //! @brief modifies the constitutive law of a single element
+     //! @param rElement element pointer
+     //! @param rIp integration point number
+     //! @param rFileName binary file to be deserialize the structure from
+     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName);
+ #endif //SWIG
+
+     //! @brief modifies the section of a single element
     //! @param rElementIdent element number
     //! @param rSectionIdent identifier for the section
     void ElementSetSection(int rElementId, int rSectionId);
@@ -445,20 +472,54 @@ public:
     //************ Constraint routines     ***************
     //**  defined in StructureBaseConstraints.cpp **
     //*************************************************
+    //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
+    //! @param ConstraintId constraint id
+    //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
+    void ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double>& rMultiplier)const;
+
+    //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
+    //! @param rGroupId group id
+    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLagrangeSetDisplacementNodeGroup(int rGroupId, const NuTo::FullMatrix<double>& rDirection, const std::string& rSign, double rValue);
+
 #ifndef SWIG
+    //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
+    //! @param rGroup group pointer
+    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLagrangeSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
+
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode pointer to node
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
 #endif
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode identifier for node
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int  ConstraintSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    int  ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+
+    #ifndef SWIG
+    //! @brief adds a fine scale displacement constraint equation for a node
+    //! @param rNode pointer to node
+    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetFineScaleDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
+#endif
+
+    //! @brief adds a displacement constraint equation for a node
+    //! @param rNode identifier for node
+    //! @param rComponent e.g. the first (count from zero) displacement component
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    int  ConstraintLinearSetFineScaleDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
 #ifndef SWIG
     //! @brief adds a displacement constraint equation for a group of node
@@ -466,7 +527,7 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
 #endif
 
     //! @brief adds a constraint equation for a group of nodes
@@ -474,11 +535,24 @@ public:
     //! @param rAttribute displacements, rotations, temperatures
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+
+    #ifndef SWIG
+    //! @brief adds a fine scale displacement constraint equation for a group of node
+    //! @param rNode pointer to group of nodes
+    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetFineScaleDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
+#endif
+
+    //! @brief adds a constraint equation for a group of nodes
+    //! @param rGroupIdent identifier for group of nodes
+    int ConstraintLinearSetFineScaleDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    int ConstraintGetNumConstraintEquations()const;
+    int ConstraintGetNumLinearConstraints()const;
 
     //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom
     //! rConstraintMatrix*DOFS = RHS
@@ -497,6 +571,24 @@ public:
     void ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain);
 
 #ifndef SWIG
+    //!@brief number the free DOFS in the constraints (Lagrange multipliers)
+    //!@param rDOF current maximum DOF number, increased in the number
+    void ConstraintNumberGlobalDofs(int& rDOF);
+
+    //! @brief renumber the dofs of the Lagrange multipliers according to predefined ordering
+    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
+    void ConstraintRenumberGlobalDofs(const std::vector<int>& mappingInitialToNewOrdering);
+
+    //! @brief extract dof values from the node (based on global dof number)
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    void ConstraintExtractGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues)const;
+
+    //! @brief write dof values to the Lagrange multipliers (based on global dof number)
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    void ConstraintMergeGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& dependentDofValues);
+
     //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
     //!@param rConstraintEquation id of the constraint equation
     //!@param rStrain new strain
@@ -515,7 +607,7 @@ public:
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
     //! @return integer id of the constraint
-    int ConstraintEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
+    int ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
 
     //! @brief ... create a constraint equation
     //! @param rConstraint ... constraint id
@@ -523,7 +615,7 @@ public:
     //! @param rDof ... dof in the first constraint equation term (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
+    void ConstraintLinearEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
 
 #ifndef SWIG
     //! @brief ... create a constraint equation
@@ -533,7 +625,7 @@ public:
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
+    void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
 #endif
 
     //! @brief ... add a term to a constraint equation
@@ -541,7 +633,7 @@ public:
     //! @param rNode ... node id
     //! @param rDof ... dof (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
     //! @param rCoefficient ... weight factor of this term
-    void ConstraintEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient);
+    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient);
 
     //! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
     //! @param  rAngle... angle in deg
@@ -550,18 +642,46 @@ public:
     //! @param  rNodeGrouplower... all nodes on the lower boundary
     //! @param  rNodeGroupLeft... all nodes on the left boundary
     //! @param  rNodeGroupRight...  all nodes on the right boundary
-    int ConstraintDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double> rStrain,
+    int ConstraintLinearDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double> rStrain,
             NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
             int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
 
-    #ifndef SWIG
+#ifndef SWIG
     //! @brief ... add a term to a constraint equation
     //! @param rConstraint ... constraint id
     //! @param rNode ... node id
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
-    void ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
+    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
+
+    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+    //! @param rMatrixJJ ... matrix jj
+    //! @param rMatrixJK ... matrix jk
+    void ConstraintsBuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)const;
+
+    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+    //! @param rMatrixJJ ... matrix jj
+    //! @param rMatrixJK ... matrix jk
+    //! @param rMatrixKJ ... matrix kj
+    //! @param rMatrixKK ... matrix kk
+    void ConstraintBuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK)const;
+
+    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+    //! @param rMatrixJJ ... matrix jj
+    //! @param rMatrixJK ... matrix jk
+    void ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)const;
+
+    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+    //! @param rMatrixJJ ... matrix jj
+    //! @param rMatrixJK ... matrix jk
+    //! @param rMatrixKK ... matrix kk
+    void ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK) const;
+
+    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+    //! @param rActiveDofGradientVector ... gradient of active dofs
+    //! @param rDependentDofGradientVector ... gradient of dependent dofs
+    void ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
 #endif
 
 private:

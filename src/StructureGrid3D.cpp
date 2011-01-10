@@ -180,7 +180,7 @@ int main()
 		   try
 			{
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
-				myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, 0.0);
+				myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
 			}
 			catch(NuTo::MechanicsException& e)
 			{}
@@ -196,7 +196,7 @@ int main()
 			try
 			{
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
-				myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, 0.0);
+				myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
 			}
 			catch(NuTo::MechanicsException& e)
 			{}
@@ -216,7 +216,7 @@ int main()
 				try
 				{
 					myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
-					myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, 0.0);
+					myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
 				}
 				catch(NuTo::MechanicsException& e)
 				{}
@@ -257,7 +257,7 @@ int main()
                    if(flag==0)
                    {
 						myGrid.NodeSetDisplacements(myNodeNumber, displacements);
-                        myGrid.ConstraintSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
+                        myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
                    }
                 }
             }

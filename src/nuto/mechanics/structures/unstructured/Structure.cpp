@@ -293,6 +293,8 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
         }
         elementIter++;
     }
+    //write contribution of Lagrange Multipliers
+    ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -369,6 +371,7 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
         }
         elementIter++;
     }
+    ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -429,6 +432,8 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<d
         }
         elementIter++;
     }
+    //write contribution of Lagrange Multipliers
+    ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK);
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -509,6 +514,8 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<d
         }
         elementIter++;
     }
+    //write contribution of Lagrange Multipliers
+    ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK, rMatrixKK);
 }
 
 void NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
@@ -557,6 +564,9 @@ void NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullM
         }
         elementIter++;
     }
+
+    //write contribution of Lagrange Multipliers
+    ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
 }
 
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models

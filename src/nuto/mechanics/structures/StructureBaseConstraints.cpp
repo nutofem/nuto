@@ -2,23 +2,104 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/constraints/ConstraintDisplacementsPeriodic2D.h"
-#include "nuto/mechanics/constraints/ConstraintEquation.h"
-#include "nuto/mechanics/constraints/ConstraintNodeDisplacements1D.h"
-#include "nuto/mechanics/constraints/ConstraintNodeDisplacements2D.h"
-#include "nuto/mechanics/constraints/ConstraintNodeDisplacements3D.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements1D.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements2D.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroupDisplacements3D.h"
+#include "nuto/mechanics/constraints/ConstraintEnum.h"
+#include "nuto/mechanics/constraints/ConstraintLagrange.h"
+#include "nuto/mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements1D.h"
+#include "nuto/mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearEquation.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements1D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements3D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeFineScaleDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements1D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.h"
+
+//! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
+//! @param rGroupId group id
+//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(int rGroupId, const NuTo::FullMatrix<double>& rDirection, const std::string& rEquationSign, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintLagrangeSetDisplacementNodeGroup] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintLagrangeSetDisplacementNodeGroup] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+    //convert equation sign to upper case
+    std::string equationSign;
+    std::transform(rEquationSign.begin(), rEquationSign.end(), std::back_inserter(equationSign), (int(*)(int)) toupper);
+    Constraint::eEquationSign eEquationSign;
+    if(equationSign == "EQUAL")
+    {
+        eEquationSign = NuTo::Constraint::EQUAL;
+    }
+    else if(equationSign == "GREATER")
+    {
+        eEquationSign = NuTo::Constraint::GREATER;
+    }
+    else if(equationSign == "SMALLER")
+    {
+        eEquationSign = NuTo::Constraint::SMALLER;
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup] equation sign is either equal, smaller or greater.");
+    }
+
+    return ConstraintLagrangeSetDisplacementNodeGroup(nodeGroup,rDirection, eEquationSign, rValue);
+
+}
+//! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
+//! @param rGroup group pointer
+//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+    mConstraintMap.insert(id, new NuTo::ConstraintLagrangeNodeGroupDisplacements1D(rGroup,rDirection,rEquationSign,rValue));
+    break;
+    case 2:
+        mConstraintMap.insert(id, new NuTo::ConstraintLagrangeNodeGroupDisplacements2D(rGroup,rDirection,rEquationSign,rValue));
+        break;
+    //case 3:
+    //mConstraintMap.insert(id, new NuTo::ConstraintLagrangeNodeGroupDisplacements3D(rGroup,rDirection,rEquationSign,rValue));
+    //break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNodeGroup] Incorrect dimension of the structure.");
+    }
+    return id;
+
+}
 
 //! @brief adds a displacement constraint equation for a node
 //! @param rNode pointer to node
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 //! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
 	//find unused integer id
@@ -33,13 +114,47 @@ int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const Nu
     switch (mDimension)
     {
     case 1:
-        mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements1D(rNode,rDirection(0,0),rValue));
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeDisplacements1D(rNode,rDirection(0,0),rValue));
         break;
     case 2:
-        mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements2D(rNode,rDirection,rValue));
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeDisplacements2D(rNode,rDirection,rValue));
         break;
     case 3:
-        mConstraintMap.insert(id, new NuTo::ConstraintNodeDisplacements3D(rNode,rDirection,rValue));
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeDisplacements3D(rNode,rDirection,rValue));
+        break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+//! @brief adds a fine scale displacement constraint equation for a node
+//! @param rNode pointer to node
+//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 1D.");
+        break;
+    case 2:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeFineScaleDisplacements2D(rNode,rDirection,rValue));
+        break;
+    case 3:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 3D.");
         break;
     default:
         throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
@@ -51,7 +166,7 @@ int NuTo::StructureBase::ConstraintSetDisplacementNode(NodeBase* rNode, const Nu
 //! @param rNode identifier for node
 //! @param rComponent e.g. the first (count from zero) displacement component
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int  NuTo::StructureBase::ConstraintSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     NodeBase* nodePtr;
@@ -69,7 +184,32 @@ int  NuTo::StructureBase::ConstraintSetDisplacementNode(int rIdent, const NuTo::
         throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Node with the given identifier could not be found.");
     }
 
-    return ConstraintSetDisplacementNode(nodePtr,rDirection, rValue);
+    return ConstraintLinearSetDisplacementNode(nodePtr,rDirection, rValue);
+}
+
+//! @brief adds a fine scale displacement constraint equation for a node
+//! @param rNode identifier for node
+//! @param rComponent e.g. the first (count from zero) displacement component
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+int  NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintSetFineScaleDisplacementNode] Node with the given identifier could not be found.");
+        throw e;
+    }
+    catch (...)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetFineScaleDisplacementNode] Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetFineScaleDisplacementNode(nodePtr,rDirection, rValue);
 }
 
 //! @brief adds a displacement constraint equation for a group of node
@@ -77,7 +217,7 @@ int  NuTo::StructureBase::ConstraintSetDisplacementNode(int rIdent, const NuTo::
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 //! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     //find unused integer id
@@ -92,48 +232,102 @@ int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(Group<NodeBase>* rGr
     switch (mDimension)
     {
     case 1:
-        mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements1D(rGroup,rDirection(0,0),rValue));
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupDisplacements1D(rGroup,rDirection(0,0),rValue));
         break;
     case 2:
-        mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements2D(rGroup,rDirection,rValue));
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupDisplacements2D(rGroup,rDirection,rValue));
         break;
     case 3:
-        mConstraintMap.insert(id, new NuTo::ConstraintNodeGroupDisplacements3D(rGroup,rDirection,rValue));
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupDisplacements3D(rGroup,rDirection,rValue));
+        break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNodeGroup] Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+//! @brief adds a fine scale displacement constraint equation for a group of node
+//! @param rNode pointer to group of nodes
+//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 1D.");
+        break;
+    case 2:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(rGroup,rDirection,rValue));
+        break;
+    case 3:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 2D.");
         break;
     default:
         throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
     }
     return id;
 }
+
 //! @brief adds a constraint equation for a group of nodes
 //! @param rGroupIdent identifier for group of nodes
 //! @param rAttribute displacements, rotations, temperatures
 //! @param rComponent e.g. the first (count from zero) displacement component
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int NuTo::StructureBase::ConstraintSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::Structure::ConstraintDisplacementNodeGroup] Group with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::Structure::ConstraintSetDisplacementNodeGroup] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
-        throw MechanicsException("[NuTo::Structure::NodeGroupAddSingleConstraint] Group is not a node group.");
+        throw MechanicsException("[NuTo::Structure::ConstraintSetDisplacementNodeGroup] Group is not a node group.");
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
 
-    return ConstraintSetDisplacementNodeGroup(nodeGroup,rDirection, rValue);
+    return ConstraintLinearSetDisplacementNodeGroup(nodeGroup,rDirection, rValue);
+}
+
+//! @brief adds a constraint equation for a group of nodes
+//! @param rGroupIdent identifier for group of nodes
+//! @param rAttribute displacements, rotations, temperatures
+//! @param rComponent e.g. the first (count from zero) displacement component
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintSetFineScaleDisplacementNodeGroup] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintSetFineScaleDisplacementNodeGroup] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+
+    return ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup,rDirection, rValue);
 }
 
 //! @brief returns the number of constraint equations
 //! @return number of constraints
-int NuTo::StructureBase::ConstraintGetNumConstraintEquations()const
+int NuTo::StructureBase::ConstraintGetNumLinearConstraints()const
 {
-    int numConstraintEquations(0);
+    int numLinearConstraints(0);
     for (boost::ptr_map<int,ConstraintBase>::const_iterator itConstraint = mConstraintMap.begin(); itConstraint != mConstraintMap.end(); itConstraint++ )
     {
-        numConstraintEquations+=itConstraint->second-> GetNumConstraintEquations();
+        numLinearConstraints+=itConstraint->second-> GetNumLinearConstraints();
     }
-    return numConstraintEquations;
+    return numLinearConstraints;
 }
 
 //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom
@@ -146,19 +340,34 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
     {
         throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] build global numbering first");
     }
-    int numConstraintEquations = ConstraintGetNumConstraintEquations();
-    rConstraintMatrix.Resize(numConstraintEquations,mNumDofs);
-    rRHS.Resize(numConstraintEquations,1);
+    int numLinearConstraints = ConstraintGetNumLinearConstraints();
+    rConstraintMatrix.Resize(numLinearConstraints,mNumDofs);
+    rRHS.Resize(numLinearConstraints,1);
     int curConstraintEquations(0);
     for (boost::ptr_map<int,ConstraintBase>::const_iterator itConstraint = mConstraintMap.begin(); itConstraint != mConstraintMap.end(); itConstraint++ )
     {
-        itConstraint->second->AddToConstraintMatrix(curConstraintEquations, rConstraintMatrix, rRHS);
+        if (itConstraint->second->GetNumLinearConstraints()>0)
+        {
+            try
+            {
+                itConstraint->second->AsConstraintLinear()->AddToConstraintMatrix(curConstraintEquations, rConstraintMatrix, rRHS);
+            }
+            catch (MechanicsException& e)
+            {
+                e.AddMessage("[NuTo::StructureBase::ConstraintGetConstraintMatrix] error building constraint matrix for constraint with nonzero number of linear components.");
+                throw e;
+            }
+            catch (...)
+            {
+                throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] error building constraint matrix for constraint with nonzero number of linear components.");
+            }
+        }
     }
 
-    if (curConstraintEquations!=numConstraintEquations)
+    if (curConstraintEquations!=numLinearConstraints)
     {
         std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
-        std::cout << "numConstraintEquations " << numConstraintEquations << std::endl;
+        std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
         throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] Internal error, there is something wrong with the constraint equations.");
     }
 }
@@ -226,7 +435,7 @@ void NuTo::StructureBase::ConstraintPeriodicSetStrain2D(int rConstraintEquation,
 }
 
 // create a constraint equation
-int NuTo::StructureBase::ConstraintEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
+int NuTo::StructureBase::ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
 	this->mNodeNumberingRequired = true;
     //find unused integer id
@@ -239,14 +448,14 @@ int NuTo::StructureBase::ConstraintEquationCreate(int rNode, const std::string& 
     }
 
     // create constraint
-    this->ConstraintEquationCreate(id, rNode, rDof, rCoefficient, rRHS);
+    this->ConstraintLinearEquationCreate(id, rNode, rDof, rCoefficient, rRHS);
 
     // return integer id
     return id;
 }
 
 // create a constraint equation
-void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS)
+void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
 	this->mNodeNumberingRequired = true;
     try
@@ -257,7 +466,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, c
         this->ConstraintEquationGetDofInformationFromString(rDof, dofType, dofComponent);
 
         // create constraint equation
-        this->ConstraintEquationCreate(rConstraint, rNode, dofType, dofComponent, rCoefficient, rRHS);
+        this->ConstraintLinearEquationCreate(rConstraint, rNode, dofType, dofComponent, rCoefficient, rRHS);
     }
     catch(NuTo::MechanicsException& e)
     {
@@ -267,7 +476,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, c
 }
 
 // create a constraint equation
-void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS)
+void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS)
 {
 	this->mNodeNumberingRequired = true;
     // check if constraint equation already exists
@@ -282,7 +491,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, N
         NodeBase* nodePtr = this->NodeGetNodePtr(rNode);
 
         // create new constraint equation term
-        ConstraintBase* constraintPtr = new ConstraintEquation(nodePtr, rDofType, rDofComponent, rCoefficient, rRHS);
+        ConstraintBase* constraintPtr = new ConstraintLinearEquation(nodePtr, rDofType, rDofComponent, rCoefficient, rRHS);
 
         // insert constraint equation into map
         this->mConstraintMap.insert(rConstraint, constraintPtr);
@@ -295,7 +504,7 @@ void NuTo::StructureBase::ConstraintEquationCreate(int rConstraint, int rNode, N
 }
 
 // add a term to a constraint equation
-void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient)
+void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient)
 {
 	this->mNodeNumberingRequired = true;
     try
@@ -306,7 +515,7 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
         this->ConstraintEquationGetDofInformationFromString(rDof, dofType, dofComponent);
 
         // add term to constraint equation
-        this->ConstraintEquationAddTerm(rConstraint, rNode, dofType, dofComponent, rCoefficient);
+        this->ConstraintLinearEquationAddTerm(rConstraint, rNode, dofType, dofComponent, rCoefficient);
     }
     catch(NuTo::MechanicsException& e)
     {
@@ -316,7 +525,7 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
 }
 
 // add a term to a constraint equation
-void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
+void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
 {
 	this->mNodeNumberingRequired = true;
     // get iterator
@@ -331,7 +540,7 @@ void NuTo::StructureBase::ConstraintEquationAddTerm(int rConstraint, int rNode, 
         NodeBase* nodePtr = this->NodeGetNodePtr(rNode);
 
         // add term
-        ConstraintEquation* equationPtr = dynamic_cast<ConstraintEquation*>(it->second);
+        ConstraintLinearEquation* equationPtr = dynamic_cast<ConstraintLinearEquation*>(it->second);
         equationPtr->AddTerm(nodePtr, rDofType, rDofComponent, rCoefficient);
     }
     catch(NuTo::MechanicsException& e)
@@ -420,10 +629,14 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
 //! @param  rNodeGrouplower... all nodes on the lower boundary
 //! @param  rNodeGroupLeft... all nodes on the left boundary
 //! @param  rNodeGroupRight...  all nodes on the right boundary
-int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double> rStrain,
+int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double> rStrain,
         NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         int rNodeGroupUpperId, int rNodeGroupLowerId, int rNodeGroupLeftId, int rNodeGroupRightId)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     //check dimension of the structure
     if (mDimension!=2)
         throw MechanicsException("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] only implemented for 2D");
@@ -478,7 +691,7 @@ int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuT
 
         EngineeringStrain2D engineeringStrain;
         engineeringStrain.SetData(rStrain.mEigenMatrix.data());
-        ConstraintBase* constraintPtr = new NuTo::ConstraintDisplacementsPeriodic2D(this, rAngle, engineeringStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
+        ConstraintBase* constraintPtr = new NuTo::ConstraintLinearDisplacementsPeriodic2D(this, rAngle, engineeringStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
                    nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
 
         // insert constraint equation into map
@@ -489,9 +702,461 @@ int NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D(double rAngle, NuT
         e.AddMessage("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] error creating periodic boundary conditions in 2D");
         throw e;
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
     // return integer id
     return id;
 
+}
+
+//!@brief number the free DOFS in the constraints (Lagrange multipliers)
+//!@param rDOF current maximum DOF number, increased in the number
+void NuTo::StructureBase::ConstraintNumberGlobalDofs(int& rDOF)
+{
+    for(boost::ptr_map<int,ConstraintBase>::iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
+    {
+        if (it->second->GetNumLagrangeMultipliers()>0)
+        {
+            ConstraintLagrange* constraintLagrangePtr(it->second->AsConstraintLagrange());
+            constraintLagrangePtr->SetGlobalDofs(rDOF);
+        }
+    }
+}
+
+//! @brief renumber the dofs of the Lagrange multipliers according to predefined ordering
+//! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
+void NuTo::StructureBase::ConstraintRenumberGlobalDofs(const std::vector<int>& mappingInitialToNewOrdering)
+{
+    for(boost::ptr_map<int,ConstraintBase>::iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
+    {
+        if (it->second->GetNumLagrangeMultipliers()>0)
+        {
+            ConstraintLagrange* constraintLagrangePtr(it->second->AsConstraintLagrange());
+            constraintLagrangePtr->RenumberGlobalDofs(mappingInitialToNewOrdering);
+        }
+    }
+}
+
+//! @brief extract dof values from the node (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues)const
+{
+    for(boost::ptr_map<int,ConstraintBase>::const_iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
+    {
+        if (it->second->GetNumLagrangeMultipliers()>0)
+        {
+            const ConstraintLagrange* constraintLagrangePtr(it->second->AsConstraintLagrange());
+            constraintLagrangePtr->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        }
+    }
+}
+
+//! @brief write dof values to the Lagrange multipliers (based on global dof number)
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::StructureBase::ConstraintMergeGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& dependentDofValues)
+{
+    for(boost::ptr_map<int,ConstraintBase>::iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
+    {
+        if (it->second->GetNumLagrangeMultipliers()>0)
+        {
+            ConstraintLagrange* constraintLagrangePtr(it->second->AsConstraintLagrange());
+            constraintLagrangePtr->SetGlobalDofValues(rActiveDofValues, dependentDofValues);
+        }
+    }
+}
+
+//! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+//! @param rMatrixJJ ... matrix jj
+//! @param rMatrixJK ... matrix jk
+void NuTo::StructureBase::ConstraintsBuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)const
+{
+    // define variables storing the element contribution outside the loop
+    NuTo::SparseMatrixCSRVector2Symmetric<double> constraintMatrix;
+    std::vector<int> constraintMatrixGlobalDofs;
+
+    // loop over all constraints
+    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
+    for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
+    {
+        // calculate element contribution
+        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+            continue;
+        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
+        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
+
+        const std::vector<std::vector<double> >& values(constraintMatrix.GetValues());
+        const std::vector<std::vector<int> >& columns(constraintMatrix.GetColumns());
+
+        // write constraint contribution to global matrix
+        for (unsigned int rowCount = 0; rowCount < values.size(); rowCount++)
+        {
+            int globalRowDof = constraintMatrixGlobalDofs[rowCount];
+            if (globalRowDof < this->mNumActiveDofs)
+            {
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalColumnDof < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                    }
+                }
+            }
+
+            //same thing, but for the transpose
+            int globalColumnDof = constraintMatrixGlobalDofs[rowCount];
+            if (globalColumnDof < this->mNumActiveDofs)
+            {
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalRowDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalRowDof==globalColumnDof)
+                            continue;
+                        if (globalRowDof < this->mNumActiveDofs)
+                        {
+                            // add upper triangle and diagonal
+                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                            rMatrixJK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof , values[rowCount][colCount]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+//! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+//! @param rMatrixJJ ... matrix jj
+//! @param rMatrixJK ... matrix jk
+//! @param rMatrixKJ ... matrix kj
+//! @param rMatrixKK ... matrix kk
+void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK)const
+{
+    // define variables storing the element contribution outside the loop
+    NuTo::SparseMatrixCSRVector2Symmetric<double> constraintMatrix;
+    std::vector<int> constraintMatrixGlobalDofs;
+
+    // loop over all elements
+    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
+    for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
+    {
+        // calculate element contribution
+        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+            continue;
+        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
+        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
+
+        const std::vector<std::vector<double> >& values(constraintMatrix.GetValues());
+        const std::vector<std::vector<int> >& columns(constraintMatrix.GetColumns());
+
+        // write constraint contribution to global matrix
+        for (unsigned int rowCount = 0; rowCount < values.size(); rowCount++)
+        {
+            int globalRowDof = constraintMatrixGlobalDofs[rowCount];
+            if (globalRowDof < this->mNumActiveDofs)
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalColumnDof < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalColumnDof < this->mNumActiveDofs)
+                        {
+                             rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                             rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // write constraint contribution to global matrix - transpose
+        for (unsigned int rowCount = 0; rowCount < values.size(); rowCount++)
+        {
+            int globalColumnDof = constraintMatrixGlobalDofs[rowCount];
+            if (globalColumnDof < this->mNumActiveDofs)
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalRowDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalRowDof==globalColumnDof)
+                            continue;
+                        if (globalRowDof < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                            rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, values[rowCount][colCount]);
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalRowDof = constraintMatrixGlobalDofs[colCount];
+                        if (globalRowDof==globalColumnDof)
+                            continue;
+                        if (globalRowDof < this->mNumActiveDofs)
+                        {
+                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                            rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                    }
+                }
+            }
+        }
+        constraintIter++;
+    }
+}
+
+//! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+//! @param rMatrixJJ ... matrix jj
+//! @param rMatrixJK ... matrix jk
+void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)const
+{
+    // define variables storing the element contribution outside the loop
+    NuTo::SparseMatrixCSRVector2Symmetric<double> constraintMatrix;
+    std::vector<int> constraintMatrixGlobalDofs;
+
+    // loop over all elements
+    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
+    for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
+    {
+        // calculate element contribution
+        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+            continue;
+        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
+        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
+
+        const std::vector<std::vector<double> >& values(constraintMatrix.GetValues());
+        const std::vector<std::vector<int> >& columns(constraintMatrix.GetColumns());
+
+        // write constraint contribution to global matrix
+        for (unsigned int rowCount = 0; rowCount < values.size(); rowCount++)
+        {
+            int globalRowDof = constraintMatrixGlobalDofs[rowCount];
+            if (globalRowDof < this->mNumActiveDofs)
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalColumnDof < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                        }
+                        else
+                        {
+                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                    }
+                }
+            }
+        }
+        constraintIter++;
+    }
+}
+
+//! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+//! @param rMatrixJJ ... matrix jj
+//! @param rMatrixJK ... matrix jk
+//! @param rMatrixKK ... matrix kk
+void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK) const
+{
+    // define variables storing the element contribution outside the loop
+    NuTo::SparseMatrixCSRVector2Symmetric<double> constraintMatrix;
+    std::vector<int> constraintMatrixGlobalDofs;
+
+    // loop over all elements
+    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
+    for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
+    {
+        // calculate element contribution
+        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+            continue;
+        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
+        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
+        assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
+
+        const std::vector<std::vector<double> >& values(constraintMatrix.GetValues());
+        const std::vector<std::vector<int> >& columns(constraintMatrix.GetColumns());
+
+        // write constraint contribution to global matrix
+        for (unsigned int rowCount = 0; rowCount < values.size(); rowCount++)
+        {
+            int globalRowDof = constraintMatrixGlobalDofs[rowCount];
+            if (globalRowDof < this->mNumActiveDofs)
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalColumnDof < this->mNumActiveDofs)
+                        {
+                            // add upper triangle and diagonal
+                            if(globalColumnDof >= globalRowDof)
+                            {
+                                rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                            }
+                        }
+                        else
+                        {
+                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                {
+                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+                    {
+                        int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+                        if (globalColumnDof >= this->mNumActiveDofs)
+                        {
+                            // add upper triangle and diagonal
+                            if(globalColumnDof >= globalRowDof)
+                            {
+                                rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        constraintIter++;
+    }
+}
+
+//! @brief ... add the contribution of Lagrange multipliers to the global system of equations
+//! @param rActiveDofGradientVector ... gradient of active dofs
+//! @param rDependentDofGradientVector ... gradient of dependent dofs
+void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
+{
+    // define variables storing the element contribution outside the loop
+    NuTo::FullMatrix<double> constraintVector;
+    std::vector<int> constraintVectorGlobalDofs;
+
+    // loop over all constraints
+    for (boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
+    {
+        // calculate constraint contribution
+        if (constraintIter->second->GetNumLagrangeMultipliers()>0)
+        {
+            const ConstraintLagrange* constraintPtr (constraintIter->second->AsConstraintLagrange());
+
+            constraintPtr->CalculateGradientInternalPotential(constraintVector,constraintVectorGlobalDofs);
+            assert(static_cast<unsigned int>(constraintVector.GetNumRows()) == constraintVectorGlobalDofs.size());
+            assert(static_cast<unsigned int>(constraintVector.GetNumColumns()) == 1);
+            //constraintVector.Trans().Info();
+            //std::cout << std::endl;
+
+            // write constraint contribution to global vectors
+            for (unsigned int rowCount = 0; rowCount < constraintVectorGlobalDofs.size(); rowCount++)
+            {
+                int globalRowDof = constraintVectorGlobalDofs[rowCount];
+                if (globalRowDof < this->mNumActiveDofs)
+                {
+                    rActiveDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
+                }
+                else
+                {
+                    globalRowDof -= this->mNumActiveDofs;
+                    assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+                    rDependentDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
+                }
+            }
+        }
+    }
+}
+
+//! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
+//! @param ConstraintId constraint id
+//! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
+void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double>& rMultiplier)const
+{
+    // get iterator
+    boost::ptr_map<int,ConstraintBase>::const_iterator it = this->mConstraintMap.find(ConstraintId);
+    if(it == this->mConstraintMap.end())
+    {
+        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintLagrangeGetMultiplier] constraint equation does not exist.");
+    }
+    try
+    {
+        if (it->second->GetNumLagrangeMultipliers()>0)
+        {
+            const ConstraintLagrange* constraintPtr (it->second->AsConstraintLagrange());
+            constraintPtr->GetLagrangeGetMultiplier(rMultiplier);
+        }
+        else
+            throw MechanicsException("[NuTo::StructureBase::ConstraintLagrangeGetMultiplier] constraint has no Lagrange multipliers.");
+    }
+    catch(NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintLagrangeGetMultiplier] error getting Lagrange multipliers.");
+        throw e;
+    }
 }
 

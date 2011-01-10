@@ -180,6 +180,9 @@ public:
     //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
     Solid* AsSolid();
 
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    void SetFineScaleModel(int rIp, std::string rFileName);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

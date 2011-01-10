@@ -156,3 +156,10 @@ std::string NuTo::NodeCoordinates1D::GetNodeTypeStr()const
 {
 	return std::string("NodeCoordinates1D");
 }
+
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeCoordinates1D::GetNodeType()const
+{
+    return NuTo::Node::NodeCoordinates1D;
+}

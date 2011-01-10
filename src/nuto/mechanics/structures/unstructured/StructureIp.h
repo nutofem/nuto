@@ -10,9 +10,11 @@
 #include <boost/ptr_container/ptr_map.hpp>
 
 #include <set>
+#include <array>
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -24,7 +26,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures, which are used as fine scale models at an integration point
-class StructureIp : public Structure, public ConstitutiveEngineeringStressStrain
+class StructureIp : public Structure
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -69,270 +71,175 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
 
+    //! @brief ... calculate the displacement based on the homogeneous strain
+    //! @param rCoordinates ... coordinates of the point
+    //! @param rCoarseDisplacements ... return array of displacements
+    void GetDisplacementsEpsilonHom2D(double rCoordinates[2], double rDisplacements[2])const;
+
+    //! @brief ... calculate the displacement based on the crack opening
+    //! @param rCoordinates ... coordinates of the point
+    //! @param rCoarseDisplacements ... return array of displacements
+    void GetDisplacementsCrack2D(double rCoordinates[2], double rDisplacements[2])const;
+
+    //! @brief derivative of displacement with respect to homogeneous strain
+    //! @param rdX_dEpsilonHom[3] return value, derivative of x-displacement with respect to homogeneous strain (exx, eyy, gxy)
+    //! @param rdY_dEpsilonHom[3] return value, derivative of x-displacement with respect to homogeneous strain (exx, eyy, gxy)
+    void GetdDisplacementdEpsilonHom(double rCoordinates[2], double rdX_dEpsilonHom[3], double rdY_dEpsilonHom[3])const;
+
+    //! @brief derivative of displacement with respect to discontinuity (crack opening)
+    //! @param rdX_dCrackOpening[2] return value, derivative of x-displacement with respect to crack opening (ux, uy)
+    //! @param rdY_dCrackOpening[2] return value, derivative of x-displacement with respect to crack opening (ux, uy)
+    void GetdDisplacementdCrackOpening(double rCoordinates[2], double rdX_dCrackOpening[2], double rdY_dCrackOpening[2])const;
+
+    //! @brief second derivative of displacement with respect to alpha and discontinuity (crack opening)
+    //! @param rdX_dCrackOpening[2] return value, derivative of x-displacement with respect to alpha and crack opening (ux, uy)
+    //! @param rdY_dCrackOpening[2] return value, derivative of y-displacement with respect to alpha and crack opening (ux, uy)
+    void Getd2Displacementd2CrackOpening(double rCoordinates[2], double rdX_dAlphaCrackOpening[2], double rdY_dAlphaCrackOpening[2])const;
+
+    //! @brief derivative of displacement with respect to discontinuity (crack opening)
+    //! @param rdX_dAlpha[2] return value, derivative of x-displacement with respect to crack orientation (alpha)
+    //! @param rdy_dAlpha[2] return value, derivative of x-displacement with respect to crack orientation (alpha)
+    void GetdDisplacementdCrackOrientation(double rCoordinates[2], double rdX_dAlpha[1], double rdy_dAlpha[1])const;
+
+    //! @brief second derivative of displacement with respect to discontinuity (crack opening)
+    //! @param rdX_dAlpha[2] return value, second derivative of x-displacement with respect to crack orientation (alpha)
+    //! @param rdy_dAlpha[2] return value, second derivative of y-displacement with respect to crack orientation (alpha)
+    void Getd2Displacementd2CrackOrientation(double rCoordinates[2], double rd2X_d2Alpha[1], double rd2Y_d2Alpha[1])const;
+
+    //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
+    //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
+    void TransformBoundaryNodes(int rBoundaryNodesId);
+
 #ifndef SWIG
-    //************ constitutive routines    ***********
-    //**  defined in structures/StructureIpConstitutive.cpp *********
-    //*************************************************
-    //  Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
+    //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
+    //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
+    void TransformBoundaryNodes(Group<NodeBase>* rBoundaryNodes);
+#endif
 
-    //  Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
+    //! @brief numbers non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
+    void NumberAdditionalGlobalDofs();
 
-    //  Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
+    //! @brief ...merge additional dof values
+    void NodeMergeAdditionalGlobalDofValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues);
 
-    // Engineering stress - Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStress ... Engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const;
+    //! @brief extract dof values additional dof values
+    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    void NodeExtractAdditionalGlobalDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
 
-    // Engineering stress - Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStress ... Engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    void BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const;
 
-    // Engineering stress - Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStress ... Engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const;
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    void BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const;
 
-    // Engineering stress - Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rEngineeringStress ... Engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const;
 
-    // Engineering stress - Engineering strain /////////////////////////////////////
-    //! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rCauchyStress ... Cauchy stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const;
 
-    //  Damage /////////////////////////////////////
-    //! @brief ... calculate isotropic damage from deformation gradient in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient1D& rDeformationGradient, double& rDamage) const;
+    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
+    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
+    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
+    void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
 
-    //  Damage /////////////////////////////////////
-    //! @brief ... calculate isotropic damage from deformation gradient in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient2D& rDeformationGradient, double& rDamage) const;
+#ifndef SWIG
+    //! @brief calculate the distance of a point to the crack
+    //! @param rCoordinates[2] coordinates of the point
+    //! @return distance to crack
+    double CalculateDistanceToCrack2D(double rCoordinates[2])const;
 
-    //  Damage /////////////////////////////////////
-    //! @brief ... calculate isotropic damage from deformation gradient in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
-                                      const DeformationGradient3D& rDeformationGradient, double& rDamage) const;
+    //! @brief calculate the derivative of the distance of a point to the crack with respect to the crack orientation alpha
+    //! @param rCoordinates[2] coordinates of the point
+    //! @return distance to crack
+    double CalculatedDistanceToCrack2DdAlpha(double rCoordinates[2])const;
 
-    //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient,
-            ConstitutiveTangentBase* rTangent) const;
+    //! @brief calculate the second derivative of the distance of a point to the crack
+    //! @param rCoordinates[2] coordinates of the point
+    //! @return second derivative of distance to crack
+    double Calculated2DistanceToCrack2Dd2Alpha(double rCoordinates[2])const;
 
-    //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient,
-            ConstitutiveTangentBase* rTangent) const;
+    //! @brief calculate the derivative of the displacements at the nodes with respect to homogeneous strain, crack opening and crack orientation
+    //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
+    //! @param rDOF return value, for each dof, the corresponding derivatives (ehomxx, ehomyy, gammahomxy, ux, uy, alpha)
+    //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
+    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,3> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
 
-    //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient,
-            ConstitutiveTangentBase* rTangent) const;
+    //! @briefset the total strain
+    void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
 
-    //! @brief ... update static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient) const;
+    //! @brief add constraint equation for alpha in case of norm of crackopening less than a prescribed value
+    void SetConstraintAlpha(EngineeringStrain2D& rTotalEngineeringStrain);
 
-    //! @brief ... update static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient) const;
+    //! @brief return the total strain
+    NuTo::EngineeringStrain2D GetTotalStrain()const;
 
-    //! @brief ... update static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient) const;
+    //! @brief renumbers the global dofs in the structure after
+    void ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
 
-    //! @brief ... update tmp static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient) const;
+#endif
 
-    //! @brief ... update tmp static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient) const;
+    //! @brief save the state as a binary
+    void Save(std::stringstream& previousState)const;
 
-    //! @brief ... update tmp static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient) const;
+    //! @brief restore the state from a binary
+    void Restore(std::stringstream& previousState);
 
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const;
+    double GetDimensionX()const
+    {
+        return mlX;
+    }
 
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const;
+    double GetDimensionY()const
+    {
+        return mlY;
+    }
 
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement) const;
-
-    //! @brief ... calculates the difference of the elastic strain between the current state and the previous update
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
-    void GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient, EngineeringStrain1D& rDeltaElasticEngineeringStrain) const;
-
-    //! @brief ... calculates the difference of the elastic strain between the current state and the previous update
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
-    void GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient, EngineeringStrain2D& rDeltaElasticEngineeringStrain) const;
-
-    //! @brief ... calculates the difference of the elastic strain between the current state and the previous update
-    //! @param rStructure ... structure
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    //! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
-    void GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rDeltaElasticEngineeringStrain) const;
-
-    //! @brief ... check parameters of the constitutive relationship
-    void CheckParameters()const;
-
-    //! @brief ... check compatibility between element type and type of constitutive relationship
-    //! @param rElementType ... element type
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    bool CheckElementCompatibility(Element::eElementType rElementType) const;
-
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
-    //! @return ... see brief explanation
-    bool HaveTmpStaticData() const;
-
-    //! @brief ... get type of constitutive relationship
-    //! @return ... type of constitutive relationship
-    //! @sa eConstitutiveType
-    NuTo::Constitutive::eConstitutiveType GetType() const;
-
-#endif //SWIG
-
+    int GetDofCrackAngle()const
+    {
+        return mDOFCrackAngle;
+    }
 protected:
     //! @brief ... standard constructor just for the serialization routine
     StructureIp()
     {}
 
-    //! @brief ... solve for equilibrium using the new boundary conditions
-    void Solve(NuTo::EngineeringStrain2D rEngineeringStrain, double tolerance);
+    //! @brief Calculate the derivate of the homogeneous strain with respect to changes of the crack orientation and crack opening
+    //! this is due to the constraint equation relating total strain, homogeneous strain and cracking strain
+    //! @parameter rbHomAlpha dHom wrt alpha
+    //! @paramter rbHomU[0-2] for wrt ux [3-5] for wrt uy
+    //! @parameter bHessian depsilondalpha2[0-2], depsilondalphadux[3-5], depsilondalphadux[6-8]
+    void GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU[6], double rbHessian[9])const;
 
-    double mCrackAngle[3];
-    int mDOFCrackAngle[3];
-    double mCrackOpening[3];
-    int mDOFCrackOpening[3];
-    int mConstraintPeriodic;
-    int mConstraintTranslation;
+    //calculate from the existing crack opening and orientation the cracking strain
+    void CalculateHomogeneousEngineeringStrain();
+
+    double mCrackAngle;
+    int mDOFCrackAngle;
+    double mCrackOpening[2];
+    int mDOFCrackOpening[2];
+    EngineeringStrain2D mEpsilonTot;
+    EngineeringStrain2D mEpsilonHom;
+    int mConstraintFineScaleX;
+    int mConstraintFineScaleY;
+    int mConstraintAlpha;
     double mlX,mlY;
-    bool mSolveForLocalization;
+    double mCrackTransitionZone;
+    bool mBoundaryNodesTransformed;
     std::string mIPName;
 
-    //! @brief ... previous total strain at the last update
-    double mPrevStrain[3];
 };
 }
 #ifdef ENABLE_SERIALIZATION

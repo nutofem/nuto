@@ -14,14 +14,13 @@
 //! @brief constructor
 NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain() : ConstitutiveStaticDataBase()
 {
-    mPrevSigma[0] = 0.;
-    mPrevSigma[1] = 0.;
-    mPrevSigma[2] = 0.;
-    mPrevSigma[3] = 0.;
+    mPrevSigma.mEngineeringStress[0] = 0.;
+    mPrevSigma.mEngineeringStress[1] = 0.;
+    mPrevSigma.mEngineeringStress[2] = 0.;
 
-    mPrevStrain[0] = 0.;
-    mPrevStrain[1] = 0.;
-    mPrevStrain[2] = 0.;
+    mPrevStrain.mEngineeringStrain[0] = 0.;
+    mPrevStrain.mEngineeringStrain[1] = 0.;
+    mPrevStrain.mEngineeringStrain[2] = 0.;
 
     mPrevTotalEnergy = 0.;
 
@@ -57,20 +56,15 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveStaticDataPrevEngineeringStressSt
 #endif // ENABLE_SERIALIZATION
 
 //! brief set the previous stress
-void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::SetPrevStress(const double rPrevSigma[4])
+void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::SetPrevStress(const EngineeringStress2D& rPrevSigma)
 {
-	mPrevSigma[0] = rPrevSigma[0];
-	mPrevSigma[1] = rPrevSigma[1];
-	mPrevSigma[2] = rPrevSigma[2];
-	mPrevSigma[3] = rPrevSigma[3];
+	mPrevSigma = rPrevSigma;
 }
 
 //! brief set the previous stress
-void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::SetPrevStrain(const double rPrevStrain[3])
+void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::SetPrevStrain(const EngineeringStrain2D& rPrevStrain)
 {
-	mPrevStrain[0] = rPrevStrain[0];
-	mPrevStrain[1] = rPrevStrain[1];
-	mPrevStrain[2] = rPrevStrain[2];
+	mPrevStrain = rPrevStrain;
 }
 
 

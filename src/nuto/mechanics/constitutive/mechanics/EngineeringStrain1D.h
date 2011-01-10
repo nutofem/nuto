@@ -26,6 +26,7 @@ class EngineeringStrain1D
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class NonlocalDamagePlasticity;
+    friend class Multiscale;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure

@@ -83,6 +83,56 @@ public:
     {
         throw MetamodelException("Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
     }
+
+    //! @brief calculate the sample mean for each support point using original support point coordinates
+    //! @param rInputMean ... vector of mean values of the input support point coordinates
+    //! @param rOutputMean ... vector of mean values of the output support point coordinates
+    void GetOriginalSupportPointsMeanValue(NuTo::FullMatrix<double>& rInputMean, NuTo::FullMatrix<double>& rOutputMean) const;
+
+    //! @brief calculate the sample mean for each support point using transformed support point coordinates
+    //! @param rInputMean ... vector of mean values of the input support point coordinates
+    //! @param rOutputMean ... vector of mean values of the output support point coordinates
+    void GetTransformedSupportPointsMeanValue(NuTo::FullMatrix<double>& rInputMean, NuTo::FullMatrix<double>& rOutputMean) const;
+
+    //! @brief calculate the sample variance for each support point using original support point coordinates
+    //! @param rInputVariance ... vector of sample variances of the input support point coordinates
+    //! @param rOutputVariance ... vector of sample variances of the output support point coordinates
+    void GetOriginalSupportPointsVariance(NuTo::FullMatrix<double>& rInputVariance, NuTo::FullMatrix<double>& rOutputVariance) const;
+
+    //! @brief calculate the sample variance for each support point using transformed support point coordinates
+    //! @param rInputVariance ... vector of sample variances of the input support point coordinates
+    //! @param rOutputVariance ... vector of sample variances of the output support point coordinates
+    void GetTransformedSupportPointsVariance(NuTo::FullMatrix<double>& rInputVariance, NuTo::FullMatrix<double>& rOutputVariance) const;
+
+    //! @brief calculate the covariance matrix of the support points using original support point coordinates
+    //! @param rCovarianceMatrix ... covariance matrix
+    void GetOriginalSupportPointsCovarianceMatrix(NuTo::FullMatrix<double>& rCovarianceMatrix) const;
+
+    //! @brief calculate the covariance matrix of the support points using transformed support point coordinates
+    //! @param rCovarianceMatrix ... covariance matrix
+    void GetTransformedSupportPointsCovarianceMatrix(NuTo::FullMatrix<double>& rCovarianceMatrix) const;
+
+    //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
+    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+    void GetOriginalSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double>& rCorrelationMatrix) const;
+
+    //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
+    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+    void GetTransformedSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double>& rCorrelationMatrix) const;
+
+    //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
+    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
+	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
+	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    void GetOriginalSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
+
+    //! @brief calculate Pearson's correlation matrix of the support points using transformed support point coordinates
+    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
+	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
+	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    void GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 protected:
 
     NuTo::SupportPoints mSupportPoints;

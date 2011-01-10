@@ -6,6 +6,7 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <string>
 #include <vector>
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
@@ -40,6 +41,9 @@ public:
     //! @param rConstitutiveLaw constitutive law
     //! @param rIp integration point
     virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
+
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleModel(int rIp, std::string rFileName);
 
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element

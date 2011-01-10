@@ -42,10 +42,10 @@ for element in range(0, NumElements):
 
 # set boundary conditions and loads
 direction = nuto.DoubleFullMatrix(1,1,(1,))
-myStructure.ConstraintSetDisplacementNode(0, direction, 0.0)
+myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 if EnableDisplacementControl:
     print "Displacement control"
-    myStructure.ConstraintSetDisplacementNode(NumElements, direction, BoundaryDisplacement)
+    myStructure.ConstraintLinearSetDisplacementNode(NumElements, direction, BoundaryDisplacement)
 else:
     print "Load control"
     myStructure.LoadCreateNodeForce(NumElements, direction, Force)

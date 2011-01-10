@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 namespace NuTo
 {
@@ -144,6 +145,23 @@ public:
     //! @return displacement
     virtual double GetDisplacement(short rIndex)const;
 
+    //! @brief returns the number of displacements of the node
+    //! @return number of displacements
+    virtual int GetNumFineScaleDisplacements()const;
+
+    //! @brief gives the global DOF of a displacement component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofFineScaleDisplacement(int rComponent)const;
+
+    //! @brief set the displacements
+    //! @param rDisplacements  given displacements
+    virtual void SetFineScaleDisplacements2D(const double rDisplacements[2]);
+
+    //! @brief writes the displacements of a node to the prescribed pointer
+    //! @param rDisplacements displacements
+    virtual void GetFineScaleDisplacements2D(double rDisplacements[2])const;
+
     //! @brief returns the number of velocities of the node
     //! @return number of velocities
     virtual int GetNumVelocities()const;
@@ -252,9 +270,13 @@ public:
     //! @return NodeGridNum
     virtual int GetNodeGridNum()const;
 
-    //! @brief returns the number of temperatures of the node
-    //! @return number of temperatures
+    //! @brief returns the type of node as a string (all the data stored at the node)
+    //! @return string
     virtual std::string GetNodeTypeStr()const=0;
+
+    //! @brief returns the type of node as an enum (all the data stored at the node)
+    //! @return enum
+    virtual Node::eNodeType GetNodeType()const=0;
 
 protected:
     //the base class of the nodes must not contain any data

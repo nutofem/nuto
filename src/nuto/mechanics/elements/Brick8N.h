@@ -110,6 +110,11 @@ public:
         mNodes[rLocalNodeNumber] = rNode;
     }
 
+    //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+    //! @param rOldPtr old node ptr
+    //! @param rNewPtr new node ptr
+    void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr);
 
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();

@@ -131,9 +131,15 @@ public:
     //! @return    class name
     virtual std::string GetTypeId() const;
 
+    virtual T Max()=0;
+#ifndef SWIG
     virtual void Max(T& result_output)=0;
+#endif
     virtual void Max(int& row_output, int& column_output, T& result_output)=0;
+    virtual T Min()=0;
+#ifndef SWIG
     virtual void Min(T& result_output)=0;
+#endif
     virtual void Min(int& row_output, int& column_output, T& result_output)=0;
 
 protected:

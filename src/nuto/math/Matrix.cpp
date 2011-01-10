@@ -24,25 +24,26 @@ std::string NuTo::Matrix<int>::Convert2String(int value)
 }
 
 template <>
-std::string NuTo::Matrix<double>::Convert2String(double value, bool scientific, int precision, int width)
+std::string NuTo::Matrix<double>::Convert2String(double value, bool scientific, int precision, int width) const
 {
     std::ostringstream format_message;
+    format_message << std::setprecision(precision);
+    format_message << std::setw(width);
+    format_message << std::right;
     if (scientific)
     {
-        format_message.setf ( std::ios_base::right, std::ios::scientific);
+        format_message << std::scientific;
     }
     else
     {
-        format_message.setf ( std::ios_base::right, std::ios::fixed);
+        format_message << std::fixed;
     }
-    format_message.precision(precision);
-    format_message.width(width);
     format_message << value;
     return format_message.str();
 }
 
 template <>
-std::string NuTo::Matrix<int>::Convert2String(int value, bool scientific, int precision, int width)
+std::string NuTo::Matrix<int>::Convert2String(int value, bool scientific, int precision, int width) const
 {
     std::ostringstream format_message;
     format_message.setf ( std::ios_base::right);

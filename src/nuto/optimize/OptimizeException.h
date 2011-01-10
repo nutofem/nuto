@@ -1,3 +1,5 @@
+// $Id$
+
 #ifndef NUTO_OPTIMIZE_EXCEPTION_H
 #define NUTO_OPTIMIZE_EXCEPTION_H
 

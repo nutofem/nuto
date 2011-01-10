@@ -108,12 +108,12 @@ try
 	DirectionY.SetValue(0,0,0.0);
 	DirectionY.SetValue(1,0,1.0);
 
-	myStructure.ConstraintSetDisplacementNodeGroup(LeftSupport,DirectionX, 0);
-	myStructure.ConstraintSetDisplacementNode(leftLowerNode,DirectionX, 0);
-	myStructure.ConstraintSetDisplacementNode(leftLowerNode,DirectionY, 0);
+	myStructure.ConstraintLinearSetDisplacementNodeGroup(LeftSupport,DirectionX, 0);
+	myStructure.ConstraintLinearSetDisplacementNode(leftLowerNode,DirectionX, 0);
+	myStructure.ConstraintLinearSetDisplacementNode(leftLowerNode,DirectionY, 0);
 
 	// update the RHS of the constrain equation with myStructure.ConstraintSetRHS
-	int ConstraintRHS = myStructure.ConstraintSetDisplacementNodeGroup(RightSupport,DirectionX, 0);
+	int ConstraintRHS = myStructure.ConstraintLinearSetDisplacementNodeGroup(RightSupport,DirectionX, 0);
 
     // start analysis
     double maxDisp(200*fct/YoungsModulus*lX);

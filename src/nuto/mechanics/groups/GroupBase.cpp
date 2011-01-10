@@ -54,6 +54,22 @@ bool NuTo::GroupBase::Contain(ElementBase* rElementPtr)
 	throw MechanicsException("[NuTo::GroupBase::Contain] looking for an element is only allowed for element groups.");
 }
 
+//! @brief replaces a ptr by another one
+//! @param rOldPtr
+//! @param rNewPtr
+void NuTo::GroupBase::ExchangePtr(ElementBase* rOldElementPtr, ElementBase* rNewElementPtr)
+{
+    throw MechanicsException("[NuTo::GroupBase::ExchangePtr] Exchanging element ptr is only allowed for element groups.");
+}
+
+//! @brief replaces a ptr by another one
+//! @param rOldPtr
+//! @param rNewPtr
+void NuTo::GroupBase::ExchangePtr(NodeBase* rOldNodePtr, NodeBase* rNewNodePtr)
+{
+    throw MechanicsException("[NuTo::GroupBase::ExchangePtr] Exchanging node ptr is only allowed for node groups.");
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::GroupBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

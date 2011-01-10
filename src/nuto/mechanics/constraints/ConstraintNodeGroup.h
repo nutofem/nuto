@@ -4,6 +4,7 @@
 #define CONSTRAINTNODEGROUP_H
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
 {
@@ -22,10 +23,6 @@ class ConstraintNodeGroup : public ConstraintBase
 public:
     //! @brief constructor
     ConstraintNodeGroup(const Group<NodeBase>* rGroup);
-
-    //! @brief returns the number of constraint equations
-    //! @return number of constraints
-    int GetNumConstraintEquations()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

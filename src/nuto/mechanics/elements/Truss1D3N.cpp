@@ -67,6 +67,20 @@ void NuTo::Truss1D3N::ReorderNodes()
     this->mNodes[2] = tmp;
 }
 
+//! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+//! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+void NuTo::Truss1D3N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
+{
+    for (int count=0; count<3; count++)
+    {
+        if (this->mNodes[count]==rOldPtr)
+        {
+            this->mNodes[count]=rNewPtr;
+            break;
+        }
+    }
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Truss1D3N::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

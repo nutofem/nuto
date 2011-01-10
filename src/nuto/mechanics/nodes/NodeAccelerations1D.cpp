@@ -48,6 +48,14 @@ std::string NuTo::NodeAccelerations1D::GetNodeTypeStr()const
 	return std::string("NodeAccelerations1D");
 }
 
+//! @brief returns the type of node as an enum (all the data stored at the node)
+//! @return enum
+NuTo::Node::eNodeType NuTo::NodeAccelerations1D::GetNodeType()const
+{
+    return NuTo::Node::NodeAccelerations1D;
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive

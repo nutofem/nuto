@@ -6,6 +6,10 @@
 
 void NuTo::StructureBase::GroupInfo(int rVerboseLevel)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     std::cout << "number of groups  : " << mGroupMap.size() << std::endl;
     if (rVerboseLevel>2)
     {
@@ -16,6 +20,11 @@ void NuTo::StructureBase::GroupInfo(int rVerboseLevel)const
             std::cout <<  std::endl;
         }
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupInfo] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
 }
 
@@ -38,6 +47,10 @@ int NuTo::StructureBase::GroupGetId(GroupBase* rGroup)const
 //! @return ... rIdent identifier for the group
 int NuTo::StructureBase::GroupCreate(const std::string& rType)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
 	//find unused integer id
 	int groupNumber(mGroupMap.size());
 	boost::ptr_map<int,GroupBase>::iterator it = mGroupMap.find(groupNumber);
@@ -66,6 +79,11 @@ int NuTo::StructureBase::GroupCreate(const std::string& rType)
 			throw MechanicsException("[NuTo::StructureBase::GroupCreate] Group type not implemented.");
 		}
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupCreate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
     return groupNumber;
 }
@@ -96,7 +114,10 @@ void NuTo::StructureBase::GroupCreate(int id, NuTo::Groups::eGroupId rEnumType)
 //! @param ... rIdent identifier for the group
 void NuTo::StructureBase::GroupDelete(int rIdentGroup)
 {
-
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     // find group in map
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == this->mGroupMap.end())
@@ -108,6 +129,11 @@ void NuTo::StructureBase::GroupDelete(int rIdentGroup)
         // delete load from map
         this->mGroupMap.erase(itGroup);
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Adds a node to a node group
@@ -115,6 +141,10 @@ void NuTo::StructureBase::GroupDelete(int rIdentGroup)
 //! @param ... rIdentNode  identifier for the node
 void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] Group with the given identifier does not exist.");
@@ -122,6 +152,11 @@ void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] A node can be added only to a node group.");
 
     itGroup->second->AddMember(NodeGetNodePtr(rIdNode));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
@@ -131,7 +166,11 @@ void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
 //! @param ... rMax ... maximum value
 void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax)
 {
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+   boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=Groups::Nodes)
@@ -166,6 +205,11 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     	if (coordinates[rDirection]>=rMin && coordinates[rDirection]<=rMax)
             itGroup->second->AddMember(nodePtr);
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddNodeCoordinateRange] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Adds a node to a node group
@@ -173,6 +217,10 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
 //! @param ... rIdentNode  identifier for the node
 void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] Group with the given identifier does not exist.");
@@ -180,6 +228,11 @@ void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group.");
 
     itGroup->second->AddMember(ElementGetElementPtr(rIdElement));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief ... Unites two groups and stores the result in a new group
@@ -188,6 +241,10 @@ void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
 //! @result ... rIdentGroupResult identifier for the created result group
 int NuTo::StructureBase::GroupUnion(int rIdentGroup1, int rIdentGroup2)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group1 with the given identifier does not exist.");
@@ -205,6 +262,11 @@ int NuTo::StructureBase::GroupUnion(int rIdentGroup1, int rIdentGroup2)
 	}
     // insert the member
     mGroupMap.insert(groupNumber, (*itGroup1).second->Unite((*itGroup2).second));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupUnite] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
     return groupNumber;
 }
 
@@ -214,12 +276,16 @@ int NuTo::StructureBase::GroupUnion(int rIdentGroup1, int rIdentGroup2)
 //! @result ... rIdentGroupResult identifier for the created result group
 int NuTo::StructureBase::GroupDifference(int rIdentGroup1, int rIdentGroup2)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group1 with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::GroupDifference] Group1 with the given identifier does not exist.");
     boost::ptr_map<int,GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group2 with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::GroupDifference] Group2 with the given identifier does not exist.");
     //find unused integer id
 	int groupNumber(mGroupMap.size());
 	boost::ptr_map<int,GroupBase>::iterator it = mGroupMap.find(groupNumber);
@@ -231,6 +297,11 @@ int NuTo::StructureBase::GroupDifference(int rIdentGroup1, int rIdentGroup2)
 
     // insert the member
     mGroupMap.insert(groupNumber, (*itGroup1).second->Difference((*itGroup2).second));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupDifference] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
     return groupNumber;
 }
@@ -241,12 +312,16 @@ int NuTo::StructureBase::GroupDifference(int rIdentGroup1, int rIdentGroup2)
 //! @result ... rIdentGroupResult identifier for the created result group
 int NuTo::StructureBase::GroupIntersection(int rIdentGroup1, int rIdentGroup2)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group1 with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::GroupIntersection] Group1 with the given identifier does not exist.");
     boost::ptr_map<int,GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group2 with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::GroupIntersection] Group2 with the given identifier does not exist.");
 
     //find unused integer id
 	int groupNumber(mGroupMap.size());
@@ -259,6 +334,11 @@ int NuTo::StructureBase::GroupIntersection(int rIdentGroup1, int rIdentGroup2)
 
     // insert the member
     mGroupMap.insert(groupNumber, (*itGroup1).second->Intersection((*itGroup2).second));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupIntersection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
     return groupNumber;
 }
@@ -269,12 +349,16 @@ int NuTo::StructureBase::GroupIntersection(int rIdentGroup1, int rIdentGroup2)
 //! @result ... rIdentGroupResult identifier for the created result group
 int NuTo::StructureBase::GroupSymmetricDifference(int rIdentGroup1, int rIdentGroup2)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group1 with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::GroupSymmetricDifference] Group1 with the given identifier does not exist.");
     boost::ptr_map<int,GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupUnite] Group2 with the given identifier does not exist.");
+        throw MechanicsException("[NuTo::StructureBase::GroupSymmetricDifference] Group2 with the given identifier does not exist.");
 
     //find unused integer id
 	int groupNumber(mGroupMap.size());
@@ -287,6 +371,11 @@ int NuTo::StructureBase::GroupSymmetricDifference(int rIdentGroup1, int rIdentGr
 
     // insert the member
     mGroupMap.insert(groupNumber, (*itGroup1).second->SymmetricDifference((*itGroup2).second));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupSymmetricDifference] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
     return groupNumber;
 }
@@ -296,9 +385,18 @@ int NuTo::StructureBase::GroupSymmetricDifference(int rIdentGroup1, int rIdentGr
 //! @return ... number of members
 int NuTo::StructureBase::GroupGetNumMembers(int rIdentGroup)const
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupGetNumMembers] Group with the given identifier does not exist.");
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupGetNumMembers] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
     return (*itGroup).second->GetNumMembers();
 }
 

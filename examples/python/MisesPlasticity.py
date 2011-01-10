@@ -41,16 +41,16 @@ myStructure.ElementSetConstitutiveLaw(myElement1,myMat)
 
 #apply constraints of left boundary
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
-myStructure.ConstraintSetDisplacementNode(myNode2, direction, 0)
-myStructure.ConstraintSetDisplacementNode(myNode3, direction, 0)
-myStructure.ConstraintSetDisplacementNode(myNode6, direction, 0)
-myStructure.ConstraintSetDisplacementNode(myNode7, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode2, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode3, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode6, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode7, direction, 0)
 direction = nuto.DoubleFullMatrix(3,1,(0,1,0))
-myStructure.ConstraintSetDisplacementNode(myNode3, direction, 0)
-myStructure.ConstraintSetDisplacementNode(myNode7, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode3, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode7, direction, 0)
 direction = nuto.DoubleFullMatrix(3,1,(0,0,1))
-myStructure.ConstraintSetDisplacementNode(myNode6, direction, 0)
-myStructure.ConstraintSetDisplacementNode(myNode7, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode6, direction, 0)
+myStructure.ConstraintLinearSetDisplacementNode(myNode7, direction, 0)
 
 #create group of nodes at right boundary
 NodeGroupRightBoundary = myStructure.GroupCreate("Nodes")
@@ -61,7 +61,7 @@ myStructure.GroupAddNode(NodeGroupRightBoundary,myNode8)
 
 #apply displacement at right boundary
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
-constraint_right_side = myStructure.ConstraintSetDisplacementNodeGroup(NodeGroupRightBoundary, direction, 0)
+constraint_right_side = myStructure.ConstraintLinearSetDisplacementNodeGroup(NodeGroupRightBoundary, direction, 0)
 
 #initialize gnuplot
 #g = Gnuplot.Gnuplot(debug=1)
@@ -99,7 +99,7 @@ for i in range(0, num_steps):
     myStructure.NodeBuildGlobalDofs()
     
     if (numActiveDofs==0):
-        numActiveDofs = myStructure.NodeGetNumberActiveDofs()
+        numActiveDofs = myStructure.GetNumActiveDofs()
         intForceVector.Resize(numActiveDofs,1)
         displacementVector.Resize(numActiveDofs,1)
 

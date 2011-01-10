@@ -25,7 +25,10 @@ public:
 
 	virtual ~ElementDataIpBase();
 
-	//! @brief sets the integration type of an element
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    void SetFineScaleModel(int rIp, std::string rFileName);
+
+    //! @brief sets the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
     //! @param rElement pointer to element

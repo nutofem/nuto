@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "nuto/math/dlapack.h"
 #include "nuto/math/Matrix.h"
 #include "nuto/math/FullMatrix.h"
 namespace NuTo
@@ -193,14 +194,157 @@ void FullMatrix<double>::ImportFromVtkASCIIFile(const char* rfileName)
 
 //! @brief elementwise absolute value of the matrix
 template<>
-FullMatrix<int> FullMatrix<int>::Abs()
+FullMatrix<int> FullMatrix<int>::Abs() const
 {
 	return FullMatrix<int> ( mEigenMatrix.cwise().abs() );
 }
 
 template<>
- FullMatrix<double> FullMatrix<double>::Abs()
+ FullMatrix<double> FullMatrix<double>::Abs() const
 {
 	return FullMatrix<double> ( mEigenMatrix.cwise().abs() );
+}
+
+template<>
+void FullMatrix<int>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
+{
+	throw MathException("[NuTo::FullMatrix::SolveCholeskyLapack] not implemented for integer data-type.");
+}
+
+template<>
+void FullMatrix<double>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
+{
+	// check matrix
+	if(this->GetNumColumns() != this->GetNumRows())
+	{
+		throw MathException("[NuTo::FullMatrix::SolveCholeskyLapack] invalid shape of the coefficient matrix.");
+	}
+	if(this->GetNumColumns() < 1)
+	{
+		throw MathException("[NuTo::FullMatrix::SolveCholeskyLapack] invalid dimension of the coefficient matrix.");
+	}
+	// check right-hand-side vectors
+	if(this->GetNumRows() != rRHS.GetNumRows())
+	{
+		throw MathException("[NuTo::FullMatrix::SolveCholeskyLapack] invalid number of rows in right-hand-side matrix.");
+	}
+	if(rRHS.GetNumColumns() < 1)
+	{
+		throw MathException("[NuTo::FullMatrix::SolveCholeskyLapack] invalid number of columns in right-hand-side matrix.");
+	}
+
+	// copy coefficient matrix and perform cholesky factorization
+	FullMatrix<double> choleskyMatrix(this->mEigenMatrix);
+	int dimCholeskyMatrix = choleskyMatrix.GetNumColumns();
+	char uplo('L');
+	int info(0);
+	dpotrf_(&uplo, &dimCholeskyMatrix, choleskyMatrix.mEigenMatrix.data(), &dimCholeskyMatrix, &info);
+	if(info != 0)
+	{
+		std::string errorMessage("[NuTo::FullMatrix::SolveCholeskyLapack] Error calculating Cholesky factorization.");
+		if(info < 1)
+		{
+			info *= -1;
+			std::stringstream infoStream;
+			infoStream << info;
+			errorMessage += " The "+infoStream.str()+"-th argument had an illegal value.";
+		}
+		else
+		{
+			std::stringstream infoStream;
+			infoStream << info;
+			errorMessage += " The leading minor of order "+infoStream.str()+"is not positive definite.";
+		}
+		throw MathException(errorMessage);
+	}
+
+	// copy right-hand-side matrix and solve linear system of equations using factorized choolesky matrix
+	rSolution = rRHS;
+	int numRHSVectors = rSolution.GetNumColumns();
+	dpotrs_(&uplo, &dimCholeskyMatrix, &numRHSVectors, choleskyMatrix.mEigenMatrix.data(), &dimCholeskyMatrix, rSolution.mEigenMatrix.data(), &dimCholeskyMatrix, &info);
+	if(info != 0)
+	{
+		std::string errorMessage("[NuTo::FullMatrix::SolveCholeskyLapack] Error solving linear system of equations.");
+		std::stringstream infoStream;
+		infoStream << -1*info;
+		errorMessage += " The "+infoStream.str()+"-th argument had an illegal value.";
+		throw MathException(errorMessage);
+	}
+}
+
+template<>
+void FullMatrix<int>::InverseCholeskyLapack(FullMatrix<double>& rInverse) const
+{
+	throw MathException("[FullMatrix::InverseCholeskyLapack] not implemented for integer data-type.");
+}
+
+template<>
+void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) const
+{
+	// check matrix
+	if(this->GetNumColumns() != this->GetNumRows())
+	{
+		throw MathException("[NuTo::FullMatrix::InverseCholeskyLapack] invalid shape of the coefficient matrix.");
+	}
+	if(this->GetNumColumns() < 1)
+	{
+		throw MathException("[NuTo::FullMatrix::InverseCholeskyLapack] invalid dimension of the coefficient matrix.");
+	}
+
+	// copy matrix and perform cholesky factorization
+	rInverse = *this;
+	int dimMatrix = rInverse.GetNumColumns();
+	char uplo('L');
+	int info(0);
+	dpotrf_(&uplo, &dimMatrix, rInverse.mEigenMatrix.data(), &dimMatrix, &info);
+	if(info != 0)
+	{
+		std::string errorMessage("[NuTo::FullMatrix::InverseCholeskyLapack] Error calculating Cholesky factorization.");
+		if(info < 1)
+		{
+			info *= -1;
+			std::stringstream infoStream;
+			infoStream << info;
+			errorMessage += " The "+infoStream.str()+"-th argument had an illegal value.";
+		}
+		else
+		{
+			std::stringstream infoStream;
+			infoStream << info;
+			errorMessage += " The leading minor of order "+infoStream.str()+"is not positive definite.";
+		}
+		throw MathException(errorMessage);
+	}
+
+	// calculate inverse matrix
+	dpotri_(&uplo, &dimMatrix, rInverse.mEigenMatrix.data(), &dimMatrix, &info);
+	if(info != 0)
+	{
+		std::string errorMessage("[NuTo::FullMatrix::InverseCholeskyLapack] Error calculating inverse matrix.");
+		if(info < 1)
+		{
+			info *= -1;
+			std::stringstream infoStream;
+			infoStream << info;
+			errorMessage += " The "+infoStream.str()+"-th argument had an illegal value.";
+		}
+		else
+		{
+			std::stringstream infoStream;
+			infoStream << info;
+			errorMessage += " The ("+infoStream.str()+","+infoStream.str()+")-th element of the factor U or L is zero, and the inverse could not be computed.";
+		}
+		throw MathException(errorMessage);
+	}
+
+	// copy values from lower triangle to upper triangle
+	double* data = rInverse.mEigenMatrix.data();
+	for(int col = 1; col < dimMatrix; col++)
+	{
+		for(int row = 0; row < col; row++)
+		{
+			data[col * dimMatrix + row] = data[row * dimMatrix + col];
+		}
+	}
 }
 }

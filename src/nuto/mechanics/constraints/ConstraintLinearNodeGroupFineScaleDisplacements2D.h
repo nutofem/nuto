@@ -1,8 +1,9 @@
-// $Id$
+// $Id: ConstraintNodeGroupFineScaleDisplacements2D.h 314 2010-09-27 16:31:43Z unger3 $
 
-#ifndef CONSTRAINTNODEGROUPDISPLACEMENTS3D_H
-#define CONSTRAINTNODEGROUPDISPLACEMENTS3D_H
+#ifndef CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
+#define CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
 
+#include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
 
 namespace NuTo
@@ -13,9 +14,9 @@ class Group;
 template <class T>
 class FullMatrix;
 //! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... class for all displacement constraints applied to a group of nodes in 3D
-class ConstraintNodeGroupDisplacements3D : public ConstraintNodeGroup
+//! @date October 2010
+//! @brief ... class for all displacement constraints applied to a group of nodes in 2D
+class ConstraintLinearNodeGroupFineScaleDisplacements2D : public ConstraintNodeGroup, public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -25,7 +26,17 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    ConstraintLinearNodeGroupFineScaleDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
+
+    //! @brief returns the number of constraint equations
+    //! @return number of constraints
+    int GetNumLinearConstraints()const;
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    NuTo::ConstraintLinear* AsConstraintLinear();
+
+    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+    const NuTo::ConstraintLinear* AsConstraintLinear()const;
 
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
@@ -49,16 +60,16 @@ public:
 
 protected:
     //! @brief ... just for serialize
-    ConstraintNodeGroupDisplacements3D(){};
+    ConstraintLinearNodeGroupFineScaleDisplacements2D(){};
 
     //! @brief prescribed displacement of the node
     double mValue;
     //! @brief direction of the applied constraint (normalized)
-    double mDirection[3];
+    double mDirection[2];
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeGroupDisplacements3D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEGROUPDISPLACEMENTS3D_H
+#endif //CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
 
