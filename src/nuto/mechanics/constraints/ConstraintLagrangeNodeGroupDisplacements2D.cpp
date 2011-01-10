@@ -47,7 +47,7 @@ int NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetNumLagrangeMultipliers(
 
 //! @brief returns the Lagrange Multiplier
 //! first col Lagrange, second column slack variables
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeGetMultiplier(FullMatrix<double>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const
 {
     rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
     for (unsigned int count=0; count<mLagrangeValue.size(); count++)

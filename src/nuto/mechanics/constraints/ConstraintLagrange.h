@@ -31,11 +31,11 @@ public:
     ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign);
 
     //! @brief destructor
-    ~ConstraintLagrange();
+    virtual ~ConstraintLagrange();
 
     //! @brief returns the Lagrange Multiplier
-    //! first col Lagrange, second column slack variables
-    virtual void GetLagrangeGetMultiplier(FullMatrix<double>& rLagrangeMultiplier)const=0;
+    //! first col Lagrange
+    virtual void GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const=0;
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine

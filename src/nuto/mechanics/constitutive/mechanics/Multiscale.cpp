@@ -644,24 +644,10 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
     EngineeringStrain2D deltaEngineeringStrain;
     deltaEngineeringStrain = engineeringStrain-prevStrain;
 
-    EngineeringStrain2D curEngineeringStrain(prevStrain+deltaEngineeringStrain*curStrainFactor);
-
-    //add constraint for alpha in case of norm of crack opening is less than prescribed lower limit otherwise remove constraint
-    fineScaleStructure->SetConstraintAlpha(curEngineeringStrain);
-
     //update conre mat
     fineScaleStructure->NodeBuildGlobalDofs();
 
-    //update dofs to ensure the constraints (alpha) are set
-    NuTo::FullMatrix<double> displacementsActiveDOFs;
-    NuTo::FullMatrix<double> displacementsDependentDOFs;
-    fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFs, displacementsDependentDOFs);
-    fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFs);
-
-    //set the total strain and calculate from the existing crack opening the homogeneous strain
-    fineScaleStructure->SetTotalEngineeringStrain(curEngineeringStrain);
-
-    //update tmpstatic data with previous displacements (not yet set to the currentStrain)
+    //update tmpstatic data with zero displacements
     fineScaleStructure->ElementTotalUpdateTmpStaticData();
 
     //init some auxiliary variables
@@ -680,13 +666,17 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
     {
         std::cout << "test of stiffness still included " << std::endl;
         NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
-        double interval(1e-6);
+        //std::cout<<"stiffness matrix" << std::endl;
+        //stiffnessMatrixCSRVector2Full.Info(10,3);
+        double interval(1e-7);
         NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
         NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
         NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
         NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
         double energy1,energy2;
         fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+        fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        fineScaleStructure->ElementTotalUpdateTmpStaticData();
         fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector1);
         energy1 = fineScaleStructure->ElementTotalGetTotalEnergy();
         for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
@@ -701,12 +691,12 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
             displacementsActiveDOFsCheck(count,0)-=interval;
         }
         fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-3)
+        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-2)
         {
             std::cout << "globalStiffnessMatrix algo" << std::endl;
-            stiffnessMatrixCSRVector2Full.Info(10);
+            stiffnessMatrixCSRVector2Full.Info(10,3);
             std::cout<< std::endl << "globalStiffnessMatrix cdf" << std::endl;
-            stiffnessMatrixCSRVector2_CDF.Info(10);
+            stiffnessMatrixCSRVector2_CDF.Info(10,3);
             std::cout<< std::endl << "error" << std::endl;
             (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Info(10);
             std::cout << "maximum error is " << (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max() << std::endl;
@@ -716,11 +706,29 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
             intForceVectorCDF.Trans().Info(10);
             throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
         }
+        else
+            std::cout << "stiffness is OK "<< std::endl;
+    }
+    //set the total strain and calculate from the existing crack opening the homogeneous strain
+    EngineeringStrain2D curEngineeringStrain(prevStrain+deltaEngineeringStrain*curStrainFactor);
+    fineScaleStructure->SetTotalEngineeringStrain(curEngineeringStrain);
+
+    //update conre mat
+    fineScaleStructure->NodeBuildGlobalDofs();
+
+    //update displacements of all nodes according to the new conre mat
+    {
+        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+        fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+        fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        fineScaleStructure->ElementTotalUpdateTmpStaticData();
     }
 
     // build global external load vector and RHS vector
     fineScaleStructure->BuildGlobalExternalLoadVector(extForceVector);
-    rhsVector = extForceVector + dispForceVector;
+    fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
+    rhsVector = extForceVector + dispForceVector - intForceVector;
 
     //calculate absolute tolerance for matrix entries to be not considered as zero
     double maxValue, minValue, ToleranceZeroStiffness;
@@ -734,17 +742,12 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
     int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
     //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
-    //update displacements of all nodes according to the new conre mat
-    {
-        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-        fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-        fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-        fineScaleStructure->ElementTotalUpdateTmpStaticData();
-    }
 
     //repeat until max displacement is reached
     bool convergenceStatusLoadSteps(false);
+    int loadstep(1);
+    NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
+    fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
     while (!convergenceStatusLoadSteps)
     {
 
@@ -791,6 +794,7 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
             {
                 //add new displacement state
                 displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
+                deltaDisplacementsActiveDOFs.Trans().Info(10,3);
                 fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFs);
                 fineScaleStructure->ElementTotalUpdateTmpStaticData();
 
@@ -798,11 +802,11 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
                 fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
                 rhsVector = extForceVector - intForceVector;
                 normResidual = rhsVector.Norm();
-                //std::cout << "alpha " << alpha << ", normResidual " << normResidual << ", normResidualInit "<< normRHS << ", normRHS*(1-0.5*alpha) " << normRHS*(1-0.5*alpha) << std::endl;
+                std::cout << "alpha " << alpha << ", normResidual " << normResidual << ", normResidualInit "<< normRHS << ", normRHS*(1-0.5*alpha) " << normRHS*(1-0.5*alpha) << std::endl;
                 alpha*=0.5;
             }
-            while(alpha>1e-3 && normResidual>normRHS*(1-0.5*alpha) && normResidual>1e-5);
-            if (normResidual>normRHS*(1-0.5*alpha) && normResidual>1e-5)
+            while(alpha>1e-3 && normResidual>normRHS*(1-0.5*alpha) && normResidual>rTolerance);
+            if (normResidual>normRHS*(1-0.5*alpha) && normResidual>rTolerance)
             {
                 convergenceStatus=2;
                 break;
@@ -831,7 +835,7 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
             std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
         }
 
-        if (deltaStrainFactor==0)
+        if (deltaStrainFactor<1e-7)
             throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence, delta strain factor < 1e-7");
 
         if (convergenceStatus==1)
@@ -846,14 +850,18 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
 //            this->Save(mIPName+std::string("bin"),"BINARY");
 //#endif // ENABLE_SERIALIZATION
 
+            fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
             if (curStrainFactor==1)
             {
                 convergenceStatusLoadSteps=true;
             }
             else
             {
-                fineScaleStructure->Save(rStringStreamBeforeSolve);
-                rStringStreamBeforeSolveWritten=true;
+                if (rStringStreamBeforeSolveWritten==false)
+                {
+                    fineScaleStructure->Save(rStringStreamBeforeSolve);
+                    rStringStreamBeforeSolveWritten=true;
+                }
 
                 // the update is only required to allow for a stepwise solution procedure in the fine scale model
                 // a final update is only required for an update on the macroscale, otherwise,the original state has
@@ -881,6 +889,7 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
                 //char cDummy[100]="";
                 //std::cin.getline(cDummy, 100);
             }
+            loadstep++;
         }
         else
         {
@@ -898,18 +907,13 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
             fineScaleStructure->NodeBuildGlobalDofs();
 
             //set previous converged displacements
-            NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-            NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-            fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-            fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+            fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
             fineScaleStructure->ElementTotalUpdateTmpStaticData();
-
-            // calculate previous residual (should be almost zero)
-            fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
 
             //decrease load step
             deltaStrainFactor*=0.5;
             curStrainFactor+=deltaStrainFactor;
+            curEngineeringStrain = prevStrain + deltaEngineeringStrain * curStrainFactor;
 
             //check for minimum delta (this mostly indicates an error in the software
             if (deltaStrainFactor<MIN_DELTA_STRAIN_FACTOR)
@@ -947,6 +951,12 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
             fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
             fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
             fineScaleStructure->ElementTotalUpdateTmpStaticData();
+
+            // calculate initial residual for next load step
+            fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
+
+            //update rhs vector for next Newton iteration
+            rhsVector = dispForceVector + extForceVector - intForceVector;
         }
     }
 }

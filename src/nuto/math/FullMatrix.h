@@ -742,6 +742,14 @@ public:
     //! @param rInverse ... inverse matrix
     void InverseCholeskyLapack(FullMatrix<double>& rInverse) const;
 
+    //! @brief calculates the eigenvalues
+    //! @param rEigenValues ... eigenvalues
+    void EigenValuesSymmetric(FullMatrix<double>& rEigenValues)const;
+
+    //! @brief calculates the eigenvectors
+    //! @param rEigenVectors ... eigenvectors
+    void EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors)const;
+
     //! @brief ... imports a matrix from a SLang ASCII file
     //! @param fileName ... file name
     virtual void ImportFromSLangText ( const char* fileName );

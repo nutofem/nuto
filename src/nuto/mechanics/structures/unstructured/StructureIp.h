@@ -5,6 +5,9 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/array.hpp>
+#else
+#include <boost/array.hpp>
 #endif //Serialize
 
 #include <boost/ptr_container/ptr_map.hpp>
@@ -177,11 +180,24 @@ public:
     //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
     void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,3> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
 
-    //! @briefset the total strain
+    //! @brief set the total strain
     void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
 
     //! @brief add constraint equation for alpha in case of norm of crackopening less than a prescribed value
     void SetConstraintAlpha(EngineeringStrain2D& rTotalEngineeringStrain);
+
+    //! @brief just for testing
+    void SetGlobalCrackOpening(boost::array<double,2> ptr)const
+    {
+        const_cast<StructureIp*>(this)->mCrackOpening[0] = ptr[0];
+        const_cast<StructureIp*>(this)->mCrackOpening[1] = ptr[1];
+    }
+
+    //! @brief just for testing
+    void SetCrackAngle(double alpha)const
+    {
+        const_cast<StructureIp*>(this)->mCrackAngle = alpha;
+    }
 
     //! @brief return the total strain
     NuTo::EngineeringStrain2D GetTotalStrain()const;
@@ -211,6 +227,22 @@ public:
     {
         return mDOFCrackAngle;
     }
+
+    double GetCrackAngle()const
+    {
+        return mCrackAngle;
+    }
+
+    boost::array<int,2> GetDofGlobalCrackOpening2D()const
+    {
+        return mDOFCrackOpening;
+    }
+
+    boost::array<double,2> GetGlobalCrackOpening2D()const
+    {
+        return mCrackOpening;
+    }
+
 protected:
     //! @brief ... standard constructor just for the serialization routine
     StructureIp()
@@ -228,8 +260,8 @@ protected:
 
     double mCrackAngle;
     int mDOFCrackAngle;
-    double mCrackOpening[2];
-    int mDOFCrackOpening[2];
+    boost::array<double,2> mCrackOpening;
+    boost::array<int,2> mDOFCrackOpening;
     EngineeringStrain2D mEpsilonTot;
     EngineeringStrain2D mEpsilonHom;
     int mConstraintFineScaleX;

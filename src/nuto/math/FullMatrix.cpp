@@ -7,6 +7,8 @@
 #include "nuto/math/dlapack.h"
 #include "nuto/math/Matrix.h"
 #include "nuto/math/FullMatrix.h"
+#include <eigen2/Eigen/QR>
+
 namespace NuTo
 {
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
@@ -347,4 +349,40 @@ void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) con
 		}
 	}
 }
+
+//! @brief calculates the eigenvalues
+//! @param rEigenValues ... eigenvalues
+template<>
+void FullMatrix<int>::EigenValuesSymmetric(FullMatrix<double>& rEigenValues) const
+{
+    throw MathException("[FullMatrix::EigenValues] not implemented for integer data-type.");
+}
+
+//! @brief calculates the eigenvalues of a symmetric matrix
+//! attention, of the matrix is not self adjoint (symmetric for real matrices), the result is wrong
+//! @param rEigenValues ... eigenvalues
+template<>
+void FullMatrix<double>::EigenValuesSymmetric(FullMatrix<double>& rEigenValues) const
+{
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver(mEigenMatrix,false);
+    rEigenValues = FullMatrix<double>(mySolver.eigenvalues());
+}
+
+//! @brief calculates the eigenvalues
+//! @param rEigenValues ... eigenvalues
+template<>
+void FullMatrix<int>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) const
+{
+    throw MathException("[FullMatrix::EigenValues] not implemented for integer data-type.");
+}
+
+//! @brief calculates the eigenvalues
+//! @param rEigenValues ... eigenvalues
+template<>
+void FullMatrix<double>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) const
+{
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver(mEigenMatrix);
+    rEigenVectors = FullMatrix<double>(mySolver.eigenvectors());
+}
+
 }

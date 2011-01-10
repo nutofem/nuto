@@ -35,7 +35,7 @@ class Group : public GroupBase, public std::set<T*>
 public:
     //! @brief constructor
     Group() : GroupBase(), std::set<T*>(){};
-    
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

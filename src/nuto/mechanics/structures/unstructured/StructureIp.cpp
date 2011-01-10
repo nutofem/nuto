@@ -20,6 +20,8 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackAngle.h"
+#include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackOpening2D.h"
+#include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackAngle2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
 #include "nuto/mechanics/structures/unstructured/StructureIp.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -45,8 +47,8 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
         throw MechanicsException("[NuTo::StructureIp::StructureIp] The concurrent multiscale model is only implemented for 2D.");
     mCrackAngle = M_PI*(-0.2);
     mDOFCrackAngle = -1;
-    mCrackOpening[0] = 0.0;
-    mCrackOpening[1] = 0.0;
+    mCrackOpening[0] = -0.1;
+    mCrackOpening[1] = -0.1;
     mDOFCrackOpening[0] = -1;
     mDOFCrackOpening[1] = -1;
     mEpsilonHom.mEngineeringStrain[0] = 0.;
@@ -60,6 +62,35 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
     mCrackTransitionZone = 0.;
     mBoundaryNodesTransformed = false;
     mIPName = std::string("fineScaleIp");
+
+    //add constraint equation to avoid negative normal Crack opening
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    ConstraintLagrangeGlobalCrackOpening2D *mConst = new NuTo::ConstraintLagrangeGlobalCrackOpening2D(this);
+
+    mConstraintMap.insert(id, mConst);
+
+    //add constraint equation to avoid singular stiffness for zero crack opening (because then the angle has no influence)
+    //find unused integer id
+    id = 1;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    ConstraintLagrangeGlobalCrackAngle2D *mConst2 = new NuTo::ConstraintLagrangeGlobalCrackAngle2D(this);
+
+    mConstraintMap.insert(id, mConst2);
+
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
@@ -547,6 +578,8 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
 
         elementIter++;
     }
+    //write contribution of Lagrange Multipliers
+    ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -825,6 +858,8 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         }
         elementIter++;
     }
+    //write contribution of Lagrange Multipliers
+    ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -1241,6 +1276,7 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         }
         elementIter++;
     }
+    ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
 }
 
 //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening and crack orientation

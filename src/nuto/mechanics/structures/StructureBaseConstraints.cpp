@@ -1148,7 +1148,7 @@ void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo
         if (it->second->GetNumLagrangeMultipliers()>0)
         {
             const ConstraintLagrange* constraintPtr (it->second->AsConstraintLagrange());
-            constraintPtr->GetLagrangeGetMultiplier(rMultiplier);
+            constraintPtr->GetLagrangeMultiplier(rMultiplier);
         }
         else
             throw MechanicsException("[NuTo::StructureBase::ConstraintLagrangeGetMultiplier] constraint has no Lagrange multipliers.");

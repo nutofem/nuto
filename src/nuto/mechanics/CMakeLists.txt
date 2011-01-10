@@ -48,6 +48,8 @@ constraints/ConstraintEquationTerm.cpp
 constraints/ConstraintLagrange.cpp
 constraints/ConstraintLagrangeNodeGroupDisplacements1D.cpp
 constraints/ConstraintLagrangeNodeGroupDisplacements2D.cpp
+constraints/ConstraintLagrangeGlobalCrackAngle2D.cpp
+constraints/ConstraintLagrangeGlobalCrackOpening2D.cpp
 constraints/ConstraintLinear.cpp
 constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
 constraints/ConstraintLinearGlobalCrackAngle.cpp

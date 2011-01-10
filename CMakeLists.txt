@@ -23,7 +23,7 @@ OPTION(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 OPTION(ENABLE_EXAMPLES "enables examples" TRUE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
-OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" FALSE)
+OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 
 IF(ENABLE_METAMODEL)
     SET(ENABLE_OPTIMIZE TRUE)
