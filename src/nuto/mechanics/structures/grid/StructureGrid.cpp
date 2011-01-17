@@ -423,7 +423,7 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
 	corners[7] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
 	if (mVerboseLevel>4)
 	{
-	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
+	    std::cout<<__FILE__<<" "<<__LINE__<<" Ecken: "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
 	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
 	}
 }

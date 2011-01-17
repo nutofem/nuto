@@ -8,15 +8,15 @@
 #include "nuto/optimize/OptimizeException.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 
-//#include "nuto/mechanics/structures/grid/StructureGrid.h"
-
-
 namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
 //! @brief ... standard class for element-by-element based conjugate gradient method
-class StructureGrid;
+#ifdef ENABLE_MECHANICS
+	class StructureGrid;
+#endif // ENABLE_MECHANICS
+
 class ConjugateGradientLinear : public Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
@@ -87,15 +87,23 @@ public:
         mShowSteps = rShowSteps;
     }
 
+#ifdef ENABLE_MECHANICS
     inline void SetGridStructure(NuTo::StructureGrid* rpGrid)
     {
-    	mpGrid = rpGrid;
+			mpGrid = rpGrid;
+			throw OptimizeException ( "[ConjugstGradientLinear::SetGridStrucutre] Modul Mechanics is not loaded." );
     }
+#else
+    inline void SetGridStructure()
+    {
+		throw OptimizeException ( "[ConjugateGradientLinear::SetGridStrucutre] Modul Mechanics is not loaded." );
+    }
+#endif // ENABLE_MECHANICS
 
     void Hessian(NuTo::FullMatrix<double>&  rHessian)const;
     void HessianDiag(NuTo::FullMatrix<double>&  rHessian)const;
 
-    #ifdef ENABLE_SERIALIZATION
+#ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
     //! @param filename ... filename
     //! @param rType ... type of file, either BINARY, XML or TEXT
@@ -129,7 +137,11 @@ protected:
 	//! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
 	void CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled);
 
-	StructureGrid *mpGrid;
+
+	#ifdef ENABLE_MECHANICS
+		StructureGrid *mpGrid;
+	#endif // ENABLE_MECHANICS
+
 	double mAccuracyGradient;
 	double mMinDeltaObjBetweenRestarts;
 	int    mMaxGradientCalls;

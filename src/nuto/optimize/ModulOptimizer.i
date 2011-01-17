@@ -9,7 +9,6 @@
 #include "nuto/optimize/CallbackHandler.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/CallbackHandlerPython.h"
-//#inlcude "nuto/optimize/SolveGridStructure.h"
 #include "nuto/optimize/OptimizeException.h"
 %}
 
@@ -27,4 +26,3 @@
 %include "nuto/optimize/Optimizer.h"
 %include "nuto/optimize/ConjugateGradientLinear.h"
 %include "nuto/optimize/ConjugateGradientNonLinear.h"
-//%inlcude "nuto/optimize/SolveGridStructure.h"

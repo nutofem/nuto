@@ -2,7 +2,6 @@
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
@@ -28,7 +27,7 @@ int NuTo::ConjugateGradientLinear::Optimize()
 	double alpha,
 		   beta,
 		   normGradient,
-		   alphaNumerator,
+		   alphaNumerator=0,
 		   alphaDenominator,
 		   betaNumerator;
 
@@ -50,7 +49,7 @@ int NuTo::ConjugateGradientLinear::Optimize()
 	Eigen::VectorXd searchDirectionScaled(GetNumParameters());
 	Eigen::VectorXd searchDirectionOrig(GetNumParameters());
 
-	std::cout<< __FILE__<<" "<<__LINE__<< " Para "<< GetNumParameters() << " oder numdofs "<<mpGrid->GetNumActiveDofs()<<std::endl;
+	std::cout<< __FILE__<<" "<<__LINE__<< " Para "<< GetNumParameters() << std::endl;
 	bool converged(false);
 	double mAccuracyGradientScaled = mAccuracyGradient*sqrt(GetNumParameters());
 	SetMaxGradientCalls(GetNumParameters()*GetNumParameters());
@@ -324,8 +323,6 @@ void NuTo::ConjugateGradientLinear::CalcScalingFactors(int& numHessianCalls,NuTo
         	scaleFactorsInv(count) = 1.;
         }
     }
-    std::cout << std::endl;
-
 }
 void NuTo::ConjugateGradientLinear::Hessian(NuTo::FullMatrix<double>& rHessian)const
 {
@@ -337,6 +334,7 @@ void NuTo::ConjugateGradientLinear::Hessian(NuTo::FullMatrix<double>& rHessian)c
 
 void NuTo::ConjugateGradientLinear::HessianDiag(NuTo::FullMatrix<double>& rHessian)const
 {
+#ifdef ENABLE_MECHANICS
 	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine ConjugateGradientLinear::HessianDiag"<<std::endl;
     int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
@@ -398,10 +396,15 @@ void NuTo::ConjugateGradientLinear::HessianDiag(NuTo::FullMatrix<double>& rHessi
         // but not yet?
         //rHessian.ElementwiseInverse();
     }
+//#else
+	//throw OptimizeException ( "[ConjugateGradientLinear::HessianDiag] Modul Mechanics is not loaded." );
+#endif // ENABLE_MECHANICS
 }
+
 //! @brief ... calculate start gradient in element-by-element way
 void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
 {
+#ifdef ENABLE_MECHANICS
 	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateStartGradient"<<std::endl;
     int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
@@ -484,12 +487,16 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
         gradientOrig+=force;
 
     }
+#else
+	throw OptimizeException ( "[ConjugateGradientLinear::CalculateStartGradient] Modul Mechanics is not loaded." );
+#endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate matix-vector product in element-by-element way
 //! @brief ... multiply each element matrix with search direction
 void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector)
 {
+#ifdef ENABLE_MECHANICS
 	//check if mvParamters is initialized
 	if (!&mvParameters)
  		throw OptimizeException("[ConjugateGradientLinear::GetStartGradient] mvParameters not initialized.");
@@ -573,11 +580,15 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
         		returnVector(dofs[count],0) += locReturn(count,0);
         }
     }
+#else
+		throw OptimizeException ( "[ConjugateGradientLinear::CalculateMatrixVectorEBE] Modul Mechanics is not loaded." );
+#endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
 void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
 {
+#ifdef ENABLE_MECHANICS
 	std::cout<<__FILE__<<" "<<__LINE__<<" "<<"in CalculateScaledSearchDirection"<<std::endl;
 	   int numElems=mpGrid->GetNumElements();
 	    NuTo::FullMatrix<int> *voxelLoc;
@@ -649,6 +660,10 @@ void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::Vector
 	       }
 	    }
 		searchDirectionScaled = activeReturn.mEigenMatrix;
+#else
+ 	throw OptimizeException ( "[ConjugateGradientLinear::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
+
+#endif // ENABLE_MECHANICS
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -2,7 +2,6 @@
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeDisplacements3D.h"
 
 #ifdef ENABLE_SERIALIZATION
@@ -345,7 +344,12 @@ int main()
         myOptimizer.SetVerboseLevel(3);
         myOptimizer.SetParameters(startVector);
         std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set"<<std::endl;
+#ifdef ENABLE_MECHANICS
         myOptimizer.SetGridStructure(&myGrid);
+//#else
+  //      myOptimizer.SetGridStructure();
+#endif // ENABLE_MECHANICS
+
         std::cout<<__FILE__<<" "<<__LINE__<<"  Grid set"<<std::endl;
 
         NuTo::FullMatrix<double> returnVector(myGrid.GetNumActiveDofs(),1);
@@ -403,16 +407,9 @@ int main()
 
 
     }
-    catch (NuTo::MechanicsException& e)
+    catch (NuTo::Exception& e)
     {
-        e.AddMessage("[NuTo::StructureGrid3D] error.");
-        std::cerr<<e.ErrorMessage()<<std::endl;
-        return -1;
-    }
-    catch(...)
-    {
-        throw NuTo::MechanicsException("[NuTo::StructureGrid3D] Unknown error catched .");
+        std::cout << e.ErrorMessage() << std::endl;
     }
     return 0;
-
 }
