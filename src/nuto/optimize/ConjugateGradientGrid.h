@@ -1,5 +1,5 @@
-#ifndef CONJUGATE_GRADIENT_LINEAR_H
-#define CONJUGATE_GRADIENT_LINEAR_H
+#ifndef CONJUGATE_GRADIENT_GRID_H
+#define CONJUGATE_GRADIENT_GRID_H
 
 #include <vector>
 #include "nuto/math/FullMatrix.h"
@@ -17,14 +17,14 @@ namespace NuTo
 	class StructureGrid;
 #endif // ENABLE_MECHANICS
 
-class ConjugateGradientLinear : public Optimizer
+class ConjugateGradientGrid : public Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    ConjugateGradientLinear(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
+    ConjugateGradientGrid(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
     {
         mAccuracyGradient = 1e-6;
         mMinDeltaObjBetweenRestarts = 1e-6;
@@ -95,7 +95,7 @@ public:
 #else
     inline void SetGridStructure()
     {
-		throw OptimizeException ( "[ConjugateGradientLinear::SetGridStructure] Modul Mechanics is not loaded." );
+		throw OptimizeException ( "[ConjugateGradientGrid::SetGridStructure] Modul Mechanics is not loaded." );
     }
 #endif // ENABLE_MECHANICS
 
@@ -151,4 +151,4 @@ protected:
 
 };
 } // namespace NuTo
-#endif // CONJUGATE_GRADIENT_LINEAR_H
+#endif // CONJUGATE_GRADIENT_GRID_H

@@ -2,7 +2,7 @@
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeDisplacements3D.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
@@ -18,12 +18,11 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
-#include "nuto/optimize/ConjugateGradientLinear.h"
+#include "nuto/optimize/ConjugateGradientGrid.h"
 
 int main()
 {
     //   int readFlag = false;
-
     double PoissonsRatio = 0.2;
     //for local base stiffness matrix
     double YoungsModulus = 1.;
@@ -54,7 +53,7 @@ int main()
         //RB
         //double Force = 1.;
         bool EnableDisplacementControl = true;
-        double BoundaryDisplacement = 0.1;
+        double BoundaryDisplacement = 50;
 
         //calculate one element stiffness matrix with E=1
         NuTo::Structure myHelpStruc(3);
@@ -127,7 +126,7 @@ int main()
         myHelpStruc.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
 
         stiffnessMatrix.RemoveZeroEntries(0,1e-14);
-        stiffnessMatrix.Info();
+         stiffnessMatrix.Info();
         //NuTo::FullMatrix A(stiffnessMatrix);
         //A.WriteToFile("$HOME/develop/nuto/stiffnessMatrix.txt"," ");
 
@@ -146,12 +145,19 @@ int main()
         NuTo::FullMatrix<double> myMapColorModul(255,1);
         count=0;
         for(count=0;count<131;count++)
-            myMapColorModul(count,0)=0;
+//            myMapColorModul(count,0)=0;
+            myMapColorModul(count,0)=1000;
         for(count=131;count<161;count++)
-            myMapColorModul(count,0)=8300.;
+            //myMapColorModul(count,0)=8300.;
+            myMapColorModul(count,0)=1000.;
         for (count=161;count<255;count++)
-            myMapColorModul(count,0)=11500.;
+            //myMapColorModul(count,0)=11500.;
+            myMapColorModul(count,0)=1000.;
+
         //myMapColorModul.WriteToFile("$HOME/develop/nuto/MapColorModul.txt"," ");
+        //generiert Knoten, Freiheitsgrade noch nicht gesetzt
+
+
          myGrid.CreateElementGrid(stiffnessMatrix,myMapColorModul,"VOXEL8N");
         std::cout<<"ElementGrid created"<<std::endl;
 
@@ -166,34 +172,56 @@ int main()
         direction(2,0)= 0;
         std::cout<<"num nodes "<<myGrid.GetNumNodes()<<std::endl;
 
-      for(int zCount = 0; zCount < NumElementsZ + 1; zCount++)
-        {
-            for(int yCount = 0; yCount < NumElementsY + 1; yCount++)
-            {
-                int node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1);
-                int myNodeNumber;
-                int flag=0;
-                try
-                {
-                    myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
-                }
-                catch(NuTo::MechanicsException& e)
-                {
-                    flag=1;
-                }
-                if(flag==0)
-                     myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
-            }
+        int myNodeNumber=0;
+		for (int count = 0;count<myGrid.GetNumNodes();count= count + (NumElementsX + 1))
+		{
+			std::cout<<__FILE__<<" "<<__LINE__<<" node constraint "<< count <<std::endl;
+		   try
+			{
+				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
+				myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
+			}
+			catch(NuTo::MechanicsException& e)
+			{}
         }
-        direction(0,0)= 0;
+
+		direction(0,0)= 0;
         direction(1,0)= 0;
         direction(2,0)= 1;
-        myGrid.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-        myGrid.ConstraintLinearSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0);
-        direction(0,0)= 0;
+//		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1);++count)
+		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		{
+            std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
+			try
+			{
+				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
+				myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
+			}
+			catch(NuTo::MechanicsException& e)
+			{}
+
+		}
+
+		direction(0,0)= 0;
         direction(1,0)= 1;
         direction(2,0)= 0;
-        myGrid.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+        for (int countY = 0; countY < (NumElementsY); ++countY)
+        {
+//			for (int count = 0;count<(NumElementsX + 1);++count)
+			for (int count = 0;count<(NumElementsX + 1)*(NumElementsY+1);++count)
+			{
+				int node = count+countY*(NumElementsX + 1)*(NumElementsY + 1);
+				std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< node <<std::endl;
+				try
+				{
+					myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
+					myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
+				}
+				catch(NuTo::MechanicsException& e)
+				{}
+			}
+
+        }
 
         // apply nodes
         if(EnableDisplacementControl)
@@ -203,6 +231,11 @@ int main()
             direction(0,0)= 1;
             direction(1,0)= 0;
             direction(2,0)= 0;
+            NuTo::FullMatrix<double> displacements(3,1);
+            displacements(0,0)= BoundaryDisplacement;
+            displacements(1,0)= 0;
+            displacements(2,0)= 0;
+
              for(int zCount = 0; zCount < NumElementsZ + 1; zCount++)
             {
                 //std::cout << zCount << std::endl;
@@ -221,13 +254,16 @@ int main()
                         flag=1;
                     }
                    if(flag==0)
+                   {
+						myGrid.NodeSetDisplacements(myNodeNumber, displacements);
                         myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, BoundaryDisplacement);
+                   }
                 }
             }
          }
         else
         {
-            std::cout << "Load control" << "not implemented"<<std::endl;
+            std::cout <<__FILE__<<" "<<__LINE__<< "Load control" << "not implemented"<<std::endl;
          /*   //! @TODO: Add special configurations if edge node not exist
             // apply load to nodes
             direction(0,0)= 1;
@@ -279,37 +315,58 @@ int main()
         // start analysis
         std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
         // build global dof numbering
+        myGrid.SetVerboseLevel(2);
         myGrid.NodeBuildGlobalDofs();
-        std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.NodeGetNumberGlobalDofs()<<std::endl;
-        std::cout<<__FILE__<<" "<<__LINE__<<" active dofs "<<myGrid.NodeGetNumberActiveDofs()<<std::endl;
 
-        myGrid.CalculateVoxelNumAndLocMatrix();
-		NuTo::FullMatrix<int>* voxelLocation=myGrid.GetVoxelNumAndLocMatrix();
-	    //std::cout<<__FILE__<<" "<<__LINE__<<" VoxelLocationmatrix: \n"<<voxelLocation<<std::endl;
+        std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.GetNumDofs()<<std::endl;
+        std::cout<<__FILE__<<" "<<__LINE__<<" active dofs "<<myGrid.GetNumActiveDofs()<<std::endl;
 
+        NuTo::FullMatrix<int> voxelLocation(myGrid.GetNumElements(),4);
+        int *dofs;
+        for (int n=0;n< myGrid.GetNumNodes();++n)
+        {
+        	NuTo::NodeBase* node=myGrid.NodeGetNodePtr(n);
+			dofs=node->GetGlobalDofs();
+        }
 
-        NuTo::CallbackHandlerGrid myCallback;
+         myGrid.CalculateVoxelNumAndLocMatrix(voxelLocation);
+	     //std::cout<<__FILE__<<" "<<__LINE__<<" VoxelLocationmatrix: \n"<<voxelLocation<< "\n\n"<<std::endl;
+
+       NuTo::CallbackHandlerGrid myCallback;
         std::cout<<__FILE__<<" "<<__LINE__<<"  callback crated"<<std::endl;
-        NuTo::ConjugateGradientLinear myOptimizer((unsigned int) myGrid.NodeGetNumberActiveDofs());
+        NuTo::ConjugateGradientGrid myOptimizer((unsigned int) myGrid.GetNumActiveDofs());
         std::cout<<__FILE__<<" "<<__LINE__<<"  optimizer created"<<std::endl;
-        NuTo::FullMatrix<double> startVector(myGrid.NodeGetNumberActiveDofs(),1);
+        NuTo::FullMatrix<double> startVector(myGrid.GetNumActiveDofs(),1);
         count=1;
-        for(int ii=0;ii<myGrid.NodeGetNumberActiveDofs(); ii++)
+        for(int ii=0;ii<myGrid.GetNumActiveDofs(); ii++)
             startVector(ii,0)=0;
-        std::cout<<__FILE__<<" "<<__LINE__<<" startVector filled, last value"<<startVector(myGrid.NodeGetNumberActiveDofs()-1,0)<<std::endl;
+
+        myOptimizer.SetVerboseLevel(3);
         myOptimizer.SetParameters(startVector);
         std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set"<<std::endl;
-        myOptimizer.SetGridStrucuture(&myGrid);
+#ifdef ENABLE_MECHANICS
+        myOptimizer.SetGridStructure(&myGrid);
+//#else
+  //      myOptimizer.SetGridStructure();
+#endif // ENABLE_MECHANICS
+
         std::cout<<__FILE__<<" "<<__LINE__<<"  Grid set"<<std::endl;
 
+        NuTo::FullMatrix<double> returnVector(myGrid.GetNumActiveDofs(),1);
+        std::cout<<__FILE__<<" "<<__LINE__<<" startVector filled, last value"<<startVector(myGrid.GetNumActiveDofs()-1,0)<<std::endl;
         //set callback routines for the calculation of the objective function, gradient etc
         //this works, because Neural network has been derived from CallbackHandler of the optimization module
         myOptimizer.SetCallback(dynamic_cast<NuTo::CallbackHandler*>(&myCallback));
-        std::cout<<__FILE__<<" "<<__LINE__<<"  Callback set"<<std::endl;
-
         myOptimizer.Optimize();
         std::cout<<__FILE__<<" "<<__LINE__<<"  optimiert"<<std::endl;
-         std::cout<<"numpar "<<myOptimizer.GetNumParameters()<<std::endl;
+        // visualize element
+		return 0;
+        myGrid.AddVisualizationComponentDisplacements();
+		myGrid.AddVisualizationComponentEngineeringStrain();
+		myGrid.AddVisualizationComponentEngineeringStress();
+		myGrid.ExportVtkDataFile("Grid3D.vtk");
+
+        std::cout<<"numpar "<<myOptimizer.GetNumParameters()<<std::endl;
         /*
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
         NuTo::SparseMatrixCSRGeneral<double> globStiffnessMatrix;
@@ -350,16 +407,9 @@ int main()
 
 
     }
-    catch (NuTo::MechanicsException& e)
+    catch (NuTo::Exception& e)
     {
-        e.AddMessage("[NuTo::StructureGrid3D] error.");
-        std::cerr<<e.ErrorMessage()<<std::endl;
-        return -1;
-    }
-    catch(...)
-    {
-        throw NuTo::MechanicsException("[NuTo::StructureGrid3D] Unknown error catched .");
+        std::cout << e.ErrorMessage() << std::endl;
     }
     return 0;
-
 }

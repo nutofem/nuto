@@ -18,7 +18,7 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
-#include "nuto/optimize/ConjugateGradientLinear.h"
+#include "nuto/optimize/ConjugateGradientGrid.h"
 
 int main()
 {
@@ -334,7 +334,7 @@ int main()
 
        NuTo::CallbackHandlerGrid myCallback;
         std::cout<<__FILE__<<" "<<__LINE__<<"  callback crated"<<std::endl;
-        NuTo::ConjugateGradientLinear myOptimizer((unsigned int) myGrid.GetNumActiveDofs());
+        NuTo::ConjugateGradientGrid myOptimizer((unsigned int) myGrid.GetNumActiveDofs());
         std::cout<<__FILE__<<" "<<__LINE__<<"  optimizer created"<<std::endl;
         NuTo::FullMatrix<double> startVector(myGrid.GetNumActiveDofs(),1);
         count=1;

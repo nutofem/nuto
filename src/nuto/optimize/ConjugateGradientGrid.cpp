@@ -9,7 +9,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
-#include "nuto/optimize/ConjugateGradientLinear.h"
+#include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
@@ -21,7 +21,7 @@
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 #define tol 1e-8
 
-int NuTo::ConjugateGradientLinear::Optimize()
+int NuTo::ConjugateGradientGrid::Optimize()
 {
 	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine optimize"<<std::endl;
 	double alpha,
@@ -55,7 +55,7 @@ int NuTo::ConjugateGradientLinear::Optimize()
 	SetMaxGradientCalls(GetNumParameters()*GetNumParameters());
 	//check, if callback handler is set
 	if (mpCallbackHandler==0)
-		throw OptimizeException("[ConjugateGradientLinear::Optimize] Callback handler not set to determine objective function and derivatives.");
+		throw OptimizeException("[ConjugateGradientGrid::Optimize] Callback handler not set to determine objective function and derivatives.");
 	std::cout<<__FILE__<<" "<<__LINE__<<" test"<<std::endl;
 
 	// calculate objective
@@ -301,7 +301,7 @@ std::cout << std::setw(width)<< "alpha "<<alpha<< "beta "<<beta << std::endl;
 	return returnValue;
 }
 
-void NuTo::ConjugateGradientLinear::CalcScalingFactors(int& numHessianCalls,NuTo::FullMatrix<double>& hessianOrig,Eigen::VectorXd& scaleFactorsInv)
+void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,NuTo::FullMatrix<double>& hessianOrig,Eigen::VectorXd& scaleFactorsInv)
 {
    //calculate hessian for preconditioning
     Hessian(hessianOrig);
@@ -324,18 +324,18 @@ void NuTo::ConjugateGradientLinear::CalcScalingFactors(int& numHessianCalls,NuTo
         }
     }
 }
-void NuTo::ConjugateGradientLinear::Hessian(NuTo::FullMatrix<double>& rHessian)const
+void NuTo::ConjugateGradientGrid::Hessian(NuTo::FullMatrix<double>& rHessian)const
 {
 	if (mUseDiagHessian)
 		HessianDiag(rHessian);
 	else
-		throw OptimizeException("[ConjugateGradientLinear::Hessian] Only diagonal hessian does exist.");
+		throw OptimizeException("[ConjugateGradientGrid::Hessian] Only diagonal hessian does exist.");
 }
 
-void NuTo::ConjugateGradientLinear::HessianDiag(NuTo::FullMatrix<double>& rHessian)const
+void NuTo::ConjugateGradientGrid::HessianDiag(NuTo::FullMatrix<double>& rHessian)const
 {
 #ifdef ENABLE_MECHANICS
-	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine ConjugateGradientLinear::HessianDiag"<<std::endl;
+	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine ConjugateGradientGrid::HessianDiag"<<std::endl;
     int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
     voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
@@ -360,7 +360,7 @@ void NuTo::ConjugateGradientLinear::HessianDiag(NuTo::FullMatrix<double>& rHessi
 
 		int dofsElem=thisElement->GetNumDofs();
 		if (dofsElem!=24)
-			throw OptimizeException("[ConjugateGradientLinear::HessianDiag] Number of Dofs is not 24.");
+			throw OptimizeException("[ConjugateGradientGrid::HessianDiag] Number of Dofs is not 24.");
 		int dofs[24]={0};
         //get grid location and number of corresponding voxel
         for (int count = 0;count<4;++count)
@@ -397,12 +397,12 @@ void NuTo::ConjugateGradientLinear::HessianDiag(NuTo::FullMatrix<double>& rHessi
         //rHessian.ElementwiseInverse();
     }
 //#else
-	//throw OptimizeException ( "[ConjugateGradientLinear::HessianDiag] Modul Mechanics is not loaded." );
+	//throw OptimizeException ( "[ConjugateGradientGrid::HessianDiag] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate start gradient in element-by-element way
-void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
+void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
 {
 #ifdef ENABLE_MECHANICS
 	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateStartGradient"<<std::endl;
@@ -488,18 +488,18 @@ void NuTo::ConjugateGradientLinear::CalculateStartGradient(NuTo::FullMatrix<doub
 
     }
 #else
-	throw OptimizeException ( "[ConjugateGradientLinear::CalculateStartGradient] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradient] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate matix-vector product in element-by-element way
 //! @brief ... multiply each element matrix with search direction
-void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector)
+void NuTo::ConjugateGradientGrid::CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector)
 {
 #ifdef ENABLE_MECHANICS
 	//check if mvParamters is initialized
 	if (!&mvParameters)
- 		throw OptimizeException("[ConjugateGradientLinear::GetStartGradient] mvParameters not initialized.");
+ 		throw OptimizeException("[ConjugateGradientGrid::GetStartGradient] mvParameters not initialized.");
 
 	//set search direction equal mvParameters
 	FullMatrix<double>origSearchDirection=mvParameters;
@@ -581,12 +581,12 @@ void NuTo::ConjugateGradientLinear::CalculateMatrixVectorEBE(bool startSolution,
         }
     }
 #else
-		throw OptimizeException ( "[ConjugateGradientLinear::CalculateMatrixVectorEBE] Modul Mechanics is not loaded." );
+		throw OptimizeException ( "[ConjugateGradientGrid::CalculateMatrixVectorEBE] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
-void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
+void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
 {
 #ifdef ENABLE_MECHANICS
 	std::cout<<__FILE__<<" "<<__LINE__<<" "<<"in CalculateScaledSearchDirection"<<std::endl;
@@ -661,7 +661,7 @@ void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::Vector
 	    }
 		searchDirectionScaled = activeReturn.mEigenMatrix;
 #else
- 	throw OptimizeException ( "[ConjugateGradientLinear::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
+ 	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
 
 #endif // ENABLE_MECHANICS
 }
@@ -670,7 +670,7 @@ void NuTo::ConjugateGradientLinear::CalculateScaledSearchDirection(Eigen::Vector
 //! @brief ... save the object to a file
 //! @param filename ... filename
 //! @param rType ... type of file, either BINARY, XML or TEXT
-void NuTo::ConjugateGradientLinear::Save ( const std::string &filename, std::string rType)const
+void NuTo::ConjugateGradientGrid::Save ( const std::string &filename, std::string rType)const
 {
 	try
 	{
@@ -744,7 +744,7 @@ void NuTo::ConjugateGradientLinear::Save ( const std::string &filename, std::str
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::ConjugateGradientLinear::Restore ( const std::string &filename,  std::string rType)
+void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::string rType)
 {
     try
     {
@@ -757,7 +757,7 @@ void NuTo::ConjugateGradientLinear::Restore ( const std::string &filename,  std:
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -775,7 +775,7 @@ void NuTo::ConjugateGradientLinear::Restore ( const std::string &filename,  std:
                 throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -793,7 +793,7 @@ void NuTo::ConjugateGradientLinear::Restore ( const std::string &filename,  std:
                 throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -825,14 +825,14 @@ void NuTo::ConjugateGradientLinear::Restore ( const std::string &filename,  std:
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
 //!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name ConjugateGradientLinear
-std::string NuTo::ConjugateGradientLinear::GetTypeId()const
+//! @return    class name ConjugateGradientGrid
+std::string NuTo::ConjugateGradientGrid::GetTypeId()const
 {
-    return std::string("ConjugateGradientLinear");
+    return std::string("ConjugateGradientGrid");
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::ConjugateGradientLinear::Info () const
+void NuTo::ConjugateGradientGrid::Info () const
 {
     NuTo::Optimizer::InfoBase();
 	std::cout<< "AccuracyGradient" << mAccuracyGradient << std::endl;
