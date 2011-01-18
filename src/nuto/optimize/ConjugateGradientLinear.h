@@ -91,12 +91,11 @@ public:
     inline void SetGridStructure(NuTo::StructureGrid* rpGrid)
     {
 			mpGrid = rpGrid;
-			throw OptimizeException ( "[ConjugstGradientLinear::SetGridStrucutre] Modul Mechanics is not loaded." );
     }
 #else
     inline void SetGridStructure()
     {
-		throw OptimizeException ( "[ConjugateGradientLinear::SetGridStrucutre] Modul Mechanics is not loaded." );
+		throw OptimizeException ( "[ConjugateGradientLinear::SetGridStructure] Modul Mechanics is not loaded." );
     }
 #endif // ENABLE_MECHANICS
 
