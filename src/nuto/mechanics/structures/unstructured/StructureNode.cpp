@@ -92,6 +92,12 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 				std::cout << "\t:";
 				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
 					std::cout << "\t" << it->second->GetCoordinate(iDof);
+                if (it->second->GetNumDisplacements()>0 || it->second->GetNumFineScaleDisplacements()>0)
+                {
+                    std::cout << "\t:";
+                    for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements()+it->second->GetNumFineScaleDisplacements(); ++iDof)
+                        std::cout << "\t" << it->second->GetDisplacement(iDof);
+                }
 			}
 			std::cout << std::endl;
     	}

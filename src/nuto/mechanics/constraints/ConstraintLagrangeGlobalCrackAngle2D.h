@@ -13,9 +13,9 @@ class FullMatrix;
 class StructureIp;
 //! @author Joerg F. Unger, NU
 //! @date June 2010
-//! @brief ... class for constraints using augemented Lagrange for the global crack angle
+//! @brief ... class for constraints using augmented Lagrange for the global crack angle
 //! the problem is that there is no influence of the crack angle in case of almost zero crack opening
-//! the constraint equation is 0.5*((alpha-alpha_2)^2-mScaling*(ux^2+uy^2))<=0
+//! the constraint equation is (abs(alpha-alpha_2)-0.5*mScaling*(ux^2+uy^2))<=0
 //! alpha is the crack angle (dof)
 //! alpha_2 is the crack angle calculated from the maximum principal strain of the global strain (given)
 //! mScaling is a scaling parameter to be determined (kind of a penalty parameter to make a smooth transition from )
@@ -75,6 +75,17 @@ public:
     void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const;
 
+    //! @brief calculates the internal potential
+    double CalculateTotalPotential()const;
+
+    //! @brief calculates the crack angle for elastic solutions
+    double CalculateCrackAngleElastic()const;
+
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const;
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -94,6 +105,12 @@ protected:
     int mLagrangeDOF;
     //! @brief parameter for scaling
     double mScaling;
+    //! @brief tolerance for difference between the principal strains, where
+    //if difference is bigger, the angle is calculated from the largest principal strain
+    double mTolerance1;
+    //! @brief tolerance for difference between the principal strains, where
+    //the previous angle is used, no update, (in between, there is a linear interpolation)
+    double mTolerance2;
 };
 }//namespace NuTo
 

@@ -11,7 +11,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 %}
 
-// convert python string to std::string 
+// convert python string to std::string
 %include "std_string.i"
 // convert python tuple to std::vector
 %include "std_vector.i"

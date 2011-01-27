@@ -377,7 +377,7 @@ void FullMatrix<int>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) c
 }
 
 //! @brief calculates the eigenvalues
-//! @param rEigenValues ... eigenvalues
+//! @param rEigenValues ... the computed eigen vectors as a matrix of column vectors
 template<>
 void FullMatrix<double>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) const
 {

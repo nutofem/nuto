@@ -9,6 +9,7 @@
 
 namespace NuTo
 {
+class StructureIp;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
@@ -335,6 +336,11 @@ protected:
     //! @brief ... solve for equilibrium using the new boundary conditions
     void Solve(const ElementBase* rElement, int rIp, const NuTo::DeformationGradient2D& rDeformationGradient, double rTolerance,
             std::stringstream& rStringStreamBeforeSolve, bool& rStringStreamBeforeSolveWritten)const;
+    // this is just for debugging purposes
+    bool CheckStiffness(NuTo::StructureIp* rFineScaleStructure)const;
+
+    //! @brief tolerance for the solution of the fine scale problem
+    double mTolerance;
 };
 }
 

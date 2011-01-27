@@ -782,4 +782,50 @@ void NuTo::SparseMatrixCSRVector2General<T>::ReorderColumns(const std::vector<in
 	}
 */
 }
+
+//! @brief ... Concatenate columns from another matrix
+//! @param rOther ... other matrix with same number of rows
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns(const SparseMatrixCSRVector2General<T>& rOther)
+{
+/*    //! @brief value of nonzero matrix entries
+    std::vector<std::vector<T> > mValues;
+    //! @brief columns of nonzero matrix entries
+    std::vector<std::vector<int> > mColumns;
+    //! @brief ... number of columns
+    int mNumColumns;
+*/
+    if (this->mOneBasedIndexing!=rOther.mOneBasedIndexing)
+        throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns] index base (0 or 1) should be identical for both matrices");
+    if (this->mValues.size()!=rOther.mValues.size())
+        throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns] number of rows has to be identical for both matrices.");
+
+    for (unsigned int theRow=0; theRow<this->mValues.size(); theRow++)
+    {
+        this->mValues[theRow].insert(this->mValues[theRow].end(), rOther.mValues[theRow].begin(), rOther.mValues[theRow].end());
+        unsigned int oldSize(this->mColumns[theRow].size());
+        this->mColumns[theRow].insert(this->mColumns[theRow].end(), rOther.mColumns[theRow].begin(), rOther.mColumns[theRow].end());
+        //add to all columns of the newly added entries the columns of the original matrix
+        for (unsigned int theCol=oldSize; theCol<this->mColumns[theRow].size(); theCol++)
+        {
+            this->mColumns[theRow][theCol]+=this->mNumColumns;
+        }
+    }
+    this->mNumColumns+=rOther.mNumColumns;
+}
+
+//! @brief ... Concatenate rows from another matrix
+//! @param rOther ... other matrix with same number of columns
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows(const SparseMatrixCSRVector2General<T>& rOther)
+{
+    if (this->mOneBasedIndexing!=rOther.mOneBasedIndexing)
+        throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows] index base (0 or 1) should be identical for both matrices");
+    if (this->mNumColumns!=rOther.mNumColumns)
+        throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns] number of columns has to be identical for both matrices.");
+
+    this->mValues.insert(this->mValues.end(), rOther.mValues.begin(), rOther.mValues.end());
+    this->mColumns.insert(this->mColumns.end(), rOther.mColumns.begin(), rOther.mColumns.end());
+}
+
 #endif // SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H

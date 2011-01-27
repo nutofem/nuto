@@ -53,6 +53,7 @@ constraints/ConstraintLagrangeGlobalCrackOpening2D.cpp
 constraints/ConstraintLinear.cpp
 constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
 constraints/ConstraintLinearGlobalCrackAngle.cpp
+constraints/ConstraintLinearGlobalCrackOpening.cpp
 constraints/ConstraintLinearEquation.cpp
 constraints/ConstraintLinearNodeDisplacements1D.cpp
 constraints/ConstraintLinearNodeDisplacements2D.cpp

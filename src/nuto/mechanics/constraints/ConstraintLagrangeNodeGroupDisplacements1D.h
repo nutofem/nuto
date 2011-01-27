@@ -74,6 +74,20 @@ public:
     void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const;
 
+    //! @brief calculates the internal potential
+    double CalculateTotalPotential()const
+    {
+        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateTotalPotential] to be implemented.");
+    }
+
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const
+    {
+        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::Info] to be implemented.");
+    }
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

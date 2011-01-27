@@ -5,6 +5,7 @@
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
@@ -39,6 +40,10 @@ public:
     void AddToConstraintMatrix(int& curConstraintEquation,
                                NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
                                NuTo::FullMatrix<double>& rRHS)const;
+
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

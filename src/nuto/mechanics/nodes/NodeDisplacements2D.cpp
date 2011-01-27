@@ -87,6 +87,17 @@ void NuTo::NodeDisplacements2D::GetDisplacements2D(double rDisplacements[2])cons
     rDisplacements[1] = mDisplacements[1];
 }
 
+//! @brief writes the displacements of a node to the prescribed pointer
+//! the difference is e.g. using XFEM, when the nodal degrees of freedom are not identical
+//! @param rDisplacements displacements
+double NuTo::NodeDisplacements2D::GetDisplacement(short rIndex)const
+{
+    if (rIndex==0 || rIndex==1)
+        return mDisplacements[rIndex];
+    else
+        throw MechanicsException("[NuTo::NodeDisplacements2D::GetDisplacement] node has only two displacements.");
+}
+
 //! @brief sets the global dofs
 //! @param rDOF current maximum DOF, this variable is increased within the routine
 void NuTo::NodeDisplacements2D::SetGlobalDofs(int& rDOF)

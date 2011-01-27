@@ -886,7 +886,7 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], 
         // get node displacements
         double NodeDisplacement[3];
         const NodeBase *nodePtr(GetNode(NodeCount));
-        if (nodePtr->GetNumDisplacements()==2)
+        if (nodePtr->GetNumDisplacements()==2 || nodePtr->GetNumFineScaleDisplacements()==2)
             nodePtr->GetDisplacements2D(NodeDisplacement);
         else
             nodePtr->GetDisplacements3D(NodeDisplacement);

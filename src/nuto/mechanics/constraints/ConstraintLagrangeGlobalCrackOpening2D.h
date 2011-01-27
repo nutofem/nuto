@@ -70,6 +70,14 @@ public:
     void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const;
 
+    //! @brief calculates the internal potential
+    double CalculateTotalPotential()const;
+
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const;
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

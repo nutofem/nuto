@@ -15,6 +15,7 @@ namespace NuTo
 {
 class LinearElastic;
 class ConstitutiveMisesPlasticity;
+template <class T> class FullMatrix;
 //! @brief ... tangent matrix for local constitutive formulations
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
@@ -30,6 +31,9 @@ class ConstitutiveTangentLocal3x3: public NuTo::ConstitutiveTangentBase
 public:
     //! @brief ... constructor
     ConstitutiveTangentLocal3x3();
+
+    //! @brief ... copy constructor from matrix
+    ConstitutiveTangentLocal3x3& operator= (const NuTo::FullMatrix<double>& rOtherMatrix);
 
     //! @brief ... destructor
     ~ConstitutiveTangentLocal3x3();

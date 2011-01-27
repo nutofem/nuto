@@ -20,6 +20,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackAngle.h"
+#include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackOpening.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackOpening2D.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackAngle2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
@@ -35,9 +36,7 @@
 #include <set>
 
 #define PRINTRESULT true
-#define MAXNUMNEWTONITERATIONS 20
-#define MIN_DELTA_STRAIN_FACTOR 1e-7
-#define MYDEBUG false
+//#define MYDEBUG
 #define tolCrackOpeningConstraint 1e-5
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -45,10 +44,11 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
 {
     if (rDimension!=2)
         throw MechanicsException("[NuTo::StructureIp::StructureIp] The concurrent multiscale model is only implemented for 2D.");
-    mCrackAngle = M_PI*(-0.2);
+    mCrackAngle = M_PI*(0.7500);
+    mPrevCrackAngle = 0.;
     mDOFCrackAngle = -1;
-    mCrackOpening[0] = -0.1;
-    mCrackOpening[1] = -0.1;
+    mCrackOpening[0] = 0.0;
+    mCrackOpening[1] = 0.00;
     mDOFCrackOpening[0] = -1;
     mDOFCrackOpening[1] = -1;
     mEpsilonHom.mEngineeringStrain[0] = 0.;
@@ -56,12 +56,12 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
     mEpsilonHom.mEngineeringStrain[2] = 0.;
     mConstraintFineScaleX = -1;
     mConstraintFineScaleY = -1;
-    mConstraintAlpha = -1;
     mlX = 0.;
     mlY = 0.;
-    mCrackTransitionZone = 0.;
-    mBoundaryNodesTransformed = false;
+    mCrackTransitionZone = 20;
     mIPName = std::string("fineScaleIp");
+    mGroupBoundaryNodes = -1;
+    mBoundaryNodesAssigned = false;
 
     //add constraint equation to avoid negative normal Crack opening
     //find unused integer id
@@ -72,11 +72,32 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
         id++;
         it = mConstraintMap.find(id);
     }
-
-    ConstraintLagrangeGlobalCrackOpening2D *mConst = new NuTo::ConstraintLagrangeGlobalCrackOpening2D(this);
-
+    mConstraintCrackOpening = id;
+ //   ConstraintLagrangeGlobalCrackOpening2D *mConst = new NuTo::ConstraintLagrangeGlobalCrackOpening2D(this);
+ //   mConstraintMap.insert(id, mConst);
+    NuTo::FullMatrix<double> dir(2,1);
+    dir(0,0)=1;
+    dir(1,0)=0;
+    ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this,dir,-0.01);
+    mConstraintMap.insert(id, mConst);
+    dir(0,0)=0;
+    dir(1,0)=1;
+    ConstraintLinearGlobalCrackOpening *mConstb = new NuTo::ConstraintLinearGlobalCrackOpening(this,dir,-0.01);
+    id++;
+    mConstraintMap.insert(id, mConstb);
+/*
+    NuTo::FullMatrix<double> direction(2,1);
+    direction(0,0) = 0;
+    direction(1,0) = 1;
+    ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction,0.1);
     mConstraintMap.insert(id, mConst);
 
+    direction(0,0) = 1;
+    direction(1,0) = 0;
+    mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction,0.1);
+    id++;
+    mConstraintMap.insert(id, mConst);
+*/
     //add constraint equation to avoid singular stiffness for zero crack opening (because then the angle has no influence)
     //find unused integer id
     id = 1;
@@ -88,8 +109,10 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
     }
 
     ConstraintLagrangeGlobalCrackAngle2D *mConst2 = new NuTo::ConstraintLagrangeGlobalCrackAngle2D(this);
+//    ConstraintLinearGlobalCrackAngle *mConst2 = new NuTo::ConstraintLinearGlobalCrackAngle(this);
 
-    mConstraintMap.insert(id, mConst2);
+//    mConstraintMap.insert(id, mConst2);
+//    mConstraintCrackAngle = id;
 
 }
 
@@ -114,23 +137,25 @@ void NuTo::StructureIp::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of structureIp" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Structure)
-       & BOOST_SERIALIZATION_NVP(mCrackAngle)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Structure);
+    ar & BOOST_SERIALIZATION_NVP(mCrackAngle)
        & BOOST_SERIALIZATION_NVP(mDOFCrackAngle)
        & BOOST_SERIALIZATION_NVP(mCrackOpening)
        & BOOST_SERIALIZATION_NVP(mDOFCrackOpening)
        & BOOST_SERIALIZATION_NVP(mEpsilonHom)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleX)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleY)
+       & BOOST_SERIALIZATION_NVP(mConstraintCrackOpening)
+       & BOOST_SERIALIZATION_NVP(mConstraintCrackAngle)
        & BOOST_SERIALIZATION_NVP(mlX)
        & BOOST_SERIALIZATION_NVP(mlY)
        & BOOST_SERIALIZATION_NVP(mCrackTransitionZone)
-       & BOOST_SERIALIZATION_NVP(mBoundaryNodesTransformed)
+       & BOOST_SERIALIZATION_NVP(mBoundaryNodesAssigned)
+       & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodes)
        & BOOST_SERIALIZATION_NVP(mIPName);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structureIp" << std::endl;
 #endif
-    std::cout << "save/restore mCrackAngle " << mCrackAngle << std::endl;
 }
 
 //! @brief ... save the object to a file
@@ -307,30 +332,26 @@ void NuTo::StructureIp::Restore(std::stringstream& previousState)
 
 //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
 //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
-void NuTo::StructureIp::TransformBoundaryNodes(int rBoundaryNodesId)
+void NuTo::StructureIp::TransformBoundaryNodes()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rBoundaryNodesId);
+    if (mBoundaryNodesAssigned==false)
+        throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] Group of boundary nodes has not been assigned yet.");
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(mGroupBoundaryNodes);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()==Groups::Nodes)
-        TransformBoundaryNodes(dynamic_cast<Group<NodeBase>*>(itGroup->second));
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureIp::TransformBoundaryNodes] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-}
+    if (itGroup->second->GetType()!=Groups::Nodes)
+        throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] Group for boundary nodes is not a node group.");
 
-void NuTo::StructureIp::TransformBoundaryNodes(Group<NodeBase>* rBoundaryNodes)
-{
+    Group<NodeBase>* nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+
     //copy the boundary nodes first, since the iterators are invalidated in NodeExchangePtr
-    std::vector<NodeBase*> nodeVec(rBoundaryNodes->size());
+    std::vector<NodeBase*> nodeVec(nodeGroup->size());
     unsigned int countNode=0;
-    for (Group<NodeBase>::iterator itNode=rBoundaryNodes->begin(); itNode!=rBoundaryNodes->end(); itNode++, countNode++)
+    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end(); itNode++, countNode++)
     {
         nodeVec[countNode] = (*itNode);
     }
@@ -381,12 +402,11 @@ void NuTo::StructureIp::TransformBoundaryNodes(Group<NodeBase>* rBoundaryNodes)
     NuTo::FullMatrix<double> direction(2,1);
     direction(0,0) = 1.;
     direction(1,0) = 0.;
-    mConstraintFineScaleX = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(rBoundaryNodes, direction, 0);
+    mConstraintFineScaleX = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
     direction(0,0) = 0.;
     direction(1,0) = 1.;
-    mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(rBoundaryNodes, direction, 0);
-    mBoundaryNodesTransformed = true;
+    mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
     if (minX!=0 || minY!=0)
     {
@@ -396,8 +416,12 @@ void NuTo::StructureIp::TransformBoundaryNodes(Group<NodeBase>* rBoundaryNodes)
         throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] structure has zero width or height, either check your boundary group or the full structure.");
     mlX = maxX;
     mlY = maxY;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureIp::TransformBoundaryNodes] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
-
 
 //! @brief numbers non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
 void NuTo::StructureIp::NumberAdditionalGlobalDofs()
@@ -430,6 +454,14 @@ void NuTo::StructureIp::NodeMergeAdditionalGlobalDofValues(const FullMatrix<doub
         else
         {
             value = rActiveDofValues(dof,0);
+        }
+        while (value<0)
+        {
+            value+=2*M_PI;
+        }
+        while (value>2*M_PI)
+        {
+            value-=2*M_PI;
         }
         this->mCrackAngle = value;
 
@@ -498,6 +530,11 @@ void NuTo::StructureIp::NodeExtractAdditionalGlobalDofValues(NuTo::FullMatrix<do
 
 void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
 {
+    BuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector,rDependentDofGradientVector,0);
+}
+
+void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector, NuTo::FullMatrix<double>* rEpsilonMGradientVector) const
+{
     // initialize vectors
     assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
     assert(rActiveDofGradientVector.GetNumColumns() == 1);
@@ -511,18 +548,26 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
     {
         rDependentDofGradientVector(row,0) = 0.0;
     }
+    if (rEpsilonMGradientVector)
+    {
+        assert(rEpsilonMGradientVector->GetNumRows() == 3);
+        assert(rEpsilonMGradientVector->GetNumColumns() == 1);
+        (*rEpsilonMGradientVector)(0,0) = 0.;
+        (*rEpsilonMGradientVector)(1,0) = 0.;
+        (*rEpsilonMGradientVector)(2,0) = 0.;
+    }
 
     // define variables storing the element contribution outside the loop
     NuTo::FullMatrix<double> elementVector;
     std::vector<int> elementVectorGlobalDofs;
 
     // calculate for all multiscale dofs the derivatives
-    // with respect to alpha, ux, uy
+    // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,3> > dDOF;
+    std::vector<std::array<double,6> > dDOF;
     std::vector<std::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
-    double bAlphaRow, bURow[2];
+    double bAlphaRow, bURow[2], bMRow[3];
 
     // loop over all elements
     boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin();
@@ -543,9 +588,8 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
             }
             else
             {
-                globalRowDof -= this->mNumActiveDofs;
-                assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-                rDependentDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+                assert(globalRowDof-this->mNumActiveDofs < this->mNumDofs - this->mNumActiveDofs);
+                rDependentDofGradientVector(globalRowDof - this->mNumActiveDofs,0) += elementVector(rowCount,0);
             }
             //add contribution of the global degrees of freedom (crack opening and crack orientation)
             if (mappingDofMultiscaleNode[globalRowDof]!=-1)
@@ -556,8 +600,12 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
 
                 //influence of u
                 bURow[0] = dDOF[theDofMapRow][1];
-
                 bURow[1] = dDOF[theDofMapRow][2];
+
+                //influence of epsilon_tot = epsilon_hom
+                bMRow[0] = dDOF[theDofMapRow][3];
+                bMRow[1] = dDOF[theDofMapRow][4];
+                bMRow[2] = dDOF[theDofMapRow][5];
 
                 if (mDOFCrackAngle< this->mNumActiveDofs)
                     rActiveDofGradientVector(mDOFCrackAngle,0) += bAlphaRow * elementVector(rowCount,0);
@@ -573,6 +621,13 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
                     rActiveDofGradientVector(mDOFCrackOpening[1],0) += bURow[1] * elementVector(rowCount,0);
                 else
                     rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
+
+                if(rEpsilonMGradientVector!=0)
+                {
+                    (*rEpsilonMGradientVector)(0,0) += bMRow[0] * elementVector(rowCount,0);
+                    (*rEpsilonMGradientVector)(1,0) += bMRow[1] * elementVector(rowCount,0);
+                    (*rEpsilonMGradientVector)(2,0) += bMRow[2] * elementVector(rowCount,0);
+                }
             }
         }
 
@@ -581,6 +636,9 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
     //write contribution of Lagrange Multipliers
     ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
 }
+
+
+
 
 // based on the global dofs build submatrices of the global coefficent matrix0
 void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
@@ -603,12 +661,11 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
     std::vector<int> elementVectorGlobalDofs;
 
     // calculate for all multiscale dofs the derivatives
-    // with respect to ehomxx, ehomyy, gammahomxy, ux, uy, alpha
+    // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,3> > dDOF;
+    std::vector<std::array<double,6> > dDOF;
     std::vector<std::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
-    double bAlphaRow, bURow[2], bAlphaCol, bUCol[2];
 
     // loop over all elements
     boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin();
@@ -622,244 +679,48 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
         assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-        // write element contribution to global matrix
-        for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-        {
-            int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-            assert(elementVectorGlobalDofs[rowCount]==globalRowDof);
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    if (fabs(elementMatrix(rowCount, colCount))>mToleranceStiffnessEntries)
-                    {
-                        int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                        if (globalColumnDof < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                        }
-                    }
-                }
-            }
+        this->AddElementMatrixToGlobalSubMatricesGeneral(
+                elementMatrix,
+                elementMatrixGlobalDofsRow,
+                elementMatrixGlobalDofsColumn,
+                elementVector,
+                mappingDofMultiscaleNode,
+                dDOF,
+                dDOF2,
+                &rMatrixJJ,
+                &rMatrixJK,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                false,
+                false);
 
-            // add influence of global variables
-            //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
-            if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-            {
-                //influence of alpha
-                int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
-                bAlphaRow =dDOF[theDofMapRow][0];
-
-                //influence of u
-                bURow[0] = dDOF[theDofMapRow][1];
-
-                bURow[1] = dDOF[theDofMapRow][2];
-
-                //add the influence of the second order derivatives
-                if (mDOFCrackAngle < this->mNumActiveDofs)
-                {
-                    rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][0]);
-                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        //rMatrixKJ.AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1], elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        //rMatrixKJ.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                }
-                else
-                {
-                    //rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][0]);
-                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                    {
-                        //rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        rMatrixJK.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    else
-                    {
-                        //rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        //rMatrixKK.AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                    {
-                        //rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1], elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        rMatrixJK.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                    else
-                    {
-                        //rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        //rMatrixKK.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                }
-            }
-
-            for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-            {
-                int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                if (mappingDofMultiscaleNode[globalColumnDof]!=-1)
-                {
-                    //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
-                    //influence of alpha
-                    int theDofMapCol = mappingDofMultiscaleNode[globalColumnDof];
-                    bAlphaCol = dDOF[theDofMapCol][0];
-
-                    //influence of u
-                    bUCol[0] = dDOF[theDofMapCol][1];
-
-                    bUCol[1] = dDOF[theDofMapCol][2];
-
-                    if (globalRowDof < this->mNumActiveDofs)
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, mDOFCrackAngle, elementMatrix(rowCount, colCount) * bAlphaCol);
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, mDOFCrackAngle - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bAlphaCol);
-                        }
-
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, mDOFCrackOpening[0], elementMatrix(rowCount, colCount) * bUCol[0]);
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, mDOFCrackOpening[0] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[0]);
-                        }
-
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, mDOFCrackOpening[1], elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                    }
-                    if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackAngle,      mDOFCrackAngle,      bAlphaRow * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                        }
-
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            if (mDOFCrackAngle < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[0], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                        }
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            if (mDOFCrackAngle < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-
-                            }
-                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[1], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                    }
-                }
-                if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-                {
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackAngle, globalColumnDof, bAlphaRow * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[0], globalColumnDof, bURow[0]  * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[1], globalColumnDof, bURow[1]  * elementMatrix(rowCount, colCount));
-                        }
-                    }
-                    else
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJK.AddEntry(mDOFCrackAngle, globalColumnDof - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixJK.AddEntry(mDOFCrackOpening[0], globalColumnDof - this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixJK.AddEntry(mDOFCrackOpening[1], globalColumnDof - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount));
-                        }
-                    }
-                }
-            }
-        }
         elementIter++;
     }
-    //write contribution of Lagrange Multipliers
+    {
+        std::cout << "JJ before "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
+        rMatrixJJFull.Info(12,5);
+        std::cout << "JK before "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJKFull(rMatrixJK);
+        rMatrixJKFull.Info(12,5);
+
+    }
+    //add contribution of Lagrange Multipliers
     ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
+    {
+        std::cout << "JJ after "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
+        rMatrixJJFull.Info(12,5);
+        std::cout << "JK after "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJKFull(rMatrixJK);
+        rMatrixJKFull.Info(12,5);
+
+    }
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -891,12 +752,11 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
     std::vector<int> elementVectorGlobalDofs;
 
     // calculate for all multiscale dofs the derivatives
-    // with respect to ehomxx, ehomyy, gammahomxy, ux, uy, alpha
+    // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,3> > dDOF;
+    std::vector<std::array<double,6> > dDOF;
     std::vector<std::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
-    double bAlphaRow, bURow[2], bAlphaCol, bUCol[2];
 
     // loop over all elements
     boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin();
@@ -910,380 +770,705 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
         assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-        // write element contribution to global matrix
-        for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-        {
-            int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
+        this->AddElementMatrixToGlobalSubMatricesGeneral(
+                elementMatrix,
+                elementMatrixGlobalDofsRow,
+                elementMatrixGlobalDofsColumn,
+                elementVector,
+                mappingDofMultiscaleNode,
+                dDOF,
+                dDOF2,
+                &rMatrixJJ,
+                &rMatrixJK,
+                0,
+                &rMatrixKJ,
+                &rMatrixKK,
+                0,
+                0,
+                0,
+                0,
+                true,
+                false);
 
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+        elementIter++;
+    }
+/*    {
+        std::cout << "JJ before "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
+        rMatrixJJFull.Info(12,5);
+        std::cout << "JK before "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJKFull(rMatrixJK);
+        rMatrixJKFull.Info(12,5);
+        std::cout << "JJ before "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixKJFull(rMatrixKJ);
+        rMatrixKJFull.Info(12,5);
+        std::cout << "KK before "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixKKFull(rMatrixKK);
+        rMatrixKKFull.Info(12,5);
 
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-                }
-            }
-            else
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                         rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
-                    }
-                    else
-                    {
-                         rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-                }
-            }
+    }
+*/
+    //add contribution of Lagrange Multipliers
+    ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
+/*    {
+        std::cout << "JJ after "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
+        rMatrixJJFull.Info(12,5);
+        std::cout << "JK after "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixJKFull(rMatrixJK);
+        rMatrixJKFull.Info(12,5);
+        std::cout << "JK after "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixKJFull(rMatrixKJ);
+        rMatrixKJFull.Info(12,5);
+        std::cout << "KK after "<< std::endl;
+        NuTo::FullMatrix<double> rMatrixKKFull(rMatrixKK);
+        rMatrixKKFull.Info(12,5);
 
+    }
+*/
+}
 
-            // add influence of global variables
-            //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
-            if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-            {
-                //influence of alpha
-                int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
-                bAlphaRow =dDOF[theDofMapRow][0];
+// for the macroscopic stiffness the global strain is another unknown (M part)
+void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixJM,
+        SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK, SparseMatrix<double>& rMatrixKM,
+        SparseMatrix<double>& rMatrixMJ, SparseMatrix<double>& rMatrixMK, SparseMatrix<double>& rMatrixMM
+) const
+{
+    assert(this->mNodeNumberingRequired == false);
+    assert(rMatrixJJ.IsSymmetric() == false);
+    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
+    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
 
-                //influence of u
-                bURow[0] = dDOF[theDofMapRow][1];
+    assert(rMatrixJK.IsSymmetric() == false);
+    assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
+    assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
 
-                bURow[1] = dDOF[theDofMapRow][2];
+    assert(rMatrixJM.IsSymmetric() == false);
+    assert(rMatrixJM.GetNumRows() == this->mNumActiveDofs);
+    assert(rMatrixJM.GetNumColumns() == 3);
 
-                //add the influence of the second order derivatives
-                if (mDOFCrackAngle < this->mNumActiveDofs)
-                {
-                    rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][0]);
-                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        rMatrixKJ.AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1], elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        rMatrixKJ.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                }
-                else
-                {
-                    rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][0]);
-                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                    {
-                        rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        rMatrixJK.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    else
-                    {
-                        rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                        rMatrixKK.AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
-                    }
-                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                    {
-                        rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1], elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        rMatrixJK.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                    else
-                    {
-                        rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                        rMatrixKK.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
-                    }
-                }
-            }
+    assert(rMatrixKJ.IsSymmetric() == false);
+    assert(rMatrixKJ.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
+    assert(rMatrixKJ.GetNumColumns() == this->mNumActiveDofs);
 
-            for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-            {
-                int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                if (mappingDofMultiscaleNode[globalColumnDof]!=-1)
-                {
-                    //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
-                    //influence of alpha
-                    int theDofMapCol = mappingDofMultiscaleNode[globalColumnDof];
-                    bAlphaCol = dDOF[theDofMapCol][0];
+    assert(rMatrixKK.IsSymmetric() == false);
+    assert(rMatrixKK.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
+    assert(rMatrixKK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
 
-                    //influence of u
-                    bUCol[0] = dDOF[theDofMapCol][1];
+    assert(rMatrixKM.IsSymmetric() == false);
+    assert(rMatrixKM.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
+    assert(rMatrixKM.GetNumColumns() == 3);
 
-                    bUCol[1] = dDOF[theDofMapCol][2];
+    assert(rMatrixMJ.IsSymmetric() == false);
+    assert(rMatrixMJ.GetNumRows() == 3);
+    assert(rMatrixMJ.GetNumColumns() == this->mNumActiveDofs);
 
-                    if (globalRowDof < this->mNumActiveDofs)
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, mDOFCrackAngle, elementMatrix(rowCount, colCount) * bAlphaCol);
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, mDOFCrackAngle - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bAlphaCol);
-                        }
+    assert(rMatrixMK.IsSymmetric() == false);
+    assert(rMatrixMK.GetNumRows() == 3);
+    assert(rMatrixMK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
 
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, mDOFCrackOpening[0], elementMatrix(rowCount, colCount) * bUCol[0]);
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, mDOFCrackOpening[0] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[0]);
-                        }
+    assert(rMatrixMM.IsSymmetric() == false);
+    assert(rMatrixMM.GetNumRows() == 3);
+    assert(rMatrixMM.GetNumColumns() == 3);
 
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, mDOFCrackOpening[1], elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                        else
-                        {
-                            rMatrixJK.AddEntry(globalRowDof, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                    }
-                    else
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackAngle, elementMatrix(rowCount, colCount) * bAlphaCol);
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bAlphaCol);
-                        }
+    // define variables storing the element contribution outside the loop
+    NuTo::FullMatrix<double> elementMatrix;
+    NuTo::FullMatrix<double> elementVector;
+    std::vector<int> elementMatrixGlobalDofsRow;
+    std::vector<int> elementMatrixGlobalDofsColumn;
+    std::vector<int> elementVectorGlobalDofs;
 
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[0], elementMatrix(rowCount, colCount) * bUCol[0]);
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[0]);
-                        }
+    // calculate for all multiscale dofs the derivatives
+    // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
+    std::vector<int> mappingDofMultiscaleNode;
+    std::vector<std::array<double,6> > dDOF;
+    std::vector<std::array<double,3> > dDOF2;
+    CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
 
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[1], elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                    }
-                    if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackAngle,      mDOFCrackAngle,      bAlphaRow * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[0] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
+    // loop over all elements
+    boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin();
+    while (elementIter != this->mElementMap.end())
+    {
+        // calculate element contribution
+        bool symmetryFlag = false;
+        elementIter->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+        elementIter->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
 
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs,      mDOFCrackAngle - this->mNumActiveDofs,      bAlphaRow * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                            {
-                                rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            else
-                            {
-                                rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
+        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
+        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                            else
-                            {
-                                rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                        }
+        this->AddElementMatrixToGlobalSubMatricesGeneral(
+                elementMatrix,
+                elementMatrixGlobalDofsRow,
+                elementMatrixGlobalDofsColumn,
+                elementVector,
+                mappingDofMultiscaleNode,
+                dDOF,
+                dDOF2,
+                &rMatrixJJ,
+                &rMatrixJK,
+                &rMatrixJM,
+                &rMatrixKJ,
+                &rMatrixKK,
+                &rMatrixKM,
+                &rMatrixMJ,
+                &rMatrixMK,
+                &rMatrixMM,
+                true,
+                true);
 
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            if (mDOFCrackAngle < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[0], mDOFCrackAngle -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[0], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                        }
-                        else
-                        {
-                            if (mDOFCrackAngle < this->mNumActiveDofs)
-                            {
-                                rMatrixKJ.AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackAngle, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            else
-                            {
-                                rMatrixKK.AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackAngle -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            rMatrixKK.AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[0] -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixKJ.AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[1], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                            else
-                            {
-                                rMatrixKK.AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            }
-                        }
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            if (mDOFCrackAngle < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[1], mDOFCrackAngle - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-
-                            }
-                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                            {
-                                rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            else
-                            {
-                                rMatrixJK.AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[1], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-                        else
-                        {
-                            if (mDOFCrackAngle < this->mNumActiveDofs)
-                            {
-                                rMatrixKJ.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            }
-                            else
-                            {
-                                rMatrixKK.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-
-                            }
-                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                            {
-                                rMatrixKJ.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackOpening[0], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            else
-                            {
-                                rMatrixKK.AddEntry(mDOFCrackOpening[1]- this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            }
-                            rMatrixKK.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                        }
-
-                    }
-                }
-                if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-                {
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackAngle,      globalColumnDof, bAlphaRow * elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixKJ.AddEntry(mDOFCrackAngle - this->mNumActiveDofs,      globalColumnDof, bAlphaRow * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[0], globalColumnDof, bURow[0]  * elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixKJ.AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, globalColumnDof, bURow[0]  * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixJJ.AddEntry(mDOFCrackOpening[1], globalColumnDof, bURow[1]  * elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixKJ.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, globalColumnDof, bURow[1]  * elementMatrix(rowCount, colCount));
-                        }
-                    }
-                    else
-                    {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
-                        {
-                            rMatrixJK.AddEntry(mDOFCrackAngle, globalColumnDof - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(mDOFCrackAngle - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
-                        {
-                            rMatrixJK.AddEntry(mDOFCrackOpening[0], globalColumnDof - this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount));
-                        }
-                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
-                        {
-                            rMatrixJK.AddEntry(mDOFCrackOpening[1], globalColumnDof - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount));
-                        }
-                        else
-                        {
-                            rMatrixKK.AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount));
-                        }
-                    }
-                }
-            }
-        }
         elementIter++;
     }
     ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
 }
 
+void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
+        NuTo::FullMatrix<double>& elementMatrix,
+        std::vector<int>& elementMatrixGlobalDofsRow,
+        std::vector<int>& elementMatrixGlobalDofsColumn,
+        NuTo::FullMatrix<double>& elementVector,
+        std::vector<int>& mappingDofMultiscaleNode,
+        std::vector<std::array<double,6> >&dDOF,
+        std::vector<std::array<double,3> >&dDOF2,
+        SparseMatrix<double>* rMatrixJJ,
+        SparseMatrix<double>* rMatrixJK,
+        SparseMatrix<double>* rMatrixJM,
+        SparseMatrix<double>* rMatrixKJ,
+        SparseMatrix<double>* rMatrixKK,
+        SparseMatrix<double>* rMatrixKM,
+        SparseMatrix<double>* rMatrixMJ,
+        SparseMatrix<double>* rMatrixMK,
+        SparseMatrix<double>* rMatrixMM,
+        bool rCalcMatrixKJ_KK,
+        bool rCalcMatrixM)const
+{
+    assert(rMatrixJJ!=0);
+    assert(rMatrixJK!=0);
+    //either both are zero or both are nonzero
+    assert(!rCalcMatrixKJ_KK || ((rMatrixKJ!=0) && (rMatrixKK!=0)));
+    assert(!rCalcMatrixM || ((rMatrixJM!=0) && (rMatrixKM!=0) && (rMatrixMM!=0) && (rMatrixMJ!=0) && (rMatrixMK!=0)));
+    //if M is calculated, KJ and KK have to be calculated as well
+    assert(!rCalcMatrixM || rCalcMatrixKJ_KK);
+    double bAlphaRow, bURow[2], bMRow[3], bAlphaCol, bUCol[2], bMCol[3];
+
+    // write element contribution to global matrix
+    for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
+    {
+        int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
+
+        if (globalRowDof < this->mNumActiveDofs)
+        {
+            for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
+            {
+                int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
+                if (globalColumnDof < this->mNumActiveDofs)
+                {
+                    rMatrixJJ->AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+
+                }
+                else
+                {
+                    rMatrixJK->AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                }
+            }
+        }
+        else
+        {
+            if (rCalcMatrixKJ_KK)
+            {
+                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
+                {
+                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
+                    if (globalColumnDof < this->mNumActiveDofs)
+                    {
+                         rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                         rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                    }
+                }
+            }
+        }
+
+
+        // add influence of global variables
+        //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
+        if (mappingDofMultiscaleNode[globalRowDof]!=-1)
+        {
+            //influence of alpha
+            int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
+            bAlphaRow =dDOF[theDofMapRow][0];
+
+            //influence of u
+            bURow[0] = dDOF[theDofMapRow][1];
+            bURow[1] = dDOF[theDofMapRow][2];
+
+            //influence of e_hom = e_tot
+            bMRow[0] = dDOF[theDofMapRow][3];
+            bMRow[1] = dDOF[theDofMapRow][4];
+            bMRow[2] = dDOF[theDofMapRow][5];
+
+            //add the influence of the second order derivatives
+            if (mDOFCrackAngle < this->mNumActiveDofs)
+            {
+                rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][0]);
+                if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                {
+                    rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                    rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                }
+                else
+                {
+                    rMatrixJK->AddEntry(mDOFCrackAngle, mDOFCrackOpening[0] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                    if (rCalcMatrixKJ_KK)
+                        rMatrixKJ->AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                }
+                if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                {
+                    rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackOpening[1], elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                    rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                }
+                else
+                {
+                    rMatrixJK->AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                    if (rCalcMatrixKJ_KK)
+                        rMatrixKJ->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                }
+            }
+            else
+            {
+                if (rCalcMatrixKJ_KK)
+                    rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][0]);
+                if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                {
+                    if (rCalcMatrixKJ_KK)
+                        rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                    rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                }
+                else
+                {
+                    if (rCalcMatrixKJ_KK)
+                    {
+                        rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                        rMatrixKK->AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                    }
+                }
+                if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                {
+                    if (rCalcMatrixKJ_KK)
+                        rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1], elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                    rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                }
+                else
+                {
+                    if (rCalcMatrixKJ_KK)
+                    {
+                        rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                        rMatrixKK->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementVector(rowCount, 0) * dDOF2[theDofMapRow][2]);
+                    }
+                }
+            }
+        }
+
+        for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
+        {
+            int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
+            if (mappingDofMultiscaleNode[globalColumnDof]!=-1)
+            {
+                //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
+                //influence of alpha
+                int theDofMapCol = mappingDofMultiscaleNode[globalColumnDof];
+                bAlphaCol = dDOF[theDofMapCol][0];
+
+                //influence of u
+                bUCol[0] = dDOF[theDofMapCol][1];
+                bUCol[1] = dDOF[theDofMapCol][2];
+
+                //influence of e_hom and e_tot
+                bMCol[0] = dDOF[theDofMapCol][3];
+                bMCol[1] = dDOF[theDofMapCol][4];
+                bMCol[2] = dDOF[theDofMapCol][5];
+
+                if (globalRowDof < this->mNumActiveDofs)
+                {
+                    if (mDOFCrackAngle < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(globalRowDof, mDOFCrackAngle, elementMatrix(rowCount, colCount) * bAlphaCol);
+                    }
+                    else
+                    {
+                        rMatrixJK->AddEntry(globalRowDof, mDOFCrackAngle - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bAlphaCol);
+                    }
+
+                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(globalRowDof, mDOFCrackOpening[0], elementMatrix(rowCount, colCount) * bUCol[0]);
+                    }
+                    else
+                    {
+                        rMatrixJK->AddEntry(globalRowDof, mDOFCrackOpening[0] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[0]);
+                    }
+
+                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(globalRowDof, mDOFCrackOpening[1], elementMatrix(rowCount, colCount) * bUCol[1]);
+                    }
+                    else
+                    {
+                        rMatrixJK->AddEntry(globalRowDof, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
+                    }
+                    if (rCalcMatrixM)
+                    {
+                        rMatrixJM->AddEntry(globalRowDof, 0, elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixJM->AddEntry(globalRowDof, 1, elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixJM->AddEntry(globalRowDof, 2, elementMatrix(rowCount, colCount) * bMCol[2]);
+                    }
+                }
+                else
+                {
+                    if (rCalcMatrixKJ_KK)
+                    {
+                        if (mDOFCrackAngle < this->mNumActiveDofs)
+                        {
+                            rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackAngle, elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+                        else
+                        {
+                            rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+
+                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                        {
+                            rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[0], elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+                        else
+                        {
+                            rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+
+                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                        {
+                            rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[1], elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        else
+                        {
+                            rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        if (rCalcMatrixM)
+                        {
+                            rMatrixKM->AddEntry(globalRowDof - this->mNumActiveDofs, 0, elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixKM->AddEntry(globalRowDof - this->mNumActiveDofs, 1, elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixKM->AddEntry(globalRowDof - this->mNumActiveDofs, 2, elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                    }
+                }
+                if (mappingDofMultiscaleNode[globalRowDof]!=-1)
+                {
+                    if (mDOFCrackAngle < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(mDOFCrackAngle,      mDOFCrackAngle,      bAlphaRow * elementMatrix(rowCount, colCount) * bAlphaCol);
+                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+                        else
+                        {
+                            rMatrixJK->AddEntry(mDOFCrackAngle, mDOFCrackOpening[0] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+
+                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackOpening[1], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        else
+                        {
+                            rMatrixJK->AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        if (rCalcMatrixM)
+                        {
+                            rMatrixJM->AddEntry(mDOFCrackAngle, 0, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJM->AddEntry(mDOFCrackAngle, 1, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJM->AddEntry(mDOFCrackAngle, 2, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                        {
+                            rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs,      mDOFCrackAngle - this->mNumActiveDofs,      bAlphaRow * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            }
+
+                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            }
+                            if (rCalcMatrixM)
+                            {
+                                rMatrixKM->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, 0, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKM->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, 1, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKM->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, 2, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            }
+                        }
+                    }
+
+                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                    {
+                        if (mDOFCrackAngle < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+                        else
+                        {
+                            rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFCrackAngle -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+                        rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[0], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        else
+                        {
+                            rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        if (rCalcMatrixM)
+                        {
+                            rMatrixJM->AddEntry(mDOFCrackOpening[0], 0, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJM->AddEntry(mDOFCrackOpening[0], 1, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJM->AddEntry(mDOFCrackOpening[0], 2, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                        {
+                            if (mDOFCrackAngle < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackAngle, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackAngle -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            }
+                            rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[0] -this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[1], bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            }
+                            if (rCalcMatrixM)
+                            {
+                                rMatrixKM->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, 0, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKM->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, 1, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKM->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, 2, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            }
+                        }
+                    }
+                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                    {
+                        if (mDOFCrackAngle < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFCrackAngle, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+                        else
+                        {
+                            rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFCrackAngle - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+
+                        }
+                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                        {
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+                        else
+                        {
+                            rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+                        rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[1], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        if (rCalcMatrixM)
+                        {
+                            rMatrixJM->AddEntry(mDOFCrackOpening[1], 0, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJM->AddEntry(mDOFCrackOpening[1], 1, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJM->AddEntry(mDOFCrackOpening[1], 2, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                        {
+                            if (mDOFCrackAngle < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+
+                            }
+                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackOpening[0], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFCrackOpening[1]- this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            }
+                            rMatrixKK->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            if (rCalcMatrixM)
+                            {
+                                rMatrixKM->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, 0, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKM->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, 1, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKM->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, 2, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            }
+                        }
+                    }
+                    if (rCalcMatrixM)
+                    {
+                        if (mDOFCrackAngle < this->mNumActiveDofs)
+                        {
+                            rMatrixMJ->AddEntry(0, mDOFCrackAngle, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixMJ->AddEntry(1, mDOFCrackAngle, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixMJ->AddEntry(2, mDOFCrackAngle, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+                        else
+                        {
+                            rMatrixMK->AddEntry(0, mDOFCrackAngle - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixMK->AddEntry(1, mDOFCrackAngle - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixMK->AddEntry(2, mDOFCrackAngle - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                        }
+                        if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                        {
+                            rMatrixMJ->AddEntry(0, mDOFCrackOpening[0], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixMJ->AddEntry(1, mDOFCrackOpening[0], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixMJ->AddEntry(2, mDOFCrackOpening[0], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+                        else
+                        {
+                            rMatrixMK->AddEntry(0, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixMK->AddEntry(1, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixMK->AddEntry(2, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                        }
+                        if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                        {
+                            rMatrixMJ->AddEntry(0, mDOFCrackOpening[1], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixMJ->AddEntry(1, mDOFCrackOpening[1], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixMJ->AddEntry(2, mDOFCrackOpening[1], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        else
+                        {
+                            rMatrixMK->AddEntry(0, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixMK->AddEntry(1, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixMK->AddEntry(2, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                        }
+                        rMatrixMM->AddEntry(0, 0, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixMM->AddEntry(0, 1, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixMM->AddEntry(0, 2, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        rMatrixMM->AddEntry(1, 0, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixMM->AddEntry(1, 1, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixMM->AddEntry(1, 2, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        rMatrixMM->AddEntry(2, 0, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixMM->AddEntry(2, 1, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixMM->AddEntry(2, 2, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                    }
+                }
+            }
+            if (mappingDofMultiscaleNode[globalRowDof]!=-1)
+            {
+                if (globalColumnDof < this->mNumActiveDofs)
+                {
+                    if (mDOFCrackAngle < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(mDOFCrackAngle,      globalColumnDof, bAlphaRow * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                            rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs,      globalColumnDof, bAlphaRow * elementMatrix(rowCount, colCount));
+                    }
+                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(mDOFCrackOpening[0], globalColumnDof, bURow[0]  * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                            rMatrixKJ->AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, globalColumnDof, bURow[0]  * elementMatrix(rowCount, colCount));
+                    }
+                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                    {
+                        rMatrixJJ->AddEntry(mDOFCrackOpening[1], globalColumnDof, bURow[1]  * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                            rMatrixKJ->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, globalColumnDof, bURow[1]  * elementMatrix(rowCount, colCount));
+                    }
+                    if (rCalcMatrixM)
+                    {
+                        rMatrixMJ->AddEntry(0, globalColumnDof, bMRow[0]  * elementMatrix(rowCount, colCount));
+                        rMatrixMJ->AddEntry(1, globalColumnDof, bMRow[1]  * elementMatrix(rowCount, colCount));
+                        rMatrixMJ->AddEntry(2, globalColumnDof, bMRow[2]  * elementMatrix(rowCount, colCount));
+                    }
+                }
+                else
+                {
+                    if (mDOFCrackAngle < this->mNumActiveDofs)
+                    {
+                        rMatrixJK->AddEntry(mDOFCrackAngle, globalColumnDof - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                            rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount));
+                    }
+                    if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                    {
+                        rMatrixJK->AddEntry(mDOFCrackOpening[0], globalColumnDof - this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                            rMatrixKK->AddEntry(mDOFCrackOpening[0] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount));
+                    }
+                    if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                    {
+                        rMatrixJK->AddEntry(mDOFCrackOpening[1], globalColumnDof - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        if (rCalcMatrixKJ_KK)
+                            rMatrixKK->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount));
+                    }
+                    if (rCalcMatrixM)
+                    {
+                        rMatrixMK->AddEntry(0, globalColumnDof - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount));
+                        rMatrixMK->AddEntry(1, globalColumnDof - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount));
+                        rMatrixMK->AddEntry(2, globalColumnDof - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount));
+                    }
+                }
+            }
+        }
+    }
+}
+
 //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening and crack orientation
 //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
-//! @param rDOF return value, for each dof, the corresponding derivatives (alpha, ux, uy, )
-//! @param r2DOF return value, for each dof, the corresponding second order derivative (alpha^2, alpha ux, alpha uy, )
-void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,3> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const
+//! @param rDOF return value, for each dof, the corresponding derivatives (alpha, ux, uy, exx, eyy, gamma_xy)
+//! @param r2DOF return value, for each dof, the corresponding second order derivative (alpha^2, alpha ux, alpha uy)
+void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const
 {
     rMappingDofMultiscaleNode.resize(mNumDofs,-1);
 
@@ -1310,35 +1495,35 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
     GetdEpsilonHomdCrack(bHomAlpha,bHomU,bHessian);
 
     //check the derivatives
-    if (MYDEBUG)
+#ifdef MYDEBUG
+    double interval(1e-5);
+    EngineeringStrain2D strain1 = mEpsilonHom;
+    std::cout << "algo alpha " << bHomAlpha[0] << "  " << bHomAlpha[1] << "  " <<  bHomAlpha[2] << std::endl;
+    const_cast<StructureIp*>(&*this)->mCrackAngle += interval;
+    const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+    EngineeringStrain2D strain2 = mEpsilonHom;
+    std::cout << "cdf alpha " << (strain2.mEngineeringStrain[0]-strain1.mEngineeringStrain[0])/interval << "  "
+                        << (strain2.mEngineeringStrain[1]-strain1.mEngineeringStrain[1])/interval << "  "
+                        << (strain2.mEngineeringStrain[2]-strain1.mEngineeringStrain[2])/interval<< std::endl;
+    const_cast<StructureIp*>(&*this)->mCrackAngle -= interval;
+    const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+
+    for (int count=0; count<2; count++)
     {
-        double interval(1e-5);
-        EngineeringStrain2D strain1 = mEpsilonHom;
-        std::cout << "algo alpha " << bHomAlpha[0] << "  " << bHomAlpha[1] << "  " <<  bHomAlpha[2] << std::endl;
-        const_cast<StructureIp*>(&*this)->mCrackAngle += interval;
+        std::cout << "algo u" << bHomU[0+3*count] << "  " << bHomU[1+3*count] << "  " <<  bHomU[2+3*count] << std::endl;
+        strain1 = mEpsilonHom;
+        const_cast<StructureIp*>(&*this)->mCrackOpening[count]+=interval;
         const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
         EngineeringStrain2D strain2 = mEpsilonHom;
-        std::cout << "cdf alpha " << (strain2.mEngineeringStrain[0]-strain1.mEngineeringStrain[0])/interval << "  "
+        std::cout << "cdf " << (strain2.mEngineeringStrain[0]-strain1.mEngineeringStrain[0])/interval << "  "
                             << (strain2.mEngineeringStrain[1]-strain1.mEngineeringStrain[1])/interval << "  "
                             << (strain2.mEngineeringStrain[2]-strain1.mEngineeringStrain[2])/interval<< std::endl;
-        const_cast<StructureIp*>(&*this)->mCrackAngle -= interval;
+        const_cast<StructureIp*>(&*this)->mCrackOpening[count] -= interval;
         const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-
-        for (int count=0; count<2; count++)
-        {
-            std::cout << "algo u" << bHomU[0+3*count] << "  " << bHomU[1+3*count] << "  " <<  bHomU[2+3*count] << std::endl;
-            strain1 = mEpsilonHom;
-            const_cast<StructureIp*>(&*this)->mCrackOpening[count]+=interval;
-            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-            EngineeringStrain2D strain2 = mEpsilonHom;
-            std::cout << "cdf " << (strain2.mEngineeringStrain[0]-strain1.mEngineeringStrain[0])/interval << "  "
-                                << (strain2.mEngineeringStrain[1]-strain1.mEngineeringStrain[1])/interval << "  "
-                                << (strain2.mEngineeringStrain[2]-strain1.mEngineeringStrain[2])/interval<< std::endl;
-            const_cast<StructureIp*>(&*this)->mCrackOpening[count] -= interval;
-            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-        }
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
+#endif
+
     //second loop, calculate derivates
     for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
     {
@@ -1353,27 +1538,28 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
             double dDOFdEpsilonHomX[3];
             double dDOFdEpsilonHomY[3];
             GetdDisplacementdEpsilonHom(coord,dDOFdEpsilonHomX,dDOFdEpsilonHomY);
-            if (MYDEBUG)
+#ifdef MYDEBUG
             {
-                double interval(1e-3);
-                double disp1[2],disp2[2];
-                double dDOFdEpsilonHomXcdf[3];
-                double dDOFdEpsilonHomYcdf[3];
-                std::cout << "dDofxdEpsilonHom algo " << dDOFdEpsilonHomX[0] << "  " << dDOFdEpsilonHomX[1] << "  " << dDOFdEpsilonHomX[2] << std::endl;
-                std::cout << "dDofydEpsilonHom algo " << dDOFdEpsilonHomY[0] << "  " << dDOFdEpsilonHomY[1] << "  " << dDOFdEpsilonHomY[2] << std::endl;
-                GetDisplacementsEpsilonHom2D(coord, disp1);
-                for (int count=0; count<3; count++)
-                {
-                    const_cast<StructureIp*>(&*this)->mEpsilonHom.mEngineeringStrain[count] += interval;
-                    GetDisplacementsEpsilonHom2D(coord, disp2);
-                    dDOFdEpsilonHomXcdf[count] = (disp2[0]-disp1[0])/interval;
-                    dDOFdEpsilonHomYcdf[count] = (disp2[1]-disp1[1])/interval;
-                    const_cast<StructureIp*>(&*this)->mEpsilonHom.mEngineeringStrain[count] -= interval;
-                }
-                std::cout << "dDofxdEpsilonHom cdf " << dDOFdEpsilonHomXcdf[0] << "  " << dDOFdEpsilonHomXcdf[1] << "  " << dDOFdEpsilonHomXcdf[2] << std::endl;
-                std::cout << "dDofydEpsilonHom cdf " << dDOFdEpsilonHomYcdf[0] << "  " << dDOFdEpsilonHomYcdf[1] << "  " << dDOFdEpsilonHomYcdf[2] << std::endl;
-                std::cout << std::endl;
+            double interval(1e-3);
+            double disp1[2],disp2[2];
+            double dDOFdEpsilonHomXcdf[3];
+            double dDOFdEpsilonHomYcdf[3];
+            std::cout << "dDofxdEpsilonHom algo " << dDOFdEpsilonHomX[0] << "  " << dDOFdEpsilonHomX[1] << "  " << dDOFdEpsilonHomX[2] << std::endl;
+            std::cout << "dDofydEpsilonHom algo " << dDOFdEpsilonHomY[0] << "  " << dDOFdEpsilonHomY[1] << "  " << dDOFdEpsilonHomY[2] << std::endl;
+            GetDisplacementsEpsilonHom2D(coord, disp1);
+            for (int count=0; count<3; count++)
+            {
+                const_cast<StructureIp*>(&*this)->mEpsilonHom.mEngineeringStrain[count] += interval;
+                GetDisplacementsEpsilonHom2D(coord, disp2);
+                dDOFdEpsilonHomXcdf[count] = (disp2[0]-disp1[0])/interval;
+                dDOFdEpsilonHomYcdf[count] = (disp2[1]-disp1[1])/interval;
+                const_cast<StructureIp*>(&*this)->mEpsilonHom.mEngineeringStrain[count] -= interval;
             }
+            std::cout << "dDofxdEpsilonHom cdf " << dDOFdEpsilonHomXcdf[0] << "  " << dDOFdEpsilonHomXcdf[1] << "  " << dDOFdEpsilonHomXcdf[2] << std::endl;
+            std::cout << "dDofydEpsilonHom cdf " << dDOFdEpsilonHomYcdf[0] << "  " << dDOFdEpsilonHomYcdf[1] << "  " << dDOFdEpsilonHomYcdf[2] << std::endl;
+            std::cout << std::endl;
+            }
+#endif
 
             //derivative of displacement with respect to discontinuity (crack orientation)
             GetdDisplacementdCrackOrientation(coord,&(rDOF[countMultiscaleDofs][0]),&(rDOF[countMultiscaleDofs+1][0]));
@@ -1384,30 +1570,29 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
             rDOF[countMultiscaleDofs+1][0] += dDOFdEpsilonHomY[0]*bHomAlpha[0] +
                                               dDOFdEpsilonHomY[1]*bHomAlpha[1] +
                                               dDOFdEpsilonHomY[2]*bHomAlpha[2];
-            if (MYDEBUG)
+#ifdef MYDEBUG
             {
-                double interval(1e-5);
-                double disp1[2],disp2[2],disptmp[2];
-                std::cout << "dDofdAlpha algo " << rDOF[countMultiscaleDofs][0] << "  " << rDOF[countMultiscaleDofs+1][0] << std::endl;
-                GetDisplacementsCrack2D(coord, disp1);
-                GetDisplacementsEpsilonHom2D(coord, disptmp);
-                disp1[0] += disptmp[0];
-                disp1[1] += disptmp[1];
-                const_cast<StructureIp*>(&*this)->mCrackAngle += interval;
-                const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-                GetDisplacementsCrack2D(coord, disp2);
-                GetDisplacementsEpsilonHom2D(coord, disptmp);
-                disp2[0] += disptmp[0];
-                disp2[1] += disptmp[1];
-                std::cout << "dDofdAlpha cdf " << (disp2[0]-disp1[0])/interval << "  " << (disp2[1]-disp1[1])/interval << std::endl;
-                if (fabs((disp2[0]-disp1[0])/interval-rDOF[countMultiscaleDofs][0])>1e-2 || fabs((disp2[1]-disp1[1])/interval-rDOF[countMultiscaleDofs+1][0])>1e-2)
-                    throw MechanicsException("Hier ist ein Fehler.");
-                const_cast<StructureIp*>(&*this)->mCrackAngle -= interval;
-                const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-                std::cout << std::endl;
+            double interval(1e-5);
+            double disp1[2],disp2[2],disptmp[2];
+            std::cout << "dDofdAlpha algo " << rDOF[countMultiscaleDofs][0] << "  " << rDOF[countMultiscaleDofs+1][0] << std::endl;
+            GetDisplacementsCrack2D(coord, disp1);
+            GetDisplacementsEpsilonHom2D(coord, disptmp);
+            disp1[0] += disptmp[0];
+            disp1[1] += disptmp[1];
+            const_cast<StructureIp*>(&*this)->mCrackAngle += interval;
+            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+            GetDisplacementsCrack2D(coord, disp2);
+            GetDisplacementsEpsilonHom2D(coord, disptmp);
+            disp2[0] += disptmp[0];
+            disp2[1] += disptmp[1];
+            std::cout << "dDofdAlpha cdf " << (disp2[0]-disp1[0])/interval << "  " << (disp2[1]-disp1[1])/interval << std::endl;
+            if (fabs((disp2[0]-disp1[0])/interval-rDOF[countMultiscaleDofs][0])>1e-2 || fabs((disp2[1]-disp1[1])/interval-rDOF[countMultiscaleDofs+1][0])>1e-2)
+                throw MechanicsException("Hier ist ein Fehler.");
+            const_cast<StructureIp*>(&*this)->mCrackAngle -= interval;
+            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+            std::cout << std::endl;
             }
-
-
+#endif
             //derivative of displacement with respect to discontinuity (crack opening)
             GetdDisplacementdCrackOpening(coord,&(rDOF[countMultiscaleDofs][1]),&(rDOF[countMultiscaleDofs+1][1]));
             rDOF[countMultiscaleDofs][1]   += dDOFdEpsilonHomX[0]*bHomU[0] +
@@ -1416,56 +1601,66 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
             rDOF[countMultiscaleDofs+1][1] += dDOFdEpsilonHomY[0]*bHomU[0] +
                                               dDOFdEpsilonHomY[1]*bHomU[1] +
                                               dDOFdEpsilonHomY[2]*bHomU[2];
-            if (MYDEBUG)
+#ifdef MYDEBUG
             {
-                double interval(1e-5);
-                double disp1[2],disp2[2],disptmp[2];
-                std::cout << "dDofdU1 algo " << rDOF[countMultiscaleDofs][1] << "  " << rDOF[countMultiscaleDofs+1][1] << std::endl;
-                GetDisplacementsCrack2D(coord, disp1);
-                GetDisplacementsEpsilonHom2D(coord, disptmp);
-                disp1[0] += disptmp[0];
-                disp1[1] += disptmp[1];
-                const_cast<StructureIp*>(&*this)->mCrackOpening[0] += interval;
-                const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-                GetDisplacementsCrack2D(coord, disp2);
-                GetDisplacementsEpsilonHom2D(coord, disptmp);
-                disp2[0] += disptmp[0];
-                disp2[1] += disptmp[1];
-                std::cout << "dDofdU1 cdf " << (disp2[0]-disp1[0])/interval << "  " << (disp2[1]-disp1[1])/interval << std::endl;
-                if (fabs((disp2[0]-disp1[0])/interval-rDOF[countMultiscaleDofs][1])>1e-2 || fabs((disp2[1]-disp1[1])/interval-rDOF[countMultiscaleDofs+1][1])>1e-2)
-                    throw MechanicsException("Hier ist ein Fehler.");
-                const_cast<StructureIp*>(&*this)->mCrackOpening[0] -= interval;
-                const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-                std::cout << std::endl;
+            double interval(1e-5);
+            double disp1[2],disp2[2],disptmp[2];
+            std::cout << "dDofdU1 algo " << rDOF[countMultiscaleDofs][1] << "  " << rDOF[countMultiscaleDofs+1][1] << std::endl;
+            GetDisplacementsCrack2D(coord, disp1);
+            GetDisplacementsEpsilonHom2D(coord, disptmp);
+            disp1[0] += disptmp[0];
+            disp1[1] += disptmp[1];
+            const_cast<StructureIp*>(&*this)->mCrackOpening[0] += interval;
+            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+            GetDisplacementsCrack2D(coord, disp2);
+            GetDisplacementsEpsilonHom2D(coord, disptmp);
+            disp2[0] += disptmp[0];
+            disp2[1] += disptmp[1];
+            std::cout << "dDofdU1 cdf " << (disp2[0]-disp1[0])/interval << "  " << (disp2[1]-disp1[1])/interval << std::endl;
+            if (fabs((disp2[0]-disp1[0])/interval-rDOF[countMultiscaleDofs][1])>1e-2 || fabs((disp2[1]-disp1[1])/interval-rDOF[countMultiscaleDofs+1][1])>1e-2)
+                throw MechanicsException("Hier ist ein Fehler.");
+            const_cast<StructureIp*>(&*this)->mCrackOpening[0] -= interval;
+            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+            std::cout << std::endl;
             }
+#endif
             rDOF[countMultiscaleDofs][2]   += dDOFdEpsilonHomX[0]*bHomU[3] +
                                               dDOFdEpsilonHomX[1]*bHomU[4] +
                                               dDOFdEpsilonHomX[2]*bHomU[5];
             rDOF[countMultiscaleDofs+1][2] += dDOFdEpsilonHomY[0]*bHomU[3] +
                                               dDOFdEpsilonHomY[1]*bHomU[4] +
                                               dDOFdEpsilonHomY[2]*bHomU[5];
-            if (MYDEBUG)
+#ifdef MYDEBUG
             {
-                double interval(1e-5);
-                double disp1[2],disp2[2],disptmp[2];
-                std::cout << "dDofdU2 algo " << rDOF[countMultiscaleDofs][2] << "  " << rDOF[countMultiscaleDofs+1][2] << std::endl;
-                GetDisplacementsCrack2D(coord, disp1);
-                GetDisplacementsEpsilonHom2D(coord, disptmp);
-                disp1[0] += disptmp[0];
-                disp1[1] += disptmp[1];
-                const_cast<StructureIp*>(&*this)->mCrackOpening[1] += interval;
-                const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-                GetDisplacementsCrack2D(coord, disp2);
-                GetDisplacementsEpsilonHom2D(coord, disptmp);
-                disp2[0] += disptmp[0];
-                disp2[1] += disptmp[1];
-                std::cout << "dDofdU2 cdf " << (disp2[0]-disp1[0])/interval << "  " << (disp2[1]-disp1[1])/interval << std::endl;
-                if (fabs((disp2[0]-disp1[0])/interval-rDOF[countMultiscaleDofs][2])>1e-2 || fabs((disp2[1]-disp1[1])/interval-rDOF[countMultiscaleDofs+1][2])>1e-2)
-                    throw MechanicsException("Hier ist ein Fehler.");
-                const_cast<StructureIp*>(&*this)->mCrackOpening[1] -= interval;
-                const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
-                std::cout << std::endl;
+            double interval(1e-5);
+            double disp1[2],disp2[2],disptmp[2];
+            std::cout << "dDofdU2 algo " << rDOF[countMultiscaleDofs][2] << "  " << rDOF[countMultiscaleDofs+1][2] << std::endl;
+            GetDisplacementsCrack2D(coord, disp1);
+            GetDisplacementsEpsilonHom2D(coord, disptmp);
+            disp1[0] += disptmp[0];
+            disp1[1] += disptmp[1];
+            const_cast<StructureIp*>(&*this)->mCrackOpening[1] += interval;
+            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+            GetDisplacementsCrack2D(coord, disp2);
+            GetDisplacementsEpsilonHom2D(coord, disptmp);
+            disp2[0] += disptmp[0];
+            disp2[1] += disptmp[1];
+            std::cout << "dDofdU2 cdf " << (disp2[0]-disp1[0])/interval << "  " << (disp2[1]-disp1[1])/interval << std::endl;
+            if (fabs((disp2[0]-disp1[0])/interval-rDOF[countMultiscaleDofs][2])>1e-2 || fabs((disp2[1]-disp1[1])/interval-rDOF[countMultiscaleDofs+1][2])>1e-2)
+                throw MechanicsException("Hier ist ein Fehler.");
+            const_cast<StructureIp*>(&*this)->mCrackOpening[1] -= interval;
+            const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+            std::cout << std::endl;
             }
+#endif
+            //derivative of displacement with respect to homogeneous strain (is equal to derivative w.r.t. total strain)
+            rDOF[countMultiscaleDofs][3]   = dDOFdEpsilonHomX[0];
+            rDOF[countMultiscaleDofs][4]   = dDOFdEpsilonHomX[1];
+            rDOF[countMultiscaleDofs][5]   = dDOFdEpsilonHomX[2];
+
+            rDOF[countMultiscaleDofs+1][3]   = dDOFdEpsilonHomY[0];
+            rDOF[countMultiscaleDofs+1][4]   = dDOFdEpsilonHomY[1];
+            rDOF[countMultiscaleDofs+1][5]   = dDOFdEpsilonHomY[2];
 
             //calculate second order derivatives
             //second derivative of displacement with respect to discontinuity (crack orientation)
@@ -1500,8 +1695,9 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
             }
         }
     }
-    if (MYDEBUG)
-        std::cout << "End of routine" << std::endl << std::endl;
+#ifdef MYDEBUG
+    std::cout << "End of routine" << std::endl << std::endl;
+#endif
 
     if (countMultiscaleDofs!=numMultiscaleDofs)
         throw MechanicsException("[NuTo::StructureIp::CalculatedDispdGlobalDofs] countMultiscaleDofs!=numMultiscaleDofs internal error.");
@@ -1543,23 +1739,22 @@ void NuTo::StructureIp::GetDisplacementsCrack2D(double rCoordinates[2], double r
 
     if (d<-mCrackTransitionZone)
     {
-        rDisplacements[0] = 0.;
-        rDisplacements[1] = 0.;
+        rDisplacements[0] = -0.5*mCrackOpening[0];
+        rDisplacements[1] = -0.5*mCrackOpening[1];
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rDisplacements[0] = mCrackOpening[0];
-            rDisplacements[1] = mCrackOpening[1];
+            rDisplacements[0] = 0.5*mCrackOpening[0];
+            rDisplacements[1] = 0.5*mCrackOpening[1];
         }
         else
         {
             //smooth transition from cracking to none cracking
-            double factor(0.5+0.5*sin(0.5*M_PI*d));
+            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
             rDisplacements[0] = factor*mCrackOpening[0];
             rDisplacements[1] = factor*mCrackOpening[1];
-
         }
     }
 }
@@ -1588,30 +1783,29 @@ void NuTo::StructureIp::GetdDisplacementdCrackOpening(double rCoordinates[2], do
 
     if (d<-mCrackTransitionZone)
     {
-        rdX_dCrackOpening[0] = 0.;
-        rdX_dCrackOpening[1] = 0.;
-        rdY_dCrackOpening[0] = 0.;
-        rdY_dCrackOpening[1] = 0.;
+        rdX_dCrackOpening[0] = -0.5;
+        rdX_dCrackOpening[1] =  0.0;
+        rdY_dCrackOpening[0] =  0.0;
+        rdY_dCrackOpening[1] = -0.5;
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rdX_dCrackOpening[0] = 1.;
-            rdX_dCrackOpening[1] = 0.;
-            rdY_dCrackOpening[0] = 0.;
-            rdY_dCrackOpening[1] = 1.;
+            rdX_dCrackOpening[0] = 0.5;
+            rdX_dCrackOpening[1] = 0.0;
+            rdY_dCrackOpening[0] = 0.0;
+            rdY_dCrackOpening[1] = 0.5;
         }
         else
         {
             //smooth transition from cracking to none cracking
-            double factor(0.5+0.5*sin(0.5*M_PI*d));
+            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
 
             rdX_dCrackOpening[0] = factor;
             rdX_dCrackOpening[1] = 0.;
             rdY_dCrackOpening[0] = 0.;
             rdY_dCrackOpening[1] = factor;
-
         }
     }
 }
@@ -1644,7 +1838,7 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
-            double dFactor(0.5*cos(0.5*M_PI*d)*dDdAlpha);
+            double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
 
             rdX_dAlphaCrackOpening[0] = dFactor;
             rdX_dAlphaCrackOpening[1] = 0.;
@@ -1657,7 +1851,7 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
 
 //! @brief derivative of displacement with respect to discontinuity (crack opening)
 //! @param rdX_dAlpha[2] return value, derivative of x-displacement with respect to crack orientation (alpha)
-//! @param rdy_dAlpha[2] return value, derivative of x-displacement with respect to crack orientation (alpha)
+//! @param rdy_dAlpha[2] return value, derivative of y-displacement with respect to crack orientation (alpha)
 void NuTo::StructureIp::GetdDisplacementdCrackOrientation(double rCoordinates[2], double rdX_dAlpha[1], double rdY_dAlpha[1])const
 {
     //calculate distance to crack
@@ -1679,7 +1873,7 @@ void NuTo::StructureIp::GetdDisplacementdCrackOrientation(double rCoordinates[2]
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
-            double dFactor(0.25*M_PI*cos(0.5*M_PI*d)*dDdAlpha);
+            double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
 
             rdX_dAlpha[0] = dFactor*mCrackOpening[0];
             rdY_dAlpha[0] = dFactor*mCrackOpening[1];
@@ -1711,7 +1905,8 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOrientation(double rCoordinates[
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
             double d2DdAlpha = Calculated2DistanceToCrack2Dd2Alpha(rCoordinates);
-            double dFactor(0.25*M_PI*(0.5*M_PI*sin(0.5*M_PI*d)*dDdAlpha+cos(0.5*M_PI*d)*d2DdAlpha));
+            double dFactor(0.25*M_PI/mCrackTransitionZone*(-0.5*M_PI/mCrackTransitionZone*sin(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha
+                                      +cos(0.5*M_PI*d/mCrackTransitionZone)*d2DdAlpha));
 
             rd2X_d2Alpha[0] = dFactor*mCrackOpening[0];
             rd2Y_d2Alpha[0] = dFactor*mCrackOpening[1];
@@ -1750,24 +1945,64 @@ void NuTo::StructureIp::CalculateHomogeneousEngineeringStrain()
     double cosAlpha(cos(mCrackAngle));
     double gamma(1./std::max(fabs(sinAlpha),fabs(cosAlpha)));
     assert(mlX==mlY);
-    double factor=gamma/(2.*mlX);
+    double factor=gamma/(mlX);
 
     mEpsilonHom.mEngineeringStrain[0] = mEpsilonTot.mEngineeringStrain[0] + factor * sinAlpha * mCrackOpening[0];
     mEpsilonHom.mEngineeringStrain[1] = mEpsilonTot.mEngineeringStrain[1] - factor * cosAlpha * mCrackOpening[1];
     mEpsilonHom.mEngineeringStrain[2] = mEpsilonTot.mEngineeringStrain[2] + factor * ( sinAlpha * mCrackOpening[1] - cosAlpha * mCrackOpening[0]);
+/*    mEpsilonHom.mEngineeringStrain[0] = 0;
+    mEpsilonHom.mEngineeringStrain[1] = 0;
+    mEpsilonHom.mEngineeringStrain[2] = 0;
+
+    std::cout << "calculation of e hom is wrong  " << std::endl;
+*/
+//#ifdef MYDEBUG
+    std::cout << "mEpsilonTot " << mEpsilonTot.mEngineeringStrain[0] << " " << mEpsilonTot.mEngineeringStrain[1] << " " << mEpsilonTot.mEngineeringStrain[2] << std::endl;
+    std::cout << "mCrackOpening " << mCrackOpening[0] << " " << mCrackOpening[1] << " " << factor << std::endl;
+    std::cout << "mEpsilonHom " << mEpsilonHom.mEngineeringStrain[0] << " " << mEpsilonHom.mEngineeringStrain[1] << " " << mEpsilonHom.mEngineeringStrain[2] << std::endl;
+//#endif
 }
 
 //calculate from the existing crack opening and orientation the cracking strain
 void NuTo::StructureIp::SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain)
 {
     mEpsilonTot = rTotalEngineeringStrain;
-    CalculateHomogeneousEngineeringStrain();
+#ifdef MYDEBUG
+    std::cout << "set total strain to " << rTotalEngineeringStrain.mEngineeringStrain[0]
+                                 << " " << rTotalEngineeringStrain.mEngineeringStrain[1]
+                                 << " " << rTotalEngineeringStrain.mEngineeringStrain[2] <<std::endl;
+#endif
+   CalculateHomogeneousEngineeringStrain();
+}
+
+//! @brief returns the total strain
+NuTo::EngineeringStrain2D NuTo::StructureIp::GetTotalEngineeringStrain()const
+{
+    return mEpsilonTot;
+}
+
+//! @brief returns the total strain
+NuTo::EngineeringStrain2D NuTo::StructureIp::GetHomogeneousEngineeringStrain()const
+{
+    return mEpsilonHom;
+}
+
+//! @brief return the previous crack angle
+double NuTo::StructureIp::GetPrevCrackAngle()const
+{
+    return mPrevCrackAngle;
+}
+
+//! @brief sets the previous crack angle
+void NuTo::StructureIp::SetPrevCrackAngle(double rPrevCrackAngle)
+{
+    mPrevCrackAngle = rPrevCrackAngle;
 }
 
 //! @brief Calculate the derivate of the homogeneous strain with respect to changes of the crack orientation and crack opening
 //! this is due to the constraint equation relating total strain, homogeneous strain and cracking strain
 //! @parameter rbHomAlpha dHom wrt alpha
-//! @paramter rbHomU[0-2] for wrt ux [3-5] for wrt uy
+//! @paramter rbHomU [0-2] wrt ux [3-5] wrt uy
 //! @parameter bHessian depsilondalpha2[0-2], depsilondalphadux[3-5], depsilondalphadux[6-8]
 void NuTo::StructureIp::GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU[6], double rbHessian[9])const
 {
@@ -1775,7 +2010,7 @@ void NuTo::StructureIp::GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU
     double cosAlpha(cos(mCrackAngle));
     double gamma(1./std::max(fabs(sinAlpha),fabs(cosAlpha)));
     assert(mlX==mlY);
-    double factor=gamma/(2.*mlX);
+    double factor=gamma/(mlX);
 
     rbHomU[0] = factor*sinAlpha;
     rbHomU[1] = 0.;
@@ -1788,68 +2023,45 @@ void NuTo::StructureIp::GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU
     if (fabs(sinAlpha)>fabs(cosAlpha))
     {
         rbHomAlpha[0] = 0.;
-        rbHomAlpha[1] = mCrackOpening[1]/(2.*mlX*sinAlpha*fabs(sinAlpha));
-        rbHomAlpha[2] = mCrackOpening[0]/(2.*mlX*sinAlpha*fabs(sinAlpha));
+        rbHomAlpha[1] = mCrackOpening[1]/(mlX*sinAlpha*fabs(sinAlpha));
+        rbHomAlpha[2] = mCrackOpening[0]/(mlX*sinAlpha*fabs(sinAlpha));
 
         if (rbHessian!=0)
         {
             rbHessian[0] = 0.;
-            rbHessian[1] = -mCrackOpening[1]*cosAlpha/(mlX*sinAlpha*sinAlpha*fabs(sinAlpha));
-            rbHessian[2] = -mCrackOpening[0]*cosAlpha/(mlX*sinAlpha*sinAlpha*fabs(sinAlpha));
+            rbHessian[1] = -mCrackOpening[1]*2.*cosAlpha/(mlX*sinAlpha*sinAlpha*fabs(sinAlpha));
+            rbHessian[2] = -mCrackOpening[0]*2.*cosAlpha/(mlX*sinAlpha*sinAlpha*fabs(sinAlpha));
 
             rbHessian[3] = 0.;
             rbHessian[4] = 0.;
-            rbHessian[5] = 1/(2.*mlX*sinAlpha*fabs(sinAlpha));
+            rbHessian[5] = 1./(mlX*sinAlpha*fabs(sinAlpha));
 
             rbHessian[6] = 0.;
-            rbHessian[7] = 1./(2.*mlX*sinAlpha*fabs(sinAlpha));
+            rbHessian[7] = 1./(mlX*sinAlpha*fabs(sinAlpha));
             rbHessian[8] = 0.;
 
         }
     }
     else
     {
-        rbHomAlpha[0] = mCrackOpening[0]/(2.*mlX*cosAlpha*fabs(cosAlpha));
+        rbHomAlpha[0] = mCrackOpening[0]/(mlX*cosAlpha*fabs(cosAlpha));
         rbHomAlpha[1] = 0.;
-        rbHomAlpha[2] = mCrackOpening[1]/(2.*mlX*cosAlpha*fabs(cosAlpha));
+        rbHomAlpha[2] = mCrackOpening[1]/(mlX*cosAlpha*fabs(cosAlpha));
         if (rbHessian!=0)
         {
-            rbHessian[0] = mCrackOpening[0]*sinAlpha/(mlX*cosAlpha*cosAlpha*fabs(cosAlpha));
+            rbHessian[0] = mCrackOpening[0]*2.*sinAlpha/(mlX*cosAlpha*cosAlpha*fabs(cosAlpha));
             rbHessian[1] = 0.;
-            rbHessian[2] = mCrackOpening[1]*sinAlpha/(mlX*cosAlpha*cosAlpha*fabs(cosAlpha));
+            rbHessian[2] = mCrackOpening[1]*2.*sinAlpha/(mlX*cosAlpha*cosAlpha*fabs(cosAlpha));
 
-            rbHessian[3] = 1./(2.*mlX*cosAlpha*fabs(cosAlpha));
+            rbHessian[3] = 1./(mlX*cosAlpha*fabs(cosAlpha));
             rbHessian[4] = 0.;
             rbHessian[5] = 0.;
 
             rbHessian[6] = 0.;
             rbHessian[7] = 0.;
-            rbHessian[8] = 1./(2.*mlX*cosAlpha*fabs(cosAlpha));
+            rbHessian[8] = 1./(mlX*cosAlpha*fabs(cosAlpha));
         }
     }
-}
-
-//! @brief add constraint equation for alpha in case of norm of crackopening less than a prescribed value
-//! @return constraint equation
-void NuTo::StructureIp::SetConstraintAlpha(EngineeringStrain2D& rTotalEngineeringStrain)
-{
-    if (mConstraintAlpha!=-1)
-        this->mConstraintMap.erase(mConstraintAlpha);
-    if (mCrackOpening[0]*mCrackOpening[0] + mCrackOpening[1]*mCrackOpening[1] > tolCrackOpeningConstraint)
-        return;
-
-    // find new constraint equation number
-    mConstraintAlpha = 0;
-    while (this->mConstraintMap.find(mConstraintAlpha) != this->mConstraintMap.end())
-    {
-        mConstraintAlpha++;
-    }
-
-    // create new constraint equation term
-    ConstraintBase* constraintPtr = new ConstraintLinearGlobalCrackAngle(this);
-
-    // insert constraint equation into map
-    this->mConstraintMap.insert(mConstraintAlpha, constraintPtr);
 }
 
 //! @brief return the total strain

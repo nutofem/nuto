@@ -22,6 +22,8 @@
 
 namespace NuTo
 {
+class ElementBase;
+class NodeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all groups
@@ -46,8 +48,8 @@ public:
 #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialize Group<T>" << std::endl;
 #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
-        boost::serialization::base_object<std::set<T*> >(*this);
+        ar & boost::serialization::make_nvp ("set",boost::serialization::base_object< std::set<T*> > ( *this ) )
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
 #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize Group<T>" << std::endl;
 #endif
@@ -166,6 +168,11 @@ public:
 
 };
 }//namespace NuTo
-
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::NodeBase>)
+BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::ElementBase>)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION
 #endif //GROUP_H
 

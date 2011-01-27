@@ -71,6 +71,10 @@ public:
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
     virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr){};
 
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    virtual void Info(unsigned short rVerboseLevel) const=0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

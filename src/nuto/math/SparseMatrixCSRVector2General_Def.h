@@ -128,6 +128,13 @@ public:
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering);
 
+    //! @brief ... Concatenate columns from another matrix
+    //! @param rOther ... other matrix with same number of rows
+    void ConcatenateColumns(const SparseMatrixCSRVector2General<T>& rOther);
+
+    //! @brief ... Concatenate rows from another matrix
+    //! @param rOther ... other matrix with same number of columns
+    void ConcatenateRows(const SparseMatrixCSRVector2General<T>& rOther);
 protected:
 };
 }

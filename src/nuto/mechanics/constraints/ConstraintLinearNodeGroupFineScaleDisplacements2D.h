@@ -50,7 +50,14 @@ public:
                                NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
                                NuTo::FullMatrix<double>& rRHS)const;
 
-#ifdef ENABLE_SERIALIZATION
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const
+    {
+        std::cout<< "ConstraintLinearNodeGroupFineScaleDisplacements2D" << std::endl;
+    }
+
+    #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version

@@ -32,6 +32,7 @@
 #include "nuto/math/fortran_routines.h"
 #include "nuto/math/SparseMatrix.h"
 #include <eigen2/Eigen/Core>
+#include <eigen2/Eigen/Array>
 
 namespace NuTo
 {
@@ -182,6 +183,15 @@ public:
     FullMatrix<T>& operator*= ( const T &other)
     {
         mEigenMatrix*=other;
+        return *this;
+    }
+
+    //! @brief ... add a value to all entries of the matrix and return a reference to this matrix
+    //! @param other ... value to be added
+    //! @return reference to this matrix
+    FullMatrix<T>& operator+= ( const T &other)
+    {
+        mEigenMatrix.cwise()+=1;
         return *this;
     }
 

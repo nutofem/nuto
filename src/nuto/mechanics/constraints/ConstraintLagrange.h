@@ -67,6 +67,9 @@ public:
     virtual void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const=0;
 
+    //! @brief calculates the internal potential
+    virtual double CalculateTotalPotential()const=0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

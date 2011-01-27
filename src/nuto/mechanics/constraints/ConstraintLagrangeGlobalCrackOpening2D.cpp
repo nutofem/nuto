@@ -145,17 +145,17 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateCoefficientMatrix_0(
         //derivative with respect to uy and lambda
         rResult.AddEntry(0,3,-cosAlpha);
         //derivative with respect to alpha and alpha
-        rResult.AddEntry(1,1,-mLagrangeValue*g+2.*mPenalty*(dgda*dgda-g*g));
+        rResult.AddEntry(1,1,-mLagrangeValue*g+mPenalty*(dgda*dgda-g*g));
         //derivative with respect to ux and alpha
-        rResult.AddEntry(1,2,mLagrangeValue*cosAlpha + 2.*mPenalty*(sinAlpha*dgda+g*cosAlpha));
+        rResult.AddEntry(1,2,mLagrangeValue*cosAlpha + mPenalty*(sinAlpha*dgda+g*cosAlpha));
         //derivative with respect to uy and alpha
-        rResult.AddEntry(1,3,mLagrangeValue*sinAlpha + 2.*mPenalty*(-cosAlpha*dgda+g*sinAlpha));
+        rResult.AddEntry(1,3,mLagrangeValue*sinAlpha + mPenalty*(-cosAlpha*dgda+g*sinAlpha));
         //derivative with respect to ux^2
-        rResult.AddEntry(2,2,2.*mPenalty*sinAlpha*sinAlpha);
+        rResult.AddEntry(2,2,mPenalty*sinAlpha*sinAlpha);
         //derivative with respect to ux and uy
-        rResult.AddEntry(2,3,-2.*mPenalty*sinAlpha*cosAlpha);
+        rResult.AddEntry(2,3,-mPenalty*sinAlpha*cosAlpha);
         //derivative with respect to uy^2
-        rResult.AddEntry(3,3,2.*mPenalty*cosAlpha*cosAlpha);
+        rResult.AddEntry(3,3,mPenalty*cosAlpha*cosAlpha);
     }
     else
     {
@@ -163,14 +163,11 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateCoefficientMatrix_0(
         rResult.AddEntry(0,0,-1./mPenalty);
     }
 
-/*
     //check result matrix by calling the gradient routine
     NuTo::FullMatrix<double> rResultFull(rResult);
-    std::cout<< "stiffness algo " << std::endl;
-    rResultFull.Info(10,3);
     NuTo::FullMatrix<double> rResultCDF(rResult);
     NuTo::FullMatrix<double> gradient1,gradient2;
-    double delta(1e-7);
+    double delta(1e-8);
     CalculateGradientInternalPotential(gradient1,rGlobalDofs);
 
     const_cast<ConstraintLagrangeGlobalCrackOpening2D*>(this)->mLagrangeValue+=delta;
@@ -199,9 +196,14 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateCoefficientMatrix_0(
     crackOpening[1]-=delta;
     mStructure->SetGlobalCrackOpening(crackOpening);
 
-    std::cout<< "stiffness cdf " << std::endl;
-    rResultCDF.Info(10,3);
-*/
+    if ((rResultFull-rResultCDF).Abs().Max()<1e-2)
+    {
+        std::cout << "constraint crack opening "  << std::endl;
+        std::cout<< "stiffness algo " << std::endl;
+        rResultFull.Info(10,3);
+        std::cout<< "stiffness cdf " << std::endl;
+        rResultCDF.Info(10,3);
+    }
 }
 
 //! @brief calculates the gradient of the internal potential
@@ -226,26 +228,119 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateGradientInternalPote
     double cosAlpha(cos(crackAngle));
     double sinAlpha(sin(crackAngle));
 
-    //std::cout << "normal crack opening" << -sinAlpha*crackOpening[0]+cosAlpha*crackOpening[1] << std::endl;
-
+    //normal crack opening is -g, but since nco>=0 is the constraint, <=> -nco<=0
     double g(sinAlpha*crackOpening[0]-cosAlpha*crackOpening[1]);
     double dgda(cosAlpha*crackOpening[0]+sinAlpha*crackOpening[1]);
 
     if (g>-mLagrangeValue/mPenalty)
     {
+        //std::cout << "constraint crack opening active(gradient) " << g << "  " << mLagrangeValue << std::endl;
         //derivative with respect to lambda
         rResult(0,0)= g;
         //derivative with respect to alpha
-        rResult(1,0)= mLagrangeValue*dgda+2.*mPenalty*g*dgda;
+        rResult(1,0)= mLagrangeValue*dgda+mPenalty*g*dgda;
         //derivative with respect to ux
-        rResult(2,0)= mLagrangeValue*sinAlpha+2.*mPenalty*sinAlpha*g;
+        rResult(2,0)= mLagrangeValue*sinAlpha+mPenalty*sinAlpha*g;
         //derivative with respect to uy
-        rResult(3,0)= -mLagrangeValue*cosAlpha-2.*mPenalty*cosAlpha*g;
+        rResult(3,0)= -mLagrangeValue*cosAlpha-mPenalty*cosAlpha*g;
     }
     else
     {
+        //std::cout << "constraint crack opening inactive(gradient) " << g << "  " << mLagrangeValue << std::endl;
         //derivative with respect to lambda
         rResult(0,0)=-mLagrangeValue/mPenalty;
+    }
+
+    //check result matrix by calling the potential routine
+    NuTo::FullMatrix<double> rResultFull(rResult);
+    NuTo::FullMatrix<double> rResultCDF(rResult);
+    double energy1,energy2;
+    double delta(1e-8);
+    energy1 = CalculateTotalPotential();
+
+    const_cast<ConstraintLagrangeGlobalCrackOpening2D*>(this)->mLagrangeValue+=delta;
+    energy2 = CalculateTotalPotential();
+    rResultCDF(0,0) = (energy2-energy1)*(1./delta);
+    const_cast<ConstraintLagrangeGlobalCrackOpening2D*>(this)->mLagrangeValue-=delta;
+
+    crackAngle+=delta;
+    mStructure->SetCrackAngle(crackAngle);
+    energy2 = CalculateTotalPotential();
+    rResultCDF(1,0) = (energy2-energy1)*(1./delta);
+    crackAngle-=delta;
+    mStructure->SetCrackAngle(crackAngle);
+
+    crackOpening[0]+=delta;
+    mStructure->SetGlobalCrackOpening(crackOpening);
+    energy2 = CalculateTotalPotential();
+    rResultCDF(2,0) = (energy2-energy1)*(1./delta);
+    crackOpening[0]-=delta;
+    mStructure->SetGlobalCrackOpening(crackOpening);
+
+    crackOpening[1]+=delta;
+    mStructure->SetGlobalCrackOpening(crackOpening);
+    energy2 = CalculateTotalPotential();
+    rResultCDF(3,0) = (energy2-energy1)*(1./delta);
+    crackOpening[1]-=delta;
+    mStructure->SetGlobalCrackOpening(crackOpening);
+
+    if ((rResultFull-rResultCDF).Abs().Max()>1e-2)
+    {
+        std::cout<< "constraint crack opening gradient algo " << std::endl;
+        rResultFull.Info(10,5);
+        std::cout<< "constraint crack opening gradient cdf " << std::endl;
+        rResultCDF.Info(10,5);
+    }
+}
+
+//! @brief calculates the internal potential
+double NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateTotalPotential()const
+{
+    boost::array<int,2> dofCrackOpening(mStructure->GetDofGlobalCrackOpening2D());
+    boost::array<double,2> crackOpening(mStructure->GetGlobalCrackOpening2D());
+
+    //calculate normal crack opening
+    double crackAngle(mStructure->GetCrackAngle());
+    double cosAlpha(cos(crackAngle));
+    double sinAlpha(sin(crackAngle));
+
+    double g(sinAlpha*crackOpening[0]-cosAlpha*crackOpening[1]);
+
+    if (g>-mLagrangeValue/mPenalty)
+    {
+        return g*(mLagrangeValue+0.5*mPenalty*g);
+    }
+    else
+    {
+        g=-mLagrangeValue/mPenalty;
+        return g*(mLagrangeValue+0.5*mPenalty*g);
+    }
+}
+
+//! @brief ... print information about the object
+//! @param rVerboseLevel ... verbosity of the information
+void NuTo::ConstraintLagrangeGlobalCrackOpening2D::Info(unsigned short rVerboseLevel) const
+{
+    boost::array<int,2> dofCrackOpening(mStructure->GetDofGlobalCrackOpening2D());
+    boost::array<double,2> crackOpening(mStructure->GetGlobalCrackOpening2D());
+
+    //calculate normal crack opening
+    double crackAngle(mStructure->GetCrackAngle());
+    double cosAlpha(cos(crackAngle));
+    double sinAlpha(sin(crackAngle));
+
+    double g(sinAlpha*crackOpening[0]-cosAlpha*crackOpening[1]);
+    std::cout << "CrackOpening : lambda " << mLagrangeValue << " g " << g <<
+            " crackOpening " << crackOpening[0] << " " << crackOpening[1] <<
+            "crackAngle  " << crackAngle <<
+            std::endl;
+    if (g>-mLagrangeValue/mPenalty)
+    {
+        std::cout << "constraint crack opening active " << std::endl;
+    }
+    else
+    {
+        std::cout << "constraint crack opening inactive " << std::endl;
     }
 }
 

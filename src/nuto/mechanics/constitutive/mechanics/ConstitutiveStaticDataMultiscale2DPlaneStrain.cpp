@@ -103,6 +103,9 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Serialization is switch off, can't restore the IP structure.");
 #endif //ENABLE_SERIALIZATION
 
+    //transform boundary nodes to multiscale nodes
+    mStructure->TransformBoundaryNodes();
+
     //check all the sections of the elements to a plane strain section
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
