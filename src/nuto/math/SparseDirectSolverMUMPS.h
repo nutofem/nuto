@@ -58,6 +58,8 @@ protected:
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
     void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
 
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution);
+
 #endif // HAVE_MUMPS
 };
 }
