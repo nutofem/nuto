@@ -1105,7 +1105,7 @@ public:
     int GetNumActiveDofs()const;
 
     //! @brief returns the a reference to the constraint matrix
-    const SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
+    const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
 
 protected:
     int mDimension;
