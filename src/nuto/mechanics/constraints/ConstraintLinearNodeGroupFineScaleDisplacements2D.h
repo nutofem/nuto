@@ -3,6 +3,8 @@
 #ifndef CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
 #define CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
 
+#include <iostream>
+
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
 
