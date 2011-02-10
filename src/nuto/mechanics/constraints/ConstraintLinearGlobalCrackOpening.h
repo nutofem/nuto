@@ -1,19 +1,21 @@
-// $Id$
+// $Id: ConstraintNode.h 314 2010-09-27 16:31:43Z unger3 $
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS3D_H
-#define CONSTRAINTNODEDISPLACEMENTS3D_H
+#ifndef CONSTRAINTGLOBALCRACKOPENING_H
+#define CONSTRAINTGLOBALCRACKOPENING_H
 
+#include <iostream>
+
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
-#include "nuto/mechanics/constraints/ConstraintNode.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
-template <class T>
-class FullMatrix;
+class StructureIp;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
-class ConstraintLinearNodeDisplacements3D : public ConstraintNode, public ConstraintLinear
+class ConstraintLinearGlobalCrackOpening : public ConstraintBase, public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -21,9 +23,7 @@ class ConstraintLinearNodeDisplacements3D : public ConstraintNode, public Constr
 
 public:
     //! @brief constructor
-    //! @param rDirection ... direction of the applied constraint
-    //! @param rValue ... direction of the applied constraint
-    ConstraintLinearNodeDisplacements3D(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    ConstraintLinearGlobalCrackOpening(const StructureIp* rStructure, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -34,10 +34,6 @@ public:
 
     //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
     const NuTo::ConstraintLinear* AsConstraintLinear()const;
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -51,7 +47,7 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const
     {
-        throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::Info] to be implemented.");
+        std::cout << "ConstraintLinearGlobalCrackOpening" << std::endl;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -63,17 +59,21 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief ... just for serialize
-    ConstraintLinearNodeDisplacements3D(){};
+    //! @brief just for serialization
+    ConstraintLinearGlobalCrackOpening(){};
 
-    //! @brief prescribed displacement of the node
+    //! @brief prescribed crack opening
     double mValue;
     //! @brief direction of the applied constraint (normalized)
-    double mDirection[3];
+    double mDirection[2];
+
+    const StructureIp* mStructure;
 };
 }//namespace NuTo
+
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeDisplacements3D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearGlobalCrackOpening)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEDISPLACEMENTS3D_H
+
+#endif //CONSTRAINTGLOBALCRACKANGLE_H
 

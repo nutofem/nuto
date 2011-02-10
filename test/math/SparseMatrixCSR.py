@@ -144,7 +144,6 @@ if (printResult):
 # sparse matrix vector of vector with one based indexing ###################
 # (interface still uses zero based indexing)
 B2_sparse = nuto.DoubleSparseMatrixCSRVector2General(4,4)
-B_sparse.SetOneBasedIndexing()
 B2_sparse.AddEntry(1,1,3)
 B2_sparse.AddEntry(0,1,8)
 B2_sparse.AddEntry(0,0,2)
@@ -157,7 +156,60 @@ B2_sparse.AddEntry(3,1,4)
 if (printResult):
     print "matrix B2, compressed storage, vector of vectors, one based indexing"
     B_sparse.Info()
+    print "matrix B2, converted to full matrix"
+    B2_Full = nuto.DoubleFullMatrix(B2_sparse);
+    B2_Full.Info(12,3)
     print ""
+
+C2_sparse = nuto.DoubleSparseMatrixCSRVector2General(4,1)
+C2_sparse.AddEntry(0,0,4)
+C2_sparse.AddEntry(1,0,2)
+C2_sparse.AddEntry(3,0,3)
+if (printResult):
+    print "matrix C2, converted to full matrix"
+    C2_Full = nuto.DoubleFullMatrix(C2_sparse);
+    C2_Full.Info(12,3)
+    print ""
+
+D2_sparse = nuto.DoubleSparseMatrixCSRVector2General(1,5)
+D2_sparse.AddEntry(0,1,4)
+D2_sparse.AddEntry(0,4,1)
+if (printResult):
+    print "matrix D2, converted to full matrix"
+    D2_Full = nuto.DoubleFullMatrix(D2_sparse);
+    D2_Full.Info(12,3)
+    print ""
+
+B2_sparse.ConcatenateColumns(C2_sparse);
+B2_sparse.ConcatenateRows(D2_sparse);
+B2_Full = nuto.DoubleFullMatrix(B2_sparse);
+if (printResult):
+    print "matrix B2, appended Columns of C2 and then append rows of D2"
+    B2_Full.Info(12,3)
+    print ""
+B2_FullRef = nuto.DoubleFullMatrix(5,5);
+B2_FullRef.AddValue(1,1,3)
+B2_FullRef.AddValue(0,1,8)
+B2_FullRef.AddValue(0,0,2)
+B2_FullRef.AddValue(1,3,3)
+B2_FullRef.AddValue(1,2,5)
+B2_FullRef.AddValue(3,2,1)
+B2_FullRef.AddValue(3,3,7)
+B2_FullRef.AddValue(3,0,9)
+B2_FullRef.AddValue(3,1,4)
+B2_FullRef.AddValue(0,4,4)
+B2_FullRef.AddValue(1,4,2)
+B2_FullRef.AddValue(3,4,3)
+B2_FullRef.AddValue(4,1,4)
+B2_FullRef.AddValue(4,4,1)
+if (printResult):
+    print "matrix B2_ref"
+    B2_FullRef.Info(12,3)
+    print ""
+
+if ((B2_Full-B2_FullRef).Abs().Max()[0]>1e-8):
+    print '[' + system,sys.argv[0] + '] : concatenation of B2 is not correct.'
+    error = True;
     
 if (error):
     sys.exit(-1)

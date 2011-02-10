@@ -16,7 +16,7 @@
 NuTo::ConstraintLagrange::ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign)
 {
     mEquationSign=rEquationSign;
-    mPenalty=1;
+    mPenalty=1.;
 }
 
 // destructor

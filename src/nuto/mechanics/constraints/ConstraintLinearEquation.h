@@ -60,6 +60,13 @@ public:
     //!@param rRHS new right hand side
     void SetRHS(double rRHS);
 
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const
+    {
+        throw MechanicsException("[NuTo::ConstraintLinearEquation::Info] to be implemented.");
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

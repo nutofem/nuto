@@ -27,8 +27,10 @@ try
     myStructureFineScale.SetShowTime(true);
 
     NuTo::FullMatrix<int> createdGroupIds;
-    //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleTest.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
-    myStructureFineScale.ImportFromGmsh("ConcurrentMultiscaleFineScale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleTest.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    //myStructureFineScale.ImportFromGmsh("ConcurrentMultiscaleFineScale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    myStructureFineScale.SetCrackTransitionZone(1.5e1);
+    myStructureFineScale.SetCrackAngle(134.99*M_PI/180.);
 
     //create constitutive law nonlocal damage
     int myMatDamage = myStructureFineScale.ConstitutiveLawCreate("NonlocalDamagePlasticity");
@@ -45,9 +47,9 @@ try
 
     //create constitutive law linear elastic (finally not used, since the elements are deleted)
     int myMatLinear = myStructureFineScale.ConstitutiveLawCreate("LinearElastic");
-    double YoungsModulusLE(20000);
+    double YoungsModulusLE(1);
     myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatLinear,YoungsModulusLE);
-    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.2);
+    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.02);
 
     //create section
     double thickness(1);
@@ -106,17 +108,25 @@ try
     int GrpNodes_LeftRight = myStructureFineScale.GroupUnion(GrpNodes_Left,GrpNodes_Right);
     int GrpNodes_Boundary = myStructureFineScale.GroupUnion(GrpNodes_BottomTop,GrpNodes_LeftRight);
 
-
     //update displacement of boundary (disp controlled)
-    myStructureFineScale.TransformBoundaryNodes(GrpNodes_Boundary);
-
+    myStructureFineScale.SetGroupBoundaryNodes(GrpNodes_Boundary);
+    myStructureFineScale.GroupInfo(10);
 	//update conre mat
 	myStructureFineScale.NodeBuildGlobalDofs();
 
+	myStructureFineScale.AddVisualizationComponentSection();
+	myStructureFineScale.AddVisualizationComponentConstitutive();
+	myStructureFineScale.AddVisualizationComponentDisplacements();
+	myStructureFineScale.AddVisualizationComponentEngineeringStrain();
+	myStructureFineScale.AddVisualizationComponentEngineeringStress();
+	myStructureFineScale.AddVisualizationComponentDamage();
+	myStructureFineScale.AddVisualizationComponentEngineeringPlasticStrain();
+	myStructureFineScale.AddVisualizationComponentPrincipalEngineeringStress();
+
 #ifdef ENABLE_SERIALIZATION
+    myStructureFineScale.Save("myStructureFineScale.xml","xml");
     myStructureFineScale.Save("myStructureFineScale.bin","binary");
     myStructureFineScale.Restore("myStructureFineScale.bin","binary");
-    //myStructureFineScale.Save("myStructureFineScale.xml","xml");
 #endif
 }
 catch (NuTo::Exception& e)

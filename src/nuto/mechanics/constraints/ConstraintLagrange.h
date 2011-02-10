@@ -31,11 +31,11 @@ public:
     ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign);
 
     //! @brief destructor
-    ~ConstraintLagrange();
+    virtual ~ConstraintLagrange();
 
     //! @brief returns the Lagrange Multiplier
-    //! first col Lagrange, second column slack variables
-    virtual void GetLagrangeGetMultiplier(FullMatrix<double>& rLagrangeMultiplier)const=0;
+    //! first col Lagrange
+    virtual void GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const=0;
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -66,6 +66,9 @@ public:
     //! for a mechanical problem, this corresponds to the internal force vector
     virtual void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const=0;
+
+    //! @brief calculates the internal potential
+    virtual double CalculateTotalPotential()const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

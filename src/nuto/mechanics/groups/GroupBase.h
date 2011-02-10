@@ -121,4 +121,11 @@ protected:
 
 }; //class definition
 }
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+#include <boost/serialization/assume_abstract.hpp>
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::GroupBase)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION
+
 #endif //GroupBase_H

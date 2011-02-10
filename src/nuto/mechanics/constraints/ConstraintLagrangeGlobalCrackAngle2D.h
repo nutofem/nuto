@@ -1,20 +1,26 @@
-// $Id: ConstraintLagrangeNodeDisplacements2D.h -1   $
+// $Id: ConstraintLagrangeGlobalCrackAngle2D.h -1   $
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS2D_H
-#define CONSTRAINTLAGRANGENODEDISPLACEMENTS2D_H
+#ifndef ConstraintLagrangeGlobalCrackAngle2D_H
+#define ConstraintLagrangeGlobalCrackAngle2D_H
 
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
 
 namespace NuTo
 {
 template <class T>
 class FullMatrix;
+class StructureIp;
 //! @author Joerg F. Unger, NU
 //! @date June 2010
-//! @brief ... class for all constraints applied to a node group solved using augmented Lagrange multipliers in 2D
-//! additional information in: Bertsekas "constrained optimization and Lagrange multiplier methods"
-class ConstraintLagrangeNodeGroupDisplacements2D : public ConstraintNodeGroup, public ConstraintLagrange
+//! @brief ... class for constraints using augmented Lagrange for the global crack angle
+//! the problem is that there is no influence of the crack angle in case of almost zero crack opening
+//! the constraint equation is (abs(alpha-alpha_2)-0.5*mScaling*(ux^2+uy^2))<=0
+//! alpha is the crack angle (dof)
+//! alpha_2 is the crack angle calculated from the maximum principal strain of the global strain (given)
+//! mScaling is a scaling parameter to be determined (kind of a penalty parameter to make a smooth transition from )
+
+class ConstraintLagrangeGlobalCrackAngle2D : public ConstraintLagrange , public ConstraintBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -22,9 +28,8 @@ class ConstraintLagrangeNodeGroupDisplacements2D : public ConstraintNodeGroup, p
 
 public:
     //! @brief constructor
-    //! @param rDirection ... direction of the applied constraint
-    //! @param rValue ... direction of the applied constraint
-    ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
+    //! @param rStructure ... corresponding structure that stores the global variables (crack angle and crack orientation
+    ConstraintLagrangeGlobalCrackAngle2D(const StructureIp* rStructure);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -39,10 +44,6 @@ public:
 
     //! @brief cast to Lagrange constraint - the corresponding dofs are eliminated in the global system
     const NuTo::ConstraintLagrange* AsConstraintLagrange()const;
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -75,17 +76,15 @@ public:
             std::vector<int>& rGlobalDofs)const;
 
     //! @brief calculates the internal potential
-    double CalculateTotalPotential()const
-    {
-        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateTotalPotential] to be implemented.");
-    }
+    double CalculateTotalPotential()const;
+
+    //! @brief calculates the crack angle for elastic solutions
+    double CalculateCrackAngleElastic()const;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const
-    {
-        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements2D::Info] to be implemented.");
-    }
+    void Info(unsigned short rVerboseLevel) const;
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -97,22 +96,27 @@ public:
 
 protected:
     //! @brief just for serialization
-    ConstraintLagrangeNodeGroupDisplacements2D(){};
-    //! @brief prescribed displacement of the node group (rhs)
-    double mRHS;
-    //! @brief direction of the applied constraint (normalized)
-    double mDirection[2];
-
-    //! @brief Lagrange multipliers related to all the nodes in the group
-    std::vector<double> mLagrangeValue;
-    //! @brief Lagrange multipliers dofs related to all the nodes in the group
-    std::vector<double> mLagrangeDOF;
+    ConstraintLagrangeGlobalCrackAngle2D(){};
+    //! @brief structure storing the global crack
+    const StructureIp *mStructure;
+    //! @brief Lagrange multipliers related to crack angle
+    double mLagrangeValue;
+    //! @brief Lagrange multipliers dofs
+    int mLagrangeDOF;
+    //! @brief parameter for scaling
+    double mScaling;
+    //! @brief tolerance for difference between the principal strains, where
+    //if difference is bigger, the angle is calculated from the largest principal strain
+    double mTolerance1;
+    //! @brief tolerance for difference between the principal strains, where
+    //the previous angle is used, no update, (in between, there is a linear interpolation)
+    double mTolerance2;
 };
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLagrangeNodeGroupDisplacements2D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLagrangeGlobalCrackAngle2D)
 #endif // ENABLE_SERIALIZATION
 
-#endif //CONSTRAINTLAGRANGENODEDISPLACEMENTS2D_H
+#endif //ConstraintLagrangeGlobalCrackAngle2D_H
 

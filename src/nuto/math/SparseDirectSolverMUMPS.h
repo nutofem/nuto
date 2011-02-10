@@ -34,7 +34,14 @@ public:
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     //! @param rRhs ... matrix storing the right-hand-side vectors (input)
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
+
     void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+
+    //! @brief ... calculates the Schurcomplement
+    //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
+    //! @param rSchurIndices ... vector/matrix storing the indices of the global matrix to be condensed to (zero based indexing)
+    //! @param rSchurComplement ... Schur complement
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullMatrix<int> rSchurIndices, NuTo::FullMatrix<double>& rSchurComplement);
 
 protected:
     //! @brief ... generate an error message from the error code
@@ -50,6 +57,8 @@ protected:
     //! @param rRhs ... matrix storing the right-hand-side vectors (input)
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
     void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution);
 
 #endif // HAVE_MUMPS
 };

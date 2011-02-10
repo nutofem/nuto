@@ -886,7 +886,7 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], 
         // get node displacements
         double NodeDisplacement[3];
         const NodeBase *nodePtr(GetNode(NodeCount));
-        if (nodePtr->GetNumDisplacements()==2)
+        if (nodePtr->GetNumDisplacements()==2 || nodePtr->GetNumFineScaleDisplacements()==2)
             nodePtr->GetDisplacements2D(NodeDisplacement);
         else
             nodePtr->GetDisplacements3D(NodeDisplacement);
@@ -1033,11 +1033,7 @@ NuTo::Plane* NuTo::Plane::AsPlane()
 //! @brief sets the fine scale model (deserialization from a binary file)
 void NuTo::Plane::SetFineScaleModel(int rIp, std::string rFileName)
 {
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
-    {
-        mElementData->SetFineScaleModel(rIp,rFileName);
-    }
-
+    mElementData->SetFineScaleModel(rIp,rFileName);
 }
 
 #ifdef ENABLE_SERIALIZATION

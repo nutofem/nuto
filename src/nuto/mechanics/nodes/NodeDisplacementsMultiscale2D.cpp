@@ -95,6 +95,24 @@ void NuTo::NodeDisplacementsMultiscale2D::GetDisplacements2D(double rDisplacemen
     rDisplacements[1] += displacements[1] + mFineScaleDisplacements[1];
 }
 
+//! @brief writes the displacements of a node to the prescribed pointer
+//! the difference is e.g. using XFEM, when the nodal degrees of freedom are not identical
+//! @param rDisplacements displacements
+double NuTo::NodeDisplacementsMultiscale2D::GetDisplacement(short rIndex)const
+{
+    double coordinates[2], displacements[2],displacementsCrack[2];
+    GetCoordinates2D(coordinates);
+
+    mStructureIp->GetDisplacementsEpsilonHom2D(coordinates, displacements);
+    mStructureIp->GetDisplacementsCrack2D(coordinates, displacementsCrack);
+    displacements[0] += displacementsCrack[0] + mFineScaleDisplacements[0];
+    displacements[1] += displacementsCrack[1] + mFineScaleDisplacements[1];
+    if (rIndex==0 || rIndex==1)
+        return displacements[rIndex];
+    else
+        throw MechanicsException("[NuTo::NodeDisplacementsMultiscale2D::GetDisplacement] node has only two displacements.");
+}
+
 //! @brief sets the global dofs
 //! @param rDOF current maximum DOF, this variable is increased within the routine
 void NuTo::NodeDisplacementsMultiscale2D::SetGlobalDofs(int& rDOF)

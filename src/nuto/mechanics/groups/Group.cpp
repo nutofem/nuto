@@ -72,6 +72,6 @@ void Group<ElementBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStr
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_GUID(NuTo::Group<NuTo::NodeBase>, "NuToGroupNodeBase")
-BOOST_CLASS_EXPORT_GUID(NuTo::Group<NuTo::ElementBase>, "NuToGroupElementBase")
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Group<NuTo::NodeBase>)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Group<NuTo::ElementBase>)
 #endif // ENABLE_SERIALIZATION

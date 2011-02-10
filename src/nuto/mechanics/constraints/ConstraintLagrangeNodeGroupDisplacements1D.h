@@ -32,7 +32,7 @@ public:
 
     //! @brief returns the Lagrange Multiplier
     //! first col Lagrange, second column slack variables
-    void GetLagrangeGetMultiplier(FullMatrix<double>& rLagrangeMultiplier)const;
+    void GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const;
 
     //! @brief cast to Lagrange constraint - the corresponding dofs are eliminated in the global system
     NuTo::ConstraintLagrange* AsConstraintLagrange();
@@ -73,6 +73,20 @@ public:
     //! for a mechanical problem, this corresponds to the internal force vector
     void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const;
+
+    //! @brief calculates the internal potential
+    double CalculateTotalPotential()const
+    {
+        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateTotalPotential] to be implemented.");
+    }
+
+    //! @brief ... print information about the object
+    //! @param rVerboseLevel ... verbosity of the information
+    void Info(unsigned short rVerboseLevel) const
+    {
+        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::Info] to be implemented.");
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

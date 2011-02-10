@@ -682,6 +682,13 @@ public:
     //! @param rActiveDofGradientVector ... gradient of active dofs
     //! @param rDependentDofGradientVector ... gradient of dependent dofs
     void ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
+
+    //! @brief ... calculates the potential due to the addition of Lagrange terms
+    double ConstraintTotalGetTotalEnergy()const;
+
+    //! @brief info about the nodes in the Structure
+    void ConstraintInfo(int mVerboseLevel)const;
+
 #endif
 
 private:
@@ -1097,6 +1104,8 @@ public:
     //! @return ... number of active degrees of freedom
     int GetNumActiveDofs()const;
 
+    //! @brief returns the a reference to the constraint matrix
+    const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
 
 protected:
     int mDimension;

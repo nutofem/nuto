@@ -56,12 +56,27 @@ void NuTo::ConstraintLinearGlobalCrackAngle::AddToConstraintMatrix(int& curConst
         rRHS(curConstraintEquation,0) = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
     else
         rRHS(curConstraintEquation,0) = 0.;
-    rRHS(curConstraintEquation,0) = M_PI*0.33;
+    rRHS(curConstraintEquation,0) = M_PI*0.5;
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofCrackAngle(), 1);
 
     // increase constraint equation number
     curConstraintEquation++;
 }
+
+//! @brief ... print information about the object
+//! @param rVerboseLevel ... verbosity of the information
+void NuTo::ConstraintLinearGlobalCrackAngle::Info(unsigned short rVerboseLevel) const
+{
+    double anglePrescribed(0);
+    // calcute principal direction of total strain
+    EngineeringStrain2D totalStrain(mStructure->GetTotalStrain());
+    if (totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]!=0.)
+        anglePrescribed = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
+    else
+        anglePrescribed = 0.;
+    std::cout << "NuTo::ConstraintLinearGlobalCrackAngle : prescribed angle " <<  anglePrescribed << std::endl;
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 // serialize

@@ -12,6 +12,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
+#include "nuto/math/FullMatrix.h"
 
 // constructor
 NuTo::ConstitutiveTangentLocal3x3::ConstitutiveTangentLocal3x3() : NuTo::ConstitutiveTangentBase::ConstitutiveTangentBase()
@@ -25,6 +26,16 @@ NuTo::ConstitutiveTangentLocal3x3::ConstitutiveTangentLocal3x3() : NuTo::Constit
     mTangent[6] = 0.;
     mTangent[7] = 0.;
     mTangent[8] = 0.;
+}
+
+//! @brief ... copy constructor from matrix
+NuTo::ConstitutiveTangentLocal3x3& NuTo::ConstitutiveTangentLocal3x3::operator= (const NuTo::FullMatrix<double>& rOtherMatrix)
+{
+    if (rOtherMatrix.GetNumRows()!=3 || rOtherMatrix.GetNumColumns()!=3)
+        throw MechanicsException("[NuTo::ConstitutiveTangentLocal3x3::operator=] matrix has to have dimension of 3x3.");
+
+    memcpy(mTangent,rOtherMatrix.mEigenMatrix.data(),9*sizeof(double));
+    return *this;
 }
 
 // destructor

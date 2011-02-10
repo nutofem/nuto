@@ -5,6 +5,9 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/array.hpp>
+#else
+#include <boost/array.hpp>
 #endif //Serialize
 
 #include <boost/ptr_container/ptr_map.hpp>
@@ -108,13 +111,7 @@ public:
 
     //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
     //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
-    void TransformBoundaryNodes(int rBoundaryNodesId);
-
-#ifndef SWIG
-    //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
-    //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
-    void TransformBoundaryNodes(Group<NodeBase>* rBoundaryNodes);
-#endif
+    void TransformBoundaryNodes();
 
     //! @brief numbers non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
     void NumberAdditionalGlobalDofs();
@@ -142,6 +139,15 @@ public:
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    void BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixJM,
+            NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK, NuTo::SparseMatrix<double>& rMatrixKM,
+            NuTo::SparseMatrix<double>& rMatrixMJ, NuTo::SparseMatrix<double>& rMatrixMK, NuTo::SparseMatrix<double>& rMatrixMM) const;
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
@@ -150,10 +156,55 @@ public:
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const;
 
+    //! @brief ... for a single element matrix, assemble the global matrix, consider here additionally the global degrees of freedom from Structureip (alpha, ux,uy) and eventually the macroscopic strain
+    //! @param elementMatrix ...stiffness matrix of the element
+    //! @param elementMatrixGlobalDofsRow ...corresponding row DOFs
+    //! @param elementMatrixGlobalDofsColumn ...corresponding column DOFs
+    //! @param elementVector ...gradient matrix of the element (internal force)
+    //! @param mappingDofMultiscaleNode ...mapping of all Dofs to Multiscale dofs (either -1 for standard dofs or the entry in dDOF and dDOF2, where additional infos are stored)
+    //! @param dDOF ... derivatives of multiscale dofs with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
+    //! @param dDOF2 ...for each dof, the corresponding second order derivative (alpha^2, alpha ux, alpha uy)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixJM ... submatrix jk (number of active dof x 3)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    //! @param rMatrixKM ... submatrix kk (number of dependent dof x 3)
+    //! @param rMatrixMJ ... submatrix kj (3 x number of active dof)
+    //! @param rMatrixMK ... submatrix kk (3 x number of dependent dof)
+    //! @param rMatrixMM ... submatrix kk (3 x 3)
+    //! @param rCalcMatrixKJ_KK ...true, if rMatrixKJ and rMatrixKK should be calculated (rMatrixJJ and rMatrixJK) are always calculated
+    //! @param rCalcMatrixM ...true, if all matrices corresponding to M should be calculated
+    void AddElementMatrixToGlobalSubMatricesGeneral(
+            NuTo::FullMatrix<double>& elementMatrix,
+            std::vector<int>& elementMatrixGlobalDofsRow,
+            std::vector<int>& elementMatrixGlobalDofsColumn,
+            NuTo::FullMatrix<double>& elementVector,
+            std::vector<int>& mappingDofMultiscaleNode,
+            std::vector<std::array<double,6> >& dDOF,
+            std::vector<std::array<double,3> >& dDOF2,
+            NuTo::SparseMatrix<double>* rMatrixJJ,
+            NuTo::SparseMatrix<double>* rMatrixJK,
+            NuTo::SparseMatrix<double>* rMatrixJM,
+            NuTo::SparseMatrix<double>* rMatrixKJ,
+            NuTo::SparseMatrix<double>* rMatrixKK,
+            NuTo::SparseMatrix<double>* rMatrixKM,
+            NuTo::SparseMatrix<double>* rMatrixMJ,
+            NuTo::SparseMatrix<double>* rMatrixMK,
+            NuTo::SparseMatrix<double>* rMatrixMM,
+            bool rCalcMatrixKJ_KK,
+            bool rCalcMatrixM)const;
+
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
     void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
+
+    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
+    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
+    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
+    //! @param rEpsilonMGradientVector ... global internal potential gradient which corresponds to the global macroscopic strain (derivative is equal to homogeneous strain)
+    void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector, NuTo::FullMatrix<double>* rEpsilonMGradientVector) const;
 
 #ifndef SWIG
     //! @brief calculate the distance of a point to the crack
@@ -175,16 +226,38 @@ public:
     //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
     //! @param rDOF return value, for each dof, the corresponding derivatives (ehomxx, ehomyy, gammahomxy, ux, uy, alpha)
     //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
-    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,3> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
+    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
 
-    //! @briefset the total strain
+    //! @brief set the total strain
     void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
 
-    //! @brief add constraint equation for alpha in case of norm of crackopening less than a prescribed value
-    void SetConstraintAlpha(EngineeringStrain2D& rTotalEngineeringStrain);
+    //! @brief returns the total strain
+    NuTo::EngineeringStrain2D GetTotalEngineeringStrain()const;
+
+    //! @brief just for testing
+    void SetGlobalCrackOpening(boost::array<double,2> ptr)const
+    {
+        const_cast<StructureIp*>(this)->mCrackOpening[0] = ptr[0];
+        const_cast<StructureIp*>(this)->mCrackOpening[1] = ptr[1];
+    }
+
+    //! @brief just for testing
+    void SetCrackAngle(double alpha)const
+    {
+        const_cast<StructureIp*>(this)->mCrackAngle = alpha;
+    }
+
+    //! @brief return the previous crack angle
+    double GetPrevCrackAngle()const;
+
+    //! @brief sets the previous crack angle
+    void SetPrevCrackAngle(double rPrevCrackAngle);
 
     //! @brief return the total strain
     NuTo::EngineeringStrain2D GetTotalStrain()const;
+
+    //! @brief return the total strain
+    NuTo::EngineeringStrain2D GetHomogeneousEngineeringStrain()const;
 
     //! @brief renumbers the global dofs in the structure after
     void ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
@@ -211,6 +284,41 @@ public:
     {
         return mDOFCrackAngle;
     }
+
+    double GetCrackAngle()const
+    {
+        return mCrackAngle;
+    }
+
+    boost::array<int,2> GetDofGlobalCrackOpening2D()const
+    {
+        return mDOFCrackOpening;
+    }
+
+    boost::array<double,2> GetGlobalCrackOpening2D()const
+    {
+        return mCrackOpening;
+    }
+
+    void SetGroupBoundaryNodes(int rGroupId)
+    {
+        mGroupBoundaryNodes = rGroupId;
+        mBoundaryNodesAssigned = true;
+    }
+
+    const std::string& GetIPName()const
+    {
+        return mIPName;
+    }
+    //calculate from the existing crack opening and orientation the cracking strain and the homogeneous strain
+    //for test purpose in public section
+    void CalculateHomogeneousEngineeringStrain();
+
+    void SetCrackTransitionZone(double rCrackTransitionZone)
+    {
+        mCrackTransitionZone = rCrackTransitionZone;
+    }
+
 protected:
     //! @brief ... standard constructor just for the serialization routine
     StructureIp()
@@ -223,21 +331,19 @@ protected:
     //! @parameter bHessian depsilondalpha2[0-2], depsilondalphadux[3-5], depsilondalphadux[6-8]
     void GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU[6], double rbHessian[9])const;
 
-    //calculate from the existing crack opening and orientation the cracking strain
-    void CalculateHomogeneousEngineeringStrain();
 
     double mCrackAngle;
+    double mPrevCrackAngle;
     int mDOFCrackAngle;
-    double mCrackOpening[2];
-    int mDOFCrackOpening[2];
+    boost::array<double,2> mCrackOpening;
+    boost::array<int,2> mDOFCrackOpening;
     EngineeringStrain2D mEpsilonTot;
     EngineeringStrain2D mEpsilonHom;
-    int mConstraintFineScaleX;
-    int mConstraintFineScaleY;
-    int mConstraintAlpha;
     double mlX,mlY;
     double mCrackTransitionZone;
-    bool mBoundaryNodesTransformed;
+    int mConstraintFineScaleX, mConstraintFineScaleY,mConstraintCrackOpening, mConstraintCrackAngle;
+    bool mBoundaryNodesAssigned;
+    int mGroupBoundaryNodes;
     std::string mIPName;
 
 };

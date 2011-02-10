@@ -1,20 +1,20 @@
-// $Id: ConstraintLagrangeNodeDisplacements2D.h -1   $
+// $Id: ConstraintLagrangeGlobalCrackOpening2D.h -1   $
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS2D_H
-#define CONSTRAINTLAGRANGENODEDISPLACEMENTS2D_H
+#ifndef ConstraintLagrangeGlobalCrackOpening2D_H
+#define ConstraintLagrangeGlobalCrackOpening2D_H
 
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
 
 namespace NuTo
 {
 template <class T>
 class FullMatrix;
+class StructureIp;
 //! @author Joerg F. Unger, NU
 //! @date June 2010
-//! @brief ... class for all constraints applied to a node group solved using augmented Lagrange multipliers in 2D
-//! additional information in: Bertsekas "constrained optimization and Lagrange multiplier methods"
-class ConstraintLagrangeNodeGroupDisplacements2D : public ConstraintNodeGroup, public ConstraintLagrange
+//! @brief ... class for constraints using augemented Lagrange for global crack opening to be nonnegative
+class ConstraintLagrangeGlobalCrackOpening2D : public ConstraintLagrange , public ConstraintBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -24,7 +24,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
+    ConstraintLagrangeGlobalCrackOpening2D(const StructureIp* rStructure);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -39,10 +39,6 @@ public:
 
     //! @brief cast to Lagrange constraint - the corresponding dofs are eliminated in the global system
     const NuTo::ConstraintLagrange* AsConstraintLagrange()const;
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -75,17 +71,12 @@ public:
             std::vector<int>& rGlobalDofs)const;
 
     //! @brief calculates the internal potential
-    double CalculateTotalPotential()const
-    {
-        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateTotalPotential] to be implemented.");
-    }
+    double CalculateTotalPotential()const;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const
-    {
-        throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements2D::Info] to be implemented.");
-    }
+    void Info(unsigned short rVerboseLevel) const;
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -97,22 +88,19 @@ public:
 
 protected:
     //! @brief just for serialization
-    ConstraintLagrangeNodeGroupDisplacements2D(){};
-    //! @brief prescribed displacement of the node group (rhs)
-    double mRHS;
-    //! @brief direction of the applied constraint (normalized)
-    double mDirection[2];
-
-    //! @brief Lagrange multipliers related to all the nodes in the group
-    std::vector<double> mLagrangeValue;
-    //! @brief Lagrange multipliers dofs related to all the nodes in the group
-    std::vector<double> mLagrangeDOF;
+    ConstraintLagrangeGlobalCrackOpening2D(){};
+    //! @brief structure storing the global crack
+    const StructureIp *mStructure;
+    //! @brief Lagrange multipliers related to the normal crack opening
+    double mLagrangeValue;
+    //! @brief Lagrange multipliers dofs
+    int mLagrangeDOF;
 };
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLagrangeNodeGroupDisplacements2D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLagrangeGlobalCrackOpening2D)
 #endif // ENABLE_SERIALIZATION
 
-#endif //CONSTRAINTLAGRANGENODEDISPLACEMENTS2D_H
+#endif //ConstraintLagrangeGlobalCrackOpening2D_H
 

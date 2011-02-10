@@ -810,6 +810,13 @@ int NuTo::StructureBase::GetNumActiveDofs()const
 #endif
 }
 
+//! @brief returns the a reference to the constraint matrix
+const NuTo::SparseMatrixCSRGeneral<double>& NuTo::StructureBase::GetConstraintMatrix()const
+{
+    return mConstraintMatrix;
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)

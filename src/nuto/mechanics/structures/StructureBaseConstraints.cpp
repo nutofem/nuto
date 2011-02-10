@@ -868,6 +868,8 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
         lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
         assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
         assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
+        NuTo::FullMatrix<double> constraintMatrixFull(constraintMatrix);
+        constraintMatrixFull.Info(12,3);
 
         const std::vector<std::vector<double> >& values(constraintMatrix.GetValues());
         const std::vector<std::vector<int> >& columns(constraintMatrix.GetColumns());
@@ -878,7 +880,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
             int globalRowDof = constraintMatrixGlobalDofs[rowCount];
             if (globalRowDof < this->mNumActiveDofs)
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -897,7 +899,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
             }
             else
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -921,7 +923,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
             int globalColumnDof = constraintMatrixGlobalDofs[rowCount];
             if (globalColumnDof < this->mNumActiveDofs)
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -942,7 +944,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
             }
             else
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -995,7 +997,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
             int globalRowDof = constraintMatrixGlobalDofs[rowCount];
             if (globalRowDof < this->mNumActiveDofs)
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -1047,7 +1049,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
             int globalRowDof = constraintMatrixGlobalDofs[rowCount];
             if (globalRowDof < this->mNumActiveDofs)
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -1069,7 +1071,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
             }
             else
             {
-                for (unsigned int colCount = 0; colCount < constraintMatrixGlobalDofs.size(); colCount++)
+                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
                 {
                     if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
                     {
@@ -1132,6 +1134,23 @@ void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVecto
     }
 }
 
+double NuTo::StructureBase::ConstraintTotalGetTotalEnergy()const
+{
+    double energy(0);
+    // loop over all constraints
+    for (boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
+    {
+        // calculate constraint contribution
+        if (constraintIter->second->GetNumLagrangeMultipliers()>0)
+        {
+            const ConstraintLagrange* constraintPtr (constraintIter->second->AsConstraintLagrange());
+
+            energy+=constraintPtr->CalculateTotalPotential();
+        }
+    }
+}
+
+
 //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
 //! @param ConstraintId constraint id
 //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
@@ -1148,7 +1167,7 @@ void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo
         if (it->second->GetNumLagrangeMultipliers()>0)
         {
             const ConstraintLagrange* constraintPtr (it->second->AsConstraintLagrange());
-            constraintPtr->GetLagrangeGetMultiplier(rMultiplier);
+            constraintPtr->GetLagrangeMultiplier(rMultiplier);
         }
         else
             throw MechanicsException("[NuTo::StructureBase::ConstraintLagrangeGetMultiplier] constraint has no Lagrange multipliers.");
@@ -1160,3 +1179,20 @@ void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo
     }
 }
 
+//! @brief info about the elements in the Structure
+void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
+{
+    std::cout<<"number of constraints: " << mConstraintMap.size() <<std::endl;
+    if (rVerboseLevel>3)
+    {
+        std::cout << "\tconstraints :" <<std::endl;
+        for (boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.begin(); it!= mConstraintMap.end(); it++)
+        {
+            if (rVerboseLevel>4)
+            {
+                std::cout << "\t\t";
+                it->second->Info(rVerboseLevel);
+            }
+        }
+    }
+}

@@ -23,7 +23,7 @@ OPTION(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 OPTION(ENABLE_EXAMPLES "enables examples" TRUE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
-OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" FALSE)
+OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 
 IF(ENABLE_METAMODEL)
     SET(ENABLE_OPTIMIZE TRUE)
@@ -152,7 +152,7 @@ ENDIF(ENABLE_MKL)
 
 # boost
 MESSAGE(STATUS "Checking for Boost...")
-SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44")
+SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45")
 IF(ENABLE_STATIC_EXTERNALS)
   SET(Boost_USE_STATIC_LIBS TRUE)
 ENDIF(ENABLE_STATIC_EXTERNALS)

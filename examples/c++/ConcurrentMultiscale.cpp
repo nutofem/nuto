@@ -26,7 +26,6 @@ try
     myStructureCoarseScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIp", "StaticData",createdGroupIds);
     //myStructureCoarseScale.ImportFromGmsh("ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticData",createdGroupIds);
 
-
     //create constitutive law from fine scale model
     int myMatCoarseScale = myStructureCoarseScale.ConstitutiveLawCreate("Multiscale");
 
@@ -102,13 +101,10 @@ try
     double maxDeltaDispFactor(0.05);
     double curDispFactor(0.00025);
 
-    double curDisp(maxDisp*curDispFactor);
-    myStructureCoarseScale.ConstraintSetRHS(ConstraintRHS,curDisp);
-
-	//update conre mat
+    //update conre mat
 	myStructureCoarseScale.NodeBuildGlobalDofs();
 
-	//update tmpstatic data with zero displacements
+    //update tmpstatic data with zero displacements
 	myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 
 	//init some auxiliary variables
@@ -124,10 +120,29 @@ try
 
     //calculate stiffness
 	myStructureCoarseScale.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+	NuTo::FullMatrix<double> fullStiffness(stiffnessMatrixCSRVector2);
+	fullStiffness.Info(12,10);
 
-	// build global external load vector and RHS vector
+	double curDisp(maxDisp*curDispFactor);
+    myStructureCoarseScale.ConstraintSetRHS(ConstraintRHS,curDisp);
+
+    //update conre mat
+    myStructureCoarseScale.NodeBuildGlobalDofs();
+
+    //update displacements of all nodes according to the new conre mat
+    {
+        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+        myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+        myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
+    }
+
+    // build global external load vector and RHS vector
 	myStructureCoarseScale.BuildGlobalExternalLoadVector(extForceVector);
-	rhsVector = extForceVector + dispForceVector;
+	myStructureCoarseScale.BuildGlobalGradientInternalPotentialVector(intForceVector);
+    //intForceVector.Info(10,13);
+    rhsVector = extForceVector + dispForceVector - intForceVector;
 
 	//calculate absolute tolerance for matrix entries to be not considered as zero
 	double maxValue, minValue, ToleranceZeroStiffness;
@@ -141,17 +156,11 @@ try
 	int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
 	std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
-	//update displacements of all nodes according to the new conre mat
-	{
-	    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-	    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-	    myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-	    myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-	    myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
-	}
-
 	//repeat until max displacement is reached
 	bool convergenceStatusLoadSteps(false);
+    int loadstep(1);
+    NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
+    myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
 	while (!convergenceStatusLoadSteps)
     {
 
@@ -240,7 +249,7 @@ try
 			std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 		}
 
-		if (deltaDispFactor==0)
+		if (deltaDispFactor<1e-7)
 		    throw NuTo::MechanicsException("Example ConcurrentMultiscale : No convergence, delta strain factor < 1e-7");
 
 		if (convergenceStatus==1)
@@ -251,12 +260,6 @@ try
 #ifdef ENABLE_VISUALIZE
             myStructureCoarseScale.ExportVtkDataFile("ConcurrentMultiscale.vtk");
 #endif
-#ifdef ENABLE_SERIALIZATION
-    //myStructureCoarseScale.Save("myStructureCoarseScale.bin","BINARY");
-    //myStructureCoarseScale.Restore("myStructureCoarseScale.bin","BINARY");
-    myStructureCoarseScale.Save("myStructureCoarseScale.xml","XML");
-    exit(0);
-#endif // ENABLE_SERIALIZATION
  			//store result/plot data
 			NuTo::FullMatrix<double> SinglePlotData(1,9);
 			SinglePlotData(0,0) = curDisp;
@@ -278,6 +281,7 @@ try
 			PlotData.AppendRows(SinglePlotData);
 		    PlotData.WriteToFile("ConcurrentMultiscaleLoadDisp.txt"," ","#load displacement curve, disp, stress, force, sxx in center element, syy in center element","  ");
 
+		    myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
             if (curDispFactor==1)
                 convergenceStatusLoadSteps=true;
             else
@@ -318,11 +322,8 @@ try
 			// build global dof numbering
 			myStructureCoarseScale.NodeBuildGlobalDofs();
 
-			//set previous converged displacements
-			NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-			NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-			myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-			myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+            //set previous converged displacements
+			myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
 			myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
 
 			// calculate previous residual (should be almost zero)
@@ -335,8 +336,7 @@ try
 			//check for minimum delta (this mostly indicates an error in the software
 			if (deltaDispFactor<MIN_DELTA_STRAIN_FACTOR)
 			{
-			    deltaDispFactor = 0;
-			    //throw NuTo::MechanicsException("Example ConcurrentMultiscale : No convergence, delta strain factor < 1e-7");
+			    throw NuTo::MechanicsException("Example ConcurrentMultiscale : No convergence, delta strain factor < 1e-7");
 			}
 
 			std::cout << "press enter to reduce load increment" << std::endl;
@@ -358,15 +358,19 @@ try
             int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
             std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
-            //update rhs vector for next Newton iteration
-            rhsVector = dispForceVector + extForceVector - intForceVector;
-
             //update displacements of all nodes according to the new conre mat
             NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
             NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
             myStructureCoarseScale.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
             myStructureCoarseScale.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
             myStructureCoarseScale.ElementTotalUpdateTmpStaticData();
+
+            // calculate initial residual for next load step
+            myStructureCoarseScale.BuildGlobalGradientInternalPotentialVector(intForceVector);
+
+            //update rhs vector for next Newton iteration
+            rhsVector = dispForceVector + extForceVector - intForceVector;
+
 		}
     }
 

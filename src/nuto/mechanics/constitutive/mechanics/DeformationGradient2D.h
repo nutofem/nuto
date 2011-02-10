@@ -16,6 +16,7 @@ class EngineeringStrain2D;
 class EngineeringStrain3D;
 class GreenLagrangeStrain2D;
 class GreenLagrangeStrain3D;
+class Multiscale;
 class Plane;
 
 //! @brief ... two-dimensional deformation gradient
@@ -36,6 +37,7 @@ class DeformationGradient2D
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class NuTo::Plane;
+    friend class NuTo::Multiscale;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure
