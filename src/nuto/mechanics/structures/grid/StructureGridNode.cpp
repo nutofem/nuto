@@ -67,7 +67,8 @@ NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNu
     }
     if (it== mNodeVec.end())
     {
-        std::cout<<__FILE__<<" "<<__LINE__<<" node number "<<nodeNumber<<std::endl;
+        if (mVerboseLevel>3)
+          	std::cout<<__FILE__<<" "<<__LINE__<<" node number "<<nodeNumber<<std::endl;
     	throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
     }
     return 0;
@@ -210,7 +211,8 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
 
     //get
     //numDimx=(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy)/(mGridDimension[0]+1);
-    std::cout<<__FILE__<<" "<<__LINE__<<" res1 "<< residual1 <<" numDimx "<<numDimx<<" numDimxy "<<numDimxy<<" res2 "<<residual2 << std::endl;
+    if (mVerboseLevel>3)
+    	std::cout<<__FILE__<<" "<<__LINE__<<" res1 "<< residual1 <<" numDimx "<<numDimx<<" numDimxy "<<numDimxy<<" res2 "<<residual2 << std::endl;
     //std::cout<<__FILE__<<" "<<__LINE__<<" Rest "<<(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy) % (mGridDimension[0]+1)<<std::endl;
     //residual2 = (rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy) % (mGridDimension[0]+1);
     // for all nodes
