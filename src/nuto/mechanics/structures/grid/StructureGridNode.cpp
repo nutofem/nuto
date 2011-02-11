@@ -1,4 +1,15 @@
 // $Id$
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
+#include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
 
 #include <boost/tokenizer.hpp>
 #include <sstream>
@@ -42,21 +53,26 @@ const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent) const
 //! @brief a reference to a node
 //! @param node GridNum
 //! @return reference to a node
+NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
 NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
 {
     int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
     if (rNodeGridNum<0 || rNodeGridNum>=numGridNodes)
          throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Grid Node number is not valid.");
     int nodeNumber(0);
-    boost::ptr_vector<NodeBase>::const_iterator it;
+    boost::ptr_vector<NodeGrid3D>::const_iterator it;
     for (it = mNodeVec.begin(); it!= mNodeVec.end(); it++,nodeNumber++)
     {
         if (it->GetNodeGridNum()==rNodeGridNum)
-            break;
+       	   return &mNodeVec[nodeNumber];
     }
     if (it== mNodeVec.end())
+    {
+        if (mVerboseLevel>3)
+          	std::cout<<__FILE__<<" "<<__LINE__<<" node number "<<nodeNumber<<std::endl;
         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
-    return &mNodeVec[nodeNumber];
+    }
+    return 0;
 }
 
 //! @brief a reference to a node
@@ -186,55 +202,78 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
 NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVoxelIDs(int rNodeID)
 {
     TCoincidentVoxelList coincidentVoxels(8);
-    int numDim2;
-    int numDim3;
-    numDim3=rNodeID/((mGridDimension[0]+1)*(mGridDimension[1]+1));
-    numDim2=(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3)/(mGridDimension[0]+1);
+    //get the number of nodes in the actual x-y-dim
+    int numDimxy=rNodeID/((mGridDimension[0]+1)*(mGridDimension[1]+1));
+    int numDimx=0;
+    int residual1=rNodeID%((mGridDimension[0]+1)*(mGridDimension[1]+1));
+    int residual2=0;
+    numDimx=residual1/(mGridDimension[0]+1);
+    residual2=residual1%(mGridDimension[0]+1);
 
+    //get
+    //numDimx=(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy)/(mGridDimension[0]+1);
+    if (mVerboseLevel>3)
+    	std::cout<<__FILE__<<" "<<__LINE__<<" res1 "<< residual1 <<" numDimx "<<numDimx<<" numDimxy "<<numDimxy<<" res2 "<<residual2 << std::endl;
+    //std::cout<<__FILE__<<" "<<__LINE__<<" Rest "<<(rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy) % (mGridDimension[0]+1)<<std::endl;
+    //residual2 = (rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy) % (mGridDimension[0]+1);
     // for all nodes
-    coincidentVoxels[0]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0]-1 -mGridDimension[0]*mGridDimension[1]);
-    coincidentVoxels[1]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0] -mGridDimension[0]*mGridDimension[1]);
-    coincidentVoxels[2]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0]*mGridDimension[1]);
-    coincidentVoxels[3]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2) -1 -mGridDimension[0]*mGridDimension[1]);
+/*    coincidentVoxels[0]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2)-mGridDimension[0]-1 -mGridDimension[0]*mGridDimension[1]);
+    coincidentVoxels[1]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2)-mGridDimension[0] -mGridDimension[0]*mGridDimension[1]);
+    coincidentVoxels[2]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2)-mGridDimension[0]*mGridDimension[1]);
+    coincidentVoxels[3]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2) -1 -mGridDimension[0]*mGridDimension[1]);
 
-    coincidentVoxels[4]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0]-1);
-    coincidentVoxels[5]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2)-mGridDimension[0]);
-    coincidentVoxels[6]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2));
-    coincidentVoxels[7]=(rNodeID-numDim2-numDim3 *( mGridDimension[1] + mGridDimension[0]+2) -1);
+    coincidentVoxels[4]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2)-mGridDimension[0]-1);
+    coincidentVoxels[5]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2)-mGridDimension[0]);
+    //coincidentVoxels[6]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2));
+    coincidentVoxels[7]=(rNodeID-numDimx  -numDimxy *( mGridDimension[1] * mGridDimension[0]+2) -1);
+*/
 
+    coincidentVoxels[0]=(numDimx * mGridDimension[0] + (numDimxy - 1) *( mGridDimension[1] * mGridDimension[0]) + residual2 ) - mGridDimension[0]-1;
+    coincidentVoxels[1]=(numDimx * mGridDimension[0] + (numDimxy - 1) *( mGridDimension[1] * mGridDimension[0]) + residual2 ) - mGridDimension[0];
+    coincidentVoxels[2]=(numDimx * mGridDimension[0] + (numDimxy - 1) *( mGridDimension[1] * mGridDimension[0]) + residual2 );
+    coincidentVoxels[3]=(numDimx * mGridDimension[0] + (numDimxy - 1) *( mGridDimension[1] * mGridDimension[0]) + residual2 ) -1;
+
+    coincidentVoxels[4]=(numDimx * mGridDimension[0] + numDimxy *( mGridDimension[1] * mGridDimension[0]) + residual2 ) - mGridDimension[0]-1;
+    coincidentVoxels[5]=(numDimx * mGridDimension[0] + numDimxy *( mGridDimension[1] * mGridDimension[0]) + residual2 ) - mGridDimension[0];
+    coincidentVoxels[6]=(numDimx * mGridDimension[0] + numDimxy *( mGridDimension[1] * mGridDimension[0]) + residual2 );
+    coincidentVoxels[7]=(numDimx * mGridDimension[0] + numDimxy *( mGridDimension[1] * mGridDimension[0]) + residual2 ) -1;
+
+/*
+    std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: ";
+	for (int count=0;count<8;count++)
+		std::cout<< coincidentVoxels[count]<<" ";
+	std::cout<<" "<<std::endl;
+*/
     // for nodes in first level related to z
-    if (numDim3==0)
+    if (numDimxy==0)
     {
         for (int count =0;count<4;count++)
             coincidentVoxels[count]=-1;
     }
     // for nodes in first last related to z
-    else if (numDim3==mGridDimension[2])
+    else if (numDimxy==mGridDimension[2])
     {
         for (int count =4;count<8;count++)
             coincidentVoxels[count]=-1;
     }
-    if(rNodeID == 0)
-        coincidentVoxels[7]=-1;
-
-    // for nodes with dim0=mGridDimension[0]!!!
-    else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==0 )
-    {
-         coincidentVoxels[1]=-1;
-         coincidentVoxels[2]=-1;
-         coincidentVoxels[5]=-1;
-         coincidentVoxels[6]=-1;
-    }
-    // for nodes with dim0=0
-    else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDim3) % (mGridDimension[0]+1)==1 )
+    // for nodes with dim0=0!!!
+    if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy) % (mGridDimension[0]+1)==0 )
     {
          coincidentVoxels[0]=-1;
          coincidentVoxels[3]=-1;
          coincidentVoxels[4]=-1;
          coincidentVoxels[7]=-1;
     }
+    // for nodes with dim0=dimension[0]
+    else if ((rNodeID-(mGridDimension[0]+1)*(mGridDimension[1]+1)*numDimxy) % (mGridDimension[0]+1)==mGridDimension[0] )
+    {
+         coincidentVoxels[1]=-1;
+         coincidentVoxels[2]=-1;
+         coincidentVoxels[5]=-1;
+         coincidentVoxels[6]=-1;
+    }
     // for node with dim1=0
-    if (numDim2==0)
+    if (numDimx==0)
     {
         coincidentVoxels[0]=-1;
         coincidentVoxels[1]=-1;
@@ -242,19 +281,20 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
         coincidentVoxels[5]=-1;
     }
     // for node with dim1=MGridDimension[1]
-    else if (numDim2==mGridDimension[1])
+    else if (numDimx==mGridDimension[1])
     {
         coincidentVoxels[2]=-1;
         coincidentVoxels[3]=-1;
         coincidentVoxels[6]=-1;
         coincidentVoxels[7]=-1;
     }
-/*
-    std::cout<<"Knoten"<<rNodeID<< "Voxels:"<<std::endl;
-    for (int count=0;count<8;count++)
-        std::cout<< coincidentVoxels[count]<<" ";
-    std::cout<<" "<<std::endl;
- */
+    if (mVerboseLevel>2)
+    {
+    	std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: ";
+    	for (int count=0;count<8;count++)
+    		std::cout<< coincidentVoxels[count]<<" ";
+    	std::cout<<" "<<std::endl;
+    }
     return coincidentVoxels;
 }
 //! @brief creates a node
@@ -294,7 +334,7 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
             attributes = attributes |  1 << Node::TEMPERATURES;
     }
 
-    NodeBase* nodePtr(0);
+    NodeGrid3D* nodePtr(0);
     switch (attributes)
     {
         // the << shifts the 1 bitwise to the left, so 1<<n = 2^n
@@ -304,10 +344,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
         {
         case 1:
-            nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
+            //nodePtr = new NuTo::NodeGrid1D(rNodeGridNum);
             break;
         case 2:
-            nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
+            //nodePtr = new NuTo::NodeGrid2D(rNodeGridNum);
             break;
         case 3:
             nodePtr = new NuTo::NodeGrid3D(rNodeGridNum);
@@ -320,10 +360,10 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
         switch (mDimension)
          {
          case 1:
-             nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
+             //nodePtr = new NuTo::NodeGridDisplacements1D(rNodeGridNum);
              break;
          case 2:
-             nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
+             //nodePtr = new NuTo::NodeGridDisplacements2D(rNodeGridNum);
              break;
          case 3:
              nodePtr = new NuTo::NodeGridDisplacements3D(rNodeGridNum);
@@ -364,7 +404,7 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
 {
     // build initial node numbering
     this->mNumDofs = 0;
-    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->SetGlobalDofs(this->mNumDofs);
     }
@@ -416,7 +456,7 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
     this->mConstraintMatrix.RemoveLastColumns(numDependentDofs);
 
     // renumber dofs
-    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->RenumberGlobalDofs(mappingInitialToNewOrdering);
     }
@@ -440,7 +480,7 @@ void NuTo::StructureGrid::NodeMergeActiveDofValues(const NuTo::FullMatrix<double
     NuTo::FullMatrix<double> dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
 
     // write dof values to the nodes
-    for (boost::ptr_vector<NodeBase>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->SetGlobalDofValues(rActiveDofValues, dependentDofValues);
     }
@@ -466,13 +506,13 @@ void NuTo::StructureGrid::NodeExtractDofValues(NuTo::FullMatrix<double>& rActive
     rDependentDofValues.Resize(this->mNumDofs - this->mNumActiveDofs,1);
 
     // extract dof values from nodes
-    for (boost::ptr_vector<NodeBase>::const_iterator it = this->mNodeVec.begin(); it!= this->mNodeVec.end(); it++)
+    for (boost::ptr_vector<NodeGrid3D>::const_iterator it = this->mNodeVec.begin(); it!= this->mNodeVec.end(); it++)
     {
         it->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 }
 /*
-void NuTo::StructureGrid::NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const
+void NuTo::StructureGrid::NodeGetInternalForce(const NodeGrid3D* rNode, NuTo::FullMatrix<double>& rNodeForce)const
 {
    // define variables storing the element contribution outside the loop
     NuTo::FullMatrix<double> elementVector;
@@ -521,7 +561,7 @@ void NuTo::StructureGrid::NodeGetInternalForce(const NodeBase* rNode, NuTo::Full
 //! @param rNodeForce return value
 void NuTo::StructureGrid::NodeGetInternalForce(int rNodeId, FullMatrix<double>& rNodeForce)const
 {
-    const NodeBase* node_ptr(NodeGetNodePtr(rNodeId));
+    const NodeGrid3D* node_ptr(NodeGetNodePtr(rNodeId));
 
     // initialize matrix
     rNodeForce.Resize(node_ptr->GetNumDisplacements(),1);
