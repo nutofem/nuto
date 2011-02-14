@@ -1,3 +1,4 @@
+// $Id$
 #ifndef NODE_Rotations_3D_H
 #define NODE_Rotations_3D_H
 

@@ -1,3 +1,4 @@
+// $Id$
 #ifndef NODE_COORDINATES_1D_H
 #define NODE_COORDINATES_1D_H
 

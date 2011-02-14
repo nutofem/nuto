@@ -1,3 +1,4 @@
+// $Id$
 #ifndef NODEBASE_H
 #define NODEBASE_H
 

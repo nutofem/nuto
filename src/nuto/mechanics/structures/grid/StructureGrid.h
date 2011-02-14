@@ -1,3 +1,4 @@
+// $Id$
 #ifndef STRUCTUREGRID_H
 #define STRUCTUREGRID_H
 
