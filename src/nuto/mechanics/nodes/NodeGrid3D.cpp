@@ -29,9 +29,10 @@ template<class Archive>
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    void NuTo::NodeGrid3D::serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase);
+void NuTo::NodeGrid3D::serialize(Archive & ar, const unsigned int version)
+{
+	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
+	& BOOST_SERIALIZATION_NVP(mNodeGridNum);
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeGrid3D)
 BOOST_CLASS_TRACKING(NuTo::NodeGrid3D, track_always)
