@@ -23,7 +23,7 @@ public:
     NodeDisplacements2D();
 
     //! @brief constructor
-    NodeDisplacements2D (const double rDisplacements[1]);
+    NodeDisplacements2D (const double rDisplacements[2]);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

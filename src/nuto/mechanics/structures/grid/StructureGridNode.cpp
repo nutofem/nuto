@@ -54,7 +54,6 @@ const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent) const
 //! @param node GridNum
 //! @return reference to a node
 NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
-NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
 {
     int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
     if (rNodeGridNum<0 || rNodeGridNum>=numGridNodes)
@@ -70,7 +69,7 @@ NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
     {
         if (mVerboseLevel>3)
           	std::cout<<__FILE__<<" "<<__LINE__<<" node number "<<nodeNumber<<std::endl;
-        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
+    	throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this id does not exist.");
     }
     return 0;
 }
@@ -161,13 +160,13 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
     NuTo::FullMatrix<int> imageValues (numVoxel,1);
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
     for (int countNodes =0; countNodes<numGridNodes;countNodes++)//countNodes correspond to nodeID
-        {
+    {
          //get coincident voxels for each node, check if one voxel has material, then create node
          TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(countNodes);
          int flag=0;
          for (int count =0; count<8; count++)
          {
-             // voxel exist (for boundary nodes)
+        	 // voxel exist (for boundary nodes)
              if (coincidentVoxels[count]>-1)
              {
                    // voxel has material
@@ -183,7 +182,7 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
              NuTo::StructureGrid::NodeCreate(numMatNodes,countNodes,rDOFs);//node number, node id, attr.
              numMatNodes++;
          }
-     }
+    }
 }
 
 //! @brief get coincident Voxels from one node in following order: against the clock, first bottom voxels, first voxel BSW = BottomSouthWest
@@ -244,7 +243,7 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
 		std::cout<< coincidentVoxels[count]<<" ";
 	std::cout<<" "<<std::endl;
 */
-    // for nodes in first level related to z
+	// for nodes in first level related to z
     if (numDimxy==0)
     {
         for (int count =0;count<4;count++)

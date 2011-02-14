@@ -110,6 +110,9 @@ public:
     {
     	return std::string("NodeGridDisplacements3D");
     }
+//raus, weil steht in NodeDisplacements3D
+//protected:
+  //  int mDof[3];
 
     //! @brief returns the type of node as an enum (all the data stored at the node)
     //! @return enum
@@ -118,9 +121,6 @@ public:
         return Node::NodeGridDisplacements3D;
     }
 
-
-protected:
-    int mDof[3];
 };
 }//namespace NuTo
 

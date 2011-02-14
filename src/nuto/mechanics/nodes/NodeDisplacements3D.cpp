@@ -77,7 +77,7 @@ int NuTo::NodeDisplacements3D::GetDofDisplacement(int rComponent)const
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-void NuTo::NodeDisplacements3D::SetDisplacements3D(const double rDisplacements[1])
+void NuTo::NodeDisplacements3D::SetDisplacements3D(const double rDisplacements[3])
 {
     mDisplacements[0] = rDisplacements[0];
     mDisplacements[1] = rDisplacements[1];
@@ -86,7 +86,7 @@ void NuTo::NodeDisplacements3D::SetDisplacements3D(const double rDisplacements[1
 
 //! @brief writes the displacements of a node to the prescribed pointer
 //! @param rDisplacements displacements
-void NuTo::NodeDisplacements3D::GetDisplacements3D(double rDisplacements[1])const
+void NuTo::NodeDisplacements3D::GetDisplacements3D(double rDisplacements[3])const
 {
     rDisplacements[0] = mDisplacements[0];
     rDisplacements[1] = mDisplacements[1];
@@ -160,6 +160,12 @@ void NuTo::NodeDisplacements3D::GetGlobalDofValues(FullMatrix<double>& rActiveDo
             rActiveDofValues(dof,0) = value;
         }
     }
+}
+
+//! @brief extract all dof numbers from the node (based on global dof number)
+int* NuTo::NodeDisplacements3D::GetGlobalDofs()
+{
+	return this->mDOF;
 }
 
 //! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)

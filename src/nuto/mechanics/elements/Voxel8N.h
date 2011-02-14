@@ -43,6 +43,11 @@ public:
         return NuTo::Element::VOXEL8N;
     }
 
+    int GetVoxelID()const
+    {
+        return mVoxelID;
+    }
+
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
     int GetNumNodes() const
@@ -132,6 +137,8 @@ public:
 
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
+
+    int GetNumLocalStiffnessMatrix();
 
 protected:
     //! @brief ... just for serialization

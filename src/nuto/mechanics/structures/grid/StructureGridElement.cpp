@@ -1,4 +1,15 @@
 // $Id$
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
+#include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
@@ -65,7 +76,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
     int numElements=0;       //counter for created elements
     NuTo::FullMatrix<int> imageValues (mNumVoxel,1);         //Color value for each voxel
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
-    NuTo::StructureGrid::SparseMat stiffnessMatrixHelp ;
+    NuTo::StructureGrid::FullMat stiffnessMatrixHelp ;
     int numCoeffMat=0;   //material counter
     std::vector<double> youngsModulus(1);
     youngsModulus[0]=0;
@@ -74,14 +85,17 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
     {
         for(int countVoxels =0; countVoxels<mNumVoxel;countVoxels++)//countVoxels correspond to VoxelID
         {
-            if (rColorToMaterialData(imageValues(countVoxels,0),0)>0.1) //if Modul is> zero
+            if (rColorToMaterialData(imageValues(countVoxels,0),0)>0) //if Modul is> zero
             {
                 if (youngsModulus[0]==0) //no coefficient matrix yet
                 {
                     //set youngsModulus and add on material on counter
                     youngsModulus[numCoeffMat]=rColorToMaterialData(imageValues(countVoxels,0),0);
+                    rBaseCoefficientMatrix0.Info();
+                    std::cout<<__FILE__<<" " <<__LINE__<<" "<<"  "<<youngsModulus[numCoeffMat]<<std::endl;
                     stiffnessMatrixHelp = rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat];
-                    this->mLocalCoefficientMatrix0.push_back(stiffnessMatrixHelp);
+                    //std::cout<<__FILE__<<" " <<__LINE__<<" "<< stiffnessMatrixHelp <<std::endl;
+                   this->mLocalCoefficientMatrix0.push_back(stiffnessMatrixHelp);
                     NuTo::StructureGrid::ElementCreate(numCoeffMat,numElements,countVoxels,rElementType);//element number, element id, attr.
                     numElements++;
                     numCoeffMat++;
@@ -115,7 +129,6 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
             matFlag=1; //initialize matFlag for next step
       }
     }
-
 }
 //! @TODO ElementCreate without elementNumber
 
@@ -228,3 +241,5 @@ void NuTo::StructureGrid::ElementDelete(int rElementNumber)
     throw MechanicsException("[NuTo::StructureGrid::ElementDelete] Not implemented yet!!!");
 
 }
+
+

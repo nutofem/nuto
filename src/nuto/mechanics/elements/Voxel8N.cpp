@@ -98,6 +98,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Voxel8N::GetStandardIntegrationTyp
     return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
 }
 
+int NuTo::Voxel8N::GetNumLocalStiffnessMatrix()
+{
+	return mNumLocalCoefficientMatrix0;
+}
+
 //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
 //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
 void NuTo::Voxel8N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)

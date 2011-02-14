@@ -175,7 +175,7 @@ int main()
         int myNodeNumber=0;
 		for (int count = 0;count<myGrid.GetNumNodes();count= count + (NumElementsX + 1))
 		{
-			std::cout<<__FILE__<<" "<<__LINE__<<" node constraint "<< count <<std::endl;
+			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint "<< count <<std::endl;
 		   try
 			{
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
@@ -188,10 +188,10 @@ int main()
 		direction(0,0)= 0;
         direction(1,0)= 0;
         direction(2,0)= 1;
-//		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1);++count)
-		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1);++count)
+//		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
 		{
-            std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
+            //std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
 			try
 			{
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
@@ -207,11 +207,11 @@ int main()
         direction(2,0)= 0;
         for (int countY = 0; countY < (NumElementsY); ++countY)
         {
-//			for (int count = 0;count<(NumElementsX + 1);++count)
-			for (int count = 0;count<(NumElementsX + 1)*(NumElementsY+1);++count)
+			for (int count = 0;count<(NumElementsX + 1);++count)
+//			for (int count = 0;count<(NumElementsX + 1)*(NumElementsY+1);++count)
 			{
 				int node = count+countY*(NumElementsX + 1)*(NumElementsY + 1);
-				std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< node <<std::endl;
+				//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< node <<std::endl;
 				try
 				{
 					myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
@@ -315,7 +315,7 @@ int main()
         // start analysis
         std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
         // build global dof numbering
-        myGrid.SetVerboseLevel(2);
+        myGrid.SetVerboseLevel(1);
         myGrid.NodeBuildGlobalDofs();
 
         std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.GetNumDofs()<<std::endl;
@@ -341,7 +341,7 @@ int main()
         for(int ii=0;ii<myGrid.GetNumActiveDofs(); ii++)
             startVector(ii,0)=0;
 
-        myOptimizer.SetVerboseLevel(3);
+        myOptimizer.SetVerboseLevel(1);
         myOptimizer.SetParameters(startVector);
         std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set"<<std::endl;
 #ifdef ENABLE_MECHANICS
