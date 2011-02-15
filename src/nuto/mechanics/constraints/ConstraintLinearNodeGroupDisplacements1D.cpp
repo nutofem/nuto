@@ -21,7 +21,7 @@ NuTo::ConstraintLinearNodeGroupDisplacements1D::ConstraintLinearNodeGroupDisplac
         ConstraintNodeGroup(rGroup), ConstraintLinear()
 {
     // set value
-    mValue = rValue;
+    mRHS = rValue;
 }
 
 //! @brief returns the number of constraint equations
@@ -29,26 +29,6 @@ NuTo::ConstraintLinearNodeGroupDisplacements1D::ConstraintLinearNodeGroupDisplac
 int NuTo::ConstraintLinearNodeGroupDisplacements1D::GetNumLinearConstraints()const
 {
     return mGroup->GetNumMembers();
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeGroupDisplacements1D::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeGroupDisplacements1D::AsConstraintLinear()const
-{
-    return this;
-}
-
-
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-void NuTo::ConstraintLinearNodeGroupDisplacements1D::SetRHS(double rRHS)
-{
-    mValue = rRHS;
 }
 
 //! @brief adds the constraint equations to the matrix
@@ -63,7 +43,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         // set right hand side value
-        rRHS(curConstraintEquation,0) = mValue;
+        rRHS(curConstraintEquation,0) = mRHS;
 
         // add constraint to constrain matrix
         if ((*itNode)->GetNumDisplacements()!=1)
@@ -92,8 +72,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::serialize(Archive & ar, con
     std::cout << "start serialize ConstraintLinearNodeGroupDisplacements1D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mValue);
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeGroupDisplacements1D" << std::endl;
 #endif

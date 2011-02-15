@@ -8,6 +8,7 @@
 #include "nuto/math/Matrix.h"
 #include "nuto/math/FullMatrix.h"
 #include <eigen2/Eigen/QR>
+#include <eigen2/Eigen/LU>
 
 namespace NuTo
 {
@@ -348,6 +349,22 @@ void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) con
 			data[col * dimMatrix + row] = data[row * dimMatrix + col];
 		}
 	}
+}
+
+//! @brief calculates the inverse of a matrix
+//! @param rInverse ... inverse matrix
+template<>
+FullMatrix<int> FullMatrix<int>::Inverse() const
+{
+    throw MathException("[FullMatrix::Inverse] not implemented for integer data-type.");
+}
+
+//! @brief calculates the inverse of a matrix
+//! @param rInverse ... inverse matrix
+template<>
+FullMatrix<double> FullMatrix<double>::Inverse() const
+{
+    return mEigenMatrix.inverse();
 }
 
 //! @brief calculates the eigenvalues

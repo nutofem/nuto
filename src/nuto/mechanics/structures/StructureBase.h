@@ -40,6 +40,7 @@ class NodeBase;
 template<class T> class SparseMatrixCSRSymmetric;
 template <class T> class SparseMatrixCSRVector2General;
 class EngineeringStrain2D;
+class NewtonRaphsonAuxRoutinesBase;
 
 class VisualizeComponentBase;
 
@@ -300,6 +301,10 @@ public:
     //! @return element with maximum error
     int ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double>& rDifference);
 
+    //! @brief similiar to above, but this time the global matrix is checked, not the element matrices
+    //! @return false, if stiffness is not correct
+    bool CheckStiffness();
+
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
     void ElementCoefficientMatrix_1(int rElementId,
@@ -468,14 +473,43 @@ public:
     //! @return elastic energy
     double ElementTotalGetElasticEnergy()const;
 
+    //! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
+    //! @parameter rElement Element pointer
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, double rParameter);
+
+    //! @brief sets the parameters  of the finescale model (structure ip) for all elements
+    //! @parameter rElement Element pointer
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void ElementTotalSetFineScaleParameter(std::string rName, double rParameter);
+
+#ifndef SWIG
+    //! @brief sets the parameters  of the finescale model (structure ip)
+    //! @parameter rElement Element pointer
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, double rParameter);
+#endif
+
     //*************************************************
     //************ Constraint routines     ***************
     //**  defined in StructureBaseConstraints.cpp **
     //*************************************************
+    //! @brief deletes a constraint equation
+    //! @param ConstraintId constraint id
+    void ConstraintDelete(int ConstraintId);
+
     //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
     //! @param ConstraintId constraint id
     //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
     void ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double>& rMultiplier)const;
+
+    //! @brief sets the penalty stiffness of the augmented Lagragian to the prescribed value
+    //! @param ConstraintId constraint id
+    //! @param rPenalty penalty parameter
+    void ConstraintLagrangeSetPenaltyStiffness(int ConstraintId, double rPenalty);
 
     //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
     //! @param rGroupId group id
@@ -1106,6 +1140,45 @@ public:
 
     //! @brief returns the a reference to the constraint matrix
     const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
+
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+    //! @parameters rAuxRoutines additional routines (defined by the user) to increment loads and plot/store data in between
+    //! @return success flag
+    void NewtonRaphson(double rToleranceResidualForce=1e-6,
+            bool rAutomaticLoadstepControl=true,
+            int rMaxNumNewtonIterations=20,
+            double rDecreaseFactor=0.5,
+            int rMinNumNewtonIterations=7,
+            double rIncreaseFactor=1.5,
+            double rMinLoadFactor=1e-6,
+            bool rSaveStructureBeforeUpdate=false);
+
+    //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
+    virtual void InitBeforeNewtonRaphson()
+    {}
+
+    //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
+    //for an update on the coarse scale
+    //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
+    //this routine saves the current state before an update in the Newton Raphson iteration is performed
+    //this only happens for more than one load step (either prescibed or with automatic load control)
+    virtual void SaveStructure()
+    {}
+    //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
+    //! @param load factor
+    virtual void SetLoadFactor(double rLoadFactor);
+
+    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
+    virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const;
+
+    //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
+    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor)const;
+
+    //! @brief only for debugging, info at some stages of the Newton Raphson iteration
+    virtual void NewtonRaphsonInfo(int rVerboseLevel)const
+    {}
+
+
 
 protected:
     int mDimension;

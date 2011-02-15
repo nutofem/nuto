@@ -145,7 +145,7 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddEntry(int rRow, int rColumn, T r
 	}
 
 */
-	typename std::vector<int>::iterator it = lower_bound(this->mColumns[rRow].begin(),this->mColumns[rRow].end(),rColumn);
+    typename std::vector<int>::iterator it = lower_bound(this->mColumns[rRow].begin(),this->mColumns[rRow].end(),rColumn);
 	if (it==this->mColumns[rRow].end())
 	{
 		// insert new value
@@ -156,7 +156,9 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddEntry(int rRow, int rColumn, T r
 	else
 	{
 		if (*it==rColumn)
+		{
 			*(this->mValues[rRow].begin() + (it-this->mColumns[rRow].begin())) += rValue;
+		}
 		else
 		{
 			// insert new value

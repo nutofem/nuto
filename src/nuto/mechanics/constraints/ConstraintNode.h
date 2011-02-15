@@ -3,7 +3,6 @@
 #ifndef CONSTRAINTNODE_H
 #define CONSTRAINTNODE_H
 
-#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
@@ -12,7 +11,7 @@ class NodeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
-class ConstraintNode : public ConstraintBase
+class ConstraintNode
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

@@ -33,7 +33,7 @@ NuTo::ConstraintLinearGlobalCrackOpening::ConstraintLinearGlobalCrackOpening(con
     double invNorm = 1./norm;
     mDirection[0]*=invNorm;
     mDirection[1]*=invNorm;
-    mValue = rValue;
+    mRHS = rValue;
 }
 
 //! @brief returns the number of constraint equations
@@ -41,18 +41,6 @@ NuTo::ConstraintLinearGlobalCrackOpening::ConstraintLinearGlobalCrackOpening(con
 int NuTo::ConstraintLinearGlobalCrackOpening::GetNumLinearConstraints()const
 {
     return 1;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearGlobalCrackOpening::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearGlobalCrackOpening::AsConstraintLinear()const
-{
-    return this;
 }
 
 //! @brief adds the constraint equations to the matrix
@@ -63,7 +51,7 @@ void NuTo::ConstraintLinearGlobalCrackOpening::AddToConstraintMatrix(int& curCon
         NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
         NuTo::FullMatrix<double>& rRHS)const
 {
-    rRHS(curConstraintEquation,0) = mValue;
+    rRHS(curConstraintEquation,0) = mRHS;
 
     if (fabs(mDirection[0])>1e-18)
         rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalCrackOpening2D()[0],mDirection[0]);
@@ -90,8 +78,7 @@ void NuTo::ConstraintLinearGlobalCrackOpening::serialize(Archive & ar, const uns
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
        & BOOST_SERIALIZATION_NVP(mStructure)
-       & BOOST_SERIALIZATION_NVP(mDirection)
-       & BOOST_SERIALIZATION_NVP(mValue);
+       & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearGlobalCrackOpening" << std::endl;
 #endif

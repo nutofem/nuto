@@ -3,7 +3,6 @@
 #ifndef ConstraintLagrangeGlobalCrackOpening2D_H
 #define ConstraintLagrangeGlobalCrackOpening2D_H
 
-#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
 
 namespace NuTo
@@ -14,7 +13,7 @@ class StructureIp;
 //! @author Joerg F. Unger, NU
 //! @date June 2010
 //! @brief ... class for constraints using augemented Lagrange for global crack opening to be nonnegative
-class ConstraintLagrangeGlobalCrackOpening2D : public ConstraintLagrange , public ConstraintBase
+class ConstraintLagrangeGlobalCrackOpening2D : public ConstraintLagrange
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -24,7 +23,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLagrangeGlobalCrackOpening2D(const StructureIp* rStructure);
+    ConstraintLagrangeGlobalCrackOpening2D(const StructureIp* rStructure, double rPenaltyStiffness);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints

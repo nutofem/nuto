@@ -22,6 +22,13 @@ NuTo::ConstraintLinear::~ConstraintLinear()
 {
 }
 
+//!@brief sets/modifies the right hand side of the constraint equations
+//!@param rRHS new right hand side
+void NuTo::ConstraintLinear::SetRHS(double rRHS)
+{
+    mRHS = rRHS;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstraintLinear::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -36,6 +43,8 @@ void NuTo::ConstraintLinear::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinear" << std::endl;
 #endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
+       & BOOST_SERIALIZATION_NVP(mRHS);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinear" << std::endl;
 #endif

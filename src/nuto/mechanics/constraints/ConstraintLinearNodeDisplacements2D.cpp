@@ -31,7 +31,7 @@ NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(c
     double invNorm = 1./norm;
     mDirection[0]*=invNorm;
     mDirection[1]*=invNorm;
-    mValue = rValue;
+    mRHS = rValue;
 }
 
 //! @brief returns the number of constraint equations
@@ -39,13 +39,6 @@ NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(c
 int NuTo::ConstraintLinearNodeDisplacements2D::GetNumLinearConstraints()const
 {
     return 1;
-}
-
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-void NuTo::ConstraintLinearNodeDisplacements2D::SetRHS(double rRHS)
-{
-    mValue = rRHS;
 }
 
 //! @brief adds the constraint equations to the matrix
@@ -56,7 +49,7 @@ void NuTo::ConstraintLinearNodeDisplacements2D::AddToConstraintMatrix(int& curCo
         NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
         NuTo::FullMatrix<double>& rRHS)const
 {
-    rRHS(curConstraintEquation,0) = mValue;
+    rRHS(curConstraintEquation,0) = mRHS;
     if (mNode->GetNumDisplacements()!=2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements2D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
     if (fabs(mDirection[0])>1e-18)
@@ -65,18 +58,6 @@ void NuTo::ConstraintLinearNodeDisplacements2D::AddToConstraintMatrix(int& curCo
         rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofDisplacement(1),mDirection[1]);
 
     curConstraintEquation++;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeDisplacements2D::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeDisplacements2D::AsConstraintLinear()const
-{
-    return this;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -95,7 +76,6 @@ void NuTo::ConstraintLinearNodeDisplacements2D::serialize(Archive & ar, const un
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode)
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mValue)
        & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeDisplacements2D" << std::endl;

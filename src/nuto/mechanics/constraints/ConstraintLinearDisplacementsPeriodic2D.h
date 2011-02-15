@@ -21,7 +21,7 @@ class NodeCoordinatesDisplacements2D;
 //! the general idea is a decomposition of the periodic boundary conditions into a homogeneous part (mStrain) and a discontinuous part (mCrackOpening)
 //! for a crack with an angle between 45 and 235 degrees (for other angles the values are automatically adjusted by +-180
 //! attention: for a tension test with a horizontal crack, either specify angle=180 and uy or angle=0 and -uy
-class ConstraintLinearDisplacementsPeriodic2D : public ConstraintBase, public ConstraintLinear
+class ConstraintLinearDisplacementsPeriodic2D : public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -39,12 +39,6 @@ public:
     //! @brief returns the number of constraint equations
     //! @return number of constraints
     int GetNumLinearConstraints()const;
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    ConstraintLinear* AsConstraintLinear();
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    const ConstraintLinear* AsConstraintLinear()const;
 
     //!@brief sets/modifies angle of the boundary condition
     //!@param rAngle angle in deg

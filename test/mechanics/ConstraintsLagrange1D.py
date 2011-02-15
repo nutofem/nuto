@@ -7,7 +7,7 @@ import nuto
 import os
 import math
 
-PRINTRESULT = False
+PRINTRESULT = True
 MAXNUMNEWTONITERATIONS = 20
 
 #if set to true, the result will be generated (for later use in the test routine)
@@ -83,7 +83,9 @@ DirectionX = nuto.DoubleFullMatrix(1,1);
 DirectionX.SetValue(0,0,1.0);
 
 constraintLHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesLeftBoundary,DirectionX, "EQUAL",0.0);
+myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintLHS,1.);
 constraintRHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesRightBoundary,DirectionX, "SMALLER",0.5);
+myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintRHS,1.);
 
 #ifdef ENABLE_VISUALIZE
 myStructure.AddVisualizationComponentSection();
@@ -419,12 +421,14 @@ PlotDataRef.SetValue(3,6,2);
 PlotDataRef.SetValue(4,6,1);
 PlotDataRef.SetValue(5,6,1);
 
-if ((PlotDataRef-PlotData).Abs().Max()>1e-4):
+if ((PlotDataRef-PlotData).Abs().Max()[0]>1e-4):
     print "final results stored in load disp file as well";
     PlotData.Info();
     print "reference results";
     PlotDataRef.Info();
-    print "[ConstraintLagrange1D] result is not correct.";
+    print "delta results";
+    (PlotDataRef-PlotData).Info(10,7);
+    print "[ConstraintLagrange1D] result is not correct." , (PlotDataRef-PlotData).Abs().Max()[0];
 else:
     print "[ConstraintLagrange1D] nice, result is correct";
 

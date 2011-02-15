@@ -8,6 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
@@ -19,7 +20,7 @@ template<class T> class SparseMatrixCSRGeneral;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all constraint equations
-class ConstraintLinear
+class ConstraintLinear : public ConstraintBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -31,6 +32,32 @@ public:
 
     //! @brief destructor
     ~ConstraintLinear();
+
+    //! @brief true, if the constraint is linear
+    bool IsLinear()const
+    {
+        return true;
+    }
+
+    //! @brief cast to linear constraint
+    NuTo::ConstraintLinear* AsConstraintLinear()
+    {
+        return this;
+    }
+
+    //! @brief cast to linear constraint
+    const NuTo::ConstraintLinear* AsConstraintLinear()const
+    {
+        return this;
+    }
+
+    //! @brief returns the number of constraint equations
+    //! @return number of constraints
+    virtual int GetNumLinearConstraints()const=0;
+
+    //!@brief sets/modifies the right hand side of the constraint equation
+    //!@param rRHS new right hand side
+    void SetRHS(double rRHS);
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -49,6 +76,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    double mRHS;
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -61,3 +61,10 @@ void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName)
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");
 }
 
+//! @brief sets the fine scale model parameters
+void NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter(const std::string& rName, double rParameter)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter] Static data has no fine scale model");
+}
+
+

@@ -21,8 +21,11 @@
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackAngle.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackOpening.h"
+#include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackOpening2D.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackAngle2D.h"
+#include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackAngle2D.h"
+#include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackOpeningTangential2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
 #include "nuto/mechanics/structures/unstructured/StructureIp.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -44,28 +47,38 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
 {
     if (rDimension!=2)
         throw MechanicsException("[NuTo::StructureIp::StructureIp] The concurrent multiscale model is only implemented for 2D.");
-    mCrackAngle = M_PI*(0.7500);
-    mPrevCrackAngle = 0.;
+    mCrackAngle = M_PI*(0.7000);
+    mPrevCrackAngle = 0.5*M_PI;
     mDOFCrackAngle = -1;
     mCrackOpening[0] = 0.0;
-    mCrackOpening[1] = 0.00;
+    mCrackOpening[1] = 0.0;
     mDOFCrackOpening[0] = -1;
     mDOFCrackOpening[1] = -1;
     mEpsilonHom.mEngineeringStrain[0] = 0.;
     mEpsilonHom.mEngineeringStrain[1] = 0.;
     mEpsilonHom.mEngineeringStrain[2] = 0.;
+    mDOFGlobalTotalStrain[0] = -1;
+    mDOFGlobalTotalStrain[1] = -1;
+    mDOFGlobalTotalStrain[2] = -1;
     mConstraintFineScaleX = -1;
     mConstraintFineScaleY = -1;
+    mConstraintCrackAngle = -1;
+    mConstraintNormalCrackOpening = -1;
+    mConstraintTangentialCrackOpening = -1;
+    mConstraintTotalStrain = -1;
     mlX = 0.;
     mlY = 0.;
-    mCrackTransitionZone = 20;
+    mCrackTransitionZone = 0;
     mIPName = std::string("fineScaleIp");
     mGroupBoundaryNodes = -1;
     mBoundaryNodesAssigned = false;
 
+    mToleranceElasticCrackAngleLow = 0.0;
+    mToleranceElasticCrackAngleHigh = 0.0;
+
     //add constraint equation to avoid negative normal Crack opening
     //find unused integer id
-    int id(0);
+/*    int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
     while (it!=mConstraintMap.end())
     {
@@ -73,26 +86,28 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
         it = mConstraintMap.find(id);
     }
     mConstraintCrackOpening = id;
- //   ConstraintLagrangeGlobalCrackOpening2D *mConst = new NuTo::ConstraintLagrangeGlobalCrackOpening2D(this);
- //   mConstraintMap.insert(id, mConst);
-    NuTo::FullMatrix<double> dir(2,1);
+    ConstraintLagrangeGlobalCrackOpening2D *mConst = new NuTo::ConstraintLagrangeGlobalCrackOpening2D(this, 0);
+    mConstraintMap.insert(id, mConst);
+*/
+/*    NuTo::FullMatrix<double> dir(2,1);
     dir(0,0)=1;
     dir(1,0)=0;
-    ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this,dir,-0.01);
+    ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this,dir,0);
     mConstraintMap.insert(id, mConst);
     dir(0,0)=0;
     dir(1,0)=1;
-    ConstraintLinearGlobalCrackOpening *mConstb = new NuTo::ConstraintLinearGlobalCrackOpening(this,dir,-0.01);
+    ConstraintLinearGlobalCrackOpening *mConstb = new NuTo::ConstraintLinearGlobalCrackOpening(this,dir,1);
     id++;
     mConstraintMap.insert(id, mConstb);
+*/
 /*
     NuTo::FullMatrix<double> direction(2,1);
-    direction(0,0) = 0;
-    direction(1,0) = 1;
-    ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction,0.1);
-    mConstraintMap.insert(id, mConst);
-
     direction(0,0) = 1;
+    direction(1,0) = 0;
+    ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction,0.);
+    mConstraintMap.insert(id, mConst);
+*/
+/*    direction(0,0) = 1;
     direction(1,0) = 0;
     mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction,0.1);
     id++;
@@ -100,7 +115,7 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
 */
     //add constraint equation to avoid singular stiffness for zero crack opening (because then the angle has no influence)
     //find unused integer id
-    id = 1;
+/*    id = 1;
     it = mConstraintMap.find(id);
     while (it!=mConstraintMap.end())
     {
@@ -109,11 +124,12 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
     }
 
     ConstraintLagrangeGlobalCrackAngle2D *mConst2 = new NuTo::ConstraintLagrangeGlobalCrackAngle2D(this);
-//    ConstraintLinearGlobalCrackAngle *mConst2 = new NuTo::ConstraintLinearGlobalCrackAngle(this);
+    //ConstraintLinearGlobalCrackAngle *mConst2 = new NuTo::ConstraintLinearGlobalCrackAngle(this);
 
-//    mConstraintMap.insert(id, mConst2);
-//    mConstraintCrackAngle = id;
-
+    mConstraintMap.insert(id, mConst2);
+    mConstraintCrackAngle = id;
+*/
+    std::cout << "number of constraints after reading in conversion " << mConstraintMap.size() << std::endl;
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
@@ -143,16 +159,21 @@ void NuTo::StructureIp::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP(mCrackOpening)
        & BOOST_SERIALIZATION_NVP(mDOFCrackOpening)
        & BOOST_SERIALIZATION_NVP(mEpsilonHom)
+       & BOOST_SERIALIZATION_NVP(mDOFGlobalTotalStrain)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleX)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleY)
-       & BOOST_SERIALIZATION_NVP(mConstraintCrackOpening)
+       & BOOST_SERIALIZATION_NVP(mConstraintNormalCrackOpening)
+       & BOOST_SERIALIZATION_NVP(mConstraintTangentialCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintCrackAngle)
+       & BOOST_SERIALIZATION_NVP(mConstraintTotalStrain)
        & BOOST_SERIALIZATION_NVP(mlX)
        & BOOST_SERIALIZATION_NVP(mlY)
        & BOOST_SERIALIZATION_NVP(mCrackTransitionZone)
        & BOOST_SERIALIZATION_NVP(mBoundaryNodesAssigned)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodes)
-       & BOOST_SERIALIZATION_NVP(mIPName);
+       & BOOST_SERIALIZATION_NVP(mIPName)
+       & BOOST_SERIALIZATION_NVP(mToleranceElasticCrackAngleLow)
+       & BOOST_SERIALIZATION_NVP(mToleranceElasticCrackAngleHigh);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structureIp" << std::endl;
 #endif
@@ -310,21 +331,30 @@ void NuTo::StructureIp::Restore (const std::string &filename, std::string rType 
 #endif// ENABLE_SERIALIZATION
 
 
-void NuTo::StructureIp::Save(std::stringstream& previousState)const
+void NuTo::StructureIp::SaveStructure()const
 {
 #ifdef ENABLE_SERIALIZATION
-    boost::archive::binary_oarchive oba(previousState);
-    oba << (*this);
+    if (mSavedToStringStream==false)
+    {
+        boost::archive::binary_oarchive oba(mSaveStringStream);
+        oba << (*this);
+        mSavedToStringStream = true;
+    }
 #else
     throw MechanicsException("[NuTo::StructureIp::Save] Serialization is required - switch it on in the CMakeFile.txt");
 #endif //ENABLE_SERIALIZATION
 }
 
-void NuTo::StructureIp::Restore(std::stringstream& previousState)
+void NuTo::StructureIp::RestoreStructure()
 {
 #ifdef ENABLE_SERIALIZATION
-    boost::archive::binary_iarchive iba(previousState);
-    iba >> (*this);
+    if (mSavedToStringStream==true)
+    {
+        boost::archive::binary_iarchive iba(mSaveStringStream);
+        iba >> (*this);
+        //delete string stream afterwards
+        mSaveStringStream.str("");
+    }
 #else
     throw MechanicsException("[NuTo::StructureIp::Restore] Serialization is required - switch it on in the CMakeFile.txt");
 #endif //ENABLE_SERIALIZATION
@@ -408,6 +438,8 @@ void NuTo::StructureIp::TransformBoundaryNodes()
     direction(1,0) = 1.;
     mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
+    ConstraintInfo(10);
+
     if (minX!=0 || minY!=0)
     {
         throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] left lower corner has to be at the origin.");
@@ -432,6 +464,9 @@ void NuTo::StructureIp::NumberAdditionalGlobalDofs()
         mDOFCrackAngle = mNumDofs++;
         mDOFCrackOpening[0] = mNumDofs++;
         mDOFCrackOpening[1] = mNumDofs++;
+        mDOFGlobalTotalStrain[0] = mNumDofs++;
+        mDOFGlobalTotalStrain[1] = mNumDofs++;
+        mDOFGlobalTotalStrain[2] = mNumDofs++;
     }
     else
         throw MechanicsException("[NuTo::StructureIp::SetAdditionalGlobalDofs] Only implemented for 2D.");
@@ -457,11 +492,11 @@ void NuTo::StructureIp::NodeMergeAdditionalGlobalDofValues(const FullMatrix<doub
         }
         while (value<0)
         {
-            value+=2*M_PI;
+            value+=2.*M_PI;
         }
-        while (value>2*M_PI)
+        while (value>2.*M_PI)
         {
-            value-=2*M_PI;
+            value-=2.*M_PI;
         }
         this->mCrackAngle = value;
 
@@ -483,6 +518,25 @@ void NuTo::StructureIp::NodeMergeAdditionalGlobalDofValues(const FullMatrix<doub
             }
             this->mCrackOpening[count] = value;
         }
+
+        //merge total strain
+        for (int count=0; count<3; count++)
+        {
+            int dof = this->mDOFGlobalTotalStrain[count];
+            double value;
+            if (dof >= rActiveDofValues.GetNumRows())
+            {
+                dof -= rActiveDofValues.GetNumRows();
+                assert(dof < rDependentDofValues.GetNumRows());
+                value = rDependentDofValues(dof,0);
+            }
+            else
+            {
+                value = rActiveDofValues(dof,0);
+            }
+            this->mEpsilonTot.mEngineeringStrain[count] = value;
+        }
+
     }
     else
         throw MechanicsException("[NuTo::StructureIp::NodeMergeActiveDofValues] Only implemented for 2D");
@@ -511,29 +565,39 @@ void NuTo::StructureIp::NodeExtractAdditionalGlobalDofValues(NuTo::FullMatrix<do
             rActiveDofValues(dof,0) = value;
         }
         for (int count=0; count<2; count++)
-         {
-             int dof = this->mDOFCrackOpening[count];
-             double value = this->mCrackOpening[count];
-             if (dof >= rActiveDofValues.GetNumRows())
-             {
-                 dof -= rActiveDofValues.GetNumRows();
-                 assert(dof < rDependentDofValues.GetNumRows());
-                 rDependentDofValues(dof,0) = value;
-             }
-             else
-             {
-                 rActiveDofValues(dof,0) = value;
-             }
-         }
+        {
+            int dof = this->mDOFCrackOpening[count];
+            double value = this->mCrackOpening[count];
+            if (dof >= rActiveDofValues.GetNumRows())
+            {
+                dof -= rActiveDofValues.GetNumRows();
+                assert(dof < rDependentDofValues.GetNumRows());
+                rDependentDofValues(dof,0) = value;
+            }
+            else
+            {
+                rActiveDofValues(dof,0) = value;
+            }
+        }
+        for (int count=0; count<3; count++)
+        {
+            int dof = this->mDOFGlobalTotalStrain[count];
+            double value = this->mEpsilonTot.mEngineeringStrain[count];
+            if (dof >= rActiveDofValues.GetNumRows())
+            {
+                dof -= rActiveDofValues.GetNumRows();
+                assert(dof < rDependentDofValues.GetNumRows());
+                rDependentDofValues(dof,0) = value;
+            }
+            else
+            {
+                rActiveDofValues(dof,0) = value;
+            }
+        }
     }
 }
 
 void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
-{
-    BuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector,rDependentDofGradientVector,0);
-}
-
-void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector, NuTo::FullMatrix<double>* rEpsilonMGradientVector) const
 {
     // initialize vectors
     assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
@@ -547,14 +611,6 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
     for (int row = 0; row < rDependentDofGradientVector.GetNumRows(); row ++)
     {
         rDependentDofGradientVector(row,0) = 0.0;
-    }
-    if (rEpsilonMGradientVector)
-    {
-        assert(rEpsilonMGradientVector->GetNumRows() == 3);
-        assert(rEpsilonMGradientVector->GetNumColumns() == 1);
-        (*rEpsilonMGradientVector)(0,0) = 0.;
-        (*rEpsilonMGradientVector)(1,0) = 0.;
-        (*rEpsilonMGradientVector)(2,0) = 0.;
     }
 
     // define variables storing the element contribution outside the loop
@@ -622,17 +678,29 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
                 else
                     rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
 
-                if(rEpsilonMGradientVector!=0)
+                if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                 {
-                    (*rEpsilonMGradientVector)(0,0) += bMRow[0] * elementVector(rowCount,0);
-                    (*rEpsilonMGradientVector)(1,0) += bMRow[1] * elementVector(rowCount,0);
-                    (*rEpsilonMGradientVector)(2,0) += bMRow[2] * elementVector(rowCount,0);
+                    assert(mDOFGlobalTotalStrain[1]< this->mNumActiveDofs);
+                    assert(mDOFGlobalTotalStrain[2]< this->mNumActiveDofs);
+                    rActiveDofGradientVector(mDOFGlobalTotalStrain[0],0) += bMRow[0] * elementVector(rowCount,0);
+                    rActiveDofGradientVector(mDOFGlobalTotalStrain[1],0) += bMRow[1] * elementVector(rowCount,0);
+                    rActiveDofGradientVector(mDOFGlobalTotalStrain[2],0) += bMRow[2] * elementVector(rowCount,0);
+                }
+                else
+                {
+                    assert(mDOFGlobalTotalStrain[1]>= this->mNumActiveDofs);
+                    assert(mDOFGlobalTotalStrain[2]>= this->mNumActiveDofs);
+                    rDependentDofGradientVector(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs,0) += bMRow[0] * elementVector(rowCount,0);
+                    rDependentDofGradientVector(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs,0) += bMRow[1] * elementVector(rowCount,0);
+                    rDependentDofGradientVector(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs,0) += bMRow[2] * elementVector(rowCount,0);
+
                 }
             }
         }
 
         elementIter++;
     }
+
     //write contribution of Lagrange Multipliers
     ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
 }
@@ -691,16 +759,12 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
                 &rMatrixJK,
                 0,
                 0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
                 false);
 
         elementIter++;
     }
+
+/*
     {
         std::cout << "JJ before "<< std::endl;
         NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
@@ -710,8 +774,10 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         rMatrixJKFull.Info(12,5);
 
     }
+*/
     //add contribution of Lagrange Multipliers
     ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
+/*
     {
         std::cout << "JJ after "<< std::endl;
         NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
@@ -721,6 +787,7 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         rMatrixJKFull.Info(12,5);
 
     }
+*/
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
@@ -780,19 +847,14 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
                 dDOF2,
                 &rMatrixJJ,
                 &rMatrixJK,
-                0,
                 &rMatrixKJ,
                 &rMatrixKK,
-                0,
-                0,
-                0,
-                0,
-                true,
-                false);
+                true);
 
         elementIter++;
     }
-/*    {
+
+    /*    {
         std::cout << "JJ before "<< std::endl;
         NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
         rMatrixJJFull.Info(12,5);
@@ -828,100 +890,6 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
 */
 }
 
-// for the macroscopic stiffness the global strain is another unknown (M part)
-void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixJM,
-        SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK, SparseMatrix<double>& rMatrixKM,
-        SparseMatrix<double>& rMatrixMJ, SparseMatrix<double>& rMatrixMK, SparseMatrix<double>& rMatrixMM
-) const
-{
-    assert(this->mNodeNumberingRequired == false);
-    assert(rMatrixJJ.IsSymmetric() == false);
-    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-
-    assert(rMatrixJK.IsSymmetric() == false);
-    assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-
-    assert(rMatrixJM.IsSymmetric() == false);
-    assert(rMatrixJM.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJM.GetNumColumns() == 3);
-
-    assert(rMatrixKJ.IsSymmetric() == false);
-    assert(rMatrixKJ.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKJ.GetNumColumns() == this->mNumActiveDofs);
-
-    assert(rMatrixKK.IsSymmetric() == false);
-    assert(rMatrixKK.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-
-    assert(rMatrixKM.IsSymmetric() == false);
-    assert(rMatrixKM.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKM.GetNumColumns() == 3);
-
-    assert(rMatrixMJ.IsSymmetric() == false);
-    assert(rMatrixMJ.GetNumRows() == 3);
-    assert(rMatrixMJ.GetNumColumns() == this->mNumActiveDofs);
-
-    assert(rMatrixMK.IsSymmetric() == false);
-    assert(rMatrixMK.GetNumRows() == 3);
-    assert(rMatrixMK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-
-    assert(rMatrixMM.IsSymmetric() == false);
-    assert(rMatrixMM.GetNumRows() == 3);
-    assert(rMatrixMM.GetNumColumns() == 3);
-
-    // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> elementMatrix;
-    NuTo::FullMatrix<double> elementVector;
-    std::vector<int> elementMatrixGlobalDofsRow;
-    std::vector<int> elementMatrixGlobalDofsColumn;
-    std::vector<int> elementVectorGlobalDofs;
-
-    // calculate for all multiscale dofs the derivatives
-    // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
-    std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,6> > dDOF;
-    std::vector<std::array<double,3> > dDOF2;
-    CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
-
-    // loop over all elements
-    boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin();
-    while (elementIter != this->mElementMap.end())
-    {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        elementIter->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        elementIter->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
-
-        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-
-        this->AddElementMatrixToGlobalSubMatricesGeneral(
-                elementMatrix,
-                elementMatrixGlobalDofsRow,
-                elementMatrixGlobalDofsColumn,
-                elementVector,
-                mappingDofMultiscaleNode,
-                dDOF,
-                dDOF2,
-                &rMatrixJJ,
-                &rMatrixJK,
-                &rMatrixJM,
-                &rMatrixKJ,
-                &rMatrixKK,
-                &rMatrixKM,
-                &rMatrixMJ,
-                &rMatrixMK,
-                &rMatrixMM,
-                true,
-                true);
-
-        elementIter++;
-    }
-    ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
-}
-
 void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
         NuTo::FullMatrix<double>& elementMatrix,
         std::vector<int>& elementMatrixGlobalDofsRow,
@@ -932,23 +900,14 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
         std::vector<std::array<double,3> >&dDOF2,
         SparseMatrix<double>* rMatrixJJ,
         SparseMatrix<double>* rMatrixJK,
-        SparseMatrix<double>* rMatrixJM,
         SparseMatrix<double>* rMatrixKJ,
         SparseMatrix<double>* rMatrixKK,
-        SparseMatrix<double>* rMatrixKM,
-        SparseMatrix<double>* rMatrixMJ,
-        SparseMatrix<double>* rMatrixMK,
-        SparseMatrix<double>* rMatrixMM,
-        bool rCalcMatrixKJ_KK,
-        bool rCalcMatrixM)const
+        bool rCalcMatrixKJ_KK)const
 {
     assert(rMatrixJJ!=0);
     assert(rMatrixJK!=0);
     //either both are zero or both are nonzero
     assert(!rCalcMatrixKJ_KK || ((rMatrixKJ!=0) && (rMatrixKK!=0)));
-    assert(!rCalcMatrixM || ((rMatrixJM!=0) && (rMatrixKM!=0) && (rMatrixMM!=0) && (rMatrixMJ!=0) && (rMatrixMK!=0)));
-    //if M is calculated, KJ and KK have to be calculated as well
-    assert(!rCalcMatrixM || rCalcMatrixKJ_KK);
     double bAlphaRow, bURow[2], bMRow[3], bAlphaCol, bUCol[2], bMCol[3];
 
     // write element contribution to global matrix
@@ -990,7 +949,6 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                 }
             }
         }
-
 
         // add influence of global variables
         //include influence of global dofs like crack orientation (alpha) and crackopening (ux,uy)
@@ -1118,12 +1076,23 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                     {
                         rMatrixJK->AddEntry(globalRowDof, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
                     }
-                    if (rCalcMatrixM)
+                    if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                     {
-                        rMatrixJM->AddEntry(globalRowDof, 0, elementMatrix(rowCount, colCount) * bMCol[0]);
-                        rMatrixJM->AddEntry(globalRowDof, 1, elementMatrix(rowCount, colCount) * bMCol[1]);
-                        rMatrixJM->AddEntry(globalRowDof, 2, elementMatrix(rowCount, colCount) * bMCol[2]);
+                        assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                        assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                        rMatrixJJ->AddEntry(globalRowDof, mDOFGlobalTotalStrain[0],  elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixJJ->AddEntry(globalRowDof, mDOFGlobalTotalStrain[1],  elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixJJ->AddEntry(globalRowDof, mDOFGlobalTotalStrain[2],  elementMatrix(rowCount, colCount) * bMCol[2]);
                     }
+                    else
+                    {
+                        assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                        assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                        rMatrixJK->AddEntry(globalRowDof, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixJK->AddEntry(globalRowDof, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixJK->AddEntry(globalRowDof, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bMCol[2]);
+                    }
+
                 }
                 else
                 {
@@ -1155,11 +1124,21 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                         {
                             rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bUCol[1]);
                         }
-                        if (rCalcMatrixM)
+                        if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                         {
-                            rMatrixKM->AddEntry(globalRowDof - this->mNumActiveDofs, 0, elementMatrix(rowCount, colCount) * bMCol[0]);
-                            rMatrixKM->AddEntry(globalRowDof - this->mNumActiveDofs, 1, elementMatrix(rowCount, colCount) * bMCol[1]);
-                            rMatrixKM->AddEntry(globalRowDof - this->mNumActiveDofs, 2, elementMatrix(rowCount, colCount) * bMCol[2]);
+                            assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                            rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFGlobalTotalStrain[0], elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFGlobalTotalStrain[1], elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixKJ->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFGlobalTotalStrain[2], elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                        else
+                        {
+                            assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                            rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixKK->AddEntry(globalRowDof - this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, elementMatrix(rowCount, colCount) * bMCol[2]);
                         }
                     }
                 }
@@ -1185,11 +1164,21 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                         {
                             rMatrixJK->AddEntry(mDOFCrackAngle, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
                         }
-                        if (rCalcMatrixM)
+                        if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                         {
-                            rMatrixJM->AddEntry(mDOFCrackAngle, 0, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
-                            rMatrixJM->AddEntry(mDOFCrackAngle, 1, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
-                            rMatrixJM->AddEntry(mDOFCrackAngle, 2, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                            rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFGlobalTotalStrain[0], bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFGlobalTotalStrain[1], bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFGlobalTotalStrain[2], bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                        else
+                        {
+                            assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                            rMatrixJK->AddEntry(mDOFCrackAngle, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJK->AddEntry(mDOFCrackAngle, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJK->AddEntry(mDOFCrackAngle, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
                         }
                     }
                     else
@@ -1214,12 +1203,23 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                             {
                                 rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[1]);
                             }
-                            if (rCalcMatrixM)
+                            if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                             {
-                                rMatrixKM->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, 0, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
-                                rMatrixKM->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, 1, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
-                                rMatrixKM->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, 2, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
+                                assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                                assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                                rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFGlobalTotalStrain[0], bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFGlobalTotalStrain[1], bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKJ->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFGlobalTotalStrain[2], bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
                             }
+                            else
+                            {
+                                assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                                assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                                rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKK->AddEntry(mDOFCrackAngle - this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bAlphaRow * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            }
+
                         }
                     }
 
@@ -1242,11 +1242,21 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                         {
                             rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
                         }
-                        if (rCalcMatrixM)
+                        if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                         {
-                            rMatrixJM->AddEntry(mDOFCrackOpening[0], 0, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
-                            rMatrixJM->AddEntry(mDOFCrackOpening[0], 1, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
-                            rMatrixJM->AddEntry(mDOFCrackOpening[0], 2, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFGlobalTotalStrain[0], bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFGlobalTotalStrain[1], bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFGlobalTotalStrain[2], bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                        else
+                        {
+                            assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                            rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJK->AddEntry(mDOFCrackOpening[0], mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
                         }
                     }
                     else
@@ -1270,11 +1280,21 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                             {
                                 rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFCrackOpening[1]-this->mNumActiveDofs, bURow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
                             }
-                            if (rCalcMatrixM)
+                            if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                             {
-                                rMatrixKM->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, 0, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
-                                rMatrixKM->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, 1, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
-                                rMatrixKM->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, 2, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                                assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                                assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFGlobalTotalStrain[0], bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFGlobalTotalStrain[1], bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFGlobalTotalStrain[2], bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            }
+                            else
+                            {
+                                assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                                assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                                rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKK->AddEntry(mDOFCrackOpening[0] -this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bURow[0] * elementMatrix(rowCount, colCount) * bMCol[2]);
                             }
                         }
                     }
@@ -1298,11 +1318,21 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                             rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
                         }
                         rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFCrackOpening[1], bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                        if (rCalcMatrixM)
+                        if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                         {
-                            rMatrixJM->AddEntry(mDOFCrackOpening[1], 0, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
-                            rMatrixJM->AddEntry(mDOFCrackOpening[1], 1, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
-                            rMatrixJM->AddEntry(mDOFCrackOpening[1], 2, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[0], bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[1], bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJJ->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[2], bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
+                        else
+                        {
+                            assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                            assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                            rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
                         }
                     }
                     else
@@ -1327,61 +1357,127 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                                 rMatrixKK->AddEntry(mDOFCrackOpening[1]- this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
                             }
                             rMatrixKK->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            if (rCalcMatrixM)
+                            if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                             {
-                                rMatrixKM->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, 0, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
-                                rMatrixKM->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, 1, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
-                                rMatrixKM->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, 2, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                                assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                                assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, mDOFGlobalTotalStrain[0], bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, mDOFGlobalTotalStrain[1], bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKJ->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, mDOFGlobalTotalStrain[2], bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
                             }
+                            else
+                            {
+                                assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                                assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                                rMatrixKK->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
+                                rMatrixKK->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
+                                rMatrixKK->AddEntry(mDOFCrackOpening[1] -this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            }
+
                         }
                     }
-                    if (rCalcMatrixM)
+                    if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                     {
-                        if (mDOFCrackAngle < this->mNumActiveDofs)
+                       assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                       assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                       if (mDOFCrackAngle < this->mNumActiveDofs)
                         {
-                            rMatrixMJ->AddEntry(0, mDOFCrackAngle, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            rMatrixMJ->AddEntry(1, mDOFCrackAngle, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            rMatrixMJ->AddEntry(2, mDOFCrackAngle, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], mDOFCrackAngle, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], mDOFCrackAngle, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], mDOFCrackAngle, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
                         }
                         else
                         {
-                            rMatrixMK->AddEntry(0, mDOFCrackAngle - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            rMatrixMK->AddEntry(1, mDOFCrackAngle - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
-                            rMatrixMK->AddEntry(2, mDOFCrackAngle - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[0], mDOFCrackAngle - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[1], mDOFCrackAngle - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[2], mDOFCrackAngle - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
                         }
                         if (mDOFCrackOpening[0] < this->mNumActiveDofs)
                         {
-                            rMatrixMJ->AddEntry(0, mDOFCrackOpening[0], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            rMatrixMJ->AddEntry(1, mDOFCrackOpening[0], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            rMatrixMJ->AddEntry(2, mDOFCrackOpening[0], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], mDOFCrackOpening[0], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], mDOFCrackOpening[0], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], mDOFCrackOpening[0], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
                         }
                         else
                         {
-                            rMatrixMK->AddEntry(0, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            rMatrixMK->AddEntry(1, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
-                            rMatrixMK->AddEntry(2, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[0], mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[1], mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[2], mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
                         }
                         if (mDOFCrackOpening[1] < this->mNumActiveDofs)
                         {
-                            rMatrixMJ->AddEntry(0, mDOFCrackOpening[1], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            rMatrixMJ->AddEntry(1, mDOFCrackOpening[1], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            rMatrixMJ->AddEntry(2, mDOFCrackOpening[1], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], mDOFCrackOpening[1], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], mDOFCrackOpening[1], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], mDOFCrackOpening[1], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
                         }
                         else
                         {
-                            rMatrixMK->AddEntry(0, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            rMatrixMK->AddEntry(1, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
-                            rMatrixMK->AddEntry(2, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[0], mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[1], mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            rMatrixJK->AddEntry(mDOFGlobalTotalStrain[2], mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
                         }
-                        rMatrixMM->AddEntry(0, 0, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[0]);
-                        rMatrixMM->AddEntry(0, 1, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[1]);
-                        rMatrixMM->AddEntry(0, 2, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[2]);
-                        rMatrixMM->AddEntry(1, 0, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[0]);
-                        rMatrixMM->AddEntry(1, 1, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[1]);
-                        rMatrixMM->AddEntry(1, 2, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[2]);
-                        rMatrixMM->AddEntry(2, 0, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[0]);
-                        rMatrixMM->AddEntry(2, 1, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[1]);
-                        rMatrixMM->AddEntry(2, 2, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], mDOFGlobalTotalStrain[0], bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], mDOFGlobalTotalStrain[1], bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], mDOFGlobalTotalStrain[2], bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], mDOFGlobalTotalStrain[0], bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], mDOFGlobalTotalStrain[1], bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], mDOFGlobalTotalStrain[2], bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], mDOFGlobalTotalStrain[0], bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], mDOFGlobalTotalStrain[1], bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], mDOFGlobalTotalStrain[2], bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                    }
+                    else
+                    {
+                       assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                       assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                       if (rCalcMatrixKJ_KK)
+                       {
+                           if (mDOFCrackAngle < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFCrackAngle, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFCrackAngle, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFCrackAngle, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFCrackAngle - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bAlphaCol);
+                            }
+                            if (mDOFCrackOpening[0] < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFCrackOpening[0], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFCrackOpening[0], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFCrackOpening[0], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFCrackOpening[0] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            }
+                            if (mDOFCrackOpening[1] < this->mNumActiveDofs)
+                            {
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFCrackOpening[1], bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFCrackOpening[1], bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                                rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFCrackOpening[1], bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            }
+                            else
+                            {
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                                rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFCrackOpening[1] - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bUCol[1]);
+                            }
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[0]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[1]);
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount) * bMCol[2]);
+                        }
                     }
                 }
             }
@@ -1416,11 +1512,24 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                         if (rCalcMatrixKJ_KK)
                             rMatrixKJ->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, globalColumnDof, bURow[1]  * elementMatrix(rowCount, colCount));
                     }
-                    if (rCalcMatrixM)
+                    if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                     {
-                        rMatrixMJ->AddEntry(0, globalColumnDof, bMRow[0]  * elementMatrix(rowCount, colCount));
-                        rMatrixMJ->AddEntry(1, globalColumnDof, bMRow[1]  * elementMatrix(rowCount, colCount));
-                        rMatrixMJ->AddEntry(2, globalColumnDof, bMRow[2]  * elementMatrix(rowCount, colCount));
+                        assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                        assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[0], globalColumnDof, bMRow[0]  * elementMatrix(rowCount, colCount));
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[1], globalColumnDof, bMRow[1]  * elementMatrix(rowCount, colCount));
+                        rMatrixJJ->AddEntry(mDOFGlobalTotalStrain[2], globalColumnDof, bMRow[2]  * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                        assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                        if (rCalcMatrixKJ_KK)
+                        {
+                            rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[0] - this->mNumActiveDofs, globalColumnDof, bMRow[0]  * elementMatrix(rowCount, colCount));
+                            rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[1] - this->mNumActiveDofs, globalColumnDof, bMRow[1]  * elementMatrix(rowCount, colCount));
+                            rMatrixKJ->AddEntry(mDOFGlobalTotalStrain[2] - this->mNumActiveDofs, globalColumnDof, bMRow[2]  * elementMatrix(rowCount, colCount));
+                        }
                     }
                 }
                 else
@@ -1452,11 +1561,24 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                         if (rCalcMatrixKJ_KK)
                             rMatrixKK->AddEntry(mDOFCrackOpening[1] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bURow[1]  * elementMatrix(rowCount, colCount));
                     }
-                    if (rCalcMatrixM)
+                    if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
                     {
-                        rMatrixMK->AddEntry(0, globalColumnDof - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount));
-                        rMatrixMK->AddEntry(1, globalColumnDof - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount));
-                        rMatrixMK->AddEntry(2, globalColumnDof - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount));
+                        assert(mDOFGlobalTotalStrain[1]<this->mNumActiveDofs);
+                        assert(mDOFGlobalTotalStrain[2]<this->mNumActiveDofs);
+                        rMatrixJK->AddEntry(mDOFGlobalTotalStrain[0], globalColumnDof - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount));
+                        rMatrixJK->AddEntry(mDOFGlobalTotalStrain[1], globalColumnDof - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount));
+                        rMatrixJK->AddEntry(mDOFGlobalTotalStrain[2], globalColumnDof - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount));
+                    }
+                    else
+                    {
+                        assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
+                        assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                        if (rCalcMatrixKJ_KK)
+                        {
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[0] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bMRow[0]  * elementMatrix(rowCount, colCount));
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[1] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bMRow[1]  * elementMatrix(rowCount, colCount));
+                            rMatrixKK->AddEntry(mDOFGlobalTotalStrain[2] - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, bMRow[2]  * elementMatrix(rowCount, colCount));
+                        }
                     }
                 }
             }
@@ -1496,7 +1618,7 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
 
     //check the derivatives
 #ifdef MYDEBUG
-    double interval(1e-5);
+    double interval(1e-8);
     EngineeringStrain2D strain1 = mEpsilonHom;
     std::cout << "algo alpha " << bHomAlpha[0] << "  " << bHomAlpha[1] << "  " <<  bHomAlpha[2] << std::endl;
     const_cast<StructureIp*>(&*this)->mCrackAngle += interval;
@@ -1521,6 +1643,40 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
         const_cast<StructureIp*>(&*this)->mCrackOpening[count] -= interval;
         const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
     }
+
+    //check hessian
+    double hessianCDF[9],bHomAlpha2[3],bHomU2[6];
+    std::cout << "algo hessian " << std::endl;
+    std::cout << bHessian[0] << "  " << bHessian[3] << "  " <<  bHessian[6] << std::endl;
+    std::cout << bHessian[1] << "  " << bHessian[4] << "  " <<  bHessian[7] << std::endl;
+    std::cout << bHessian[2] << "  " << bHessian[5] << "  " <<  bHessian[8] << std::endl;
+    const_cast<StructureIp*>(&*this)->mCrackAngle += interval;
+    const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+    GetdEpsilonHomdCrack(bHomAlpha2,bHomU2,0);
+    hessianCDF[0] = (bHomAlpha2[0]-bHomAlpha[0])/interval;
+    hessianCDF[1] = (bHomAlpha2[1]-bHomAlpha[1])/interval;
+    hessianCDF[2] = (bHomAlpha2[2]-bHomAlpha[2])/interval;
+
+    const_cast<StructureIp*>(&*this)->mCrackAngle -= interval;
+    const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+
+    for (int count=0; count<2; count++)
+    {
+        const_cast<StructureIp*>(&*this)->mCrackOpening[count]+=interval;
+        const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+        GetdEpsilonHomdCrack(bHomAlpha2,bHomU2,0);
+        hessianCDF[3+3*count] = (bHomAlpha2[0]-bHomAlpha[0])/interval;
+        hessianCDF[4+3*count] = (bHomAlpha2[1]-bHomAlpha[1])/interval;
+        hessianCDF[5+3*count] = (bHomAlpha2[2]-bHomAlpha[2])/interval;
+
+        const_cast<StructureIp*>(&*this)->mCrackOpening[count] -= interval;
+        const_cast<StructureIp*>(&*this)->CalculateHomogeneousEngineeringStrain();
+    }
+    std::cout << "cdf hessian " << std::endl;
+    std::cout << hessianCDF[0] << "  " << hessianCDF[3] << "  " <<  hessianCDF[6] << std::endl;
+    std::cout << hessianCDF[1] << "  " << hessianCDF[4] << "  " <<  hessianCDF[7] << std::endl;
+    std::cout << hessianCDF[2] << "  " << hessianCDF[5] << "  " <<  hessianCDF[8] << std::endl;
+
     std::cout << std::endl;
 #endif
 
@@ -1725,8 +1881,8 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::Sparse
 //! @param rCoarseDisplacements ... return array of displacements
 void NuTo::StructureIp::GetDisplacementsEpsilonHom2D(double rCoordinates[2], double rDisplacements[2])const
 {
-    rDisplacements[0] = mEpsilonHom.mEngineeringStrain[0] * rCoordinates[0] + 0.5 * mEpsilonHom.mEngineeringStrain[2] * rCoordinates[1];
-    rDisplacements[1] = mEpsilonHom.mEngineeringStrain[1] * rCoordinates[1] + 0.5 * mEpsilonHom.mEngineeringStrain[2] * rCoordinates[0];
+    rDisplacements[0] = mEpsilonHom.mEngineeringStrain[0] * (rCoordinates[0]-mlX*0.5) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[1]-mlX*0.5);
+    rDisplacements[1] = mEpsilonHom.mEngineeringStrain[1] * (rCoordinates[1]-mlX*0.5) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[0]-mlX*0.5);
 }
 
 //! @brief ... calculate the displacement based on the crack opening
@@ -1736,27 +1892,30 @@ void NuTo::StructureIp::GetDisplacementsCrack2D(double rCoordinates[2], double r
 {
     //calculate distance to crack
     double d = CalculateDistanceToCrack2D(rCoordinates);
+    double sinAlpha(sin(mCrackAngle));
+    double cosAlpha(cos(mCrackAngle));
 
+    double factor;
     if (d<-mCrackTransitionZone)
     {
-        rDisplacements[0] = -0.5*mCrackOpening[0];
-        rDisplacements[1] = -0.5*mCrackOpening[1];
+        factor = -0.5;
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rDisplacements[0] = 0.5*mCrackOpening[0];
-            rDisplacements[1] = 0.5*mCrackOpening[1];
+            factor = 0.5;
         }
         else
         {
             //smooth transition from cracking to none cracking
-            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
-            rDisplacements[0] = factor*mCrackOpening[0];
-            rDisplacements[1] = factor*mCrackOpening[1];
+            factor = 0.5*sin(0.5*M_PI*d/mCrackTransitionZone);
         }
     }
+
+    rDisplacements[0] = factor*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
+    rDisplacements[1] = factor*(sinAlpha*mCrackOpening[0]+cosAlpha*mCrackOpening[1]);
+
 }
 
 //! @brief derivative of displacement with respect to homogeneous strain
@@ -1764,13 +1923,13 @@ void NuTo::StructureIp::GetDisplacementsCrack2D(double rCoordinates[2], double r
 //! @param rdY_dEpsilonHom[3] return value, derivative of x-displacement with respect to homogeneous strain (exx, eyy, gxy)
 void NuTo::StructureIp::GetdDisplacementdEpsilonHom(double rCoordinates[2], double rdX_dEpsilonHom[3], double rdY_dEpsilonHom[3])const
 {
-    rdX_dEpsilonHom[0] = rCoordinates[0];
+    rdX_dEpsilonHom[0] = rCoordinates[0]-mlX*0.5;
     rdX_dEpsilonHom[1] = 0.;
-    rdX_dEpsilonHom[2] = 0.5 * rCoordinates[1];
+    rdX_dEpsilonHom[2] = 0.5 * (rCoordinates[1]-mlX*0.5);
 
     rdY_dEpsilonHom[0] = 0.;
     rdY_dEpsilonHom[1] = rCoordinates[1];
-    rdY_dEpsilonHom[2] = 0.5 * rCoordinates[0];
+    rdY_dEpsilonHom[2] = 0.5 * (rCoordinates[0]-mlX*0.5);
 }
 
 //! @brief derivative of displacement with respect to discontinuity (crack opening)
@@ -1780,34 +1939,30 @@ void NuTo::StructureIp::GetdDisplacementdCrackOpening(double rCoordinates[2], do
 {
     //calculate distance to crack
     double d = CalculateDistanceToCrack2D(rCoordinates);
+    double sinAlpha(sin(mCrackAngle));
+    double cosAlpha(cos(mCrackAngle));
+    double factor;
 
     if (d<-mCrackTransitionZone)
     {
-        rdX_dCrackOpening[0] = -0.5;
-        rdX_dCrackOpening[1] =  0.0;
-        rdY_dCrackOpening[0] =  0.0;
-        rdY_dCrackOpening[1] = -0.5;
+        factor = -0.5;
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rdX_dCrackOpening[0] = 0.5;
-            rdX_dCrackOpening[1] = 0.0;
-            rdY_dCrackOpening[0] = 0.0;
-            rdY_dCrackOpening[1] = 0.5;
+            factor = 0.5;
         }
         else
         {
             //smooth transition from cracking to none cracking
-            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
-
-            rdX_dCrackOpening[0] = factor;
-            rdX_dCrackOpening[1] = 0.;
-            rdY_dCrackOpening[0] = 0.;
-            rdY_dCrackOpening[1] = factor;
+            factor=0.5*sin(0.5*M_PI*d/mCrackTransitionZone);
         }
     }
+    rdX_dCrackOpening[0] =  factor*cosAlpha;
+    rdX_dCrackOpening[1] = -factor*sinAlpha;
+    rdY_dCrackOpening[0] =  factor*sinAlpha;
+    rdY_dCrackOpening[1] =  factor*cosAlpha;
 }
 
 //! @brief second derivative of displacement with respect to alpha and discontinuity (crack opening)
@@ -1817,33 +1972,39 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
 {
     //calculate distance to crack
     double d = CalculateDistanceToCrack2D(rCoordinates);
+    double factor;
+    double sinAlpha(sin(mCrackAngle));
+    double cosAlpha(cos(mCrackAngle));
 
     if (d<-mCrackTransitionZone)
     {
-        rdX_dAlphaCrackOpening[0] = 0.;
-        rdX_dAlphaCrackOpening[1] = 0.;
-        rdY_dAlphaCrackOpening[0] = 0.;
-        rdY_dAlphaCrackOpening[1] = 0.;
+        factor=-0.5;
+        rdX_dAlphaCrackOpening[0] = -factor*sinAlpha;
+        rdX_dAlphaCrackOpening[1] = -factor*cosAlpha;
+        rdY_dAlphaCrackOpening[0] =  factor*cosAlpha;
+        rdY_dAlphaCrackOpening[1] = -factor*sinAlpha;
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rdX_dAlphaCrackOpening[0] = 0.;
-            rdX_dAlphaCrackOpening[1] = 0.;
-            rdY_dAlphaCrackOpening[0] = 0.;
-            rdY_dAlphaCrackOpening[1] = 0.;
+            factor=0.5;
+            rdX_dAlphaCrackOpening[0] = -factor*sinAlpha;
+            rdX_dAlphaCrackOpening[1] = -factor*cosAlpha;
+            rdY_dAlphaCrackOpening[0] =  factor*cosAlpha;
+            rdY_dAlphaCrackOpening[1] = -factor*sinAlpha;
         }
         else
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
             double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
+            factor = 0.5*sin(0.5*M_PI*d/mCrackTransitionZone);
 
-            rdX_dAlphaCrackOpening[0] = dFactor;
-            rdX_dAlphaCrackOpening[1] = 0.;
-            rdY_dAlphaCrackOpening[0] = 0.;
-            rdY_dAlphaCrackOpening[1] = dFactor;
+            rdX_dAlphaCrackOpening[0] = -factor*sinAlpha+dFactor*cosAlpha;
+            rdX_dAlphaCrackOpening[1] = -factor*cosAlpha-dFactor*sinAlpha;
+            rdY_dAlphaCrackOpening[0] =  factor*cosAlpha+dFactor*sinAlpha;
+            rdY_dAlphaCrackOpening[1] = -factor*sinAlpha+dFactor*cosAlpha;
         }
     }
 }
@@ -1856,62 +2017,102 @@ void NuTo::StructureIp::GetdDisplacementdCrackOrientation(double rCoordinates[2]
 {
     //calculate distance to crack
     double d = CalculateDistanceToCrack2D(rCoordinates);
+    double sinAlpha(sin(mCrackAngle));
+    double cosAlpha(cos(mCrackAngle));
 
     if (d<-mCrackTransitionZone)
     {
-        rdX_dAlpha[0] = 0.;
-        rdY_dAlpha[0] = 0.;
+        rdX_dAlpha[0] = -0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
+        rdY_dAlpha[0] = -0.5*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rdX_dAlpha[0] = 0.;
-            rdY_dAlpha[0] = 0.;
+            rdX_dAlpha[0] = 0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
+            rdY_dAlpha[0] = 0.5*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
         }
         else
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
+            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
             double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
 
-            rdX_dAlpha[0] = dFactor*mCrackOpening[0];
-            rdY_dAlpha[0] = dFactor*mCrackOpening[1];
+            rdX_dAlpha[0] = factor*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1])+
+                           dFactor*(cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);
+            rdY_dAlpha[0] = factor*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1])+
+                           dFactor*(sinAlpha*mCrackOpening[0] + cosAlpha*mCrackOpening[1]);
         }
     }
+#ifdef MYDEBUG
+
+    // test using central differences
+    double displacements1[2],displacements2[2];
+    double interval(1e-8);
+    GetDisplacementsCrack2D(rCoordinates, displacements1);
+    const_cast<NuTo::StructureIp*> (this)->mCrackAngle+=interval;
+    GetDisplacementsCrack2D(rCoordinates, displacements2);
+    const_cast<NuTo::StructureIp*> (this)->mCrackAngle-=interval;
+    std::cout << "rdX_dAlpha "<< rdX_dAlpha[0] << " " << (displacements2[0]-displacements1[0])/interval << std::endl;
+    std::cout << "rdY_dAlpha "<< rdY_dAlpha[0] << " " << (displacements2[1]-displacements1[1])/interval << std::endl;
+    std::cout << d << std::endl;
+#endif
 }
-//! @brief second derivative of displacement with respect to discontinuity (crack opening)
+//! @brief second derivative of displacement with respect to orientation of discontinuity (crack angle)
 //! @param rdX_dAlpha[2] return value, second derivative of x-displacement with respect to crack orientation (alpha)
 //! @param rdy_dAlpha[2] return value, second derivative of y-displacement with respect to crack orientation (alpha)
 void NuTo::StructureIp::Getd2Displacementd2CrackOrientation(double rCoordinates[2], double rd2X_d2Alpha[1], double rd2Y_d2Alpha[1])const
 {
     //calculate distance to crack
     double d = CalculateDistanceToCrack2D(rCoordinates);
+    double sinAlpha(sin(mCrackAngle));
+    double cosAlpha(cos(mCrackAngle));
 
     if (d<-mCrackTransitionZone)
     {
-        rd2X_d2Alpha[0] = 0.;
-        rd2Y_d2Alpha[0] = 0.;
+        rd2X_d2Alpha[0] = -0.5*(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
+        rd2Y_d2Alpha[0] = -0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
     }
     else
     {
         if (d>mCrackTransitionZone)
         {
-            rd2X_d2Alpha[0] = 0.;
-            rd2Y_d2Alpha[0] = 0.;
+            rd2X_d2Alpha[0] = 0.5*(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
+            rd2Y_d2Alpha[0] = 0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
         }
         else
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
             double d2DdAlpha = Calculated2DistanceToCrack2Dd2Alpha(rCoordinates);
-            double dFactor(0.25*M_PI/mCrackTransitionZone*(-0.5*M_PI/mCrackTransitionZone*sin(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha
+            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
+            double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
+            double dFactor2(0.25*M_PI/mCrackTransitionZone*(-0.5*M_PI/mCrackTransitionZone*sin(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha*dDdAlpha
                                       +cos(0.5*M_PI*d/mCrackTransitionZone)*d2DdAlpha));
 
-            rd2X_d2Alpha[0] = dFactor*mCrackOpening[0];
-            rd2Y_d2Alpha[0] = dFactor*mCrackOpening[1];
+            rd2X_d2Alpha[0] = (dFactor2-factor)*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1])+2.*dFactor*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
+            rd2Y_d2Alpha[0] = (dFactor2-factor)*(sinAlpha*mCrackOpening[0]+cosAlpha*mCrackOpening[1])+2.*dFactor*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
         }
     }
+#ifdef MYDEBUG
+
+    //check dd2d2alpha
+    double interval(1e-8);
+    double dX_dAlpha1,dY_dAlpha1,dX_dAlpha2,dY_dAlpha2;
+    GetdDisplacementdCrackOrientation(rCoordinates, &dX_dAlpha1, &dY_dAlpha1);
+    const_cast<NuTo::StructureIp*> (this)->mCrackAngle+=interval;
+    GetdDisplacementdCrackOrientation(rCoordinates, &dX_dAlpha2, &dY_dAlpha2);
+    const_cast<NuTo::StructureIp*> (this)->mCrackAngle-=interval;
+
+    std::cout << "dd2d2alpha algo " << rd2X_d2Alpha[0] << " " << rd2Y_d2Alpha[0] << std::endl;
+    std::cout << "dd2d2alpha cdf " << (dX_dAlpha2-dX_dAlpha1)/interval << " " << (dY_dAlpha2-dY_dAlpha1)/interval << std::endl;
+
+    if (fabs(rd2X_d2Alpha[0]-(dX_dAlpha2-dX_dAlpha1)/interval)>1e-2)
+        exit(0);
+    if (fabs(rd2Y_d2Alpha[0]-(dY_dAlpha2-dY_dAlpha1)/interval)>1e-2)
+        exit(0);
+#endif
 }
 
 //! @brief calculate the distance of a point to the crack
@@ -1947,20 +2148,24 @@ void NuTo::StructureIp::CalculateHomogeneousEngineeringStrain()
     assert(mlX==mlY);
     double factor=gamma/(mlX);
 
-    mEpsilonHom.mEngineeringStrain[0] = mEpsilonTot.mEngineeringStrain[0] + factor * sinAlpha * mCrackOpening[0];
-    mEpsilonHom.mEngineeringStrain[1] = mEpsilonTot.mEngineeringStrain[1] - factor * cosAlpha * mCrackOpening[1];
-    mEpsilonHom.mEngineeringStrain[2] = mEpsilonTot.mEngineeringStrain[2] + factor * ( sinAlpha * mCrackOpening[1] - cosAlpha * mCrackOpening[0]);
+    mEpsilonHom.mEngineeringStrain[0] = mEpsilonTot.mEngineeringStrain[0] - factor * sinAlpha *(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
+    mEpsilonHom.mEngineeringStrain[1] = mEpsilonTot.mEngineeringStrain[1] - factor * cosAlpha *(sinAlpha*mCrackOpening[0]+cosAlpha*mCrackOpening[1]);
+    mEpsilonHom.mEngineeringStrain[2] = mEpsilonTot.mEngineeringStrain[2] - factor * ((2.*cosAlpha*cosAlpha-1.)* mCrackOpening[0] - 2.*sinAlpha*cosAlpha * mCrackOpening[1]);
 /*    mEpsilonHom.mEngineeringStrain[0] = 0;
     mEpsilonHom.mEngineeringStrain[1] = 0;
     mEpsilonHom.mEngineeringStrain[2] = 0;
 
-    std::cout << "calculation of e hom is wrong  " << std::endl;
+    std::cout << "calculation of e hom  " << std::endl;
 */
+    std::cout << "mEpsilonHom " << mEpsilonHom.mEngineeringStrain[0] << " " << mEpsilonHom.mEngineeringStrain[1] << " " << mEpsilonHom.mEngineeringStrain[2] << std::endl;
+
+    /*
 //#ifdef MYDEBUG
     std::cout << "mEpsilonTot " << mEpsilonTot.mEngineeringStrain[0] << " " << mEpsilonTot.mEngineeringStrain[1] << " " << mEpsilonTot.mEngineeringStrain[2] << std::endl;
     std::cout << "mCrackOpening " << mCrackOpening[0] << " " << mCrackOpening[1] << " " << factor << std::endl;
     std::cout << "mEpsilonHom " << mEpsilonHom.mEngineeringStrain[0] << " " << mEpsilonHom.mEngineeringStrain[1] << " " << mEpsilonHom.mEngineeringStrain[2] << std::endl;
 //#endif
+*/
 }
 
 //calculate from the existing crack opening and orientation the cracking strain
@@ -1975,6 +2180,18 @@ void NuTo::StructureIp::SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEng
    CalculateHomogeneousEngineeringStrain();
 }
 
+//! @brief set the maximum total strain (used in the automatic increment of the Newton Raphson iteration multiplied by the load factor to give the totalEngineeringStrain)
+void NuTo::StructureIp::SetDeltaTotalEngineeringStrain(EngineeringStrain2D& rDeltaTotalEngineeringStrain)
+{
+    mDeltaEpsilonTot = rDeltaTotalEngineeringStrain;
+}
+
+//! @brief set the maximum total strain (used in the automatic increment of the Newton Raphson iteration multiplied by the load factor to give the totalEngineeringStrain)
+void NuTo::StructureIp::SetPrevTotalEngineeringStrain(EngineeringStrain2D& rPrevTotalEngineeringStrain)
+{
+    mPrevEpsilonTot = rPrevTotalEngineeringStrain;
+}
+
 //! @brief returns the total strain
 NuTo::EngineeringStrain2D NuTo::StructureIp::GetTotalEngineeringStrain()const
 {
@@ -1985,6 +2202,12 @@ NuTo::EngineeringStrain2D NuTo::StructureIp::GetTotalEngineeringStrain()const
 NuTo::EngineeringStrain2D NuTo::StructureIp::GetHomogeneousEngineeringStrain()const
 {
     return mEpsilonHom;
+}
+
+//! @brief set the homgeneous strain (just for test purpose)
+void NuTo::StructureIp::SetHomogeneousEngineeringStrain(NuTo::EngineeringStrain2D rStrain)
+{
+    mEpsilonHom = rStrain;
 }
 
 //! @brief return the previous crack angle
@@ -2008,60 +2231,75 @@ void NuTo::StructureIp::GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU
 {
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
-    double gamma(1./std::max(fabs(sinAlpha),fabs(cosAlpha)));
     assert(mlX==mlY);
-    double factor=gamma/(mlX);
-
-    rbHomU[0] = factor*sinAlpha;
-    rbHomU[1] = 0.;
-    rbHomU[2] = factor*(-cosAlpha);
-
-    rbHomU[3] = 0.;
-    rbHomU[4] = factor*(-cosAlpha);
-    rbHomU[5] = factor*sinAlpha;
 
     if (fabs(sinAlpha)>fabs(cosAlpha))
     {
-        rbHomAlpha[0] = 0.;
-        rbHomAlpha[1] = mCrackOpening[1]/(mlX*sinAlpha*fabs(sinAlpha));
-        rbHomAlpha[2] = mCrackOpening[0]/(mlX*sinAlpha*fabs(sinAlpha));
+        double signdivl = sinAlpha<0 ? 1./mlX : -1./mlX;
+        rbHomAlpha[0] = signdivl*(sinAlpha*mCrackOpening[0] + cosAlpha*mCrackOpening[1]);
+        rbHomAlpha[1] = signdivl*(-sinAlpha*mCrackOpening[0] + cosAlpha/(sinAlpha*sinAlpha)*(cosAlpha*cosAlpha-2.)*mCrackOpening[1]);
+        rbHomAlpha[2] = signdivl*(cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.)*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
+
+        rbHomU[0] = signdivl*(-cosAlpha);
+        rbHomU[1] = signdivl*cosAlpha;
+        rbHomU[2] = signdivl*(2.*cosAlpha*cosAlpha-1.)/sinAlpha;
+
+        rbHomU[3] = signdivl*(sinAlpha);
+        rbHomU[4] = signdivl*(cosAlpha*cosAlpha)/sinAlpha;
+        rbHomU[5] = signdivl*(-2.*cosAlpha);
 
         if (rbHessian!=0)
         {
-            rbHessian[0] = 0.;
-            rbHessian[1] = -mCrackOpening[1]*2.*cosAlpha/(mlX*sinAlpha*sinAlpha*fabs(sinAlpha));
-            rbHessian[2] = -mCrackOpening[0]*2.*cosAlpha/(mlX*sinAlpha*sinAlpha*fabs(sinAlpha));
+            rbHessian[0] = signdivl*(cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);;
+            rbHessian[1] = signdivl*(-cosAlpha*mCrackOpening[0] + (cosAlpha*cosAlpha*cosAlpha*cosAlpha-cosAlpha*cosAlpha+2.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[1]);
+            rbHessian[2] = signdivl*((2.*cosAlpha*cosAlpha*cosAlpha*cosAlpha-3.*cosAlpha*cosAlpha+3.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[0] +2.* cosAlpha*mCrackOpening[1]);
 
-            rbHessian[3] = 0.;
-            rbHessian[4] = 0.;
-            rbHessian[5] = 1./(mlX*sinAlpha*fabs(sinAlpha));
+            rbHessian[3] = signdivl*sinAlpha;
+            rbHessian[4] = -signdivl*sinAlpha;
+            rbHessian[5] = signdivl*(cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.));
 
-            rbHessian[6] = 0.;
-            rbHessian[7] = 1./(mlX*sinAlpha*fabs(sinAlpha));
-            rbHessian[8] = 0.;
+            rbHessian[6] = signdivl*cosAlpha;
+            rbHessian[7] = signdivl*cosAlpha/(sinAlpha*sinAlpha)*(cosAlpha*cosAlpha-2.);
+            rbHessian[8] = signdivl*2.* sinAlpha;
 
         }
     }
     else
     {
-        rbHomAlpha[0] = mCrackOpening[0]/(mlX*cosAlpha*fabs(cosAlpha));
-        rbHomAlpha[1] = 0.;
-        rbHomAlpha[2] = mCrackOpening[1]/(mlX*cosAlpha*fabs(cosAlpha));
+        double signdivl = cosAlpha<0 ? 1./mlX : -1./mlX;
+        rbHomAlpha[0] = signdivl*(-cosAlpha*mCrackOpening[0] + sinAlpha/(cosAlpha*cosAlpha)*(cosAlpha*cosAlpha+1)*mCrackOpening[1]);
+        rbHomAlpha[1] = signdivl*( cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);
+        rbHomAlpha[2] = signdivl*(-sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1)*mCrackOpening[0] -2.* cosAlpha*mCrackOpening[1]);
+
+        rbHomU[0] = signdivl*(-sinAlpha);
+        rbHomU[1] = signdivl*sinAlpha;
+        rbHomU[2] = signdivl*(2*cosAlpha*cosAlpha-1.)/cosAlpha;
+
+        rbHomU[3] = signdivl*(sinAlpha*sinAlpha)/cosAlpha;
+        rbHomU[4] = signdivl*(cosAlpha);
+        rbHomU[5] = signdivl*(-2.*sinAlpha);
+
         if (rbHessian!=0)
         {
-            rbHessian[0] = mCrackOpening[0]*2.*sinAlpha/(mlX*cosAlpha*cosAlpha*fabs(cosAlpha));
-            rbHessian[1] = 0.;
-            rbHessian[2] = mCrackOpening[1]*2.*sinAlpha/(mlX*cosAlpha*cosAlpha*fabs(cosAlpha));
+            rbHessian[0] = signdivl*(sinAlpha*mCrackOpening[0] + (cosAlpha*cosAlpha*cosAlpha*cosAlpha-cosAlpha*cosAlpha+2)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[1]);
+            rbHessian[1] = signdivl*(-sinAlpha*mCrackOpening[0] - cosAlpha*mCrackOpening[1]);
+            rbHessian[2] = signdivl*(-(2.*cosAlpha*cosAlpha*cosAlpha*cosAlpha-cosAlpha*cosAlpha+2.)/(cosAlpha*cosAlpha*cosAlpha)*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
 
-            rbHessian[3] = 1./(mlX*cosAlpha*fabs(cosAlpha));
-            rbHessian[4] = 0.;
-            rbHessian[5] = 0.;
+            rbHessian[3] = -signdivl*cosAlpha;
+            rbHessian[4] = signdivl*cosAlpha;
+            rbHessian[5] = -signdivl*sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1);
 
-            rbHessian[6] = 0.;
-            rbHessian[7] = 0.;
-            rbHessian[8] = 1./(mlX*cosAlpha*fabs(cosAlpha));
+            rbHessian[6] = signdivl*(sinAlpha/(cosAlpha*cosAlpha)*(cosAlpha*cosAlpha+1));
+            rbHessian[7] = -signdivl*sinAlpha;
+            rbHessian[8] = signdivl*(-2.* cosAlpha);
         }
     }
+/*
+    std::cout << "crack opening "  << mCrackOpening[0] << " " << mCrackOpening[1]  << std::endl;
+    std::cout << "dhom dalpha " << rbHomAlpha[0] << " " <<  rbHomAlpha[1] << " " <<  rbHomAlpha[2] << std::endl;
+    std::cout << "dhom dut " << rbHomU[0] << " " <<  rbHomU[1] << " " <<  rbHomU[2] << std::endl;
+    std::cout << "dhom dun " << rbHomU[3] << " " <<  rbHomU[4] << " " <<  rbHomU[5] << std::endl;
+*/
 }
 
 //! @brief return the total strain
@@ -2076,6 +2314,373 @@ void NuTo::StructureIp::ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingI
     mDOFCrackAngle = rMappingInitialToNewOrdering[mDOFCrackAngle];
     mDOFCrackOpening[0] = rMappingInitialToNewOrdering[mDOFCrackOpening[0]];
     mDOFCrackOpening[1] = rMappingInitialToNewOrdering[mDOFCrackOpening[1]];
+    mDOFGlobalTotalStrain[0]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[0]];
+    mDOFGlobalTotalStrain[1]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[1]];
+    mDOFGlobalTotalStrain[2]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[2]];
+}
+
+//! @brief calculates the crack angle for elastic solutions (initial value, no scaling with previous crack angle)
+//! @return crack angle in the range 0..Pi
+double  NuTo::StructureIp::CalculateInitialCrackAngleElastic()const
+{
+    FullMatrix<double> strain(2,2);
+    const double *dataPtr = mEpsilonTot.GetData();
+    strain(0,0) = dataPtr[0];
+    strain(0,1) = dataPtr[2]*0.5;
+    strain(1,0) = strain(0,1);
+    strain(1,1) = dataPtr[1];
+
+//    strain.Info(12,5);
+
+    NuTo::FullMatrix<double> eigenVectors;
+    NuTo::FullMatrix<double> eigenValues;
+    strain.EigenVectorsSymmetric(eigenVectors);
+    strain.EigenValuesSymmetric(eigenValues);
+
+    strain.EigenValuesSymmetric(eigenValues);
+    /*    std::cout << "eigenvalues of epsilon tot" << std::endl;
+    eigenValues.Trans().Info(12,3);
+    std::cout << "eigenvectors of epsilon tot" << std::endl;
+    eigenVectors.Info(12,3);
+*/
+    assert(eigenValues(0,0)<=eigenValues(1,0));
+    double alpha = atan2(eigenVectors(1,0),eigenVectors(0,0));
+    if (alpha<0)
+        alpha+=M_PI;
+    return alpha;
+}
+
+//! @brief calculates the crack angle for elastic solutions
+//! @return crack angle in the range 0..Pi
+double NuTo::StructureIp::CalculateCrackAngleElastic()const
+{
+    FullMatrix<double> strain(2,2);
+    const double *dataPtr = mEpsilonTot.GetData();
+    strain(0,0) = dataPtr[0];
+    strain(0,1) = dataPtr[2]*0.5;
+    strain(1,0) = strain(0,1);
+    strain(1,1) = dataPtr[1];
+//    strain.Info(12,5);
+
+    NuTo::FullMatrix<double> eigenVectors;
+    NuTo::FullMatrix<double> eigenValues;
+    strain.EigenVectorsSymmetric(eigenVectors);
+    strain.EigenValuesSymmetric(eigenValues);
+
+    strain.EigenValuesSymmetric(eigenValues);
+    /*    std::cout << "eigenvalues of epsilon tot" << std::endl;
+    eigenValues.Trans().Info(12,3);
+    std::cout << "eigenvectors of epsilon tot" << std::endl;
+    eigenVectors.Info(12,3);
+*/
+    assert(eigenValues(0,0)<=eigenValues(1,0));
+    double alpha_2(0);
+    if (eigenValues(1,0)-eigenValues(0,0) > mToleranceElasticCrackAngleHigh)
+    {
+        alpha_2 = atan2(eigenVectors(1,0),eigenVectors(0,0));
+        if (alpha_2<0)
+            alpha_2+=M_PI;
+    }
+    else
+    {
+        if (eigenValues(1,0)-eigenValues(0,0)<mToleranceElasticCrackAngleLow)
+        {
+            alpha_2 = mPrevCrackAngle;
+        }
+        else
+        {
+            double s((eigenValues(1,0)-eigenValues(0,0)-mToleranceElasticCrackAngleLow)/(mToleranceElasticCrackAngleHigh - mToleranceElasticCrackAngleLow));
+            alpha_2 = atan2(eigenVectors(1,0),eigenVectors(0,0));
+            if (alpha_2<0)
+                alpha_2+=M_PI;
+            alpha_2 = alpha_2* (1-s) + mPrevCrackAngle*s;
+        }
+    }
+    return alpha_2;
+}
+
+//! @brief calculates the difference between the crack angle of the elastic solution and the current angle
+//! attention, the periodicity of the crack angle has to be taken into account
+double NuTo::StructureIp::CalculateDeltaCrackAngleElastic()const
+{
+    //calculate angle orthogonal to second principal stress
+     double alpha_2 = this->CalculateCrackAngleElastic();
+
+     double delta_alpha = mCrackAngle-alpha_2;
+     while (fabs(delta_alpha>M_PI))
+     {
+         if (delta_alpha>0)
+         {
+             delta_alpha-=M_PI;
+             alpha_2+=M_PI;
+         }
+         else
+         {
+             delta_alpha+=M_PI;
+             alpha_2-=M_PI;
+         }
+     }
+     //now delta_alpha is in [0..PI]
+
+     if (delta_alpha>0.5*M_PI)
+     {
+         delta_alpha = M_PI-delta_alpha;
+         alpha_2 += M_PI;
+     }
+     //std::cout << "alpha " << mCrackAngle << " alpha2 " << alpha_2 << " delta " << delta_alpha << std::endl;
+
+     return delta_alpha;
+}
+
+//! @brief add a constraint equation for alpha, which corresponds to an artificial spring
+//! @parameter rPenaltyStiffness penalty stiffness
+//! @parameter rScalingFactor scaling factor
+//! @return id of the constraint
+int NuTo::StructureIp::ConstraintNonlinearCrackAngle(double rPenaltyStiffness, double rScalingFactor)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintCrackAngle);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 1;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    ConstraintNonlinearGlobalCrackAngle2D *mConst = new NuTo::ConstraintNonlinearGlobalCrackAngle2D(this, rPenaltyStiffness, rScalingFactor);
+
+    mConstraintMap.insert(id, mConst);
+    mConstraintCrackAngle = id;
+    return id;
+}
+
+//! @brief set the penalty stiffness for the nonlinear crack angle constraint
+void NuTo::StructureIp::SetPenaltyStiffnessCrackAngle(double rParameter)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintCrackAngle);
+    if (it!=mConstraintMap.end())
+    {
+        ConstraintNonlinearGlobalCrackAngle2D *constraintPtr = dynamic_cast<ConstraintNonlinearGlobalCrackAngle2D*>(it->second);
+        if (constraintPtr==0)
+            throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessCrackAngle] Constraint for the crack angle is not of the type ConstraintNonlinearGlobalCrackAngle2D.");
+        constraintPtr->SetPenaltyStiffness(rParameter);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessCrackAngle] There is no constraint for the crack angle.");
+    }
+}
+
+//! @brief set the scaling factor for the nonlinear crack angle constraint
+void NuTo::StructureIp::SetPenaltyStiffnessScalingFactorCrackAngle(double rParameter)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintCrackAngle);
+    if (it!=mConstraintMap.end())
+    {
+        ConstraintNonlinearGlobalCrackAngle2D *constraintPtr = dynamic_cast<ConstraintNonlinearGlobalCrackAngle2D*>(it->second);
+        if (constraintPtr==0)
+            throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessScalingFactorCrackAngle] Constraint for the crack angle is not of the type ConstraintNonlinearGlobalCrackAngle2D.");
+        constraintPtr->SetScalingFactor(rParameter);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessScalingFactorCrackAngle] There is no constraint for the crack angle.");
+    }
+
+}
+
+//! @brief add a constraint equation for the tangential crack opening, which corresponds to an artificial spring
+//! @parameter rPenaltyStiffness penalty stiffness
+//! @parameter rScalingFactor scaling factor
+//! @return id of the constraint
+int NuTo::StructureIp::ConstraintNonlinearTangentialCrackOpening(double rPenaltyStiffness, double rScalingFactor)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 1;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    ConstraintNonlinearGlobalCrackOpeningTangential2D *mConst = new NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D(this, rPenaltyStiffness, rScalingFactor);
+
+    mConstraintMap.insert(id, mConst);
+    mConstraintTangentialCrackOpening = id;
+    return id;
+}
+
+//! @brief set the penalty stiffness for the nonlinear TangentialCrackOpening
+void NuTo::StructureIp::SetPenaltyStiffnessTangentialCrackOpening(double rParameter)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        ConstraintNonlinearGlobalCrackOpeningTangential2D *constraintPtr = dynamic_cast<ConstraintNonlinearGlobalCrackOpeningTangential2D*>(it->second);
+        if (constraintPtr==0)
+            throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessTangentialCrackOpening] Constraint for the crack angle is not of the type ConstraintNonlinearGlobalCrackAngle2D.");
+        constraintPtr->SetPenaltyStiffness(rParameter);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessTangentialCrackOpening] There is no constraint for the crack angle.");
+    }
+}
+
+//! @brief set the scaling factor for the nonlinear TangentialCrackOpening
+void NuTo::StructureIp::SetPenaltyStiffnessScalingFactorTangentialCrackOpening(double rParameter)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        ConstraintNonlinearGlobalCrackOpeningTangential2D *constraintPtr = dynamic_cast<ConstraintNonlinearGlobalCrackOpeningTangential2D*>(it->second);
+        if (constraintPtr==0)
+            throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessScalingFactorTangentialCrackOpening] Constraint for the crack angle is not of the type ConstraintNonlinearGlobalCrackAngle2D.");
+        constraintPtr->SetScalingFactor(rParameter);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureIp::SetPenaltyStiffnessScalingFactorTangentialCrackOpening] There is no constraint for the crack angle.");
+    }
+
+}
+
+//! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
+void NuTo::StructureIp::SetToleranceElasticCrackAngleHigh(double rParameter)
+{
+    if (rParameter<mToleranceElasticCrackAngleLow || rParameter<0)
+        throw MechanicsException("[NuTo::StructureIp::SetToleranceElasticCrackAngleHigh] Tolerance has to be positive and higher than the low tolerance.");
+    mToleranceElasticCrackAngleHigh = rParameter;
+}
+
+//! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
+void NuTo::StructureIp::SetToleranceElasticCrackAngleLow(double rParameter)
+{
+    if (rParameter<0 || rParameter>mToleranceElasticCrackAngleHigh)
+        throw MechanicsException("[NuTo::StructureIp::SetToleranceElasticCrackAngleLow] Tolerance has to be positive and lower than the high tolerance.");
+    mToleranceElasticCrackAngleLow = rParameter;
+}
+
+//! @brief add a constraint equation for the crack opening (normal crack opening non negativ)
+//! @parameter rPenaltyStiffness penalty stiffness for augmented Lagrangian
+//! @return id of the constraint
+int NuTo::StructureIp::ConstraintLagrangeCrackOpening(double rPenaltyStiffness)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 1;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    ConstraintLagrangeGlobalCrackOpening2D *mConst = new NuTo::ConstraintLagrangeGlobalCrackOpening2D(this, rPenaltyStiffness);
+
+    mConstraintMap.insert(id, mConst);
+    mConstraintNormalCrackOpening = id;
+    return id;
+}
+
+//! @brief add a constraint equation for the total strain
+//! @parameter rStrain applied strain (rhs)
+//! @return id of the constraint
+int NuTo::StructureIp::ConstraintLinearGlobalTotalStrain(const EngineeringStrain2D& rStrain)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTotalStrain);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 1;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    NuTo::ConstraintLinearGlobalTotalStrain *mConst = new NuTo::ConstraintLinearGlobalTotalStrain(this, rStrain);
+
+    mConstraintMap.insert(id, mConst);
+    mConstraintTotalStrain = id;
+    return id;
+}
+
+//! @brief initializes some variables etc. before the Newton-Raphson routine is executed
+void NuTo::StructureIp::InitBeforeNewtonRaphson()
+{
+    mSavedToStringStream = false;
+    this->ElementTotalUpdateTmpStaticData();
+}
+
+//! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
+//! @param load factor
+void NuTo::StructureIp::SetLoadFactor(double rLoadFactor)
+{
+    //set the total strain and calculate from the existing crack opening the homogeneous strain
+    EngineeringStrain2D curEngineeringStrain(mPrevEpsilonTot+mDeltaEpsilonTot*rLoadFactor);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTotalStrain);
+    if (it!=mConstraintMap.end())
+    {
+        dynamic_cast<NuTo::ConstraintLinearGlobalTotalStrain*>(it->second)->SetRHS(curEngineeringStrain);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::StructureIp::SetLoadFactor] Linear constraint for total strain not found.");
+    }
+}
+
+//! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
+void NuTo::StructureIp::PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const
+{
+    std::cout << " Finescale convergence after " << rNumNewtonIterations << " Newton iterations, curLoadFactor " << rLoadFactor << ", deltaLoadFactor "<< rDeltaLoadFactor << std::endl<< std::endl;
+    std::cout << " crack angle " << mCrackAngle*180./M_PI << " Crack opening " << mCrackOpening[0] << " " << mCrackOpening[1] <<  std::endl;
+}
+
+//! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
+void NuTo::StructureIp::PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor)const
+{
+    std::cout << " Finescale step, iteration " << rNewtonIteration <<
+                 ", line search factor " << rLineSearchFactor <<
+                 ", load factor " << rLoadFactor << std::endl;
+    std::cout << " crack angle " << mCrackAngle*180./M_PI << " Crack opening " << mCrackOpening[0] << " " << mCrackOpening[1] <<  std::endl;
+    std::stringstream ssLoadStep;
+    ssLoadStep << rLoadStep;
+    std::stringstream ssIteration;
+    ssIteration << rNewtonIteration;
+    this->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FinescaleConcurrentMultiscale") + ssLoadStep.str()+"_" + ssIteration.str() + std::string(".vtk"));
+}
+
+//! @brief only for debugging, info at some stages of the Newton Raphson iteration
+void NuTo::StructureIp::NewtonRaphsonInfo(int rVerboseLevel)const
+{
+    std::cout << "DOFs : alpha "   << this->GetCrackAngle()                << "(" << this->GetDofCrackAngle()<< ") "
+              << " tangential " << this->GetGlobalCrackOpening2D()[0]   << "(" << this->GetDofGlobalCrackOpening2D()[0] << ") "
+              << " normal " << this->GetGlobalCrackOpening2D()[1]   << "(" << this->GetDofGlobalCrackOpening2D()[1] << ") "
+              << std::endl;
+
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -460,6 +460,7 @@ void NuTo::Structure::ElementDeleteInternal(int rElementId)
 void NuTo::Structure::GetElementsTotal(std::vector<const ElementBase*>& rElements) const
 {
     rElements.reserve(mElementMap.size());
+    rElements.resize(0);
 	boost::ptr_map<int,ElementBase>::const_iterator ElementIter = this->mElementMap.begin();
     while (ElementIter != this->mElementMap.end())
     {
@@ -472,6 +473,7 @@ void NuTo::Structure::GetElementsTotal(std::vector<const ElementBase*>& rElement
 void NuTo::Structure::GetElementsTotal(std::vector<ElementBase*>& rElements)
 {
     rElements.reserve(mElementMap.size());
+    rElements.resize(0);
     boost::ptr_map<int,ElementBase>::iterator ElementIter = this->mElementMap.begin();
     while (ElementIter != this->mElementMap.end())
     {

@@ -356,6 +356,75 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 	}
 }
 
+bool NuTo::StructureBase::CheckStiffness()
+{
+    std::cout << "test of stiffness still included " << std::endl;
+    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
+    NuTo::FullMatrix<double> dispForceVector;
+
+    //recalculate stiffness
+    this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+    this->ConstraintInfo(10);
+
+    NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
+    //std::cout<<"stiffness matrix" << std::endl;
+    //stiffnessMatrixCSRVector2Full.Info(10,3);
+    double interval(1e-9);
+    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+    NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
+    NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
+    double energy1,energy2;
+    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->ElementTotalUpdateTmpStaticData();
+    this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
+    std::cout << "check stiffness:: intForceVector1"<< std::endl;
+    intForceVector1.Trans().Info(12,3);
+    energy1 = this->ElementTotalGetTotalEnergy();
+    energy1 += this->ConstraintTotalGetTotalEnergy();
+    for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
+    {
+        displacementsActiveDOFsCheck(count,0)+=interval;
+        this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        this->ElementTotalUpdateTmpStaticData();
+        this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
+        std::cout << "check stiffness:: intForceVector2"<< std::endl;
+        intForceVector2.Trans().Info(12,3);
+        this->ConstraintInfo(10);
+        energy2 = this->ElementTotalGetTotalEnergy();
+        energy2 += this->ConstraintTotalGetTotalEnergy();
+        stiffnessMatrixCSRVector2_CDF.SetColumn(count,(intForceVector2-intForceVector1)*(1./interval));
+        intForceVectorCDF(count,0) = (energy2-energy1)/interval;
+        displacementsActiveDOFsCheck(count,0)-=interval;
+    }
+    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-3)
+    {
+        std::cout << "globalStiffnessMatrix algo" << std::endl;
+        stiffnessMatrixCSRVector2Full.Info(10,3);
+        std::cout<< std::endl << "globalStiffnessMatrix cdf" << std::endl;
+        stiffnessMatrixCSRVector2_CDF.Info(10,3);
+        std::cout<< std::endl << "error" << std::endl;
+        (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Info(10);
+        std::cout << "maximum error is " << (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max() << std::endl;
+        std::cout<< std::endl << "intForceVector algo" << std::endl;
+        intForceVector1.Trans().Info(10);
+        std::cout<< std::endl << "intForceVector cdf" << std::endl;
+        intForceVectorCDF.Trans().Info(10);
+        //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
+        std::cout << "stiffness is wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< std::endl;
+        return false;
+    }
+    else
+    {
+        std::cout << "stiffness is OK "<< std::endl;
+        return true;
+    }
+
+}
+
+
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
 void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
@@ -1623,4 +1692,104 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()const
         std::cout<<"[NuTo::StructureBase::ElementTotalGetElasticEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
     return elasticEnergy;
+}
+
+
+//! @brief sets the parameters  of the finescale model (structure ip)
+//! @parameter rElement Element pointer
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::StructureBase::ElementTotalSetFineScaleParameter(std::string rName, double rParameter)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    std::vector<ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+    {
+        try
+        {
+            for (int theIp=0; theIp<elementVector[elementCount]->GetNumIntegrationPoints(); theIp++)
+                elementVector[elementCount]->SetFineScaleParameter(theIp, rName, rParameter);
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
+        }
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
+//! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
+//! @parameter rElement Element pointer
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, double rParameter)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Group is not an element group.");
+    Group<ElementBase> *elementGroup = dynamic_cast<Group< ElementBase >*>(itGroup->second);
+    assert(elementGroup!=0);
+
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    {
+        try
+        {
+            for (int theIp=0; theIp<(*itElement)->GetNumIntegrationPoints(); theIp++)
+                (*itElement)->SetFineScaleParameter(theIp, rName, rParameter);
+        }
+        catch(NuTo::MechanicsException e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            e.AddMessage("[NuTo::StructureBase::SetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(*itElement);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error setting fine scale parameter for element " + ss.str() + ".");
+        }
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief sets the parameters  of the finescale model (structure ip)
+//! @parameter rElement Element pointer
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, double rParameter)
+{
 }

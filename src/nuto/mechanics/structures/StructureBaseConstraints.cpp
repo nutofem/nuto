@@ -785,10 +785,10 @@ void NuTo::StructureBase::ConstraintsBuildGlobalCoefficientSubMatrices0General(S
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
-        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+        if (constraintIter->second->IsLinear())
             continue;
-        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
-        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        const ConstraintNonlinear* nonlinearPtr(constraintIter->second->AsConstraintNonlinear());
+        nonlinearPtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
 
         assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
         assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
@@ -857,15 +857,16 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
     NuTo::SparseMatrixCSRVector2Symmetric<double> constraintMatrix;
     std::vector<int> constraintMatrixGlobalDofs;
 
-    // loop over all elements
+    // loop over all constraints
     boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
+    std::cout << "number of constraints " << mConstraintMap.size() << std::endl;
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
-        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+        if (constraintIter->second->IsLinear())
             continue;
-        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
-        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        const ConstraintNonlinear* nonlinearPtr(constraintIter->second->AsConstraintNonlinear());
+        nonlinearPtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
         assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
         assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
         NuTo::FullMatrix<double> constraintMatrixFull(constraintMatrix);
@@ -963,7 +964,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
                 }
             }
         }
-        constraintIter++;
     }
 }
 
@@ -981,10 +981,10 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
-        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+        if (constraintIter->second->IsLinear())
             continue;
-        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
-        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        const ConstraintNonlinear* nonlinearPtr(constraintIter->second->AsConstraintNonlinear());
+        nonlinearPtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
         assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
         assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
 
@@ -1014,7 +1014,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
                 }
             }
         }
-        constraintIter++;
     }
 }
 
@@ -1033,10 +1032,10 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
-        if (constraintIter->second->GetNumLagrangeMultipliers()==0)
+        if (constraintIter->second->IsLinear())
             continue;
-        const ConstraintLagrange* lagrangePtr(constraintIter->second->AsConstraintLagrange());
-        lagrangePtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
+        const ConstraintNonlinear* nonlinearPtr(constraintIter->second->AsConstraintNonlinear());
+        nonlinearPtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
         assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
         assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
 
@@ -1088,7 +1087,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
                 }
             }
         }
-        constraintIter++;
     }
 }
 
@@ -1104,31 +1102,29 @@ void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVecto
     // loop over all constraints
     for (boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
-        // calculate constraint contribution
-        if (constraintIter->second->GetNumLagrangeMultipliers()>0)
+        // calculate element contribution
+        if (constraintIter->second->IsLinear())
+            continue;
+        const ConstraintNonlinear* nonlinearPtr(constraintIter->second->AsConstraintNonlinear());
+        nonlinearPtr->CalculateGradientInternalPotential(constraintVector,constraintVectorGlobalDofs);
+        assert(static_cast<unsigned int>(constraintVector.GetNumRows()) == constraintVectorGlobalDofs.size());
+        assert(static_cast<unsigned int>(constraintVector.GetNumColumns()) == 1);
+        //constraintVector.Trans().Info();
+        //std::cout << std::endl;
+
+        // write constraint contribution to global vectors
+        for (unsigned int rowCount = 0; rowCount < constraintVectorGlobalDofs.size(); rowCount++)
         {
-            const ConstraintLagrange* constraintPtr (constraintIter->second->AsConstraintLagrange());
-
-            constraintPtr->CalculateGradientInternalPotential(constraintVector,constraintVectorGlobalDofs);
-            assert(static_cast<unsigned int>(constraintVector.GetNumRows()) == constraintVectorGlobalDofs.size());
-            assert(static_cast<unsigned int>(constraintVector.GetNumColumns()) == 1);
-            //constraintVector.Trans().Info();
-            //std::cout << std::endl;
-
-            // write constraint contribution to global vectors
-            for (unsigned int rowCount = 0; rowCount < constraintVectorGlobalDofs.size(); rowCount++)
+            int globalRowDof = constraintVectorGlobalDofs[rowCount];
+            if (globalRowDof < this->mNumActiveDofs)
             {
-                int globalRowDof = constraintVectorGlobalDofs[rowCount];
-                if (globalRowDof < this->mNumActiveDofs)
-                {
-                    rActiveDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
-                }
-                else
-                {
-                    globalRowDof -= this->mNumActiveDofs;
-                    assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-                    rDependentDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
-                }
+                rActiveDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
+            }
+            else
+            {
+                globalRowDof -= this->mNumActiveDofs;
+                assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+                rDependentDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
             }
         }
     }
@@ -1148,6 +1144,7 @@ double NuTo::StructureBase::ConstraintTotalGetTotalEnergy()const
             energy+=constraintPtr->CalculateTotalPotential();
         }
     }
+    return energy;
 }
 
 
@@ -1179,6 +1176,34 @@ void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo
     }
 }
 
+//! @brief sets the penalty stiffness of the augmented Lagragian to the prescribed value
+//! @param ConstraintId constraint id
+//! @param rPenalty penalty parameter
+void NuTo::StructureBase::ConstraintLagrangeSetPenaltyStiffness(int ConstraintId, double rPenalty)
+{
+    // get iterator
+    boost::ptr_map<int,ConstraintBase>::iterator it = this->mConstraintMap.find(ConstraintId);
+    if(it == this->mConstraintMap.end())
+    {
+        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintLagrangeSetPenaltyStiffness] constraint equation does not exist.");
+    }
+    try
+    {
+        if (it->second->GetNumLagrangeMultipliers()>0)
+        {
+            ConstraintLagrange* constraintPtr (it->second->AsConstraintLagrange());
+            constraintPtr->SetPenaltyStiffness(rPenalty);
+        }
+        else
+            throw MechanicsException("[NuTo::StructureBase::ConstraintLagrangeSetPenaltyStiffness] constraint has no Lagrange multipliers.");
+    }
+    catch(NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintLagrangeSetPenaltyStiffness] error setting penalty stiffness.");
+        throw e;
+    }
+}
+
 //! @brief info about the elements in the Structure
 void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
 {
@@ -1195,4 +1220,19 @@ void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
             }
         }
     }
+}
+
+
+//!@brief deletes a constraint equation
+//!@param rConstraintEquation id of the constraint equation
+//!@param rCrackOpening new crack opening (x,y)
+void NuTo::StructureBase::ConstraintDelete(int ConstraintId)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(ConstraintId);
+    if (it==mConstraintMap.end())
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintDelete] Constraint equation does not exist.");
+    }
+    mConstraintMap.erase(it);
 }

@@ -32,7 +32,7 @@ NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplac
     double invNorm = 1./norm;
     mDirection[0]*=invNorm;
     mDirection[1]*=invNorm;
-    mValue = rValue;
+    mRHS = rValue;
 }
 
 //! @brief returns the number of constraint equations
@@ -40,25 +40,6 @@ NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplac
 int NuTo::ConstraintLinearNodeGroupDisplacements2D::GetNumLinearConstraints()const
 {
     return mGroup->GetNumMembers();
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeGroupDisplacements2D::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeGroupDisplacements2D::AsConstraintLinear()const
-{
-    return this;
-}
-
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-void NuTo::ConstraintLinearNodeGroupDisplacements2D::SetRHS(double rRHS)
-{
-    mValue = rRHS;
 }
 
 //! @brief adds the constraint equations to the matrix
@@ -71,7 +52,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& 
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
-        rRHS(curConstraintEquation,0) = mValue;
+        rRHS(curConstraintEquation,0) = mRHS;
         if ((*itNode)->GetNumDisplacements()==0)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix] Node does not have displacements or has more than two displacement components.");
 
@@ -100,7 +81,6 @@ void NuTo::ConstraintLinearNodeGroupDisplacements2D::serialize(Archive & ar, con
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mValue)
        & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeGroupDisplacements2D" << std::endl;

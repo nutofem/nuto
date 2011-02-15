@@ -16,7 +16,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 // constructor
-NuTo::ConstraintLinearEquation::ConstraintLinearEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue): ConstraintBase()
+NuTo::ConstraintLinearEquation::ConstraintLinearEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue)
 {
     this->AddTerm(rNode, rDofType, rDofComponent, rCoefficient);
     this->mRhsValue = rRhsValue;
@@ -61,24 +61,6 @@ int NuTo::ConstraintLinearEquation::GetNumLinearConstraints()const
     return 1;
 }
 
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearEquation::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearEquation::AsConstraintLinear()const
-{
-    return this;
-}
-
-// set right-hand-side
-void NuTo::ConstraintLinearEquation::SetRHS(double rRHS)
-{
-    this->mRhsValue = rRHS;
-}
-
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::ConstraintLinearEquation::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintLinearEquation::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
@@ -91,8 +73,8 @@ template<class Archive> void NuTo::ConstraintLinearEquation::serialize(Archive &
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinearEquation" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mTerms)
-       & BOOST_SERIALIZATION_NVP(mRhsValue);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+       & BOOST_SERIALIZATION_NVP(mTerms);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearEquation" << std::endl;
 #endif

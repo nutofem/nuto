@@ -1,19 +1,19 @@
-// $Id$
+// $Id: ConstraintLinearGlobalTotalStrain.h 314 2010-09-27 16:31:43Z unger3 $
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS3D_H
-#define CONSTRAINTNODEDISPLACEMENTS3D_H
+#ifndef CONSTRAINTLINEARGLOBALTOTALSTRAIN_H
+#define CONSTRAINTLINEARGLOBALTOTALSTRAIN_H
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
-#include "nuto/mechanics/constraints/ConstraintNode.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
-template <class T>
-class FullMatrix;
+class StructureIp;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
-class ConstraintLinearNodeDisplacements3D : public ConstraintNode, public ConstraintLinear
+class ConstraintLinearGlobalTotalStrain : public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -21,13 +21,14 @@ class ConstraintLinearNodeDisplacements3D : public ConstraintNode, public Constr
 
 public:
     //! @brief constructor
-    //! @param rDirection ... direction of the applied constraint
-    //! @param rValue ... direction of the applied constraint
-    ConstraintLinearNodeDisplacements3D(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    ConstraintLinearGlobalTotalStrain(const StructureIp* rStructure, const EngineeringStrain2D& rStrain);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
     int GetNumLinearConstraints()const;
+
+    //! @brief sets the rhs of the constraint equation
+    void SetRHS(const EngineeringStrain2D& rStrain);
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -41,7 +42,7 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const
     {
-        throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::Info] to be implemented.");
+        std::cout << "ConstraintLinearGlobalCrackOpening" << std::endl;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -53,15 +54,19 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief ... just for serialize
-    ConstraintLinearNodeDisplacements3D(){};
+    //! @brief just for serialization
+    ConstraintLinearGlobalTotalStrain(){};
 
-    //! @brief direction of the applied constraint (normalized)
-    double mDirection[3];
+    //! @brief applied strain
+    EngineeringStrain2D mStrain;
+
+    const StructureIp* mStructure;
 };
 }//namespace NuTo
+
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeDisplacements3D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearGlobalTotalStrain)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEDISPLACEMENTS3D_H
+
+#endif //CONSTRAINTLINEARGLOBALTOTALSTRAIN_H
 

@@ -15,7 +15,7 @@
 
 
 //! @brief constructor
-NuTo::ConstraintNode::ConstraintNode(const NodeBase* rNode) : ConstraintBase(), mNode(rNode)
+NuTo::ConstraintNode::ConstraintNode(const NodeBase* rNode) : mNode(rNode)
 {
 }
 
@@ -33,8 +33,7 @@ void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintNode" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
+    ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintNode" << std::endl;
 #endif

@@ -32,7 +32,9 @@ NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::ConstraintLinearNodeGro
     double invNorm = 1./norm;
     mDirection[0]*=invNorm;
     mDirection[1]*=invNorm;
-    mValue = rValue;
+    mRHS = rValue;
+
+    std::cout << "number of nodes in fine scale set " << mGroup->GetNumMembers() << std::endl;
 }
 
 //! @brief returns the number of constraint equations
@@ -42,24 +44,6 @@ int NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::GetNumLinearConstra
     return mGroup->GetNumMembers();
 }
 
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AsConstraintLinear()const
-{
-    return this;
-}
-
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::SetRHS(double rRHS)
-{
-    mValue = rRHS;
-}
 
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
@@ -71,7 +55,7 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
-        rRHS(curConstraintEquation,0) = mValue;
+        rRHS(curConstraintEquation,0) = mRHS;
         if ((*itNode)->GetNumFineScaleDisplacements()!=2)
         {
             std::cout << "node ptr " << (*itNode) << std::endl;
@@ -102,7 +86,6 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::serialize(Archive 
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mValue)
        & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeGroupFineScaleDisplacements2D" << std::endl;

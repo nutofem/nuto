@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
+#include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 
 namespace NuTo
 {
@@ -20,7 +21,7 @@ template<class T> class SparseMatrixCSRVector2Symmetric;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all constraint equations solved with augmented Lagrange
-class ConstraintLagrange
+class ConstraintLagrange : public ConstraintNonlinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -29,6 +30,9 @@ class ConstraintLagrange
 public:
     //! @brief constructor
     ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign);
+
+    //! @brief constructor
+    ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign, double rPenaltyStiffness);
 
     //! @brief destructor
     virtual ~ConstraintLagrange();
@@ -40,6 +44,10 @@ public:
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)=0;
+
+    //! @brief sets the penalty stiffness of the augmented lagrangian
+    //! @param rDOF current maximum DOF, this variable is increased within the routine
+    void SetPenaltyStiffness(double rPenalty);
 
     //! @brief write dof values to constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values

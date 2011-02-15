@@ -96,7 +96,14 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
                 {
                     std::cout << "\t:";
                     for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements()+it->second->GetNumFineScaleDisplacements(); ++iDof)
-                        std::cout << "\t" << it->second->GetDisplacement(iDof);
+                    {
+                        std::cout << "\t" << it->second->GetDisplacement(iDof) ;
+                        if (it->second->GetNumDisplacements()>0)
+                            std::cout << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
+                        if (it->second->GetNumFineScaleDisplacements()>0)
+                            std::cout << "("<< it->second->GetDofFineScaleDisplacement(iDof)<< ")" ;
+
+                    }
                 }
 			}
 			std::cout << std::endl;
@@ -513,7 +520,11 @@ void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActive
 	this->mUpdateTmpStaticDataRequired=true;
 
     // calculate dependent dof values
-    FullMatrix<double> dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
+    FullMatrix<double> dependentDofValues;
+    if (mNumActiveDofs>0)
+        dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
+    else
+        dependentDofValues = this->mConstraintRHS;
 
     // write dof values to the nodes
     for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
@@ -554,6 +565,7 @@ void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues,
 void NuTo::Structure::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
 {
 	rNodes.reserve(mNodeMap.size());
+    rNodes.resize(0);
 	boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
     while (NodeIter != this->mNodeMap.end())
     {
@@ -566,6 +578,7 @@ void NuTo::Structure::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
 void NuTo::Structure::GetNodesTotal(std::vector<NodeBase*>& rNodes)
 {
 	rNodes.reserve(mNodeMap.size());
+	rNodes.resize(0);
     boost::ptr_map<int,NodeBase>::iterator NodeIter = this->mNodeMap.begin();
     while (NodeIter != this->mNodeMap.end())
     {

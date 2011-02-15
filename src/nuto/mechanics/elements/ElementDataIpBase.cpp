@@ -63,6 +63,15 @@ void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName)
     mIpData[rIp].SetFineScaleModel(rFileName);
 }
 
+//! @brief sets the fine scale parameter for all ips
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::ElementDataIpBase::SetFineScaleParameter(int rIp, const std::string& rName, double rParameter)
+{
+    assert(rIp<mIntegrationType->GetNumIntegrationPoints());
+    mIpData[rIp].SetFineScaleParameter(rName, rParameter);
+}
+
 //! @brief sets the integration type of an element
 //! implemented with an exception for all elements, reimplementation required for those elements
 //! which actually need an integration type

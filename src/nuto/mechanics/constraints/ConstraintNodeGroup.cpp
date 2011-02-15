@@ -16,8 +16,7 @@
 
 
 //! @brief constructor
-NuTo::ConstraintNodeGroup::ConstraintNodeGroup(const Group<NodeBase>* rGroup) :
-        ConstraintBase(), mGroup(rGroup)
+NuTo::ConstraintNodeGroup::ConstraintNodeGroup(const Group<NodeBase>* rGroup) : mGroup(rGroup)
 {
 }
 
@@ -35,8 +34,7 @@ void NuTo::ConstraintNodeGroup::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintNodeGroup" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_NVP(mGroup);
+    ar & BOOST_SERIALIZATION_NVP(mGroup);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintNodeGroup" << std::endl;
 #endif

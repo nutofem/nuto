@@ -13,15 +13,29 @@
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
-NuTo::ConstraintLagrange::ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign)
+NuTo::ConstraintLagrange::ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign) : NuTo::ConstraintNonlinear::ConstraintNonlinear()
 {
     mEquationSign=rEquationSign;
-    mPenalty=1.;
+    mPenalty=0.;  //standard Lagrange
+}
+
+//! @brief constructor
+NuTo::ConstraintLagrange::ConstraintLagrange(NuTo::Constraint::eEquationSign rEquationSign, double rPenaltyStiffness) : NuTo::ConstraintNonlinear::ConstraintNonlinear()
+{
+    mEquationSign=rEquationSign;
+    mPenalty=rPenaltyStiffness;
 }
 
 // destructor
 NuTo::ConstraintLagrange::~ConstraintLagrange()
 {
+}
+
+//! @brief sets the penalty stiffness of the augmented lagrangian
+//! @param rDOF current maximum DOF, this variable is increased within the routine
+void NuTo::ConstraintLagrange::SetPenaltyStiffness(double rPenalty)
+{
+    mPenalty = rPenalty;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -38,7 +52,8 @@ void NuTo::ConstraintLagrange::serialize(Archive & ar, const unsigned int versio
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLagrange" << std::endl;
 #endif
-       ar & BOOST_SERIALIZATION_NVP(mEquationSign)
+       ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNonlinear)
+          & BOOST_SERIALIZATION_NVP(mEquationSign)
           & BOOST_SERIALIZATION_NVP(mPenalty);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLagrange" << std::endl;

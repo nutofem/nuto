@@ -36,6 +36,21 @@ public:
     //! @brief sets the fine scale model (deserialization from a binary file)
     void SetFineScaleModel(std::string rFileName);
 
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    void SetFineScaleParameter(const std::string& rName, double rParameter);
+
+    //! @brief in case the fine scale model has not been initialized,
+    //! an initial linear elastic model is used
+    //! with this routine, the transition to the actual fine scale model is used
+    //! with the initialization of the crack angle based on the previous elastic solution
+    void UseNonlinearSolution();
+
+    //return if the solution is either linear elastic or from the fine scale model
+    bool NonlinearSolutionOn()const
+    {
+        return mNonlinearSolutionOn;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -47,6 +62,7 @@ public:
 protected:
     //! @brief fine scale structure repesentative for a macroscopic integration point
     StructureIp* mStructure;
+    bool mNonlinearSolutionOn;
 };
 
 }

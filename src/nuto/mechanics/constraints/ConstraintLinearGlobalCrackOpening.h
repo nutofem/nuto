@@ -3,9 +3,6 @@
 #ifndef CONSTRAINTGLOBALCRACKOPENING_H
 #define CONSTRAINTGLOBALCRACKOPENING_H
 
-#include <iostream>
-
-#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -15,7 +12,7 @@ class StructureIp;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
-class ConstraintLinearGlobalCrackOpening : public ConstraintBase, public ConstraintLinear
+class ConstraintLinearGlobalCrackOpening : public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -28,12 +25,6 @@ public:
     //! @brief returns the number of constraint equations
     //! @return number of constraints
     int GetNumLinearConstraints()const;
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    NuTo::ConstraintLinear* AsConstraintLinear();
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    const NuTo::ConstraintLinear* AsConstraintLinear()const;
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -62,8 +53,6 @@ protected:
     //! @brief just for serialization
     ConstraintLinearGlobalCrackOpening(){};
 
-    //! @brief prescribed crack opening
-    double mValue;
     //! @brief direction of the applied constraint (normalized)
     double mDirection[2];
 

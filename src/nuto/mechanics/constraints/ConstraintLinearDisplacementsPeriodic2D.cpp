@@ -27,23 +27,11 @@ int NuTo::ConstraintLinearDisplacementsPeriodic2D::GetNumLinearConstraints()cons
     return 2*(mSlaveNodesRightBoundary.size()+mSlaveNodesTopBoundary.size());
 }
 
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearDisplacementsPeriodic2D::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearDisplacementsPeriodic2D::AsConstraintLinear()const
-{
-    return this;
-}
-
  //! @brief constructor
 NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle,
         const EngineeringStrain2D& rStrain,NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
-        const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintBase(), ConstraintLinear()
+        const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintLinear()
 {
     mStructure = rStructure,
 

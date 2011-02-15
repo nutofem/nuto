@@ -93,7 +93,9 @@ try
     DirectionY.SetValue(1,0,1.0);
 
     int constraintLHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesLeftBoundary ,DirectionX, std::string("GREATER"),-0.5);
+    myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintLHS,1.);
     int constraintRHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesRightBoundary,DirectionX, std::string("EQUAL"),0.0);
+    myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintRHS,1.);
 
     myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodesBottomLeftNodeBoundary,DirectionY, 0);
 

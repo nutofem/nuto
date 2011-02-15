@@ -30,16 +30,6 @@ public:
     //! @return number of constraints
     int GetNumLinearConstraints()const;
 
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    NuTo::ConstraintLinear* AsConstraintLinear();
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    const NuTo::ConstraintLinear* AsConstraintLinear()const;
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
-
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
@@ -66,9 +56,6 @@ public:
 protected:
     //! @brief ... just for serialize
     ConstraintLinearNodeGroupDisplacements1D(){};
-
-    //! @brief ... prescribed displacement of the node
-    double mValue;
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

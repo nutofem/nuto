@@ -50,6 +50,18 @@ const NuTo::ConstraintLinear* NuTo::ConstraintBase::AsConstraintLinear()const
     throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLinear] Constraint is not linear.");
 }
 
+//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+NuTo::ConstraintNonlinear* NuTo::ConstraintBase::AsConstraintNonlinear()
+{
+    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintNonlinear] Constraint is not nonlinear.");
+}
+
+//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
+const NuTo::ConstraintNonlinear* NuTo::ConstraintBase::AsConstraintNonlinear()const
+{
+    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintNonlinear] Constraint is not nonlinear.");
+}
+
 //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
 NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()
 {

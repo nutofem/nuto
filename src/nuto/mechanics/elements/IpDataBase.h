@@ -50,6 +50,11 @@ public :
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(std::string rFileName);
 
+    //! @brief sets the fine scale parameter for all ips
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    virtual void SetFineScaleParameter(const std::string& rName, double rParameter);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

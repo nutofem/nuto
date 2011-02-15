@@ -28,7 +28,7 @@ NuTo::ConstraintLinearNodeDisplacements1D::ConstraintLinearNodeDisplacements1D(c
     this->mDirection = rDirection / fabs(rDirection);
 
     // set value
-    mValue = rValue;
+    mRHS = rValue;
 }
 
 //! @brief returns the number of constraint equations
@@ -36,13 +36,6 @@ NuTo::ConstraintLinearNodeDisplacements1D::ConstraintLinearNodeDisplacements1D(c
 int NuTo::ConstraintLinearNodeDisplacements1D::GetNumLinearConstraints()const
 {
     return 1;
-}
-
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-void NuTo::ConstraintLinearNodeDisplacements1D::SetRHS(double rRHS)
-{
-    mValue = rRHS;
 }
 
 
@@ -55,7 +48,7 @@ void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curCo
         NuTo::FullMatrix<double>& rRHS)const
 {
     // set right hand side value
-    rRHS(curConstraintEquation,0) = mValue;
+    rRHS(curConstraintEquation,0) = mRHS;
 
     // add constraint to constrain matrix
     if (mNode->GetNumDisplacements()!=1)
@@ -68,17 +61,6 @@ void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curCo
     curConstraintEquation++;
 }
 
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeDisplacements1D::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearNodeDisplacements1D::AsConstraintLinear()const
-{
-    return this;
-}
 #ifdef ENABLE_SERIALIZATION
 // serialize
 template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -95,7 +77,6 @@ void NuTo::ConstraintLinearNodeDisplacements1D::serialize(Archive & ar, const un
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode)
     & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-    & BOOST_SERIALIZATION_NVP(mValue)
     & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeDisplacements1D" << std::endl;

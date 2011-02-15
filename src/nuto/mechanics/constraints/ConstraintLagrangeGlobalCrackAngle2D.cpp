@@ -15,19 +15,17 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 
-#define UMAX 0.03 //0.03mm
+#define UMAX 10.1 //0.03mm
 
 NuTo::ConstraintLagrangeGlobalCrackAngle2D::ConstraintLagrangeGlobalCrackAngle2D(const NuTo::StructureIp* rStructure) :
-        ConstraintLagrange(NuTo::Constraint::EQUAL) , ConstraintBase()
+        ConstraintLagrange(NuTo::Constraint::EQUAL)
 {
     mStructure = rStructure;
     mLagrangeValue = 0;
     mLagrangeDOF = -1;
     std::cout<< "scaling factor for ConstraintLagrangeGlobalCrackAngle2D has to be adapted" << std::endl;
-    mScaling = 2.*M_PI/(UMAX*UMAX);
+    mScaling = 2.*M_PI/(UMAX);
     mScaling = 0.;
-    mTolerance1 = 0.001;
-    mTolerance2 = 0.0005;
 }
 
 //! @brief returns the number of constraint equations
@@ -135,42 +133,66 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateCoefficientMatrix_0(Nu
 
     double alpha(mStructure->GetCrackAngle());
     //calculate angle orthogonal to second principal stress
-    double alpha_2 = this->CalculateCrackAngleElastic();
+    double alpha_2 = mStructure->CalculateCrackAngleElastic();
+
+    double delta_alpha = alpha-alpha_2;
+    while (fabs(delta_alpha>M_PI))
+    {
+        if (delta_alpha>0)
+        {
+            delta_alpha-=M_PI;
+            alpha_2+=M_PI;
+        }
+        else
+        {
+            delta_alpha+=M_PI;
+            alpha_2-=M_PI;
+        }
+    }
+    //now delta_alpha is in [0..PI]
+
+    if (delta_alpha>M_PI-delta_alpha)
+    {
+        alpha_2 += M_PI;
+    }
 
     double abs_delta_alpha = alpha-alpha_2;
+    std::cout << abs_delta_alpha << " " << 0.5*M_PI << std::endl;
+    assert(fabs(abs_delta_alpha)<=0.50001*M_PI);
     double sign_delta_alpha(1.);
-    if (abs_delta_alpha<0)
+    if (delta_alpha<0)
     {
         abs_delta_alpha=fabs(abs_delta_alpha);
         sign_delta_alpha = -1;
     }
-
-    double CrackOpening_square = crackOpening[0]*crackOpening[0] + crackOpening[1]*crackOpening[1];
-    double g = abs_delta_alpha-mScaling*0.5*CrackOpening_square;
+    double signU0 = crackOpening[0] < 0 ? -1 : 1;
+    double signU1 = crackOpening[1] < 0 ? -1 : 1;
+    double g = abs_delta_alpha-mScaling*(signU0*crackOpening[0]+signU1*crackOpening[1]);
+    //double g = abs_delta_alpha-mScaling*(signU1*crackOpening[1]);
 
     //std::cout << "alpha_2 " << alpha_2 << " alpha "<< alpha << " abs_delta_alpha " <<  abs_delta_alpha << " sign " << sign_delta_alpha << std::endl;
 
-    if (g>-mLagrangeValue/mPenalty)
+    if (g>=-mLagrangeValue/mPenalty)
     {
         //std::cout << "constraint crack angle active(stiffness) " << g << std::endl;
         //derivative with respect to lambda and alpha
         rResult.AddEntry(0,1,sign_delta_alpha);
-        //derivative with respect to lambda and ux
-        rResult.AddEntry(0,2,-mScaling*crackOpening[0]);
-        //derivative with respect to lambda and uy
-        rResult.AddEntry(0,3,-mScaling*crackOpening[1]);
+        //derivative with respect to lambda and u0
+        rResult.AddEntry(0,2,-mScaling*signU0);
+        //derivative with respect to lambda and u1
+        rResult.AddEntry(0,3,-mScaling*signU1);
         //derivative with respect to alpha^2
         rResult.AddEntry(1,1,mPenalty);
-        //derivative with respect to alpha and ux
-        rResult.AddEntry(1,2,-mPenalty*mScaling*crackOpening[0]*sign_delta_alpha);
-        //derivative with respect to alpha and uy
-        rResult.AddEntry(1,3,-mPenalty*mScaling*crackOpening[1]*sign_delta_alpha);
-        //derivative with respect to ux^2
-        rResult.AddEntry(2,2,-mLagrangeValue*mScaling+mPenalty*mScaling*(mScaling*crackOpening[0]*crackOpening[0]-g));
-        //derivative with respect to ux and uy
-        rResult.AddEntry(2,3,mPenalty*mScaling*mScaling*crackOpening[0]*crackOpening[1]);
+        //derivative with respect to alpha and u0
+        rResult.AddEntry(1,2,-mPenalty*mScaling*sign_delta_alpha*signU0);
+        //derivative with respect to alpha and u1
+        rResult.AddEntry(1,3,-mPenalty*mScaling*sign_delta_alpha*signU1);
+        //derivative with respect to u0^2
+        rResult.AddEntry(2,2,mPenalty*mScaling*mScaling);
+        //derivative with respect to u0 and u1
+        rResult.AddEntry(2,3,mPenalty*mScaling*mScaling*signU0*signU1);
         //derivative with respect to uy^2
-        rResult.AddEntry(3,3,-mLagrangeValue*mScaling+mPenalty*mScaling*(mScaling*crackOpening[1]*crackOpening[1]-g));
+        rResult.AddEntry(3,3,mPenalty*mScaling*mScaling);
     }
     else
     {
@@ -220,6 +242,10 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateCoefficientMatrix_0(Nu
         std::cout<< "stiffness cdf " << std::endl;
         rResultCDF.Info(10,3);
     }
+    else
+    {
+        std::cout << "constraint crack angle is fine " << std::endl;
+    }
 }
 
 //! @brief calculates the gradient of the internal potential
@@ -241,31 +267,53 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateGradientInternalPotent
 
     double alpha(mStructure->GetCrackAngle());
     //calculate angle orthogonal to second principal stress
-    double alpha_2 = this->CalculateCrackAngleElastic();
+    double alpha_2 = mStructure->CalculateCrackAngleElastic();
+
+    double delta_alpha = alpha-alpha_2;
+    while (fabs(delta_alpha>M_PI))
+    {
+        if (delta_alpha>0)
+        {
+            delta_alpha-=M_PI;
+            alpha_2+=M_PI;
+        }
+        else
+        {
+            delta_alpha+=M_PI;
+            alpha_2-=M_PI;
+        }
+    }
+    //now delta_alpha is in [0..PI]
+
+    if (delta_alpha>0.5*M_PI)
+    {
+        alpha_2 += M_PI;
+    }
 
     double abs_delta_alpha = alpha-alpha_2;
+    assert(fabs(abs_delta_alpha)<0.50001*M_PI);
     double sign_delta_alpha(1.);
-    if (abs_delta_alpha<0)
+    if (delta_alpha<0)
     {
         abs_delta_alpha=fabs(abs_delta_alpha);
         sign_delta_alpha = -1;
     }
+    double signU0 = crackOpening[0] < 0 ? -1 : 1;
+    double signU1 = crackOpening[1] < 0 ? -1 : 1;
+    double g = abs_delta_alpha-mScaling*(signU0*crackOpening[0]+signU1*crackOpening[1]);
+    //double g = abs_delta_alpha-mScaling*(signU1*crackOpening[1]);
 
-    double CrackOpening_square = crackOpening[0]*crackOpening[0] + crackOpening[1]*crackOpening[1];
-    double g = abs_delta_alpha-mScaling*0.5*CrackOpening_square;
-
-
-    if (g>-mLagrangeValue/mPenalty)
+    if (g>=-mLagrangeValue/mPenalty)
     {
         //std::cout << "constraint crack angle active(gradient) " << g << "  " << mLagrangeValue << std::endl;
         //derivative with respect to lambda
         rResult(0,0)= g;
         //derivative with respect to alpha
         rResult(1,0)= sign_delta_alpha*(mLagrangeValue + mPenalty*g);
-        //derivative with respect to ux
-        rResult(2,0)= -mScaling*crackOpening[0]*(mLagrangeValue+mPenalty*g);
-        //derivative with respect to uy
-        rResult(3,0)= -mScaling*crackOpening[1]*(mLagrangeValue+mPenalty*g);
+        //derivative with respect to u0 (tangential)
+        rResult(2,0)= -mScaling*signU0*(mLagrangeValue+mPenalty*g);
+        //derivative with respect to u1 (normal)
+        rResult(3,0)= -mScaling*signU1*(mLagrangeValue+mPenalty*g);
     }
     else
     {
@@ -324,21 +372,43 @@ double NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateTotalPotential()cons
 
     double alpha(mStructure->GetCrackAngle());
     //calculate angle orthogonal to second principal stress
-    double alpha_2 = this->CalculateCrackAngleElastic();
+    double alpha_2 = mStructure->CalculateCrackAngleElastic();
+
+    double delta_alpha = alpha-alpha_2;
+    while (fabs(delta_alpha>M_PI))
+    {
+        if (delta_alpha>0)
+        {
+            delta_alpha-=M_PI;
+            alpha_2+=M_PI;
+        }
+        else
+        {
+            delta_alpha+=M_PI;
+            alpha_2-=M_PI;
+        }
+    }
+    //now delta_alpha is in [0..PI]
+
+    if (delta_alpha>0.5*M_PI)
+    {
+        alpha_2 += M_PI;
+    }
 
     double abs_delta_alpha = alpha-alpha_2;
+    assert(fabs(abs_delta_alpha)<0.50001*M_PI);
     double sign_delta_alpha(1.);
-    if (abs_delta_alpha<0)
+    if (delta_alpha<0)
     {
         abs_delta_alpha=fabs(abs_delta_alpha);
         sign_delta_alpha = -1;
     }
+    double signU0 = crackOpening[0] < 0 ? -1 : 1;
+    double signU1 = crackOpening[1] < 0 ? -1 : 1;
+    double g = abs_delta_alpha-mScaling*(signU0*crackOpening[0]+signU1*crackOpening[1]);
+//    double g = abs_delta_alpha-mScaling*(crackOpening[1]);
 
-    double CrackOpening_square = crackOpening[0]*crackOpening[0] + crackOpening[1]*crackOpening[1];
-    double g = abs_delta_alpha-mScaling*0.5*CrackOpening_square;
-
-//    std::cout << "CrackAngle : lambda " << mLagrangeValue << " g " << g << std::endl;
-    if (g>-mLagrangeValue/mPenalty)
+    if (g>=-mLagrangeValue/mPenalty)
     {
         return g*(mLagrangeValue+0.5*mPenalty*g);
     }
@@ -356,23 +426,47 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::Info(unsigned short rVerboseLev
     boost::array<int,2> dofCrackOpening(mStructure->GetDofGlobalCrackOpening2D());
     boost::array<double,2> crackOpening(mStructure->GetGlobalCrackOpening2D());
 
-    double alpha_2 = this->CalculateCrackAngleElastic();
-
     double alpha(mStructure->GetCrackAngle());
 
+    double alpha_2 = mStructure->CalculateCrackAngleElastic();
+
+    double delta_alpha = alpha-alpha_2;
+    while (fabs(delta_alpha>M_PI))
+    {
+        if (delta_alpha>0)
+        {
+            delta_alpha-=M_PI;
+            alpha_2+=M_PI;
+        }
+        else
+        {
+            delta_alpha+=M_PI;
+            alpha_2-=M_PI;
+        }
+    }
+    //now delta_alpha is in [0..PI]
+    double signU0 = crackOpening[0] < 0 ? -1 : 1;
+    double signU1 = crackOpening[1] < 0 ? -1 : 1;
+
+    if (delta_alpha>0.5*M_PI)
+    {
+        alpha_2 += M_PI;
+    }
+
     double abs_delta_alpha = alpha-alpha_2;
+    assert(fabs(abs_delta_alpha)<0.50001*M_PI);
     double sign_delta_alpha(1.);
-    if (abs_delta_alpha<0)
+    if (delta_alpha<0)
     {
         abs_delta_alpha=fabs(abs_delta_alpha);
         sign_delta_alpha = -1;
     }
 
-    double CrackOpening_square = crackOpening[0]*crackOpening[0] + crackOpening[1]*crackOpening[1];
-    double g = abs_delta_alpha-mScaling*0.5*CrackOpening_square;
+    double g = abs_delta_alpha-mScaling*(signU0*crackOpening[0]+signU1*crackOpening[1]);
+    //    double g = abs_delta_alpha-mScaling*(crackOpening[1]);
 
-    std::cout << "CrackAngle : lambda " << mLagrangeValue << " g " << g << std::endl;
-    if (g>-mLagrangeValue/mPenalty)
+    std::cout << "CrackAngle : lambda " << mLagrangeValue << "(" <<  mLagrangeDOF << ")" <<" g " << g << std::endl;
+    if (g>=-mLagrangeValue/mPenalty)
     {
         std::cout << "constraint crack angle active ";
     }
@@ -383,57 +477,6 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::Info(unsigned short rVerboseLev
     std::cout << "alpha_2 " << alpha_2 << " alpha "<< alpha << " abs_delta_alpha " <<  abs_delta_alpha << " sign " << sign_delta_alpha << std::endl;
 }
 
-//! @brief calculates the crack angle for elastic solutions
-double NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateCrackAngleElastic()const
-{
-    //calculate angle orthogonal to second principal stress
-    EngineeringStrain2D strainVec(mStructure->GetTotalStrain());
-
-    FullMatrix<double> strain(2,2);
-    const double *dataPtr = strainVec.GetData();
-    strain(0,0) = dataPtr[0];
-    strain(0,1) = dataPtr[2]*0.5;
-    strain(1,0) = strain(0,1);
-    strain(1,1) = dataPtr[1];
-//    strain.Info(12,5);
-
-    NuTo::FullMatrix<double> eigenVectors;
-    NuTo::FullMatrix<double> eigenValues;
-    strain.EigenVectorsSymmetric(eigenVectors);
-    strain.EigenValuesSymmetric(eigenValues);
-
-    strain.EigenValuesSymmetric(eigenValues);
-/*    std::cout << "eigenvalues of epsilon tot" << std::endl;
-    eigenValues.Trans().Info(12,3);
-    std::cout << "eigenvectors of epsilon tot" << std::endl;
-    eigenVectors.Info(12,3);
-*/
-    assert(eigenValues(0,0)<=eigenValues(1,0));
-    double alpha_2(0);
-    if (eigenValues(1,0)-eigenValues(0,0) > mTolerance1)
-    {
-        alpha_2 = atan2(eigenVectors(1,0),eigenVectors(0,0));
-        if (alpha_2<0)
-            alpha_2+=M_PI;
-    }
-    else
-    {
-        double alphaPrev = mStructure->GetPrevCrackAngle();
-        if (eigenValues(1,0)-eigenValues(0,0)<mTolerance2)
-        {
-            alpha_2 = alphaPrev;
-        }
-        else
-        {
-            double s((eigenValues(1,0)-eigenValues(0,0)-mTolerance2)/(mTolerance1 - mTolerance2));
-            alpha_2 = atan2(eigenVectors(1,0),eigenVectors(0,0));
-            if (alpha_2<0)
-                alpha_2+=M_PI;
-            alpha_2 = alpha_2* (1-s) + alphaPrev*s;
-        }
-    }
-    return alpha_2;
-}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
@@ -454,9 +497,7 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::serialize(Archive & ar, const u
        & BOOST_SERIALIZATION_NVP(mStructure)
        & BOOST_SERIALIZATION_NVP(mLagrangeValue)
        & BOOST_SERIALIZATION_NVP(mLagrangeDOF)
-       & BOOST_SERIALIZATION_NVP(mScaling)
-       & BOOST_SERIALIZATION_NVP(mTolerance1)
-       & BOOST_SERIALIZATION_NVP(mTolerance2);
+       & BOOST_SERIALIZATION_NVP(mScaling);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLagrangeGlobalCrackAngle2D" << std::endl;
 #endif

@@ -15,6 +15,7 @@ namespace NuTo
 class EngineeringStrain2D;
 class NodeBase;
 class ConstraintLinear;
+class ConstraintNonlinear;
 class ConstraintLagrange;
 template<class T> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
@@ -35,6 +36,9 @@ public:
     //! @brief destructor
     virtual ~ConstraintBase();
 
+    //! @brief true, if the constraint is linear
+    virtual bool IsLinear()const=0;
+
     //! @brief returns the number of constraint equations
     //! @return number of constraints
     virtual int GetNumLinearConstraints()const;
@@ -48,6 +52,12 @@ public:
 
     //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
     virtual const ConstraintLinear* AsConstraintLinear()const;
+
+    //! @brief cast to nonlinear constraint - the corresponding dofs are eliminated in the global system
+    virtual ConstraintNonlinear* AsConstraintNonlinear();
+
+    //! @brief cast to nonlinear constraint - the corresponding dofs are eliminated in the global system
+    virtual const ConstraintNonlinear* AsConstraintNonlinear()const;
 
     //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
     virtual ConstraintLagrange* AsConstraintLagrange();

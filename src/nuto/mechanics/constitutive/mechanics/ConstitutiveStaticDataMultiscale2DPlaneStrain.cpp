@@ -11,6 +11,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+
+#include <cctype>
+#include <algorithm>
+
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMultiscale2DPlaneStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
 #include "nuto/mechanics/structures/unstructured/StructureIp.h"
@@ -20,6 +24,7 @@ NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::ConstitutiveStaticDataMulti
    : NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain()
 {
     mStructure = 0;
+    mNonlinearSolutionOn = false;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -39,8 +44,8 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::serialize(Archive & ar
     std::cout << "start serialize ConstitutiveStaticDataMultiscale2DPlaneStrain" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain)
-       & BOOST_SERIALIZATION_NVP(mStructure);
-
+       & BOOST_SERIALIZATION_NVP(mStructure)
+       & BOOST_SERIALIZATION_NVP(mNonlinearSolutionOn);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataMultiscale2DPlaneStrain" << std::endl;
 #endif
@@ -110,3 +115,53 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
 
+//! @brief sets the parameters of the fine scale model
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(const std::string& rName, double rParameter)
+{
+    std::string upperCaseName(rName);
+    std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
+    if (upperCaseName=="CRACKTRANSITIONZONE")
+        mStructure->SetCrackTransitionZone(rParameter);
+    else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
+        mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
+    else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORCRACKANGLE")
+        mStructure->SetPenaltyStiffnessScalingFactorCrackAngle(rParameter);
+    else if (upperCaseName=="TOLERANCEELASTICCRACKANGLELOW")
+        mStructure->SetToleranceElasticCrackAngleLow(rParameter);
+    else if (upperCaseName=="TOLERANCEELASTICCRACKANGLEHIGH")
+        mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
+    else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSCRACKANGLE")
+        mStructure->ConstraintNonlinearCrackAngle(rParameter,2.*M_PI);
+    else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
+        mStructure->ConstraintLagrangeCrackOpening(rParameter);
+    else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSTANGENTIALCRACKOPENING")
+        mStructure->ConstraintNonlinearTangentialCrackOpening(rParameter, 0.);
+    else if (upperCaseName=="PENALTYSTIFFNESSTANGENTIALCRACKOPENING")
+        mStructure->SetPenaltyStiffnessTangentialCrackOpening(rParameter);
+    else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORTANGENTIALCRACKOPENING")
+        mStructure->SetPenaltyStiffnessScalingFactorTangentialCrackOpening(rParameter);
+    else if (upperCaseName=="USENONLINEARSOLUTION")
+        UseNonlinearSolution();
+    else
+        throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
+}
+
+//! @brief in case the fine scale model has not been initialized,
+//! an initial linear elastic model is used
+//! with this routine, the transition to the actual fine scale model is used
+//! with the initialization of the crack angle based on the previous elastic solution
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::UseNonlinearSolution()
+{
+    if (mNonlinearSolutionOn==false)
+    {
+        double alpha = mStructure->CalculateInitialCrackAngleElastic();
+        mStructure->SetPrevCrackAngle(alpha);
+        mStructure->SetCrackAngle(alpha);
+        mNonlinearSolutionOn = true;
+        std::cout << "initial alpha is " << alpha*180./M_PI << std::endl;
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::InitAlpha] Nonlinear solution is already turned on.");
+    }
+}

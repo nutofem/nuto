@@ -29,6 +29,13 @@ void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName)
     mStaticData->SetFineScaleModel(rFileName);
 }
 
+//! @brief sets the fine scale parameter for all ips
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName, double rParameter)
+{
+    mStaticData->SetFineScaleParameter(rName, rParameter);
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

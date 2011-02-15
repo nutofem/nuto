@@ -54,6 +54,7 @@ constraints/ConstraintLinear.cpp
 constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
 constraints/ConstraintLinearGlobalCrackAngle.cpp
 constraints/ConstraintLinearGlobalCrackOpening.cpp
+constraints/ConstraintLinearGlobalTotalStrain.cpp
 constraints/ConstraintLinearEquation.cpp
 constraints/ConstraintLinearNodeDisplacements1D.cpp
 constraints/ConstraintLinearNodeDisplacements2D.cpp
@@ -65,6 +66,9 @@ constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
 constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeGroup.cpp
+constraints/ConstraintNonlinear.cpp
+constraints/ConstraintNonlinearGlobalCrackAngle2D.cpp
+constraints/ConstraintNonlinearGlobalCrackOpeningTangential2D.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES

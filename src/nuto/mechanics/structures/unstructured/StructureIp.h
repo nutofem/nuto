@@ -74,6 +74,7 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
 
+#ifndef SWIG
     //! @brief ... calculate the displacement based on the homogeneous strain
     //! @param rCoordinates ... coordinates of the point
     //! @param rCoarseDisplacements ... return array of displacements
@@ -108,11 +109,13 @@ public:
     //! @param rdX_dAlpha[2] return value, second derivative of x-displacement with respect to crack orientation (alpha)
     //! @param rdy_dAlpha[2] return value, second derivative of y-displacement with respect to crack orientation (alpha)
     void Getd2Displacementd2CrackOrientation(double rCoordinates[2], double rd2X_d2Alpha[1], double rd2Y_d2Alpha[1])const;
+#endif //SWIG
 
     //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
     //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
     void TransformBoundaryNodes();
 
+#ifndef SWIG
     //! @brief numbers non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
     void NumberAdditionalGlobalDofs();
 
@@ -139,15 +142,6 @@ public:
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    void BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixJM,
-            NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK, NuTo::SparseMatrix<double>& rMatrixKM,
-            NuTo::SparseMatrix<double>& rMatrixMJ, NuTo::SparseMatrix<double>& rMatrixMK, NuTo::SparseMatrix<double>& rMatrixMM) const;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
@@ -166,13 +160,8 @@ public:
     //! @param dDOF2 ...for each dof, the corresponding second order derivative (alpha^2, alpha ux, alpha uy)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixJM ... submatrix jk (number of active dof x 3)
     //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    //! @param rMatrixKM ... submatrix kk (number of dependent dof x 3)
-    //! @param rMatrixMJ ... submatrix kj (3 x number of active dof)
-    //! @param rMatrixMK ... submatrix kk (3 x number of dependent dof)
-    //! @param rMatrixMM ... submatrix kk (3 x 3)
     //! @param rCalcMatrixKJ_KK ...true, if rMatrixKJ and rMatrixKK should be calculated (rMatrixJJ and rMatrixJK) are always calculated
     //! @param rCalcMatrixM ...true, if all matrices corresponding to M should be calculated
     void AddElementMatrixToGlobalSubMatricesGeneral(
@@ -185,15 +174,9 @@ public:
             std::vector<std::array<double,3> >& dDOF2,
             NuTo::SparseMatrix<double>* rMatrixJJ,
             NuTo::SparseMatrix<double>* rMatrixJK,
-            NuTo::SparseMatrix<double>* rMatrixJM,
             NuTo::SparseMatrix<double>* rMatrixKJ,
             NuTo::SparseMatrix<double>* rMatrixKK,
-            NuTo::SparseMatrix<double>* rMatrixKM,
-            NuTo::SparseMatrix<double>* rMatrixMJ,
-            NuTo::SparseMatrix<double>* rMatrixMK,
-            NuTo::SparseMatrix<double>* rMatrixMM,
-            bool rCalcMatrixKJ_KK,
-            bool rCalcMatrixM)const;
+            bool rCalcMatrixKJ_KK)const;
 
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
@@ -206,7 +189,6 @@ public:
     //! @param rEpsilonMGradientVector ... global internal potential gradient which corresponds to the global macroscopic strain (derivative is equal to homogeneous strain)
     void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector, NuTo::FullMatrix<double>* rEpsilonMGradientVector) const;
 
-#ifndef SWIG
     //! @brief calculate the distance of a point to the crack
     //! @param rCoordinates[2] coordinates of the point
     //! @return distance to crack
@@ -228,8 +210,14 @@ public:
     //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
     void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
 
-    //! @brief set the total strain
+    //! @brief set the total current strain
     void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
+
+    //! @brief set the maximum total strain (used in the automatic increment of the Newton Raphson iteration multiplied by the load factor to give the totalEngineeringStrain)
+    void SetDeltaTotalEngineeringStrain(EngineeringStrain2D& rDeltaTotalEngineeringStrain);
+
+    //! @brief set the maximum total strain (used in the automatic increment of the Newton Raphson iteration multiplied by the load factor to give the totalEngineeringStrain)
+    void SetPrevTotalEngineeringStrain(EngineeringStrain2D& rPrevTotalEngineeringStrain);
 
     //! @brief returns the total strain
     NuTo::EngineeringStrain2D GetTotalEngineeringStrain()const;
@@ -259,16 +247,25 @@ public:
     //! @brief return the total strain
     NuTo::EngineeringStrain2D GetHomogeneousEngineeringStrain()const;
 
+    //! @brief set the homgeneous strain (just for test purpose)
+    void SetHomogeneousEngineeringStrain(NuTo::EngineeringStrain2D rStrain);
+
     //! @brief renumbers the global dofs in the structure after
     void ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
 
+
 #endif
+    //! @brief returns the constraint equation for the crack angle
+    int GetConstraintCrackAngle()const
+    {
+        return mConstraintCrackAngle;
+    }
 
-    //! @brief save the state as a binary
-    void Save(std::stringstream& previousState)const;
-
-    //! @brief restore the state from a binary
-    void Restore(std::stringstream& previousState);
+    //! @brief returns the constraint equation for the total strain
+    int GetConstraintTotalStrain()const
+    {
+        return mConstraintTotalStrain;
+    }
 
     double GetDimensionX()const
     {
@@ -299,7 +296,10 @@ public:
     {
         return mCrackOpening;
     }
-
+    boost::array<int,3> GetDofGlobalTotalStrain2D()const
+    {
+        return mDOFGlobalTotalStrain;
+    }
     void SetGroupBoundaryNodes(int rGroupId)
     {
         mGroupBoundaryNodes = rGroupId;
@@ -319,6 +319,83 @@ public:
         mCrackTransitionZone = rCrackTransitionZone;
     }
 
+    //! @brief calculates the crack angle for elastic solutions
+    double CalculateCrackAngleElastic()const;
+
+    //! @brief calculates the difference between the crack angle of the elastic solution and the current angle
+    //! attention, the periodicity of the crack angle has to be taken into account
+    double CalculateDeltaCrackAngleElastic()const;
+
+    //! @brief calculates the crack angle for elastic solutions (initial value, no scaling with previous crack angle)
+    //! @return alpha crack angle in the range 0..Pi (return value)
+    double CalculateInitialCrackAngleElastic()const;
+
+    //! @brief add a constraint equation for alpha, which corresponds to an artificial spring
+    //! @parameter rPenaltyStiffness penalty stiffness
+    //! @parameter rScalingFactor scaling factor
+    //! @return id of the constraint
+    int ConstraintNonlinearCrackAngle(double rPenaltyStiffness, double rScalingFactor);
+
+    //! @brief set the penalty stiffness for the nonlinear crack angle constraint
+    void SetPenaltyStiffnessCrackAngle(double rParameter);
+
+    //! @brief set the scaling factor for the nonlinear crack angle constraint
+    void SetPenaltyStiffnessScalingFactorCrackAngle(double rParameter);
+
+    //! @brief add a constraint equation for the tangential crack opening, which corresponds to an artificial spring
+    //! @parameter rPenaltyStiffness penalty stiffness
+    //! @parameter rScalingFactor scaling factor
+    //! @return id of the constraint
+    int ConstraintNonlinearTangentialCrackOpening(double rPenaltyStiffness, double rScalingFactor);
+
+    //! @brief set the penalty stiffness for the nonlinear TangentialCrackOpening constraint
+    void SetPenaltyStiffnessTangentialCrackOpening(double rParameter);
+
+    //! @brief set the scaling factor for the nonlinear TangentialCrackOpening constraint
+    void SetPenaltyStiffnessScalingFactorTangentialCrackOpening(double rParameter);
+
+    //! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
+    void SetToleranceElasticCrackAngleHigh(double rParameter);
+
+    //! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
+    void SetToleranceElasticCrackAngleLow(double rParameter);
+
+    //! @brief add a constraint equation for the crack opening (normal crack opening non negativ)
+    //! @parameter rPenaltyStiffness penalty stiffness for augmented Lagrangian
+    //! @return id of the constraint
+    int ConstraintLagrangeCrackOpening(double rPenaltyStiffness);
+
+    //! @brief add a constraint equation for the total strain
+    //! @parameter rStrain applied strain (rhs)
+    //! @return id of the constraint
+    int ConstraintLinearGlobalTotalStrain(const EngineeringStrain2D& rStrain);
+
+    //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
+    //for an update on the coarse scale
+    //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
+    //this routine saves the current state before an update in the Newton Raphson iteration is performed
+    //this only happens for more than one load step (either prescibed or with automatic load control)
+    //if not alreaday saved, the structure is saved to an internal stream (be careful to not include this stream in the serialization routine)
+    void SaveStructure()const;
+
+    void RestoreStructure();
+
+    //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
+    //! @param load factor
+    void SetLoadFactor(double rLoadFactor);
+
+    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
+    void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const;
+
+    //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
+    void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor)const;
+
+    //! @brief only for debugging, info at some stages of the Newton Raphson iteration
+    void NewtonRaphsonInfo(int rVerboseLevel)const;
+
+    //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
+    void InitBeforeNewtonRaphson();
+
 protected:
     //! @brief ... standard constructor just for the serialization routine
     StructureIp()
@@ -335,17 +412,41 @@ protected:
     double mCrackAngle;
     double mPrevCrackAngle;
     int mDOFCrackAngle;
-    boost::array<double,2> mCrackOpening;
+    boost::array<double,2> mCrackOpening; //UT UN
     boost::array<int,2> mDOFCrackOpening;
+    //! @brief this is the current total strain
     EngineeringStrain2D mEpsilonTot;
+    boost::array<int,3> mDOFGlobalTotalStrain;
+    //! @brief this is the current homogeneous part of the strain
     EngineeringStrain2D mEpsilonHom;
     double mlX,mlY;
     double mCrackTransitionZone;
-    int mConstraintFineScaleX, mConstraintFineScaleY,mConstraintCrackOpening, mConstraintCrackAngle;
+    int mConstraintFineScaleX,
+        mConstraintFineScaleY,
+        mConstraintNormalCrackOpening,
+        mConstraintTangentialCrackOpening,
+        mConstraintCrackAngle,
+        mConstraintTotalStrain;
     bool mBoundaryNodesAssigned;
     int mGroupBoundaryNodes;
     std::string mIPName;
 
+    //! @brief tolerance for difference between the principal strains, where
+    //if difference is bigger, the angle is calculated from the largest principal strain
+    double mToleranceElasticCrackAngleHigh;
+    //! @brief tolerance for difference between the principal strains, where
+    //the previous angle is used, no update, (in between, there is a linear interpolation)
+    double mToleranceElasticCrackAngleLow;
+
+    // the following parameters are used for the Newton-Raphson iteration
+    //! @brief this is the previous strain (used in the load application of the Newton procedure)
+    EngineeringStrain2D mPrevEpsilonTot;
+    //! @brief this is the delta strain (used in the load application of the Newton procedure)
+    EngineeringStrain2D mDeltaEpsilonTot;
+    //! @brief set to true, if during an update in NR the structure had to be saved, otherwise unchanged
+    mutable bool mSavedToStringStream;
+    //! @brief structure is saved to that string stream
+    mutable std::stringstream mSaveStringStream;
 };
 }
 #ifdef ENABLE_SERIALIZATION

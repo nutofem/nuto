@@ -65,7 +65,9 @@ try
 	DirectionX.SetValue(0,0,1.0);
 
     int constraintLHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesLeftBoundary,DirectionX, std::string("EQUAL"),0.0);
+    myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintLHS,1.);
     int constraintRHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesRightBoundary,DirectionX, std::string("SMALLER"),0.5);
+    myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintRHS,1.);
 
 #ifdef ENABLE_VISUALIZE
     myStructure.AddVisualizationComponentSection();

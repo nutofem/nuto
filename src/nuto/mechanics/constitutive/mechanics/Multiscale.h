@@ -331,7 +331,25 @@ public:
     //! @return ... see brief explanation
     bool IsNonlocalModel()const;
 
+    //! @brief ... get Young's modulus
+    //! @return ... Young's modulus
+    double GetYoungsModulus() const;
+
+    //! @brief ... set Young's modulus
+    //! @param rE ... Young's modulus
+    void SetYoungsModulus(double rE);
+
+    //! @brief ... get Poisson's ratio
+    //! @return ... Poisson's ratio
+    double GetPoissonsRatio() const;
+
+    //! @brief ... set Poisson's ratio
+    //! @param rNu ... Poisson's ratio
+    void SetPoissonsRatio(double rNu);
+
 protected:
+    // calculate coefficients of the linear elastic material matrix
+    void CalculateCoefficients3D(double& C11, double& C12, double& C33) const;
 
     //! @brief ... solve for equilibrium using the new boundary conditions
     void Solve(const ElementBase* rElement, int rIp, const NuTo::DeformationGradient2D& rDeformationGradient, double rTolerance,
@@ -339,8 +357,23 @@ protected:
     // this is just for debugging purposes
     bool CheckStiffness(NuTo::StructureIp* rFineScaleStructure)const;
 
+    // this is just for debugging purposes
+    bool CheckGradient(NuTo::StructureIp* rFineScaleStructure)const;
     //! @brief tolerance for the solution of the fine scale problem
     double mTolerance;
+
+    //! @brief ... Young's modulus \f$ E \f$ in case of linear elastic solution
+    double mE;
+
+    //! @brief ... Poisson's ratio \f$ \nu \f$ in case of linear elastic solution
+    double mNu;
+
+    double mToleranceResidualForce;
+    int mMaxNumNewtonIterations;
+    double mDecreaseFactor;
+    int mMinNumNewtonIterations;
+    double mIncreaseFactor;
+    double mMinLoadFactor;
 };
 }
 

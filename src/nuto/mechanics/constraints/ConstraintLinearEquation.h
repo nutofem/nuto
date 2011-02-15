@@ -19,7 +19,7 @@ class ConstraintEquationTerm;
 //! @brief ... constraint equations
 //! @author Stefan Eckardt, ISM
 //! @date 16.12.2009
-class ConstraintLinearEquation :  public NuTo::ConstraintBase, public NuTo::ConstraintLinear
+class ConstraintLinearEquation :  public NuTo::ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -49,16 +49,6 @@ public:
     //! @brief returns the number of constraint equations
     //! @return number of constraints
     int GetNumLinearConstraints()const;
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    NuTo::ConstraintLinear* AsConstraintLinear();
-
-    //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-    const NuTo::ConstraintLinear* AsConstraintLinear()const;
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

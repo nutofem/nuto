@@ -27,10 +27,9 @@ try
     myStructureFineScale.SetShowTime(true);
 
     NuTo::FullMatrix<int> createdGroupIds;
-    myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleTest.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+//    myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleTest.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleCrack.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
     //myStructureFineScale.ImportFromGmsh("ConcurrentMultiscaleFineScale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
-    myStructureFineScale.SetCrackTransitionZone(1.5e1);
-    myStructureFineScale.SetCrackAngle(134.99*M_PI/180.);
 
     //create constitutive law nonlocal damage
     int myMatDamage = myStructureFineScale.ConstitutiveLawCreate("NonlocalDamagePlasticity");
@@ -49,7 +48,7 @@ try
     int myMatLinear = myStructureFineScale.ConstitutiveLawCreate("LinearElastic");
     double YoungsModulusLE(1);
     myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatLinear,YoungsModulusLE);
-    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.02);
+    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.00);
 
     //create section
     double thickness(1);
@@ -106,7 +105,14 @@ try
 	//top right node
     int GrpNodes_BottomTop = myStructureFineScale.GroupUnion(GrpNodes_Bottom,GrpNodes_Top);
     int GrpNodes_LeftRight = myStructureFineScale.GroupUnion(GrpNodes_Left,GrpNodes_Right);
-    int GrpNodes_Boundary = myStructureFineScale.GroupUnion(GrpNodes_BottomTop,GrpNodes_LeftRight);
+    //int GrpNodes_Boundary = myStructureFineScale.GroupUnion(GrpNodes_BottomTop,GrpNodes_LeftRight);
+
+    std::cout << "all nodes are boundary nodes!!!!!!!!!!" << std::endl;
+    direction=1;
+    min=-1;
+    max=101;
+    int GrpNodes_Boundary = myStructureFineScale.GroupCreate("Nodes");
+    myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Boundary,direction,min,max);
 
     //update displacement of boundary (disp controlled)
     myStructureFineScale.SetGroupBoundaryNodes(GrpNodes_Boundary);
@@ -122,6 +128,7 @@ try
 	myStructureFineScale.AddVisualizationComponentDamage();
 	myStructureFineScale.AddVisualizationComponentEngineeringPlasticStrain();
 	myStructureFineScale.AddVisualizationComponentPrincipalEngineeringStress();
+	myStructureFineScale.Info();
 
 #ifdef ENABLE_SERIALIZATION
     myStructureFineScale.Save("myStructureFineScale.xml","xml");

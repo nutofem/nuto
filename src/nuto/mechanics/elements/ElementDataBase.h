@@ -46,6 +46,11 @@ public:
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(int rIp, std::string rFileName);
 
+    //! @brief sets the fine scale parameter for all ips
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    virtual void SetFineScaleParameter(int rIp, const std::string& rName, double rParameter);
+
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
     virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement)=0;

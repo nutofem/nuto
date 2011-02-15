@@ -752,6 +752,10 @@ public:
     //! @param rInverse ... inverse matrix
     void InverseCholeskyLapack(FullMatrix<double>& rInverse) const;
 
+    //! @brief calculates the inverse of a matrix
+    //! @param rInverse ... inverse matrix
+    FullMatrix<T> Inverse() const;
+
     //! @brief calculates the eigenvalues
     //! @param rEigenValues ... eigenvalues
     void EigenValuesSymmetric(FullMatrix<double>& rEigenValues)const;

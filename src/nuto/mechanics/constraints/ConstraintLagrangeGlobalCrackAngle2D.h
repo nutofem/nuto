@@ -3,7 +3,6 @@
 #ifndef ConstraintLagrangeGlobalCrackAngle2D_H
 #define ConstraintLagrangeGlobalCrackAngle2D_H
 
-#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
 
 namespace NuTo
@@ -20,7 +19,7 @@ class StructureIp;
 //! alpha_2 is the crack angle calculated from the maximum principal strain of the global strain (given)
 //! mScaling is a scaling parameter to be determined (kind of a penalty parameter to make a smooth transition from )
 
-class ConstraintLagrangeGlobalCrackAngle2D : public ConstraintLagrange , public ConstraintBase
+class ConstraintLagrangeGlobalCrackAngle2D : public ConstraintLagrange
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -105,12 +104,6 @@ protected:
     int mLagrangeDOF;
     //! @brief parameter for scaling
     double mScaling;
-    //! @brief tolerance for difference between the principal strains, where
-    //if difference is bigger, the angle is calculated from the largest principal strain
-    double mTolerance1;
-    //! @brief tolerance for difference between the principal strains, where
-    //the previous angle is used, no update, (in between, there is a linear interpolation)
-    double mTolerance2;
 };
 }//namespace NuTo
 

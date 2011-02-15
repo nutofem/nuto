@@ -29,18 +29,6 @@ int NuTo::ConstraintLinearGlobalCrackAngle::GetNumLinearConstraints()const
     return 1;
 }
 
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-NuTo::ConstraintLinear* NuTo::ConstraintLinearGlobalCrackAngle::AsConstraintLinear()
-{
-    return this;
-}
-
-//! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
-const NuTo::ConstraintLinear* NuTo::ConstraintLinearGlobalCrackAngle::AsConstraintLinear()const
-{
-    return this;
-}
-
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
@@ -56,7 +44,7 @@ void NuTo::ConstraintLinearGlobalCrackAngle::AddToConstraintMatrix(int& curConst
         rRHS(curConstraintEquation,0) = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
     else
         rRHS(curConstraintEquation,0) = 0.;
-    rRHS(curConstraintEquation,0) = M_PI*0.5;
+    rRHS(curConstraintEquation,0) = M_PI*0.49;
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofCrackAngle(), 1);
 
     // increase constraint equation number

@@ -3,7 +3,6 @@
 #ifndef CONSTRAINTNODEGROUP_H
 #define CONSTRAINTNODEGROUP_H
 
-#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
@@ -14,7 +13,7 @@ class Group;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a node group
-class ConstraintNodeGroup : public ConstraintBase
+class ConstraintNodeGroup
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
