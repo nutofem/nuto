@@ -24,6 +24,7 @@ OPTION(ENABLE_EXAMPLES "enables examples" TRUE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
+OPTION(ENABLE_GUI "enable building the GUI application" TRUE)
 
 IF(ENABLE_METAMODEL)
     SET(ENABLE_OPTIMIZE TRUE)
