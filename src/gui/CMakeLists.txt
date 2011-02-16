@@ -1,7 +1,3 @@
-PROJECT(nutogui)
-
-cmake_minimum_required(VERSION 2.8)
-
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(CheckCXXSourceCompiles)
@@ -48,45 +44,43 @@ endif()
 
 # Dependencies
 include(FindwxWidgets)
-find_package(wxWidgets REQUIRED base core aui)
-include(${wxWidgets_USE_FILE})
+find_package(wxWidgets COMPONENTS base core aui)
+find_package_message(WX "Found wxWidgets: ${wxWidgets_FOUND}" ${wxWidgets_FOUND})
+if (wxWidgets_FOUND)
+  include(${wxWidgets_USE_FILE})
+endif()
 
 include(FindVTK)
-if(NOT VTK_FOUND)
-  message(FATAL_ERROR "VTK is required.")
-endif(NOT VTK_FOUND)
-find_package_message(VTK "Found VTK: ${VTK_USE_FILE}" ${VTK_USE_FILE})
-include(${VTK_USE_FILE})
-try_compile(VTK_RECENT
-            ${CMAKE_CURRENT_BINARY_DIR}/
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/vtk_recent.cpp
-            CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${VTK_INCLUDE_DIRS}" 
-            )
-if(NOT VTK_RECENT)
-  message(FATAL_ERROR "VTK is too old. Version 5.2 required.")
-endif(NOT VTK_RECENT)
-
-# Boost: as of 2010-11-03, NuTo requires Boost 1.44.0; hence, so do we...
-include(FindBoost)
-SET(Boost_ADDITIONAL_VERSIONS)
-find_package(Boost 1.44.0 REQUIRED python serialization)
-include_directories(${Boost_INCLUDE_DIRS})
-
-# @@@ Write a proper check ...
-if(NOT NUTO_PREFIX)
-  message(FATAL_ERROR "NUTO_PREFIX variable not specified.")
+if(VTK_FOUND)
+  find_package_message(VTK "Found VTK: ${VTK_USE_FILE}" ${VTK_USE_FILE})
+  include(${VTK_USE_FILE})
+  try_compile(VTK_RECENT
+	      ${CMAKE_CURRENT_BINARY_DIR}/
+	      ${CMAKE_CURRENT_SOURCE_DIR}/cmake/vtk_recent.cpp
+	      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${VTK_INCLUDE_DIRS}" 
+	      )
+  if(NOT VTK_RECENT)
+    set(VTK_FOUND FALSE)
+  endif(NOT VTK_RECENT)
 endif()
-get_filename_component(NUTO_PREFIX "${NUTO_PREFIX}" ABSOLUTE)
-find_package_message(NUTO "Using NUTO: ${NUTO_PREFIX}" ${NUTO_PREFIX})
-include_directories(${NUTO_PREFIX}/include)
-link_libraries(-L${NUTO_PREFIX}/lib)
 
-# Utilities
-include(ArtProvider)
-include(SplitDebugInfo)
+# Also need Boost.Python for GUI
+include(FindBoost)
+find_package(Boost ${BOOST_MAJOR_VERSION}.${BOOST_MINOR_VERSION}.${BOOST_SUBMINOR_VERSION} COMPONENTS python)
+find_package_message(BOOST_PYTHON "Found Boost.Python: ${Boost_PYTHON_FOUND}" ${Boost_PYTHON_FOUND})
 
-add_subdirectory(vtkwx)
+if(wxWidgets_FOUND AND VTK_FOUND AND Boost_PYTHON_FOUND AND ENABLE_VISUALIZE)
+  message(STATUS "All requirements for GUI met.")
+  # Utilities
+  include(ArtProvider)
+  include(SplitDebugInfo)
 
-include_directories(include)
-include_directories(vtkwx)
-add_subdirectory(src)
+  add_subdirectory(vtkwx)
+
+  include_directories(include)
+  include_directories(vtkwx)
+  add_subdirectory(src)
+else()
+  message(STATUS "GUI not built: need: external libraries wxWidgets, VTK and Boost.Python")
+  message(STATUS "... also, ENABLE_VISUALIZE must be set")
+endif()
