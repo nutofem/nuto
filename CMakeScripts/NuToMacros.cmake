@@ -83,3 +83,29 @@ MACRO(NUTO_INSTALL_SWIG_PYTHON_MODULE module_name destination)
   INSTALL(FILES ${NUTO_INSTALL_SWIG_PYTHON_MODULE_ABSOLUTE_PATH}/${NUTO_INSTALL_SWIG_PYTHON_MODULE_NAME}.py DESTINATION ${destination})
   INSTALL(FILES ${NUTO_INSTALL_SWIG_PYTHON_MODULE_ABSOLUTE_PATH}/${NUTO_INSTALL_SWIG_PYTHON_MODULE_NAME}.pyc DESTINATION ${destination})
 ENDMACRO(NUTO_INSTALL_SWIG_PYTHON_MODULE)
+
+# NUTO_SWIG_MODULE(<module> <interface file> <install_path> <dependencies>)
+#	Function to set up a SWIG module for a NuTo library.
+#	<module>		SWIG module name
+#	<interface file>	SWIG .i file
+#	<dependencies>		Dependencies needed by that module. Typically the NuTo library it wraps.
+#	<install_path>		Where to install the module. Relative to NUTO_PYTHON_MODULES_INSTALL_PATH.
+function(NUTO_SWIG_MODULE module_name interface_file install_path)
+  set(libraries ${ARGN})
+
+  SET_SOURCE_FILES_PROPERTIES(${interface_file} PROPERTIES CPLUSPLUS ON)
+  SET_SOURCE_FILES_PROPERTIES(${interface_file} PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
+  SWIG_ADD_MODULE(${module_name} python ${interface_file})
+  # link library
+  SWIG_LINK_LIBRARIES(${module_name} ${libraries} ${PYTHON_LIBRARIES})
+  # check for unresolved symbols
+  IF( NOT WIN32 AND NOT CYGWIN )
+    SET_TARGET_PROPERTIES(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS -Wl,-z,defs)
+  ENDIF( NOT WIN32 AND NOT CYGWIN )
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS "-shared -Wl,--enable-auto-import")
+  ENDIF(MINGW)
+
+  # installation
+  NUTO_INSTALL_SWIG_PYTHON_MODULE(${module_name} ${NUTO_PYTHON_MODULES_INSTALL_PATH}/${install_path})
+endfunction()
