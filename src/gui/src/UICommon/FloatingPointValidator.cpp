@@ -77,7 +77,7 @@ namespace uicommon
     std::use_facet<NumPutter> (locale).put (outstream, outstream, ' ', destination);
     if (outstream.fail()) return false;
     
-    textCtrl->ChangeValue (wxString (outstream.str()));
+    textCtrl->ChangeValue (wxString (outstream.str().c_str(), wxConvLocal));
     return true;
   }
   

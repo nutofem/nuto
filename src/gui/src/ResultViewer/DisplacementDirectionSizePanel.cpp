@@ -78,7 +78,7 @@ namespace nutogui
       std::use_facet<NumPutter> (locale).put (outstream, outstream, ' ', FLT_MAX);
       if (!outstream.fail())
       {
-	wxString numberStr (outstream.str());
+	wxString numberStr (outstream.str().c_str(), wxConvLocal);
 	numberStr.Append (wxT(" ")); // for good measure
 	wxSize numberStrExtent (dc.GetTextExtent (numberStr));
 	wxSize scaleInputMinSize (scaleInput->GetMinSize ());

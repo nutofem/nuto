@@ -43,7 +43,7 @@ void NutoModuleOverlay::BindToPython ()
 void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& self, const std::string& exportFile)
 {
   {
-    wxString loggedFN (exportFile);
+    wxString loggedFN (exportFile.c_str(), wxConvLibc);
     wxLogDebug (wxT ("intercepted ExportVtkDataFile() to %s"), loggedFN.c_str());
   }
   // 'self' contains nuto.Structure
@@ -68,7 +68,7 @@ void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& 
       if (locals[key] == self)
       {
 	std::string keyStr = extract<std::string> (key);
-	resultsTitle = keyStr;
+	resultsTitle = wxString (keyStr.c_str(), wxConvLibc);
 	break;
       }
     }

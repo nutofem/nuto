@@ -116,8 +116,8 @@ static void ExtractTraceback (object py_traceback, nutogui::ScriptRunner::Traceb
       std::string co_filename = extract<std::string> (f_code.attr ("co_filename"));
       
       nutogui::ScriptRunner::TracebackEntry tbEntry;
-      tbEntry.module = wxString (co_name);
-      tbEntry.filename = wxString (co_filename);
+      tbEntry.module = wxString (co_name.c_str(), wxConvLibc);
+      tbEntry.filename = wxString (co_filename.c_str(), wxConvLibc);
       tbEntry.line = tb_lineno;
       traceback.push_back (tbEntry);
       
@@ -170,7 +170,8 @@ void ScriptRunnerThreaded::ActualStartScript (const wxString& source)
 	  object last_value (last_value_ptr);
 	  nutogui::ScriptRunner::TracebackEntry tbEntry;
 	  // module: ? - not contained in SyntaxError exception
-	  tbEntry.filename = wxString (extract<std::string> (last_value.attr ("filename")));
+	  std::string filenameStr (extract<std::string> (last_value.attr ("filename")));
+	  tbEntry.filename = wxString (filenameStr.c_str(), wxConvLibc);
 	  tbEntry.line = extract<int> (last_value.attr ("lineno"));
 	  traceback->push_back (tbEntry);
 	}
