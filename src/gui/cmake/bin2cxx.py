@@ -38,7 +38,7 @@ in_len = len (in_data)
 input_file.close()
   
 output_file.write ("static const size_t %s_size = %d;\n" % (identifier, in_len))
-output_file.write ("static const char %s_data[%s_size] = {" % (identifier, identifier))
+output_file.write ("static const unsigned char %s_data[%s_size] = {" % (identifier, identifier))
 
 n = 0
 for byte in in_data:
