@@ -1,0 +1,6 @@
+add_definitions(-DPLATFORM_EXPORTED=NUTOGUI_EXPORT)
+file(GLOB Platform_sources *.h *.cpp)
+add_library(Platform STATIC ${Platform_sources})
+if(STATIC_LIBRARY_FLAGS)
+  set_target_properties(Platform PROPERTIES COMPILE_FLAGS ${STATIC_LIBRARY_FLAGS})
+endif()

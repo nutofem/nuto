@@ -1,0 +1,6 @@
+add_definitions(-DGUIFRAME_EXPORTED=NUTOGUI_EXPORT)
+file(GLOB GuiFrame_sources *.h *.cpp)
+add_library(GuiFrame STATIC ${GuiFrame_sources})
+if(STATIC_LIBRARY_FLAGS)
+  set_target_properties(GuiFrame PROPERTIES COMPILE_FLAGS ${STATIC_LIBRARY_FLAGS})
+endif()

@@ -1,0 +1,6 @@
+add_definitions(-DUICOMMON_EXPORTED=NUTOGUI_EXPORT)
+file(GLOB UICommon_sources *.h *.cpp)
+add_library(UICommon STATIC ${UICommon_sources})
+if(STATIC_LIBRARY_FLAGS)
+  set_target_properties(UICommon PROPERTIES COMPILE_FLAGS ${STATIC_LIBRARY_FLAGS})
+endif()
