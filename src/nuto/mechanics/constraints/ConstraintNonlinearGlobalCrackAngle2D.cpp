@@ -128,7 +128,7 @@ void NuTo::ConstraintNonlinearGlobalCrackAngle2D::serialize(Archive & ar, const 
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNonlinear)
        & BOOST_SERIALIZATION_NVP(mStructure);
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize ConstraintNonLinearGlobalCrackAngle"2D << std::endl;
+    std::cout << "finish serialize ConstraintNonLinearGlobalCrackAngle2D" << std::endl;
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNonlinearGlobalCrackAngle2D)
