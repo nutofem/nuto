@@ -17,7 +17,6 @@
 #include <iostream>
 #include <boost/python/raw_function.hpp>
 
-#define ENABLE_VISUALIZE // @@@ Should get ENABLE_ flags from NUTO build
 #include "nuto/visualize/VisualizeComponentBase.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
