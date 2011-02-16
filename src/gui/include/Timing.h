@@ -37,12 +37,14 @@ namespace nutogui
     ~Timing()
     {
       TimeType endTime = GetTime();
+      (void)endTime; // silence warning for non-debug builds
       wxLogDebug (wxT ("%s: " __TIMING_FORMAT), description, endTime-startTime);
     }
     /// Print out the time that passed so far
     void PrintIntermediate (const char* descr) const
     {
       TimeType time = GetTime();
+      (void)time; // silence warning for non-debug builds
       wxLogDebug (wxT ("%s: %s " __TIMING_FORMAT), description, descr, time-startTime);
     }
 #undef __TIMING_FORMAT
