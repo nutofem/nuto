@@ -70,7 +70,7 @@ void PythonOutputGrabber::Write (const std::string& str)
     wxCriticalSectionLocker _lock (bufferLock);
     
     size_t wcharsNeeded = wxConvLibc.ToWChar (nullptr, 0, str.c_str(), str.length());
-    wchar_t convertDest[wcharsNeeded];
+    wchar_t* convertDest = (wchar_t*)alloca (wcharsNeeded * sizeof (wchar_t));
     wxConvLibc.ToWChar (convertDest, wcharsNeeded, str.c_str(), str.length());
   #if wxABI_VERSION < 20900
     // Get rid of NUL
