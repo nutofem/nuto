@@ -38,7 +38,7 @@ namespace nutogui
     void SetCellType (int cellType);
   };
   
-  vtkCxxRevisionMacro(UnstructuredGridWithQuadsClippingToPoly, "1");
+  vtkCxxRevisionMacro(UnstructuredGridWithQuadsClippingToPoly, "1")
   
   void UnstructuredGridWithQuadsClippingToPoly::GetCell (vtkIdType cellId, vtkGenericCell *cell)
   {
