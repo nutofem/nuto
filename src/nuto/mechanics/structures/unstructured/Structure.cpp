@@ -911,7 +911,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 
     unsigned int num_nodes = 0;
     unsigned int num_elements = 0;
-    std::ifstream file (rFileName, std::ios::in );
+    std::ifstream file (rFileName.c_str(), std::ios::in );
     if (file.is_open() == false)
     {
         throw MechanicsException("[NuTo::Structure::ImportFromGmsh] Error opening input file for read access.");
