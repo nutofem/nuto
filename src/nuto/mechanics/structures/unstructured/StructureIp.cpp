@@ -65,8 +65,7 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
     mConstraintCrackAngle = -1;
     mConstraintNormalCrackOpening = -1;
     mConstraintTangentialCrackOpening = -1;
-    mConstraintTotalStrain = -1;
-    mlX = 0.;
+     mlX = 0.;
     mlY = 0.;
     mCrackTransitionZone = 0;
     mIPName = std::string("fineScaleIp");
@@ -75,6 +74,9 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
 
     mToleranceElasticCrackAngleLow = 0.0;
     mToleranceElasticCrackAngleHigh = 0.0;
+
+    // generate the constrain equation
+    mConstraintTotalStrain = ConstraintLinearGlobalTotalStrain(NuTo::EngineeringStrain2D());
 
     //add constraint equation to avoid negative normal Crack opening
     //find unused integer id
@@ -2499,7 +2501,7 @@ void NuTo::StructureIp::SetPenaltyStiffnessScalingFactorCrackAngle(double rParam
 //! @parameter rPenaltyStiffness penalty stiffness
 //! @parameter rScalingFactor scaling factor
 //! @return id of the constraint
-int NuTo::StructureIp::ConstraintNonlinearTangentialCrackOpening(double rPenaltyStiffness, double rScalingFactor)
+int NuTo::StructureIp::ConstraintNonlinearTangentialCrackOpening(double rScalingFactor, double rPenaltyStiffness)
 {
     this->mNodeNumberingRequired = true;
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
@@ -2516,7 +2518,7 @@ int NuTo::StructureIp::ConstraintNonlinearTangentialCrackOpening(double rPenalty
         it = mConstraintMap.find(id);
     }
 
-    ConstraintNonlinearGlobalCrackOpeningTangential2D *mConst = new NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D(this, rPenaltyStiffness, rScalingFactor);
+    ConstraintNonlinearGlobalCrackOpeningTangential2D *mConst = new NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D(this, rScalingFactor, rPenaltyStiffness);
 
     mConstraintMap.insert(id, mConst);
     mConstraintTangentialCrackOpening = id;
@@ -2632,7 +2634,7 @@ int NuTo::StructureIp::ConstraintLinearGlobalTotalStrain(const EngineeringStrain
 void NuTo::StructureIp::InitBeforeNewtonRaphson()
 {
     mSavedToStringStream = false;
-    this->ElementTotalUpdateTmpStaticData();
+    NewtonRaphsonInfo(10);
 }
 
 //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson

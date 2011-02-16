@@ -343,10 +343,10 @@ public:
     void SetPenaltyStiffnessScalingFactorCrackAngle(double rParameter);
 
     //! @brief add a constraint equation for the tangential crack opening, which corresponds to an artificial spring
-    //! @parameter rPenaltyStiffness penalty stiffness
     //! @parameter rScalingFactor scaling factor
+    //! @parameter rPenaltyStiffness penalty stiffness
     //! @return id of the constraint
-    int ConstraintNonlinearTangentialCrackOpening(double rPenaltyStiffness, double rScalingFactor);
+    int ConstraintNonlinearTangentialCrackOpening(double rScalingFactor, double rPenaltyStiffness);
 
     //! @brief set the penalty stiffness for the nonlinear TangentialCrackOpening constraint
     void SetPenaltyStiffnessTangentialCrackOpening(double rParameter);
@@ -395,6 +395,11 @@ public:
 
     //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
     void InitBeforeNewtonRaphson();
+
+    bool GetSavedToStringStream()
+    {
+        return mSavedToStringStream;
+    }
 
 protected:
     //! @brief ... standard constructor just for the serialization routine

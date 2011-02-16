@@ -1146,11 +1146,12 @@ public:
     //! @return success flag
     void NewtonRaphson(double rToleranceResidualForce=1e-6,
             bool rAutomaticLoadstepControl=true,
+            double rMaxDeltaLoadFactor=1.,
             int rMaxNumNewtonIterations=20,
             double rDecreaseFactor=0.5,
             int rMinNumNewtonIterations=7,
             double rIncreaseFactor=1.5,
-            double rMinLoadFactor=1e-6,
+            double rMinDeltaLoadFactor=1e-6,
             bool rSaveStructureBeforeUpdate=false);
 
     //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
@@ -1162,7 +1163,7 @@ public:
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
     //this routine saves the current state before an update in the Newton Raphson iteration is performed
     //this only happens for more than one load step (either prescibed or with automatic load control)
-    virtual void SaveStructure()
+    virtual void SaveStructure()const
     {}
     //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
     //! @param load factor

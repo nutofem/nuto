@@ -370,6 +370,7 @@ protected:
 
     double mToleranceResidualForce;
     int mMaxNumNewtonIterations;
+    double mMaxDeltaLoadFactor;
     double mDecreaseFactor;
     int mMinNumNewtonIterations;
     double mIncreaseFactor;

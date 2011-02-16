@@ -51,6 +51,7 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 {
     SetParametersValid();
     mToleranceResidualForce=1e-6;
+    mMaxDeltaLoadFactor = 0.1;
     mMaxNumNewtonIterations=20;
     mDecreaseFactor=0.5;
     mMinNumNewtonIterations=7;
@@ -70,6 +71,7 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 #endif
        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
           & BOOST_SERIALIZATION_NVP(mToleranceResidualForce)
+          & BOOST_SERIALIZATION_NVP(mMaxDeltaLoadFactor)
           & BOOST_SERIALIZATION_NVP(mMaxNumNewtonIterations)
           & BOOST_SERIALIZATION_NVP(mDecreaseFactor)
           & BOOST_SERIALIZATION_NVP(mMinNumNewtonIterations)
@@ -160,9 +162,6 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
     // since the material law is a full structure whose bc change, this can either be implemented with a cast (as I did)
     // or by removing the const flag from all material routines (which I do not consider is good)
     const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
-    StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
-    NuTo::FullMatrix<double> activeDOF, dependentDOF;
-    fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
     if (staticData->NonlinearSolutionOn()==false)
     {
         // linear solution
@@ -183,6 +182,12 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
     else
     {
         //nonlinear solution
+        StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+        NuTo::FullMatrix<double> activeDOF, dependentDOF;
+        fineScaleStructure->SetLoadFactor(0);
+        fineScaleStructure->NodeBuildGlobalDofs();
+        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 
         //Get and set previous total strain
         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
@@ -194,11 +199,9 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
-        // generate the constrain equation
-        fineScaleStructure->ConstraintLinearGlobalTotalStrain(prevStrain);
 
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-                true, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
+                true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
                 mIncreaseFactor, mMinLoadFactor, true);
 
         //calculate average stress
@@ -213,9 +216,18 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         rEngineeringStress.mEngineeringStress[2] = averageStress(3,0);
 
         //restore previous state (only performed if the load had to be subdivided)
-        fineScaleStructure->RestoreStructure();
+        if (fineScaleStructure->GetSavedToStringStream())
+        {
+            fineScaleStructure->RestoreStructure();
+        }
+        else
+        {
+            //set load factor to zero in order to get the same ordering of the displacements as before the routine
+            fineScaleStructure->SetLoadFactor(0);
+            fineScaleStructure->NodeBuildGlobalDofs();
+            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        }
     }
-    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -340,6 +352,11 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         //nonlinear solution
         const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
         StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+        fineScaleStructure->SetLoadFactor(0);
+        fineScaleStructure->NodeBuildGlobalDofs();
+        NuTo::FullMatrix<double> activeDOF, dependentDOF;
+        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 
         //Get and set previous total strain
         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
@@ -351,14 +368,9 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
-        //calculate engineering strain
-        fineScaleStructure->ConstraintLinearGlobalTotalStrain(prevStrain);
-
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-                true, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
+                true,  mMaxDeltaLoadFactor, mMaxNumNewtonIterations,mDecreaseFactor, mMinNumNewtonIterations,
                 mIncreaseFactor, mMinLoadFactor, true);
-
-        //fineScaleStructure->ConstraintDelete(fineScaleStructure->GetConstraintTotalStrain());
 
         // use Schur complement to calculate the stiffness
         SparseMatrixCSRVector2General<double>
@@ -367,7 +379,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             matrixKJ(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumActiveDofs()),
             matrixKK(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs());
 
-        fineScaleStructure->NodeBuildGlobalDofs();
         fineScaleStructure->BuildGlobalCoefficientSubMatrices0General(
                 matrixJJ, matrixJK, matrixKJ, matrixKK);
 
@@ -554,9 +565,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         stiffness*=1./(fineScaleStructure->GetDimensionX()*fineScaleStructure->GetDimensionY());
         *(rTangent->AsConstitutiveTangentLocal3x3()) = stiffness;
 
-        //restore previous state (only performed if the load had to be subdivided)
-        fineScaleStructure->RestoreStructure();
-
     /*
         //just for test purpose, calculate stiffness via resforces
         EngineeringStress2D stress1, stress2;
@@ -593,6 +601,18 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         stiffness.Info(12,3);
     //    std::cout << "Schur stiffness cdf" << std::endl;
     //    stiffnessCDF.Info(12,3);
+        //restore previous state (only performed if the load had to be subdivided)
+        if (fineScaleStructure->GetSavedToStringStream())
+        {
+            fineScaleStructure->RestoreStructure();
+        }
+        else
+        {
+            //set load factor to zero in order to get the same ordering of the displacements as before the routine
+            fineScaleStructure->SetLoadFactor(0);
+            fineScaleStructure->NodeBuildGlobalDofs();
+            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        }
     }//nonlinear solution
 #else
     throw MechanicsException("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] MUMPS solver required to calculate Schur complement.");
@@ -658,7 +678,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-                true, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
+                true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
                 mIncreaseFactor, mMinLoadFactor, false);
 
         fineScaleStructure->ElementTotalUpdateStaticData();
@@ -952,7 +972,7 @@ void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::D
     fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
     fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-            true, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
+            true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
             mIncreaseFactor, mMinLoadFactor, true);
 
 #ifdef oldSolution

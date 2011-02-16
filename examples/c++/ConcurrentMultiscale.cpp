@@ -69,8 +69,8 @@ public:
 
         //create constitutive law from fine scale model
         int myMatCoarseScale = ConstitutiveLawCreate("Multiscale");
-        ConstitutiveLawSetYoungsModulus(myMatCoarseScale,1);
-        ConstitutiveLawSetPoissonsRatio(myMatCoarseScale,0.2);
+        ConstitutiveLawSetYoungsModulus(myMatCoarseScale,20000);
+        ConstitutiveLawSetPoissonsRatio(myMatCoarseScale,0.0);
 
         //create section
         double thickness(1);
@@ -244,16 +244,16 @@ try
 
 
     //crack transition zone
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackTransitionZone",10);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackTransitionZone",5);
 
     //penalty stiffness for crack angle
-    double PenaltyStiffnessCrackAngle(1);
+    double PenaltyStiffnessCrackAngle(100);
     double PenaltyStiffnessScalingFactorCrackAngle(2.*M_PI);
     myStructureCoarseScale.ElementTotalSetFineScaleParameter("ConstraintPenaltyStiffnessCrackAngle", PenaltyStiffnessCrackAngle);
     myStructureCoarseScale.ElementTotalSetFineScaleParameter("PenaltyStiffnessScalingFactorCrackAngle", PenaltyStiffnessScalingFactorCrackAngle);
 
     //penalty stiffness for tangential crack opening
-    double PenaltyStiffnessTangentialCrackOpening(.1);
+    double PenaltyStiffnessTangentialCrackOpening(100);
     double PenaltyStiffnessScalingFactorPenaltyStiffnessTangentialCrackOpening(0.1);
     myStructureCoarseScale.ElementTotalSetFineScaleParameter("ConstraintPenaltyStiffnessTangentialCrackOpening", PenaltyStiffnessTangentialCrackOpening);
     myStructureCoarseScale.ElementTotalSetFineScaleParameter("PenaltyStiffnessScalingFactorTangentialCrackOpening", PenaltyStiffnessScalingFactorPenaltyStiffnessTangentialCrackOpening);
@@ -263,9 +263,9 @@ try
     //myStructureCoarseScale.ElementTotalSetFineScaleParameter("AugmentedLagrangeCrackOpening", AugmentedLagrangeStiffnessCrackOpening);
 
     //difference in both principal strains in order to solve the crack direction elastic from the total strain
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleHigh",0.1);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleHigh",0.001);
     //difference in both principal strains in order to solve the crack direction elastic from the previous state
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleLow",0.05);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleLow",0.0005);
 
     // apply constraints set the strains and
     // do the initial step using the linear elastic solution (no fine scale model just the calibration of the initial angles)
@@ -276,11 +276,21 @@ try
     myStructureCoarseScale.SetTotalStrain(strain);
     myStructureCoarseScale.InitStructure();
 
-    strain(0,0) = 0.1;
+    strain(0,0) = 0.001;
     strain(1,0) = 0.;
     strain(2,0) = 0.0;
     myStructureCoarseScale.SetTotalStrain(strain);
-    myStructureCoarseScale.NewtonRaphson();
+    double toleranceResidualForce = 1e-6;
+    bool automaticLoadstepControl=true;
+    double maxDeltaLoadFactor=1;
+    int maxNumNewtonIterations=20;
+    double decreaseFactor=0.5;
+    int minNumNewtonIterations=7;
+    double increaseFactor=1.5;
+    double minDeltaLoadFactor=1e-6;
+    bool saveStructureBeforeUpdate=false;
+    myStructureCoarseScale.NewtonRaphson(toleranceResidualForce,automaticLoadstepControl,maxDeltaLoadFactor,maxNumNewtonIterations,decreaseFactor,
+            minNumNewtonIterations,increaseFactor,minDeltaLoadFactor,saveStructureBeforeUpdate);
 
     myStructureCoarseScale.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentMultiscaleFinal.vtk"));
 
