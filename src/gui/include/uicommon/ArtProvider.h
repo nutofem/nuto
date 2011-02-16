@@ -49,7 +49,8 @@ namespace uicommon
 #define ARTPROVIDER_REGISTER(Name, Data, Size, MIME)						\
   namespace {											\
     struct RegisterArt {									\
-      RegisterArt() { uicommon::ArtProvider::RegisterArt (wxT (Name), Data, Size, wxT(MIME)); }	\
+      RegisterArt() { uicommon::ArtProvider::RegisterArt (wxT (Name), (const char*) Data, 	\
+							  Size, wxT(MIME)); }			\
     };												\
     RegisterArt artRegistrator;									\
   }
