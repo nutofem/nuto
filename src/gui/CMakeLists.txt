@@ -65,9 +65,9 @@ if(VTK_FOUND)
 endif()
 
 # Also need Boost.Python for GUI
-include(FindBoost)
-find_package(Boost ${BOOST_MAJOR_VERSION}.${BOOST_MINOR_VERSION}.${BOOST_SUBMINOR_VERSION} COMPONENTS python)
-find_package_message(BOOST_PYTHON "Found Boost.Python: ${Boost_PYTHON_FOUND}" ${Boost_PYTHON_FOUND})
+if(Boost_FOUND)
+  find_package(Boost ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} COMPONENTS python)
+endif()
 
 if(wxWidgets_FOUND AND VTK_FOUND AND Boost_PYTHON_FOUND AND ENABLE_VISUALIZE)
   message(STATUS "All requirements for GUI met.")
