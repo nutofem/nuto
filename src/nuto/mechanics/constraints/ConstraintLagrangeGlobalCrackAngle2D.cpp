@@ -9,6 +9,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <iostream>
+
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackAngle2D.h"
 #include "nuto/mechanics/structures/unstructured/StructureIp.h"

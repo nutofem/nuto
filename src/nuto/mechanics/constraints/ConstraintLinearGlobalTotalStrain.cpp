@@ -9,6 +9,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <iostream>
+
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"

@@ -10,6 +10,8 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include <math.h>
+#include <iostream>
+
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"

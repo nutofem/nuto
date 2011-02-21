@@ -9,6 +9,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <iostream>
+
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
