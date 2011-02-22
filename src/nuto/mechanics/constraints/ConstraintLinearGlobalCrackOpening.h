@@ -3,6 +3,8 @@
 #ifndef CONSTRAINTGLOBALCRACKOPENING_H
 #define CONSTRAINTGLOBALCRACKOPENING_H
 
+#include <iostream>
+
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/MechanicsException.h"
 

@@ -3,6 +3,8 @@
 #ifndef CONSTRAINTLINEARGLOBALTOTALSTRAIN_H
 #define CONSTRAINTLINEARGLOBALTOTALSTRAIN_H
 
+#include <iostream>
+
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/MechanicsException.h"
