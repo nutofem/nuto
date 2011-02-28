@@ -11,10 +11,9 @@ set_source_files_properties(${THROBBER_SOURCE} PROPERTIES GENERATED TRUE)
 
 file(GLOB app_sources *.h *.cpp)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-ADD_EXECUTABLE(nutogui_app ${app_sources} ${app_art_sources} ${THROBBER_SOURCE})
-set_target_properties(nutogui_app
+ADD_EXECUTABLE(nutogui ${app_sources} ${app_art_sources} ${THROBBER_SOURCE})
+set_target_properties(nutogui
 		      PROPERTIES
-		      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-		      OUTPUT_NAME "nutogui")
-target_link_libraries(nutogui_app UIShared ScriptRunner)
-split_debug_info(nutogui_app)
+		      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+target_link_libraries(nutogui UIShared ScriptRunner)
+split_debug_info(nutogui)
