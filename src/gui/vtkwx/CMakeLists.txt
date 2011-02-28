@@ -20,6 +20,8 @@ endif(HAS_gtk_widget_get_window)
 file(GLOB vtkwx_sources *.h *.cpp)
 add_library(vtkwx STATIC ${vtkwx_sources})
 target_link_libraries(vtkwx vtkCommon vtkRendering)
+# Link against GTK because we use gtk_widget_get_window() together with wxGTK
+target_link_libraries(vtkwx ${GTK_LIBRARIES})
 if(STATIC_LIBRARY_FLAGS)
   set_target_properties(vtkwx PROPERTIES COMPILE_FLAGS ${STATIC_LIBRARY_FLAGS})
 endif()
