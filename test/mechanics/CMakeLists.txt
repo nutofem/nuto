@@ -16,27 +16,27 @@ IF(ENABLE_PYTHON_TESTS)
   ADD_TEST(mechanics::Truss1D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
  #ADD_TEST(mechanics::Tetrahedron4N                     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::DeleteElemNode                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DeleteElemNode.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+  # set PYTHONPATH environment for all examples
+
+  SET(MYTESTS 
+  mechanics::Brick8N
+  mechanics::ConstitutiveLaws
+  mechanics::CreateNodesAndGroupOperations
+  mechanics::ConstraintsLagrange1D
+  #mechanics::GlobalDofs
+  mechanics::NonlocalDamagePlasticity
+  mechanics::Plane2D3N
+  mechanics::Plane2D4N
+  mechanics::Section
+  mechanics::Tetrahedron10N
+  mechanics::Truss1D2N
+  mechanics::Truss1D3N
+  #mechanics::Tetrahedron4N
+  mechanics::DeleteElemNode
+  )
+  SET_PROPERTY(TEST ${MYTESTS}  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 ENDIF(ENABLE_PYTHON_TESTS)
-
-# set PYTHONPATH environment for all examples
-
-SET(MYTESTS 
-mechanics::Brick8N
-mechanics::ConstitutiveLaws
-mechanics::CreateNodesAndGroupOperations
-mechanics::ConstraintsLagrange1D
-#mechanics::GlobalDofs
-mechanics::NonlocalDamagePlasticity
-mechanics::Plane2D3N
-mechanics::Plane2D4N
-mechanics::Section
-mechanics::Tetrahedron10N
-mechanics::Truss1D2N
-mechanics::Truss1D3N
-#mechanics::Tetrahedron4N
-mechanics::DeleteElemNode
-)
-SET_PROPERTY(TEST ${MYTESTS}  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 
 
 IF(ENABLE_C++_TESTS)
