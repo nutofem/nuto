@@ -109,7 +109,15 @@ ELSE(ENABLE_OPENMP)
 ENDIF(ENABLE_OPENMP)
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ansi -Wall -Wno-long-long -pedantic-errors -std=c++0x")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long")
+  # ISO standards mode does not work well on MinGW
+  # (they don't define certain things that are defined on other platforms in standard mode,
+  # like M_PI)
+  if(WIN32)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+  else()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -pedantic-errors")
+  endif()
 ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 # Python required for interface files c++ and python
@@ -135,6 +143,7 @@ FIND_PACKAGE(SWIG REQUIRED)
 #MESSAGE(STATUS "SWIG found: ${SWIG_EXECUTABLE}")
 INCLUDE(${SWIG_USE_FILE})
 SET(NuTo_SWIG_FLAGS "-Wall;-fvirtual;${NuTo_SWIG_FLAGS}")
+add_definitions("-D_hypot=hypot")
 
 # search for MKL
 IF(ENABLE_MKL)
