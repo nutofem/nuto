@@ -560,6 +560,21 @@ namespace nutogui
       grad.lut = colors;
       sharedData->gradients.push_back (grad);
     }
+    {
+      size_t nColors = 256;
+      vtkSmartPointer<vtkLookupTable> colors (vtkSmartPointer<vtkLookupTable>::New());
+      colors->SetNumberOfTableValues (nColors);
+      for (size_t i = 0; i < nColors; i++)
+      {
+	double x = i / double (nColors-1);
+	colors->SetTableValue (i, sqrt (x), x*x*x, sin (x*M_PI));
+      }
+      
+      SharedViewData::Gradient grad;
+      grad.name = wxT("pm3d");
+      grad.lut = colors;
+      sharedData->gradients.push_back (grad);
+    }
   }
 
   void ResultViewerImpl::View::SetData (const DataConstPtr& data)
