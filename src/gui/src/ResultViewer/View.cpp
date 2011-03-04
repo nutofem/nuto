@@ -282,7 +282,7 @@ namespace nutogui
 			      sharedData->imgSplitV,
 			      wxT ("Split top/bottom"));
     splitButtonsBar->Realize ();
-    topBarSizer->Add (splitButtonsBar, 0);
+    topBarSizer->Add (splitButtonsBar, 0, wxEXPAND);
     
     toolbar = new wxAuiToolBar (this, ID_Toolbar, wxDefaultPosition, wxDefaultSize,
 				wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
@@ -356,7 +356,7 @@ namespace nutogui
 				 sharedData->imgMaximize,
 				 wxT ("Maximize this view"));
     closeMaxButtonsBar->Realize ();
-    topBarSizer->Add (closeMaxButtonsBar, 0);
+    topBarSizer->Add (closeMaxButtonsBar, 0, wxEXPAND);
     
     sizer->Add (topBarSizer, 0, wxEXPAND);
     
