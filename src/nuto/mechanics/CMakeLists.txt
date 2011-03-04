@@ -107,6 +107,7 @@ groups/GroupBase.cpp
 )
 
 SET(NuToMechanicsIntegrationtypes_SOURCES
+integrationtypes/IntegrationPointBase.cpp
 integrationtypes/IntegrationType1D.cpp
 integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
@@ -118,6 +119,8 @@ integrationtypes/IntegrationType2D3NGauss3Ip.cpp
 integrationtypes/IntegrationType2D4NConstVariableIp.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp
+integrationtypes/IntegrationType2D4NModVariableIp.cpp
+integrationtypes/IntegrationType2DMod.cpp
 integrationtypes/IntegrationType3D.cpp
 integrationtypes/IntegrationType3D4NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss1Ip.cpp

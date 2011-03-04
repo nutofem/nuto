@@ -12,6 +12,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NModVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
@@ -144,6 +145,42 @@ const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(cons
             it = mIntegrationTypeMap.insert(const_cast<std::string&>(IntegrationTypeString), new NuTo::IntegrationType2D4NConstVariableIp(numIp)).first;
             return it->second;
         }
+        else if (IntegrationTypeString.substr(0,7)=="2D4NMOD")
+    	{
+    		//Allocate an integration type in 2D with variable number of integration points
+    		// find first incidence of 'IP'
+    		std::string::size_type posIP = IntegrationTypeString.find_first_of("IP");
+    		if(posIP==std::string::npos)
+    		{
+    			throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] The name of an modifiable integration type\
+with variable number of Ips is e.g. 2D4NMOD100IP12.");
+    		}
+    		int numIp;
+    		try
+    		{
+    			std::istringstream is(IntegrationTypeString.substr(7,posIP-7));
+    			is >> numIp;
+    		}
+    		catch(...)
+    		{
+    			throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Error converting number of integration points to integer.");
+    		}
+    		int Id;
+    		try
+    		{
+    			std::istringstream is(IntegrationTypeString.substr((posIP+2),IntegrationTypeString.length()-(posIP+2)));
+    			is >> Id;
+    		}
+    		catch(...)
+    		{
+    			throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Error converting ID to integer.");
+    		}
+    		it = mIntegrationTypeMap.insert(
+					const_cast<std::string&>(IntegrationTypeString),
+					new NuTo::IntegrationType2D4NModVariableIp(const_cast<std::string&>(IntegrationTypeString),numIp)
+    			).first;
+            return it->second;
+    	}
         else
         {
             throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Integration type " + IntegrationTypeString +

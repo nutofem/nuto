@@ -21,6 +21,7 @@ Force = 5
 ElementType = "PLANE2D4N"
 #IntegragionType = "2D4NGauss4Ip"
 IntegragionType = "2D4NConst630Ip"
+IntegragionType2 = "2D4NMod10000Ip2"
 
 #StressState = "XX"
 StressState = "YY"
@@ -87,7 +88,10 @@ myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 myStructure.ElementTotalSetSection(mySection)
 
 for i in range(0,elements.GetNumRows()):
-	myStructure.ElementSetIntegrationType(i,IntegragionType,"NOIPDATA")
+	if i==2:
+		myStructure.ElementSetIntegrationType(i,IntegragionType2,"NOIPDATA")
+	else:
+		myStructure.ElementSetIntegrationType(i,IntegragionType,"NOIPDATA")
 
 LoadNodesXPos = myStructure.GroupCreate("Nodes")
 LoadNodesXNeg = myStructure.GroupCreate("Nodes")
