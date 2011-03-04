@@ -60,6 +60,7 @@ namespace nutogui
     struct SharedViewData;
     boost::shared_ptr<SharedViewData> sharedData;
     void SetupSharedData ();
+    void SetupGradients ();
     
     wxAuiToolBar* visOptionEmpty;
     wxAuiToolBar* visOptionChoice;
@@ -81,7 +82,6 @@ namespace nutogui
     class RenderWidget;
     RenderWidget* renderWidget;
     vtkSmartPointer<vtkRenderer> renderer;
-    vtkSmartPointer<vtkLookupTable> colors;
     struct DataSetMapperWithEdges
     {
       DataSetMapperWithEdges ();
@@ -173,8 +173,9 @@ namespace nutogui
     {
       int comp;
       bool legend;
+      size_t gradient;
       
-      VisOpt() : comp (-1), legend (true) {}
+      VisOpt() : comp (-1), legend (true), gradient (0) {}
     };
     std::vector<VisOpt> lastVisOpt;
 
@@ -183,6 +184,8 @@ namespace nutogui
     void OnVisOptionChanged (wxCommandEvent& event);
     void UpdateVisOptionChoice (size_t dataIndex, int initialSel);
     void SetVisComponent (size_t dataIndex, int visComp);
+    void UpdateGradientUI (size_t gradient);
+    void SetGradient (size_t gradient);
 
     void OnRenderModeDropDown (wxAuiToolBarEvent& event);
     void OnRenderModeCommand (wxCommandEvent& event);
@@ -190,6 +193,8 @@ namespace nutogui
     void SetUIRenderMode ();
     void OnShowLegend (wxCommandEvent& event);
     void OnShowLegendUpdateUI (wxUpdateUIEvent& event);
+    void OnLegendOptions (wxAuiToolBarEvent& event);
+    void OnLegendOptionsUpdateUI (wxUpdateUIEvent& event);
     void OnClipPlane (wxCommandEvent& event);
     void OnDisplacementOffset (wxCommandEvent& event);
     void OnDisplacementDirDropDown (wxAuiToolBarEvent& event);
@@ -201,6 +206,7 @@ namespace nutogui
     void HideDisplacementDirections ();
     void ComputeDisplacementDirections ();
     
+    void DoToolDropDown (wxAuiToolBar* toolbar, int toolID, wxMenu* menu);
     void UpdateToolbarControlMinSize (wxWindow* control,
 				      wxAuiToolBar* toolbar,
 				      int forceHeight = 0);
@@ -219,6 +225,23 @@ namespace nutogui
     
     void CheckDisplacementSizePanelVisibility ();
     void OnDisplacementScaleChange (wxEvent& event);
+    
+    /**
+     * Class to handle commands from gradient menu.
+     * (Don't use event handling in View since gradient menu entries have
+     * "special" IDs, clashing with regular IDs.)
+     */
+    class GradientMenuEventHandler : public wxEvtHandler
+    {
+      View* parent;
+    public:
+      GradientMenuEventHandler (View* parent) : parent (parent) {}
+      
+      void OnGradientSelect (wxCommandEvent& event);
+			      
+      DECLARE_EVENT_TABLE()
+    };
+    GradientMenuEventHandler gradientMenuHandler;
   public:
     View (wxWindow* parent, SplitManager* splitMgr,
 	  const View* cloneFrom = nullptr);

@@ -31,6 +31,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkClipDataSet.h>
+#include <vtkColorTransferFunction.h>
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
@@ -171,6 +172,14 @@ namespace nutogui
     wxBitmap displacementDirButtonImages[numDisplacementDirModes];
     
     vtkSmartPointer<vtkArrowSource> displaceDirectionGlyphSource;
+    
+    struct Gradient
+    {
+      wxString name;
+      vtkSmartPointer<vtkLookupTable> lut;
+    };
+    std::vector<Gradient> gradients;
+    wxMenu gradientMenu;
   };
   
   enum
@@ -180,6 +189,7 @@ namespace nutogui
     ID_VisOption,
     ID_ActorRenderMode,
     ID_ShowLegend,
+    ID_LegendOptions,
     ID_ClipPlane,
     ID_DisplacementOffset,
     ID_DisplacementDirMode,
@@ -206,6 +216,8 @@ namespace nutogui
 		   ResultViewerImpl::View::OnRenderModeCommand)
     EVT_MENU(ID_ShowLegend, ResultViewerImpl::View::OnShowLegend)
     EVT_UPDATE_UI(ID_ShowLegend, ResultViewerImpl::View::OnShowLegendUpdateUI)
+    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_LegendOptions, ResultViewerImpl::View::OnLegendOptions)
+    EVT_UPDATE_UI(ID_LegendOptions, ResultViewerImpl::View::OnLegendOptionsUpdateUI)
     EVT_MENU(ID_ClipPlane, ResultViewerImpl::View::OnClipPlane)
     EVT_MENU(ID_DisplacementOffset, ResultViewerImpl::View::OnDisplacementOffset)
     EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_DisplacementDirMode, ResultViewerImpl::View::OnDisplacementDirDropDown)
@@ -237,7 +249,8 @@ namespace nutogui
      displacementData ((size_t)~0),
      displacementDirScale (1),
      useClipper (false),
-     updatingCam (false)
+     updatingCam (false),
+     gradientMenuHandler (this)
   {
     if (cloneFrom)
     {
@@ -303,6 +316,11 @@ namespace nutogui
 			     sharedData->imgShowLegend,
 			     wxT ("Show legend"),
 			     wxITEM_CHECK);
+    actorOptionsTB->AddTool (ID_LegendOptions, wxEmptyString,
+			     wxArtProvider::GetBitmap (wxART_MISSING_IMAGE, wxART_TOOLBAR),
+			     wxT ("Select gradient"),
+			     wxITEM_NORMAL);
+    actorOptionsTB->SetToolDropDown (ID_LegendOptions, true);
     actorOptionsTB->AddTool (ID_ClipPlane, wxEmptyString,
 			     sharedData->imgClipPlane,
 			     wxT ("Clipping plane"),
@@ -436,6 +454,59 @@ namespace nutogui
       sharedData->displacementDirButtonImages[m] =
 	wxArtProvider::GetBitmap (displacementDirArtNames[m], wxART_TOOLBAR);
     }
+    
+    SetupGradients();
+    
+    for (size_t i = 0; i < sharedData->gradients.size(); i++)
+    {
+      const SharedViewData::Gradient& grad = sharedData->gradients[i];
+      wxMenuItem* newItem = new wxMenuItem (&sharedData->gradientMenu,
+					    i,
+					    grad.name,
+					    wxEmptyString,
+					    wxITEM_NORMAL);
+      sharedData->gradientMenu.Append (newItem);
+    }
+  }
+  
+  static vtkSmartPointer<vtkLookupTable> ColorTransferFunctionToLookupTable (vtkColorTransferFunction* ctf)
+  {
+    size_t nColors = 256;
+    vtkSmartPointer<vtkLookupTable> colors (vtkSmartPointer<vtkLookupTable>::New());
+    colors->SetNumberOfTableValues (nColors);
+    for (size_t i = 0; i < nColors; i++)
+    {
+      double rgb[3];
+      ctf->GetColor (float (i)/float (nColors-1), rgb);
+      colors->SetTableValue (i, rgb[0], rgb[1], rgb[2]);
+    }
+    return colors;
+  }
+  
+  void ResultViewerImpl::View::SetupGradients ()
+  {
+    vtkSmartPointer<vtkLookupTable> colors;
+    vtkSmartPointer<vtkColorTransferFunction> ctf;
+    {
+      colors = vtkSmartPointer<vtkLookupTable>::New(); 
+      colors->SetHueRange (0.667, 0.0);
+      
+      SharedViewData::Gradient grad;
+      grad.name = wxT("Rainbow");
+      grad.lut = colors;
+      sharedData->gradients.push_back (grad);
+    }
+    {
+      ctf = vtkSmartPointer<vtkColorTransferFunction>::New(); 
+      ctf->AddRGBPoint (0, 0, 0, 0);
+      ctf->AddRGBPoint (1, 1, 1, 1);
+      colors = ColorTransferFunctionToLookupTable (ctf);
+      
+      SharedViewData::Gradient grad;
+      grad.name = wxT("Grayscale");
+      grad.lut = colors;
+      sharedData->gradients.push_back (grad);
+    }
   }
 
   void ResultViewerImpl::View::SetData (const DataConstPtr& data)
@@ -444,10 +515,6 @@ namespace nutogui
     vtkDataSet* dataset = data->GetDataSet ();
     displacementData = (size_t)~0;
     
-    colors = vtkSmartPointer<vtkLookupTable>::New(); 
-    colors->SetHueRange (0.667, 0.0);
-    colors->SetVectorModeToMagnitude();
-    dataSetMapper.SetLookupTable (colors);
     dataSetMapper.InterpolateScalarsBeforeMappingOn ();
     dataSetMapper.SetInput (dataset);
     dataSetMapper.Update ();
@@ -562,7 +629,6 @@ namespace nutogui
     
     scalarBar = vtkSmartPointer<vtkScalarBarWidget>::New ();
     scalarBar->SetInteractor (renderWidget->GetRenderWindow()->GetInteractor());
-    scalarBar->GetScalarBarActor()->SetLookupTable (dataSetMapper.GetLookupTable());
     scalarBar->KeyPressActivationOff();
     
     orientationMarker = vtkSmartPointer<vtkOrientationMarkerWidget>::New ();
@@ -699,6 +765,9 @@ namespace nutogui
       SetVisComponent (sel-1, lastVisOpt[sel-1].comp);
       useScalarBar = lastVisOpt[sel-1].legend;
       actorOptionsTB->ToggleTool (ID_ShowLegend, useScalarBar);
+      size_t gradient = lastVisOpt[sel-1].gradient;
+      UpdateGradientUI (gradient);
+      SetGradient (gradient);
       actorOptionsTB->Refresh ();
     }
     
@@ -761,6 +830,28 @@ namespace nutogui
       data->GetDataArrayCompValueRange (arrayIndex, range);
     }
     dataSetMapper.SetScalarRange (range);
+  }
+
+  void ResultViewerImpl::View::UpdateGradientUI (size_t gradient)
+  {
+    // TODO: Change image of legend toolbar button
+    int displaySel = displayDataChoice->GetSelection();
+    if (displaySel <= 0) return;
+    
+    lastVisOpt[displaySel-1].gradient = gradient;
+  }
+  
+  void ResultViewerImpl::View::SetGradient (size_t gradient)
+  {
+    if (gradient == (size_t)~0) return;
+
+    vtkSmartPointer<vtkScalarsToColors> colors (dataSetMapper.GetLookupTable ());
+    const SharedViewData::Gradient& grad = sharedData->gradients[gradient];
+    vtkSmartPointer<vtkLookupTable> newColors (vtkSmartPointer<vtkLookupTable>::New ());
+    newColors->DeepCopy (grad.lut); // TODO: Look into sharing the table data
+    newColors->SetVectorMode (colors->GetVectorMode());
+    dataSetMapper.SetLookupTable (newColors);
+    scalarBar->GetScalarBarActor()->SetLookupTable (newColors);
   }
 
   void ResultViewerImpl::View::OnRenderModeDropDown (wxAuiToolBarEvent& event)
@@ -838,11 +929,24 @@ namespace nutogui
     
     scalarBar->SetEnabled (event.IsChecked());
     lastVisOpt[displaySel-1].legend = event.IsChecked();
-    
     renderWidget->GetRenderWindow()->Render();
   }
-  
+
   void ResultViewerImpl::View::OnShowLegendUpdateUI (wxUpdateUIEvent& event)
+  {
+    event.Enable (displayDataChoice->GetSelection() > 0);
+  }
+
+  void ResultViewerImpl::View::OnLegendOptions (wxAuiToolBarEvent& event)
+  {
+    int displaySel = displayDataChoice->GetSelection();
+    if (displaySel <= 0) return;
+    
+    sharedData->gradientMenu.SetEventHandler (&gradientMenuHandler);
+    DoToolDropDown (actorOptionsTB, ID_LegendOptions, &sharedData->gradientMenu);
+  }
+  
+  void ResultViewerImpl::View::OnLegendOptionsUpdateUI (wxUpdateUIEvent& event)
   {
     event.Enable (displayDataChoice->GetSelection() > 0);
   }
@@ -1122,6 +1226,15 @@ namespace nutogui
     displaceDirectionsActor->SetMapper (displaceDirectionsMapper);
   }
   
+  void ResultViewerImpl::View::DoToolDropDown (wxAuiToolBar* toolbar, int toolID, wxMenu* menu)
+  {
+    wxPoint popupPos (toolbar->GetToolRect (toolID).GetBottomLeft());
+    popupPos = toolbar->ClientToScreen (popupPos);
+    popupPos = ScreenToClient (popupPos);
+    
+    PopupMenu (menu, popupPos);
+  }
+
   void ResultViewerImpl::View::UpdateToolbarControlMinSize (wxWindow* control,
 							    wxAuiToolBar* toolbar,
 							    int forceHeight)
@@ -1438,4 +1551,18 @@ namespace nutogui
   {
     return mapper;
   }
+  
+  //-------------------------------------------------------------------------
+  
+  BEGIN_EVENT_TABLE(ResultViewerImpl::View::GradientMenuEventHandler, wxEvtHandler)
+    EVT_MENU(wxID_ANY, ResultViewerImpl::View::GradientMenuEventHandler::OnGradientSelect)
+  END_EVENT_TABLE()
+  
+  void ResultViewerImpl::View::GradientMenuEventHandler::OnGradientSelect (wxCommandEvent& event)
+  {
+    size_t gradientID = event.GetId();
+    parent->SetGradient (gradientID);
+    parent->UpdateGradientUI (gradientID);
+  }
+
 } // namespace nutogui
