@@ -195,6 +195,7 @@ namespace nutogui
     void OnShowLegendUpdateUI (wxUpdateUIEvent& event);
     void OnLegendOptions (wxAuiToolBarEvent& event);
     void OnLegendOptionsUpdateUI (wxUpdateUIEvent& event);
+    void OnGradientSelect (wxCommandEvent& event);
     void OnClipPlane (wxCommandEvent& event);
     void OnDisplacementOffset (wxCommandEvent& event);
     void OnDisplacementDirDropDown (wxAuiToolBarEvent& event);

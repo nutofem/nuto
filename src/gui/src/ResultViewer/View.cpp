@@ -950,6 +950,14 @@ namespace nutogui
   {
     event.Enable (displayDataChoice->GetSelection() > 0);
   }
+
+  void ResultViewerImpl::View::OnGradientSelect (wxCommandEvent& event)
+  {
+    size_t gradientID = event.GetId();
+    SetGradient (gradientID);
+    UpdateGradientUI (gradientID);
+    renderWidget->GetRenderWindow()->Render();
+  }
   
   inline vtkSmartPointer<vtkDataSet> ClipWrapDataSet (vtkDataSet* dataset,
 						      vtkImplicitFunction* clipFunc)
@@ -1560,9 +1568,7 @@ namespace nutogui
   
   void ResultViewerImpl::View::GradientMenuEventHandler::OnGradientSelect (wxCommandEvent& event)
   {
-    size_t gradientID = event.GetId();
-    parent->SetGradient (gradientID);
-    parent->UpdateGradientUI (gradientID);
+    parent->OnGradientSelect (event);
   }
 
 } // namespace nutogui
