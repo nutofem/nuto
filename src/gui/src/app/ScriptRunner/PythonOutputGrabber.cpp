@@ -145,7 +145,7 @@ void PythonOutputGrabber::GetPendingOutput (wxString& out)
     outBuf[pendingSize] = 0;
   #else
     size_t charsNeeded = wxConvLibc.FromWChar (nullptr, 0, bufferUnread, pendingSize);
-    char convertDest[charsNeeded];
+    char* convertDest = (char*)alloca (charsNeeded);
     wxConvString.FromWChar (convertDest, charsNeeded, bufferUnread, pendingSize);
     wxStringBuffer outBuf (out, charsNeeded);
     memcpy (outBuf, convertDest, charsNeeded);
@@ -168,11 +168,11 @@ void PythonOutputGrabber::GetPendingOutput (wxString& out)
     memcpy (outBuf, buffer, pending2*sizeof (wchar_t));
     outBuf[pending1 + pending2] = 0;
   #else
-    wchar_t pendingCombined[pending1 + pending2];
+    wchar_t* pendingCombined = (wchar_t*)alloca ((pending1 + pending2) * sizeof (wchar_t));
     memcpy (pendingCombined, bufferUnread, pending1 * sizeof (wchar_t));
     memcpy (pendingCombined + pending1, buffer, pending2 * sizeof (wchar_t));
     size_t charsNeeded = wxConvLibc.FromWChar (nullptr, 0, pendingCombined, pending1 + pending2);
-    char convertDest[charsNeeded];
+    char* convertDest = (char*)alloca (charsNeeded);
     wxConvString.FromWChar (convertDest, charsNeeded, pendingCombined, pending1 + pending2);
     wxStringBuffer outBuf (out, charsNeeded);
     memcpy (outBuf, convertDest, charsNeeded);
