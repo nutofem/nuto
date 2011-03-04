@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 
+#include <boost/foreach.hpp>
 #include <boost/utility.hpp>
 
 #include "nuto/base/Debug.h"
