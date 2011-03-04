@@ -390,6 +390,7 @@ namespace nutogui
     {
       uicommon::BitmapGraphicsContext gc (bmp);
 
+      gc->SetPen (*wxTRANSPARENT_PEN);
       int numStrips = (stripsHorizontal ? bitmapSize.y : bitmapSize.x) - 2;
       int stripW = stripsHorizontal ? bitmapSize.x - 2 : 1;
       int stripH = stripsHorizontal ? 1 : bitmapSize.y - 2;
@@ -414,7 +415,7 @@ namespace nutogui
 	gc->SetBrush (wxColour (rgb[0]*255, rgb[1]*255, rgb[2]*255));
 	gc->DrawRectangle (x, y, stripW, stripH);
       }
-      gc->SetBrush (wxColour (0, 0, 0, 0));
+      gc->SetBrush (*wxTRANSPARENT_BRUSH);
       {
 	gc->SetPen (wxColour (128, 128, 128));
 	gc->DrawRoundedRectangle (0, 0, bitmapSize.x-1, bitmapSize.y-1, 1); // ??? -1 -- WX off by one?
