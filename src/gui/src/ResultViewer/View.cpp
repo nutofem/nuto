@@ -386,7 +386,7 @@ namespace nutogui
   {
     // Direction of gradient *strip*: vertical gradient -> horizontal strips, horizontal gradient -> vertical strips!
     bool stripsHorizontal = true;
-    wxBitmap bmp (bitmapSize, 32);
+    wxBitmap bmp (bitmapSize.x, bitmapSize.y, 32);
     {
       uicommon::BitmapGraphicsContext gc (bmp);
 
