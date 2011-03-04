@@ -16,7 +16,11 @@ PoissonsRatio = 0.2
 Force = 5
 
 #ElementType = "PLANE2D3N"
+#IntegragionType = "2D3NGauss3Ip"
+
 ElementType = "PLANE2D4N"
+#IntegragionType = "2D4NGauss4Ip"
+IntegragionType = "2D4NConst630Ip"
 
 #StressState = "XX"
 StressState = "YY"
@@ -78,9 +82,12 @@ else:
 	error = True;
 	sys.exit(-1)
 
-myStructure.ElementsCreate(ElementType, elementIncidence)
+elements=myStructure.ElementsCreate(ElementType, elementIncidence)
 myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 myStructure.ElementTotalSetSection(mySection)
+
+for i in range(0,elements.GetNumRows()):
+	myStructure.ElementSetIntegrationType(i,IntegragionType,"NOIPDATA")
 
 LoadNodesXPos = myStructure.GroupCreate("Nodes")
 LoadNodesXNeg = myStructure.GroupCreate("Nodes")

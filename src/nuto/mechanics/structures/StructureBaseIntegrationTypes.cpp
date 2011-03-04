@@ -9,6 +9,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
@@ -122,6 +123,25 @@ const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(cons
                 throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Error converting number of integration points to integer.");
             }
             it = mIntegrationTypeMap.insert(const_cast<std::string&>(IntegrationTypeString), new NuTo::IntegrationType1D2NConstVariableIp(numIp)).first;
+            return it->second;
+        }
+        else if (IntegrationTypeString.substr(0,9)=="2D4NCONST")
+        {
+            //Allocate an integration type in 2D with variable number of integration points
+            if (IntegrationTypeString.substr(IntegrationTypeString.length()-2,2)!="IP")
+                throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] The name of an integration type\
+ with variable number of Ips is e.g. 2D4NCONST100IP.");
+            std::istringstream is(IntegrationTypeString.substr(9,IntegrationTypeString.length()-11));
+            int numIp;
+            try
+            {
+                is >> numIp;
+            }
+            catch(...)
+            {
+                throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Error converting number of integration points to integer.");
+            }
+            it = mIntegrationTypeMap.insert(const_cast<std::string&>(IntegrationTypeString), new NuTo::IntegrationType2D4NConstVariableIp(numIp)).first;
             return it->second;
         }
         else

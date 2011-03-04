@@ -115,6 +115,7 @@ integrationtypes/IntegrationType1D2NGauss3Ip.cpp
 integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D3NGauss1Ip.cpp
 integrationtypes/IntegrationType2D3NGauss3Ip.cpp
+integrationtypes/IntegrationType2D4NConstVariableIp.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp
 integrationtypes/IntegrationType3D.cpp
