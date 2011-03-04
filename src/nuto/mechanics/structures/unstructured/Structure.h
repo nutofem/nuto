@@ -359,6 +359,10 @@ public:
     //! @param rCrackedElems (Output) ... vector of cracked elements
     void InitiateCrack(const int rIdent, elementBasePtrSet_t & rCrackedElems);
 
+    //! @brief ... Initialize the PhantomNodeMethod to the structure: rCrackedElems will be doubled after initialization
+    //! @param rCrackedElems (Input) ... vector of cracked elements
+    void InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedElems);
+
 #ifndef SWIG
     //! @brief returns a reference to a crack
     //! @param identifier

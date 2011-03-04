@@ -58,6 +58,8 @@ public:
 
     virtual ~ElementBase();
 
+    //! @todo copy-constructor
+
     //! @brief returns the enum (type of the element)
     //! @return enum
     virtual NuTo::Element::eElementType GetEnumType()const=0;
@@ -70,6 +72,12 @@ public:
     //! @return id
     int ElementGetId()const;
 
+    //! @brief returns the global dimension of the element
+    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
+    //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
+    //! @return global dimension
+    virtual int GetGlobalDimension()const=0;
+
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
     virtual int GetNumNodes()const=0;
@@ -79,11 +87,10 @@ public:
     //! @return pointer to the node
     virtual NodeBase* GetNode(int rLocalNodeNumber)=0;
 
-    //! @brief returns the global dimension of the element
-    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
-    //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
-    //! @return global dimension
-    virtual int GetGlobalDimension()const=0;
+    //! @brief sets the rLocalNodeNumber-th node of the element
+    //! @param local node number
+    //! @param pointer to the node
+    virtual void SetNode(int rLocalNodeNumber, NodeBase* rNode)=0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
@@ -263,6 +270,11 @@ public:
     //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     virtual void GetIntegrationPointVolume(std::vector<double>& rVolume)const=0;
 
+    //! @brief returns the coordinates of an integration point
+    //! @param rIpNum integration point
+    //! @param rCoordinates coordinates to be returned
+    virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const=0;
+
     //! @brief computes the natural coordinates of an given point
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! @param rGlobCoords (input) ... pointer to the array of coordinates
@@ -275,11 +287,6 @@ public:
     //! @param rGlobCoords (input) ... pointer to the array of coordinates
     //! @return True if coordinates are within the element, False otherwise
     virtual bool CheckPointInside(const double* rGlobCoords)const;
-
-    //! @brief returns the coordinates of an integration point
-    //! @param rIpNum integration point
-    //! @param rCoordinates coordinates to be returned
-    virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const=0;
 
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual const Plane* AsPlane()const;
@@ -347,7 +354,7 @@ protected:
 
     //the base class of the elements data
     ElementDataBase *mElementData;
-
 };
 }//namespace NuTo
 #endif //ELEMENT_BASE_H
+

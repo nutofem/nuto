@@ -28,6 +28,8 @@ public:
     //! @brief constructor
     NodeBase();
 
+    //! @todo copy-constructor
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
