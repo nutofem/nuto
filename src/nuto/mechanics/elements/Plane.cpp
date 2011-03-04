@@ -24,7 +24,6 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 
 #include "nuto/math/FullMatrix.h"
-#include "nuto/base/Debug.h"
 
 //! @brief constructor
 NuTo::Plane::Plane(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
@@ -425,7 +424,7 @@ void NuTo::Plane::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
 //! @param rDetJac determinant of the Jacobian (return value)
 void NuTo::Plane::CalculateJacobian(const std::vector<double>& rDerivativeShapeFunctions,
                                     const std::vector<double>& rNodeCoordinates,
-                                    double rInvJacobian[9],
+                                    double rInvJacobian[4],
                                     double& rDetJac)const
 {
     /*       jacobian

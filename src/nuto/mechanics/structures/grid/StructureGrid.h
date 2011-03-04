@@ -20,6 +20,7 @@ namespace NuTo
 
 //! @brief forward declaration to speed up compilation time
 class StructureBase;
+class CrackBase;
 class ElementDataEnum;
 class ElementEnum;
 class NodeGrid3D;
@@ -268,6 +269,42 @@ public:
 
 	}
 
+    //*************************************************************
+    //************         Crack routines        ******************
+    //**  defined in structures/grid/StructureCrack.cpp **
+    //*************************************************************
+    //! @brief returns the number of cracks
+    //! @return number of cracks
+    unsigned int GetNumCracks() const
+	{
+    	throw MechanicsException("[NuTo::StructureGrid::GetNumCracks] not implemented here.");
+	}
+
+#ifndef SWIG
+    //! @brief returns a reference to a crack
+    //! @param identifier
+    //! @return reference to a crack
+    CrackBase* CrackGetCrackPtr(int rIdent)
+	{
+    	throw MechanicsException("[NuTo::StructureGrid::CrackGetCrackPtr] not implemented here.");
+	}
+
+    //! @brief returns a const reference to a crack
+    //! @param identifier
+    //! @return const reference to a crack
+    const CrackBase* CrackGetCrackPtr(int rIdent)const
+	{
+    	throw MechanicsException("[NuTo::StructureGrid::CrackGetCrackPtr] not implemented here.");
+	}
+
+    //! @brief gives the identifier of a crack
+    //! @param pointer to a crack
+    //! @return identifier
+    int CrackGetId(const CrackBase* rCrack)const
+	{
+    	throw MechanicsException("[NuTo::StructureGrid::CrackGetId] not implemented here.");
+	}
+#endif //SWIG
 
 
 protected:

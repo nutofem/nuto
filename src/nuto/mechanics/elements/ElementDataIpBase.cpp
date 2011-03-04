@@ -20,6 +20,9 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 //! @brief constructor
+//! @param rElement			... element for the IP Data
+//! @param rIntegrationType	... integration type
+//! @param rIpDataType		... the IP Data
 NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) : NuTo::ElementDataBase()
 {
     //std::cout << "ElementDataIpBase constructor " << std::endl;

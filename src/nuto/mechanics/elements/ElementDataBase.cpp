@@ -137,6 +137,37 @@ const std::vector<double>& NuTo::ElementDataBase::GetNonlocalWeights(int rIp, in
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalWeights] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//! functions defined in @link ElementDataCrackBase.h @endlink
+
+//! @brief gets the cracks of an element
+//! @return vector to cracks
+std::vector<NuTo::CrackBase*>& NuTo::ElementDataBase::GetCracks()
+{
+    throw MechanicsException("[NuTo::ElementDataBase::GetCracks] Not implemented for the ElementDataBase class - check the allocated element data type..");
+}
+//! @brief gets the number of cracks for an element
+//! @return number of cracks
+int NuTo::ElementDataBase::GetNumCracks()const
+{
+    throw MechanicsException("[NuTo::ElementDataBase::GetNumCracks] Not implemented for the ElementDataBase class - check the allocated element data type..");
+}
+//! @brief adds a crack to the element
+//! @param rCrack  crack
+//! @return the local crack number, the crack is either append to the list, or the existing local number is returned
+unsigned int NuTo::ElementDataBase::AddCrack(NuTo::CrackBase* rCrack)
+{
+    throw MechanicsException("[NuTo::ElementDataBase::AddCrack] Not implemented for the ElementDataBase class - check the allocated element data type..");
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//! @brief returns the enum of element data type
+//! @return enum of ElementDataType
+const NuTo::ElementData::eElementDataType NuTo::ElementDataBase::GetElementDataType()const
+{
+    return NuTo::ElementData::NOELEMENTDATA;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ElementDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

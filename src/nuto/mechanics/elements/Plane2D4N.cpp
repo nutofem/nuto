@@ -9,13 +9,17 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <tuple>
+
+#include <assert.h>
+
+#include <boost/foreach.hpp>
+
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
-#include <assert.h>
-
 NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
@@ -90,6 +94,90 @@ void NuTo::Plane2D4N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
             break;
         }
     }
+}
+
+//! @brief returns the natural coordinates of an given point
+//! @param rGlobCoords (input) ... pointer to the array of coordinates
+//! @param rLocCoords (output) ... coordinates to be returned
+//! @return True if coordinates are within the element, False otherwise
+bool NuTo::Plane2D4N::GetLocalPointCoordinates(const double rGlobCoords[2],  double rLocCoords[2])const
+{
+	//! local variables
+	double inc[2] = {0.0,0.0};
+	double iterPoint[3];
+	double diffCoords[2] = {0.0,0.0};
+	const double accuracy=1e-14;
+	const unsigned int maxIter=100;
+    std::vector<double> derivativeShapeFunctionsNatural(2*GetNumShapeFunctions());
+
+	//! initialize local coordinates (starting value: center of element)
+	rLocCoords[0] = 0.0;
+	rLocCoords[1] = 0.0;
+
+	//! get nodal coordinates
+    std::vector<double> localNodeCoord(GetNumLocalDofs());
+    CalculateLocalCoordinates(localNodeCoord);
+
+	//! check if node is inside this element
+    //! if point outside the surrounding polygon: return false
+    if( !CheckPointInside(rGlobCoords) )
+    	return false;
+
+
+	//! iterative solution of equations
+	for(unsigned int i=0; ; ++i)
+	{
+		//! get inverse of jacobian
+		double invJacobian[4], detJacobian;
+
+	    InterpolateCoordinatesFrom2D( rLocCoords , iterPoint);
+		diffCoords[0]=iterPoint[0] - rGlobCoords[0];
+		diffCoords[1]=iterPoint[1] - rGlobCoords[1];
+
+		// abort if accuracy is reached
+		if( (diffCoords[0]*diffCoords[0]+diffCoords[1]*diffCoords[1]) < accuracy )
+			return true;
+
+		//! get inverse jacobian matrix
+        CalculateDerivativeShapeFunctionsNatural(iterPoint, derivativeShapeFunctionsNatural);
+        try
+        {
+        	CalculateJacobian(derivativeShapeFunctionsNatural,localNodeCoord, invJacobian, detJacobian);
+        }
+        catch ( MechanicsException  &e )
+        {
+        	throw MechanicsException("[NuTo::Plane2D4N::GetLocalPointCoordinates] Can't find the natural coordinates of the given point:  Determinant of the Jacobian is zero!");
+        }
+
+		//! jacInverse*(X_i-X_P)
+		inc[0]=invJacobian[0]*diffCoords[0]+invJacobian[2]*diffCoords[1];
+		inc[1]=invJacobian[1]*diffCoords[0]+invJacobian[3]*diffCoords[1];
+
+		rLocCoords[0]-=inc[0];
+		rLocCoords[1]-=inc[1];
+
+		// error if no convergence within maximum number of iterations
+		if(i==maxIter)
+	        throw MechanicsException("[NuTo::Plane2D4N::GetLocalPointCoordinates] Can't find the natural coordinates of the given point: No convergence!.");
+	}
+
+	//! output
+	//! if function had passed, point is outside the element -> FALSE will returned
+	return false;
+}
+
+//! @brief checks if a node is inside of an element
+//! implemented with an exception for all elements, reimplementation required for those elements
+//! @param rGlobCoords (input) ... pointer to the array of coordinates
+//! @return True if coordinates are within the element, False otherwise
+bool NuTo::Plane2D4N::CheckPointInside(const double rGlobCoords[2])const
+{
+	const std::tuple<double,double> point(std::make_tuple(rGlobCoords[0],rGlobCoords[1]));
+	std::vector<std::tuple<double,double> > polygon;
+	BOOST_FOREACH(NuTo::NodeBase* thisNode,this->mNodes)
+		polygon.push_back(std::make_tuple( thisNode->GetCoordinate(0),thisNode->GetCoordinate(1)));
+
+	return CheckPointInsidePolygon(&point,&polygon);
 }
 
 #ifdef ENABLE_SERIALIZATION

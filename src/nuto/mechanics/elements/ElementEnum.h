@@ -21,8 +21,9 @@ enum eElementType
 
 enum eUpdateType
 {
-    STATICDATA=0,
-    TMPSTATICDATA
+    STATICDATA=0,		//!< @ToDo[eUpdateType]: Description
+    TMPSTATICDATA,		//!< @ToDo[eUpdateType]: Description
+    CRACK				//!< update for crack informations
 };
 }
 }

@@ -41,8 +41,10 @@
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include "nuto/visualize/VisualizeComponentConstitutive.h"
+#include "nuto/visualize/VisualizeComponentCrack.h"
 #include "nuto/visualize/VisualizeComponentDamage.h"
 #include "nuto/visualize/VisualizeComponentDisplacement.h"
+#include "nuto/visualize/VisualizeComponentElement.h"
 #include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
@@ -165,6 +167,21 @@ void NuTo::StructureBase::AddVisualizationComponentDisplacements()
     end=clock();
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief ... Add element ID to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentElement()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentElement());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
 
@@ -304,6 +321,22 @@ void NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress()
         std::cout<<"[NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+//! @brief ... Add crack id vector to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentCracks()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	mVisualizeComponents.push_back(new NuTo::VisualizeComponentCrack());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::AddVisualizationComponentCracks] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef SHOW_TIME
@@ -372,6 +405,9 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
         case NuTo::VisualizeBase::DISPLACEMENTS:
             Visualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
+        case NuTo::VisualizeBase::ELEMENT:
+            Visualize.DefineCellDataScalar(itWhat->GetComponentName());
+            break;
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
             Visualize.DefineCellDataTensor(itWhat->GetComponentName());
             break;
@@ -389,6 +425,9 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::vector<const ElementBase*
             break;
         case NuTo::VisualizeBase::CONSTITUTIVE:
             Visualize.DefineCellDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::CRACK:
+            Visualize.DefineCellDataVector(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
             Visualize.DefineCellDataVector(itWhat->GetComponentName());

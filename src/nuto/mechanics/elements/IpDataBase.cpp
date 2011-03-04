@@ -71,6 +71,14 @@ void NuTo::IpDataBase::SetStaticData(ConstitutiveStaticDataBase* rStaticData)
 	throw NuTo::MechanicsException("[NuTo::IpDataBase::SetStaticData] This Ip data type has no static data.");
 }
 
+
+//! @brief returns the enum of IP data type
+//! @return enum of IPDataType
+const NuTo::IpData::eIpDataType NuTo::IpDataBase::GetIpDataType()const
+{
+	throw NuTo::MechanicsException("[IpDataBase::IpDataBase] This Ip data type is an abstract class.");
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::IpDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

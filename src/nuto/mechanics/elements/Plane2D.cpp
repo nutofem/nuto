@@ -122,6 +122,58 @@ double NuTo::Plane2D::CalculateArea()const
     return 0.5*area;
 }
 
+
+//! @brief checks if a node is inside a polygon
+//! @param rPoint (input) ... a pointer to a 2D tuple containing the coordinates
+//! @param rPoint (input) ... a pointer to a vector of 2D tuples representing the polyline
+//! @return True if coordinates are within the element, False otherwise
+/*! This function is a modified function of
+ *
+ *  public domain function by Darel Rex Finley
+ *  http://alienryderflex.com/polygon/
+ *
+ *  double fuzzy  (internal constant)  =  fuzzy control
+ *  bool   inside (internal variable)  =  check result
+ *  double x, y   (internal constants) =  point to be tested
+ *
+ *  The function will return TRUE if the point rPoint is inside the polygon, or
+ *  NO if it is not.  If the point is exactly on the edge of the polygon,
+ *  then the function will return TRUE.
+ *
+ *  Note that division by zero is avoided because the division is protected
+ *  by the "if" clause which surrounds it.
+ */
+//! @todo move to geometry class
+bool NuTo::Plane2D::CheckPointInsidePolygon( const std::tuple<double,double> *rPoint, const std::vector<std::tuple<double,double> > * rPolygon)const
+{
+	double fuzzy=1e-14;
+	bool  inside=false ;
+
+	const double x=std::get<0>(*rPoint);
+	const double y=std::get<1>(*rPoint);
+
+	unsigned int j=rPolygon->size()-1 ;
+	for (unsigned int i=0; i<rPolygon->size(); i++)
+	{
+		if ( (std::get<1>((*rPolygon)[i])-y<fuzzy && std::get<1>((*rPolygon)[j])-y>fuzzy)
+		||   (std::get<1>((*rPolygon)[j])-y<fuzzy && std::get<1>((*rPolygon)[i])-y>fuzzy) )
+		{
+			if (std::get<0>((*rPolygon)[i])
+				+(y-std::get<1>((*rPolygon)[i]))
+					/(std::get<1>((*rPolygon)[j])-std::get<1>((*rPolygon)[i]))
+					*(std::get<0>((*rPolygon)[j])
+				-std::get<0>((*rPolygon)[i]))-x<fuzzy)
+			{
+				inside=!inside;
+			}
+		}
+		j=i;
+	}
+
+	return inside;
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Plane2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

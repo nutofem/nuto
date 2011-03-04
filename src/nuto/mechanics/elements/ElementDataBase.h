@@ -9,14 +9,19 @@
 
 #include <string>
 #include <vector>
+#include <boost/ptr_container/ptr_vector.hpp>
+
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
 class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
+class CrackBase;
 class IntegrationTypeBase;
 class ElementBase;
+class IpDataBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -111,6 +116,27 @@ public:
     //! @return vector of weights for all integration points of the nonlocal element
     virtual const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement)const;
 
+    //! @brief returns the enum of element data type
+    //! @return enum of ElementDataType
+    virtual const NuTo::ElementData::eElementDataType GetElementDataType()const;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //! functions defined in @link ElementDataCrackBase.h @endlink
+
+    //! @brief gets the cracks of an element
+    //! @return vector to cracks
+    virtual std::vector<CrackBase*>& GetCracks();
+
+    //! @brief gets the number of cracks for an element
+    //! @return number of cracks
+    virtual int GetNumCracks()const;
+
+	//! @brief adds a crack to the element
+	//! @param rCrack  crack
+	//! @return the local crack number, the crack is either append to the list, or the existing local number is returned
+    virtual unsigned int AddCrack(CrackBase* rCrack);
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -118,6 +144,10 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
+
+
+protected:
+
 
 };
 }//namespace NuTo

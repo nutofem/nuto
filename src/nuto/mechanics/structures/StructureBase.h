@@ -41,6 +41,7 @@ template<class T> class SparseMatrixCSRSymmetric;
 template <class T> class SparseMatrixCSRVector2General;
 class EngineeringStrain2D;
 class NewtonRaphsonAuxRoutinesBase;
+class CrackBase;
 
 class VisualizeComponentBase;
 
@@ -81,6 +82,9 @@ public:
     //! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentDisplacements();
 
+    //! @brief ... Add element id to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentElement();
+
     //! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentEngineeringStrain();
 
@@ -95,6 +99,9 @@ public:
 
     //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentConstitutive();
+
+    //! @brief ... Add crack id vector to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentCracks();
 
     //! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentPrincipalEngineeringStress();
@@ -1113,6 +1120,31 @@ public:
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
     const NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::IntegrationType::eIntegrationType rIdentIntegrationType);
+#endif //SWIG
+
+    //*************************************************
+    //************    Crack routines    ***************
+    //**  pure virtual                               **
+    //*************************************************
+	//! @brief returns the number of cracks
+	//! @return number of cracks
+	virtual unsigned int GetNumCracks()const=0;
+
+#ifndef SWIG
+	//! @brief a reference to a crack
+	//! @param identifier
+	//! @return reference to a cracks
+	virtual CrackBase* CrackGetCrackPtr(int rIdent)=0;
+
+	//! @brief a reference to a crack
+	//! @param identifier
+	//! @return reference to a crack
+	virtual const CrackBase* CrackGetCrackPtr(int rIdent)const=0;
+
+	//! @brief gives the identifier of a crack
+	//! @param reference to a crack
+	//! @return identifier
+	virtual int CrackGetId(const CrackBase* rCrack)const=0;
 #endif //SWIG
 
     //*************************************************

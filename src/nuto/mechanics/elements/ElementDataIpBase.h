@@ -21,6 +21,10 @@ class ElementDataIpBase : public virtual ElementDataBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
+    //! @brief constructor
+    //! @param rElement			... element for the IP Data
+    //! @param rIntegrationType	... integration type
+    //! @param rIpDataType		... the IP Data
 	ElementDataIpBase(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
 	virtual ~ElementDataIpBase();

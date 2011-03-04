@@ -1,3 +1,4 @@
+# $Id$
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
 constitutive/ConstitutiveStaticDataBase.cpp
@@ -69,6 +70,14 @@ constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNonlinear.cpp
 constraints/ConstraintNonlinearGlobalCrackAngle2D.cpp
 constraints/ConstraintNonlinearGlobalCrackOpeningTangential2D.cpp
+)
+
+SET(NuToMechanicsCrack_SOURCES
+cracks/CrackBase.cpp
+cracks/CrackExplicit2D.cpp
+elements/ElementDataCrackBase.cpp
+elements/ElementDataConstitutiveIpCrack.cpp
+structures/unstructured/StructureCrack.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES
@@ -199,8 +208,8 @@ structures/grid/StructureGridElement.cpp
 
 SET(NuToMechanics_SOURCES
 MechanicsException.cpp ${NuToMechanicsConstitutive_SOURCES} ${NuToMechanicsConstraint_SOURCES}
-${NuToMechanicsElements_SOURCES} ${NuToMechanicsGroups_SOURCES} ${NuToMechanicsIntegrationtypes_SOURCES}
- ${NuToMechanicsLoads_SOURCES}
+${NuToMechanicsCrack_SOURCES} ${NuToMechanicsElements_SOURCES} ${NuToMechanicsGroups_SOURCES}
+${NuToMechanicsIntegrationtypes_SOURCES} ${NuToMechanicsLoads_SOURCES}
 ${NuToMechanicsNodes_SOURCES} ${NuToMechanicsSection_SOURCES} ${NuToMechanicsStructures_SOURCES}
 )
 

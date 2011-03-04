@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "nuto/mechanics/elements/IpDataEnum.h"
+
 namespace NuTo
 {
 class ConstitutiveBase;
@@ -46,6 +48,10 @@ public :
     virtual const ConstitutiveStaticDataBase* GetStaticData()const;
 
     virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
+
+    //! @brief returns the enum of IP data type
+    //! @return enum of IPDataType
+    virtual const NuTo::IpData::eIpDataType GetIpDataType()const;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(std::string rFileName);

@@ -112,7 +112,16 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
     }
 }
 
-// creates a node
+//! creates a node at coordinate's origin
+int NuTo::Structure::NodeCreate(std::string rDOFs)
+{
+	NuTo::FullMatrix<double> coordinates(this->GetDimension(), 1);
+
+	//return int identifier of the new node
+    return NodeCreate(rDOFs,coordinates);
+}
+
+//! creates a node
 int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates)
 {
 
@@ -154,7 +163,11 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     boost::tokenizer<> tok(rDOFs);
     for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
-        if (*beg=="DISPLACEMENTS")
+        if (*beg=="COORDINATES")
+        {
+            attributes = attributes | 1 << Node::COORDINATES;
+        }
+        else if (*beg=="DISPLACEMENTS")
         {
             attributes = attributes | 1 << Node::DISPLACEMENTS;
         }

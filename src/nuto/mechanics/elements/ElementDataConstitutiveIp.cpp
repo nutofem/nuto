@@ -38,6 +38,13 @@ void NuTo::ElementDataConstitutiveIp::InitializeUpdatedConstitutiveLaw(const Ele
 
 }
 
+//! @brief returns the enum of element data type
+//! @return enum of ElementDataType
+const NuTo::ElementData::eElementDataType NuTo::ElementDataConstitutiveIp::GetElementDataType()const
+{
+    return NuTo::ElementData::CONSTITUTIVELAWIP;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ElementDataConstitutiveIp::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

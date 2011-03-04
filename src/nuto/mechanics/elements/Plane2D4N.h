@@ -104,6 +104,17 @@ public:
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 
+    //! @brief returns the natural coordinates of an given point
+    //! @param rGlobCoords (input) ... pointer to the array of coordinates
+    //! @param rLocCoords (output) ... coordinates to be returned
+    //! @return True if coordinates are within the element, False otherwise
+    bool GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const;
+
+    //! @brief checks if a node is inside of an element
+    //! implemented with an exception for all elements, reimplementation required for those elements
+    //! @param rGlobCoords (input) ... pointer to the array of coordinates
+    //! @return True if coordinates are within the element, False otherwise
+    bool CheckPointInside(const double* rGlobCoords)const;
 
 protected:
     //! @brief ... just for serialization

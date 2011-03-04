@@ -11,7 +11,6 @@
 #include <boost/foreach.hpp>
 #include <boost/utility.hpp>
 
-#include "nuto/base/Debug.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor

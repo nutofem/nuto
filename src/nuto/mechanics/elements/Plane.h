@@ -202,6 +202,11 @@ public:
     //! @return Area
     virtual double CalculateArea()const=0;
 
+    //! @brief checks if a node is inside a polygon
+    //! @param rPoint (input) ... a pointer to a 2D tuple containing the coordinates
+    //! @param rPoint (input) ... a pointer to a vector of 2D tuples representing the polyline
+    virtual bool CheckPointInsidePolygon( const std::tuple<double,double> *rPoint, const std::vector<std::tuple<double,double> > * rPolygon)const=0;
+
     //! @brief cast the base pointer to an Plane, otherwise throws an exception
     const Plane* AsPlane()const;
 

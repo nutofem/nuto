@@ -28,6 +28,10 @@ public:
     //! @param rElement element
    virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement);
 
+   //! @brief returns the enum of element data type
+   //! @return enum of ElementDataType
+   virtual const NuTo::ElementData::eElementDataType GetElementDataType()const;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

@@ -42,6 +42,10 @@ public:
      //! @return vector of weights for all integration points of the nonlocal element
      const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement)const;
 
+     //! @brief returns the enum of element data type
+     //! @return enum of ElementDataType
+     const NuTo::ElementData::eElementDataType GetElementDataType()const;
+
 #ifdef ENABLE_SERIALIZATION
 	//! @brief serializes the class
 	//! @param ar         archive

@@ -13,10 +13,12 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentConstitutive.cpp
   VisualizeComponentDamage.cpp
   VisualizeComponentDisplacement.cpp
-  VisualizeComponentNonlocalWeight.cpp
+  VisualizeComponentCrack.cpp
+  VisualizeComponentElement.cpp
   VisualizeComponentEngineeringPlasticStrain.cpp
   VisualizeComponentEngineeringStrain.cpp
   VisualizeComponentEngineeringStress.cpp
+  VisualizeComponentNonlocalWeight.cpp
   VisualizeComponentPrincipalEngineeringStress.cpp
   VisualizeComponentSection.cpp
   VisualizeDataBase.cpp

@@ -72,6 +72,13 @@ const std::vector<double>& NuTo::ElementDataConstitutiveIpNonlocal::GetNonlocalW
     return mIpData[rIp].GetNonlocalWeights(rNonlocalElement);
 }
 
+//! @brief returns the enum of element data type
+//! @return enum of ElementDataType
+const NuTo::ElementData::eElementDataType NuTo::ElementDataConstitutiveIpNonlocal::GetElementDataType()const
+{
+    return NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ElementDataConstitutiveIpNonlocal::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

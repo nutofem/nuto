@@ -12,6 +12,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/cracks/CrackBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -29,6 +30,15 @@ class Structure : public StructureBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
+    //! @brief Typedefinitions
+    //! @todo check if it is useful to switch to Boost::Ptr container types
+	typedef ElementBase* elementBasePtr_t;
+	typedef std::vector<elementBasePtr_t> elementBasePtrVec_t;
+	typedef std::set<elementBasePtr_t>    elementBasePtrSet_t;
+	typedef NodeBase* nodeBasePtr_t;
+	typedef std::vector<nodeBasePtr_t> nodeBasePtrVec_t;
+	typedef std::set<nodeBasePtr_t>    nodeBasePtrSet_t;
+
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
     Structure(int mDimension);
@@ -104,6 +114,12 @@ public:
     //! @return id
     int NodeGetId(const NodeBase* rNode)const;
 #endif //SWIG
+
+    //! @brief creates a node at coordinate's origin
+    //! @param rDOFs space separated string containing the attributes like
+    //! DISPLACEMENTS, ROTATIONS; TEMPERATURES
+    //! @return node number
+    int NodeCreate(std::string rDOFs);
 
     //! @brief creates a node
     //! @param rDOFs space separated string containing the attributes like
@@ -298,6 +314,67 @@ public:
     		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
     		NuTo::FullMatrix<int>& rElementGroupIds);
 
+    //*************************************************************
+    //************         Crack routines        ******************
+    //**  defined in structures/unstructured/StructureCrack.cpp **
+    //*************************************************************
+    //! @brief returns the number of cracks
+    //! @return number of cracks
+    unsigned int GetNumCracks() const;
+
+    //! @brief ... Info routine that prints general information about the cracks
+    //! @param ... rVerboseLevel describes how detailed the information is
+    void CrackInfo(int rVerboseLevel)const;
+
+    //! @brief ... create a new crack
+    //! @param rIdent ... crack identifier
+    int CrackCreate();
+
+    //! @brief ... delete an existing crack
+    //! @param rIdent ... crack identifier
+    void CrackDelete(int rIdent);
+
+    //! @brief ... extends an existing crack
+    //! @param rIdent ... crack identifier
+    //! @param rNode ... pointer to the node to be attended to the crack
+    void CrackPushBack(int rIdent, NodeBase* rNode);
+    void CrackPushFront(int rIdent, NodeBase* rNode);
+
+    //! @brief ... shortens an existing crack
+    //! @param rIdent ... crack identifier
+    void CrackPopBack(int rIdent);
+    void CrackPopFront(int rIdent);
+
+    //! @brief ... merge all cracks to the existing structure
+    void InitiateCracks();
+    //! @brief ... merge all cracks to the existing structure
+    //! @param rCrackedElems (Output) ... vector of cracked elements
+    void InitiateCracks(elementBasePtrSet_t & rCrackedElems);
+
+    //! @brief ... merge specified crack to the existing structure
+    //! @param rIdent ... crack identifier
+    void InitiateCrack(const int rIdent);
+    //! @brief ... merge specified crack to the existing structure
+    //! @param rIdent (Input) ... crack identifier
+    //! @param rCrackedElems (Output) ... vector of cracked elements
+    void InitiateCrack(const int rIdent, elementBasePtrSet_t & rCrackedElems);
+
+#ifndef SWIG
+    //! @brief returns a reference to a crack
+    //! @param identifier
+    //! @return reference to a crack
+    CrackBase* CrackGetCrackPtr(int rIdent);
+
+    //! @brief returns a const reference to a crack
+    //! @param identifier
+    //! @return const reference to a crack
+    const CrackBase* CrackGetCrackPtr(int rIdent)const;
+
+    //! @brief gives the identifier of a crack
+    //! @param pointer to a crack
+    //! @return identifier
+    int CrackGetId(const CrackBase* rCrack)const;
+#endif //SWIG
 
     //*************************************************
     //************ Info routine         ***************
@@ -326,6 +403,14 @@ protected:
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
     void GetNodesTotal(std::vector<NodeBase*>& rNodes);
+
+    //! @brief ... store all cracks of a structure in a vector
+    //! @param rElements ... vector of const crack pointer
+    void GetCracksTotal(std::vector<const CrackBase*>& rCracks) const;
+
+    //! @brief ... store all cracks of a structure in a vector
+    //! @param rElements ... vector of crack pointer
+    void GetCracksTotal(std::vector<CrackBase*>& rCracks);
 
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
@@ -374,6 +459,14 @@ protected:
 
     boost::ptr_map<int,NodeBase> mNodeMap;
     boost::ptr_map<int,ElementBase> mElementMap;
+
+
+    //! @brief ... map storing the cracks and a pointer to the objects
+    //! @sa CrackBase
+    typedef boost::ptr_map<int,CrackBase> crackMap_t;
+    crackMap_t mCrackMap;
+
+
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

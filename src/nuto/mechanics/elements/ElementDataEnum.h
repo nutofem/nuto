@@ -10,7 +10,8 @@ enum eElementDataType
 {
     NOELEMENTDATA=0,
     CONSTITUTIVELAWIP,                      //!< constitutive law and integration points
-    CONSTITUTIVELAWIPNONLOCAL               //!< constitutive law, integration points and nonlocal data
+    CONSTITUTIVELAWIPNONLOCAL,              //!< constitutive law, integration points and nonlocal data
+    CONSTITUTIVELAWIPCRACK                  //!< constitutive law, integration points and crack data
 };
 }
 }

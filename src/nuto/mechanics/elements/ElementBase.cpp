@@ -9,12 +9,12 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
+#include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
@@ -43,6 +43,9 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL:
 		ptrElementData = new NuTo::ElementDataConstitutiveIpNonlocal(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
+    break;
+	case NuTo::ElementData::CONSTITUTIVELAWIPCRACK:
+		ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
     break;
 	default:
 		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] unsupported element data type.");
@@ -225,6 +228,13 @@ const NuTo::IntegrationTypeBase* NuTo::ElementBase::GetIntegrationType()const
     return mElementData->GetIntegrationType();
 }
 
+//! @brief returns the enum of element data type
+//! @return enum of ElementDataType
+const NuTo::ElementData::eElementDataType NuTo::ElementBase::GetElementDataType()const
+{
+    return mElementData->GetElementDataType();
+}
+
 //! @brief returns the number of integration points
 //! @return number of integration points
 int NuTo::ElementBase::GetNumIntegrationPoints()const
@@ -255,6 +265,25 @@ const NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp
 NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp)
 {
 	return this->mElementData->GetStaticData(rIp);
+}
+
+//! @brief returns the natural coordinates of an given point
+//! implemented with an exception for all elements, reimplementation required for those elements
+//! @param rGlobCoords (input) ... pointer to the array of coordinates
+//! @param rLocCoords (output) ... coordinates to be returned
+//! @return True if coordinates are within the element, False otherwise
+bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
+}
+
+//! @brief checks if a node is inside of an element
+//! implemented with an exception for all elements, reimplementation required for those elements
+//! @param rGlobCoords (input) ... pointer to the array of coordinates
+//! @return True if coordinates are within the element, False otherwise
+bool NuTo::ElementBase::CheckPointInside(const double* rGlobCoords)const
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::CheckPointInside] not implemented for this element type.");
 }
 
 #ifdef ENABLE_VISUALIZE
@@ -595,8 +624,31 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), sectionId);
             }
         }
+        case NuTo::VisualizeBase::ELEMENT:
+        {
+            int elementId = this->ElementGetId();
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), elementId);
+            }
+        }
         break;
-         default:
+        case NuTo::VisualizeBase::CRACK:
+        {
+        	std::vector<NuTo::CrackBase*> elementCracks = this->GetDataPtr()->GetCracks();
+        	//! @todo [DA] change SetCellDataVector to variable data size
+        	if(2 < elementCracks.size())
+            	throw NuTo::VisualizeException("[NuTo::ElementBase::Visualize::CRACK] cannot visualize more than 3 cracks per elements");
+        	double elementCrackIds[]={-1.0,-1.0,-1.0};
+        	unsigned int crackCount=0;
+        	BOOST_FOREACH(const NuTo::CrackBase* thisCrack, elementCracks)
+            	elementCrackIds[crackCount++] = this->mStructure->CrackGetId(thisCrack);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+                rVisualize.SetCellDataVector(CellIdVec[CellCount], WhatIter->GetComponentName(), elementCrackIds );
+        }
+        break;
+		default:
             throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported datatype for visualization.");
         }
         WhatIter++;

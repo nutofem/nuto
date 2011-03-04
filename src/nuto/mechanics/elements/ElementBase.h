@@ -62,6 +62,10 @@ public:
     //! @return enum
     virtual NuTo::Element::eElementType GetEnumType()const=0;
 
+    //! @brief returns the enum of element data type
+    //! @return enum of ElementDataType
+    const NuTo::ElementData::eElementDataType GetElementDataType()const;
+
     //! @brief returns the id number of the element
     //! @return id
     int ElementGetId()const;
@@ -258,6 +262,19 @@ public:
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     virtual void GetIntegrationPointVolume(std::vector<double>& rVolume)const=0;
+
+    //! @brief computes the natural coordinates of an given point
+    //! implemented with an exception for all elements, reimplementation required for those elements
+    //! @param rGlobCoords (input) ... pointer to the array of coordinates
+    //! @param rLocCoords (output) ... coordinates to be returned
+    //! @return True if coordinates are within the element, False otherwise
+    virtual bool GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const;
+
+    //! @brief checks if a node is inside of an element
+    //! implemented with an exception for all elements, reimplementation required for those elements
+    //! @param rGlobCoords (input) ... pointer to the array of coordinates
+    //! @return True if coordinates are within the element, False otherwise
+    virtual bool CheckPointInside(const double* rGlobCoords)const;
 
     //! @brief returns the coordinates of an integration point
     //! @param rIpNum integration point

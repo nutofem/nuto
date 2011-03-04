@@ -36,6 +36,13 @@ void NuTo::IpDataStaticDataNonlocal::Initialize(const ElementBase* rElement, con
 		mStaticData = 0;
 }
 
+//! @brief returns the enum of IP data type
+//! @return enum of IPDataType
+const NuTo::IpData::eIpDataType NuTo::IpDataStaticDataNonlocal::GetIpDataType()const
+{
+    return NuTo::IpData::STATICDATANONLOCAL;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::IpDataStaticDataNonlocal::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
