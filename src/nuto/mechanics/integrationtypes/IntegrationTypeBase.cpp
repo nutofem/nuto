@@ -31,15 +31,15 @@ void NuTo::IntegrationTypeBase::Info(int rVerboseLevel)const
             {
             case 1:
                 GetLocalIntegrationPointCoordinates1D(count,localCoord[0]);
-                std::cout << localCoord[0] << std::endl;
+                std::cout << "[ " << localCoord[0] << " ]" << std::endl;
                 break;
             case 2:
                 GetLocalIntegrationPointCoordinates2D(count,localCoord);
-                std::cout << localCoord[0] << localCoord[1] << std::endl;
+                std::cout << "[ " << localCoord[0] << " ; " << localCoord[1] << " ]" << std::endl;
                 break;
             case 3:
                 GetLocalIntegrationPointCoordinates3D(count,localCoord);
-                std::cout << localCoord[0] << localCoord[1] << localCoord[2] << std::endl;
+                std::cout << "[ " << localCoord[0] << " ; " << localCoord[1] << " ; " << localCoord[2] << " ]" << std::endl;
                 break;
             default:
                 throw MechanicsException("[NuTo::IntegrationTypeBase::Info] Invalid dimension of integration point coordinates.");
@@ -70,6 +70,13 @@ void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates2D(int rIpNum
 void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
 {
     throw MechanicsException("[NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates] This integration type does not support 3D coordinates.");
+}
+
+//! @brief deletes an integration point
+//! @param rIpNum (Input) integration point (counting from zero)
+void NuTo::IntegrationTypeBase::DeleteIntegrationPoint(const int rIpNum)
+{
+    throw MechanicsException("[NuTo::IntegrationTypeBase::DeleteIntegrationPoint] Cannot delete IP from this integration type.");
 }
 
 #ifdef ENABLE_SERIALIZATION

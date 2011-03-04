@@ -79,6 +79,10 @@ public:
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const = 0;
 
+    // @brief deletes an integration point
+    // @param rIpNum (Input) integration point (counting from zero)
+    virtual void DeleteIntegrationPoint(const int rIpNum);
+
 #ifdef ENABLE_VISUALIZE
     virtual void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,
@@ -89,7 +93,6 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const = 0;
 #endif // ENABLE_VISUALIZE
 protected:
-
 
 };
 
