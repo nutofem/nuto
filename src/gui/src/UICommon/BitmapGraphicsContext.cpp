@@ -39,12 +39,18 @@ namespace uicommon
     }
     
     dc.SelectObject (bmp);
+  #if wxUSE_GRAPHICS_CONTEXT
     theGC = wxGraphicsContext::Create (dc);
+  #else
+    theGC = &dc;
+  #endif
   }
 
   BitmapGraphicsContext::~BitmapGraphicsContext()
   {
+  #if wxUSE_GRAPHICS_CONTEXT
     delete theGC;
+  #endif
     dc.SelectObject (wxNullBitmap);
     
     if (alphaHack)

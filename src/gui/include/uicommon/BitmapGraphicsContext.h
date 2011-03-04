@@ -19,6 +19,12 @@ class wxGraphicsContext;
 
 namespace uicommon
 {
+#if wxUSE_GRAPHICS_CONTEXT
+  typedef wxGraphicsContext GraphicsContext;
+#else
+  typedef wxDC GraphicsContext;
+#endif
+  
   /**
    * Helper class to get a wxGraphicsContext for a wxBitmap.
    */
@@ -30,7 +36,7 @@ namespace uicommon
      */
     bool alphaHack;
     
-    wxGraphicsContext* theGC;
+    GraphicsContext* theGC;
     wxBitmap& bmp;
     wxMemoryDC dc;
   public:
@@ -43,7 +49,7 @@ namespace uicommon
     BitmapGraphicsContext (wxBitmap& bmp, ClearMode clearMode = clear);
     ~BitmapGraphicsContext();
     
-    wxGraphicsContext* operator->() { return theGC; }
+    GraphicsContext* operator->() { return theGC; }
   };
 } // namespace uicommon
 
