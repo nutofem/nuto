@@ -47,6 +47,11 @@ namespace nutogui
     float scaleDragStartScale;
     void OnScaleDragBegin (wxCommandEvent& event);
     void OnScaleDragChanged (DirScaleDragThing::ChangedEvent& event);
+    void SetRelativeScale (float scale);
+    
+    long lastWheelTimeStamp;
+    double wheelDist;
+    void OnMouseWheel (wxMouseEvent& event);
   public:
     DisplacementDirectionSizePanel (wxWindow* parent, wxPoint position);
     

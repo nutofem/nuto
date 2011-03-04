@@ -45,10 +45,13 @@ namespace nutogui
     
     EVT_COMMAND(ID_DragThing, EVENT_SCALEDRAG_BEGIN, DisplacementDirectionSizePanel::OnScaleDragBegin)
     EVT_SCALEDRAG_CHANGED(ID_DragThing, DisplacementDirectionSizePanel::OnScaleDragChanged)
+    
+    EVT_MOUSEWHEEL(DisplacementDirectionSizePanel::OnMouseWheel)
   END_EVENT_TABLE()
   
   DisplacementDirectionSizePanel::DisplacementDirectionSizePanel (wxWindow* parent, wxPoint position)
-   : wxPanel (parent, wxID_ANY, position), locale (""), scaleValue (1)
+   : wxPanel (parent, wxID_ANY, position), locale (""), scaleValue (1),
+     lastWheelTimeStamp (0), wheelDist (0)
   {
     wxColour bgColour (32, 32, 32);
     wxColour textColour (240, 240, 240);
@@ -139,7 +142,12 @@ namespace nutogui
   
   void DisplacementDirectionSizePanel::OnScaleDragChanged (DirScaleDragThing::ChangedEvent& event)
   {
-    double newScale = scaleDragStartScale * event.GetTotalScale();
+    SetRelativeScale (event.GetTotalScale());
+  }
+
+  void DisplacementDirectionSizePanel::SetRelativeScale (float scale)
+  {
+    double newScale = scaleDragStartScale * scale;
     if (newScale > FLT_MAX)
       newScale = FLT_MAX;
     else if (newScale < FLT_EPSILON)
@@ -152,6 +160,26 @@ namespace nutogui
     wxPostEvent (this, changedEvent);
     
     scaleInput->ResetFeedbackColorFactor();
+  }
+
+  void DisplacementDirectionSizePanel::OnMouseWheel (wxMouseEvent& event)
+  {
+    /* Accumulate wheel "distance" as long as the user keeps scrolling
+       (s/he presumably stops scrolling when not having scrolled for 1000 ms) */
+    if ((event.GetTimestamp() - lastWheelTimeStamp) > 1000)
+    {
+      scaleDragStartScale = scaleValue;
+      wheelDist = 0;
+    }
+
+    // Use the "distance" to compute a factor for the scale
+    wheelDist += event.GetWheelRotation () / double (event.GetWheelDelta ());
+    // similar formula as for dragging; but climbs faster (as wheel scrolling is "harder" than dragging)
+    float scale = pow (1.2, wheelDist);
+    
+    SetRelativeScale (scale);
+    
+    lastWheelTimeStamp = event.GetTimestamp();
   }
   
 } // namespace nutogui
