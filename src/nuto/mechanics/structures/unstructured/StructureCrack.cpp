@@ -316,9 +316,10 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 		BOOST_FOREACH( NuTo::CrackBase * thisCrackPtr, crackPtrVec ){
 			//! now find the cracked edge and the position of the crack
 			//! assumption: linear elements (incremental numeration leads to the edges)
-			const int numElemNodes=thisElPtr->GetNumNodes ();
-			for(int i=0; i<numElemNodes; i++)
+			const unsigned short numElemNodes=thisElPtr->GetNumNodes ();
+			for(unsigned short i=0; i<numElemNodes; i++)
 			{
+				// create a temporary point
 				int tmpNodeId=NodeCreate("Coordinates");
 				double relCoor=0.0;
 				size_t segment;
@@ -330,10 +331,59 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				if(edgeIntersected)
 				{
 					// Now things are really heating up!
-					//! @todo Remove this dirty hack!!!
+					/**
+					 * first build up new integration types
+					 * 1) building up crack segment in element
+					 * 2) create two new nodes
+					 * 3) create the two new elements
+					 * 4) get numer and position of integration points and create two new modifiable integration types
+					 * 5) impose the integration scheme
+					 * 6) delete the original element
+					 */ 
+					//! @brief 1) building up crack segment in element
+					//! build up integration cells for the two elements
+					//! @todo dirty hack: just for 2D
+					double xA[2], xB[2];
+					NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xA);
+					//! check if the crack running thru the element
+					unsigned short numIntersectedEdges=1; //!< one edge already intersected
+					for(unsigned short j=i+1; j<numElemNodes; j++)
+					{
+						if(thisCrackPtr->Intersect(
+								thisElPtr->GetNode(j),
+								thisElPtr->GetNode(((j+1)%numElemNodes)),
+								NodeGetNodePtr(tmpNodeId), relCoor, segment))
+						{
+							numIntersectedEdges++;
+						}
+					}
+					//! check intersection type
+					if(numIntersectedEdges==2){ //< if  numIntersectedEdges==2 -> crack running thru
+						//! @todo implementation of an fully cracked case
+						throw NuTo::MechanicsException("[NuTo::Structure::InitiatePhantomNodeMethod] Still to be implemented");
+					}else if(numIntersectedEdges==1){ //< if  numIntersectedEdges==1 -> crack ends inside the element
+						//! find the projection of the crack to the element corners.
+						for(unsigned short j=0; j<numElemNodes; j++)
+						{
+							if(j==i) continue; //< this edge is already cracked
+							int newCrackEnd=NodeCreate("Coordinates");
+							//! @todo check if the intersecting crack segment is at the end or beginning of the crack
+							if(thisCrackPtr->ExtendEnd(
+									thisElPtr->GetNode(j),
+									thisElPtr->GetNode(((j+1)%numElemNodes)),
+									NodeGetNodePtr(newCrackEnd), relCoor))
+							{
+								thisCrackPtr->PushBack(NodeGetNodePtr(newCrackEnd));
+								NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xB);
+							}else{
+								this->NodeDelete(newCrackEnd);
+							}
+						}
+					}
+					//! @brief 2) create two new nodes
+					//! @todo Remove this dirty hack!!! (make it general maybe using enum)
 					int newNodeA=this->NodeCreate("displacements");
 					int newNodeB=this->NodeCreate("displacements");
-
 					nodeBasePtr_t oldNodePtrA=thisElPtr->GetNode(i);
 					nodeBasePtr_t oldNodePtrB=thisElPtr->GetNode(((i+1)%numElemNodes));
 					nodeBasePtr_t newNodePtrA=this->NodeGetNodePtr(newNodeA);
@@ -376,89 +426,35 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 							break;
 						default:
 					    	throw NuTo::MechanicsException("[" + std::string(__PRETTY_FUNCTION__) + "] Wrong node dimension!");
-
 					}
-					//! ... create the new element
-					//! @todo Remove this dirty hack --> make it general!!!
-					std::vector<int> tmpVec;
+					//! @brief 3) create the two new elements
+					//! @todo Remove this dirty hack --> make it general!!! (perhaps element copy constructor)
+					//! 3a) elementA: all nodes but the i+1st
+					std::vector<nodeBasePtr_t> rNodeVector(0);
 					for(int j=0; j<numElemNodes; j++)
-						if(i==j)
-							tmpVec.push_back(newNodeA);
+					{
+						if(j==(i+1)%numElemNodes)
+							rNodeVector.push_back(newNodePtrB);
 						else
-							tmpVec.push_back(this->NodeGetId(thisElPtr->GetNode(j)));
-					NuTo::FullMatrix<int> nodeNumbers(tmpVec);
-
-					//! get the number of integration points for this element
-					int numIp = thisElPtr->GetIntegrationType()->GetNumIntegrationPoints();
-					std::string elementTypeStr;
-					std::stringstream  intTypeStr, intTypeStr1, intTypeStr2;
-					switch(thisElPtr->GetEnumType())
+							rNodeVector.push_back(thisElPtr->GetNode(j));
+					}
+					//! create the new element A
+					const size_t numElA = this->ElementCreate(thisElPtr->GetEnumType(),rNodeVector,thisElPtr->GetElementDataType(), NuTo::IpData::NOIPDATA);
+					elementBasePtr_t newElPtrA = this->ElementGetElementPtr(numElA);
+					
+					//! 3b) elementB: all nodes but the ith
+					rNodeVector=std::vector<nodeBasePtr_t>(0);
+					for(int j=0; j<numElemNodes; j++)
 					{
-				    case NuTo::Element::PLANE2D3N:
-				    	elementTypeStr="PLANE2D3N";
-				    	intTypeStr << "2D3NGAUSS3IP";
-				        break;
-				    case NuTo::Element::PLANE2D4N:
-				    	elementTypeStr="PLANE2D4N";
-				    	intTypeStr << "2D4NMOD" << numIp << "IP";
-				        break;
-					default:
-				    	throw NuTo::MechanicsException("[" + std::string(__PRETTY_FUNCTION__) + "] Wrong Elementtype!");
+						if(j==i)
+							rNodeVector.push_back(newNodePtrA);
+						else
+							rNodeVector.push_back(thisElPtr->GetNode(j));
 					}
-
-					//! create a new element
-					int numEl2 = this->ElementCreate(elementTypeStr,nodeNumbers,"CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
-
-					//! now re-set the second node of this line to the new one
-					thisElPtr->SetNode(((i+1)%numElemNodes),newNodePtrB);
-
-					//! change the integration type
-					intTypeStr1 << intTypeStr.str() << thisElPtr->ElementGetId();
-					this->ElementSetIntegrationType(thisElPtr->ElementGetId(),intTypeStr1.str(),"NOIPDATA");
-					intTypeStr2 << intTypeStr.str() << numEl2;
-					this->ElementSetIntegrationType(numEl2,intTypeStr2.str(),"NOIPDATA");
-
-					//! build up integration cells for the two elements
-					//! @todo dirty hack: just for 2D
-					double xA[2], xB[2];
-					NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xA);
-					//! check if the crack running thru the element
-					unsigned short numIntersectedEdges=1; //< one edge already intersected
-					for(size_t j=i+1; j<numElemNodes; j++)
-					{
-						if(thisCrackPtr->Intersect(
-								thisElPtr->GetNode(j),
-								thisElPtr->GetNode(((j+1)%numElemNodes)),
-								NodeGetNodePtr(tmpNodeId), relCoor, segment))
-						{
-							numIntersectedEdges++;
-						}
-					}
-
-					//! check intersection type
-					if(numIntersectedEdges==2){ //< if  numIntersectedEdges==2 -> crack running thru
-						//! @todo implementation of an fully cracked case
-				    	throw NuTo::MechanicsException("[NuTo::Structure::InitiatePhantomNodeMethod] Still to be implemented");
-					}else if(numIntersectedEdges==1){ //< if  numIntersectedEdges==1 -> crack ends inside the element
-						//! find the projection of the crack to the element corners.
-						for(size_t j=0; j<numElemNodes; j++)
-						{
-							if(j==i) continue; //< this edge is already cracked
-
-							int newCrackEnd=NodeCreate("Coordinates");
-							//! @todo check if the intersecting crack segment is at the end of the crack
-							if(thisCrackPtr->ExtendEnd(
-									thisElPtr->GetNode(j),
-									thisElPtr->GetNode(((j+1)%numElemNodes)),
-									NodeGetNodePtr(newCrackEnd), relCoor))
-							{
-								thisCrackPtr->PushBack(NodeGetNodePtr(newCrackEnd));
-								NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xB);
-							}else{
-								this->NodeDelete(newCrackEnd);
-							}
-						}
-					}
+					//! create the new element B
+					const size_t numElB = this->ElementCreate(thisElPtr->GetEnumType(),rNodeVector,thisElPtr->GetElementDataType(), NuTo::IpData::NOIPDATA);
+					elementBasePtr_t newElPtrB = this->ElementGetElementPtr(numElB);
+					//! @brief 4) get numer and position of integration points and create two new modifiable integration types
 					/**
 					 * now we have two intersections of the element's corners.
 					 * With this intersection nodes we build up the integration cells,
@@ -477,73 +473,65 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 					double norm = sqrt(normalVec[0]*normalVec[0]+normalVec[1]*normalVec[1]);
 					normalVec[0] /= norm;
 					normalVec[1] /= norm;
-
-//! @todo build up the two integration schemes, create two new elements, assign the integration schemes to the new elements
 					double ipCoor[3];
-					std::vector<size_t> outsideIps(0);
-					//~ NuTo::IntegrationTypeBase* thisIntTypPtr(thisElPtr->GetIntegrationType());
-					//~ //! get the global coordinates of each IP
-					//~ for(int ip=0; ip<numIp; ++ip){
-						//~ thisElPtr->GetGlobalIntegrationPointCoordinates(ip,ipCoor);
-						//~ /// calculate the distance of the node to the cracksegment
-						//~ /*!
-							//~ In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
-							//~ \f[ d = \left( \boldsymbol{x}_B - \boldsymbol{x}_A \right) \cdot \boldsymbol{n}
-							//~ \f]
-						//~ */
-						//~ double dist= (ipCoor[0] - xA[0])*normalVec[0] +(ipCoor[1] - xA[1])*normalVec[1];
-						//~ /**
-						 //~ *  for this element all IP on the left side are required
-						 //~ *  --> all IPs with positive distances have to be deleted
-						 //~ *  	--> all IPs without signbit
-						 //~ *  first collect all not needed IPs (don't delete it now, otherwise you will get problems with the iterators inside the integration type)
-						 //~ */
-						//~ if(!std::signbit(dist)) outsideIps.push_back(ip);
-					//~ }
-					//~ //! delete non-needed IPs of the two elements
-					//~ BOOST_FOREACH(size_t ip, outsideIps)
-						//~ thisIntTypPtr->DeleteIntegrationPoint(ip);
-					/**
-					 * the same for the second element
-					 * @todo put in a loop for the two elements
-					 */
-					normalVec[0] = xA[1] - xB[1];
-					normalVec[1] = xB[0] - xA[0];
-					norm = sqrt(normalVec[0]*normalVec[0]+normalVec[1]*normalVec[1]);
-					normalVec[0] /= norm;
-					normalVec[1] /= norm;
-
-					thisElPtr=this->ElementGetElementPtr(numEl2);
-					outsideIps=std::vector<size_t>(0);
-					//~ thisIntTypPtr=thisElPtr->GetIntegrationType();
-					//~ //! get the global coordinates of each IP
-					//~ for(int ip=0; ip<numIp; ++ip){
-						//~ thisElPtr->GetGlobalIntegrationPointCoordinates(ip,ipCoor);
-						//~ /// calculate the distance of the node to the cracksegment
-						//~ /*!
-							//~ In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
-							//~ \f[ d = \left( \boldsymbol{x}_B - \boldsymbol{x}_A \right) \cdot \boldsymbol{n}
-							//~ \f]
-						//~ */
-						//~ double dist= (ipCoor[0] - xA[0])*normalVec[0] +(ipCoor[1] - xA[1])*normalVec[1];
-						//~ /**
-						 //~ *  for this element all IP on the left side are required
-						 //~ *  --> all IPs with positive distances have to be deleted
-						 //~ *  	--> all IPs without signbit
-						 //~ *  first collect all not needed IPs (don't delete it now, otherwise you will get problems with the iterators inside the integration type)
-						 //~ */
-						//~ if(!std::signbit(dist)) outsideIps.push_back(ip);
-					//~ }
-					//~ //! delete non-needed IPs of the two elements
-					//~ BOOST_FOREACH(size_t ip, outsideIps)
-						//~ thisIntTypPtr->DeleteIntegrationPoint(ip);
-
+					//! get general information and informations about integration type for this element
+					size_t numIp=thisElPtr->GetIntegrationType()->GetNumIntegrationPoints();
+					std::stringstream  intTypeStr;
+					switch(thisElPtr->GetEnumType())
+					{
+				    case NuTo::Element::PLANE2D3N:
+				    	intTypeStr << "2D3NGAUSS3IP";
+				        break;
+				    case NuTo::Element::PLANE2D4N:
+				    	intTypeStr << "2D4NMOD" << numIp << "IP";
+				        break;
+					default:
+				    	throw NuTo::MechanicsException("[" + std::string(__PRETTY_FUNCTION__) + "] Wrong Elementtype!");
+					}
+					std::vector<size_t> outsideIpsA(0), outsideIpsB(0);
+					//! get the global coordinates of each IP
+					for(size_t ip=0; ip<numIp; ++ip){
+						thisElPtr->GetGlobalIntegrationPointCoordinates(ip,ipCoor);
+						/// calculate the distance of the node to the cracksegment
+						/*!
+							In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
+							\f[ d = \left( \boldsymbol{x}_B - \boldsymbol{x}_A \right) \cdot \boldsymbol{n}
+							\f]
+						*/
+						double dist= (ipCoor[0] - xA[0])*normalVec[0] +(ipCoor[1] - xA[1])*normalVec[1];
+						/**
+						 *  for this first element all IP on the left side are required
+						 *  --> all IPs with positive distances have to be deleted in this element
+						 *  	--> all IPs without signbit
+						 *  --> all other IPs have to be deleted for the second element
+						 *  first collect all not needed IPs (don't delete it now, otherwise you will get problems with the iterators inside the integration type)
+						 */
+						if(!std::signbit(dist))	outsideIpsA.push_back(ip);
+							else 				outsideIpsB.push_back(ip);
+					}
+					//! build up new integration types
+					std::stringstream  intTypeStrA, intTypeStrB;
+					intTypeStrA << intTypeStr.str() << numElA;
+					intTypeStrB << intTypeStr.str() << numElB;
+					NuTo::IntegrationTypeBase* intTypePtrA(this->GetPtrIntegrationType(intTypeStrA.str()));
+					NuTo::IntegrationTypeBase* intTypePtrB(this->GetPtrIntegrationType(intTypeStrB.str()));
+					//! delete non-needed IPs of the two integration types
+					BOOST_FOREACH(size_t ip, outsideIpsA)
+						intTypePtrA->DeleteIntegrationPoint(ip);
+					BOOST_FOREACH(size_t ip, outsideIpsB)
+						intTypePtrB->DeleteIntegrationPoint(ip);
+					//! @brief 5) impose the integration schemes
+					newElPtrA->SetIntegrationType(intTypePtrA,NuTo::IpData::NOIPDATA);
+					newElPtrB->SetIntegrationType(intTypePtrB,NuTo::IpData::NOIPDATA);
+					//! @brief 6) delete the original element
+					this->ElementDelete(thisElPtr->ElementGetId());
 					//! if edge is cracked, the new element is introduced and the integration cell updated: Go to next cracked element
 					this->NodeDelete(tmpNodeId);
 					break;
-
+				}else{
+					// delete the temporary point
+					this->NodeDelete(tmpNodeId);
 				}
-				this->NodeDelete(tmpNodeId);
 			}
 		}
 	}

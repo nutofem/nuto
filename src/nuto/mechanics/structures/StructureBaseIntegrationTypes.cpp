@@ -32,7 +32,7 @@ void NuTo::StructureBase::IntegrationTypeInfo(int rVerboseLevel)const
 //! @brief ... Returns a pointer to an integration type
 //! if the integration type does not exist, the integration type is created
 //! @param identIntegrationType Identifier for an integration type
-const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
+NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
        (NuTo::IntegrationType::eIntegrationType rEnumIntegrationType)
 {
     boost::ptr_map<std::string,IntegrationTypeBase>::iterator it = mIntegrationTypeMap.find(mMappingIntEnum2String[rEnumIntegrationType]);
@@ -86,12 +86,12 @@ const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
 //! @brief ... Returns a pointer to an integration type
 //! if the integration type does not exist, the integration type is created
 //! @param identIntegrationType Identifier for an integration type
-const NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(const std::string& rIdentIntegrationType)
+NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(const std::string& rIdentIntegrationType)
 {
     std::string IntegrationTypeString;
     std::transform(rIdentIntegrationType.begin(), rIdentIntegrationType.end(), std::back_inserter(IntegrationTypeString), (int(*)(int)) toupper);
 
-    boost::ptr_map<std::string,IntegrationTypeBase>::const_iterator it = mIntegrationTypeMap.find(IntegrationTypeString);
+    boost::ptr_map<std::string,IntegrationTypeBase>::iterator it = mIntegrationTypeMap.find(IntegrationTypeString);
     if (it!=mIntegrationTypeMap.end())
         return it->second;
     else

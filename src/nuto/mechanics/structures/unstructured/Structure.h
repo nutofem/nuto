@@ -291,6 +291,14 @@ public:
     //! @param rElementNumber element number
     //! @param rElementType element type
     //! @param rNodeIdents pointers to the corresponding nodes
+    //! @return int rElementNumber
+    int ElementCreate(Element::eElementType rType, std::vector<NodeBase*> rNodeVector,
+    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+
+    //! @brief Creates an element
+    //! @param rElementNumber element number
+    //! @param rElementType element type
+    //! @param rNodeIdents pointers to the corresponding nodes
     void ElementCreate(int rElementNumber, Element::eElementType rType, std::vector<NodeBase*> rNodeVector,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 

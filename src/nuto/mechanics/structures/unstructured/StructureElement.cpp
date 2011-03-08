@@ -230,6 +230,29 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
 }
 
 //! @brief Creates an element
+//! @param rElementNumber element number
+//! @param rElementType element type
+//! @param rNodeIdents pointers to the corresponding nodes
+//! @return int rElementNumber
+int NuTo::Structure::ElementCreate(Element::eElementType rType,
+        std::vector<NodeBase*> rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+{
+	//find unused integer id
+	int elementNumber(mElementMap.size());
+	boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(elementNumber);
+	while (it!=mElementMap.end())
+	{
+		elementNumber++;
+		it = mElementMap.find(elementNumber);
+	}
+
+	// create element
+	this->ElementCreate(elementNumber,rType,rNodeVector,rElementDataType,rIpDataType);
+
+	// return element number
+	return elementNumber;
+}
+//! @brief Creates an element
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
 //! @param rNodeIdents pointers to the corresponding nodes

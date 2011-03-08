@@ -1114,12 +1114,12 @@ public:
     //! @brief ... Returns a pointer to an integration type
     //! if the integration type does not exist in the map, an exception is thrown
     //! @param identIntegrationType Identifier for an integration type
-    const NuTo::IntegrationTypeBase* GetPtrIntegrationType(const std::string& rIdentIntegrationType);
+    NuTo::IntegrationTypeBase* GetPtrIntegrationType(const std::string& rIdentIntegrationType);
 
     //! @brief ... Returns a pointer to an integration type
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
-    const NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::IntegrationType::eIntegrationType rIdentIntegrationType);
+    NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::IntegrationType::eIntegrationType rIdentIntegrationType);
 #endif //SWIG
 
     //*************************************************
