@@ -157,6 +157,11 @@ namespace nutogui
   
   // ------------------------------------------------------------------------
 
+  BEGIN_DECLARE_EVENT_TYPES()
+    DECLARE_EVENT_TYPE(EVENT_DATASET_FRAME_CHANGED, 0)
+  END_DECLARE_EVENT_TYPES()
+  DEFINE_EVENT_TYPE(EVENT_DATASET_FRAME_CHANGED)
+  
   struct ResultViewerImpl::View::SharedViewData
   {
     wxSize smallButtonSize;
@@ -190,8 +195,10 @@ namespace nutogui
     // Linked views
     unsigned int linkedViewCount;
     vtkSmartPointer<vtkCamera> camTemplate;
+    // Data set frame linking
+    size_t linkedFrame;
     
-    SharedViewData() : linkedViewCount (0) {}
+    SharedViewData() : linkedViewCount (0), linkedFrame (0) {}
   };
   
   enum
@@ -256,6 +263,7 @@ namespace nutogui
     EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View::OnDisplacementScaleChange)
     
     EVT_COMMAND_SCROLL(ID_DataSetSlider, ResultViewerImpl::View::OnDataSetSelectionChanged)
+    EVT_COMMAND(wxID_ANY, EVENT_DATASET_FRAME_CHANGED, ResultViewerImpl::View::OnLinkedDataSetChanged)
   END_EVENT_TABLE()
   
   ResultViewerImpl::View::View (wxWindow* parent, SplitManager* splitMgr,
@@ -858,12 +866,17 @@ namespace nutogui
 	   Set the current camera as the template the next views will
 	   copy their settings from upon linking. */
 	sharedData->camTemplate = renderer->GetActiveCamera ();
+	// Also set current data set frame as linked
+	sharedData->linkedFrame = currentDataSet;
 	ret = false;
       }
       else
       {
 	// Other views are linked, use existing template
 	UpdateCameraPositions (sharedData->camTemplate);
+	// Also copy existing data set frame
+	dataSetSelectionSlider->SetValue (sharedData->linkedFrame);
+	SetDisplayedDataSet (sharedData->linkedFrame);
 	ret = true;
       }
     }
@@ -1535,6 +1548,24 @@ namespace nutogui
   void ResultViewerImpl::View::OnDataSetSelectionChanged (wxScrollEvent& event)
   {
     SetDisplayedDataSet (event.GetPosition());
+    
+    renderWidget->GetRenderWindow()->Render();
+    
+    if (useLinkView)
+    {
+      sharedData->linkedFrame = event.GetPosition();
+      wxCommandEvent changeEvent (EVENT_DATASET_FRAME_CHANGED);
+      changeEvent.SetInt (event.GetPosition());
+      splitMgr->PostToOthers (changeEvent, this);
+    }
+  }
+
+  void ResultViewerImpl::View::OnLinkedDataSetChanged (wxCommandEvent& event)
+  {
+    if (!useLinkView) return;
+    
+    dataSetSelectionSlider->SetValue (event.GetInt());
+    SetDisplayedDataSet (event.GetInt());
     
     renderWidget->GetRenderWindow()->Render();
   }

@@ -240,6 +240,7 @@ namespace nutogui
     void OnDisplacementScaleChange (wxEvent& event);
     
     void OnDataSetSelectionChanged (wxScrollEvent& event);
+    void OnLinkedDataSetChanged (wxCommandEvent& event);
     void SetDisplayedDataSet (size_t index);
     
     /**
