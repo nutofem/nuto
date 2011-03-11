@@ -11,6 +11,7 @@
 #define __UICOMMON_BUDDYSLIDER_H__
 
 #include "export.h"
+#include <wx/slider.h>
 #include <wx/window.h>
 
 class wxSlider;
@@ -50,7 +51,7 @@ namespace uicommon
     void OnSysColourChanged(wxSysColourChangedEvent& event);
   public:
     BuddySlider (wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition,
-		 const wxSize& size = wxDefaultSize);
+		 const wxSize& size = wxDefaultSize, long sliderStyle = wxSL_HORIZONTAL);
 
     // Shadow wxWindow method, forward tip to children
     void SetToolTip (const wxString& tip);

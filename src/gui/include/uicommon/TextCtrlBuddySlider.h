@@ -42,7 +42,8 @@ namespace uicommon
     TextCtrlBuddySlider (wxWindow* parent, wxWindowID id, 
 		         int value, int minValue, int maxValue,
 		         const wxPoint& pos = wxDefaultPosition,
-		         const wxSize& size = wxDefaultSize);
+		         const wxSize& size = wxDefaultSize,
+			 long sliderStyle = wxSL_HORIZONTAL);
     
     int GetValue() const;
     void SetValue (int value);

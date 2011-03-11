@@ -23,10 +23,13 @@ namespace uicommon
   END_EVENT_TABLE()
   
   BuddySlider::BuddySlider (wxWindow* parent, wxWindowID id,
-			    const wxPoint& pos, const wxSize& size)
+			    const wxPoint& pos, const wxSize& size,
+			    long sliderStyle)
    : wxWindow (parent, id, pos, size)
   {
-    sliderCtrl = new wxSlider (this, wxID_ANY, 0, 0, 1);
+    sliderCtrl = new wxSlider (this, wxID_ANY, 0, 0, 1,
+			       wxDefaultPosition, wxDefaultSize,
+			       sliderStyle);
     sliderCtrl->SetEventHandler (this);
     
     // Create sizer ...

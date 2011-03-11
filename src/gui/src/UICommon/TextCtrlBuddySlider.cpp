@@ -29,8 +29,9 @@ namespace uicommon
 
   TextCtrlBuddySlider::TextCtrlBuddySlider (wxWindow* parent, wxWindowID id, 
 					    int value, int minValue, int maxValue,
-					    const wxPoint& pos, const wxSize& size)
-   : BuddySlider (parent, id, pos, size), buddy (0), rangeMin (minValue), rangeMax (maxValue)
+					    const wxPoint& pos, const wxSize& size,
+					    long sliderStyle)
+   : BuddySlider (parent, id, pos, size, sliderStyle), buddy (0), rangeMin (minValue), rangeMax (maxValue)
   {
     buddy = new wxTextCtrl (this, wxID_ANY, wxEmptyString,
 			    wxDefaultPosition, wxDefaultSize,
