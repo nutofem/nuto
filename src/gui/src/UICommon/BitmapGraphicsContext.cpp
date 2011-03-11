@@ -13,6 +13,12 @@
 #include <wx/graphics.h>
 #include <wx/rawbmp.h>
 
+#if wxABI_VERSION < 20900
+/* WX 2.8: setting the alpha to 0 and to 255 later doesn't always work...
+    whyever, whatever, invert the alpha hack logic in that case. */
+#define ALPHA_HACK_INVERSE
+#endif
+
 namespace uicommon
 {
   BitmapGraphicsContext::BitmapGraphicsContext (wxBitmap& bmp, ClearMode clearMode)
@@ -33,11 +39,9 @@ namespace uicommon
 	p.Red() = alphaHack ? 1 : 0;
 	p.Green() = alphaHack ? 1 : 0;
 	p.Blue() = alphaHack ? 1 : 0;
-      #if wxUSE_GRAPHICS_CONTEXT
+      #ifndef ALPHA_HACK_INVERSE
 	p.Alpha() = 0;
       #else
-	/* WX 2.8: setting the alpha to 0 and to 255 later doesn't always work...
-	   whyever, whatever, invert the alpha hack logic in that case. */
 	p.Alpha() = 255;
       #endif
 	++p;
@@ -68,7 +72,7 @@ namespace uicommon
       {
 	for (int x = 0; x < bmpPixels.GetWidth(); x++)
 	{
-	#if wxUSE_GRAPHICS_CONTEXT
+	#ifndef ALPHA_HACK_INVERSE
 	  if ((p.Red() != 1) || (p.Green() != 1) || (p.Blue() != 1))
 	    p.Alpha() = 255;
 	#else
