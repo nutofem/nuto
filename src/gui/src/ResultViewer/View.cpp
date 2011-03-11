@@ -16,16 +16,15 @@
 #include "DataSetFaceExtractor.h"
 #include "DataSetHelpers.h"
 #include "DisplacementDirectionSizePanel.h"
+#include "Gradients.h"
 #include "UnstructuredGridWithQuadsClippingToPoly.h"
 #include "SplitManager.h"
 
-#include "uicommon/BitmapGraphicsContext.h"
 #include "uicommon/Quote.h"
 
 #include "vtkwx.h"
 #include <wx/artprov.h>
 #include <wx/aui/auibar.h>
-#include <wx/graphics.h>
 #include <boost/make_shared.hpp>
 #include <boost/weak_ptr.hpp>
 
@@ -35,7 +34,6 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkClipDataSet.h>
-#include <vtkColorTransferFunction.h>
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
@@ -183,13 +181,8 @@ namespace nutogui
     
     vtkSmartPointer<vtkArrowSource> displaceDirectionGlyphSource;
     
-    struct Gradient
-    {
-      wxString name;
-      vtkSmartPointer<vtkLookupTable> lut;
-      wxBitmap toolImage;
-    };
-    std::vector<Gradient> gradients;
+    Gradients gradients;
+    std::vector<wxBitmap> gradientToolImages;
     wxMenu gradientMenu;
     
     // Linked views
@@ -346,7 +339,7 @@ namespace nutogui
 			     wxT ("Show legend"),
 			     wxITEM_CHECK);
     actorOptionsTB->AddTool (ID_LegendOptions, wxEmptyString,
-			     sharedData->gradients[0].toolImage,
+			     sharedData->gradientToolImages[0],
 			     wxT ("Select gradient"),
 			     wxITEM_NORMAL);
     actorOptionsTB->SetToolDropDown (ID_LegendOptions, true);
@@ -427,48 +420,6 @@ namespace nutogui
 #define wxART_CLOSE	wxART_MAKE_ART_ID(wxART_CLOSE)
 #endif
 
-  static wxBitmap GradientToBitmap (vtkScalarsToColors* colors, const wxSize& bitmapSize)
-  {
-    // Direction of gradient *strip*: vertical gradient -> horizontal strips, horizontal gradient -> vertical strips!
-    bool stripsHorizontal = true;
-    wxBitmap bmp (bitmapSize.x, bitmapSize.y, 32);
-    {
-      uicommon::BitmapGraphicsContext gc (bmp);
-
-      gc->SetPen (*wxTRANSPARENT_PEN);
-      int numStrips = (stripsHorizontal ? bitmapSize.y : bitmapSize.x) - 2;
-      int stripW = stripsHorizontal ? bitmapSize.x - 2 : 1;
-      int stripH = stripsHorizontal ? 1 : bitmapSize.y - 2;
-      for (int strip = 0; strip < numStrips; strip++)
-      {
-	int x, y;
-	if (stripsHorizontal)
-	{
-	  x = 1;
-	  y = strip + 1;
-	}
-	else
-	{
-	  x = strip + 1;
-	  y = 1;
-	}
-	
-	double rgb[3];
-	double v = strip / double (numStrips-1);
-	if (stripsHorizontal) v = 1-v;
-	colors->GetColor (v, rgb);
-	gc->SetBrush (wxColour (rgb[0]*255, rgb[1]*255, rgb[2]*255));
-	gc->DrawRectangle (x, y, stripW, stripH);
-      }
-      gc->SetBrush (*wxTRANSPARENT_BRUSH);
-      {
-	gc->SetPen (wxColour (128, 128, 128));
-	gc->DrawRoundedRectangle (0, 0, bitmapSize.x-1, bitmapSize.y-1, 1); // ??? -1 -- WX off by one?
-      }
-    }
-    return bmp;
-  }
-  
   void ResultViewerImpl::View::SetupSharedData ()
   {
     sharedData = boost::make_shared<SharedViewData> ();
@@ -548,83 +499,23 @@ namespace nutogui
 	wxArtProvider::GetBitmap (displacementDirArtNames[m], wxART_TOOLBAR);
     }
     
-    SetupGradients();
-    
     wxSize toolImageSize (wxArtProvider::GetSizeHint (wxART_TOOLBAR));
     // Note: for horizontal gradients a width of toolImageSize.x would be better looking
     wxSize menuImageSize (wxArtProvider::GetSizeHint (wxART_MENU));
-    for (size_t i = 0; i < sharedData->gradients.size(); i++)
+    for (size_t i = 0; i < sharedData->gradients.GetGradientsNum(); i++)
     {
-      SharedViewData::Gradient& grad = sharedData->gradients[i];
-      
-      grad.toolImage = GradientToBitmap (grad.lut, toolImageSize);
+      sharedData->gradientToolImages.push_back (sharedData->gradients.RenderGradient (i, toolImageSize));
       
       wxMenuItem* newItem = new wxMenuItem (&sharedData->gradientMenu,
 					    i,
-					    grad.name,
+					    sharedData->gradients.GetGradientName (i),
 					    wxEmptyString,
 					    wxITEM_NORMAL);
-      newItem->SetBitmap (GradientToBitmap (grad.lut, menuImageSize));
+      newItem->SetBitmap (sharedData->gradients.RenderGradient (i, menuImageSize));
       sharedData->gradientMenu.Append (newItem);
     }
   }
   
-  static vtkSmartPointer<vtkLookupTable> ColorTransferFunctionToLookupTable (vtkColorTransferFunction* ctf)
-  {
-    size_t nColors = 256;
-    vtkSmartPointer<vtkLookupTable> colors (vtkSmartPointer<vtkLookupTable>::New());
-    colors->SetNumberOfTableValues (nColors);
-    for (size_t i = 0; i < nColors; i++)
-    {
-      double rgb[3];
-      ctf->GetColor (float (i)/float (nColors-1), rgb);
-      colors->SetTableValue (i, rgb[0], rgb[1], rgb[2]);
-    }
-    return colors;
-  }
-  
-  void ResultViewerImpl::View::SetupGradients ()
-  {
-    vtkSmartPointer<vtkLookupTable> colors;
-    vtkSmartPointer<vtkColorTransferFunction> ctf;
-    {
-      colors = vtkSmartPointer<vtkLookupTable>::New(); 
-      colors->SetHueRange (0.667, 0.0);
-      colors->Build ();
-      
-      SharedViewData::Gradient grad;
-      grad.name = wxT("Rainbow");
-      grad.lut = colors;
-      sharedData->gradients.push_back (grad);
-    }
-    {
-      ctf = vtkSmartPointer<vtkColorTransferFunction>::New(); 
-      ctf->AddRGBPoint (0, 0, 0, 0);
-      ctf->AddRGBPoint (1, 1, 1, 1);
-      colors = ColorTransferFunctionToLookupTable (ctf);
-      
-      SharedViewData::Gradient grad;
-      grad.name = wxT("Grayscale");
-      grad.lut = colors;
-      sharedData->gradients.push_back (grad);
-    }
-    {
-      size_t nColors = 256;
-      vtkSmartPointer<vtkLookupTable> colors (vtkSmartPointer<vtkLookupTable>::New());
-      colors->SetNumberOfTableValues (nColors);
-      for (size_t i = 0; i < nColors; i++)
-      {
-	double x = i / double (nColors-1);
-	colors->SetTableValue (i, sqrt (x), x*x*x, sin (x*M_PI));
-      }
-      
-      SharedViewData::Gradient grad;
-      grad.name = wxT("pm3d");
-      grad.lut = colors;
-      sharedData->gradients.push_back (grad);
-    }
-  }
-
   void ResultViewerImpl::View::SetData (const DataConstPtr& data)
   {
     this->data = data;
@@ -996,7 +887,7 @@ namespace nutogui
   void ResultViewerImpl::View::UpdateGradientUI (size_t gradient)
   {
     actorOptionsTB->SetToolBitmap (ID_LegendOptions,
-				   sharedData->gradients[gradient].toolImage);
+				   sharedData->gradientToolImages[gradient]);
     actorOptionsTB->Refresh ();
 				   
     int displaySel = displayDataChoice->GetSelection();
@@ -1010,9 +901,8 @@ namespace nutogui
     if (gradient == (size_t)~0) return;
 
     vtkSmartPointer<vtkScalarsToColors> colors (dataSetMapper.GetLookupTable ());
-    const SharedViewData::Gradient& grad = sharedData->gradients[gradient];
     vtkSmartPointer<vtkLookupTable> newColors (vtkSmartPointer<vtkLookupTable>::New ());
-    newColors->DeepCopy (grad.lut); // TODO: Look into sharing the table data
+    newColors->DeepCopy (sharedData->gradients.GetGradientColors (gradient)); // TODO: Look into sharing the table data
     newColors->SetVectorMode (colors->GetVectorMode());
     dataSetMapper.SetLookupTable (newColors);
     scalarBar->GetScalarBarActor()->SetLookupTable (newColors);

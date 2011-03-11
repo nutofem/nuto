@@ -51,6 +51,8 @@ namespace nutogui
   {
     class CameraModifiedCallback;
     
+    class Gradients;
+    
     SplitManager* splitMgr;
     
     wxSizer* topBarSizer;
@@ -61,7 +63,6 @@ namespace nutogui
     struct SharedViewData;
     boost::shared_ptr<SharedViewData> sharedData;
     void SetupSharedData ();
-    void SetupGradients ();
     
     wxAuiToolBar* visOptionEmpty;
     wxAuiToolBar* visOptionChoice;
