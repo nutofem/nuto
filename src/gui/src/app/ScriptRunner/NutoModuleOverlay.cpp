@@ -14,7 +14,6 @@
 #include <wx/filename.h>
 #include <wx/log.h>
 
-#include <iostream>
 #include <boost/python/raw_function.hpp>
 
 #include "nuto/visualize/VisualizeComponentBase.h"
@@ -79,8 +78,8 @@ void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& 
   newOutput.AssignTempFileName (wxT ("nutogui"));
   if (!newOutput.IsOk())
   {
-    // @@@ Proper error feedback
-    std::cerr << "couldn't generate temp file name" << std::endl;
+    // @@@ Better error feedback?
+    wxLogError (wxT ("Couldn't generate temp file name"));
     return;
   }
   std::string outputPath (newOutput.GetFullPath().fn_str());
