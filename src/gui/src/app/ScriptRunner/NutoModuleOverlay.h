@@ -10,6 +10,8 @@
 #ifndef __NUTOMODULEOVERLAY_H__
 #define __NUTOMODULEOVERLAY_H__
 
+#include "ResultDataSourceVTK.h"
+
 #include <wx/string.h>
 
 namespace boost
@@ -28,8 +30,8 @@ public:
   {
     virtual ~Callback() {}
     
-    virtual void ResultDataFile (const wxString& fileName,
-				 const wxString& title) = 0;
+    virtual void Result (const nutogui::ResultDataSourceVTKPtr& result,
+			 const wxString& title) = 0;
   };
   typedef boost::shared_ptr<Callback> CallbackPtr;
   

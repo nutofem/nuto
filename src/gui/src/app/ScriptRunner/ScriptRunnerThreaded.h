@@ -12,6 +12,9 @@
 
 #include "ScriptRunner.h"
 
+#include "ResultDataSourceVTK.h"
+#include "platform/ThreadRPC.h"
+
 #include <wx/string.h>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -20,7 +23,6 @@
 
 #include "NutoModuleOverlay.h"
 #include "PythonOutputGrabber.h"
-#include "platform/ThreadRPC.h"
 
 #define SRT_RPC_METHODS					\
   /* Top level: methods */				\
@@ -51,12 +53,12 @@ class ScriptRunnerThreaded : public wxThreadHelper
   public:
     OverlayCallback (ScriptRunnerThreaded* runner) : runner (runner) {}
   
-    void ResultDataFile (const wxString& fileName,
-			 const wxString& title)
-    { runner->ResultDataFile (fileName, title); }
+    void Result (const nutogui::ResultDataSourceVTKPtr& result,
+		 const wxString& title)
+    { runner->Result (result, title); }
   };
-  void ResultDataFile (const wxString& fileName,
-		       const wxString& title);
+  void Result (const nutogui::ResultDataSourceVTKPtr& result,
+	       const wxString& title);
   /** @} */
   
   wxCriticalSection feedbackProtect;
@@ -108,8 +110,10 @@ public:
   (TRPC_METHOD (public, StartupComplete,			\
     TRPC_METHOD_ARG_LIST(2, (bool, const wxString&))		\
   ))								\
-  (TRPC_METHOD (public, ResultDataFile,				\
-    TRPC_METHOD_ARG_LIST(2, (const wxString&, const wxString&))	\
+  (TRPC_METHOD (public, Result,					\
+    TRPC_METHOD_ARG_LIST(2,					\
+      (const nutogui::ResultDataSourceVTKPtr&,			\
+       const wxString&))					\
   ))								\
   (TRPC_METHOD (public, ScriptOutput,				\
     TRPC_METHOD_ARG_LIST(2, 					\

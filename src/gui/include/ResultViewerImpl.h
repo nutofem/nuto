@@ -11,6 +11,7 @@
 #define __NUTOGUI_RESULTVIEWERIMPL_H__
 
 #include "GuiFrame.h"
+#include "ResultDataSourceVTK.h"
 #include "TabCommonImpl.h"
 
 #include <wx/wx.h>
@@ -29,8 +30,6 @@ namespace nutogui
     typedef boost::shared_ptr<const Data> DataConstPtr;
     DataConstPtr data;
     
-    wxString dataFile;
-    bool deleteFileWhenDone;
     const wxString caption;
     
     void ReadDataFromFile (const char* filename);
@@ -38,9 +37,8 @@ namespace nutogui
     class SplitManager;
     SplitManager* splitMgr;
   public:
-    ResultViewerImpl (const wxString& filename,
-		      const wxString& caption,
-		      bool deleteFileWhenDone = false);
+    ResultViewerImpl (const ResultDataSourceVTKPtr& resultData,
+		      const wxString& caption);
     ~ResultViewerImpl ();
     
     wxWindow* CreateContents (const GuiFrame::TabCallbackWeakPtr& callback,

@@ -38,8 +38,8 @@ public:
   /**\name nutogui::ScriptRunner::FeedbackCallback implementation
    * @{ */
   void StartupComplete (bool success, const wxString& message);
-  void ResultDataFile (const wxString& fileName,
-		       const wxString& caption);
+  void Result (const nutogui::ResultDataSourceVTKPtr& result,
+	       const wxString& caption);
 		       
   void ScriptOutput (OutputTarget target, const wxString& str);
   

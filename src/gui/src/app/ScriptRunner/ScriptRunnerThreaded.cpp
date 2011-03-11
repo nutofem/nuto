@@ -34,14 +34,14 @@ ScriptRunnerThreaded::~ScriptRunnerThreaded ()
   GetThread()->Wait();
 }
 
-void ScriptRunnerThreaded::ResultDataFile (const wxString& fileName,
-					   const wxString& title)
+void ScriptRunnerThreaded::Result (const nutogui::ResultDataSourceVTKPtr& result,
+				   const wxString& title)
 {
   wxCriticalSectionLocker _lock (feedbackProtect);
   
   BOOST_FOREACH(const FeedbackCallback& callback, feedbackCallbacks)
   {
-    callback.wrappedCallback->ResultDataFile (fileName, title);
+    callback.wrappedCallback->Result (result, title);
   }
 }
 

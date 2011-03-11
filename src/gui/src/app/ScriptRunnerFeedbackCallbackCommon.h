@@ -16,8 +16,8 @@ class ScriptRunnerFeedbackCallbackCommon : public nutogui::ScriptRunner::Feedbac
 {
 public:
   void StartupComplete (bool success, const wxString& message) {}
-  void ResultDataFile (const wxString& fileName,
-		       const wxString& caption) {}
+  void Result (const nutogui::ResultDataSourceVTKPtr& result,
+	       const wxString& caption) {}
   void ScriptOutput (nutogui::ScriptRunner::FeedbackCallback::OutputTarget target, const wxString& str) {}
   
   void ScriptRunStart () {}

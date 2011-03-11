@@ -10,6 +10,8 @@
 #ifndef __NUTOGUI_SCRIPTRUNNER_H__
 #define __NUTOGUI_SCRIPTRUNNER_H__
 
+#include "ResultDataSourceVTK.h"
+
 #include <wx/string.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
@@ -34,8 +36,8 @@ namespace nutogui
       virtual ~FeedbackCallback() {}
       
       virtual void StartupComplete (bool success, const wxString& message) = 0;
-      virtual void ResultDataFile (const wxString& fileName,
-				   const wxString& caption) = 0;
+      virtual void Result (const ResultDataSourceVTKPtr& result,
+			   const wxString& caption) = 0;
 
       enum OutputTarget { StdOut, StdErr };
       virtual void ScriptOutput (OutputTarget target, const wxString& str) = 0;

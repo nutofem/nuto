@@ -29,8 +29,8 @@ void ScriptResultDispatcher::StartupComplete (bool success, const wxString& mess
   }
 }
 
-void ScriptResultDispatcher::ResultDataFile (const wxString& fileName,
-					     const wxString& caption)
+void ScriptResultDispatcher::Result (const nutogui::ResultDataSourceVTKPtr& result,
+				     const wxString& caption)
 {
   // Create a result frame
   wxString captionStr (caption);
@@ -42,7 +42,7 @@ void ScriptResultDispatcher::ResultDataFile (const wxString& fileName,
 					  scriptSource->GetSourceName().c_str()));
   
   nutogui::GuiFrame::TabPtr resultViewerTab =
-    boost::make_shared<nutogui::ResultViewerImpl> (fileName, fullCaption, true);
+    boost::make_shared<nutogui::ResultViewerImpl> (result, fullCaption);
   frame->AddTab (resultViewerTab, true);
 }
 
