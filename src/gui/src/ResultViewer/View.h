@@ -157,8 +157,6 @@ namespace nutogui
     vtkSmartPointer<vtkPlane> clipPlane;
     bool useClipper;
     
-    vtkSmartPointer<vtkCamera> camTemplate;
-    
     void OnRenderWidgetRealized (wxCommandEvent& event);
     void OnWindowCreate (wxWindowCreateEvent& event);
     void SetupRenderer ();
@@ -183,6 +181,13 @@ namespace nutogui
       VisOpt() : comp (-1), legend (true), gradient (0) {}
     };
     std::vector<VisOpt> lastVisOpt;
+    
+    bool useLinkView;
+    /**
+     * Change whether the current view should be linked to all others.
+     * \return Whether the current camera view was changed (usually after linking was enabled).
+     */
+    bool SetLinkView (bool flag);
 
     void OnDisplayDataChanged (wxCommandEvent& event);
 
@@ -202,6 +207,8 @@ namespace nutogui
     void OnLegendOptionsUpdateUI (wxUpdateUIEvent& event);
     void OnGradientSelect (wxCommandEvent& event);
     void OnClipPlane (wxCommandEvent& event);
+    void OnLinkViews (wxCommandEvent& event);
+    void OnLinkViewsUpdateUI (wxUpdateUIEvent& event);
     void OnDisplacementOffset (wxCommandEvent& event);
     void OnDisplacementDirDropDown (wxAuiToolBarEvent& event);
     void OnDisplacementDirCommand (wxCommandEvent& event);
@@ -254,6 +261,7 @@ namespace nutogui
   public:
     View (wxWindow* parent, SplitManager* splitMgr,
 	  const View* cloneFrom = nullptr);
+    ~View ();
     
     void SetData (const DataConstPtr& data);
 			      

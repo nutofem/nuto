@@ -170,6 +170,7 @@ namespace nutogui
     wxBitmap renderModeButtonImages[numRenderModes];
     wxBitmap imgShowLegend;
     wxBitmap imgClipPlane;
+    wxBitmap imgLinkViews;
     
     wxBitmap imgDisplacementOffset;
     wxMenu displacementDirMenu;
@@ -185,6 +186,12 @@ namespace nutogui
     };
     std::vector<Gradient> gradients;
     wxMenu gradientMenu;
+    
+    // Linked views
+    unsigned int linkedViewCount;
+    vtkSmartPointer<vtkCamera> camTemplate;
+    
+    SharedViewData() : linkedViewCount (0) {}
   };
   
   enum
@@ -196,6 +203,7 @@ namespace nutogui
     ID_ShowLegend,
     ID_LegendOptions,
     ID_ClipPlane,
+    ID_LinkViews,
     ID_DisplacementOffset,
     ID_DisplacementDirMode,
     
@@ -226,6 +234,8 @@ namespace nutogui
     EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_LegendOptions, ResultViewerImpl::View::OnLegendOptions)
     EVT_UPDATE_UI(ID_LegendOptions, ResultViewerImpl::View::OnLegendOptionsUpdateUI)
     EVT_MENU(ID_ClipPlane, ResultViewerImpl::View::OnClipPlane)
+    EVT_MENU(ID_LinkViews, ResultViewerImpl::View::OnLinkViews)
+    EVT_UPDATE_UI(ID_LinkViews, ResultViewerImpl::View::OnLinkViewsUpdateUI)
     EVT_MENU(ID_DisplacementOffset, ResultViewerImpl::View::OnDisplacementOffset)
     EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_DisplacementDirMode, ResultViewerImpl::View::OnDisplacementDirDropDown)
     EVT_MENU_RANGE(ID_DisplacementDirModeFirst,
@@ -260,6 +270,7 @@ namespace nutogui
      displacementDirScale (1),
      useClipper (false),
      updatingCam (false),
+     useLinkView (false),
      gradientMenuHandler (this)
   {
     if (cloneFrom)
@@ -331,10 +342,16 @@ namespace nutogui
 			     wxT ("Select gradient"),
 			     wxITEM_NORMAL);
     actorOptionsTB->SetToolDropDown (ID_LegendOptions, true);
+    actorOptionsTB->AddSeparator ();
     actorOptionsTB->AddTool (ID_ClipPlane, wxEmptyString,
 			     sharedData->imgClipPlane,
 			     wxT ("Clipping plane"),
 			     wxITEM_CHECK);
+    actorOptionsTB->AddTool (ID_LinkViews, wxEmptyString,
+			     sharedData->imgLinkViews,
+			     wxT ("Link display to other views"),
+			     wxITEM_CHECK);
+    actorOptionsTB->ToggleTool (ID_LinkViews, true);
     actorOptionsTB->AddSeparator ();
     actorOptionsTB->AddTool (ID_DisplacementOffset, wxEmptyString,
 			     sharedData->imgDisplacementOffset,
@@ -388,8 +405,13 @@ namespace nutogui
     if (cloneFrom)
     {
       SetData (cloneFrom->data);
-      camTemplate = cloneFrom->GetCamera ();
     }
+  }
+  
+  ResultViewerImpl::View::~View ()
+  {
+    // To ensure linkedViewCount is correctly decremented
+    SetLinkView (false);
   }
 
 // Hack for wx 2.8
@@ -456,6 +478,8 @@ namespace nutogui
 							  sharedData->smallButtonSize);
     sharedData->imgShowLegend = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(show-legend), wxART_TOOLBAR);
     sharedData->imgClipPlane = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(clip), wxART_TOOLBAR);
+    sharedData->imgLinkViews = wxArtProvider::GetBitmap (wxART_MISSING_IMAGE,
+							 wxART_TOOLBAR);
     
     static const wxChar* const renderModeNames[numRenderModes] =
     {
@@ -747,9 +771,9 @@ namespace nutogui
     double mapperBounds[6];
     dataSetMapper.GetBounds (mapperBounds);
     renderer->ResetCamera (mapperBounds);
-    
-    if (camTemplate)
-      UpdateCameraPositions (camTemplate);
+
+    // Cam starts out as linked. Copies camera settings if this isn't the first view.
+    SetLinkView (true);
     
     // Install callback to listen for camera modifications
     vtkSmartPointer<CameraModifiedCallback> camCallback (vtkSmartPointer<CameraModifiedCallback>::New ());
@@ -807,6 +831,8 @@ namespace nutogui
   void ResultViewerImpl::View::CameraChanged (vtkCamera* cam)
   {
     if (updatingCam) return;
+    // Unlinked, don't propagate
+    if (!useLinkView) return;
     
     UpdateCameraEvent event (cam);
     splitMgr->PostToOthers (event, this);
@@ -816,6 +842,38 @@ namespace nutogui
   {
     renderer->ResetCameraClippingRange ();
     clipPlaneWidget->GetPlane (clipPlane);
+  }
+
+  bool ResultViewerImpl::View::SetLinkView (bool flag)
+  {
+    if (useLinkView == flag) return false;
+    
+    bool ret;
+    if (flag)
+    {
+      sharedData->linkedViewCount++;
+      if (sharedData->linkedViewCount == 1)
+      {
+	/* This is the only view marked as "linked".
+	   Set the current camera as the template the next views will
+	   copy their settings from upon linking. */
+	sharedData->camTemplate = renderer->GetActiveCamera ();
+	ret = false;
+      }
+      else
+      {
+	// Other views are linked, use existing template
+	UpdateCameraPositions (sharedData->camTemplate);
+	ret = true;
+      }
+    }
+    else
+    {
+      sharedData->linkedViewCount--;
+      ret = false;
+    }
+    useLinkView = flag;
+    return ret;
   }
 
   void ResultViewerImpl::View::OnDisplayDataChanged (wxCommandEvent& event)
@@ -1093,6 +1151,19 @@ namespace nutogui
     }
     
     renderWidget->GetRenderWindow()->Render();
+  }
+
+  void ResultViewerImpl::View::OnLinkViews (wxCommandEvent& event)
+  {
+    if (SetLinkView (event.IsChecked ()))
+      renderWidget->GetRenderWindow()->Render();
+  }
+
+  void ResultViewerImpl::View::OnLinkViewsUpdateUI (wxUpdateUIEvent& event)
+  {
+    /* Link views makes only sense with > 1 views
+       Abuse CanToggleMaximization() to check that */
+    event.Enable (splitMgr->CanToggleMaximization (this));
   }
 
   void ResultViewerImpl::View::OnDisplacementOffset (wxCommandEvent& event)
@@ -1416,6 +1487,9 @@ namespace nutogui
 
   void ResultViewerImpl::View::OnUpdateCamera (UpdateCameraEvent& event)
   {
+    // Not linked, so ignore event
+    if (!useLinkView) return;
+    
     // Going to change camera which is going to trigger the callback ... ignore that
     updatingCam = true;
     
