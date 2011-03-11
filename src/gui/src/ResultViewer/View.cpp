@@ -203,6 +203,8 @@ namespace nutogui
     ID_Unsplit,
     ID_ToggleMaximization,
     
+    ID_DataSetSlider,
+    
     ID_RenderModeFirst = 100,
     ID_DisplacementDirModeFirst = 110
   };
@@ -241,6 +243,8 @@ namespace nutogui
     EVT_UPDATE_CAMERA(ResultViewerImpl::View::OnUpdateCamera)
     
     EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View::OnDisplacementScaleChange)
+    
+    EVT_COMMAND_SCROLL(ID_DataSetSlider, ResultViewerImpl::View::OnDataSetSelectionChanged)
   END_EVENT_TABLE()
   
   ResultViewerImpl::View::View (wxWindow* parent, SplitManager* splitMgr,
@@ -251,6 +255,7 @@ namespace nutogui
      oldDisplacementDirection (ddColored),
      useDisplaceData (false),
      displacementData ((size_t)~0),
+     displaceDirectionsDataDS (0),
      displacementDirScale (1),
      useClipper (false),
      updatingCam (false),
@@ -363,6 +368,13 @@ namespace nutogui
     renderWidget = new RenderWidget (this);
     renderWidget->EnableKeyboardHandling (false);
     sizer->Add (renderWidget, 1, wxEXPAND);
+    
+    dataSetSelectionBar = new wxPanel (this);
+    wxSizer* dataSetSelectionBarSizer = new wxBoxSizer (wxHORIZONTAL);
+    dataSetSelectionSlider = new wxSlider (dataSetSelectionBar, ID_DataSetSlider, 0, 0, 1);
+    dataSetSelectionBarSizer->Add (dataSetSelectionSlider, wxSizerFlags().Proportion(1).Expand());
+    dataSetSelectionBar->SetSizer (dataSetSelectionBarSizer);
+    sizer->Add (dataSetSelectionBar, wxSizerFlags().Proportion(0).Expand());
     
     SetSizer (sizer);
     
@@ -580,17 +592,12 @@ namespace nutogui
 
   void ResultViewerImpl::View::SetData (const DataConstPtr& data)
   {
-    currentDataSet = 0;
     this->data = data;
-    vtkDataSet* dataset = data->GetDataSet (currentDataSet);
     displacementData = (size_t)~0;
     
     dataSetMapper.InterpolateScalarsBeforeMappingOn ();
-    dataSetMapper.SetInput (dataset);
-    dataSetMapper.Update ();
     
     origDataSetFaces = vtkSmartPointer<DataSetFaceExtractor>::New();
-    origDataSetFaces->SetInput (dataset);
     vtkSmartPointer<UnstructuredGridWithQuadsClippingToPoly> faceExtractOut =
       vtkSmartPointer<UnstructuredGridWithQuadsClippingToPoly>::New ();
     origDataSetFaces->SetOutput (faceExtractOut);
@@ -598,21 +605,21 @@ namespace nutogui
     origDataSetEdges->SetInput (origDataSetFaces->GetOutput());
     origDataSetMapper = vtkSmartPointer<vtkDataSetMapper>::New ();
     origDataSetMapper->SetInput (origDataSetEdges->GetOutput());
-    origDataSetMapper->Update ();
     
     /* Set a scale for displacement direction arrows; use the min distance
        along all edges of the cells of the model for that. */
     {
       float minEdge = HUGE_VAL;
-      DataSetEdgeIterator edges (dataset);
+      vtkDataSet* dataset0 = data->GetDataSet (0);
+      DataSetEdgeIterator edges (dataset0);
       
       while (edges.HasNext())
       {
 	DataSetEdgeIterator::Edge edge (edges.Next());
 	double pt1[3];
 	double pt2[3];
-	dataset->GetPoint (edge.first, pt1);
-	dataset->GetPoint (edge.second, pt2);
+	dataset0->GetPoint (edge.first, pt1);
+	dataset0->GetPoint (edge.second, pt2);
 	double dist = sqrt (((pt1[0] - pt2[0]) * (pt1[0] - pt2[0]))
 			  + ((pt1[1] - pt2[1]) * (pt1[1] - pt2[1]))
 			  + ((pt1[2] - pt2[2]) * (pt1[2] - pt2[2])));
@@ -647,6 +654,16 @@ namespace nutogui
     
     // Choice box strings have changed, so update size
     UpdateToolbarControlMinSize (displayDataChoice, toolbar);
+    
+    if (data->GetDataSetNum() > 1)
+    {
+      dataSetSelectionSlider->SetRange (0, data->GetDataSetNum()-1);
+      dataSetSelectionBar->Show();
+    }
+    else
+      dataSetSelectionBar->Hide();
+    
+    SetDisplayedDataSet (0);
   }
 
   void ResultViewerImpl::View::OnRenderWidgetRealized (wxCommandEvent& event)
@@ -1254,7 +1271,7 @@ namespace nutogui
     {
       sharedData->displaceDirectionGlyphSource = vtkSmartPointer<vtkArrowSource>::New ();
     }
-    if (!displaceDirectionsData)
+    if (!displaceDirectionsData || (displaceDirectionsDataDS != currentDataSet))
     {
       vtkDataArray* displaceData = data->GetDataArrayRawData (currentDataSet, displacementData);
     
@@ -1283,6 +1300,8 @@ namespace nutogui
 	normals->SetTuple (norm, ptDisplace);
       }
       displaceDirectionsData->GetPointData()->SetNormals (normals);
+      
+      displaceDirectionsDataDS = currentDataSet;
     }
     if (!displaceDirectionsGlyphs)
     {
@@ -1434,6 +1453,37 @@ namespace nutogui
     }
     
     renderWidget->GetRenderWindow()->Render();
+  }
+
+  void ResultViewerImpl::View::OnDataSetSelectionChanged (wxScrollEvent& event)
+  {
+    SetDisplayedDataSet (event.GetPosition());
+    
+    renderWidget->GetRenderWindow()->Render();
+  }
+
+  void ResultViewerImpl::View::SetDisplayedDataSet (size_t index)
+  {
+    currentDataSet = index;
+    vtkDataSet* dataset = data->GetDataSet (currentDataSet);
+    dataSetMapper.SetInput (dataset);
+    dataSetMapper.Update ();
+    origDataSetFaces->SetInput (dataset);
+    origDataSetMapper->Update ();
+    
+    if (displacementDirection != ddNone)
+    {
+      ComputeDisplacementDirections ();
+      ShowDisplacementDirections();
+    }
+    
+    // Always invalidate (so it gets updated for new dataset even if _not_ visible)
+    displacedData = nullptr;
+    if (useDisplaceData)
+    {
+      ComputeDisplacementOffset ();
+      ShowDisplacementOffset ();
+    }
   }
   
   //-------------------------------------------------------------------------

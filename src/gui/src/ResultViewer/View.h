@@ -81,6 +81,8 @@ namespace nutogui
     
     class RenderWidget;
     RenderWidget* renderWidget;
+    wxPanel* dataSetSelectionBar;
+    wxSlider* dataSetSelectionSlider;
     vtkSmartPointer<vtkRenderer> renderer;
     struct DataSetMapperWithEdges
     {
@@ -142,6 +144,7 @@ namespace nutogui
     bool useDisplaceData;
     size_t displacementData;
     vtkSmartPointer<vtkPolyData> displaceDirectionsData;
+    size_t displaceDirectionsDataDS;
     vtkSmartPointer<vtkGlyph3D> displaceDirectionsGlyphs;
     vtkSmartPointer<vtkPolyDataMapper> displaceDirectionsMapper;
     vtkSmartPointer<vtkActor> displaceDirectionsActor;
@@ -227,6 +230,9 @@ namespace nutogui
     
     void CheckDisplacementSizePanelVisibility ();
     void OnDisplacementScaleChange (wxEvent& event);
+    
+    void OnDataSetSelectionChanged (wxScrollEvent& event);
+    void SetDisplayedDataSet (size_t index);
     
     /**
      * Class to handle commands from gradient menu.
