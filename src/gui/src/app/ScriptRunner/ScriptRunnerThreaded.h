@@ -54,11 +54,13 @@ class ScriptRunnerThreaded : public wxThreadHelper
     OverlayCallback (ScriptRunnerThreaded* runner) : runner (runner) {}
   
     void Result (const nutogui::ResultDataSourceVTKPtr& result,
-		 const wxString& title)
-    { runner->Result (result, title); }
+		 const wxString& title,
+		 const wxString& resultName)
+    { runner->Result (result, title, resultName); }
   };
   void Result (const nutogui::ResultDataSourceVTKPtr& result,
-	       const wxString& title);
+	       const wxString& title,
+	       const wxString& resultName);
   /** @} */
   
   wxCriticalSection feedbackProtect;

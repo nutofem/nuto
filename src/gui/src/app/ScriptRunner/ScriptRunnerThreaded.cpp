@@ -35,7 +35,8 @@ ScriptRunnerThreaded::~ScriptRunnerThreaded ()
 }
 
 void ScriptRunnerThreaded::Result (const nutogui::ResultDataSourceVTKPtr& result,
-				   const wxString& title)
+				   const wxString& title,
+				   const wxString& resultName)
 {
   wxCriticalSectionLocker _lock (feedbackProtect);
   

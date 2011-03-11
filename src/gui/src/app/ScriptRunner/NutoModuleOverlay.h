@@ -31,7 +31,8 @@ public:
     virtual ~Callback() {}
     
     virtual void Result (const nutogui::ResultDataSourceVTKPtr& result,
-			 const wxString& title) = 0;
+			 const wxString& title,
+			 const wxString& resultName) = 0;
   };
   typedef boost::shared_ptr<Callback> CallbackPtr;
   
