@@ -16,6 +16,9 @@
 
 #include "ScriptRunnerFeedbackCallbackCommon.h"
 
+#include <boost/unordered_map.hpp>
+
+class ResultDataSourceVTKFromFile;
 class ScriptOutputTab;
 
 class ScriptResultDispatcher : public ScriptRunnerFeedbackCallbackCommon
@@ -27,6 +30,10 @@ class ScriptResultDispatcher : public ScriptRunnerFeedbackCallbackCommon
   
   bool scriptHadWarnings;
   bool hasErrorLocation;
+  
+  typedef boost::shared_ptr<ResultDataSourceVTKFromFile> ResultDataSourceVTKFromFilePtr;
+  typedef boost::unordered_map<wxString, ResultDataSourceVTKFromFilePtr> ResultsMap;
+  ResultsMap results;
 public:
   ScriptResultDispatcher (nutogui::GuiFrame* frame,
 			  const nutogui::ScriptSourcePtr& scriptSource,
@@ -38,8 +45,9 @@ public:
   /**\name nutogui::ScriptRunner::FeedbackCallback implementation
    * @{ */
   void StartupComplete (bool success, const wxString& message);
-  void Result (const nutogui::ResultDataSourceVTKPtr& result,
-	       const wxString& caption);
+  void Result (const wxString& resultTempFile,
+	       const wxString& caption,
+	       const wxString& resultName);
 		       
   void ScriptOutput (OutputTarget target, const wxString& str);
   

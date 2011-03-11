@@ -34,7 +34,7 @@ ScriptRunnerThreaded::~ScriptRunnerThreaded ()
   GetThread()->Wait();
 }
 
-void ScriptRunnerThreaded::Result (const nutogui::ResultDataSourceVTKPtr& result,
+void ScriptRunnerThreaded::Result (const wxString& resultTempFile,
 				   const wxString& title,
 				   const wxString& resultName)
 {
@@ -42,7 +42,7 @@ void ScriptRunnerThreaded::Result (const nutogui::ResultDataSourceVTKPtr& result
   
   BOOST_FOREACH(const FeedbackCallback& callback, feedbackCallbacks)
   {
-    callback.wrappedCallback->Result (result, title);
+    callback.wrappedCallback->Result (resultTempFile, title, resultName);
   }
 }
 

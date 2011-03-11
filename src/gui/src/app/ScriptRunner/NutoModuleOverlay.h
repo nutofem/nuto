@@ -30,7 +30,7 @@ public:
   {
     virtual ~Callback() {}
     
-    virtual void Result (const nutogui::ResultDataSourceVTKPtr& result,
+    virtual void Result (const wxString& resultTempFile,
 			 const wxString& title,
 			 const wxString& resultName) = 0;
   };

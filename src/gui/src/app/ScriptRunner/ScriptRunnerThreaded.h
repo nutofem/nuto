@@ -53,12 +53,12 @@ class ScriptRunnerThreaded : public wxThreadHelper
   public:
     OverlayCallback (ScriptRunnerThreaded* runner) : runner (runner) {}
   
-    void Result (const nutogui::ResultDataSourceVTKPtr& result,
+    void Result (const wxString& resultTempFile,
 		 const wxString& title,
 		 const wxString& resultName)
-    { runner->Result (result, title, resultName); }
+    { runner->Result (resultTempFile, title, resultName); }
   };
-  void Result (const nutogui::ResultDataSourceVTKPtr& result,
+  void Result (const wxString& resultTempFile,
 	       const wxString& title,
 	       const wxString& resultName);
   /** @} */
@@ -113,9 +113,8 @@ public:
     TRPC_METHOD_ARG_LIST(2, (bool, const wxString&))		\
   ))								\
   (TRPC_METHOD (public, Result,					\
-    TRPC_METHOD_ARG_LIST(2,					\
-      (const nutogui::ResultDataSourceVTKPtr&,			\
-       const wxString&))					\
+    TRPC_METHOD_ARG_LIST(3,					\
+      (const wxString&,	const wxString&, const wxString&))	\
   ))								\
   (TRPC_METHOD (public, ScriptOutput,				\
     TRPC_METHOD_ARG_LIST(2, 					\

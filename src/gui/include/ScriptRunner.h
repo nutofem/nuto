@@ -36,8 +36,9 @@ namespace nutogui
       virtual ~FeedbackCallback() {}
       
       virtual void StartupComplete (bool success, const wxString& message) = 0;
-      virtual void Result (const ResultDataSourceVTKPtr& result,
-			   const wxString& caption) = 0;
+      virtual void Result (const wxString& resultTempFile,
+			   const wxString& caption,
+			   const wxString& resultName) = 0;
 
       enum OutputTarget { StdOut, StdErr };
       virtual void ScriptOutput (OutputTarget target, const wxString& str) = 0;

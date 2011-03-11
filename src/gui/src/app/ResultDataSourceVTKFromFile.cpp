@@ -13,17 +13,30 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetReader.h>
 
-ResultDataSourceVTKFromFile::ResultDataSourceVTKFromFile (const char* filename)
+ResultDataSourceVTKFromFile::ResultDataSourceVTKFromFile ()
 {
-  ReadDataFromFile (filename);
 }
 
-vtkDataSet* ResultDataSourceVTKFromFile::QueryDataSet ()
+void ResultDataSourceVTKFromFile::AddDataSet (const char* filename, const wxString& name)
 {
-  return dataset;
+  vtkSmartPointer<vtkDataSet> dataset (ReadDataFromFile (filename));
+  if (dataset)
+  {
+    datasets.push_back (std::make_pair (dataset, name));
+  }
 }
 
-void ResultDataSourceVTKFromFile::ReadDataFromFile (const char* filename)
+vtkDataSet* ResultDataSourceVTKFromFile::GetDataSet (size_t index)
+{
+  return datasets[index].first;
+}
+
+const wxString& ResultDataSourceVTKFromFile::GetDataSetName (size_t index) const
+{
+  return datasets[index].second;
+}
+
+vtkSmartPointer<vtkDataSet> ResultDataSourceVTKFromFile::ReadDataFromFile (const char* filename)
 {
   vtkSmartPointer<vtkDataSetReader> reader = vtkSmartPointer<vtkDataSetReader>::New();
   reader->SetFileName (filename);
@@ -40,5 +53,5 @@ void ResultDataSourceVTKFromFile::ReadDataFromFile (const char* filename)
   // Ignoring, for now: tcoords and fielddata - no idea what to do with them...
   
   reader->Update ();
-  dataset = reader->GetOutput();
+  return reader->GetOutput();
 }

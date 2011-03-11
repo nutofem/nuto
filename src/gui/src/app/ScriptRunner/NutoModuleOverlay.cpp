@@ -11,7 +11,6 @@
 
 #include "NutoModuleOverlay.h"
 
-#include "ResultDataSourceVTKFromFile.h"
 #include "SwigConnect.h"
 
 #include <wx/filename.h>
@@ -89,12 +88,14 @@ void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& 
   /* FIXME: Better would be:
    *  - Grab data directly from VTK, w/o going through a temp file
    *  - Build VTK DataSet in ResultViewer
+   * 
+   * It would already be better to pass out nutoStruct instead of a temp file,
+   * however, that is not as easy as it may seem, mainly because the data extraction
+   * has to be done on the script thread, right away - otherwise the object may be
+   * destroyed...
    */
   std::string outputPath (newOutput.GetFullPath().fn_str());
   nutoStruct->ExportVtkDataFile (outputPath);
-  boost::shared_ptr<ResultDataSourceVTKFromFile> resultSource (
-    boost::make_shared<ResultDataSourceVTKFromFile> (outputPath.c_str()));
-  wxRemoveFile (newOutput.GetFullPath());
   
   wxString resultName;
   {
@@ -105,5 +106,5 @@ void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& 
       resultName = origExportName.GetFullName();
   }
   
-  GetOverlayInstance().callback->Result (resultSource, resultsTitle, resultName);
+  GetOverlayInstance().callback->Result (newOutput.GetFullPath(), resultsTitle, resultName);
 }

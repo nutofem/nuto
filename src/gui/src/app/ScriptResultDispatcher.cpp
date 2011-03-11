@@ -13,6 +13,7 @@
 #include "uicommon/Quote.h"
 #include "ResultViewerImpl.h"
 
+#include "ResultDataSourceVTKFromFile.h"
 #include "ScriptOutputTab.h"
 
 #include <boost/make_shared.hpp>
@@ -29,21 +30,23 @@ void ScriptResultDispatcher::StartupComplete (bool success, const wxString& mess
   }
 }
 
-void ScriptResultDispatcher::Result (const nutogui::ResultDataSourceVTKPtr& result,
-				     const wxString& caption)
+void ScriptResultDispatcher::Result (const wxString& resultTempFile,
+				     const wxString& caption,
+				     const wxString& resultName)
 {
-  // Create a result frame
-  wxString captionStr (caption);
-  if (captionStr.IsEmpty())
-    captionStr = wxT ("Results");
-  
-  wxString fullCaption (wxString::Format (wxT ("%s (%s)"),
-					  captionStr.c_str(),
-					  scriptSource->GetSourceName().c_str()));
-  
-  nutogui::GuiFrame::TabPtr resultViewerTab =
-    boost::make_shared<nutogui::ResultViewerImpl> (result, fullCaption);
-  frame->AddTab (resultViewerTab, true);
+  ResultDataSourceVTKFromFilePtr resultsContainer;
+  {
+    ResultsMap::const_iterator existingResult = results.find (caption);
+    if (existingResult != results.end())
+      resultsContainer = existingResult->second;
+    else
+    {
+      resultsContainer = boost::make_shared<ResultDataSourceVTKFromFile> ();
+      results[caption] = resultsContainer;
+    }
+  }
+  resultsContainer->AddDataSet (resultTempFile.fn_str(), resultName);
+  wxRemoveFile (resultTempFile);
 }
 
 void ScriptResultDispatcher::ScriptOutput (OutputTarget target, const wxString& str)
@@ -107,6 +110,27 @@ void ScriptResultDispatcher::ScriptRunEnd (bool success,
   {
     hasErrorLocation = scriptError->SetErrorLocation (traceback);
   }
+  
+  // Create result tabs for collected results
+  for (ResultsMap::const_iterator result = results.begin();
+       result != results.end();
+       ++result)
+  {
+    // Create a result frame
+    wxString captionStr (result->first);
+    if (captionStr.IsEmpty())
+      captionStr = wxT ("Results");
+    
+    wxString fullCaption (wxString::Format (wxT ("%s (%s)"),
+					    captionStr.c_str(),
+					    scriptSource->GetSourceName().c_str()));
+    
+    nutogui::GuiFrame::TabPtr resultViewerTab =
+      boost::make_shared<nutogui::ResultViewerImpl> (result->second, fullCaption);
+    frame->AddTab (resultViewerTab, true);
+  }
+  // Clean up all collected results
+  results.clear();
 }
   
 void ScriptResultDispatcher::ShowScriptOutput ()

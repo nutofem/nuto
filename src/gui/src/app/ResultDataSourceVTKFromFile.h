@@ -12,17 +12,26 @@
 
 #include "ResultDataSourceVTK.h"
 
+#include <wx/string.h>
+
 #include <vtkSmartPointer.h>
+
+#include <vector>
 
 class ResultDataSourceVTKFromFile : public nutogui::ResultDataSourceVTK
 {
-  vtkSmartPointer<vtkDataSet> dataset;
+  typedef std::pair<vtkSmartPointer<vtkDataSet>, wxString> DataSetPair;
+  std::vector<DataSetPair> datasets;
   
-  void ReadDataFromFile (const char* filename);
+  vtkSmartPointer<vtkDataSet> ReadDataFromFile (const char* filename);
 public:
-  ResultDataSourceVTKFromFile (const char* filename);
+  ResultDataSourceVTKFromFile ();
   
-  vtkDataSet* QueryDataSet ();
+  void AddDataSet (const char* filename, const wxString& name);
+  
+  size_t GetNumDataSets () const { return datasets.size(); }
+  vtkDataSet* GetDataSet (size_t index);
+  const wxString& GetDataSetName (size_t index) const;
 };
 
 #endif // __RESULTDATASOURCEVTKFROMFILE_H__
