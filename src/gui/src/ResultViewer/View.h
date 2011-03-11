@@ -13,6 +13,7 @@
 #include "ResultViewerImpl.h"
 
 #include "uicommon/ControlWithItemsClientDataWrapper.h"
+#include "uicommon/TextCtrlBuddySlider.h"
 
 #include <vector>
 
@@ -82,7 +83,7 @@ namespace nutogui
     class RenderWidget;
     RenderWidget* renderWidget;
     wxPanel* dataSetSelectionBar;
-    wxSlider* dataSetSelectionSlider;
+    uicommon::TextCtrlBuddySlider* dataSetSelectionSlider;
     vtkSmartPointer<vtkRenderer> renderer;
     struct DataSetMapperWithEdges
     {
