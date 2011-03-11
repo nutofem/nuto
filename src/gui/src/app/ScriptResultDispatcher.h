@@ -16,7 +16,7 @@
 
 #include "ScriptRunnerFeedbackCallbackCommon.h"
 
-#include <boost/unordered_map.hpp>
+#include <wx/hashmap.h>
 
 class ResultDataSourceVTKFromFile;
 class ScriptOutputTab;
@@ -32,7 +32,7 @@ class ScriptResultDispatcher : public ScriptRunnerFeedbackCallbackCommon
   bool hasErrorLocation;
   
   typedef boost::shared_ptr<ResultDataSourceVTKFromFile> ResultDataSourceVTKFromFilePtr;
-  typedef boost::unordered_map<wxString, ResultDataSourceVTKFromFilePtr> ResultsMap;
+  WX_DECLARE_STRING_HASH_MAP (ResultDataSourceVTKFromFilePtr, ResultsMap);
   ResultsMap results;
 public:
   ScriptResultDispatcher (nutogui::GuiFrame* frame,
