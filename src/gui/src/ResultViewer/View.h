@@ -168,6 +168,7 @@ namespace nutogui
     void ClipPlaneChanged ();
     
     DataConstPtr data;
+    size_t currentDataSet;
     wxChoice* displayDataChoice;
     struct VisOpt
     {

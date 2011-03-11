@@ -23,7 +23,7 @@ namespace nutogui
 {
   class ResultViewerImpl::Data
   {
-    vtkSmartPointer<vtkDataSet> dataset;
+    ResultDataSourceVTKPtr dataSource;
     
     struct DataArray;
     std::vector<DataArray> arrays;
@@ -31,9 +31,11 @@ namespace nutogui
     void CollectArrays ();
     void ComputeDisplayDataRange (DataArray& data, vtkDataArray* arrayData);
   public:
-    Data (vtkDataSet* dataset);
+    Data (const ResultDataSourceVTKPtr& dataSource);
     
-    vtkDataSet* GetDataSet() const;
+    size_t GetDataSetNum() const;
+    const wxString& GetDataSetName (size_t index) const;
+    vtkDataSet* GetDataSet (size_t index) const;
     
     size_t GetNumDataArrays () const;
     const wxString& GetDataArrayName (size_t i) const;
@@ -49,7 +51,7 @@ namespace nutogui
     void GetDataArrayCompValueRange (size_t i, double* range) const;
     
     bool IsDataArrayDisplacement (size_t i) const;
-    vtkDataArray* GetDataArrayRawData (size_t i) const;
+    vtkDataArray* GetDataArrayRawData (size_t setIndex, size_t i) const;
   private:
     struct DataArray
     {
@@ -60,6 +62,8 @@ namespace nutogui
       
       double magMin, magMax;
       double compMin, compMax;
+      
+      DataArray();
     };
   };
 } // namespace nutogui

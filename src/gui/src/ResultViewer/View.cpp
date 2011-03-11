@@ -580,8 +580,9 @@ namespace nutogui
 
   void ResultViewerImpl::View::SetData (const DataConstPtr& data)
   {
+    currentDataSet = 0;
     this->data = data;
-    vtkDataSet* dataset = data->GetDataSet ();
+    vtkDataSet* dataset = data->GetDataSet (currentDataSet);
     displacementData = (size_t)~0;
     
     dataSetMapper.InterpolateScalarsBeforeMappingOn ();
@@ -711,7 +712,7 @@ namespace nutogui
     clipPlaneWidget = vtkSmartPointer<vtkPlaneWidget>::New ();
     clipPlaneWidget->SetInteractor (renderWidget->GetRenderWindow()->GetInteractor());
     clipPlaneWidget->KeyPressActivationOff();
-    clipPlaneWidget->SetInput (data->GetDataSet());
+    clipPlaneWidget->SetInput (data->GetDataSet (currentDataSet));
     clipPlaneWidget->PlaceWidget();
     clipPlane = vtkSmartPointer<vtkPlane>::New ();
     clipPlaneWidget->GetPlane (clipPlane);
@@ -1171,7 +1172,7 @@ namespace nutogui
   
   void ResultViewerImpl::View::HideDisplacementOffset ()
   {
-    dataSetMapper.SetInput (data->GetDataSet());
+    dataSetMapper.SetInput (data->GetDataSet (currentDataSet));
     renderer->RemoveActor (origDataSetActor);
   }
 
@@ -1180,14 +1181,15 @@ namespace nutogui
     if (displacedData) return;
       
     double scale = displacementSizePanel->GetDisplacementScale();
-    vtkDataArray* displaceData = data->GetDataArrayRawData (displacementData);
+    vtkDataArray* displaceData = data->GetDataArrayRawData (currentDataSet, displacementData);
     
+    vtkDataSet* dataset = data->GetDataSet (currentDataSet);
     vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New ();
-    newPoints->SetNumberOfPoints (data->GetDataSet()->GetNumberOfPoints());
-    for (vtkIdType point = 0; point < data->GetDataSet()->GetNumberOfPoints(); point++)
+    newPoints->SetNumberOfPoints (dataset->GetNumberOfPoints());
+    for (vtkIdType point = 0; point < dataset->GetNumberOfPoints(); point++)
     {
       double pt[3];
-      data->GetDataSet()->GetPoint (point, pt);
+      dataset->GetPoint (point, pt);
       double* ptDisplace = displaceData->GetTuple3 (point);
       for (int c = 0; c < 3; c++)
       {
@@ -1197,15 +1199,15 @@ namespace nutogui
     }
     vtkSmartPointer<vtkUnstructuredGrid> newDataSet = vtkSmartPointer<vtkUnstructuredGrid>::New ();
     newDataSet->SetPoints (newPoints);
-    newDataSet->Allocate (data->GetDataSet()->GetNumberOfCells());
-    for (vtkIdType cell = 0; cell < data->GetDataSet()->GetNumberOfCells(); cell++)
+    newDataSet->Allocate (dataset->GetNumberOfCells());
+    for (vtkIdType cell = 0; cell < dataset->GetNumberOfCells(); cell++)
     {
-      vtkCell* cellPtr = data->GetDataSet()->GetCell (cell);
+      vtkCell* cellPtr = dataset->GetCell (cell);
       newDataSet->InsertNextCell (cellPtr->GetCellType(),
 				  cellPtr->GetPointIds());
     }
-    newDataSet->GetPointData()->ShallowCopy (data->GetDataSet()->GetPointData());
-    newDataSet->GetCellData()->ShallowCopy (data->GetDataSet()->GetCellData());
+    newDataSet->GetPointData()->ShallowCopy (dataset->GetPointData());
+    newDataSet->GetCellData()->ShallowCopy (dataset->GetCellData());
     
     displacedData = newDataSet;
   }
@@ -1254,15 +1256,16 @@ namespace nutogui
     }
     if (!displaceDirectionsData)
     {
-      vtkDataArray* displaceData = data->GetDataArrayRawData (displacementData);
+      vtkDataArray* displaceData = data->GetDataArrayRawData (currentDataSet, displacementData);
     
       displaceDirectionsData = vtkSmartPointer<vtkPolyData>::New ();
       
+      vtkDataSet* dataset = data->GetDataSet (currentDataSet);
       // Points: simply copy the points from the original data set
-      DataSetHelpers::CopyPoints (displaceDirectionsData, data->GetDataSet());
+      DataSetHelpers::CopyPoints (displaceDirectionsData, dataset);
       vtkSmartPointer<vtkCellArray> verts = vtkSmartPointer<vtkCellArray>::New ();
-      verts->Allocate (data->GetDataSet()->GetNumberOfPoints());
-      for (vtkIdType point = 0; point < data->GetDataSet()->GetNumberOfPoints(); point++)
+      verts->Allocate (dataset->GetNumberOfPoints());
+      for (vtkIdType point = 0; point < dataset->GetNumberOfPoints(); point++)
       {
 	verts->InsertNextCell (1, &point);
       }
@@ -1273,8 +1276,8 @@ namespace nutogui
       normals.TakeReference (vtkFloatArray::New());
 
       normals->SetNumberOfComponents (3);
-      normals->SetNumberOfTuples (data->GetDataSet()->GetNumberOfPoints());
-      for (vtkIdType norm = 0; norm < data->GetDataSet()->GetNumberOfPoints(); norm++)
+      normals->SetNumberOfTuples (dataset->GetNumberOfPoints());
+      for (vtkIdType norm = 0; norm < dataset->GetNumberOfPoints(); norm++)
       {
 	double* ptDisplace = displaceData->GetTuple3 (norm);
 	normals->SetTuple (norm, ptDisplace);

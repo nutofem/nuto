@@ -25,8 +25,7 @@ namespace nutogui
    : caption (caption),
      splitMgr (nullptr)
   {
-    vtkDataSet* dataset = resultData->GetDataSet (0);
-    data = boost::make_shared<Data> (dataset);
+    data = boost::make_shared<Data> (resultData);
   }
   
   ResultViewerImpl::~ResultViewerImpl()

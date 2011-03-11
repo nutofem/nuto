@@ -15,19 +15,27 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
+#include <float.h>
+
 namespace nutogui
 {
-  
-  ResultViewerImpl::Data::Data (vtkDataSet* dataset)
-   : dataset (dataset)
+  ResultViewerImpl::Data::Data (const ResultDataSourceVTKPtr& dataSource)
+   : dataSource (dataSource)
   {
+    /* Assumes that all data set in the source have the same set of arrays.
+     * *Probably* pretty much always the case in practice, still -
+     * are the safeguards enough? */
     CollectArrays ();
   }
   
   void ResultViewerImpl::Data::CollectArrays ()
   {
+    /* Assumes that all data set in the source have the same set of arrays.
+     * *Probably* pretty much always the case in practice, still -
+     * are the safeguards enough? */
+    vtkDataSet* dataset0 =  dataSource->GetDataSet (0);
     {
-      vtkCellData* cellData = dataset->GetCellData();
+      vtkCellData* cellData = dataset0->GetCellData();
       for (int i = 0; i < cellData->GetNumberOfArrays(); i++)
       {
 	DataArray data;
@@ -36,13 +44,22 @@ namespace nutogui
 	data.arrayIndex = i;
 	vtkDataArray* array = cellData->GetArray (i);
 	data.arrayComps = array->GetNumberOfComponents ();
-	ComputeDisplayDataRange (data, array);
+	
+	for (size_t s = 0; s < dataSource->GetNumDataSets(); s++)
+	{
+	  vtkCellData* setCellData = dataSource->GetDataSet (s)->GetCellData();
+	  if (!setCellData) continue;
+	  vtkDataArray* array = setCellData->GetArray (i);
+	  if (!array) continue;
+	  ComputeDisplayDataRange (data, array);
+	}
+	
 	arrays.push_back (data);
       }
     }
     
     {
-      vtkPointData* pointData = dataset->GetPointData();
+      vtkPointData* pointData = dataset0->GetPointData();
       for (int i = 0; i < pointData->GetNumberOfArrays(); i++)
       {
 	DataArray data;
@@ -51,7 +68,16 @@ namespace nutogui
 	data.arrayIndex = i;
 	vtkDataArray* array = pointData->GetArray (i);
 	data.arrayComps = array->GetNumberOfComponents ();
-	ComputeDisplayDataRange (data, array);
+	
+	for (size_t s = 0; s < dataSource->GetNumDataSets(); s++)
+	{
+	  vtkPointData* setPointData = dataSource->GetDataSet (s)->GetPointData();
+	  if (!setPointData) continue;
+	  vtkDataArray* array = setPointData->GetArray (i);
+	  if (!array) continue;
+	  ComputeDisplayDataRange (data, array);
+	}
+	
 	arrays.push_back (data);
       }
     }
@@ -62,11 +88,12 @@ namespace nutogui
   {
     double range[2];
     arrayData->GetRange (range, -1);
-    data.magMin = range[0];
-    data.magMax = range[1];
+    data.magMin = std::min (data.magMin, range[0]);
+    data.magMax = std::max (data.magMax, range[1]);
     
-    arrayData->GetRange (range, 0);
-    for (int comp = 1; comp < arrayData->GetNumberOfComponents(); comp++)
+    range[0] = data.compMin;
+    range[1] = data.compMax;
+    for (int comp = 0; comp < arrayData->GetNumberOfComponents(); comp++)
     {
       double compRange[2];
       arrayData->GetRange (compRange, comp);
@@ -77,9 +104,19 @@ namespace nutogui
     data.compMax = range[1];
   }
   
-  vtkDataSet* ResultViewerImpl::Data::GetDataSet() const
+  size_t ResultViewerImpl::Data::GetDataSetNum() const
   {
-    return dataset;
+    return dataSource->GetNumDataSets();
+  }
+
+  const wxString& ResultViewerImpl::Data::GetDataSetName (size_t index) const
+  {
+    return dataSource->GetDataSetName (index);
+  }
+
+  vtkDataSet* ResultViewerImpl::Data::GetDataSet (size_t index) const
+  {
+    return dataSource->GetDataSet (index);
   }
   
   size_t ResultViewerImpl::Data::GetNumDataArrays () const
@@ -125,8 +162,9 @@ namespace nutogui
     return (arrays[i].arrayComps == 3) && (arrays[i].name == wxT ("Displacements"));
   }
   
-  vtkDataArray* ResultViewerImpl::Data::GetDataArrayRawData (size_t i) const
+  vtkDataArray* ResultViewerImpl::Data::GetDataArrayRawData (size_t setIndex, size_t i) const
   {
+    vtkDataSet* dataset = dataSource->GetDataSet (setIndex);
     if (arrays[i].assoc == perPoint)
     {
       vtkPointData* pointData = dataset->GetPointData();
@@ -137,5 +175,12 @@ namespace nutogui
       vtkCellData* cellData = dataset->GetCellData();
       return cellData->GetArray (arrays[i].arrayIndex);
     }
+  }
+  
+  //-------------------------------------------------------------------------
+  
+  ResultViewerImpl::Data::DataArray::DataArray()
+    : magMin (DBL_MAX), magMax (DBL_MIN), compMin (DBL_MAX), compMax (DBL_MIN)
+  {
   }
 } // namespace nutogui
