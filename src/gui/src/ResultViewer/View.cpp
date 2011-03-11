@@ -35,10 +35,7 @@
 #include <vtkCellData.h>
 #include <vtkClipDataSet.h>
 #include <vtkCommand.h>
-#include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
-#include <vtkDataSetSurfaceFilter.h>
-#include <vtkDefaultPainter.h>
 #include <vtkFloatArray.h>
 #include <vtkGlyph3D.h>
 #include <vtkInteractorStyleSwitch.h>
