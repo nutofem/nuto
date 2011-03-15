@@ -24,7 +24,7 @@ namespace nutogui
 {
   class RESULTVIEWER_EXPORTED ResultViewerImpl : public TabCommonImpl
   {
-    class View;
+    class View3D;
     
     class Data;
     typedef boost::shared_ptr<const Data> DataConstPtr;

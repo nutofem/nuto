@@ -12,7 +12,7 @@
 
 #include "Data.h"
 #include "SplitManager.h"
-#include "View.h"
+#include "View3D.h"
 
 #include <wx/wx.h>
 #include <boost/make_shared.hpp>
@@ -40,7 +40,7 @@ namespace nutogui
     callback->SetCloseable (true);
     
     splitMgr = new SplitManager (parentWindow);
-    View* firstView = new View (splitMgr, splitMgr);
+    View3D* firstView = new View3D (splitMgr, splitMgr);
     firstView->SetData (data);
     splitMgr->SetInitialView (firstView);
     return splitMgr;

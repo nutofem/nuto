@@ -1,5 +1,5 @@
 /**\file
- * Result viewer view panel.
+ * Result viewer 3D view panel.
  */
 /*
  * Written 2010 by Frank Richter <frank.richter@gmail.com>
@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef __NUTOGUI_RESULTVIEWER_VIEW_H__
-#define __NUTOGUI_RESULTVIEWER_VIEW_H__
+#ifndef __NUTOGUI_RESULTVIEWER_VIEW3D_H__
+#define __NUTOGUI_RESULTVIEWER_VIEW3D_H__
 
 #include "ResultViewerImpl.h"
 
@@ -47,7 +47,7 @@ namespace nutogui
   class DataSetFaceExtractor;
   class DisplacementDirectionSizePanel;
   
-  class ResultViewerImpl::View : public wxPanel
+  class ResultViewerImpl::View3D : public wxPanel
   {
     class CameraModifiedCallback;
     
@@ -234,7 +234,7 @@ namespace nutogui
     void OnToggleMaximizationUpdateUI (wxUpdateUIEvent& event);
     
     class UpdateCameraEvent;
-    typedef void (ResultViewerImpl::View::*UpdateCameraEventFunction)(UpdateCameraEvent&);
+    typedef void (ResultViewerImpl::View3D::*UpdateCameraEventFunction)(UpdateCameraEvent&);
     void OnUpdateCamera (UpdateCameraEvent& event);
     
     void CheckDisplacementSizePanelVisibility ();
@@ -251,9 +251,9 @@ namespace nutogui
      */
     class GradientMenuEventHandler : public wxEvtHandler
     {
-      View* parent;
+      View3D* parent;
     public:
-      GradientMenuEventHandler (View* parent) : parent (parent) {}
+      GradientMenuEventHandler (View3D* parent) : parent (parent) {}
       
       void OnGradientSelect (wxCommandEvent& event);
 			      
@@ -261,9 +261,9 @@ namespace nutogui
     };
     GradientMenuEventHandler gradientMenuHandler;
   public:
-    View (wxWindow* parent, SplitManager* splitMgr,
-	  const View* cloneFrom = nullptr);
-    ~View ();
+    View3D (wxWindow* parent, SplitManager* splitMgr,
+	  const View3D* cloneFrom = nullptr);
+    ~View3D ();
     
     void SetData (const DataConstPtr& data);
 			      
@@ -271,4 +271,4 @@ namespace nutogui
   };
 } // namespace nutogui
 
-#endif // __NUTOGUI_RESULTVIEWER_VIEW_H__
+#endif // __NUTOGUI_RESULTVIEWER_VIEW3D_H__

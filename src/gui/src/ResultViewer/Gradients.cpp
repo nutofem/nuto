@@ -34,7 +34,7 @@ namespace nutogui
     return colors;
   }
   
-  ResultViewerImpl::View::Gradients::Gradients ()
+  ResultViewerImpl::View3D::Gradients::Gradients ()
   {
     // Set up default gradients
     vtkSmartPointer<vtkLookupTable> colors;
@@ -69,12 +69,12 @@ namespace nutogui
     }
   }
   
-  vtkLookupTable* ResultViewerImpl::View::Gradients::GetGradientColors (size_t n) const
+  vtkLookupTable* ResultViewerImpl::View3D::Gradients::GetGradientColors (size_t n) const
   {
     return gradients[n].second;
   }
   
-  wxBitmap ResultViewerImpl::View::Gradients::RenderGradient (size_t n, const wxSize& bitmapSize) const
+  wxBitmap ResultViewerImpl::View3D::Gradients::RenderGradient (size_t n, const wxSize& bitmapSize) const
   {
     vtkScalarsToColors* colors = gradients[n].second;
     

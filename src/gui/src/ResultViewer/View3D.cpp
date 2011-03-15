@@ -1,5 +1,5 @@
 /**\file
- * Result viewer view panel.
+ * Result viewer 3D view panel.
  */
 /*
  * Written 2010 by Frank Richter <frank.richter@gmail.com>
@@ -8,7 +8,7 @@
  */
 
 #include "common.h"
-#include "View.h"
+#include "View3D.h"
 
 #include "Data.h"
 #include "DataSetEdgeExtractor.h"
@@ -54,10 +54,10 @@
 namespace nutogui
 {
   
-  class ResultViewerImpl::View::CameraModifiedCallback : public vtkCommand
+  class ResultViewerImpl::View3D::CameraModifiedCallback : public vtkCommand
   {
   public:
-    View* view;
+    View3D* view;
     
     static CameraModifiedCallback* New ()
     {
@@ -73,10 +73,10 @@ namespace nutogui
   
   //-------------------------------------------------------------------
   
-  class ResultViewerImpl::View::ClipPlaneChangedCallback : public vtkCommand
+  class ResultViewerImpl::View3D::ClipPlaneChangedCallback : public vtkCommand
   {
   public:
-    View* view;
+    View3D* view;
     
     static ClipPlaneChangedCallback* New ()
     {
@@ -97,7 +97,7 @@ namespace nutogui
   END_DECLARE_EVENT_TYPES()
   DEFINE_EVENT_TYPE(EVENT_RENDER_WIDGET_REALIZED)
   
-  class ResultViewerImpl::View::RenderWidget : public vtkwx::RenderWidget
+  class ResultViewerImpl::View3D::RenderWidget : public vtkwx::RenderWidget
   {
     bool painted;
     
@@ -112,11 +112,11 @@ namespace nutogui
     DECLARE_EVENT_TABLE()
   };
   
-  BEGIN_EVENT_TABLE(ResultViewerImpl::View::RenderWidget, vtkwx::RenderWidget)
+  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D::RenderWidget, vtkwx::RenderWidget)
     EVT_PAINT(RenderWidget::OnPaint)
   END_EVENT_TABLE()
   
-  void ResultViewerImpl::View::RenderWidget::OnPaint (wxPaintEvent& event)
+  void ResultViewerImpl::View3D::RenderWidget::OnPaint (wxPaintEvent& event)
   {
     if (!painted)
     {
@@ -132,7 +132,7 @@ namespace nutogui
 
   DEFINE_EVENT_TYPE(EVENT_UPDATE_CAMERA)
   
-  class ResultViewerImpl::View::UpdateCameraEvent : public wxEvent
+  class ResultViewerImpl::View3D::UpdateCameraEvent : public wxEvent
   {
     vtkCamera* cam;
   public:
@@ -157,7 +157,7 @@ namespace nutogui
   END_DECLARE_EVENT_TYPES()
   DEFINE_EVENT_TYPE(EVENT_DATASET_FRAME_CHANGED)
   
-  struct ResultViewerImpl::View::SharedViewData
+  struct ResultViewerImpl::View3D::SharedViewData
   {
     wxSize smallButtonSize;
     wxBitmap imgSplitH;
@@ -215,49 +215,49 @@ namespace nutogui
     ID_DisplacementDirModeFirst = 110
   };
   
-  BEGIN_EVENT_TABLE(ResultViewerImpl::View, wxPanel)
-    EVT_COMMAND(wxID_ANY, EVENT_RENDER_WIDGET_REALIZED, ResultViewerImpl::View::OnRenderWidgetRealized)
-    EVT_WINDOW_CREATE(ResultViewerImpl::View::OnWindowCreate)
+  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D, wxPanel)
+    EVT_COMMAND(wxID_ANY, EVENT_RENDER_WIDGET_REALIZED, ResultViewerImpl::View3D::OnRenderWidgetRealized)
+    EVT_WINDOW_CREATE(ResultViewerImpl::View3D::OnWindowCreate)
     
-    EVT_CHOICE(ID_DisplayData, ResultViewerImpl::View::OnDisplayDataChanged)
-    EVT_CHOICE(ID_VisOption, ResultViewerImpl::View::OnVisOptionChanged)
+    EVT_CHOICE(ID_DisplayData, ResultViewerImpl::View3D::OnDisplayDataChanged)
+    EVT_CHOICE(ID_VisOption, ResultViewerImpl::View3D::OnVisOptionChanged)
     
-    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_ActorRenderMode, ResultViewerImpl::View::OnRenderModeDropDown)
+    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_ActorRenderMode, ResultViewerImpl::View3D::OnRenderModeDropDown)
     EVT_MENU_RANGE(ID_RenderModeFirst,
-		   ID_RenderModeFirst+ResultViewerImpl::View::numRenderModes-1,
-		   ResultViewerImpl::View::OnRenderModeCommand)
-    EVT_MENU(ID_ShowLegend, ResultViewerImpl::View::OnShowLegend)
-    EVT_UPDATE_UI(ID_ShowLegend, ResultViewerImpl::View::OnShowLegendUpdateUI)
-    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_LegendOptions, ResultViewerImpl::View::OnLegendOptions)
-    EVT_UPDATE_UI(ID_LegendOptions, ResultViewerImpl::View::OnLegendOptionsUpdateUI)
-    EVT_MENU(ID_ClipPlane, ResultViewerImpl::View::OnClipPlane)
-    EVT_MENU(ID_LinkViews, ResultViewerImpl::View::OnLinkViews)
-    EVT_UPDATE_UI(ID_LinkViews, ResultViewerImpl::View::OnLinkViewsUpdateUI)
-    EVT_MENU(ID_DisplacementOffset, ResultViewerImpl::View::OnDisplacementOffset)
-    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_DisplacementDirMode, ResultViewerImpl::View::OnDisplacementDirDropDown)
+		   ID_RenderModeFirst+ResultViewerImpl::View3D::numRenderModes-1,
+		   ResultViewerImpl::View3D::OnRenderModeCommand)
+    EVT_MENU(ID_ShowLegend, ResultViewerImpl::View3D::OnShowLegend)
+    EVT_UPDATE_UI(ID_ShowLegend, ResultViewerImpl::View3D::OnShowLegendUpdateUI)
+    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_LegendOptions, ResultViewerImpl::View3D::OnLegendOptions)
+    EVT_UPDATE_UI(ID_LegendOptions, ResultViewerImpl::View3D::OnLegendOptionsUpdateUI)
+    EVT_MENU(ID_ClipPlane, ResultViewerImpl::View3D::OnClipPlane)
+    EVT_MENU(ID_LinkViews, ResultViewerImpl::View3D::OnLinkViews)
+    EVT_UPDATE_UI(ID_LinkViews, ResultViewerImpl::View3D::OnLinkViewsUpdateUI)
+    EVT_MENU(ID_DisplacementOffset, ResultViewerImpl::View3D::OnDisplacementOffset)
+    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_DisplacementDirMode, ResultViewerImpl::View3D::OnDisplacementDirDropDown)
     EVT_MENU_RANGE(ID_DisplacementDirModeFirst,
-		   ID_DisplacementDirModeFirst+ResultViewerImpl::View::numDisplacementDirModes-1,
-		   ResultViewerImpl::View::OnDisplacementDirCommand)
+		   ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
+		   ResultViewerImpl::View3D::OnDisplacementDirCommand)
     
-    EVT_MENU(ID_SplitHorz, ResultViewerImpl::View::OnSplitHorizontally)
-    EVT_UPDATE_UI(ID_SplitHorz, ResultViewerImpl::View::OnSplitUpdateUI)
-    EVT_MENU(ID_SplitVert, ResultViewerImpl::View::OnSplitVertically)
-    EVT_UPDATE_UI(ID_SplitVert, ResultViewerImpl::View::OnSplitUpdateUI)
-    EVT_MENU(ID_Unsplit, ResultViewerImpl::View::OnUnsplit)
-    EVT_UPDATE_UI(ID_Unsplit, ResultViewerImpl::View::OnUnsplitUpdateUI)
-    EVT_MENU(ID_ToggleMaximization, ResultViewerImpl::View::OnToggleMaximization)
-    EVT_UPDATE_UI(ID_ToggleMaximization, ResultViewerImpl::View::OnToggleMaximizationUpdateUI)
+    EVT_MENU(ID_SplitHorz, ResultViewerImpl::View3D::OnSplitHorizontally)
+    EVT_UPDATE_UI(ID_SplitHorz, ResultViewerImpl::View3D::OnSplitUpdateUI)
+    EVT_MENU(ID_SplitVert, ResultViewerImpl::View3D::OnSplitVertically)
+    EVT_UPDATE_UI(ID_SplitVert, ResultViewerImpl::View3D::OnSplitUpdateUI)
+    EVT_MENU(ID_Unsplit, ResultViewerImpl::View3D::OnUnsplit)
+    EVT_UPDATE_UI(ID_Unsplit, ResultViewerImpl::View3D::OnUnsplitUpdateUI)
+    EVT_MENU(ID_ToggleMaximization, ResultViewerImpl::View3D::OnToggleMaximization)
+    EVT_UPDATE_UI(ID_ToggleMaximization, ResultViewerImpl::View3D::OnToggleMaximizationUpdateUI)
     
-    EVT_UPDATE_CAMERA(ResultViewerImpl::View::OnUpdateCamera)
+    EVT_UPDATE_CAMERA(ResultViewerImpl::View3D::OnUpdateCamera)
     
-    EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View::OnDisplacementScaleChange)
+    EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View3D::OnDisplacementScaleChange)
     
-    EVT_COMMAND_SCROLL(ID_DataSetSlider, ResultViewerImpl::View::OnDataSetSelectionChanged)
-    EVT_COMMAND(wxID_ANY, EVENT_DATASET_FRAME_CHANGED, ResultViewerImpl::View::OnLinkedDataSetChanged)
+    EVT_COMMAND_SCROLL(ID_DataSetSlider, ResultViewerImpl::View3D::OnDataSetSelectionChanged)
+    EVT_COMMAND(wxID_ANY, EVENT_DATASET_FRAME_CHANGED, ResultViewerImpl::View3D::OnLinkedDataSetChanged)
   END_EVENT_TABLE()
   
-  ResultViewerImpl::View::View (wxWindow* parent, SplitManager* splitMgr,
-				const View* cloneFrom)
+  ResultViewerImpl::View3D::View3D (wxWindow* parent, SplitManager* splitMgr,
+				    const View3D* cloneFrom)
    : wxPanel (parent), splitMgr (splitMgr),
      renderMode (0),
      displacementDirection (ddNone),
@@ -406,7 +406,7 @@ namespace nutogui
     }
   }
   
-  ResultViewerImpl::View::~View ()
+  ResultViewerImpl::View3D::~View3D ()
   {
     // To ensure linkedViewCount is correctly decremented
     SetLinkView (false);
@@ -417,7 +417,7 @@ namespace nutogui
 #define wxART_CLOSE	wxART_MAKE_ART_ID(wxART_CLOSE)
 #endif
 
-  void ResultViewerImpl::View::SetupSharedData ()
+  void ResultViewerImpl::View3D::SetupSharedData ()
   {
     sharedData = boost::make_shared<SharedViewData> ();
     
@@ -513,7 +513,7 @@ namespace nutogui
     }
   }
   
-  void ResultViewerImpl::View::SetData (const DataConstPtr& data)
+  void ResultViewerImpl::View3D::SetData (const DataConstPtr& data)
   {
     this->data = data;
     displacementData = (size_t)~0;
@@ -589,7 +589,7 @@ namespace nutogui
     SetDisplayedDataSet (0);
   }
 
-  void ResultViewerImpl::View::OnRenderWidgetRealized (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnRenderWidgetRealized (wxCommandEvent& event)
   {
     if (!renderer)
     {
@@ -601,7 +601,7 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View::OnWindowCreate (wxWindowCreateEvent& event)
+  void ResultViewerImpl::View3D::OnWindowCreate (wxWindowCreateEvent& event)
   {
     if (event.GetWindow() == this)
     {
@@ -613,7 +613,7 @@ namespace nutogui
     }
   }
   
-  void ResultViewerImpl::View::SetupRenderer ()
+  void ResultViewerImpl::View3D::SetupRenderer ()
   {
     renderer = vtkSmartPointer<vtkRenderer>::New ();
     renderWidget->GetRenderWindow()->AddRenderer (renderer);
@@ -693,7 +693,7 @@ namespace nutogui
     }
   }
 
-  bool ResultViewerImpl::View::UpdateCameraPositions (vtkCamera* cam)
+  bool ResultViewerImpl::View3D::UpdateCameraPositions (vtkCamera* cam)
   {
     vtkCamera* myCam = renderer->GetActiveCamera ();
     if (cam == myCam) return false;
@@ -719,12 +719,12 @@ namespace nutogui
     return true;
   }
 
-  vtkCamera* ResultViewerImpl::View::GetCamera () const
+  vtkCamera* ResultViewerImpl::View3D::GetCamera () const
   {
     return renderer->GetActiveCamera ();
   }
   
-  void ResultViewerImpl::View::CameraChanged (vtkCamera* cam)
+  void ResultViewerImpl::View3D::CameraChanged (vtkCamera* cam)
   {
     if (updatingCam) return;
     // Unlinked, don't propagate
@@ -734,13 +734,13 @@ namespace nutogui
     splitMgr->PostToOthers (event, this);
   }
 
-  void ResultViewerImpl::View::ClipPlaneChanged ()
+  void ResultViewerImpl::View3D::ClipPlaneChanged ()
   {
     renderer->ResetCameraClippingRange ();
     clipPlaneWidget->GetPlane (clipPlane);
   }
 
-  bool ResultViewerImpl::View::SetLinkView (bool flag)
+  bool ResultViewerImpl::View3D::SetLinkView (bool flag)
   {
     if (useLinkView == flag) return false;
     
@@ -777,7 +777,7 @@ namespace nutogui
     return ret;
   }
 
-  void ResultViewerImpl::View::OnDisplayDataChanged (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnDisplayDataChanged (wxCommandEvent& event)
   {
     if (event.GetSelection() < 0) return;
     if (!dataSetMapper) return;
@@ -834,7 +834,7 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
   
-  void ResultViewerImpl::View::OnVisOptionChanged (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnVisOptionChanged (wxCommandEvent& event)
   {
     int displaySel = displayDataChoice->GetSelection();
     if (displaySel <= 0) return;
@@ -847,7 +847,7 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::UpdateVisOptionChoice (size_t arrayIndex, int initialSel)
+  void ResultViewerImpl::View3D::UpdateVisOptionChoice (size_t arrayIndex, int initialSel)
   {
     visChoiceCtrl->Clear ();
     visChoiceCtrl->Append (wxT ("Magnitude"));
@@ -863,7 +863,7 @@ namespace nutogui
 				 displayDataChoice->GetBestSize().GetHeight());
   }
 
-  void ResultViewerImpl::View::SetVisComponent (size_t arrayIndex, int visComp)
+  void ResultViewerImpl::View3D::SetVisComponent (size_t arrayIndex, int visComp)
   {
     vtkSmartPointer<vtkScalarsToColors> lut (dataSetMapper.GetLookupTable ());
     double range[2];
@@ -881,7 +881,7 @@ namespace nutogui
     dataSetMapper.SetScalarRange (range);
   }
 
-  void ResultViewerImpl::View::UpdateGradientUI (size_t gradient)
+  void ResultViewerImpl::View3D::UpdateGradientUI (size_t gradient)
   {
     actorOptionsTB->SetToolBitmap (ID_LegendOptions,
 				   sharedData->gradientToolImages[gradient]);
@@ -893,7 +893,7 @@ namespace nutogui
     lastVisOpt[displaySel-1].gradient = gradient;
   }
   
-  void ResultViewerImpl::View::SetGradient (size_t gradient)
+  void ResultViewerImpl::View3D::SetGradient (size_t gradient)
   {
     if (gradient == (size_t)~0) return;
 
@@ -905,7 +905,7 @@ namespace nutogui
     scalarBar->GetScalarBarActor()->SetLookupTable (newColors);
   }
 
-  void ResultViewerImpl::View::OnRenderModeDropDown (wxAuiToolBarEvent& event)
+  void ResultViewerImpl::View3D::OnRenderModeDropDown (wxAuiToolBarEvent& event)
   {
     if (event.IsDropDownClicked())
     {
@@ -925,7 +925,7 @@ namespace nutogui
     }
   }
   
-  void ResultViewerImpl::View::OnRenderModeCommand (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnRenderModeCommand (wxCommandEvent& event)
   {
     renderMode = event.GetId() - ID_RenderModeFirst;
     ApplyRenderMode ();
@@ -944,7 +944,7 @@ namespace nutogui
     };
   }
   
-  void ResultViewerImpl::View::ApplyRenderMode ()
+  void ResultViewerImpl::View3D::ApplyRenderMode ()
   {
     static const RenderModeSettings rmSettings[numRenderModes] =
     {
@@ -965,7 +965,7 @@ namespace nutogui
     dataSetMapper.SetEdgeVisibility (rmSettings[renderMode].edgeVis);
   }
 
-  void ResultViewerImpl::View::SetUIRenderMode ()
+  void ResultViewerImpl::View3D::SetUIRenderMode ()
   {
     //renderModeMenu.Check (ID_RenderModeFirst + mode, true);
     actorOptionsTB->SetToolBitmap (ID_ActorRenderMode,
@@ -973,7 +973,7 @@ namespace nutogui
     actorOptionsTB->Refresh();
   }
 
-  void ResultViewerImpl::View::OnShowLegend (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnShowLegend (wxCommandEvent& event)
   {
     int displaySel = displayDataChoice->GetSelection();
     if (displaySel <= 0) return;
@@ -983,12 +983,12 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::OnShowLegendUpdateUI (wxUpdateUIEvent& event)
+  void ResultViewerImpl::View3D::OnShowLegendUpdateUI (wxUpdateUIEvent& event)
   {
     event.Enable (displayDataChoice->GetSelection() > 0);
   }
 
-  void ResultViewerImpl::View::OnLegendOptions (wxAuiToolBarEvent& event)
+  void ResultViewerImpl::View3D::OnLegendOptions (wxAuiToolBarEvent& event)
   {
     int displaySel = displayDataChoice->GetSelection();
     if (displaySel <= 0) return;
@@ -997,12 +997,12 @@ namespace nutogui
     DoToolDropDown (actorOptionsTB, ID_LegendOptions, &sharedData->gradientMenu);
   }
   
-  void ResultViewerImpl::View::OnLegendOptionsUpdateUI (wxUpdateUIEvent& event)
+  void ResultViewerImpl::View3D::OnLegendOptionsUpdateUI (wxUpdateUIEvent& event)
   {
     event.Enable (displayDataChoice->GetSelection() > 0);
   }
 
-  void ResultViewerImpl::View::OnGradientSelect (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnGradientSelect (wxCommandEvent& event)
   {
     size_t gradientID = event.GetId();
     SetGradient (gradientID);
@@ -1019,7 +1019,7 @@ namespace nutogui
     return clipData->GetOutput();
   }
 
-  void ResultViewerImpl::View::OnClipPlane (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnClipPlane (wxCommandEvent& event)
   {
     clipPlaneWidget->SetEnabled (event.IsChecked());
     
@@ -1053,20 +1053,20 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::OnLinkViews (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnLinkViews (wxCommandEvent& event)
   {
     if (SetLinkView (event.IsChecked ()))
       renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::OnLinkViewsUpdateUI (wxUpdateUIEvent& event)
+  void ResultViewerImpl::View3D::OnLinkViewsUpdateUI (wxUpdateUIEvent& event)
   {
     /* Link views makes only sense with > 1 views
        Abuse CanToggleMaximization() to check that */
     event.Enable (splitMgr->CanToggleMaximization (this));
   }
 
-  void ResultViewerImpl::View::OnDisplacementOffset (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnDisplacementOffset (wxCommandEvent& event)
   {
     if (event.IsChecked())
     {
@@ -1085,7 +1085,7 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::OnDisplacementDirDropDown (wxAuiToolBarEvent& event)
+  void ResultViewerImpl::View3D::OnDisplacementDirDropDown (wxAuiToolBarEvent& event)
   {
     if (event.IsDropDownClicked())
     {
@@ -1123,7 +1123,7 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View::OnDisplacementDirCommand (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnDisplacementDirCommand (wxCommandEvent& event)
   {
     DisplacementDir oldDisplacementDirection = displacementDirection;
     displacementDirection = (DisplacementDir)(event.GetId() - ID_DisplacementDirModeFirst);
@@ -1155,19 +1155,19 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::ShowDisplacementOffset ()
+  void ResultViewerImpl::View3D::ShowDisplacementOffset ()
   {
     dataSetMapper.SetInput (displacedData);
     renderer->AddActor (origDataSetActor);
   }
   
-  void ResultViewerImpl::View::HideDisplacementOffset ()
+  void ResultViewerImpl::View3D::HideDisplacementOffset ()
   {
     dataSetMapper.SetInput (data->GetDataSet (currentDataSet));
     renderer->RemoveActor (origDataSetActor);
   }
 
-  void ResultViewerImpl::View::ComputeDisplacementOffset ()
+  void ResultViewerImpl::View3D::ComputeDisplacementOffset ()
   {
     if (displacedData) return;
       
@@ -1203,7 +1203,7 @@ namespace nutogui
     displacedData = newDataSet;
   }
 
-  void ResultViewerImpl::View::ShowDisplacementDirections ()
+  void ResultViewerImpl::View3D::ShowDisplacementDirections ()
   {
     if (!displaceDirectionsActor) return;
 
@@ -1233,13 +1233,13 @@ namespace nutogui
     renderer->AddActor (displaceDirectionsActor);
   }
   
-  void ResultViewerImpl::View::HideDisplacementDirections ()
+  void ResultViewerImpl::View3D::HideDisplacementDirections ()
   {
     if (!displaceDirectionsActor) return;
     renderer->RemoveActor (displaceDirectionsActor);
   }
   
-  void ResultViewerImpl::View::ComputeDisplacementDirections ()
+  void ResultViewerImpl::View3D::ComputeDisplacementDirections ()
   {
     if (!sharedData->displaceDirectionGlyphSource)
     {
@@ -1302,7 +1302,7 @@ namespace nutogui
     displaceDirectionsActor->SetMapper (displaceDirectionsMapper);
   }
   
-  void ResultViewerImpl::View::DoToolDropDown (wxAuiToolBar* toolbar, int toolID, wxMenu* menu)
+  void ResultViewerImpl::View3D::DoToolDropDown (wxAuiToolBar* toolbar, int toolID, wxMenu* menu)
   {
     wxPoint popupPos (toolbar->GetToolRect (toolID).GetBottomLeft());
     popupPos = toolbar->ClientToScreen (popupPos);
@@ -1311,7 +1311,7 @@ namespace nutogui
     PopupMenu (menu, popupPos);
   }
 
-  void ResultViewerImpl::View::UpdateToolbarControlMinSize (wxWindow* control,
+  void ResultViewerImpl::View3D::UpdateToolbarControlMinSize (wxWindow* control,
 							    wxAuiToolBar* toolbar,
 							    int forceHeight)
   {
@@ -1334,34 +1334,34 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View::OnSplitHorizontally (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnSplitHorizontally (wxCommandEvent& event)
   {
-    View* newView = new View (splitMgr, splitMgr, this);
+    View3D* newView = new View3D (splitMgr, splitMgr, this);
     splitMgr->SplitHorizontally (this, newView);
   }
   
-  void ResultViewerImpl::View::OnSplitVertically (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnSplitVertically (wxCommandEvent& event)
   {
-    View* newView = new View (splitMgr, splitMgr, this);
+    View3D* newView = new View3D (splitMgr, splitMgr, this);
     splitMgr->SplitVertically (this, newView);
   }
 
-  void ResultViewerImpl::View::OnSplitUpdateUI (wxUpdateUIEvent& event)
+  void ResultViewerImpl::View3D::OnSplitUpdateUI (wxUpdateUIEvent& event)
   {
     event.Enable (splitMgr->CanSplit (this));
   }
   
-  void ResultViewerImpl::View::OnUnsplit (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnUnsplit (wxCommandEvent& event)
   {
     splitMgr->Unsplit (this);
   }
   
-  void ResultViewerImpl::View::OnUnsplitUpdateUI (wxUpdateUIEvent& event)
+  void ResultViewerImpl::View3D::OnUnsplitUpdateUI (wxUpdateUIEvent& event)
   {
     event.Enable (splitMgr->CanUnsplit (this));
   }
 
-  void ResultViewerImpl::View::OnToggleMaximization (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnToggleMaximization (wxCommandEvent& event)
   {
     bool isMaximized = splitMgr->ToggleMaximization (this);
     if (isMaximized)
@@ -1380,12 +1380,12 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View::OnToggleMaximizationUpdateUI (wxUpdateUIEvent& event)
+  void ResultViewerImpl::View3D::OnToggleMaximizationUpdateUI (wxUpdateUIEvent& event)
   {
     event.Enable (splitMgr->CanToggleMaximization (this));
   }
 
-  void ResultViewerImpl::View::OnUpdateCamera (UpdateCameraEvent& event)
+  void ResultViewerImpl::View3D::OnUpdateCamera (UpdateCameraEvent& event)
   {
     // Not linked, so ignore event
     if (!useLinkView) return;
@@ -1401,12 +1401,12 @@ namespace nutogui
     updatingCam = false;
   }
 
-  void ResultViewerImpl::View::CheckDisplacementSizePanelVisibility ()
+  void ResultViewerImpl::View3D::CheckDisplacementSizePanelVisibility ()
   {
     displacementSizePanel->Show (useDisplaceData || (displacementDirection == ddScaled));
   }
 
-  void ResultViewerImpl::View::OnDisplacementScaleChange (wxEvent& event)
+  void ResultViewerImpl::View3D::OnDisplacementScaleChange (wxEvent& event)
   {
     switch (displacementDirection)
     {
@@ -1432,7 +1432,7 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::OnDataSetSelectionChanged (wxScrollEvent& event)
+  void ResultViewerImpl::View3D::OnDataSetSelectionChanged (wxScrollEvent& event)
   {
     SetDisplayedDataSet (event.GetPosition());
     
@@ -1447,7 +1447,7 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View::OnLinkedDataSetChanged (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnLinkedDataSetChanged (wxCommandEvent& event)
   {
     if (!useLinkView) return;
     
@@ -1457,7 +1457,7 @@ namespace nutogui
     renderWidget->GetRenderWindow()->Render();
   }
 
-  void ResultViewerImpl::View::SetDisplayedDataSet (size_t index)
+  void ResultViewerImpl::View3D::SetDisplayedDataSet (size_t index)
   {
     currentDataSet = index;
     vtkDataSet* dataset = data->GetDataSet (currentDataSet);
@@ -1483,7 +1483,7 @@ namespace nutogui
   
   //-------------------------------------------------------------------------
   
-  ResultViewerImpl::View::DataSetMapperWithEdges::DataSetMapperWithEdges ()
+  ResultViewerImpl::View3D::DataSetMapperWithEdges::DataSetMapperWithEdges ()
    : currentRepr (VTK_SURFACE), edgeVisibility (0)
   {
     mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
@@ -1504,14 +1504,14 @@ namespace nutogui
     edgesMapper->SetInput (faceExtract->GetOutput());
   }
   
-  vtkActor* ResultViewerImpl::View::DataSetMapperWithEdges::CreateMapperActor ()
+  vtkActor* ResultViewerImpl::View3D::DataSetMapperWithEdges::CreateMapperActor ()
   {
     mapperActor = vtkSmartPointer<vtkActor>::New ();
     mapperActor->SetMapper (mapper);
     return mapperActor;
   }
   
-  vtkActor* ResultViewerImpl::View::DataSetMapperWithEdges::CreateEdgesActor ()
+  vtkActor* ResultViewerImpl::View3D::DataSetMapperWithEdges::CreateEdgesActor ()
   {
     edgesActor = vtkSmartPointer<vtkActor>::New ();
     edgesActor->SetMapper (edgesMapper);
@@ -1522,7 +1522,7 @@ namespace nutogui
     return edgesActor;
   }
       
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetInput (vtkDataSet* dataset)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetInput (vtkDataSet* dataset)
   {
     originalInput = dataset;
     faceExtract->SetInput (dataset);
@@ -1530,18 +1530,18 @@ namespace nutogui
     SetClipFunction (lastClipper);
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::Update ()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::Update ()
   {
     mapper->Update();
     edgesMapper->Update();
   }
 
-  void ResultViewerImpl::View::DataSetMapperWithEdges::GetBounds (double bounds[6])
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::GetBounds (double bounds[6])
   {
     mapper->GetBounds (bounds);
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetClipFunction (vtkImplicitFunction* clipFunc)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetClipFunction (vtkImplicitFunction* clipFunc)
   {
     if (clipFunc)
     {
@@ -1556,7 +1556,7 @@ namespace nutogui
     lastClipper = clipFunc;
   }
       
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetColorModeToDefault()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetColorModeToDefault()
   {
     if (currentRepr == VTK_SURFACE)
       mapper->SetColorModeToDefault();
@@ -1564,7 +1564,7 @@ namespace nutogui
       edgesMapper->SetColorModeToDefault();
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetColorModeToMapScalars()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetColorModeToMapScalars()
   {
     if (currentRepr == VTK_SURFACE)
       mapper->SetColorModeToMapScalars();
@@ -1572,7 +1572,7 @@ namespace nutogui
       edgesMapper->SetColorModeToMapScalars();
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetScalarModeToUseCellFieldData()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetScalarModeToUseCellFieldData()
   {
     if (currentRepr == VTK_SURFACE)
       mapper->SetScalarModeToUseCellFieldData();
@@ -1580,7 +1580,7 @@ namespace nutogui
       edgesMapper->SetScalarModeToUseCellFieldData();
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetScalarModeToUsePointFieldData()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetScalarModeToUsePointFieldData()
   {
     if (currentRepr == VTK_SURFACE)
       mapper->SetScalarModeToUsePointFieldData();
@@ -1588,7 +1588,7 @@ namespace nutogui
       edgesMapper->SetScalarModeToUsePointFieldData();
   }
     
-  void ResultViewerImpl::View::DataSetMapperWithEdges::ScalarVisibilityOff()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::ScalarVisibilityOff()
   {
     if (currentRepr == VTK_SURFACE)
       mapper->ScalarVisibilityOff();
@@ -1596,7 +1596,7 @@ namespace nutogui
       edgesMapper->ScalarVisibilityOff();
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::ScalarVisibilityOn()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::ScalarVisibilityOn()
   {
     if (currentRepr == VTK_SURFACE)
       mapper->ScalarVisibilityOn();
@@ -1604,36 +1604,36 @@ namespace nutogui
       edgesMapper->ScalarVisibilityOn();
   }
     
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SelectColorArray (int array)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SelectColorArray (int array)
   {
     mapper->SelectColorArray (array);
     edgesMapper->SelectColorArray (array);
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetLookupTable (vtkScalarsToColors* lut)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetLookupTable (vtkScalarsToColors* lut)
   {
     mapper->SetLookupTable (lut);
     edgesMapper->SetLookupTable (lut);
   }
   
-  vtkScalarsToColors* ResultViewerImpl::View::DataSetMapperWithEdges::GetLookupTable ()
+  vtkScalarsToColors* ResultViewerImpl::View3D::DataSetMapperWithEdges::GetLookupTable ()
   {
     return mapper->GetLookupTable();
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetScalarRange (double range[2])
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetScalarRange (double range[2])
   {
     mapper->SetScalarRange (range);
     edgesMapper->SetScalarRange (range);
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::InterpolateScalarsBeforeMappingOn ()
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::InterpolateScalarsBeforeMappingOn ()
   {
     mapper->InterpolateScalarsBeforeMappingOn();
     edgesMapper->InterpolateScalarsBeforeMappingOn();
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetRepresentation (int repr)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetRepresentation (int repr)
   {
     if (repr == currentRepr) return;
     
@@ -1660,7 +1660,7 @@ namespace nutogui
     }
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetLighting (int lighting)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetLighting (int lighting)
   {
     if (currentRepr == VTK_SURFACE)
       mapperActor->GetProperty()->SetLighting (lighting);
@@ -1668,25 +1668,25 @@ namespace nutogui
       edgesActor->GetProperty()->SetLighting (lighting);
   }
   
-  void ResultViewerImpl::View::DataSetMapperWithEdges::SetEdgeVisibility (int edgeVis)
+  void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetEdgeVisibility (int edgeVis)
   {
     if (currentRepr != VTK_SURFACE) return;
     edgesActor->SetVisibility (edgeVis);
     this->edgeVisibility = edgeVis;
   }
   
-  ResultViewerImpl::View::DataSetMapperWithEdges::operator bool() const
+  ResultViewerImpl::View3D::DataSetMapperWithEdges::operator bool() const
   {
     return mapper;
   }
   
   //-------------------------------------------------------------------------
   
-  BEGIN_EVENT_TABLE(ResultViewerImpl::View::GradientMenuEventHandler, wxEvtHandler)
-    EVT_MENU(wxID_ANY, ResultViewerImpl::View::GradientMenuEventHandler::OnGradientSelect)
+  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D::GradientMenuEventHandler, wxEvtHandler)
+    EVT_MENU(wxID_ANY, ResultViewerImpl::View3D::GradientMenuEventHandler::OnGradientSelect)
   END_EVENT_TABLE()
   
-  void ResultViewerImpl::View::GradientMenuEventHandler::OnGradientSelect (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::GradientMenuEventHandler::OnGradientSelect (wxCommandEvent& event)
   {
     parent->OnGradientSelect (event);
   }

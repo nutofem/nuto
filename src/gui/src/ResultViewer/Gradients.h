@@ -10,7 +10,7 @@
 #ifndef __GRADIENTS_H__
 #define __GRADIENTS_H__
 
-#include "View.h"
+#include "View3D.h"
 
 #include <wx/string.h>
 
@@ -23,7 +23,7 @@ namespace nutogui
   /**
    * Manage list of gradients.
    */
-  class ResultViewerImpl::View::Gradients
+  class ResultViewerImpl::View3D::Gradients
   {
     std::vector<std::pair<wxString, vtkSmartPointer<vtkLookupTable> > > gradients;
   public:
