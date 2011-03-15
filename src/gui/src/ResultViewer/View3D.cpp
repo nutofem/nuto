@@ -18,7 +18,6 @@
 #include "DisplacementDirectionSizePanel.h"
 #include "Gradients.h"
 #include "UnstructuredGridWithQuadsClippingToPoly.h"
-#include "SplitManager.h"
 
 #include "uicommon/Quote.h"
 
@@ -159,13 +158,6 @@ namespace nutogui
   
   struct ResultViewerImpl::View3D::SharedViewData
   {
-    wxSize smallButtonSize;
-    wxBitmap imgSplitH;
-    wxBitmap imgSplitV;
-    wxBitmap imgUnsplit;
-    wxBitmap imgMaximize;
-    wxBitmap imgUnmaximize;
-    
     wxMenu renderModeMenu;
     wxBitmap renderModeButtonImages[numRenderModes];
     wxBitmap imgShowLegend;
@@ -204,18 +196,13 @@ namespace nutogui
     ID_DisplacementOffset,
     ID_DisplacementDirMode,
     
-    ID_SplitHorz,
-    ID_SplitVert,
-    ID_Unsplit,
-    ID_ToggleMaximization,
-    
     ID_DataSetSlider,
     
     ID_RenderModeFirst = 100,
     ID_DisplacementDirModeFirst = 110
   };
   
-  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D, wxPanel)
+  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D, ResultViewerImpl::ViewPanel::Content)
     EVT_COMMAND(wxID_ANY, EVENT_RENDER_WIDGET_REALIZED, ResultViewerImpl::View3D::OnRenderWidgetRealized)
     EVT_WINDOW_CREATE(ResultViewerImpl::View3D::OnWindowCreate)
     
@@ -239,15 +226,6 @@ namespace nutogui
 		   ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
 		   ResultViewerImpl::View3D::OnDisplacementDirCommand)
     
-    EVT_MENU(ID_SplitHorz, ResultViewerImpl::View3D::OnSplitHorizontally)
-    EVT_UPDATE_UI(ID_SplitHorz, ResultViewerImpl::View3D::OnSplitUpdateUI)
-    EVT_MENU(ID_SplitVert, ResultViewerImpl::View3D::OnSplitVertically)
-    EVT_UPDATE_UI(ID_SplitVert, ResultViewerImpl::View3D::OnSplitUpdateUI)
-    EVT_MENU(ID_Unsplit, ResultViewerImpl::View3D::OnUnsplit)
-    EVT_UPDATE_UI(ID_Unsplit, ResultViewerImpl::View3D::OnUnsplitUpdateUI)
-    EVT_MENU(ID_ToggleMaximization, ResultViewerImpl::View3D::OnToggleMaximization)
-    EVT_UPDATE_UI(ID_ToggleMaximization, ResultViewerImpl::View3D::OnToggleMaximizationUpdateUI)
-    
     EVT_UPDATE_CAMERA(ResultViewerImpl::View3D::OnUpdateCamera)
     
     EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View3D::OnDisplacementScaleChange)
@@ -256,9 +234,8 @@ namespace nutogui
     EVT_COMMAND(wxID_ANY, EVENT_DATASET_FRAME_CHANGED, ResultViewerImpl::View3D::OnLinkedDataSetChanged)
   END_EVENT_TABLE()
   
-  ResultViewerImpl::View3D::View3D (wxWindow* parent, SplitManager* splitMgr,
-				    const View3D* cloneFrom)
-   : wxPanel (parent), splitMgr (splitMgr),
+  ResultViewerImpl::View3D::View3D (ViewPanel* parent, const View3D* cloneFrom)
+   : ViewPanel::Content (parent),
      renderMode (0),
      displacementDirection (ddNone),
      oldDisplacementDirection (ddColored),
@@ -283,21 +260,6 @@ namespace nutogui
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
     
     topBarSizer = new wxBoxSizer (wxHORIZONTAL);
-    
-    wxAuiToolBar* splitButtonsBar = new wxAuiToolBar (this, wxID_ANY,
-						      wxDefaultPosition, wxDefaultSize,
-						      wxAUI_TB_VERTICAL | wxAUI_TB_NO_AUTORESIZE);
-    splitButtonsBar->SetToolBitmapSize (sharedData->smallButtonSize);
-    splitButtonsBar->SetToolBorderPadding (2);
-    splitButtonsBar->SetMargins (1, -1);
-    splitButtonsBar->AddTool (ID_SplitHorz, wxEmptyString,
-			      sharedData->imgSplitH,
-			      wxT ("Split left/right"));
-    splitButtonsBar->AddTool (ID_SplitVert, wxEmptyString,
-			      sharedData->imgSplitV,
-			      wxT ("Split top/bottom"));
-    splitButtonsBar->Realize ();
-    topBarSizer->Add (splitButtonsBar, 0, wxEXPAND);
     
     toolbar = new wxAuiToolBar (this, ID_Toolbar, wxDefaultPosition, wxDefaultSize,
 				wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
@@ -364,21 +326,6 @@ namespace nutogui
     actorOptionsTB->Realize ();
     topBarSizer->Add (actorOptionsTB, wxSizerFlags (1).Expand ());
     
-    closeMaxButtonsBar = new wxAuiToolBar (this, wxID_ANY,
-					   wxDefaultPosition, wxDefaultSize,
-					   wxAUI_TB_VERTICAL | wxAUI_TB_NO_AUTORESIZE);
-    closeMaxButtonsBar->SetToolBitmapSize (sharedData->smallButtonSize);
-    closeMaxButtonsBar->SetToolBorderPadding (2);
-    closeMaxButtonsBar->SetMargins (1, -1);
-    closeMaxButtonsBar->AddTool (ID_Unsplit, wxEmptyString,
-				 sharedData->imgUnsplit,
-				 wxT ("Close this view"));
-    closeMaxButtonsBar->AddTool (ID_ToggleMaximization, wxEmptyString,
-				 sharedData->imgMaximize,
-				 wxT ("Maximize this view"));
-    closeMaxButtonsBar->Realize ();
-    topBarSizer->Add (closeMaxButtonsBar, 0, wxEXPAND);
-    
     sizer->Add (topBarSizer, 0, wxEXPAND);
     
     renderWidget = new RenderWidget (this);
@@ -421,17 +368,6 @@ namespace nutogui
   {
     sharedData = boost::make_shared<SharedViewData> ();
     
-    sharedData->smallButtonSize = wxSize (11, 11);
-    sharedData->imgSplitH = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(split-horz), wxART_TOOLBAR,
-						      sharedData->smallButtonSize);
-    sharedData->imgSplitV = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(split-vert), wxART_TOOLBAR,
-						      sharedData->smallButtonSize);
-    sharedData->imgUnsplit = wxArtProvider::GetBitmap (wxART_CLOSE, wxART_TOOLBAR,
-						       sharedData->smallButtonSize);
-    sharedData->imgMaximize = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(maximize), wxART_TOOLBAR,
-							sharedData->smallButtonSize);
-    sharedData->imgUnmaximize = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(unmaximize), wxART_TOOLBAR,
-							  sharedData->smallButtonSize);
     sharedData->imgShowLegend = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(show-legend), wxART_TOOLBAR);
     sharedData->imgClipPlane = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(clip), wxART_TOOLBAR);
     sharedData->imgLinkViews = wxArtProvider::GetBitmap (wxART_MISSING_IMAGE,
@@ -589,6 +525,11 @@ namespace nutogui
     SetDisplayedDataSet (0);
   }
 
+  ResultViewerImpl::ViewPanel::Content* ResultViewerImpl::View3D::Clone (ViewPanel* parent)
+  {
+    return new View3D (parent, this);
+  }
+
   void ResultViewerImpl::View3D::OnRenderWidgetRealized (wxCommandEvent& event)
   {
     if (!renderer)
@@ -731,7 +672,7 @@ namespace nutogui
     if (!useLinkView) return;
     
     UpdateCameraEvent event (cam);
-    splitMgr->PostToOthers (event, this);
+    PostToOthers (event);
   }
 
   void ResultViewerImpl::View3D::ClipPlaneChanged ()
@@ -1061,9 +1002,8 @@ namespace nutogui
 
   void ResultViewerImpl::View3D::OnLinkViewsUpdateUI (wxUpdateUIEvent& event)
   {
-    /* Link views makes only sense with > 1 views
-       Abuse CanToggleMaximization() to check that */
-    event.Enable (splitMgr->CanToggleMaximization (this));
+    /* Link views makes only sense with > 1 views */
+    event.Enable (!sharedData.unique());
   }
 
   void ResultViewerImpl::View3D::OnDisplacementOffset (wxCommandEvent& event)
@@ -1334,57 +1274,6 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View3D::OnSplitHorizontally (wxCommandEvent& event)
-  {
-    View3D* newView = new View3D (splitMgr, splitMgr, this);
-    splitMgr->SplitHorizontally (this, newView);
-  }
-  
-  void ResultViewerImpl::View3D::OnSplitVertically (wxCommandEvent& event)
-  {
-    View3D* newView = new View3D (splitMgr, splitMgr, this);
-    splitMgr->SplitVertically (this, newView);
-  }
-
-  void ResultViewerImpl::View3D::OnSplitUpdateUI (wxUpdateUIEvent& event)
-  {
-    event.Enable (splitMgr->CanSplit (this));
-  }
-  
-  void ResultViewerImpl::View3D::OnUnsplit (wxCommandEvent& event)
-  {
-    splitMgr->Unsplit (this);
-  }
-  
-  void ResultViewerImpl::View3D::OnUnsplitUpdateUI (wxUpdateUIEvent& event)
-  {
-    event.Enable (splitMgr->CanUnsplit (this));
-  }
-
-  void ResultViewerImpl::View3D::OnToggleMaximization (wxCommandEvent& event)
-  {
-    bool isMaximized = splitMgr->ToggleMaximization (this);
-    if (isMaximized)
-    {
-      closeMaxButtonsBar->SetToolBitmap (ID_ToggleMaximization,
-					 sharedData->imgUnmaximize);
-      closeMaxButtonsBar->SetToolShortHelp (ID_ToggleMaximization,
-					    wxT ("Reduce this view to normal size"));
-    }
-    else
-    {
-      closeMaxButtonsBar->SetToolBitmap (ID_ToggleMaximization,
-					 sharedData->imgMaximize);
-      closeMaxButtonsBar->SetToolShortHelp (ID_ToggleMaximization,
-					    wxT ("Maximize this view"));
-    }
-  }
-
-  void ResultViewerImpl::View3D::OnToggleMaximizationUpdateUI (wxUpdateUIEvent& event)
-  {
-    event.Enable (splitMgr->CanToggleMaximization (this));
-  }
-
   void ResultViewerImpl::View3D::OnUpdateCamera (UpdateCameraEvent& event)
   {
     // Not linked, so ignore event
@@ -1443,7 +1332,7 @@ namespace nutogui
       sharedData->linkedFrame = event.GetPosition();
       wxCommandEvent changeEvent (EVENT_DATASET_FRAME_CHANGED);
       changeEvent.SetInt (event.GetPosition());
-      splitMgr->PostToOthers (changeEvent, this);
+      PostToOthers (changeEvent);
     }
   }
 

@@ -48,9 +48,6 @@ namespace nutogui
 						    int splitDir);
     int ComputeSizeInDirection (const SplitNodePtr& node, int splitDir, int viewSize);
     void SetSizeInDirection (const SplitNodePtr& node, int splitDir, int size);
-
-    void PostToOthersUp (wxEvent& event, const SplitNodePtr& node);
-    void PostToOthersDown (wxEvent& event, const SplitNodePtr& node);
   public:
     SplitManager (wxWindow* parent);
     
@@ -65,7 +62,13 @@ namespace nutogui
     bool CanToggleMaximization (wxWindow* view);
     bool ToggleMaximization (wxWindow* view);
     
-    void PostToOthers (wxEvent& event, wxWindow* source);
+    struct ViewsTraverser
+    {
+      virtual bool operator() (wxWindow* view) = 0;
+    };
+    void Traverse (ViewsTraverser& trav);
+  protected:
+    bool Traverse (const SplitNodePtr& node, ViewsTraverser& trav);
   };
 } // namespace nutogui
 

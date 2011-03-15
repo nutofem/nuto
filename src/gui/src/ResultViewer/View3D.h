@@ -11,6 +11,7 @@
 #define __NUTOGUI_RESULTVIEWER_VIEW3D_H__
 
 #include "ResultViewerImpl.h"
+#include "ViewPanelContent.h"
 
 #include "uicommon/ControlWithItemsClientDataWrapper.h"
 #include "uicommon/TextCtrlBuddySlider.h"
@@ -47,18 +48,15 @@ namespace nutogui
   class DataSetFaceExtractor;
   class DisplacementDirectionSizePanel;
   
-  class ResultViewerImpl::View3D : public wxPanel
+  class ResultViewerImpl::View3D : public ViewPanel::Content
   {
     class CameraModifiedCallback;
     
     class Gradients;
     
-    SplitManager* splitMgr;
-    
     wxSizer* topBarSizer;
     wxAuiToolBar* toolbar;
     wxAuiToolBar* actorOptionsTB;
-    wxAuiToolBar* closeMaxButtonsBar;
     enum { numRenderModes = 5 };
     struct SharedViewData;
     boost::shared_ptr<SharedViewData> sharedData;
@@ -224,14 +222,6 @@ namespace nutogui
     void UpdateToolbarControlMinSize (wxWindow* control,
 				      wxAuiToolBar* toolbar,
 				      int forceHeight = 0);
-				      
-    void OnSplitHorizontally (wxCommandEvent& event);
-    void OnSplitVertically (wxCommandEvent& event);
-    void OnSplitUpdateUI (wxUpdateUIEvent& event);
-    void OnUnsplit (wxCommandEvent& event);
-    void OnUnsplitUpdateUI (wxUpdateUIEvent& event);
-    void OnToggleMaximization (wxCommandEvent& event);
-    void OnToggleMaximizationUpdateUI (wxUpdateUIEvent& event);
     
     class UpdateCameraEvent;
     typedef void (ResultViewerImpl::View3D::*UpdateCameraEventFunction)(UpdateCameraEvent&);
@@ -261,11 +251,11 @@ namespace nutogui
     };
     GradientMenuEventHandler gradientMenuHandler;
   public:
-    View3D (wxWindow* parent, SplitManager* splitMgr,
-	  const View3D* cloneFrom = nullptr);
+    View3D (ViewPanel* parent, const View3D* cloneFrom = nullptr);
     ~View3D ();
     
     void SetData (const DataConstPtr& data);
+    Content* Clone (ViewPanel* parent);
 			      
     DECLARE_EVENT_TABLE()
   };

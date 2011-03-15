@@ -328,40 +328,21 @@ namespace nutogui
     return SplitNodePtr ();
   }
   
-  void ResultViewerImpl::SplitManager::PostToOthers (wxEvent& event, wxWindow* source)
+  void ResultViewerImpl::SplitManager::Traverse (ViewsTraverser& trav)
   {
-    SplitNodePtr node = FindNode (splitTree, source);
-    assert (node);
-    PostToOthersUp (event, node);
+    if (!splitTree) return;
+    Traverse (splitTree, trav);
   }
   
-  void ResultViewerImpl::SplitManager::PostToOthersUp (wxEvent& event, const SplitNodePtr& node)
-  {
-    SplitNodePtr nodeParent (node->parent.lock());
-    if (!nodeParent) return;
-
-    if (nodeParent->children[0] == node)
-    {
-      PostToOthersDown (event, nodeParent->children[1]);
-    }
-    else
-    {
-      PostToOthersDown (event, nodeParent->children[0]);
-    }
-    
-    PostToOthersUp (event, nodeParent);
-  }
-  
-  void ResultViewerImpl::SplitManager::PostToOthersDown (wxEvent& event, const SplitNodePtr& node)
+  bool ResultViewerImpl::SplitManager::Traverse (const SplitNodePtr& node, ViewsTraverser& trav)
   {
     if (node->IsLeaf ())
     {
-      node->window->GetEventHandler()->ProcessEvent (event);
+      return trav (node->window);
     }
     else
     {
-      PostToOthersDown (event, node->children[0]);
-      PostToOthersDown (event, node->children[1]);
+      return Traverse (node->children[0], trav) && Traverse (node->children[1], trav);
     }
   }
   
