@@ -32,7 +32,7 @@ namespace nutogui
   
   enum
   {
-    ID_SplitHorz = 1,
+    ID_SplitHorz = 12345678, // Arbitrary, large ID to avoid conflicts with child IDs
     ID_SplitVert,
     ID_Unsplit,
     ID_ToggleMaximization
@@ -132,7 +132,11 @@ namespace nutogui
     splitButtonsBar->Realize ();
     topBarSizer->Add (splitButtonsBar, 0, wxEXPAND);
     
-    topBarSizer->AddStretchSpacer ();
+    wxWindow* topBarContentTools = childPanel->CreateTopTools (this);
+    if (topBarContentTools)
+      topBarSizer->Add (topBarContentTools, wxSizerFlags (1).Expand());
+    else
+      topBarSizer->AddStretchSpacer ();
     
     closeMaxButtonsBar = new wxAuiToolBar (this, wxID_ANY,
 					   wxDefaultPosition, wxDefaultSize,

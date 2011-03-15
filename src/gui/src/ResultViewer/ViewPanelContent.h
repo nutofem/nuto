@@ -21,6 +21,7 @@ namespace nutogui
     
     virtual void SetData (const DataConstPtr& data) = 0;
     virtual Content* Clone (ViewPanel* parent) = 0;
+    virtual wxWindow* CreateTopTools (wxWindow* parentWindow) = 0;
   protected:
     /// Post an event to all other view panel content children
     void PostToOthers (wxEvent& event);

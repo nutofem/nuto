@@ -206,7 +206,7 @@ namespace nutogui
     EVT_COMMAND(wxID_ANY, EVENT_RENDER_WIDGET_REALIZED, ResultViewerImpl::View3D::OnRenderWidgetRealized)
     EVT_WINDOW_CREATE(ResultViewerImpl::View3D::OnWindowCreate)
     
-    EVT_CHOICE(ID_DisplayData, ResultViewerImpl::View3D::OnDisplayDataChanged)
+    /*EVT_CHOICE(ID_DisplayData, ResultViewerImpl::View3D::OnDisplayDataChanged)
     EVT_CHOICE(ID_VisOption, ResultViewerImpl::View3D::OnVisOptionChanged)
     
     EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_ActorRenderMode, ResultViewerImpl::View3D::OnRenderModeDropDown)
@@ -224,7 +224,7 @@ namespace nutogui
     EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_DisplacementDirMode, ResultViewerImpl::View3D::OnDisplacementDirDropDown)
     EVT_MENU_RANGE(ID_DisplacementDirModeFirst,
 		   ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
-		   ResultViewerImpl::View3D::OnDisplacementDirCommand)
+		   ResultViewerImpl::View3D::OnDisplacementDirCommand)*/
     
     EVT_UPDATE_CAMERA(ResultViewerImpl::View3D::OnUpdateCamera)
     
@@ -239,6 +239,7 @@ namespace nutogui
      renderMode (0),
      displacementDirection (ddNone),
      oldDisplacementDirection (ddColored),
+     topBar (nullptr),
      useDisplaceData (false),
      displacementData ((size_t)~0),
      displaceDirectionsDataDS (0),
@@ -258,75 +259,6 @@ namespace nutogui
     }
     
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
-    
-    topBarSizer = new wxBoxSizer (wxHORIZONTAL);
-    
-    toolbar = new wxAuiToolBar (this, ID_Toolbar, wxDefaultPosition, wxDefaultSize,
-				wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
-    toolbar->SetToolBitmapSize (wxArtProvider::GetSizeHint (wxART_TOOLBAR));
-    displayDataChoice = new wxChoice (toolbar, ID_DisplayData);
-    displayDataChoice->SetToolTip (wxT ("Data"));
-    toolbar->AddControl (displayDataChoice);
-    toolbar->Realize();
-    topBarSizer->Add (toolbar, 0);
-    
-    {
-      visOptionEmpty = new wxAuiToolBar (this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-					 wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
-      visOptionEmpty->Realize();
-    }
-    topBarSizer->Add (visOptionEmpty, wxSizerFlags (0).Expand());
-    
-    {
-      visOptionChoice = new wxAuiToolBar (this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-					  wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
-      visOptionChoice->Hide ();
-      visChoiceCtrl = new wxChoice (visOptionChoice, ID_VisOption);
-      visChoiceCtrl->SetToolTip (wxT ("Component"));
-      visOptionChoice->AddControl (visChoiceCtrl);
-      visOptionChoice->Realize ();
-    }
-    
-    actorOptionsTB = new wxAuiToolBar (this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-				       wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
-    actorOptionsTB->AddTool (ID_ActorRenderMode, wxEmptyString,
-			     sharedData->renderModeButtonImages[0],
-			     wxT ("Rendering mode"));
-    actorOptionsTB->SetToolDropDown (ID_ActorRenderMode, true);
-    actorOptionsTB->AddTool (ID_ShowLegend, wxEmptyString,
-			     sharedData->imgShowLegend,
-			     wxT ("Show legend"),
-			     wxITEM_CHECK);
-    actorOptionsTB->AddTool (ID_LegendOptions, wxEmptyString,
-			     sharedData->gradientToolImages[0],
-			     wxT ("Select gradient"),
-			     wxITEM_NORMAL);
-    actorOptionsTB->SetToolDropDown (ID_LegendOptions, true);
-    actorOptionsTB->AddSeparator ();
-    actorOptionsTB->AddTool (ID_ClipPlane, wxEmptyString,
-			     sharedData->imgClipPlane,
-			     wxT ("Clipping plane"),
-			     wxITEM_CHECK);
-    actorOptionsTB->AddTool (ID_LinkViews, wxEmptyString,
-			     sharedData->imgLinkViews,
-			     wxT ("Link display to other views"),
-			     wxITEM_CHECK);
-    actorOptionsTB->ToggleTool (ID_LinkViews, true);
-    actorOptionsTB->AddSeparator ();
-    actorOptionsTB->AddTool (ID_DisplacementOffset, wxEmptyString,
-			     sharedData->imgDisplacementOffset,
-			     wxT ("Apply displacement to model"),
-			     wxITEM_CHECK);
-    actorOptionsTB->EnableTool (ID_DisplacementOffset, false);
-    actorOptionsTB->AddTool (ID_DisplacementDirMode, wxEmptyString,
-			     sharedData->displacementDirButtonImages[0],
-			     wxT ("Show displacement directions"));
-    actorOptionsTB->SetToolDropDown (ID_DisplacementDirMode, true);
-    actorOptionsTB->EnableTool (ID_DisplacementDirMode, false);
-    actorOptionsTB->Realize ();
-    topBarSizer->Add (actorOptionsTB, wxSizerFlags (1).Expand ());
-    
-    sizer->Add (topBarSizer, 0, wxEXPAND);
     
     renderWidget = new RenderWidget (this);
     renderWidget->EnableKeyboardHandling (false);
@@ -349,7 +281,7 @@ namespace nutogui
     
     if (cloneFrom)
     {
-      SetData (cloneFrom->data);
+      this->data = cloneFrom->data;
     }
   }
   
@@ -528,6 +460,145 @@ namespace nutogui
   ResultViewerImpl::ViewPanel::Content* ResultViewerImpl::View3D::Clone (ViewPanel* parent)
   {
     return new View3D (parent, this);
+  }
+
+  wxWindow* ResultViewerImpl::View3D::CreateTopTools (wxWindow* parentWindow)
+  {
+    topBar = new wxPanel (parentWindow);
+    
+    topBarSizer = new wxBoxSizer (wxHORIZONTAL);
+    
+    toolbar = new wxAuiToolBar (topBar, ID_Toolbar, wxDefaultPosition, wxDefaultSize,
+				wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
+    toolbar->SetToolBitmapSize (wxArtProvider::GetSizeHint (wxART_TOOLBAR));
+    displayDataChoice = new wxChoice (toolbar, ID_DisplayData);
+    displayDataChoice->SetToolTip (wxT ("Data"));
+    toolbar->AddControl (displayDataChoice);
+    toolbar->Realize();
+    topBarSizer->Add (toolbar, wxSizerFlags(0).Expand());
+    
+    {
+      visOptionEmpty = new wxAuiToolBar (topBar, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+					 wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
+      visOptionEmpty->Realize();
+    }
+    topBarSizer->Add (visOptionEmpty, wxSizerFlags (0).Expand());
+    
+    {
+      visOptionChoice = new wxAuiToolBar (topBar, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+					  wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
+      visOptionChoice->Hide ();
+      visChoiceCtrl = new wxChoice (visOptionChoice, ID_VisOption);
+      visChoiceCtrl->SetToolTip (wxT ("Component"));
+      visOptionChoice->AddControl (visChoiceCtrl);
+      visOptionChoice->Realize ();
+    }
+    
+    actorOptionsTB = new wxAuiToolBar (topBar, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+				       wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
+    actorOptionsTB->AddTool (ID_ActorRenderMode, wxEmptyString,
+			     sharedData->renderModeButtonImages[0],
+			     wxT ("Rendering mode"));
+    actorOptionsTB->SetToolDropDown (ID_ActorRenderMode, true);
+    actorOptionsTB->AddTool (ID_ShowLegend, wxEmptyString,
+			     sharedData->imgShowLegend,
+			     wxT ("Show legend"),
+			     wxITEM_CHECK);
+    actorOptionsTB->AddTool (ID_LegendOptions, wxEmptyString,
+			     sharedData->gradientToolImages[0],
+			     wxT ("Select gradient"),
+			     wxITEM_NORMAL);
+    actorOptionsTB->SetToolDropDown (ID_LegendOptions, true);
+    actorOptionsTB->AddSeparator ();
+    actorOptionsTB->AddTool (ID_ClipPlane, wxEmptyString,
+			     sharedData->imgClipPlane,
+			     wxT ("Clipping plane"),
+			     wxITEM_CHECK);
+    actorOptionsTB->AddTool (ID_LinkViews, wxEmptyString,
+			     sharedData->imgLinkViews,
+			     wxT ("Link display to other views"),
+			     wxITEM_CHECK);
+    actorOptionsTB->ToggleTool (ID_LinkViews, true);
+    actorOptionsTB->AddSeparator ();
+    actorOptionsTB->AddTool (ID_DisplacementOffset, wxEmptyString,
+			     sharedData->imgDisplacementOffset,
+			     wxT ("Apply displacement to model"),
+			     wxITEM_CHECK);
+    actorOptionsTB->EnableTool (ID_DisplacementOffset, false);
+    actorOptionsTB->AddTool (ID_DisplacementDirMode, wxEmptyString,
+			     sharedData->displacementDirButtonImages[0],
+			     wxT ("Show displacement directions"));
+    actorOptionsTB->SetToolDropDown (ID_DisplacementDirMode, true);
+    actorOptionsTB->EnableTool (ID_DisplacementDirMode, false);
+    actorOptionsTB->Realize ();
+    topBarSizer->Add (actorOptionsTB, wxSizerFlags (1).Expand ());
+    
+    topBar->SetSizer (topBarSizer);
+    
+    // Connect events
+    topBar->Connect (ID_DisplayData,
+		     wxEVT_COMMAND_CHOICE_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnDisplayDataChanged),
+		     nullptr, this);
+    topBar->Connect (ID_VisOption,
+		     wxEVT_COMMAND_CHOICE_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnVisOptionChanged),
+		     nullptr, this);
+    
+    topBar->Connect (ID_ActorRenderMode,
+		     wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN,
+		     wxAuiToolBarEventHandler (ResultViewerImpl::View3D::OnRenderModeDropDown),
+		     nullptr, this);
+    topBar->Connect (ID_RenderModeFirst,
+		     ID_RenderModeFirst+ResultViewerImpl::View3D::numRenderModes-1,
+		     wxEVT_COMMAND_MENU_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnRenderModeCommand),
+		     nullptr, this);
+    topBar->Connect (ID_ShowLegend,
+		     wxEVT_COMMAND_MENU_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnShowLegend),
+		     nullptr, this);
+    topBar->Connect (ID_ShowLegend,
+		     wxEVT_UPDATE_UI,
+		     wxUpdateUIEventHandler (ResultViewerImpl::View3D::OnShowLegendUpdateUI),
+		     nullptr, this);
+    topBar->Connect (ID_LegendOptions,
+		     wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN,
+		     wxAuiToolBarEventHandler (ResultViewerImpl::View3D::OnLegendOptions),
+		     nullptr, this);
+    topBar->Connect (ID_LegendOptions,
+		     wxEVT_UPDATE_UI,
+		     wxUpdateUIEventHandler (ResultViewerImpl::View3D::OnLegendOptionsUpdateUI),
+		     nullptr, this);
+    topBar->Connect (ID_ClipPlane,
+		     wxEVT_COMMAND_MENU_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnClipPlane),
+		     nullptr, this);
+    topBar->Connect (ID_LinkViews,
+		     wxEVT_COMMAND_MENU_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnLinkViews),
+		     nullptr, this);
+    topBar->Connect (ID_LinkViews,
+		     wxEVT_UPDATE_UI,
+		     wxUpdateUIEventHandler (ResultViewerImpl::View3D::OnLinkViewsUpdateUI),
+		     nullptr, this);
+    topBar->Connect (ID_DisplacementOffset,
+		     wxEVT_COMMAND_MENU_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnDisplacementOffset),
+		     nullptr, this);
+    topBar->Connect (ID_DisplacementDirMode,
+		     wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN,
+		     wxAuiToolBarEventHandler (ResultViewerImpl::View3D::OnDisplacementDirDropDown),
+		     nullptr, this);
+    topBar->Connect (ID_DisplacementDirModeFirst,
+		     ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
+		     wxEVT_COMMAND_MENU_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::View3D::OnDisplacementDirCommand),
+		     nullptr, this);
+    
+    if (data) SetData (data);
+
+    return topBar;
   }
 
   void ResultViewerImpl::View3D::OnRenderWidgetRealized (wxCommandEvent& event)
@@ -761,7 +832,7 @@ namespace nutogui
       actorOptionsTB->Refresh ();
     }
     
-    wxWindow* currentVisOpt = topBarSizer->GetItem (2)->GetWindow();
+    wxWindow* currentVisOpt = topBarSizer->GetItem (1)->GetWindow();
     if (currentVisOpt != visOptions)
     {
       visOptions->Show ();

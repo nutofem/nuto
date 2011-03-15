@@ -79,6 +79,7 @@ namespace nutogui
     
     DisplacementDirectionSizePanel* displacementSizePanel;
     
+    wxPanel* topBar;
     class RenderWidget;
     RenderWidget* renderWidget;
     wxPanel* dataSetSelectionBar;
@@ -256,6 +257,7 @@ namespace nutogui
     
     void SetData (const DataConstPtr& data);
     Content* Clone (ViewPanel* parent);
+    wxWindow* CreateTopTools (wxWindow* parentWindow);
 			      
     DECLARE_EVENT_TABLE()
   };
