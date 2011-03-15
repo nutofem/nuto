@@ -105,6 +105,8 @@ function(NUTO_SWIG_MODULE module_name interface_file install_path)
   IF(MINGW)
     SET_TARGET_PROPERTIES(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS "-shared -Wl,--enable-auto-import")
   ENDIF(MINGW)
+  # Additional build flags for module
+  SET_SOURCE_FILES_PROPERTIES("${swig_generated_file_fullname}" PROPERTIES COMPILE_FLAGS ${PYTHON_C_FLAGS})
 
   # installation
   NUTO_INSTALL_SWIG_PYTHON_MODULE(${module_name} ${NUTO_PYTHON_MODULES_INSTALL_PATH}/${install_path})

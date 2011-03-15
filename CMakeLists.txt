@@ -7,6 +7,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
+# Check for Mingw64
+if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
+  set(MINGW64 TRUE)
+endif()
+
 # options
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
 OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
@@ -130,6 +135,14 @@ EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3
 STRING(REGEX REPLACE "\n" "" PYTHON_VERSION ${PYTHON_VERSION})
 #message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 #message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+## Extra flags to work around build issues with Python on Mingw64
+if(MINGW64)
+  # Python.h #defines 'hypot' to '_hypot'; this breaks the C++ header <cmath>.
+  # Workaround: #define _hypot to hypot
+  SET(PYTHON_C_FLAGS "-D_hypot=hypot")
+  # Preprocessor definition needed by Python.h to use proper 64-bit definition
+  SET(PYTHON_C_FLAGS "${PYTHON_C_FLAGS} -DMS_WIN64")
+endif()
 
 # set relative paths for install
 SET(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
@@ -143,7 +156,6 @@ FIND_PACKAGE(SWIG REQUIRED)
 #MESSAGE(STATUS "SWIG found: ${SWIG_EXECUTABLE}")
 INCLUDE(${SWIG_USE_FILE})
 SET(NuTo_SWIG_FLAGS "-Wall;-fvirtual;${NuTo_SWIG_FLAGS}")
-add_definitions("-D_hypot=hypot")
 
 # search for MKL
 IF(ENABLE_MKL)
