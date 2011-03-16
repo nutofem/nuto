@@ -725,6 +725,27 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)const
     }
 }
 
+//! @brief Returns the vector of crack pointers of an element
+//! @return crack pointer vector
+const std::vector<NuTo::CrackBase*> NuTo::ElementBase::GetCracks() const
+{
+	return this->mElementData->GetCracks();
+}
+
+//! @brief Set the information that the element is already cracked or not
+//! @param bool cracked or not
+void NuTo::ElementBase::IsCracked(const bool rIsCracked)
+{
+	this->mElementData->IsCracked(rIsCracked);
+}
+
+//! @brief Give the information if the element is already cracked or not
+//! @return bool cracked or not
+const bool NuTo::ElementBase::IsCracked() const
+{
+	return this->mElementData->IsCracked();
+}
+
 //! @brief cast the base pointer to a Plane, otherwise throws an exception
 const NuTo::Plane* NuTo::ElementBase::AsPlane()const
 {

@@ -21,6 +21,7 @@
 
 namespace NuTo
 {
+class CrackBase;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementDataBase;
@@ -287,6 +288,18 @@ public:
     //! @param rGlobCoords (input) ... pointer to the array of coordinates
     //! @return True if coordinates are within the element, False otherwise
     virtual bool CheckPointInside(const double* rGlobCoords)const;
+
+    //! @brief Returns the vector of crack pointers of an element
+    //! @return crack pointer vector
+    virtual const std::vector<CrackBase*>  GetCracks() const;
+
+    //! @brief Set the information that the element is already cracked or not
+    //! @param bool (Input) cracked or not
+    void IsCracked(const bool rIsCracked);
+
+    //! @brief Give the information if the element is already cracked or not
+    //! @return bool cracked or not
+    const bool IsCracked() const;
 
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual const Plane* AsPlane()const;

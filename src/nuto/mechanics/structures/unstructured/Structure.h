@@ -36,8 +36,12 @@ public:
 	typedef std::vector<elementBasePtr_t> elementBasePtrVec_t;
 	typedef std::set<elementBasePtr_t>    elementBasePtrSet_t;
 	typedef NodeBase* nodeBasePtr_t;
-	typedef std::vector<nodeBasePtr_t> nodeBasePtrVec_t;
+	typedef std::map<nodeBasePtr_t , nodeBasePtr_t > nodeBasePtrMap_t;
 	typedef std::set<nodeBasePtr_t>    nodeBasePtrSet_t;
+	typedef std::vector<nodeBasePtr_t> nodeBasePtrVec_t;
+	typedef CrackBase* crackBasePtr_t;
+	typedef std::vector<crackBasePtr_t> crackBasePtrVec_t;
+    typedef boost::ptr_map<int,CrackBase> crackMap_t;
 
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -109,11 +113,21 @@ public:
     //! @return reference to a node
     const NodeBase* NodeGetNodePtr(int rIdent)const;
 
+    //! @brief ... store all elements connected to this node in a vector
+    //! @param rNode (Input) 		... node pointer
+    //! @param rElements (Output) 	... vector of element pointers
+    void NodeGetElements(const NodeBase* rNodePtr, std::vector<ElementBase*>& rElements);
+
     //! @brief gives the identifier of a node
     //! @param pointer to a node
     //! @return id
     int NodeGetId(const NodeBase* rNode)const;
 #endif //SWIG
+
+    //! @brief ... store all elements connected to this node in a vector
+    //! @param rNodeId (Input) 			... node id
+    //! @param rElementNumbers (Output)	... vector of element ids
+    void NodeGetElements(const int rNodeId, NuTo::FullMatrix<int>& rElementNumbers);
 
     //! @brief creates a node at coordinate's origin
     //! @param rDOFs space separated string containing the attributes like
@@ -475,7 +489,6 @@ protected:
 
     //! @brief ... map storing the cracks and a pointer to the objects
     //! @sa CrackBase
-    typedef boost::ptr_map<int,CrackBase> crackMap_t;
     crackMap_t mCrackMap;
 
 

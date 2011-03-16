@@ -77,6 +77,42 @@ int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
     throw MechanicsException("[NuTo::Structure::GetNodeId] Node does not exist.");
 }
 
+//! @brief ... store all element ids connected to this node in a vector
+//! @param rNode (Input) 			... node id
+//! @param rElementNumbers (Output) ... vector of element ids
+void NuTo::Structure::NodeGetElements(const int rNodeId, NuTo::FullMatrix<int>& rElementNumbers)
+{
+	const NuTo::NodeBase* nodePtr(NuTo::Structure::NodeGetNodePtr(rNodeId));
+	std::vector<NuTo::ElementBase*> elementPtrs;
+	this->NodeGetElements(nodePtr,elementPtrs);
+	rElementNumbers.Resize(elementPtrs.size(),1);
+	size_t i=0;
+	BOOST_FOREACH(NuTo::ElementBase* thisElPtr,elementPtrs)
+		rElementNumbers(++i,1)=thisElPtr->ElementGetId();
+}
+
+//! @brief ... store all elements connected to this node in a vector
+//! @param rNode (Input) 		... node pointer
+//! @param rElements (Output) 	... vector of element pointers
+void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)
+{
+	rElements.resize(0);
+	boost::ptr_map<int,NuTo::ElementBase>::iterator ElementIter = this->mElementMap.begin();
+	while (ElementIter != this->mElementMap.end())
+	{
+		for(size_t thisNode=ElementIter->second->GetNumNodes();--thisNode;){
+			NuTo::NodeBase* thisNodePtr=ElementIter->second->GetNode(thisNode);
+			if(thisNodePtr==rNodePtr)
+			{
+				rElements.push_back(ElementIter->second);
+				break;
+			}
+		}
+		ElementIter++;
+	}
+}
+
+
 //! @brief info about the elements in the Structure
 void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 {

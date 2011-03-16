@@ -175,11 +175,21 @@ public:
     //! @return reference to a node
     virtual const NodeBase* NodeGetNodePtr(int rIdent)const=0;
 
+    //! @brief ... store all elements connected to this node in a vector
+    //! @param rNode (Input) 		... node pointer
+    //! @param rElements (Output) 	... vector of element pointers
+    void NodeGetElements(const NodeBase* rNodePtr, std::vector<ElementBase*>& rElements);
+
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
     virtual int NodeGetId(const NodeBase* rNode)const=0;
 #endif //SWIG
+
+    //! @brief ... store all elements connected to this node in a vector
+    //! @param rNodeId (Input) 			... node id
+    //! @param rElementNumbers (Output) ... vector of element ids
+    void NodeGetElements(const int rNodeId, NuTo::FullMatrix<int>& rElementNumbers);
 
     //! @brief delete node
     //! @param rIdent ... node identifier

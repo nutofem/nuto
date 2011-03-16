@@ -286,3 +286,18 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::Full
 
 }
 
+//! @brief ... store all element ids connected to this node in a vector
+//! @param rNode (Input) 			... node id
+//! @param rElementNumbers (Output) ... vector of element ids
+void NuTo::StructureBase::NodeGetElements(const int rNodeId, NuTo::FullMatrix<int>& rElementNumbers)
+{
+    throw MechanicsException("[NuTo::StructureBase::NodeGetElements] Not available for this structure type.");
+}
+
+//! @brief ... store all elements connected to this node in a vector
+//! @param rNode (Input) 		... node pointer
+//! @param rElements (Output) 	... vector of element pointers
+void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)
+{
+    throw MechanicsException("[NuTo::StructureBase::NodeGetElements] Not available for this structure type.");
+}

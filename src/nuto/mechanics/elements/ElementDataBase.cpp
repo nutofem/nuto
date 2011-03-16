@@ -159,7 +159,18 @@ unsigned int NuTo::ElementDataBase::AddCrack(NuTo::CrackBase* rCrack)
 {
     throw MechanicsException("[NuTo::ElementDataBase::AddCrack] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
-
+//! @brief Set the information that the element is already cracked or not
+//! @param bool (Input) cracked or not
+void NuTo::ElementDataBase::IsCracked(const bool rIsCracked)
+{
+    throw MechanicsException("[NuTo::ElementDataBase::IsCracked] Not implemented for the ElementDataBase class - check the allocated element data type..");
+}
+//! @brief Give the information if the element is already cracked or not
+//! @return bool false: elements with this elementDataType are not cracked
+const bool NuTo::ElementDataBase::IsCracked() const
+{
+    return false;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //! @brief returns the enum of element data type
 //! @return enum of ElementDataType

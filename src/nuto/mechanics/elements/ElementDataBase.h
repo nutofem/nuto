@@ -127,6 +127,14 @@ public:
     //! @return vector to cracks
     virtual std::vector<CrackBase*>& GetCracks();
 
+    //! @brief Set the information that the element is already cracked or not
+    //! @param bool (Input) cracked or not
+    virtual void IsCracked(const bool rIsCracked);
+
+    //! @brief Give the information if the element is already cracked or not
+    //! @return bool false: elements with this elementDataType are not cracked
+    virtual const bool IsCracked() const;
+
     //! @brief gets the number of cracks for an element
     //! @return number of cracks
     virtual int GetNumCracks()const;

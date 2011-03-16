@@ -6,6 +6,7 @@
 
 NuTo::ElementDataCrackBase::ElementDataCrackBase() :  NuTo::ElementDataBase::ElementDataBase()
 {
+	isCracked=false;
 }
 
 NuTo::ElementDataCrackBase::~ElementDataCrackBase()
@@ -20,6 +21,20 @@ std::vector<NuTo::CrackBase*>& NuTo::ElementDataCrackBase::GetCracks()
 int NuTo::ElementDataCrackBase::GetNumCracks()const
 {
     return mCracks.size();
+}
+
+//! @brief Set the information that the element is already cracked or not
+//! @param bool (Input) cracked or not
+void NuTo::ElementDataCrackBase::IsCracked(const bool rIsCracked)
+{
+	isCracked=rIsCracked;
+}
+
+//! @brief Give the information if the element is already cracked or not
+//! @return bool cracked or not
+const bool NuTo::ElementDataCrackBase::IsCracked() const
+{
+    return isCracked;
 }
 
 //! @brief adds a crack to the element

@@ -29,6 +29,14 @@ public:
     //! @return number of cracks
 	int GetNumCracks()const;
 
+    //! @brief Set the information that the element is already cracked or not
+    //! @param bool (Input) cracked or not
+    void IsCracked(const bool rIsCracked);
+
+    //! @brief Give the information if the element is already cracked or not
+    //! @return bool cracked or not
+    const bool IsCracked() const;
+
 	//! @brief adds a crack to the element
 	//! @param rCrack  crack
 	//! @return the local crack number, the crack is either append to the list, or the existing local number is returned
@@ -36,6 +44,7 @@ public:
 
 protected:
     std::vector<CrackBase*> mCracks;
+    bool isCracked;
 };
 }
 #endif // ELEMENTDATACRACKBASE_H_
