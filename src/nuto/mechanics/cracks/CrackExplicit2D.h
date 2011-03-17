@@ -89,12 +89,12 @@ public:
     bool Intersect(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist, size_t& rSeg);
 
     // @brief computes the intersection point between the end-ray of this crack and a line segment
-    // @return a bool if the line segment AB is intersected or not
+    // @return an unsigned short if the line segment AB is intersected or not (0=no intersection, 1=front, 2=end)
     // @param rNodeA (Input) ... const reference to first node of the line
     // @param rNodeB (Input) ... const reference to second node of the line
     // @param rNodeI (Output) ... reference to intersection node of the line with the crack
     // @param rDist  (Output) ... relative coordinate of the segment intersection
-    bool ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist);
+    unsigned short ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist);
 
     // @brief computes the intersection point of two straight segments
 	// @return bool intersect?
@@ -119,7 +119,7 @@ public:
     // @param rDist1 (Output) ... normalized position of the intersection on the first segment ( xI=xA+r*(xB-xA) )
     // @todo  move this function to geometry class
     bool IntersectSegmentRay(	const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, const NuTo::NodeBase* rNodeC, const double rDir2[2],
-    							NuTo::NodeBase* rNodeI, double & rDist1);
+    							NuTo::NodeBase* rNodeI, double & rDist1, double & rDist2);
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize) const;
 #endif // ENABLE_VISUALIZE

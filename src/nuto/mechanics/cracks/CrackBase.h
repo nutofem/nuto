@@ -54,12 +54,12 @@ public:
     virtual bool Intersect(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist, size_t& rSeg)=0;
 
     //! @brief computes the intersection point between the end-ray of this crack and a line segment
-    //! @return a bool if the line segment AB is intersected or not
+    //! @return an unsigned short if the line segment AB is intersected or not (0=no intersection, 1=front, 2=end)
     //! @param rNodeA (Input) ... const reference to first node of the line
     //! @param rNodeB (Input) ... const reference to second node of the line
     //! @param rNodeI (Output) ... reference to intersection node of the line with the crack
     //! @param rDist  (Output) ... relative coordinate of the segment intersection
-    virtual bool ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist)=0;
+    virtual unsigned short ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist)=0;
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize) const;

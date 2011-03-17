@@ -10,104 +10,69 @@
 
 int main()
 {
-//	int numIp=16;
-//	std::cout << (int)sqrt((double)numIp) << std::endl;
-//	numIp=((int)sqrt((double)numIp))*((int)sqrt((double)numIp));
-//	std::cout << numIp << std::endl;
-//	for(int i=0; i<numIp; ++i)
-//	{
-//		if(i%(int)sqrt((double)numIp)==0) std::cout << std::endl << i/(int)sqrt((double)numIp) << ":";
-//		std::cout << "\t" << i%(int)sqrt((double)numIp);
-//	}
-//	std::cout << std::endl;
-//
-//	for(int i=0; i<numIp; ++i)
-//	{
-//		std::cout << "coordinates: [" 	<< (0.5+i%(int)sqrt((double)numIp))/(sqrt((double)numIp))*2-1 <<
-//									";" << (0.5+i/(int)sqrt((double)numIp))/(sqrt((double)numIp))*2-1 << "]" << std::endl;
-//	}
-//
-//	unsigned int mNumIp1D=(unsigned int)sqrt((double)numIp);
-//	for(int i=0; i<(mNumIp1D+1)*(mNumIp1D+1); ++i)
-//	{
-//		std::cout << "VisulizeCoordinates: [" 	<< (i%(mNumIp1D+1))/((double)mNumIp1D)*2-1 <<
-//											";" << (i/(mNumIp1D+1))/((double)mNumIp1D)*2-1 << "]" << std::endl;
-//	}
+	// definitions
+	const double Width = 5.;
+	const double Height = 10.;
+	const size_t  NumElementsX = 13;
+	const size_t  NumElementsY = 25;
 
 	try
 	{
 		// create structure
 		NuTo::Structure myStructure(2);
 		myStructure.Info();
+		myStructure.SetShowTime(true);
 
 		// create nodes
-		NuTo::FullMatrix<double> Displacements(2,12);
+		NuTo::FullMatrix<double> nodeCoordinates(2,1);
+		size_t node = 0;
+		for(size_t yCount = 0; yCount < NumElementsY + 1; yCount++)
+		{
+			nodeCoordinates(1,0) = (double)yCount * Height/(double)NumElementsY;
+			for(size_t xCount = 0; xCount < NumElementsX + 1; xCount++)
+			{
+				nodeCoordinates(0,0) = (double)xCount * Width/(double)NumElementsX;
+				//std::cout << "node: " << node << " coordinates: " << nodeCoordinates.GetValue(0,0) << "," << nodeCoordinates.GetValue(1,0) << "," << nodeCoordinates.GetValue(2,0) << std::endl;
+				myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+				node ++;
+			}
+		}
 
-		NuTo::FullMatrix<double> Coordinates(2,12, std::vector< double >{0,0 ,
-																		1,0 ,
-																		2,0 ,
-																		0,1 ,
-																		1,1 ,
-																		2,1 ,
-																		0,2 ,
-																		1,2 ,
-																		2,2 ,
-																		0,3 ,
-																		1,3 ,
-																		2,3});
-/*		NuTo::FullMatrix<double> Coordinates(2,12, std::vector< double >{0,0 ,
-																		1,0 ,
-																		2,0 ,
-																		0,1 ,
-																		1.9,1 ,
-																		2,1 ,
-																		0,2 ,
-																		1,2 ,
-																		2,2 ,
-																		0,3 ,
-																		1,3 ,
-																		2,3});
-*/		DBG_POSITION_INFO("Coordinates Matrix")
-		Coordinates.Info();
-
-/*		NuTo::FullMatrix<double> InitCrackCoords(2,4, std::vector< double >{
-																		-1.0,-1.0 ,
-																		 0.5, 1.0 ,
-																		 1.0, 1.5 ,
-																		 1.5, 0.0});*/
-//NuTo::FullMatrix<double> InitCrackCoords(2,3, std::vector< double >{
-//																-1.0, 2.0 ,
-//																-1.0, 1.5 ,
-//																 1.5, 1.5 });
-NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
-																-1.0, 1.5 ,
-																 0.5, 1.5 });
-//NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
-//																-1.0, 1.5 ,
-//																 0.5, 1.6 });
-//NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
-//																 1.5, 0.5 ,
-//																 2.5, 0.5 });
+		// create elements
+		NuTo::FullMatrix<int> elementIncidence(4,1);
+		size_t element = 0;
+		for(size_t yCount = 0; yCount < NumElementsY; yCount++)
+		{
+			for(size_t xCount = 0; xCount < NumElementsX; xCount++)
+			{
+				size_t node1 = yCount * (NumElementsX + 1) + xCount;
+				elementIncidence(0,0) = node1;
+				elementIncidence(1,0) = node1 + 1;
+				elementIncidence(2,0) = node1 + NumElementsX + 2;
+				elementIncidence(3,0) = node1 + NumElementsX + 1;
+				//std::cout << "element: " << element << " incidence: " << std::endl;
+				//elementIncidence.Info();
+				myStructure.ElementCreate(element, "plane2d4n", elementIncidence, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
+				element ++;
+			}
+		}
+		//~ NuTo::FullMatrix<double> InitCrackCoords(2,4, std::vector< double >{
+																 //~ 1.6, 5 ,
+																 //~ 2.5, 5 ,
+																 //~ 2.6, 7.5 ,
+																 //~ 3.4, 7.5 });
+		//~ NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
+																 //~ 1.6, 5 ,
+																 //~ 3.4, 5 });
+		NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
+																 1.6, 5 ,
+																 6, 5 });
 		DBG_POSITION_INFO("InitCrackCoords Matrix")
 		InitCrackCoords.Info();
-
-		NuTo::FullMatrix<int> Nodes = myStructure.NodesCreate("displacements", Coordinates);
 
 		NuTo::FullMatrix<int> CrackNodes = myStructure.NodesCreate("coordinates", InitCrackCoords);
 		DBG_POSITION_INFO("CrackNodes")
 		CrackNodes.Info(5);
-
-		// create elements
-		NuTo::FullMatrix<int> Incidences(4,6, std::vector< int >{
-			Nodes(0,0), Nodes(1,0), Nodes(4,0) , Nodes(3,0) ,
-			Nodes(1,0), Nodes(2,0), Nodes(5,0) , Nodes(4,0) ,
-			Nodes(3,0), Nodes(4,0), Nodes(7,0) , Nodes(6,0) ,
-			Nodes(4,0), Nodes(5,0), Nodes(8,0) , Nodes(7,0) ,
-			Nodes(6,0), Nodes(7,0), Nodes(10,0), Nodes(9,0) ,
-			Nodes(7,0), Nodes(8,0), Nodes(11,0), Nodes(10,0)});
-		DBG_POSITION_INFO("Incidence Matrix")
-		Incidences.Info();
-	    NuTo::FullMatrix<int> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
 
 	    // create constitutive law
 	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
@@ -128,35 +93,20 @@ NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
 			myStructure.CrackPushBack(crack1, myStructure.NodeGetNodePtr(CrackNodes(i,0)));
 	    myStructure.CrackInfo(5);
 
+		myStructure.Info();
 	    // merge crack into elements
-	    //! @todo [DA] muss intern ablaufen: sowas wie InitiatePhantomNode oder so
 	    NuTo::Structure::elementBasePtrSet_t crackedElems;
 	    myStructure.InitiateCrack(crack1, crackedElems);
-	    BOOST_FOREACH(NuTo::Structure::elementBasePtr_t thisCrackedElem, crackedElems)
-	    {
-	    	double globCoors[]={10.0,1.0};
-	    	double locCoords[2];
-
-	    	if(thisCrackedElem->GetLocalPointCoordinates(globCoors , locCoords))
-	    	{
-	    		DBG_PRINT_VEC(locCoords)
-	    	}else{
-	    		DBG_POSITION_INFO("point is not in Element")
-	    	}
-
-	    	//! @todo intersect element's corners with the crack
-
-	    }
-
+	    
 	    BOOST_FOREACH(NuTo::Structure::elementBasePtr_t thisCrackedElem, crackedElems)
 	    	    myStructure.ElementSetIntegrationType(thisCrackedElem->ElementGetId(),"2D4Nconst100Ip","NOIPDATA");
 
 	    myStructure.InitiatePhantomNodeMethod(crackedElems);
 
-	    myStructure.NodeInfo(5);
-	    myStructure.ElementInfo(5);
-
-	    myStructure.IntegrationTypeInfo(1);
+	    //~ myStructure.NodeInfo(5);
+	    //~ myStructure.ElementInfo(5);
+//~ 
+	    //~ myStructure.IntegrationTypeInfo(1);
 
 	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	    myStructure.ElementTotalSetSection(mySection1);
@@ -179,15 +129,21 @@ NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
         // y-direction bottom
         direction(0,0)= 0;
         direction(1,0)= 1;
-        myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-        myStructure.ConstraintLinearSetDisplacementNode(1, direction, 0.0);
-        myStructure.ConstraintLinearSetDisplacementNode(2, direction, 0.0);
+		for(size_t xCount = 0; xCount < NumElementsX + 1; xCount++)
+		{
+			size_t node = xCount;
+			//std::cout << "node: " << node << std::endl;
+			myStructure.ConstraintLinearSetDisplacementNode(node, direction, 0.0);
+		}
         // y-direction top
         direction(0,0)= 0;
         direction(1,0)= 1;
-        myStructure.ConstraintLinearSetDisplacementNode( 9, direction, 0.5);
-        myStructure.ConstraintLinearSetDisplacementNode(10, direction, 0.5);
-        myStructure.ConstraintLinearSetDisplacementNode(11, direction, 0.5);
+		for(size_t xCount = 0; xCount < NumElementsX + 1; xCount++)
+		{
+			size_t node = xCount + (NumElementsX + 1) * NumElementsY;
+			//std::cout << "node: " << node << std::endl;
+			myStructure.ConstraintLinearSetDisplacementNode(node, direction, 0.5);
+		}
 
         // start analysis
         // build global dof numbering

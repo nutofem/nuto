@@ -204,18 +204,22 @@ bool NuTo::CrackExplicit2D::Intersect(const NuTo::NodeBase* rNodeA, const NuTo::
 }
 
 //! @brief computes the intersection point between the end-ray of this crack and a line segment
-//! @return a bool if the line segment AB is intersected or not
+//! @return an unsigned short if the line segment AB is intersected or not (0=no intersection, 1=front, 2=end)
 //! @param rNodeA (Input) ... const reference to first node of the line
 //! @param rNodeB (Input) ... const reference to second node of the line
 //! @param rNodeI (Output) ... reference to intersection node of the line with the crack
 //! @param rDist  (Output) ... relative coordinate of the segment intersection
-bool NuTo::CrackExplicit2D::ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist)
+unsigned short NuTo::CrackExplicit2D::ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist)
 {
 	//! check if input nodes are 2D-nodes
 	if(rNodeA->GetNumCoordinates()!=2 || rNodeB->GetNumCoordinates()!=2 )
 		throw NuTo::MechanicsException("[NuTo::CrackExplicit2D::ExtendEnd] don't got an 2D-Node!!!");
 
-	bool isCracked=false;
+	unsigned short isCracked=0;
+
+	//! Variables for the ray subroutine
+	bool rayIntersects=false;
+	double distRay=0.0;
 
 	std::list<NuTo::NodeBase*>::const_reverse_iterator crackPtIt1 = this->rbegin();	++crackPtIt1;
 	std::list<NuTo::NodeBase*>::const_reverse_iterator crackPtIt2 = this->rbegin();
@@ -231,9 +235,35 @@ bool NuTo::CrackExplicit2D::ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::
 	dir[0]/=len;
 	dir[1]/=len;
 
+	//! check if there is an intersection with the end-ray of this crack
 	const NuTo::NodeBase* nodeC(*crackPtIt2);
-	if( IntersectSegmentRay(rNodeA,rNodeB,nodeC,dir,rNodeI,rDist) )
-		isCracked=true;
+	rayIntersects=IntersectSegmentRay(rNodeA,rNodeB,nodeC,dir,rNodeI,rDist, distRay);
+	if(rayIntersects && 0<distRay)
+	{
+		isCracked=2; //!< projection of the end-tip (end of the vector)
+	}else{
+		//! now do the same stuff with the other crack tip
+		std::list<NuTo::NodeBase*>::const_iterator crackPtIt1 = this->begin();	++crackPtIt1;
+		std::list<NuTo::NodeBase*>::const_iterator crackPtIt2 = this->begin();
+
+		//! compute the nomalized direction of the end-ray
+		double dir[2];
+		double coor1[2], coor2[2];
+		(*crackPtIt1)->GetCoordinates2D(coor1);
+		(*crackPtIt2)->GetCoordinates2D(coor2);
+		dir[0]=coor2[0]-coor1[0];
+		dir[1]=coor2[1]-coor1[1];
+		const double len=sqrt(dir[0]*dir[0]+dir[1]*dir[1]);
+		dir[0]/=len;
+		dir[1]/=len;
+
+		const NuTo::NodeBase* nodeC(*crackPtIt2);
+		rayIntersects=IntersectSegmentRay(rNodeA,rNodeB,nodeC,dir,rNodeI,rDist, distRay);
+		if(rayIntersects && 0<distRay)
+		{
+			isCracked=1; //!< projection of the front-tip (begin of the vector)
+		}
+	}
 
 	return isCracked;
 }
@@ -362,7 +392,7 @@ bool NuTo::CrackExplicit2D::IntersectSegmentSegment(	const NuTo::NodeBase* rNode
 //! @todo  move this function to geometry class
 bool NuTo::CrackExplicit2D::IntersectSegmentRay(	const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB,
 														const NuTo::NodeBase* rNodeC, const double rDir2[2],
-														NuTo::NodeBase* rNodeI, double & rDist1)
+														NuTo::NodeBase* rNodeI, double & rDist1, double & rDist2)
 {
 	//! check if input nodes are 2D-nodes
 	if(rNodeA->GetNumCoordinates()!=2 || rNodeB->GetNumCoordinates()!=2 || rNodeC->GetNumCoordinates()!=2 || rNodeI->GetNumCoordinates()!=2 )
@@ -420,6 +450,14 @@ bool NuTo::CrackExplicit2D::IntersectSegmentRay(	const NuTo::NodeBase* rNodeA, c
 	 * \f$
 	 */
 	rDist1=(rDir2[1]*(xC[0]-xA[0])-rDir2[0]*(xC[1]-xA[1]))/det;
+
+	/*!
+	 * Solution in Respect to $s$
+	 * \f[
+	 * s = \frac{1}{det} \left[ dir1_2 \left(C_1-A_1\right) - dir1_1 \left(C_2-A_2\right) \right]
+	 * \f]
+	 */
+	rDist2=(dir1[1]*(xC[0]-xA[0])-dir1[0]*(xC[1]-xA[1]))/det;
 
 	/*!
 	 *
