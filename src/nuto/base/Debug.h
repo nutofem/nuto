@@ -31,10 +31,10 @@
 
 
 #else //DEBUG
-	#define DBG_POSITION
-	#define DBG_POSITION_INFO(v)
-	#define DBG_PRINT_VAL(v)
-	#define DBG_PRINT_VEC(v)
+	#define DBG_POSITION ;
+	#define DBG_POSITION_INFO(v) ;
+	#define DBG_PRINT_VAL(v) ;
+	#define DBG_PRINT_VEC(v) ;
 #endif //DEBUG
 
 
