@@ -265,6 +265,12 @@ public:
     //! @param reference to an element
     //! @return identifier
     virtual int ElementGetId(const ElementBase* rElement)const=0;
+
+    //! @brief info about one single element
+    //! @param rElement (Input) ... pointer to the element
+    //! @param rVerboseLevel (Input) ... level of verbosity
+    virtual void ElementInfo(const ElementBase* rElement, int rVerboseLevel)const=0;
+
 #endif //SWIG
 
     //! @brief delete element
@@ -272,7 +278,7 @@ public:
     virtual void ElementDelete(int rIdent)=0;
 
     //! @brief info about the elements in the Structure
-    virtual void ElementInfo(int mVerboseLevel)const=0;
+    virtual void ElementInfo(int rVerboseLevel)const=0;
 
     //! @brief calls ElementCoefficientMatrix_0,
     //! renaming only for clarification in mechanical problems for the end user

@@ -414,6 +414,10 @@ void NuTo::Structure::NodeDelete(int rNodeNumber)
 //! @param rNodeNumber identifier for the node
 void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     boost::ptr_map<int,NodeBase>::iterator itNode = mNodeMap.find(rNodeNumber);
     if (itNode==this->mNodeMap.end())
     {
@@ -457,6 +461,11 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 
         this->mNodeNumberingRequired = true;
     }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::NodeDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief number the dofs in the structure

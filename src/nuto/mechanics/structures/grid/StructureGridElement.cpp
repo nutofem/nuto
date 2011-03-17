@@ -63,6 +63,12 @@ int NuTo::StructureGrid::ElementGetId(const ElementBase* rElement)const
 }
 
 //! @brief info about the elements in the Structure
+void NuTo::StructureGrid::ElementInfo(const ElementBase* rElement, int rVerboseLevel)const
+{
+	throw MechanicsException("[NuTo::StructureGrid::ElementInfo] not implemented.");
+}
+
+//! @brief info about the elements in the Structure
 void NuTo::StructureGrid::ElementInfo(int mVerboseLevel)const
 {
     std::cout<<"number of elements: " << mElementVec.size() <<std::endl;

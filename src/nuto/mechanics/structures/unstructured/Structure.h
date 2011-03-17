@@ -237,10 +237,15 @@ public:
     //! @param pointer to an element
     //! @return identifier
     int ElementGetId(const ElementBase* rElement)const;
+
+    //! @brief info about one single element
+    //! @param rElement (Input) ... pointer to the element
+    //! @param rVerboseLevel (Input) ... level of verbosity
+    void ElementInfo(const ElementBase* rElement, int rVerboseLevel)const;
 #endif //SWIG
 
     //! @brief info about the elements in the Structure
-    void ElementInfo(int mVerboseLevel)const;
+    void ElementInfo(int rVerboseLevel)const;
 
     //! @brief Creates an element
     //! @param rElementType element type

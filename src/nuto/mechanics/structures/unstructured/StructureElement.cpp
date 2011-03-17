@@ -64,6 +64,35 @@ int NuTo::Structure::ElementGetId(const ElementBase* rElement)const
     throw MechanicsException("[NuTo::Structure::GetElementId] Element does not exist.");
 }
 
+//! @brief info about one single element
+//! @param rElement (Input) ... pointer to the element
+//! @param rVerboseLevel (Input) ... level of verbosity
+void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel)const
+{
+	std::cout << "element : " << rElement->ElementGetId() << std::endl;
+	if (rVerboseLevel>2)
+	{
+		std::cout << "\tenum::type=" << rElement->GetEnumType() << std::endl;
+		if (rVerboseLevel>3)
+		{
+			std::cout << "\tNodes:";
+			for(unsigned short iNode=0; iNode<rElement->GetNumNodes(); ++iNode)
+				std::cout << "\t" << this->NodeGetId(rElement->GetNode(iNode));
+			std::cout << std::endl;
+			if (rVerboseLevel>4)
+			{
+				std::cout << "\tintegration points :" << std::endl;
+				for(int iIp=0; iIp<rElement->GetNumIntegrationPoints(); ++iIp)
+				{
+					double coor[3];
+					rElement->GetGlobalIntegrationPointCoordinates(iIp,coor);
+					std::cout << "\t\t" << iIp << ": [" << coor[0] << ";" << coor[1] << ";" << coor[2] << "]" << std::endl;
+				}
+			}
+		}
+	}
+}
+
 //! @brief info about the elements in the Structure
 void NuTo::Structure::ElementInfo(int rVerboseLevel)const
 {
