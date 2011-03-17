@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/base/Exception.h"
@@ -22,8 +23,8 @@ public:
     MyStructureClass(int rDimension) : NuTo::Structure(rDimension)
     {
         //create the Structure
-        mlX = 100;
-        mlY = 100;
+        mlX = 10000;
+        mlY = 10000;
 
         //create structure
         SetShowTime(true);
@@ -98,7 +99,7 @@ public:
         this->ConstraintSetRHS(mConstraint3X,rLoadFactor*(mStrain(0,0)*mlX+0.5*mStrain(2,0)*mlY));
         this->ConstraintSetRHS(mConstraint3Y,rLoadFactor*(mStrain(1,0)*mlY+0.5*mStrain(2,0)*mlX));
         this->ConstraintSetRHS(mConstraint4X,rLoadFactor*0.5*mStrain(2,0)*mlY);
-        this->ConstraintSetRHS(mConstraint4Y,rLoadFactor*0.5*mStrain(2,0)*mlX);
+        this->ConstraintSetRHS(mConstraint4Y,rLoadFactor*mStrain(1,0)*mlY);
     }
 
     void SetTotalStrain(NuTo::FullMatrix<double> rStrain)
@@ -201,6 +202,11 @@ public:
     void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const
     {
         std::cout << " Macroscale Convergence after " << rNumNewtonIterations << " Newton iterations, curLoadFactor " << rLoadFactor << ", deltaLoadFactor "<< rDeltaLoadFactor << std::endl<< std::endl;
+        std::stringstream ssLoadStep;
+        ssLoadStep << rLoadStep;
+        std::stringstream ssIteration;
+        ssIteration << rNumNewtonIterations;
+        ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentConverged") + ssLoadStep.str()+"_" + ssIteration.str() + std::string(".vtk"));
     }
 
     //! @brief do a postprocessing step after each line search within the load step
@@ -242,55 +248,66 @@ try
 {
     MyStructureClass myStructureCoarseScale(2);
 
-
-    //crack transition zone
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackTransitionZone",5);
+    //crack transition zone (radius)
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackTransitionRadius",5);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackAverageRadius",15);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("SquareCoarseScaleModel",1);
 
     //penalty stiffness for crack angle
-    double PenaltyStiffnessCrackAngle(100);
+    double PenaltyStiffnessCrackAngle(1);
     double PenaltyStiffnessScalingFactorCrackAngle(2.*M_PI);
     myStructureCoarseScale.ElementTotalSetFineScaleParameter("ConstraintPenaltyStiffnessCrackAngle", PenaltyStiffnessCrackAngle);
     myStructureCoarseScale.ElementTotalSetFineScaleParameter("PenaltyStiffnessScalingFactorCrackAngle", PenaltyStiffnessScalingFactorCrackAngle);
 
     //penalty stiffness for tangential crack opening
-    double PenaltyStiffnessTangentialCrackOpening(100);
-    double PenaltyStiffnessScalingFactorPenaltyStiffnessTangentialCrackOpening(0.1);
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ConstraintPenaltyStiffnessTangentialCrackOpening", PenaltyStiffnessTangentialCrackOpening);
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("PenaltyStiffnessScalingFactorTangentialCrackOpening", PenaltyStiffnessScalingFactorPenaltyStiffnessTangentialCrackOpening);
+    //double PenaltyStiffnessTangentialCrackOpening(1);
+    //double PenaltyStiffnessScalingFactorPenaltyStiffnessTangentialCrackOpening(0.1);
+    //myStructureCoarseScale.ElementTotalSetFineScaleParameter("ConstraintPenaltyStiffnessTangentialCrackOpening", PenaltyStiffnessTangentialCrackOpening);
+    //myStructureCoarseScale.ElementTotalSetFineScaleParameter("PenaltyStiffnessScalingFactorTangentialCrackOpening", PenaltyStiffnessScalingFactorPenaltyStiffnessTangentialCrackOpening);
 
     //augmented lagrangian for normal crack opening to be non negativ
-    double AugmentedLagrangeStiffnessCrackOpening(1);
+    //double AugmentedLagrangeStiffnessCrackOpening(10000);
     //myStructureCoarseScale.ElementTotalSetFineScaleParameter("AugmentedLagrangeCrackOpening", AugmentedLagrangeStiffnessCrackOpening);
 
     //difference in both principal strains in order to solve the crack direction elastic from the total strain
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleHigh",0.001);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleHigh",0.0000001);
     //difference in both principal strains in order to solve the crack direction elastic from the previous state
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleLow",0.0005);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("ToleranceElasticCrackAngleLow", 0.00000005);
 
     // apply constraints set the strains and
     // do the initial step using the linear elastic solution (no fine scale model just the calibration of the initial angles)
     NuTo::FullMatrix<double> strain(3,1);
-    strain(0,0) = 0.1;
-    strain(1,0) = 0.;
-    strain(2,0) = 0.;
+    // pure tension in diagonal direction for nu=0
+    //strain(0,0) = 0.001;
+    //strain(1,0) = 0.001;
+    //strain(2,0) = 0.002;
+    strain(0,0) = 0.001;
+    strain(1,0) = 0.00;
+    strain(2,0) = 0.00;
+
     myStructureCoarseScale.SetTotalStrain(strain);
     myStructureCoarseScale.InitStructure();
-
-    strain(0,0) = 0.001;
-    strain(1,0) = 0.;
-    strain(2,0) = 0.0;
-    myStructureCoarseScale.SetTotalStrain(strain);
-    double toleranceResidualForce = 1e-6;
-    bool automaticLoadstepControl=true;
-    double maxDeltaLoadFactor=1;
-    int maxNumNewtonIterations=20;
-    double decreaseFactor=0.5;
-    int minNumNewtonIterations=7;
-    double increaseFactor=1.5;
-    double minDeltaLoadFactor=1e-6;
-    bool saveStructureBeforeUpdate=false;
-    myStructureCoarseScale.NewtonRaphson(toleranceResidualForce,automaticLoadstepControl,maxDeltaLoadFactor,maxNumNewtonIterations,decreaseFactor,
-            minNumNewtonIterations,increaseFactor,minDeltaLoadFactor,saveStructureBeforeUpdate);
+    int numLoadStepMacro=100;
+    for (int loadstepMacro=1;loadstepMacro <= numLoadStepMacro; loadstepMacro++)
+    {
+        NuTo::FullMatrix<double> curStrain(strain*((double)loadstepMacro/(double)numLoadStepMacro));
+        myStructureCoarseScale.SetTotalStrain(curStrain);
+        double toleranceResidualForce = 1e-6;
+        bool automaticLoadstepControl=true;
+        double maxDeltaLoadFactor=1;
+        int maxNumNewtonIterations=20;
+        double decreaseFactor=0.5;
+        int minNumNewtonIterations=7;
+        double increaseFactor=1.5;
+        double minDeltaLoadFactor=1e-6;
+        bool saveStructureBeforeUpdate=false;
+        myStructureCoarseScale.NewtonRaphson(toleranceResidualForce,automaticLoadstepControl,maxDeltaLoadFactor,maxNumNewtonIterations,decreaseFactor,
+        minNumNewtonIterations,increaseFactor,minDeltaLoadFactor,saveStructureBeforeUpdate);
+        myStructureCoarseScale.ElementTotalUpdateStaticData();
+        double energy = myStructureCoarseScale.ElementTotalGetTotalEnergy();
+        std::cout << "total energy on the macroscale " << energy << std::endl;
+        //system("paraview --state=/home/unger3/develop/nuto_build/examples/c++/test.pvsm");
+    }
 
     myStructureCoarseScale.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentMultiscaleFinal.vtk"));
 

@@ -60,10 +60,10 @@ NuTo::ElementDataIpBase::~ElementDataIpBase()
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName)
+void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale)
 {
     assert(rIp<mIntegrationType->GetNumIntegrationPoints());
-    mIpData[rIp].SetFineScaleModel(rFileName);
+    mIpData[rIp].SetFineScaleModel(rFileName, rLengthCoarseScale);
 }
 
 //! @brief sets the fine scale parameter for all ips

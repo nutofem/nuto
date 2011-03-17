@@ -672,13 +672,23 @@ void NuTo::NonlocalDamagePlasticity::UpdateStaticData_EngineeringStress_Engineer
         EngineeringStress2D stress;
         GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, stress);
 
+        double energy = oldStaticData->GetPrevTotalEnergy();
+        //calculate delta total energy (sigma1+sigma2)/2*delta_strain
+        const EngineeringStress2D& prevStress(oldStaticData->GetPrevStress());
+        const EngineeringStrain2D prevStrain(oldStaticData->GetPrevStrain());
+        energy+=0.5*(
+            (stress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+            (stress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
+            (stress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+            );
+        oldStaticData->mPrevStrain = engineeringStrain;
         oldStaticData->mPrevSigma = stress;
+        oldStaticData->SetPrevTotalEnergy(energy);
 
         // update the parts of the static data that are not related to the temporary updates (from the nonlocal calculation)
         oldStaticData->mKappa = oldStaticData->mTmpKappa;
 
         Eigen::Matrix<double,4,1>::Map(oldStaticData->mEpsilonP,4,1) = Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4,1);;
-        oldStaticData->mPrevStrain = engineeringStrain;
     }
     else
     {
@@ -871,20 +881,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticity::AllocateStatic
 double NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-
-    // calculate engineering strain
-    EngineeringStrain1D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-    return 0.5 * engineeringStrain.mEngineeringStrain * this->mE * engineeringStrain.mEngineeringStrain;
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain] not implemented for 1D.");
 }
 
 
@@ -896,42 +893,21 @@ double NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_Engineer
 double NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain2D engineeringStrain;
     EngineeringStress2D engineeringStress;
+    GetEngineeringStressFromEngineeringStrain(rElement, rIp, rDeformationGradient, engineeringStress);
+    const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
+    double energy = staticData->GetPrevTotalEnergy();
+    const EngineeringStress2D& prevStress(staticData->GetPrevStress());
+    EngineeringStrain2D engineeringStrain;
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+    EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
+    energy+=0.5*(
+            (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+            (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
+            (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+            );
 
-    const SectionBase* theSection(rElement->GetSection());
-    if (theSection==0)
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-    if (theSection->GetType()==Section::PLANE_STRAIN)
-    {
-        // calculate coefficients of the material matrix
-        double C11, C12, C33;
-        this->CalculateCoefficients3D(C11, C12, C33);
-
-        // calculate Engineering stress
-        engineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
-        engineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
-        engineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain] Plane stress is to be implemented.");
-    }
-    return 0.5*(
-            engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
-           +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
-           +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]);
+    return energy;
 }
 
 
@@ -943,39 +919,7 @@ double NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_Engineer
 double NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient) const
 {
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain3D engineeringStrain;
-    EngineeringStress3D engineeringStress;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    // calculate coefficients of the material matrix
-    double C11, C12, C44;
-    this->CalculateCoefficients3D(C11, C12, C44);
-
-    // calculate Engineering stress
-    engineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * (engineeringStrain.mEngineeringStrain[1]+engineeringStrain.mEngineeringStrain[2]);
-    engineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * (engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[2]);
-    engineeringStress.mEngineeringStress[2] = C11 * engineeringStrain.mEngineeringStrain[2] + C12 * (engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[1]);
-    engineeringStress.mEngineeringStress[3] = C44 * engineeringStrain.mEngineeringStrain[3] ;
-    engineeringStress.mEngineeringStress[4] = C44 * engineeringStrain.mEngineeringStrain[4] ;
-    engineeringStress.mEngineeringStress[5] = C44 * engineeringStrain.mEngineeringStrain[5] ;
-
-    return 0.5*(
-            engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
-           +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
-           +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]
-           +engineeringStrain.mEngineeringStrain[3]*engineeringStress.mEngineeringStress[3]
-           +engineeringStrain.mEngineeringStrain[4]*engineeringStress.mEngineeringStress[4]
-           +engineeringStrain.mEngineeringStrain[5]*engineeringStress.mEngineeringStress[5]);
+    throw MechanicsException("[NuTo::NonlocalDamagePlasticity::GetTotalEnergy_EngineeringStress_EngineeringStrain] not implemented for 3D.");
 }
 
 

@@ -31,6 +31,7 @@ NuTo::Tetrahedron10N::Tetrahedron10N(NuTo::StructureBase* rStructure, std::vecto
     mNodes[7] = rNodes[7];
     mNodes[8] = rNodes[8];
     mNodes[9] = rNodes[9];
+    CheckElement();
 }
 
 

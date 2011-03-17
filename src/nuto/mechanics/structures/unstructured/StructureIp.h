@@ -189,6 +189,8 @@ public:
     //! @param rEpsilonMGradientVector ... global internal potential gradient which corresponds to the global macroscopic strain (derivative is equal to homogeneous strain)
     void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector, NuTo::FullMatrix<double>* rEpsilonMGradientVector) const;
 
+    void CalculateCohesiveForce(NuTo::FullMatrix<double>& rCohesiveForce) const;
+
     //! @brief calculate the distance of a point to the crack
     //! @param rCoordinates[2] coordinates of the point
     //! @return distance to crack
@@ -209,6 +211,11 @@ public:
     //! @param rDOF return value, for each dof, the corresponding derivatives (ehomxx, ehomyy, gammahomxy, ux, uy, alpha)
     //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
     void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
+
+    //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening without considering this to be balanced by epsilon_hom
+    //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
+    //! @param rDOF return value, for each dof, the corresponding derivatives (ux, uy)
+    void CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<std::array<double,2> >& rDOF)const;
 
     //! @brief set the total current strain
     void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
@@ -267,14 +274,23 @@ public:
         return mConstraintTotalStrain;
     }
 
-    double GetDimensionX()const
+    void SetlCoarseScale(double rlCoarseScale)
     {
-        return mlX;
+        mlCoarseScale = rlCoarseScale;
+    }
+    void SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel)
+    {
+        mSquareCoarseScaleModel = rSquareCoarseScaleModel;
     }
 
-    double GetDimensionY()const
+    double GetlCoarseScale()const
     {
-        return mlY;
+        return mlCoarseScale;
+    }
+
+    double GetAreaFineScale()const
+    {
+        return mArea;
     }
 
     int GetDofCrackAngle()const
@@ -314,9 +330,14 @@ public:
     //for test purpose in public section
     void CalculateHomogeneousEngineeringStrain();
 
-    void SetCrackTransitionZone(double rCrackTransitionZone)
+    void SetCrackTransitionRadius(double rCrackTransitionRadius)
     {
-        mCrackTransitionZone = rCrackTransitionZone;
+        mCrackTransitionRadius = rCrackTransitionRadius;
+    }
+
+    void SetCrackAverageRadius(double rCrackAverageRadius)
+    {
+        mCrackAverageRadius = rCrackAverageRadius;
     }
 
     //! @brief calculates the crack angle for elastic solutions
@@ -424,8 +445,24 @@ protected:
     boost::array<int,3> mDOFGlobalTotalStrain;
     //! @brief this is the current homogeneous part of the strain
     EngineeringStrain2D mEpsilonHom;
-    double mlX,mlY;
-    double mCrackTransitionZone;
+    //! @brief true for an approximately square coarse scale model, false for a either triangular meshes or meshes not aligned with the axes
+    //! in case the coarse scale element is well aligned, the ratio CrackLength/Area can be calculated exactly
+    //! whereas for other shapes, an approximation has to be used (additional errors)
+    bool mSquareCoarseScaleModel;
+    //! @brief for mSquareCoarseScaleModel == edge length of the macroscale element (sqrt of the area of the macroscale element)
+    //! for mSquareCoarseScaleModel==false ratio of the crack length divided by the area approximated by (sqrt of the area of the macroscale element)
+    double mlCoarseScale;
+    //! @brief length to regularize the Heaviside function
+    double mCrackTransitionRadius;
+    //! @brief length to calculate the weighting function for the integration points
+    //! if IP within radius, w=1 otherwise w\approx l_coarse/l_fine
+    double mCrackAverageRadius;
+    //! @brief center of the model
+    boost::array<double,2> mCenter;
+    //! @brief area of the fine scale model
+    // this has to be stored, since for a round fine scale model (especially coarse scale) the real area is substantially
+    // lower than the area of the circle
+    double mArea;
     int mConstraintFineScaleX,
         mConstraintFineScaleY,
         mConstraintNormalCrackOpening,

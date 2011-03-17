@@ -34,9 +34,9 @@ public:
     const StructureIp* GetFineScaleStructure()const;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(std::string rFileName);
+    void SetFineScaleModel(std::string rFileName, double rMacroLength);
 
-    //! @brief sets the fine scale model (deserialization from a binary file)
+    //! @brief sets the fine scale parameters
     void SetFineScaleParameter(const std::string& rName, double rParameter);
 
     //! @brief in case the fine scale model has not been initialized,

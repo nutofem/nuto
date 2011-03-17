@@ -131,9 +131,9 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)
 	}
 }
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementBase::SetFineScaleModel(int rIp, std::string rFileName)
+void NuTo::ElementBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale)
 {
-    mElementData->SetFineScaleModel(rIp, rFileName);
+    mElementData->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale);
 }
 
 //! @brief sets the fine scale parameter for all ips

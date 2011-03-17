@@ -58,8 +58,14 @@ void NuTo::ConstraintNonlinearGlobalCrackAngle2D::Info(unsigned short rVerboseLe
     if (totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]!=0.)
         anglePrescribed = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
     else
-        anglePrescribed = 0.;
-    std::cout << "NuTo::ConstraintLinearGlobalCrackAngle : prescribed angle " <<  anglePrescribed << std::endl;
+    {
+        if (totalStrain.mEngineeringStrain[2]>0)
+            anglePrescribed = 1.5*M_PI;
+        else
+            anglePrescribed = 0.5*M_PI;
+    }
+
+    //std::cout << "NuTo::ConstraintLinearGlobalCrackAngle : prescribed angle " <<  anglePrescribed << std::endl;
 }
 
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation

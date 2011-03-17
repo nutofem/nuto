@@ -733,6 +733,7 @@ void NuTo::Solid::CheckElement()
         this->ReorderNodes();
         // recalculate node coordinates after renumbering
         this->CalculateCoordinates(nodeCoord);
+        std::cout << "reorder element due to detJac=" << detJacobian << std::endl;
     }
 
     // check jacobian determinant for all integration points for positive sign and calculate element volume
@@ -743,8 +744,10 @@ void NuTo::Solid::CheckElement()
         this->GetLocalIntegrationPointCoordinates(ipCount, localIPCoord);
         this->CalculateDerivativeShapeFunctionsLocal(localIPCoord, derivativeShapeFunctionsLocal);
         this->CalculateJacobian(derivativeShapeFunctionsLocal,nodeCoord, invJacobian, detJacobian);
+        std::cout << "detJac=" << detJacobian << std::endl;
         if (detJacobian <= 0)
         {
+            std::cout << "error due to detJac=" << detJacobian << std::endl;
             throw MechanicsException("[NuTo::Solid::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
         }
         volume += this->GetIntegrationPointWeight(ipCount) * detJacobian;

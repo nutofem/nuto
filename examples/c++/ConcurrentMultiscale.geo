@@ -1,12 +1,12 @@
 //mesh using gmsh -2 -order 1 ConcurrentMultiscale.geo
 Mesh.ChacoSeed = 1;
-Mesh.SubdivisionAlgorithm=2;
+Mesh.SubdivisionAlgorithm=3;
 //width of the bounding box
 w = 100;
 //height of the bounding box
 h = 100;
 //mesh size
-lc = 10;
+lc = 5;
 
 //define points
 Point(1) = { 0.0, 0.0 , 0.0 , lc};
@@ -48,6 +48,7 @@ Function myHole
    l1 = newreg; Line Loop(l1) = {e1,e2,e3,e4};
 
    theloops[t] = l1 ; 
+   t = t+1;
 
 Return
 
@@ -56,8 +57,50 @@ t = 1;
 x = w/2;
 y = h/2;
 angle = Rand(180.);
-he = 10;
-we = 10;
+he = 8;
+we = 8;
+Call myHole;
+
+x = w*0.15;
+y = h*(0.5-0.1);
+angle = Rand(180.);
+he = 8;
+we = 8;
+Call myHole;
+
+x = w*0.85;
+y = h*(0.5+0.1);
+angle = Rand(180.);
+he = 8;
+we = 8;
+Call myHole;
+
+x = w*0.2;
+y = h*(0.2);
+angle = Rand(180.);
+he = 8;
+we = 8;
+Call myHole;
+
+x = w*0.65;
+y = h*0.7;
+angle = Rand(180.);
+he = 8;
+we = 8;
+Call myHole;
+
+x = w*0.7;
+y = h*(0.15);
+angle = Rand(180.);
+he = 8;
+we = 8;
+Call myHole;
+
+x = w*0.3;
+y = h*0.83;
+angle = Rand(180.);
+he = 8;
+we = 8;
 Call myHole;
 
 

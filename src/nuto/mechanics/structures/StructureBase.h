@@ -383,7 +383,7 @@ public:
      //! @param rElement element pointer
      //! @param rIp integration point number
      //! @param rFileName binary file to be deserialize the structure from
-     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName);
+     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale);
  #endif //SWIG
 
      //! @brief modifies the section of a single element
@@ -1101,6 +1101,13 @@ public:
     //! @param ... rMax ... maximum value
     void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
 
+    //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rCenter center of the selection circle
+    //! @param ... rMin ... minimum radius
+    //! @param ... rMax ... maximum radius
+    void GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMatrix<double> rCenter, double rMin, double rMax);
+
     //! @brief ... Adds an element to an element group
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rIdentElement  identifier for the element
@@ -1221,8 +1228,6 @@ public:
     virtual void NewtonRaphsonInfo(int rVerboseLevel)const
     {}
 
-
-
 protected:
     int mDimension;
 
@@ -1336,6 +1341,7 @@ protected:
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
     virtual void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const = 0;
+
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

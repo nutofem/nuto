@@ -49,7 +49,7 @@ public:
     virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(int rIp, std::string rFileName);
+    virtual void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale);
 
     //! @brief sets the fine scale parameter for all ips
     //! @parameter rName name of the parameter, e.g. YoungsModulus

@@ -25,7 +25,7 @@ NuTo::IpDataBase::~IpDataBase()
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::IpDataBase::SetFineScaleModel(std::string rFileName)
+void NuTo::IpDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength)
 {
     throw NuTo::MechanicsException("[NuTo::IpDataBase::IpDataBaseSetFineScaleModel] This Ip data type has no fine scale model.");
 }

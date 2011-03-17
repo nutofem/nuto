@@ -371,6 +371,7 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
         }
         elementIter++;
     }
+    //write contribution of Lagrange Multipliers
     ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
 }
 

@@ -19,24 +19,34 @@ int main()
 try
 {
     //
-    double lX(100);
-    double lY(100);
+    bool square(true);
 
     //create structure
     NuTo::StructureIp myStructureFineScale(2);
     myStructureFineScale.SetShowTime(true);
 
+
     NuTo::FullMatrix<int> createdGroupIds;
-    myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
-    //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleCrack.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
-    //myStructureFineScale.ImportFromGmsh("ConcurrentMultiscaleFineScale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    if (square)
+    {
+        //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+        //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleCrack.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+        myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleSquare.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+        //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScale.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    }
+    else
+    {
+        //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleRoundCrack.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+        myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleRound.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+        //myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleSquare.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    }
 
     //create constitutive law nonlocal damage
     int myMatDamage = myStructureFineScale.ConstitutiveLawCreate("NonlocalDamagePlasticity");
     double YoungsModulusDamage(20000);
     myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatDamage,YoungsModulusDamage);
     myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.0);
-    double nonlocalRadius(10);
+    double nonlocalRadius(15);
     myStructureFineScale.ConstitutiveLawSetNonlocalRadius(myMatDamage,nonlocalRadius);
     double fct(2);
     myStructureFineScale.ConstitutiveLawSetTensileStrength(myMatDamage,fct);
@@ -48,7 +58,7 @@ try
     int myMatLinear = myStructureFineScale.ConstitutiveLawCreate("LinearElastic");
     double YoungsModulusLE(20000);
     myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatLinear,YoungsModulusLE);
-    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.2);
+    myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.0);
 
     //create section
     double thickness(1);
@@ -74,48 +84,64 @@ try
     //Build nonlocal elements
     myStructureFineScale.BuildNonlocalData(myMatDamage);
 
-	//Create groups to apply the periodic boundary conditions
-	//left boundary
-	int GrpNodes_Left = myStructureFineScale.GroupCreate("Nodes");
-	int direction = 0; //either 0,1,2
-	double min(0.);
-	double max(0.);
-	myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Left,direction,min,max);
+    int GrpNodes_Boundary;
+    if (square)
+    {
+        //Create groups to apply the periodic boundary conditions
+        double lX(100);
+        double lY(100);
+        //left boundary
+        int GrpNodes_Left = myStructureFineScale.GroupCreate("Nodes");
+        int direction = 0; //either 0,1,2
+        double min(0.);
+        double max(0.);
+        myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Left,direction,min,max);
 
-    //right boundary
-    int GrpNodes_Right = myStructureFineScale.GroupCreate("Nodes");
-    direction = 0; //either 0,1,2
-    min=lX;
-    max=lX;
-    myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Right,direction,min,max);
+        //right boundary
+        int GrpNodes_Right = myStructureFineScale.GroupCreate("Nodes");
+        direction = 0; //either 0,1,2
+        min=lX;
+        max=lX;
+        myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Right,direction,min,max);
 
-    //top boundary
-	int GrpNodes_Top = myStructureFineScale.GroupCreate("Nodes");
-	direction=1;
-	min=lY;
-	max=lY;
-	myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Top,direction,min,max);
+        //top boundary
+        int GrpNodes_Top = myStructureFineScale.GroupCreate("Nodes");
+        direction=1;
+        min=lY;
+        max=lY;
+        myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Top,direction,min,max);
 
-    //bottom boundary
-    int GrpNodes_Bottom = myStructureFineScale.GroupCreate("Nodes");
-    direction=1;
-    min=0;
-    max=0;
-    myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Bottom,direction,min,max);
+        //bottom boundary
+        int GrpNodes_Bottom = myStructureFineScale.GroupCreate("Nodes");
+        direction=1;
+        min=0;
+        max=0;
+        myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Bottom,direction,min,max);
 
-	//top right node
-    int GrpNodes_BottomTop = myStructureFineScale.GroupUnion(GrpNodes_Bottom,GrpNodes_Top);
-    int GrpNodes_LeftRight = myStructureFineScale.GroupUnion(GrpNodes_Left,GrpNodes_Right);
-    int GrpNodes_Boundary = myStructureFineScale.GroupUnion(GrpNodes_BottomTop,GrpNodes_LeftRight);
+        //top right node
+        int GrpNodes_BottomTop = myStructureFineScale.GroupUnion(GrpNodes_Bottom,GrpNodes_Top);
+        int GrpNodes_LeftRight = myStructureFineScale.GroupUnion(GrpNodes_Left,GrpNodes_Right);
+        //GrpNodes_Boundary = myStructureFineScale.GroupUnion(GrpNodes_BottomTop,GrpNodes_LeftRight);
 
-    /*std::cout << "all nodes are boundary nodes!!!!!!!!!!" << std::endl;
-    direction=1;
-    min=-1;
-    max=101;
-    int GrpNodes_Boundary = myStructureFineScale.GroupCreate("Nodes");
-    myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Boundary,direction,min,max);
-*/
-    //update displacement of boundary (disp controlled)
+        std::cout << "all nodes are boundary nodes!!!!!!!!!!" << std::endl;
+        direction=1;
+        min=-1;
+        max=101;
+        GrpNodes_Boundary = myStructureFineScale.GroupCreate("Nodes");
+        myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Boundary,direction,min,max);
+    }
+    else
+    {
+        GrpNodes_Boundary = myStructureFineScale.GroupCreate("Nodes");
+        NuTo::FullMatrix<double> center(2,1);
+        center(0,0) = 0.;
+        center(1,0) = 0.;
+        double rmin=49.999;
+        double rmax=50.001;
+        myStructureFineScale.GroupAddNodeRadiusRange(GrpNodes_Boundary,center,rmin,rmax);
+
+    }
+
     myStructureFineScale.SetGroupBoundaryNodes(GrpNodes_Boundary);
     myStructureFineScale.GroupInfo(10);
 	//update conre mat

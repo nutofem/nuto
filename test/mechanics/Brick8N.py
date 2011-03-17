@@ -32,14 +32,14 @@ error = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1,-1,-1)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1,-1,+1)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1,+1,-1)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1,+1,-1)))
-myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1,-1,+1)))
-myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1,-1,+1)))
-myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1,+1,+1)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1,+1,+1)))
+myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1.,-1.,-1.)))
+myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1.,-1.,-1.)))
+myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1.,+1.,-1.)))
+myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1.,+1.,-1.)))
+myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1.,-1.,+1.)))
+myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1.,-1.,+1.)))
+myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1.,+1.,+1.)))
+myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1.,+1.,+1.)))
 
 #create element
 myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullMatrix(8,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)))
@@ -55,9 +55,9 @@ myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 
 #set displacements of right node
 myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
-myStructure.NodeSetDisplacements(myNode4,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
+myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
 myStructure.NodeSetDisplacements(myNode6,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
-myStructure.NodeSetDisplacements(myNode8,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
+myStructure.NodeSetDisplacements(myNode7,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
 
 #calculate element stiffness matrix
 Ke = nuto.DoubleFullMatrix(0,0)

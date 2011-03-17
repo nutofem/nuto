@@ -213,9 +213,6 @@ public:
     //! @brief cast the base pointer to an Plane, otherwise throws an exception
     Plane* AsPlane();
 
-    //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(int rIp, std::string rFileName);
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

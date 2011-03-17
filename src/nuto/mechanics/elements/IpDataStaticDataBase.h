@@ -35,7 +35,7 @@ public:
         mStaticData = rStaticData;
 	}
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName);
+    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength);
 
     //! @brief sets the fine scale parameter
     //! @parameter rName name of the parameter, e.g. YoungsModulus

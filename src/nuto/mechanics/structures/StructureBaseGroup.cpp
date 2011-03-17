@@ -212,6 +212,72 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
 #endif
 }
 
+//! @brief ... Adds all nodes to a group whose coordinates are in the specified range
+//! @param ... rIdentGroup identifier for the group
+//! @param ... rCenter center of the selection circle
+//! @param ... rMin ... minimum radius
+//! @param ... rMax ... maximum radius
+void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMatrix<double> rCenter, double rMin, double rMax)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+   boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=Groups::Nodes)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] A node can be added only to a node group.");
+
+    if (rCenter.GetNumRows()!=mDimension || rCenter.GetNumColumns()!=1)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] The center point must have the same number of coordinates as the dimension of the structure.");
+
+    if(rMin>rMax)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] The minimum radius must not be larger than the maximum radius.");
+
+    std::vector<NodeBase*> nodeVector;
+    this->GetNodesTotal(nodeVector);
+    double coordinates[3];
+    double rMin2 = rMin*rMin;
+    double rMax2 = rMax*rMax;
+
+    for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+    {
+        NodeBase* nodePtr(nodeVector[countNode]);
+        if (nodePtr->GetNumCoordinates()<1)
+            continue;
+        double r2(0.);
+        switch (mDimension)
+        {
+        case 1:
+            nodePtr->GetCoordinates1D(coordinates);
+            r2 = (coordinates[0]-rCenter(0,0))*(coordinates[0]-rCenter(0,0));
+            break;
+        case 2:
+            nodePtr->GetCoordinates2D(coordinates);
+            r2 = (coordinates[0]-rCenter(0,0))*(coordinates[0]-rCenter(0,0))
+                +(coordinates[1]-rCenter(1,0))*(coordinates[1]-rCenter(1,0));
+            break;
+        case 3:
+            nodePtr->GetCoordinates3D(coordinates);
+            r2 = (coordinates[0]-rCenter(0,0))*(coordinates[0]-rCenter(0,0))
+                +(coordinates[1]-rCenter(1,0))*(coordinates[1]-rCenter(1,0))
+                +(coordinates[2]-rCenter(2,0))*(coordinates[2]-rCenter(2,0));
+            break;
+        default:
+            throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] unsupported dimension of the structure.");
+        }
+        if (r2>=rMin2 && r2<=rMax2)
+            itGroup->second->AddMember(nodePtr);
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddNodeRadiusRange] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
 //! @brief ... Adds a node to a node group
 //! @param ... rIdentGroup identifier for the group
 //! @param ... rIdentNode  identifier for the node

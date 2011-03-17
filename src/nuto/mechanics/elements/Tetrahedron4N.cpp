@@ -24,6 +24,7 @@ NuTo::Tetrahedron4N::Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<
     mNodes[1] = rNodes[1];
     mNodes[2] = rNodes[2];
     mNodes[3] = rNodes[3];
+    CheckElement();
 }
 
 NuTo::Tetrahedron4N::~Tetrahedron4N()

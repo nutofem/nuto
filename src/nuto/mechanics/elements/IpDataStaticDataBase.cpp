@@ -24,9 +24,9 @@ NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName)
+void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength)
 {
-    mStaticData->SetFineScaleModel(rFileName);
+    mStaticData->SetFineScaleModel(rFileName, rMacroLength);
 }
 
 //! @brief sets the fine scale parameter for all ips

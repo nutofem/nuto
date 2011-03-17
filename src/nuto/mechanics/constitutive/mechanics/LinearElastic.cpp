@@ -207,7 +207,6 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 		rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
 		rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
 		rEngineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
-
     }
     else
     {
@@ -649,6 +648,16 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
 	{
 		throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Plane stress is to be implemented.");
 	}
+    std::cout << "strain ";
+    std::cout << engineeringStrain.mEngineeringStrain[0] << " " << engineeringStrain.mEngineeringStrain[1]<< " " << engineeringStrain.mEngineeringStrain[2]<< std::endl;
+    std::cout << "stress ";
+    std::cout << engineeringStress.mEngineeringStress[0] << " ";
+    std::cout << engineeringStress.mEngineeringStress[1] << " ";
+    std::cout << engineeringStress.mEngineeringStress[2] << std::endl;
+    std::cout << "energy " << 0.5*(
+            engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
+           +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
+           +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]) << std::endl<<std::endl;
     return 0.5*(
     		engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
            +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
@@ -1205,7 +1214,7 @@ void NuTo::LinearElastic::CalculateCoefficients3D(double& C11, double& C12, doub
     double factor = this->mE/((1.0 + this->mNu) * (1.0 - 2.0 * this->mNu));
     C11 = factor * (1.0 - this->mNu);
     C12 = factor * this->mNu;
-    C44 = this->mE/(2*(1.0 + this->mNu));
+    C44 = this->mE/(2.*(1.0 + this->mNu));
 }
 
 ///////////////////////////////////////////////////////////////////////////

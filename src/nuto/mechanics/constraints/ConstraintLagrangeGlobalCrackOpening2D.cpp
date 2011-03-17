@@ -138,7 +138,7 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateCoefficientMatrix_0(
         //derivative with respect to lambda^2
         rResult.AddEntry(0,0,-1./mPenalty);
     }
-
+/*
     //check result matrix by calling the gradient routine
     NuTo::FullMatrix<double> rResultFull(rResult);
     NuTo::FullMatrix<double> rResultCDF(rResult);
@@ -170,6 +170,7 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateCoefficientMatrix_0(
     {
         std::cout << "constraint crack opening is fine " << std::endl;
     }
+*/
 }
 
 //! @brief calculates the gradient of the internal potential
@@ -199,7 +200,7 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateGradientInternalPote
         //derivative with respect to lambda
         rResult(0,0)=-mLagrangeValue/mPenalty;
     }
-
+/*
     //check result matrix by calling the potential routine
     NuTo::FullMatrix<double> rResultFull(rResult);
     NuTo::FullMatrix<double> rResultCDF(rResult);
@@ -226,6 +227,7 @@ void NuTo::ConstraintLagrangeGlobalCrackOpening2D::CalculateGradientInternalPote
         std::cout<< "constraint crack opening gradient cdf " << std::endl;
         rResultCDF.Info(10,5);
     }
+*/
 }
 
 //! @brief calculates the internal potential

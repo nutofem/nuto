@@ -50,8 +50,8 @@
 NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 {
     SetParametersValid();
-    mToleranceResidualForce=1e-6;
-    mMaxDeltaLoadFactor = 0.1;
+    mToleranceResidualForce=2e-5;
+    mMaxDeltaLoadFactor = 1;
     mMaxNumNewtonIterations=20;
     mDecreaseFactor=0.5;
     mMinNumNewtonIterations=7;
@@ -184,21 +184,21 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         //nonlinear solution
         StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
+
+        //Get and set previous total strain
+         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
+         fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
+
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
         fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 
-        //Get and set previous total strain
-        EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
-        fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
-
-        //Get and set previous delta strain
+         //Get and set previous delta strain
         EngineeringStrain2D engineeringStrain;
         rDeformationGradient.GetEngineeringStrain(engineeringStrain);
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
-
 
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
                 true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
@@ -207,10 +207,8 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         //calculate average stress
         NuTo::FullMatrix<double> averageStress;
 
-        double mlX, mlY;
-        mlX = fineScaleStructure->GetDimensionX();
-        mlY = fineScaleStructure->GetDimensionY();
-        fineScaleStructure->ElementTotalGetAverageStress(mlX*mlY,averageStress);
+        double area = fineScaleStructure->GetAreaFineScale();
+        fineScaleStructure->ElementTotalGetAverageStress(area,averageStress);
         rEngineeringStress.mEngineeringStress[0] = averageStress(0,0);
         rEngineeringStress.mEngineeringStress[1] = averageStress(1,0);
         rEngineeringStress.mEngineeringStress[2] = averageStress(3,0);
@@ -352,15 +350,17 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         //nonlinear solution
         const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
         StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+
+        //Get and set previous total strain
+        EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
+        fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
+
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
         fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 
-        //Get and set previous total strain
-        EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
-        fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
 
         //Get and set previous delta strain
         EngineeringStrain2D engineeringStrain;
@@ -562,7 +562,8 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         mumps.SchurComplement(stiffnessFineScale,schurIndicesMatrix,stiffness);
 
         //scale with the dimension of the structure (area)
-        stiffness*=1./(fineScaleStructure->GetDimensionX()*fineScaleStructure->GetDimensionY());
+        double area = fineScaleStructure->GetAreaFineScale();
+        stiffness*=1./(area);
         *(rTangent->AsConstitutiveTangentLocal3x3()) = stiffness;
 
     /*
@@ -649,7 +650,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient) const
+        const DeformationGradient2D& rDeformationGradient)const
 {
     // this is a somehow weird situation, since for a normal material law nothing should be changed
     // since the material law is a full structure whose bc change, this can either be implemented with a cast (as I did)
@@ -665,11 +666,15 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
     }
     else
     {
-        //nonlinear solution
-
         //Get and set previous total strain
         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
         fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
+
+        fineScaleStructure->SetLoadFactor(0);
+        fineScaleStructure->NodeBuildGlobalDofs();
+        NuTo::FullMatrix<double> activeDOF, dependentDOF;
+        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 
         // calculate engineering strain
         EngineeringStrain2D engineeringStrain;
@@ -681,8 +686,33 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
                 true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
                 mIncreaseFactor, mMinLoadFactor, false);
 
+        double energy = staticData->GetPrevTotalEnergy();
+        //calculate delta total energy (sigma1+sigma2)/2*delta_strain
+        //calculate average stress
+        NuTo::FullMatrix<double> averageStress;
+        double area = fineScaleStructure->GetAreaFineScale();
+        fineScaleStructure->ElementTotalGetAverageStress(area,averageStress);
+        std::cout<<"Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain : average stress" << std::endl;
+        averageStress.Trans().Info(12,6);
+        EngineeringStress2D engineeringStress;
+        engineeringStress.mEngineeringStress[0] = averageStress(0,0);
+        engineeringStress.mEngineeringStress[1] = averageStress(1,0);
+        engineeringStress.mEngineeringStress[2] = averageStress(3,0);
+        const EngineeringStress2D& prevStress(staticData->GetPrevStress());
+        //std::cout << engineeringStress.mEngineeringStress[0] << " " << engineeringStress.mEngineeringStress[1] << " " << engineeringStress.mEngineeringStress[2] << std::endl;
+        //std::cout << engineeringStrain.mEngineeringStrain[0] << " " << engineeringStrain.mEngineeringStrain[1] << " " << engineeringStrain.mEngineeringStrain[2] << std::endl;
+        energy+=0.5*(
+            (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+            (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
+            (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+            );
+        const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStrain(engineeringStrain);
+        const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStress(engineeringStress);
+        const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevTotalEnergy(energy);
         fineScaleStructure->ElementTotalUpdateStaticData();
         fineScaleStructure->SetPrevCrackAngle(fineScaleStructure->GetCrackAngle());
+        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+
     }
 }
 //! @brief ... update static data (history variables) of the constitutive relationship
@@ -764,22 +794,6 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
         const DeformationGradient1D& rDeformationGradient) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
-    /*
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-
-    // calculate engineering strain
-    EngineeringStrain1D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-    return 0.5 * engineeringStrain.mEngineeringStrain * this->mE * engineeringStrain.mEngineeringStrain;
-*/
 }
 
 
@@ -791,45 +805,60 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient) const
 {
-    throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
-/*
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
+    const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
+    StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+
+    //Get and set previous total strain
+     EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
+     fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
+
+    fineScaleStructure->SetLoadFactor(0);
+    fineScaleStructure->NodeBuildGlobalDofs();
+    NuTo::FullMatrix<double> activeDOF, dependentDOF;
+    fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+
     // calculate engineering strain
     EngineeringStrain2D engineeringStrain;
-    EngineeringStress2D engineeringStress;
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
+    EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
+    fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
-    const SectionBase* theSection(rElement->GetSection());
-    if (theSection==0)
-        throw MechanicsException("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-    if (theSection->GetType()==Section::PLANE_STRAIN)
+    fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
+            true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
+            mIncreaseFactor, mMinLoadFactor, true);
+
+    double energy = staticData->GetPrevTotalEnergy();
+    //calculate delta total energy (sigma1+sigma2)/2*delta_strain
+     //calculate average stress
+    NuTo::FullMatrix<double> averageStress;
+    double area = fineScaleStructure->GetAreaFineScale();
+    fineScaleStructure->ElementTotalGetAverageStress(area,averageStress);
+    EngineeringStress2D engineeringStress;
+    engineeringStress.mEngineeringStress[0] = averageStress(0,0);
+    engineeringStress.mEngineeringStress[1] = averageStress(1,0);
+    engineeringStress.mEngineeringStress[2] = averageStress(3,0);
+    const EngineeringStress2D& prevStress(staticData->GetPrevStress());
+    energy+=0.5*(
+        (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+        (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
+        (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+        );
+    //restore structure
+    if (fineScaleStructure->GetSavedToStringStream())
     {
-        // calculate coefficients of the material matrix
-        double C11, C12, C33;
-        this->CalculateCoefficients3D(C11, C12, C33);
-
-        // calculate Engineering stress
-        engineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
-        engineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
-        engineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
+        fineScaleStructure->RestoreStructure();
     }
     else
     {
-        throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Plane stress is to be implemented.");
+        //set load factor to zero in order to get the same ordering of the displacements as before the routine
+        fineScaleStructure->SetLoadFactor(0);
+        fineScaleStructure->NodeBuildGlobalDofs();
+        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
     }
-    return 0.5*(
-            engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
-           +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
-           +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]);
-*/
+    std::cout << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy() << std::endl;
+    std::cout << "Energy of fine scale approx " << energy * area << std::endl;
+    return energy;
 }
 
 

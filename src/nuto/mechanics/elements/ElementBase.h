@@ -117,7 +117,7 @@ public:
     ConstitutiveBase* GetConstitutiveLaw(int rIp);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(int rIp, std::string rFileName);
+    void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale);
 
     //! @brief sets the fine scale parameter for all ips
     //! @parameter rName name of the parameter, e.g. YoungsModulus

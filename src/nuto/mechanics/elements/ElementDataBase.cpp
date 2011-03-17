@@ -42,7 +42,7 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int 
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementDataBase::SetFineScaleModel(int rIp, std::string rFileName)
+void NuTo::ElementDataBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale)
 {
     throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleModel] Not implemented for the ElementDataClass - check the allocated element data type..");
 }

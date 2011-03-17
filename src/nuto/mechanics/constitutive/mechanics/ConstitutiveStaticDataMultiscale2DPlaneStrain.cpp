@@ -78,7 +78,7 @@ const NuTo::StructureIp* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::Ge
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std::string rFileName)
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std::string rFileName, double rMacroLength)
 {
     // open file
     std::ifstream ifs ( rFileName.c_str(), std::ios_base::binary );
@@ -111,6 +111,9 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     //transform boundary nodes to multiscale nodes
     mStructure->TransformBoundaryNodes();
 
+    //set macroscopic length (sqrt of area of macroelement)
+    mStructure->SetlCoarseScale(rMacroLength);
+
     //check all the sections of the elements to a plane strain section
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
@@ -120,8 +123,10 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 {
     std::string upperCaseName(rName);
     std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
-    if (upperCaseName=="CRACKTRANSITIONZONE")
-        mStructure->SetCrackTransitionZone(rParameter);
+    if (upperCaseName=="CRACKTRANSITIONRADIUS")
+        mStructure->SetCrackTransitionRadius(rParameter);
+    else if (upperCaseName=="CRACKAVERAGERADIUS")
+        mStructure->SetCrackAverageRadius(rParameter);
     else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
         mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
     else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORCRACKANGLE")
@@ -142,6 +147,15 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
         mStructure->SetPenaltyStiffnessScalingFactorTangentialCrackOpening(rParameter);
     else if (upperCaseName=="USENONLINEARSOLUTION")
         UseNonlinearSolution();
+    else if (upperCaseName=="SQUARECOARSESCALEMODEL")
+    {
+        if (rParameter==0)
+            mStructure->SetSquareCoarseScaleModel(false);
+        else if (rParameter==1)
+            mStructure->SetSquareCoarseScaleModel(true);
+        else
+            throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter for SetSquareCoarseScaleModel is either 0 or 1");
+    }
     else
         throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
 }

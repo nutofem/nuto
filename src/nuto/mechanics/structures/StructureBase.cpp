@@ -969,13 +969,14 @@ try
         return;
     }
     this->ElementTotalUpdateTmpStaticData();
+
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 //    std::cout << "initial stiffness" << std::endl;
 //    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
 //Check the stiffness matrix
 //CheckStiffness();
 
-     //update displacements of all nodes according to the new conre mat
+    //update displacements of all nodes according to the new conre mat
     {
         NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
         NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
@@ -996,6 +997,13 @@ try
     double normRHS = rhsVector.Norm();
     rhsVector = extForceVector + dispForceVector;
 
+/*    {
+        double energy;
+        energy = this->ElementTotalGetTotalEnergy();
+        energy += this->ConstraintTotalGetTotalEnergy();
+        std::cout << "energy " << energy << std::endl;
+    }
+*/
     //calculate absolute tolerance for matrix entries to be not considered as zero
     double maxValue, minValue, ToleranceZeroStiffness;
     if (stiffnessMatrixCSRVector2.GetNumColumns()==0)
@@ -1055,23 +1063,28 @@ try
             this->NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
             NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
             stiffnessMatrixCSR.SetOneBasedIndexing();
-/*            if (1==1)
+            try
             {
-                NewtonRaphsonInfo(10);
-                NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
-                //std::cout << "stiffness full" << std::endl;
-                //stiffnessMatrixFull.Info(12,3);
-                NuTo::FullMatrix<double> eigenValues;
-                stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
-                std::cout << "eigenvalues" << std::endl;
-                eigenValues.Trans().Info(12,3);
-                NuTo::FullMatrix<double> eigenVectors;
-                stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
-                std::cout << "eigenvector 1" << std::endl;
-                eigenVectors.GetColumn(0).Trans().Info(12,3);
+                mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
             }
-*/
-            mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
+            catch(...)
+            {
+                if (mNumActiveDofs<1000)
+                {
+                    NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+                    std::cout << "stiffness full" << std::endl;
+                    stiffnessMatrixFull.Info(12,3);
+                    NuTo::FullMatrix<double> eigenValues;
+                    stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
+                    std::cout << "eigenvalues" << std::endl;
+                    eigenValues.Trans().Info(12,3);
+                    NuTo::FullMatrix<double> eigenVectors;
+                    stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
+                    std::cout << "eigenvector 1" << std::endl;
+                    eigenVectors.GetColumn(0).Trans().Info(12,3);
+                }
+                throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] Error solving system of equations using mumps.");
+            }
 
             //std::cout << " rhsVector" << std::endl;
             //rhsVector.Trans().Info(10,3);
@@ -1090,10 +1103,17 @@ try
                 this->NodeMergeActiveDofValues(displacementsActiveDOFs);
                 this->ElementTotalUpdateTmpStaticData();
 
+/*                {
+                    double energy;
+                    energy = this->ElementTotalGetTotalEnergy();
+                    energy += this->ConstraintTotalGetTotalEnergy();
+                    std::cout << "energy " << energy << std::endl;
+                }
+*/
                 // calculate residual
                 this->BuildGlobalGradientInternalPotentialVector(intForceVector);
-                std::cout << "intForceVector "  << std::endl;
-                intForceVector.Trans().Info(10,3);
+                //std::cout << "intForceVector "  << std::endl;
+                //intForceVector.Trans().Info(10,3);
 
                 rhsVector = extForceVector - intForceVector;
                 normResidual = rhsVector.Norm();
@@ -1112,6 +1132,22 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
             if (normResidual>normRHS*(1-0.5*alpha) && normResidual>rToleranceResidualForce)
             {
                 convergenceStatus=2;
+                {
+                    if (mNumActiveDofs<1000)
+                    {
+                        NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+                        std::cout << "stiffness full" << std::endl;
+                        stiffnessMatrixFull.Info(12,3);
+                        NuTo::FullMatrix<double> eigenValues;
+                        stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
+                        std::cout << "eigenvalues" << std::endl;
+                        eigenValues.Trans().Info(12,3);
+                        NuTo::FullMatrix<double> eigenVectors;
+                        stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
+                        std::cout << "eigenvector 1" << std::endl;
+                        eigenVectors.GetColumn(0).Trans().Info(12,3);
+                    }
+                }
                 break;
             }
 
@@ -1124,6 +1160,7 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
             {
                 this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor);
                 convergenceStatus=1;
+                //NodeInfo(12);
                 break;
             }
 
@@ -1133,7 +1170,7 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
             this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
             std::cout << dispForceVector.Norm() << std::endl;
 //check stiffness
-//CheckStiffness();
+CheckStiffness();
             int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
             int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
             //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;

@@ -22,6 +22,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/structures/StructureBase.h"
 
 #include "nuto/math/FullMatrix.h"
 
@@ -546,6 +547,8 @@ void NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
 
         //add to local resforce vector
         assert(mSection->GetThickness()>0);
+
+        //this global weight function is 1 for all standard problems, it's not equal to one for the multiscale method
         double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
         AddDetJBtSigma(derivativeShapeFunctionsLocal, engineeringStress, factor, rResult);
     }
@@ -1028,11 +1031,6 @@ const NuTo::Plane* NuTo::Plane::AsPlane()const
 NuTo::Plane* NuTo::Plane::AsPlane()
 {
     return this;
-}
-//! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::Plane::SetFineScaleModel(int rIp, std::string rFileName)
-{
-    mElementData->SetFineScaleModel(rIp,rFileName);
 }
 
 #ifdef ENABLE_SERIALIZATION

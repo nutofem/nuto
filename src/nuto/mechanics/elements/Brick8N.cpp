@@ -29,6 +29,7 @@ NuTo::Brick8N::Brick8N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBa
     mNodes[5] = rNodes[5];
     mNodes[6] = rNodes[6];
     mNodes[7] = rNodes[7];
+    CheckElement();
 }
 
 

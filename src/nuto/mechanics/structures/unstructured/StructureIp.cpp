@@ -43,7 +43,7 @@
 #define tolCrackOpeningConstraint 1e-5
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
+NuTo::StructureIp::StructureIp ( int rDimension)  : Structure ( rDimension )
 {
     if (rDimension!=2)
         throw MechanicsException("[NuTo::StructureIp::StructureIp] The concurrent multiscale model is only implemented for 2D.");
@@ -65,9 +65,11 @@ NuTo::StructureIp::StructureIp ( int rDimension )  : Structure ( rDimension )
     mConstraintCrackAngle = -1;
     mConstraintNormalCrackOpening = -1;
     mConstraintTangentialCrackOpening = -1;
-     mlX = 0.;
-    mlY = 0.;
-    mCrackTransitionZone = 0;
+    mSquareCoarseScaleModel = true;
+    mlCoarseScale = 0.;
+    mArea = 0.;
+    mCrackTransitionRadius = 0;
+    mCrackAverageRadius = 0;
     mIPName = std::string("fineScaleIp");
     mGroupBoundaryNodes = -1;
     mBoundaryNodesAssigned = false;
@@ -168,9 +170,11 @@ void NuTo::StructureIp::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP(mConstraintTangentialCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintCrackAngle)
        & BOOST_SERIALIZATION_NVP(mConstraintTotalStrain)
-       & BOOST_SERIALIZATION_NVP(mlX)
-       & BOOST_SERIALIZATION_NVP(mlY)
-       & BOOST_SERIALIZATION_NVP(mCrackTransitionZone)
+       & BOOST_SERIALIZATION_NVP(mlCoarseScale)
+       & BOOST_SERIALIZATION_NVP(mArea)
+       & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
+       & BOOST_SERIALIZATION_NVP(mCrackTransitionRadius)
+       & BOOST_SERIALIZATION_NVP(mCrackAverageRadius)
        & BOOST_SERIALIZATION_NVP(mBoundaryNodesAssigned)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodes)
        & BOOST_SERIALIZATION_NVP(mIPName)
@@ -389,17 +393,81 @@ void NuTo::StructureIp::TransformBoundaryNodes()
     }
     double minX(0.), minY(0.), maxX(0.), maxY(0.);
 
+    //determine from the first three nodes the center and radius in case the model is round
+    double vec1[2], vec2[2], coord1[2], coord2[2], coord3[2], midPoint1[2], midPoint2[2];
+    if (nodeVec.size()<3)
+        throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] Number of nodes in the fine scale model has to be at least 3.");
+    nodeVec[0]->GetCoordinates2D(coord1);
+    nodeVec[1]->GetCoordinates2D(coord2);
+    nodeVec[2]->GetCoordinates2D(coord3);
+    //check for being on a straight line
+    bool onLine(true);
+    unsigned int count=2;
+    while (onLine)
+    {
+        vec1[0] = coord2[0]-coord1[0];
+        vec1[1] = coord2[1]-coord1[1];
+        vec2[0] = coord3[0]-coord1[0];
+        vec2[1] = coord3[1]-coord1[1];
+        std::cout << (vec1[0]*vec2[0]+vec2[1]*vec1[1])/(sqrt(vec1[0]*vec1[0]+vec1[1]*vec1[1])*sqrt(vec2[0]*vec2[0]+vec2[1]*vec2[1])) << std::endl;
+        if ((vec1[0]*vec2[0]+vec2[1]*vec1[1])/(sqrt(vec1[0]*vec1[0]+vec1[1]*vec1[1])*sqrt(vec2[0]*vec2[0]+vec2[1]*vec2[1]))>1.-1e-3)
+        {
+            count++;
+            if (count>=nodeVec.size())
+                throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] All nodes are on the same line.");
+            nodeVec[count]->GetCoordinates2D(coord3);
+        }
+        else
+            onLine = false;
+    }
+
+    vec1[0] = -(coord2[1]-coord1[1]);
+    vec1[1] = coord2[0]-coord1[0];
+    vec2[0] = -(coord3[1]-coord1[1]);
+    vec2[1] = coord3[0]-coord1[0];
+    midPoint1[0] = 0.5*(coord2[0]+coord1[0]);
+    midPoint1[1] = 0.5*(coord2[1]+coord1[1]);
+    midPoint2[0] = 0.5*(coord3[0]+coord1[0]);
+    midPoint2[1] = 0.5*(coord3[1]+coord1[1]);
+
+    //calculate the intersection
+    double s = -(-(midPoint1[0] -midPoint2[0])* vec2[1]+(midPoint1[1] -midPoint2[1])*vec2[0])/
+            (-vec1[0]*vec2[1]+vec1[1]*vec2[0]);
+    double t = -(-(midPoint1[0] -midPoint2[0])* vec1[1]+(midPoint1[1] -midPoint2[1])*vec1[0])/
+            (-vec1[0]*vec2[1]+vec1[1]*vec2[0]);
+
+    mCenter[0] = midPoint1[0] + s*vec1[0];
+    mCenter[1] = midPoint1[1] + s*vec1[1];
+
+    if (fabs(mCenter[0]-(midPoint2[0] + t*vec2[0]))>1e-3)
+        throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] calculation of midpoint is wrong.");
+    if (fabs(mCenter[1]-(midPoint2[1] + t*vec2[1]))>1e-3)
+        throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] calculation of midpoint is wrong.");
+    double fineScaleRadius = sqrt((coord1[0]-mCenter[0])*(coord1[0]-mCenter[0])+(coord1[1]-mCenter[1])*(coord1[1]-mCenter[1]));
+
+    //assume a round fine scale model
+    bool squareFineScaleModel = false;
+
     for (countNode=0; countNode<nodeVec.size(); countNode++)
     {
         Node::eNodeType nodeType = nodeVec[countNode]->GetNodeType();
         NodeBase* newNode(0);
 
+        double coordinates[2];
+        nodeVec[countNode]->GetCoordinates2D(coordinates);
+        if (squareFineScaleModel==false)
+        {
+            if (fabs((mCenter[0]-coordinates[0])*(mCenter[0]-coordinates[0])+(mCenter[1]-coordinates[1])*(mCenter[1]-coordinates[1])-fineScaleRadius*fineScaleRadius)>0.001*fineScaleRadius*fineScaleRadius)
+            {
+                std::cout << (mCenter[0]-coordinates[0])*(mCenter[0]-coordinates[0])+(mCenter[1]-coordinates[1])*(mCenter[1]-coordinates[1]) << " " << fineScaleRadius*fineScaleRadius << std::endl;
+                squareFineScaleModel = true;
+            }
+        }
+
         switch (nodeType)
         {
         case Node::NodeCoordinatesDisplacements2D:
             newNode = new NodeCoordinatesDisplacementsMultiscale2D(this);
-            double coordinates[2];
-            nodeVec[countNode]->GetCoordinates2D(coordinates);
             if (countNode==0)
             {
                 minX = coordinates[0];
@@ -441,15 +509,34 @@ void NuTo::StructureIp::TransformBoundaryNodes()
     mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
     ConstraintInfo(10);
-
-    if (minX!=0 || minY!=0)
-    {
-        throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] left lower corner has to be at the origin.");
-    }
     if (minX==maxX || minY==maxY)
         throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] structure has zero width or height, either check your boundary group or the full structure.");
-    mlX = maxX;
-    mlY = maxY;
+    if (squareFineScaleModel)
+    {
+        if (fabs((maxX-minX)-(maxY-minY))>1e-3)
+            throw MechanicsException("[NuTo::StructureIp::TransformBoundaryNodes] domain is not square.");
+        mCenter[0] = 0.5*(maxX-minX);
+        mCenter[1] = 0.5*(maxY-minY);
+        mArea = (maxX-minX)* (maxY-minY);
+        std::cout<< "square fine scale model" << std::endl;
+    }
+    else
+    {
+        mArea = 0.;
+        boost::ptr_map<int,ElementBase>::iterator elementIter;
+        std::vector<double> volume;
+        for (elementIter = this->mElementMap.begin(); elementIter!= this->mElementMap.end(); elementIter++)
+        {
+            ElementBase* elementPtr = elementIter->second;
+            elementPtr->GetIntegrationPointVolume(volume);
+            for (unsigned int count=0; count< volume.size(); count++)
+            {
+                mArea+= volume[count];
+            }
+        }
+        std::cout<< "round fine scale model" << std::endl;
+    }
+    std::cout<< "center of fine scale at (" << mCenter[0] << "," << mCenter[1] << "), area(" << mArea << ")" << std::endl;
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -538,7 +625,6 @@ void NuTo::StructureIp::NodeMergeAdditionalGlobalDofValues(const FullMatrix<doub
             }
             this->mEpsilonTot.mEngineeringStrain[count] = value;
         }
-
     }
     else
         throw MechanicsException("[NuTo::StructureIp::NodeMergeActiveDofValues] Only implemented for 2D");
@@ -676,7 +762,9 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
                     rDependentDofGradientVector(mDOFCrackOpening[0] - this->mNumActiveDofs,0) += bURow[0] * elementVector(rowCount,0);
 
                 if (mDOFCrackOpening[1]< this->mNumActiveDofs)
+                {
                     rActiveDofGradientVector(mDOFCrackOpening[1],0) += bURow[1] * elementVector(rowCount,0);
+                }
                 else
                     rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
 
@@ -707,6 +795,56 @@ void NuTo::StructureIp::BuildGlobalGradientInternalPotentialSubVectors(NuTo::Ful
     ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
 }
 
+
+void NuTo::StructureIp::CalculateCohesiveForce(NuTo::FullMatrix<double>& rCohesiveForce) const
+{
+    // initialize vectors
+    assert(rCohesiveForce.GetNumRows() == 2);
+    assert(rCohesiveForce.GetNumColumns() == 1);
+    rCohesiveForce(0,0) = 0.0;
+    rCohesiveForce(1,0) = 0.0;
+
+    // define variables storing the element contribution outside the loop
+    NuTo::FullMatrix<double> elementVector;
+    std::vector<int> elementVectorGlobalDofs;
+
+    // calculate for all multiscale dofs the derivatives
+    // with respect to ux, uy without assuming this to be balanced with epsilon_hom
+    std::vector<int> mappingDofMultiscaleNode;
+    std::vector<std::array<double,2> > dDOF;
+    CalculatedDispdCrackOpening(mappingDofMultiscaleNode,dDOF);
+    double bURow[2];
+
+    // loop over all elements
+    boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin();
+    while (elementIter != this->mElementMap.end())
+    {
+        // calculate element contribution
+        elementIter->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+        assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+        assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
+
+        // write element contribution to global vectors
+        for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+        {
+            int globalRowDof = elementVectorGlobalDofs[rowCount];
+
+            //add contribution of the global degrees of freedom (crack opening)
+            if (mappingDofMultiscaleNode[globalRowDof]!=-1)
+            {
+                //influence of alpha
+                int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
+
+                bURow[0] = dDOF[theDofMapRow][0];
+                bURow[1] = dDOF[theDofMapRow][1];
+
+                rCohesiveForce(0,0) += bURow[0] * elementVector(rowCount,0);
+                rCohesiveForce(1,0) += bURow[1] * elementVector(rowCount,0);
+            }
+        }
+        elementIter++;
+    }
+}
 
 
 
@@ -765,7 +903,6 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
 
         elementIter++;
     }
-
 /*
     {
         std::cout << "JJ before "<< std::endl;
@@ -779,8 +916,7 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
 */
     //add contribution of Lagrange Multipliers
     ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
-/*
-    {
+/*    {
         std::cout << "JJ after "<< std::endl;
         NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
         rMatrixJJFull.Info(12,5);
@@ -855,8 +991,8 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
 
         elementIter++;
     }
-
-    /*    {
+/*
+    {
         std::cout << "JJ before "<< std::endl;
         NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
         rMatrixJJFull.Info(12,5);
@@ -874,7 +1010,8 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
 */
     //add contribution of Lagrange Multipliers
     ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
-/*    {
+/*
+    {
         std::cout << "JJ after "<< std::endl;
         NuTo::FullMatrix<double> rMatrixJJFull(rMatrixJJ);
         rMatrixJJFull.Info(12,5);
@@ -887,7 +1024,6 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<d
         std::cout << "KK after "<< std::endl;
         NuTo::FullMatrix<double> rMatrixKKFull(rMatrixKK);
         rMatrixKKFull.Info(12,5);
-
     }
 */
 }
@@ -976,6 +1112,8 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                 if (mDOFCrackOpening[0] < this->mNumActiveDofs)
                 {
                     rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
+                    //std::cout.precision(15);
+                    //std::cout << "add F(" << elementVector(rowCount, 0) << ")*dDOF2(" << dDOF2[theDofMapRow][1] << ")=" << elementVector(rowCount, 0) * dDOF2[theDofMapRow][1] <<  std::endl;
                     rMatrixJJ->AddEntry(mDOFCrackOpening[0], mDOFCrackAngle, elementVector(rowCount, 0) * dDOF2[theDofMapRow][1]);
                 }
                 else
@@ -1152,6 +1290,7 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
                         if (mDOFCrackOpening[0] < this->mNumActiveDofs)
                         {
                             rMatrixJJ->AddEntry(mDOFCrackAngle, mDOFCrackOpening[0], bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0]);
+                            //std::cout << "add at ("<< mDOFCrackAngle << "," << mDOFCrackOpening[0]<< ") " << bAlphaRow<< "(" << bAlphaRow << ")*elementMatrix(" << elementMatrix(rowCount, colCount) << ")*bUCol(" <<  bUCol[0] << ")=" << bAlphaRow * elementMatrix(rowCount, colCount) * bUCol[0] << std::endl;
                         }
                         else
                         {
@@ -1588,6 +1727,56 @@ void NuTo::StructureIp::AddElementMatrixToGlobalSubMatricesGeneral(
     }
 }
 
+//! @brief calculate the derivative of the displacements at the nodes with respect to crack opening without considering this to be balanced by epsilon_hom
+//! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
+//! @param rDOF return value, for each dof, the corresponding derivatives (ux, uy)
+void NuTo::StructureIp::CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<std::array<double,2> >& rDOF)const
+{
+    rMappingDofMultiscaleNode.resize(mNumDofs,-1);
+
+    //first loop, just count the DOFS
+    int numMultiscaleDofs(0);
+    for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
+    {
+        if (itNode->second->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        {
+            numMultiscaleDofs+=2;
+        }
+        else
+        {
+            if (itNode->second->GetNumFineScaleDisplacements()!=0)
+                throw MechanicsException("[NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0General] This multiscale node type has not been implemented.");
+        }
+    }
+
+    rDOF.resize(numMultiscaleDofs);
+    int countMultiscaleDofs(0);
+    //second loop, calculate derivates
+    for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
+    {
+        if (itNode->second->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        {
+            rMappingDofMultiscaleNode[itNode->second->GetDofFineScaleDisplacement(0)] = countMultiscaleDofs;
+            rMappingDofMultiscaleNode[itNode->second->GetDofFineScaleDisplacement(1)] = countMultiscaleDofs+1;
+
+            double coord[2];
+            itNode->second->GetCoordinates2D(coord);
+
+            //derivative of displacement with respect to discontinuity (crack orientation)
+            GetdDisplacementdCrackOpening(coord,&(rDOF[countMultiscaleDofs][0]),&(rDOF[countMultiscaleDofs+1][0]));
+            countMultiscaleDofs+=2;
+
+            if (countMultiscaleDofs>numMultiscaleDofs)
+            {
+                throw MechanicsException("[NuTo::StructureIp::CalculatedDispdCrackOpening] countMultiscaleDofs>numMultiscaleDofs internal error.");
+            }
+        }
+    }
+    if (countMultiscaleDofs!=numMultiscaleDofs)
+        throw MechanicsException("[NuTo::StructureIp::CalculatedDispdCrackOpening] countMultiscaleDofs!=numMultiscaleDofs internal error.");
+}
+
+
 //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening and crack orientation
 //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
 //! @param rDOF return value, for each dof, the corresponding derivatives (alpha, ux, uy, exx, eyy, gamma_xy)
@@ -1678,6 +1867,11 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
     std::cout << hessianCDF[0] << "  " << hessianCDF[3] << "  " <<  hessianCDF[6] << std::endl;
     std::cout << hessianCDF[1] << "  " << hessianCDF[4] << "  " <<  hessianCDF[7] << std::endl;
     std::cout << hessianCDF[2] << "  " << hessianCDF[5] << "  " <<  hessianCDF[8] << std::endl;
+
+    if (fabs(hessianCDF[0]-hessian[0])>1e-3 || fabs(hessianCDF[0]-hessian[0])>1e-3 || fabs(hessianCDF[0]-hessian[0])>1e-3 ||
+        fabs(hessianCDF[0]-hessian[0])>1e-3 || fabs(hessianCDF[0]-hessian[0])>1e-3 || fabs(hessianCDF[0]-hessian[0])>1e-3 ||
+        fabs(hessianCDF[0]-hessian[0])>1e-3 || fabs(hessianCDF[0]-hessian[0])>1e-3 || fabs(hessianCDF[0]-hessian[0])>1e-3 )
+        throw MechanicsException("CalculatedDispdGlobalDofs hessian is not correct.");
 
     std::cout << std::endl;
 #endif
@@ -1845,8 +2039,8 @@ void NuTo::StructureIp::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofM
             rDOF2[countMultiscaleDofs+1][2] += dDOFdEpsilonHomY[0]*bHessian[6] +
                                                dDOFdEpsilonHomY[1]*bHessian[7] +
                                                dDOFdEpsilonHomY[2]*bHessian[8];
-
             countMultiscaleDofs+=2;
+
             if (countMultiscaleDofs>numMultiscaleDofs)
             {
                 throw MechanicsException("[NuTo::StructureIp::CalculatedDispdGlobalDofs] countMultiscaleDofs>numMultiscaleDofs internal error.");
@@ -1883,8 +2077,8 @@ void NuTo::StructureIp::BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::Sparse
 //! @param rCoarseDisplacements ... return array of displacements
 void NuTo::StructureIp::GetDisplacementsEpsilonHom2D(double rCoordinates[2], double rDisplacements[2])const
 {
-    rDisplacements[0] = mEpsilonHom.mEngineeringStrain[0] * (rCoordinates[0]-mlX*0.5) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[1]-mlX*0.5);
-    rDisplacements[1] = mEpsilonHom.mEngineeringStrain[1] * (rCoordinates[1]-mlX*0.5) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[0]-mlX*0.5);
+    rDisplacements[0] = mEpsilonHom.mEngineeringStrain[0] * (rCoordinates[0]-mCenter[0]) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[1]-mCenter[0]);
+    rDisplacements[1] = mEpsilonHom.mEngineeringStrain[1] * (rCoordinates[1]-mCenter[1]) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[0]-mCenter[1]);
 }
 
 //! @brief ... calculate the displacement based on the crack opening
@@ -1898,20 +2092,20 @@ void NuTo::StructureIp::GetDisplacementsCrack2D(double rCoordinates[2], double r
     double cosAlpha(cos(mCrackAngle));
 
     double factor;
-    if (d<-mCrackTransitionZone)
+    if (d<-mCrackTransitionRadius)
     {
         factor = -0.5;
     }
     else
     {
-        if (d>mCrackTransitionZone)
+        if (d>mCrackTransitionRadius)
         {
             factor = 0.5;
         }
         else
         {
             //smooth transition from cracking to none cracking
-            factor = 0.5*sin(0.5*M_PI*d/mCrackTransitionZone);
+            factor = 0.5*sin(0.5*M_PI*d/mCrackTransitionRadius);
         }
     }
 
@@ -1925,13 +2119,13 @@ void NuTo::StructureIp::GetDisplacementsCrack2D(double rCoordinates[2], double r
 //! @param rdY_dEpsilonHom[3] return value, derivative of x-displacement with respect to homogeneous strain (exx, eyy, gxy)
 void NuTo::StructureIp::GetdDisplacementdEpsilonHom(double rCoordinates[2], double rdX_dEpsilonHom[3], double rdY_dEpsilonHom[3])const
 {
-    rdX_dEpsilonHom[0] = rCoordinates[0]-mlX*0.5;
+    rdX_dEpsilonHom[0] = rCoordinates[0]-mCenter[0];
     rdX_dEpsilonHom[1] = 0.;
-    rdX_dEpsilonHom[2] = 0.5 * (rCoordinates[1]-mlX*0.5);
+    rdX_dEpsilonHom[2] = 0.5 * (rCoordinates[1]-mCenter[0]);
 
     rdY_dEpsilonHom[0] = 0.;
-    rdY_dEpsilonHom[1] = rCoordinates[1];
-    rdY_dEpsilonHom[2] = 0.5 * (rCoordinates[0]-mlX*0.5);
+    rdY_dEpsilonHom[1] = rCoordinates[1]-mCenter[1];
+    rdY_dEpsilonHom[2] = 0.5 * (rCoordinates[0]-mCenter[1]);
 }
 
 //! @brief derivative of displacement with respect to discontinuity (crack opening)
@@ -1945,20 +2139,20 @@ void NuTo::StructureIp::GetdDisplacementdCrackOpening(double rCoordinates[2], do
     double cosAlpha(cos(mCrackAngle));
     double factor;
 
-    if (d<-mCrackTransitionZone)
+    if (d<-mCrackTransitionRadius)
     {
         factor = -0.5;
     }
     else
     {
-        if (d>mCrackTransitionZone)
+        if (d>mCrackTransitionRadius)
         {
             factor = 0.5;
         }
         else
         {
             //smooth transition from cracking to none cracking
-            factor=0.5*sin(0.5*M_PI*d/mCrackTransitionZone);
+            factor=0.5*sin(0.5*M_PI*d/mCrackTransitionRadius);
         }
     }
     rdX_dCrackOpening[0] =  factor*cosAlpha;
@@ -1978,7 +2172,7 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
 
-    if (d<-mCrackTransitionZone)
+    if (d<-mCrackTransitionRadius)
     {
         factor=-0.5;
         rdX_dAlphaCrackOpening[0] = -factor*sinAlpha;
@@ -1988,7 +2182,7 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
     }
     else
     {
-        if (d>mCrackTransitionZone)
+        if (d>mCrackTransitionRadius)
         {
             factor=0.5;
             rdX_dAlphaCrackOpening[0] = -factor*sinAlpha;
@@ -2000,8 +2194,8 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
-            double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
-            factor = 0.5*sin(0.5*M_PI*d/mCrackTransitionZone);
+            double dFactor(0.25*M_PI/mCrackTransitionRadius*cos(0.5*M_PI*d/mCrackTransitionRadius)*dDdAlpha);
+            factor = 0.5*sin(0.5*M_PI*d/mCrackTransitionRadius);
 
             rdX_dAlphaCrackOpening[0] = -factor*sinAlpha+dFactor*cosAlpha;
             rdX_dAlphaCrackOpening[1] = -factor*cosAlpha-dFactor*sinAlpha;
@@ -2009,6 +2203,24 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOpening(double rCoordinates[2], 
             rdY_dAlphaCrackOpening[1] = -factor*sinAlpha+dFactor*cosAlpha;
         }
     }
+#ifdef MYDEBUG
+    {
+        double delta(1e-8);
+        double rdX_dAlphaCrackOpeningCDF[2],rdY_dAlphaCrackOpeningCDF[2];
+        double rdX_dCrackOpening1[2],rdX_dCrackOpening2[2],rdY_dCrackOpening1[2],rdY_dCrackOpening2[2];
+        GetdDisplacementdCrackOpening(rCoordinates, rdX_dCrackOpening1, rdY_dCrackOpening1);
+        const_cast<StructureIp*>(this)->mCrackAngle+=delta;
+        GetdDisplacementdCrackOpening(rCoordinates, rdX_dCrackOpening2, rdY_dCrackOpening2);
+        rdX_dAlphaCrackOpeningCDF[0] = (rdX_dCrackOpening2[0] - rdX_dCrackOpening1[0])/delta;
+        rdX_dAlphaCrackOpeningCDF[1] = (rdX_dCrackOpening2[1] - rdX_dCrackOpening1[1])/delta;
+        rdY_dAlphaCrackOpeningCDF[0] = (rdY_dCrackOpening2[0] - rdY_dCrackOpening1[0])/delta;
+        rdY_dAlphaCrackOpeningCDF[1] = (rdY_dCrackOpening2[1] - rdY_dCrackOpening1[1])/delta;
+        if (fabs(rdX_dAlphaCrackOpeningCDF[0]-rdX_dAlphaCrackOpening[0])>1e-3 || fabs(rdX_dAlphaCrackOpeningCDF[1]-rdX_dAlphaCrackOpening[1])>1e-3 ||
+            fabs(rdY_dAlphaCrackOpeningCDF[0]-rdY_dAlphaCrackOpening[0])>1e-3 || fabs(rdY_dAlphaCrackOpeningCDF[1]-rdY_dAlphaCrackOpening[1])>1e-3)
+            throw MechanicsException("[Getd2Displacementd2CrackOpening] something is wrong");
+        const_cast<StructureIp*>(this)->mCrackAngle-=delta;
+    }
+#endif
 }
 
 
@@ -2022,14 +2234,14 @@ void NuTo::StructureIp::GetdDisplacementdCrackOrientation(double rCoordinates[2]
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
 
-    if (d<-mCrackTransitionZone)
+    if (d<-mCrackTransitionRadius)
     {
         rdX_dAlpha[0] = -0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
         rdY_dAlpha[0] = -0.5*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
     }
     else
     {
-        if (d>mCrackTransitionZone)
+        if (d>mCrackTransitionRadius)
         {
             rdX_dAlpha[0] = 0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
             rdY_dAlpha[0] = 0.5*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
@@ -2038,8 +2250,23 @@ void NuTo::StructureIp::GetdDisplacementdCrackOrientation(double rCoordinates[2]
         {
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
-            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
-            double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
+            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionRadius));
+            double dFactor(0.25*M_PI/mCrackTransitionRadius*cos(0.5*M_PI*d/mCrackTransitionRadius)*dDdAlpha);
+#ifdef MYDEBUG
+            {
+                double delta(1e-8);
+                const_cast<StructureIp*>(this)->mCrackAngle+=delta;
+                double d2 = CalculateDistanceToCrack2D(rCoordinates);
+                double factor2(0.5*sin(0.5*M_PI*d2/mCrackTransitionRadius));
+                double dFactorCDF = (factor2 - factor)/delta;
+                double dDdAlphaCDF = (d2 - d)/delta;
+                std::cout << "dFactor " << dFactor<< " " << dFactorCDF << std::endl;
+                std::cout << "dDdAlpha " << dDdAlpha<< " " << dDdAlphaCDF << std::endl;
+                if (fabs(dFactor-dFactorCDF)>1e-3)
+                    throw MechanicsException("[GetdDisplacementdCrackOrientation] dFactor calculation is wrong");
+                const_cast<StructureIp*>(this)->mCrackAngle-=delta;
+            }
+#endif
 
             rdX_dAlpha[0] = factor*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1])+
                            dFactor*(cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);
@@ -2059,6 +2286,10 @@ void NuTo::StructureIp::GetdDisplacementdCrackOrientation(double rCoordinates[2]
     std::cout << "rdX_dAlpha "<< rdX_dAlpha[0] << " " << (displacements2[0]-displacements1[0])/interval << std::endl;
     std::cout << "rdY_dAlpha "<< rdY_dAlpha[0] << " " << (displacements2[1]-displacements1[1])/interval << std::endl;
     std::cout << d << std::endl;
+    if (fabs(rdX_dAlpha[0]-(displacements2[0]-displacements1[0])/interval)>1e-3)
+        throw MechanicsException("[NuTo::StructureIp::GetdDisplacementdCrackOrientation] Here is something wrong.");
+    if (fabs(rdY_dAlpha[0]-(displacements2[1]-displacements1[1])/interval)>1e-3)
+        throw MechanicsException("[NuTo::StructureIp::GetdDisplacementdCrackOrientation] Here is something wrong.");
 #endif
 }
 //! @brief second derivative of displacement with respect to orientation of discontinuity (crack angle)
@@ -2071,14 +2302,14 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOrientation(double rCoordinates[
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
 
-    if (d<-mCrackTransitionZone)
+    if (d<-mCrackTransitionRadius)
     {
         rd2X_d2Alpha[0] = -0.5*(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
         rd2Y_d2Alpha[0] = -0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
     }
     else
     {
-        if (d>mCrackTransitionZone)
+        if (d>mCrackTransitionRadius)
         {
             rd2X_d2Alpha[0] = 0.5*(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
             rd2Y_d2Alpha[0] = 0.5*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
@@ -2088,10 +2319,10 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOrientation(double rCoordinates[
             //smooth transition from cracking to none cracking
             double dDdAlpha = CalculatedDistanceToCrack2DdAlpha(rCoordinates);
             double d2DdAlpha = Calculated2DistanceToCrack2Dd2Alpha(rCoordinates);
-            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionZone));
-            double dFactor(0.25*M_PI/mCrackTransitionZone*cos(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha);
-            double dFactor2(0.25*M_PI/mCrackTransitionZone*(-0.5*M_PI/mCrackTransitionZone*sin(0.5*M_PI*d/mCrackTransitionZone)*dDdAlpha*dDdAlpha
-                                      +cos(0.5*M_PI*d/mCrackTransitionZone)*d2DdAlpha));
+            double factor(0.5*sin(0.5*M_PI*d/mCrackTransitionRadius));
+            double dFactor(0.25*M_PI/mCrackTransitionRadius*cos(0.5*M_PI*d/mCrackTransitionRadius)*dDdAlpha);
+            double dFactor2(0.25*M_PI/mCrackTransitionRadius*(-0.5*M_PI/mCrackTransitionRadius*sin(0.5*M_PI*d/mCrackTransitionRadius)*dDdAlpha*dDdAlpha
+                                      +cos(0.5*M_PI*d/mCrackTransitionRadius)*d2DdAlpha));
 
             rd2X_d2Alpha[0] = (dFactor2-factor)*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1])+2.*dFactor*(-sinAlpha*mCrackOpening[0]-cosAlpha*mCrackOpening[1]);
             rd2Y_d2Alpha[0] = (dFactor2-factor)*(sinAlpha*mCrackOpening[0]+cosAlpha*mCrackOpening[1])+2.*dFactor*(cosAlpha*mCrackOpening[0]-sinAlpha*mCrackOpening[1]);
@@ -2111,9 +2342,9 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOrientation(double rCoordinates[
     std::cout << "dd2d2alpha cdf " << (dX_dAlpha2-dX_dAlpha1)/interval << " " << (dY_dAlpha2-dY_dAlpha1)/interval << std::endl;
 
     if (fabs(rd2X_d2Alpha[0]-(dX_dAlpha2-dX_dAlpha1)/interval)>1e-2)
-        exit(0);
+        throw MechanicsException("[Getd2Displacementd2CrackOrientation] there is something wrong.");
     if (fabs(rd2Y_d2Alpha[0]-(dY_dAlpha2-dY_dAlpha1)/interval)>1e-2)
-        exit(0);
+        throw MechanicsException("[Getd2Displacementd2CrackOrientation] there is something wrong.");
 #endif
 }
 
@@ -2122,7 +2353,7 @@ void NuTo::StructureIp::Getd2Displacementd2CrackOrientation(double rCoordinates[
 //! @return distance to crack
 double NuTo::StructureIp::CalculateDistanceToCrack2D(double rCoordinates[2])const
 {
-    return sin(mCrackAngle)*(mlX/2-rCoordinates[0]) - cos(mCrackAngle)*(mlY/2-rCoordinates[1]);
+    return sin(mCrackAngle)*(mCenter[0]-rCoordinates[0]) - cos(mCrackAngle)*(mCenter[1]-rCoordinates[1]);
 }
 
 //! @brief calculate the derivative of the distance of a point to the crack
@@ -2130,7 +2361,7 @@ double NuTo::StructureIp::CalculateDistanceToCrack2D(double rCoordinates[2])cons
 //! @return derivative of distance to crack
 double NuTo::StructureIp::CalculatedDistanceToCrack2DdAlpha(double rCoordinates[2])const
 {
-    return cos(mCrackAngle)*(mlX/2-rCoordinates[0]) + sin(mCrackAngle)*(mlY/2-rCoordinates[1]);
+    return cos(mCrackAngle)*(mCenter[0]-rCoordinates[0]) + sin(mCrackAngle)*(mCenter[1]-rCoordinates[1]);
 }
 
 //! @brief calculate the second derivative of the distance of a point to the crack
@@ -2138,7 +2369,7 @@ double NuTo::StructureIp::CalculatedDistanceToCrack2DdAlpha(double rCoordinates[
 //! @return second derivative of distance to crack
 double NuTo::StructureIp::Calculated2DistanceToCrack2Dd2Alpha(double rCoordinates[2])const
 {
-    return -sin(mCrackAngle)*(mlX/2-rCoordinates[0]) + cos(mCrackAngle)*(mlY/2-rCoordinates[1]);
+    return -sin(mCrackAngle)*(mCenter[0]-rCoordinates[0]) + cos(mCrackAngle)*(mCenter[1]-rCoordinates[1]);
 }
 
 //calculate from the existing crack opening and orientation the cracking strain
@@ -2146,9 +2377,16 @@ void NuTo::StructureIp::CalculateHomogeneousEngineeringStrain()
 {
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
-    double gamma(1./std::max(fabs(sinAlpha),fabs(cosAlpha)));
-    assert(mlX==mlY);
-    double factor=gamma/(mlX);
+    double gamma(0.);
+    if (mSquareCoarseScaleModel)
+    {
+        gamma = 1./std::max(fabs(sinAlpha),fabs(cosAlpha));
+    }
+    else
+    {
+        gamma = 1.;
+    }
+    double factor=gamma/(mlCoarseScale);
 
     mEpsilonHom.mEngineeringStrain[0] = mEpsilonTot.mEngineeringStrain[0] - factor * sinAlpha *(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
     mEpsilonHom.mEngineeringStrain[1] = mEpsilonTot.mEngineeringStrain[1] - factor * cosAlpha *(sinAlpha*mCrackOpening[0]+cosAlpha*mCrackOpening[1]);
@@ -2159,9 +2397,8 @@ void NuTo::StructureIp::CalculateHomogeneousEngineeringStrain()
 
     std::cout << "calculation of e hom  " << std::endl;
 */
-    std::cout << "mEpsilonHom " << mEpsilonHom.mEngineeringStrain[0] << " " << mEpsilonHom.mEngineeringStrain[1] << " " << mEpsilonHom.mEngineeringStrain[2] << std::endl;
-
-    /*
+//    std::cout << "mEpsilonHom " << mEpsilonHom.mEngineeringStrain[0] << " " << mEpsilonHom.mEngineeringStrain[1] << " " << mEpsilonHom.mEngineeringStrain[2] << std::endl;
+/*
 //#ifdef MYDEBUG
     std::cout << "mEpsilonTot " << mEpsilonTot.mEngineeringStrain[0] << " " << mEpsilonTot.mEngineeringStrain[1] << " " << mEpsilonTot.mEngineeringStrain[2] << std::endl;
     std::cout << "mCrackOpening " << mCrackOpening[0] << " " << mCrackOpening[1] << " " << factor << std::endl;
@@ -2228,72 +2465,104 @@ void NuTo::StructureIp::SetPrevCrackAngle(double rPrevCrackAngle)
 //! this is due to the constraint equation relating total strain, homogeneous strain and cracking strain
 //! @parameter rbHomAlpha dHom wrt alpha
 //! @paramter rbHomU [0-2] wrt ux [3-5] wrt uy
-//! @parameter bHessian depsilondalpha2[0-2], depsilondalphadux[3-5], depsilondalphadux[6-8]
+//! @parameter bHessian depsilondalpha2[0-2], depsilondalphadux[3-5], depsilondalphaduy[6-8]
 void NuTo::StructureIp::GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU[6], double rbHessian[9])const
 {
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
-    assert(mlX==mlY);
 
-    if (fabs(sinAlpha)>fabs(cosAlpha))
+    if (mSquareCoarseScaleModel)
     {
-        double signdivl = sinAlpha<0 ? 1./mlX : -1./mlX;
-        rbHomAlpha[0] = signdivl*(sinAlpha*mCrackOpening[0] + cosAlpha*mCrackOpening[1]);
-        rbHomAlpha[1] = signdivl*(-sinAlpha*mCrackOpening[0] + cosAlpha/(sinAlpha*sinAlpha)*(cosAlpha*cosAlpha-2.)*mCrackOpening[1]);
-        rbHomAlpha[2] = signdivl*(cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.)*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
-
-        rbHomU[0] = signdivl*(-cosAlpha);
-        rbHomU[1] = signdivl*cosAlpha;
-        rbHomU[2] = signdivl*(2.*cosAlpha*cosAlpha-1.)/sinAlpha;
-
-        rbHomU[3] = signdivl*(sinAlpha);
-        rbHomU[4] = signdivl*(cosAlpha*cosAlpha)/sinAlpha;
-        rbHomU[5] = signdivl*(-2.*cosAlpha);
-
-        if (rbHessian!=0)
+        if (fabs(sinAlpha)>fabs(cosAlpha))
         {
-            rbHessian[0] = signdivl*(cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);;
-            rbHessian[1] = signdivl*(-cosAlpha*mCrackOpening[0] + (cosAlpha*cosAlpha*cosAlpha*cosAlpha-cosAlpha*cosAlpha+2.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[1]);
-            rbHessian[2] = signdivl*((2.*cosAlpha*cosAlpha*cosAlpha*cosAlpha-3.*cosAlpha*cosAlpha+3.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[0] +2.* cosAlpha*mCrackOpening[1]);
+            double signdivl = sinAlpha<0 ? 1./mlCoarseScale : -1./mlCoarseScale;
+            rbHomAlpha[0] = signdivl*(sinAlpha*mCrackOpening[0] + cosAlpha*mCrackOpening[1]);
+            rbHomAlpha[1] = signdivl*(-sinAlpha*mCrackOpening[0] +(cosAlpha/(sinAlpha*sinAlpha)*(cosAlpha*cosAlpha-2.))*mCrackOpening[1]);
+            rbHomAlpha[2] = signdivl*((cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.))*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
 
-            rbHessian[3] = signdivl*sinAlpha;
-            rbHessian[4] = -signdivl*sinAlpha;
-            rbHessian[5] = signdivl*(cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.));
+            rbHomU[0] = signdivl*(-cosAlpha);
+            rbHomU[1] = signdivl*cosAlpha;
+            rbHomU[2] = signdivl*(2.*cosAlpha*cosAlpha-1.)/sinAlpha;
 
-            rbHessian[6] = signdivl*cosAlpha;
-            rbHessian[7] = signdivl*cosAlpha/(sinAlpha*sinAlpha)*(cosAlpha*cosAlpha-2.);
-            rbHessian[8] = signdivl*2.* sinAlpha;
+            rbHomU[3] = signdivl*(sinAlpha);
+            rbHomU[4] = signdivl*(cosAlpha*cosAlpha)/sinAlpha;
+            rbHomU[5] = signdivl*(-2.*cosAlpha);
 
+            if (rbHessian!=0)
+            {
+                rbHessian[0] = signdivl*(cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);;
+                rbHessian[1] = signdivl*(-cosAlpha*mCrackOpening[0] + (cosAlpha*cosAlpha*(cosAlpha*cosAlpha-1.)+2.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[1]);
+                rbHessian[2] = signdivl*((cosAlpha*cosAlpha*(2.*cosAlpha*cosAlpha-3.)+3.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[0] +2.* cosAlpha*mCrackOpening[1]);
+
+                rbHessian[3] = signdivl*sinAlpha;
+                rbHessian[4] = -signdivl*sinAlpha;
+                rbHessian[5] = signdivl*(cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.));
+
+                rbHessian[6] = signdivl*cosAlpha;
+                rbHessian[7] = signdivl*(cosAlpha*(cosAlpha*cosAlpha-2.)/(sinAlpha*sinAlpha));
+                rbHessian[8] = signdivl*2.* sinAlpha;
+            }
+        }
+        else
+        {
+            double signdivl = cosAlpha<0 ? 1./mlCoarseScale : -1./mlCoarseScale;
+            rbHomAlpha[0] = signdivl*(-cosAlpha*mCrackOpening[0] + ((cosAlpha*cosAlpha+1.)*sinAlpha/(cosAlpha*cosAlpha))*mCrackOpening[1]);
+            rbHomAlpha[1] = signdivl*( cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);
+            rbHomAlpha[2] = signdivl*(-(sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1.))*mCrackOpening[0] -2.* cosAlpha*mCrackOpening[1]);
+
+            rbHomU[0] = signdivl*(-sinAlpha);
+            rbHomU[1] = signdivl*sinAlpha;
+            rbHomU[2] = signdivl*(2.*cosAlpha*cosAlpha-1.)/cosAlpha;
+
+            rbHomU[3] = signdivl*(sinAlpha*sinAlpha)/cosAlpha;
+            rbHomU[4] = signdivl*(cosAlpha);
+            rbHomU[5] = signdivl*(-2.*sinAlpha);
+
+            if (rbHessian!=0)
+            {
+                rbHessian[0] = signdivl*(sinAlpha*mCrackOpening[0] +(cosAlpha*cosAlpha*(cosAlpha*cosAlpha-1.)+2.)/(cosAlpha*cosAlpha*cosAlpha)*mCrackOpening[1]);
+                rbHessian[1] = signdivl*(-sinAlpha*mCrackOpening[0] - cosAlpha*mCrackOpening[1]);
+                rbHessian[2] = signdivl*(-(cosAlpha*cosAlpha*(2.*cosAlpha*cosAlpha-1.)+2)/(cosAlpha*cosAlpha*cosAlpha)*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
+
+                rbHessian[3] = -signdivl*cosAlpha;
+                rbHessian[4] = signdivl*cosAlpha;
+                rbHessian[5] = signdivl*(-sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1.));
+
+                rbHessian[6] = signdivl*(sinAlpha*(cosAlpha*cosAlpha+1.)/(cosAlpha*cosAlpha));
+                rbHessian[7] = -signdivl*sinAlpha;
+                rbHessian[8] = -signdivl*(2.*cosAlpha);
+            }
         }
     }
     else
     {
-        double signdivl = cosAlpha<0 ? 1./mlX : -1./mlX;
-        rbHomAlpha[0] = signdivl*(-cosAlpha*mCrackOpening[0] + sinAlpha/(cosAlpha*cosAlpha)*(cosAlpha*cosAlpha+1)*mCrackOpening[1]);
-        rbHomAlpha[1] = signdivl*( cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);
-        rbHomAlpha[2] = signdivl*(-sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1)*mCrackOpening[0] -2.* cosAlpha*mCrackOpening[1]);
+        // coarse scale model is not a square or not aligned with the principal axes
+        double factor = -1./(mlCoarseScale);
+        rbHomAlpha[0] = factor*((1.-2.*cosAlpha*cosAlpha)*mCrackOpening[0] + 2.*sinAlpha*cosAlpha*mCrackOpening[1]);
+        rbHomAlpha[1] = -rbHomAlpha[0];
+        rbHomAlpha[2] = factor*((-4.*sinAlpha*cosAlpha)*mCrackOpening[0] + (2.-4.*cosAlpha*cosAlpha)*mCrackOpening[1]);
 
-        rbHomU[0] = signdivl*(-sinAlpha);
-        rbHomU[1] = signdivl*sinAlpha;
-        rbHomU[2] = signdivl*(2*cosAlpha*cosAlpha-1.)/cosAlpha;
+        rbHomU[0] = factor*(-sinAlpha*cosAlpha);
+        rbHomU[1] = -rbHomU[0];
+        rbHomU[2] = factor*(2.*cosAlpha*cosAlpha-1.);
 
-        rbHomU[3] = signdivl*(sinAlpha*sinAlpha)/cosAlpha;
-        rbHomU[4] = signdivl*(cosAlpha);
-        rbHomU[5] = signdivl*(-2.*sinAlpha);
+        rbHomU[3] = factor*(sinAlpha*sinAlpha);
+        rbHomU[4] = factor*(cosAlpha*cosAlpha);
+        rbHomU[5] = factor*(-2.*sinAlpha*cosAlpha);
 
         if (rbHessian!=0)
         {
-            rbHessian[0] = signdivl*(sinAlpha*mCrackOpening[0] + (cosAlpha*cosAlpha*cosAlpha*cosAlpha-cosAlpha*cosAlpha+2)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[1]);
-            rbHessian[1] = signdivl*(-sinAlpha*mCrackOpening[0] - cosAlpha*mCrackOpening[1]);
-            rbHessian[2] = signdivl*(-(2.*cosAlpha*cosAlpha*cosAlpha*cosAlpha-cosAlpha*cosAlpha+2.)/(cosAlpha*cosAlpha*cosAlpha)*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
+            rbHessian[0] = factor*(4.*sinAlpha*cosAlpha*mCrackOpening[0] + (4.*cosAlpha*cosAlpha-2.)*mCrackOpening[1]);
+            rbHessian[1] = -rbHessian[0];
+            rbHessian[2] = factor*((4.-8.*cosAlpha*cosAlpha)*mCrackOpening[0] + 8.*sinAlpha*cosAlpha*mCrackOpening[1]);
 
-            rbHessian[3] = -signdivl*cosAlpha;
-            rbHessian[4] = signdivl*cosAlpha;
-            rbHessian[5] = -signdivl*sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1);
+            rbHessian[3] = factor*(1.-2.*cosAlpha*cosAlpha);
+            rbHessian[4] = -rbHessian[3];
+            rbHessian[5] = factor*(-4.*sinAlpha*cosAlpha);
 
-            rbHessian[6] = signdivl*(sinAlpha/(cosAlpha*cosAlpha)*(cosAlpha*cosAlpha+1));
-            rbHessian[7] = -signdivl*sinAlpha;
-            rbHessian[8] = signdivl*(-2.* cosAlpha);
+            rbHessian[6] = factor*2.*sinAlpha*cosAlpha;
+            rbHessian[7] = -rbHessian[6];
+            rbHessian[8] = factor*(2.-4.*cosAlpha*cosAlpha);
         }
     }
 /*
@@ -2413,24 +2682,15 @@ double NuTo::StructureIp::CalculateDeltaCrackAngleElastic()const
      {
          if (delta_alpha>0)
          {
-             delta_alpha-=M_PI;
-             alpha_2+=M_PI;
+             delta_alpha-=2.*M_PI;
          }
          else
          {
-             delta_alpha+=M_PI;
-             alpha_2-=M_PI;
+             delta_alpha+=2.*M_PI;
          }
      }
      //now delta_alpha is in [0..PI]
-
-     if (delta_alpha>0.5*M_PI)
-     {
-         delta_alpha = M_PI-delta_alpha;
-         alpha_2 += M_PI;
-     }
      //std::cout << "alpha " << mCrackAngle << " alpha2 " << alpha_2 << " delta " << delta_alpha << std::endl;
-
      return delta_alpha;
 }
 
@@ -2657,8 +2917,27 @@ void NuTo::StructureIp::SetLoadFactor(double rLoadFactor)
 //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
 void NuTo::StructureIp::PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const
 {
-    std::cout << " Finescale convergence after " << rNumNewtonIterations << " Newton iterations, curLoadFactor " << rLoadFactor << ", deltaLoadFactor "<< rDeltaLoadFactor << std::endl<< std::endl;
-    std::cout << " crack angle " << mCrackAngle*180./M_PI << " Crack opening " << mCrackOpening[0] << " " << mCrackOpening[1] <<  std::endl;
+    std::cout << " Finescale convergence after " << rNumNewtonIterations << " Newton iterations, curLoadFactor " << rLoadFactor << ", deltaLoadFactor "<< rDeltaLoadFactor << std::endl;
+    std::cout << " crack angle " << mCrackAngle*180./M_PI << "[0..360], Crack opening " << mCrackOpening[0] << "[t] " << mCrackOpening[1] << "[n]"<< std::endl;
+    std::cout << " total strain " << mEpsilonTot.mEngineeringStrain[0] << " " << mEpsilonTot.mEngineeringStrain[1] << " " << mEpsilonTot.mEngineeringStrain[2]  << std::endl;
+    std::cout << " hom strain " << mEpsilonHom.mEngineeringStrain[0] << " " << mEpsilonHom.mEngineeringStrain[1] << " " << mEpsilonHom.mEngineeringStrain[2]  << std::endl;
+    NuTo::FullMatrix<double> multiplier;
+    if (mConstraintNormalCrackOpening!=-1)
+    {
+        ConstraintLagrangeGetMultiplier(mConstraintNormalCrackOpening,multiplier);
+        std::cout << " lambda crack opening " << multiplier(0,0)  << std::endl;    //! @brief calculates the average stress
+
+    }
+    NuTo::FullMatrix<double> cohesiveForce(2,1);
+    CalculateCohesiveForce(cohesiveForce);
+    std::cout << " cohesive force " << cohesiveForce(0,0) << "(t) " << cohesiveForce(1,0) << "(n) " << std::endl;
+
+    NuTo::FullMatrix<double> engineeringStress(3,1);
+    ElementTotalGetAverageStress(mArea, engineeringStress);
+    std::cout << " average stress vector " << engineeringStress(0,0) << " " << engineeringStress(1,0)<< " " <<  engineeringStress(2,0) << std::endl;
+    std::cout << " stress vector on the crack " << engineeringStress(0,0)*(-sin(mCrackAngle))+ engineeringStress(2,0)*cos(mCrackAngle)<< "(t) " ;
+                                      std::cout << engineeringStress(2,0)*(-sin(mCrackAngle))+ engineeringStress(1,0)*cos(mCrackAngle)<< "(n) " << std::endl;
+
 }
 
 //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
@@ -2667,7 +2946,7 @@ void NuTo::StructureIp::PostProcessDataAfterLineSearch(int rLoadStep, int rNewto
     std::cout << " Finescale step, iteration " << rNewtonIteration <<
                  ", line search factor " << rLineSearchFactor <<
                  ", load factor " << rLoadFactor << std::endl;
-    std::cout << " crack angle " << mCrackAngle*180./M_PI << " Crack opening " << mCrackOpening[0] << " " << mCrackOpening[1] <<  std::endl;
+    std::cout << " crack angle " << mCrackAngle*180./M_PI << "[0..360], Crack opening " << mCrackOpening[0] << "[t] " << mCrackOpening[1] << "[n]"<< std::endl;
     std::stringstream ssLoadStep;
     ssLoadStep << rLoadStep;
     std::stringstream ssIteration;

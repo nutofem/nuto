@@ -54,7 +54,7 @@ public :
     virtual const NuTo::IpData::eIpDataType GetIpDataType()const;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName);
+    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength);
 
     //! @brief sets the fine scale parameter for all ips
     //! @parameter rName name of the parameter, e.g. YoungsModulus

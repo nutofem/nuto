@@ -33,7 +33,7 @@ public:
     {};
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName);
+    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleParameter(const std::string& rName, double rParameter);

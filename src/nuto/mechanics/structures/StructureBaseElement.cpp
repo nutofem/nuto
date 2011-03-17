@@ -358,20 +358,28 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 
 bool NuTo::StructureBase::CheckStiffness()
 {
-    std::cout << "test of stiffness still included " << std::endl;
+    //be carefull this routine performs a node merge, which modifies the displacements
+    //as a result, the stiffness calculated here might be different from the one if you just call the stiffness routine
+    //this is especially true for the first step of the Newton iteration in displacement control situation
+    //where the stiffness of the old state is calulated on purpose and the multiplied by the difference between prescribed dependent dofs and actual dependent dofs
+
+    std::cout << "test of stiffness still included, node merge is called!!! " << std::endl;
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
     NuTo::FullMatrix<double> dispForceVector;
+    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
 
     //recalculate stiffness
+    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-    this->ConstraintInfo(10);
+    //this->ConstraintInfo(10);
 
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
     //std::cout<<"stiffness matrix" << std::endl;
     //stiffnessMatrixCSRVector2Full.Info(10,3);
-    double interval(1e-9);
-    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+    double interval(1e-8);
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
@@ -379,8 +387,8 @@ bool NuTo::StructureBase::CheckStiffness()
     this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
-    std::cout << "check stiffness:: intForceVector1"<< std::endl;
-    intForceVector1.Trans().Info(12,3);
+    //std::cout << "check stiffness:: intForceVector1"<< std::endl;
+    //intForceVector1.Trans().Info(10,6);
     energy1 = this->ElementTotalGetTotalEnergy();
     energy1 += this->ConstraintTotalGetTotalEnergy();
     for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
@@ -389,9 +397,9 @@ bool NuTo::StructureBase::CheckStiffness()
         this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
         this->ElementTotalUpdateTmpStaticData();
         this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
-        std::cout << "check stiffness:: intForceVector2"<< std::endl;
-        intForceVector2.Trans().Info(12,3);
-        this->ConstraintInfo(10);
+        //std::cout << "check stiffness:: intForceVector2"<< std::endl;
+        //intForceVector2.Trans().Info(10,6);
+        //this->ConstraintInfo(10);
         energy2 = this->ElementTotalGetTotalEnergy();
         energy2 += this->ConstraintTotalGetTotalEnergy();
         stiffnessMatrixCSRVector2_CDF.SetColumn(count,(intForceVector2-intForceVector1)*(1./interval));
@@ -399,7 +407,8 @@ bool NuTo::StructureBase::CheckStiffness()
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
     this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-3)
+    //if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-3)
+    if (true)
     {
         std::cout << "globalStiffnessMatrix algo" << std::endl;
         stiffnessMatrixCSRVector2Full.Info(10,3);
@@ -745,7 +754,8 @@ void NuTo::StructureBase::ElementIpSetFineScaleModel(int rElementId, int rIp, st
 
     try
     {
-        ElementIpSetFineScaleModel(elementPtr,rIp,rFileName);
+        double rLengthCoarseScale = sqrt(elementPtr->CalculateArea());
+        ElementIpSetFineScaleModel(elementPtr,rIp,rFileName,rLengthCoarseScale);
     }
     catch(NuTo::MechanicsException e)
     {
@@ -790,8 +800,9 @@ void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::st
     {
         try
         {
+            double rLengthCoarseScale = sqrt((*itElement)->CalculateArea());
             for (int theIp=0; theIp<(*itElement)->GetNumIntegrationPoints(); theIp++)
-                ElementIpSetFineScaleModel(*itElement, theIp, rFileName);
+                ElementIpSetFineScaleModel(*itElement, theIp, rFileName, rLengthCoarseScale);
         }
         catch(NuTo::MechanicsException e)
         {
@@ -830,8 +841,11 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
     {
         try
         {
+            double lCoarseScale = sqrt(elementVector[countElement]->CalculateArea());
             for (int theIp=0; theIp<elementVector[countElement]->GetNumIntegrationPoints(); theIp++)
-                 ElementIpSetFineScaleModel(elementVector[countElement], theIp, rFileName);
+            {
+                 ElementIpSetFineScaleModel(elementVector[countElement], theIp, rFileName, lCoarseScale);
+            }
         }
         catch(NuTo::MechanicsException e)
         {
@@ -861,9 +875,9 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
 //! @brief sets the constitutive law of a single element
 //! @param rElement element pointer
 //! @param rConstitutive material pointer
-void NuTo::StructureBase::ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName)
+void NuTo::StructureBase::ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale)
 {
-    rElement->SetFineScaleModel(rIp, rFileName);
+    rElement->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale);
 }
 
 //! @brief sets the section of a single element
