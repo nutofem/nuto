@@ -268,7 +268,7 @@ namespace nutogui
     wxSizer* dataSetSelectionBarSizer = new wxBoxSizer (wxHORIZONTAL);
     dataSetSelectionSlider = new uicommon::TextCtrlBuddySlider (dataSetSelectionBar, ID_DataSetSlider, 0, 0, 1);
     dataSetSelectionSlider->SetToolTip (wxString::Format (wxT ("Select which result data %s to display"),
-							  uicommon::Quote::Double (wxT ("frame"))));
+							  uicommon::Quote::Double (wxT ("frame")).c_str()));
     dataSetSelectionBarSizer->Add (dataSetSelectionSlider, wxSizerFlags().Proportion(1).Expand());
     dataSetSelectionBar->SetSizer (dataSetSelectionBarSizer);
     sizer->Add (dataSetSelectionBar, wxSizerFlags().Proportion(0).Expand());
