@@ -94,6 +94,11 @@ namespace nutogui
     splitMgr->Traverse (ptovt);
   }
 
+// Hack for wx 2.8
+#ifndef wxART_CLOSE
+#define wxART_CLOSE	wxART_MAKE_ART_ID(wxART_CLOSE)
+#endif
+
   void ResultViewerImpl::ViewPanel::SetupSharedData ()
   {
     sharedData = boost::make_shared<SharedViewData> ();
