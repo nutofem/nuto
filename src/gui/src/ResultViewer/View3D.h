@@ -11,7 +11,7 @@
 #define __NUTOGUI_RESULTVIEWER_VIEW3D_H__
 
 #include "ResultViewerImpl.h"
-#include "ViewPanelContent.h"
+#include "ViewPanelContentVTK.h"
 
 #include "uicommon/ControlWithItemsClientDataWrapper.h"
 #include "uicommon/TextCtrlBuddySlider.h"
@@ -48,7 +48,7 @@ namespace nutogui
   class DataSetFaceExtractor;
   class DisplacementDirectionSizePanel;
   
-  class ResultViewerImpl::View3D : public ViewPanel::Content
+  class ResultViewerImpl::View3D : public ViewPanelContentVTK
   {
     class CameraModifiedCallback;
     
@@ -80,8 +80,6 @@ namespace nutogui
     DisplacementDirectionSizePanel* displacementSizePanel;
     
     wxPanel* topBar;
-    class RenderWidget;
-    RenderWidget* renderWidget;
     wxPanel* dataSetSelectionBar;
     uicommon::TextCtrlBuddySlider* dataSetSelectionSlider;
     vtkSmartPointer<vtkRenderer> renderer;
@@ -157,8 +155,8 @@ namespace nutogui
     vtkSmartPointer<vtkPlane> clipPlane;
     bool useClipper;
     
-    void OnRenderWidgetRealized (wxCommandEvent& event);
     void OnWindowCreate (wxWindowCreateEvent& event);
+    void SetupVTKRenderer ();
     void SetupRenderer ();
     bool UpdateCameraPositions (vtkCamera* cam);
     vtkCamera* GetCamera () const;

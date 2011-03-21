@@ -24,6 +24,7 @@ namespace nutogui
 {
   class RESULTVIEWER_EXPORTED ResultViewerImpl : public TabCommonImpl
   {
+    class ViewPanelContentVTK;
     class View3D;
     class ViewPanel;
     

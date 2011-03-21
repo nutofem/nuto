@@ -91,44 +91,8 @@ namespace nutogui
   //-------------------------------------------------------------------
   
   BEGIN_DECLARE_EVENT_TYPES()
-    DECLARE_EVENT_TYPE(EVENT_RENDER_WIDGET_REALIZED, 0)
     DECLARE_EVENT_TYPE(EVENT_UPDATE_CAMERA, 0)
   END_DECLARE_EVENT_TYPES()
-  DEFINE_EVENT_TYPE(EVENT_RENDER_WIDGET_REALIZED)
-  
-  class ResultViewerImpl::View3D::RenderWidget : public vtkwx::RenderWidget
-  {
-    bool painted;
-    
-    void OnPaint (wxPaintEvent& event);
-  public:
-    RenderWidget (wxWindow *parent, wxWindowID id = -1,
-      const wxPoint& pos = wxDefaultPosition,
-      const wxSize& size = wxDefaultSize,
-      long style = 0, const wxString& name = wxT("RenderWidget"))
-     : vtkwx::RenderWidget (parent, id, pos, size, style, name), painted (false) {}
-     
-    DECLARE_EVENT_TABLE()
-  };
-  
-  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D::RenderWidget, vtkwx::RenderWidget)
-    EVT_PAINT(RenderWidget::OnPaint)
-  END_EVENT_TABLE()
-  
-  void ResultViewerImpl::View3D::RenderWidget::OnPaint (wxPaintEvent& event)
-  {
-    if (!painted)
-    {
-      painted = true;
-      // First paint: post event to parent so it can set up the VTK renderer etc.
-      wxCommandEvent event (EVENT_RENDER_WIDGET_REALIZED);
-      event.SetEventObject (this);
-      wxPostEvent (this, event);
-    }
-    
-    event.Skip();
-  }
-
   DEFINE_EVENT_TYPE(EVENT_UPDATE_CAMERA)
   
   class ResultViewerImpl::View3D::UpdateCameraEvent : public wxEvent
@@ -202,8 +166,7 @@ namespace nutogui
     ID_DisplacementDirModeFirst = 110
   };
   
-  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D, ResultViewerImpl::ViewPanel::Content)
-    EVT_COMMAND(wxID_ANY, EVENT_RENDER_WIDGET_REALIZED, ResultViewerImpl::View3D::OnRenderWidgetRealized)
+  BEGIN_EVENT_TABLE(ResultViewerImpl::View3D, ViewPanelContentVTK)
     EVT_WINDOW_CREATE(ResultViewerImpl::View3D::OnWindowCreate)
     
     /*EVT_CHOICE(ID_DisplayData, ResultViewerImpl::View3D::OnDisplayDataChanged)
@@ -235,7 +198,7 @@ namespace nutogui
   END_EVENT_TABLE()
   
   ResultViewerImpl::View3D::View3D (ViewPanel* parent, const View3D* cloneFrom)
-   : ViewPanel::Content (parent),
+   : ViewPanelContentVTK (parent),
      renderMode (0),
      displacementDirection (ddNone),
      oldDisplacementDirection (ddColored),
@@ -260,7 +223,8 @@ namespace nutogui
     
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
     
-    renderWidget = new RenderWidget (this);
+    //renderWidget = new RenderWidget (this);
+    vtkwx::RenderWidget* renderWidget = CreateRenderWidget (this);
     renderWidget->EnableKeyboardHandling (false);
     sizer->Add (renderWidget, 1, wxEXPAND);
     
@@ -596,7 +560,19 @@ namespace nutogui
     return topBar;
   }
 
-  void ResultViewerImpl::View3D::OnRenderWidgetRealized (wxCommandEvent& event)
+  void ResultViewerImpl::View3D::OnWindowCreate (wxWindowCreateEvent& event)
+  {
+    if (event.GetWindow() == this)
+    {
+      // Layouting was done, can place panel.
+      wxPoint displacementPanelPos (GetRenderWidget()->GetPosition());
+      displacementPanelPos.x += 8;
+      displacementPanelPos.y += 8;
+      displacementSizePanel->SetPosition (displacementPanelPos);
+    }
+  }
+  
+  void ResultViewerImpl::View3D::SetupVTKRenderer ()
   {
     if (!renderer)
     {
@@ -608,26 +584,14 @@ namespace nutogui
     }
   }
 
-  void ResultViewerImpl::View3D::OnWindowCreate (wxWindowCreateEvent& event)
-  {
-    if (event.GetWindow() == this)
-    {
-      // Layouting was done, can place panel.
-      wxPoint displacementPanelPos (renderWidget->GetPosition());
-      displacementPanelPos.x += 8;
-      displacementPanelPos.y += 8;
-      displacementSizePanel->SetPosition (displacementPanelPos);
-    }
-  }
-  
   void ResultViewerImpl::View3D::SetupRenderer ()
   {
     renderer = vtkSmartPointer<vtkRenderer>::New ();
-    renderWidget->GetRenderWindow()->AddRenderer (renderer);
+    GetRenderWidget()->GetRenderWindow()->AddRenderer (renderer);
     
     vtkSmartPointer<vtkInteractorStyleSwitch> istyle = vtkSmartPointer<vtkInteractorStyleSwitch>::New ();
     istyle->SetCurrentStyleToTrackballCamera ();
-    renderWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle (istyle);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->SetInteractorStyle (istyle);
     
     vtkSmartPointer<vtkActor> mapperActor = dataSetMapper.CreateMapperActor();
     renderer->AddActor (mapperActor);
@@ -645,11 +609,11 @@ namespace nutogui
     renderer->SetBackground (0.6, 0.6, 0.6);
     
     scalarBar = vtkSmartPointer<vtkScalarBarWidget>::New ();
-    scalarBar->SetInteractor (renderWidget->GetRenderWindow()->GetInteractor());
+    scalarBar->SetInteractor (GetRenderWidget()->GetRenderWindow()->GetInteractor());
     scalarBar->KeyPressActivationOff();
     
     orientationMarker = vtkSmartPointer<vtkOrientationMarkerWidget>::New ();
-    orientationMarker->SetInteractor (renderWidget->GetRenderWindow()->GetInteractor());
+    orientationMarker->SetInteractor (GetRenderWidget()->GetRenderWindow()->GetInteractor());
     vtkSmartPointer<vtkAxesActor> axes (vtkSmartPointer<vtkAxesActor>::New ());
     orientationMarker->SetOrientationMarker (axes);
     orientationMarker->EnabledOn();
@@ -657,7 +621,7 @@ namespace nutogui
     orientationMarker->InteractiveOff();
     
     clipPlaneWidget = vtkSmartPointer<vtkPlaneWidget>::New ();
-    clipPlaneWidget->SetInteractor (renderWidget->GetRenderWindow()->GetInteractor());
+    clipPlaneWidget->SetInteractor (GetRenderWidget()->GetRenderWindow()->GetInteractor());
     clipPlaneWidget->KeyPressActivationOff();
     clipPlaneWidget->SetInput (data->GetDataSet (currentDataSet));
     clipPlaneWidget->PlaceWidget();
@@ -838,7 +802,7 @@ namespace nutogui
     
     scalarBar->SetEnabled (useScalarBar);
     dataSetMapper.Update();
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
   
   void ResultViewerImpl::View3D::OnVisOptionChanged (wxCommandEvent& event)
@@ -851,7 +815,7 @@ namespace nutogui
     lastVisOpt[displaySel-1].comp = visComp;
 
     dataSetMapper.Update();
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::UpdateVisOptionChoice (size_t arrayIndex, int initialSel)
@@ -928,7 +892,7 @@ namespace nutogui
       ApplyRenderMode ();
       SetUIRenderMode ();
 
-      renderWidget->GetRenderWindow()->Render();
+      Render();
     }
   }
   
@@ -938,7 +902,7 @@ namespace nutogui
     ApplyRenderMode ();
     SetUIRenderMode ();
 
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   namespace
@@ -987,7 +951,7 @@ namespace nutogui
     
     scalarBar->SetEnabled (event.IsChecked());
     lastVisOpt[displaySel-1].legend = event.IsChecked();
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::OnShowLegendUpdateUI (wxUpdateUIEvent& event)
@@ -1014,7 +978,7 @@ namespace nutogui
     size_t gradientID = event.GetId();
     SetGradient (gradientID);
     UpdateGradientUI (gradientID);
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
   
   inline vtkSmartPointer<vtkDataSet> ClipWrapDataSet (vtkDataSet* dataset,
@@ -1057,13 +1021,13 @@ namespace nutogui
       useClipper = false;
     }
     
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::OnLinkViews (wxCommandEvent& event)
   {
     if (SetLinkView (event.IsChecked ()))
-      renderWidget->GetRenderWindow()->Render();
+      Render();
   }
 
   void ResultViewerImpl::View3D::OnLinkViewsUpdateUI (wxUpdateUIEvent& event)
@@ -1088,7 +1052,7 @@ namespace nutogui
     
     CheckDisplacementSizePanelVisibility ();
 
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::OnDisplacementDirDropDown (wxAuiToolBarEvent& event)
@@ -1125,7 +1089,7 @@ namespace nutogui
       
       CheckDisplacementSizePanelVisibility ();
     
-      renderWidget->GetRenderWindow()->Render();
+      Render();
     }
   }
 
@@ -1158,7 +1122,7 @@ namespace nutogui
     
     CheckDisplacementSizePanelVisibility ();
 
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::ShowDisplacementOffset ()
@@ -1350,7 +1314,7 @@ namespace nutogui
     
     if (UpdateCameraPositions (event.GetCamera ()))
     {
-      renderWidget->GetRenderWindow()->Render();
+      Render();
     }
     
     updatingCam = false;
@@ -1384,14 +1348,14 @@ namespace nutogui
       ShowDisplacementOffset ();
     }
     
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::OnDataSetSelectionChanged (wxScrollEvent& event)
   {
     SetDisplayedDataSet (event.GetPosition());
     
-    renderWidget->GetRenderWindow()->Render();
+    Render();
     
     if (useLinkView)
     {
@@ -1409,7 +1373,7 @@ namespace nutogui
     dataSetSelectionSlider->SetValue (event.GetInt());
     SetDisplayedDataSet (event.GetInt());
     
-    renderWidget->GetRenderWindow()->Render();
+    Render();
   }
 
   void ResultViewerImpl::View3D::SetDisplayedDataSet (size_t index)
