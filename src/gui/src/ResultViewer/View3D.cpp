@@ -169,26 +169,6 @@ namespace nutogui
   BEGIN_EVENT_TABLE(ResultViewerImpl::View3D, ViewPanelContentVTK)
     EVT_WINDOW_CREATE(ResultViewerImpl::View3D::OnWindowCreate)
     
-    /*EVT_CHOICE(ID_DisplayData, ResultViewerImpl::View3D::OnDisplayDataChanged)
-    EVT_CHOICE(ID_VisOption, ResultViewerImpl::View3D::OnVisOptionChanged)
-    
-    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_ActorRenderMode, ResultViewerImpl::View3D::OnRenderModeDropDown)
-    EVT_MENU_RANGE(ID_RenderModeFirst,
-		   ID_RenderModeFirst+ResultViewerImpl::View3D::numRenderModes-1,
-		   ResultViewerImpl::View3D::OnRenderModeCommand)
-    EVT_MENU(ID_ShowLegend, ResultViewerImpl::View3D::OnShowLegend)
-    EVT_UPDATE_UI(ID_ShowLegend, ResultViewerImpl::View3D::OnShowLegendUpdateUI)
-    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_LegendOptions, ResultViewerImpl::View3D::OnLegendOptions)
-    EVT_UPDATE_UI(ID_LegendOptions, ResultViewerImpl::View3D::OnLegendOptionsUpdateUI)
-    EVT_MENU(ID_ClipPlane, ResultViewerImpl::View3D::OnClipPlane)
-    EVT_MENU(ID_LinkViews, ResultViewerImpl::View3D::OnLinkViews)
-    EVT_UPDATE_UI(ID_LinkViews, ResultViewerImpl::View3D::OnLinkViewsUpdateUI)
-    EVT_MENU(ID_DisplacementOffset, ResultViewerImpl::View3D::OnDisplacementOffset)
-    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_DisplacementDirMode, ResultViewerImpl::View3D::OnDisplacementDirDropDown)
-    EVT_MENU_RANGE(ID_DisplacementDirModeFirst,
-		   ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
-		   ResultViewerImpl::View3D::OnDisplacementDirCommand)*/
-    
     EVT_UPDATE_CAMERA(ResultViewerImpl::View3D::OnUpdateCamera)
     
     EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View3D::OnDisplacementScaleChange)
