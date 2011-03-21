@@ -203,7 +203,6 @@ namespace nutogui
     
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
     
-    //renderWidget = new RenderWidget (this);
     vtkwx::RenderWidget* renderWidget = CreateRenderWidget (this);
     renderWidget->EnableKeyboardHandling (false);
     sizer->Add (renderWidget, 1, wxEXPAND);

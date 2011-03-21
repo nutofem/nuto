@@ -28,6 +28,9 @@ namespace nutogui
     wxBitmap imgUnsplit;
     wxBitmap imgMaximize;
     wxBitmap imgUnmaximize;
+    
+    wxBitmap imgContentViewButtonImages[numContentTypes];
+    wxMenu contentViewMenu;
   };
   
   enum
@@ -35,7 +38,10 @@ namespace nutogui
     ID_SplitHorz = 12345678, // Arbitrary, large ID to avoid conflicts with child IDs
     ID_SplitVert,
     ID_Unsplit,
-    ID_ToggleMaximization
+    ID_ToggleMaximization,
+    
+    ID_ContentViewPopup,
+    ID_ContentViewFirst
   };
   
   BEGIN_EVENT_TABLE(ResultViewerImpl::ViewPanel, wxPanel)
@@ -47,12 +53,18 @@ namespace nutogui
     EVT_UPDATE_UI(ID_Unsplit, ResultViewerImpl::ViewPanel::OnUnsplitUpdateUI)
     EVT_MENU(ID_ToggleMaximization, ResultViewerImpl::ViewPanel::OnToggleMaximization)
     EVT_UPDATE_UI(ID_ToggleMaximization, ResultViewerImpl::ViewPanel::OnToggleMaximizationUpdateUI)
+    
+    EVT_AUITOOLBAR_TOOL_DROPDOWN(ID_ContentViewPopup, ResultViewerImpl::ViewPanel::OnContentViewPopup)
+    EVT_MENU_RANGE(ID_ContentViewFirst,
+		   ID_ContentViewFirst + ResultViewerImpl::ViewPanel::numContentTypes - 1,
+		   ResultViewerImpl::ViewPanel::OnContentViewChange)
   END_EVENT_TABLE()
   
   ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, SplitManager* splitMgr)
    : wxPanel (parent), splitMgr (splitMgr)
   {
     SetupSharedData ();
+    contentType = content3D;
     childPanel = new View3D (this);
     CreateChildren ();
   }
@@ -60,6 +72,7 @@ namespace nutogui
   ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, ViewPanel* cloneFrom)
    : wxPanel (parent), splitMgr (cloneFrom->splitMgr), sharedData (cloneFrom->sharedData)
   {
+    contentType = cloneFrom->contentType;
     childPanel = cloneFrom->childPanel->Clone (this);
     CreateChildren ();
   }
@@ -114,11 +127,33 @@ namespace nutogui
 							sharedData->smallButtonSize);
     sharedData->imgUnmaximize = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(unmaximize), wxART_TOOLBAR,
 							  sharedData->smallButtonSize);
+
+    static const wxChar* const contentTypeNames[numContentTypes] =
+    {
+      wxT ("&3D")
+    };
+    static const wxChar* const contentTypeArtNames[numContentTypes] =
+    {
+      wxART_MISSING_IMAGE
+    };
+    for (size_t i = 0; i < numContentTypes; i++)
+    {
+      wxMenuItem* newItem = new wxMenuItem (&sharedData->contentViewMenu,
+					    ID_ContentViewFirst + i,
+					    contentTypeNames[i],
+					    wxEmptyString,
+					    wxITEM_NORMAL);
+      newItem->SetBitmap (wxArtProvider::GetBitmap (contentTypeArtNames[i], wxART_MENU));
+      sharedData->contentViewMenu.Append (newItem);
+      
+      sharedData->imgContentViewButtonImages[i] = wxArtProvider::GetBitmap (contentTypeArtNames[i],
+									    wxART_TOOLBAR);
+    }
   }
 
   void ResultViewerImpl::ViewPanel::CreateChildren ()
   {
-    wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
+    contentsSizer = new wxBoxSizer (wxVERTICAL);
     
     topBarSizer = new wxBoxSizer (wxHORIZONTAL);
     
@@ -137,7 +172,17 @@ namespace nutogui
     splitButtonsBar->Realize ();
     topBarSizer->Add (splitButtonsBar, 0, wxEXPAND);
     
-    wxWindow* topBarContentTools = childPanel->CreateTopTools (this);
+    contentViewBar = new wxAuiToolBar (this, wxID_ANY,
+				       wxDefaultPosition, wxDefaultSize,
+				       wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
+    contentViewBar->AddTool (ID_ContentViewPopup, wxEmptyString,
+			     sharedData->imgContentViewButtonImages[contentType],
+			     wxT ("Select how to display the data"));
+    contentViewBar->SetToolDropDown (ID_ContentViewPopup, true);
+    contentViewBar->Realize ();
+    topBarSizer->Add (contentViewBar, wxSizerFlags (0));
+    
+    topBarContentTools = childPanel->CreateTopTools (this);
     if (topBarContentTools)
       topBarSizer->Add (topBarContentTools, wxSizerFlags (1).Expand());
     else
@@ -158,11 +203,11 @@ namespace nutogui
     closeMaxButtonsBar->Realize ();
     topBarSizer->Add (closeMaxButtonsBar, 0, wxEXPAND);
     
-    sizer->Add (topBarSizer, wxSizerFlags (0).Expand());
+    contentsSizer->Add (topBarSizer, wxSizerFlags (0).Expand());
     
-    sizer->Add (childPanel, wxSizerFlags (1).Expand());
+    contentsSizer->Add (childPanel, wxSizerFlags (1).Expand());
     
-    SetSizer (sizer);
+    SetSizer (contentsSizer);
   }
 
   void ResultViewerImpl::ViewPanel::OnSplitHorizontally (wxCommandEvent& event)
@@ -216,4 +261,53 @@ namespace nutogui
     event.Enable (splitMgr->CanToggleMaximization (this));
   }
 
+  void ResultViewerImpl::ViewPanel::OnContentViewPopup (wxAuiToolBarEvent& event)
+  {
+    wxPoint popupPos (contentViewBar->GetToolRect (ID_ContentViewPopup).GetBottomLeft());
+    popupPos = contentViewBar->ClientToScreen (popupPos);
+    popupPos = ScreenToClient (popupPos);
+    
+    PopupMenu (&sharedData->contentViewMenu, popupPos);
+  }
+
+  void ResultViewerImpl::ViewPanel::OnContentViewChange (wxCommandEvent& event)
+  {
+    ContentType newContentType = ContentType (event.GetId() - ID_ContentViewFirst);
+    if (contentType == newContentType) return;
+    
+    Content* newChild = nullptr;
+    switch (newContentType)
+    {
+    case content3D:
+      newChild = new View3D (this);
+      break;
+    case numContentTypes:
+      break;
+    }
+    assert (newChild);
+    if (!newChild) return;
+    
+    contentsSizer->Replace (childPanel, newChild);
+    wxWindow* newTopBarContentTools = newChild->CreateTopTools (this);
+    
+    wxSizerItem* topBarContentSizerItem;
+    if (newTopBarContentTools)
+      topBarContentSizerItem = new wxSizerItem (newTopBarContentTools, wxSizerFlags (1).Expand());
+    else
+      // Stretch spacer
+      topBarContentSizerItem = new wxSizerItem (0, 0, 1, 0, 0, nullptr);
+    // @@@ Hardcoded sizer item index
+    topBarSizer->Replace (2, topBarContentSizerItem);
+    
+    delete topBarContentTools;
+    topBarContentTools = newTopBarContentTools;
+    
+    delete childPanel;
+    childPanel = newChild;
+    
+    contentViewBar->SetToolBitmap (ID_ContentViewPopup,
+				   sharedData->imgContentViewButtonImages[newContentType]);
+    
+    contentsSizer->Layout();
+  }
 } // namespace nutogui

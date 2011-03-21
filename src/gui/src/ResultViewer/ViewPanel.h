@@ -13,6 +13,7 @@
 #include "ResultViewerImpl.h"
 
 class wxAuiToolBar;
+class wxAuiToolBarEvent;
 
 namespace nutogui
 {
@@ -40,8 +41,18 @@ namespace nutogui
     boost::shared_ptr<SharedViewData> sharedData;
     void SetupSharedData ();
     
+    wxSizer* contentsSizer;
     wxSizer* topBarSizer;
+    wxAuiToolBar* contentViewBar;
+    wxWindow* topBarContentTools;
     wxAuiToolBar* closeMaxButtonsBar;
+    enum ContentType
+    {
+      content3D = 0,
+      
+      numContentTypes
+    };
+    ContentType contentType;
     Content* childPanel;
     void CreateChildren ();
     
@@ -52,6 +63,9 @@ namespace nutogui
     void OnUnsplitUpdateUI (wxUpdateUIEvent& event);
     void OnToggleMaximization (wxCommandEvent& event);
     void OnToggleMaximizationUpdateUI (wxUpdateUIEvent& event);
+    
+    void OnContentViewPopup (wxAuiToolBarEvent& event);
+    void OnContentViewChange (wxCommandEvent& event);
   };
 } // namespace nutogui
 
