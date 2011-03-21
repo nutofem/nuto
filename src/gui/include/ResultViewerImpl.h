@@ -26,6 +26,7 @@ namespace nutogui
   {
     class ViewPanelContentVTK;
     class View3D;
+    class ViewPlot;
     class ViewPanel;
     
     class Data;

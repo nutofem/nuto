@@ -13,6 +13,7 @@
 
 #include "SplitManager.h"
 #include "View3D.h"
+#include "ViewPlot.h"
 
 #include <wx/artprov.h>
 #include <wx/aui/auibar.h>
@@ -79,6 +80,7 @@ namespace nutogui
 
   void ResultViewerImpl::ViewPanel::SetData (const DataConstPtr& data)
   {
+    this->data = data;
     childPanel->SetData (data);
   }
 
@@ -130,10 +132,12 @@ namespace nutogui
 
     static const wxChar* const contentTypeNames[numContentTypes] =
     {
-      wxT ("&3D")
+      wxT ("&3D"),
+      wxT ("&Plot"),
     };
     static const wxChar* const contentTypeArtNames[numContentTypes] =
     {
+      wxART_MISSING_IMAGE,
       wxART_MISSING_IMAGE
     };
     for (size_t i = 0; i < numContentTypes; i++)
@@ -281,11 +285,15 @@ namespace nutogui
     case content3D:
       newChild = new View3D (this);
       break;
+    case contentPlot:
+      newChild = new ViewPlot (this);
+      break;
     case numContentTypes:
       break;
     }
     assert (newChild);
     if (!newChild) return;
+    contentType = newContentType;
     
     contentsSizer->Replace (childPanel, newChild);
     wxWindow* newTopBarContentTools = newChild->CreateTopTools (this);
@@ -304,10 +312,11 @@ namespace nutogui
     
     delete childPanel;
     childPanel = newChild;
+    childPanel->SetData (data);
     
     contentViewBar->SetToolBitmap (ID_ContentViewPopup,
 				   sharedData->imgContentViewButtonImages[newContentType]);
     
-    contentsSizer->Layout();
+    Layout();
   }
 } // namespace nutogui

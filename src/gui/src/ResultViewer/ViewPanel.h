@@ -36,6 +36,7 @@ namespace nutogui
     class PostToOthersViewsTraverser;
     
     SplitManager* splitMgr;
+    DataConstPtr data;
 
     struct SharedViewData;
     boost::shared_ptr<SharedViewData> sharedData;
@@ -49,6 +50,7 @@ namespace nutogui
     enum ContentType
     {
       content3D = 0,
+      contentPlot,
       
       numContentTypes
     };
