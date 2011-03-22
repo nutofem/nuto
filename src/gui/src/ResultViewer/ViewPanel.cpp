@@ -36,7 +36,7 @@ namespace nutogui
   
   enum
   {
-    ID_SplitHorz = 12345678, // Arbitrary, large ID to avoid conflicts with child IDs
+    ID_SplitHorz = 12345, // Arbitrary, large ID to avoid conflicts with child IDs
     ID_SplitVert,
     ID_Unsplit,
     ID_ToggleMaximization,
