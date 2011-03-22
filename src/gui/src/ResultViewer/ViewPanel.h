@@ -12,6 +12,8 @@
 
 #include "ResultViewerImpl.h"
 
+#include <boost/unordered_map.hpp>
+
 class wxAuiToolBar;
 class wxAuiToolBarEvent;
 
@@ -29,6 +31,33 @@ namespace nutogui
     /// Post an event to content children of all other view panels
     void PostToOthers (wxEvent& event);
     
+    /**\name View panel shared data management
+     * @{ */
+    /// Base class for individual view panel shared data structures
+    struct SharedDataBase {};
+    
+    /// Query shared data.
+    template<typename T>
+    boost::shared_ptr<T> GetSharedData () const
+    {
+      const void* tag = GetSharedDataTag<T> ();
+      PanelsSharedDataMap::const_iterator panelSharedData = sharedDataBase->panelsSharedData.find (tag);
+      if (panelSharedData != sharedDataBase->panelsSharedData.end())
+	return boost::shared_static_cast<T> (panelSharedData->second);
+      else
+	return boost::shared_ptr<T> ();
+    }
+    
+    /// Set shared data.
+    template<typename T>
+    void SetSharedData (const boost::shared_ptr<T>& panelSharedData)
+    {
+      const void* tag = GetSharedDataTag<T> ();
+      sharedDataBase->panelsSharedData[tag] = panelSharedData;
+    }
+    
+    /** @} */
+    
     DECLARE_EVENT_TABLE()
   protected:
     ViewPanel (wxWindow* parent, ViewPanel* cloneFrom);
@@ -38,8 +67,26 @@ namespace nutogui
     SplitManager* splitMgr;
     DataConstPtr data;
 
+    /**\name Generic shared data
+     * @{ */
+    /// Get a unique "ID" for a shared data type
+    template<typename T>
+    static const void* GetSharedDataTag ()
+    {
+      static char tag; // type doesn't matter
+      return &tag;
+    }
+    
+    typedef boost::unordered_map<const void*, boost::shared_ptr<SharedDataBase> > PanelsSharedDataMap;
+    struct SharedViewDataBase
+    {
+      /// Shared data structures
+      PanelsSharedDataMap panelsSharedData;
+    };
+    /** @} */
+    
     struct SharedViewData;
-    boost::shared_ptr<SharedViewData> sharedData;
+    boost::shared_ptr<SharedViewDataBase> sharedDataBase;
     void SetupSharedData ();
     
     wxSizer* contentsSizer;

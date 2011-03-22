@@ -120,7 +120,7 @@ namespace nutogui
   END_DECLARE_EVENT_TYPES()
   DEFINE_EVENT_TYPE(EVENT_DATASET_FRAME_CHANGED)
   
-  struct ResultViewerImpl::View3D::SharedViewData
+  struct ResultViewerImpl::View3D::SharedViewData : public ViewPanel::SharedDataBase
   {
     wxMenu renderModeMenu;
     wxBitmap renderModeButtonImages[numRenderModes];
@@ -192,13 +192,11 @@ namespace nutogui
      useLinkView (false),
      gradientMenuHandler (this)
   {
-    if (cloneFrom)
-    {
-      sharedData = cloneFrom->sharedData;
-    }
-    else
+    sharedData = parent->GetSharedData<SharedViewData> ();
+    if (!sharedData)
     {
       SetupSharedData ();
+      parent->SetSharedData (sharedData);
     }
     
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);

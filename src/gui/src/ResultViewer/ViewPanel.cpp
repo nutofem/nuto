@@ -21,7 +21,7 @@
 
 namespace nutogui
 {
-  struct ResultViewerImpl::ViewPanel::SharedViewData
+  struct ResultViewerImpl::ViewPanel::SharedViewData : public SharedViewDataBase
   {
     wxSize smallButtonSize;
     wxBitmap imgSplitH;
@@ -72,7 +72,7 @@ namespace nutogui
 
   ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, ViewPanel* cloneFrom)
    : wxPanel (parent), splitMgr (cloneFrom->splitMgr), 
-     data (cloneFrom->data), sharedData (cloneFrom->sharedData)
+     data (cloneFrom->data), sharedDataBase (cloneFrom->sharedDataBase)
   {
     contentType = cloneFrom->contentType;
     childPanel = cloneFrom->childPanel->Clone (this);
@@ -117,7 +117,7 @@ namespace nutogui
 
   void ResultViewerImpl::ViewPanel::SetupSharedData ()
   {
-    sharedData = boost::make_shared<SharedViewData> ();
+    boost::shared_ptr<SharedViewData> sharedData (boost::make_shared<SharedViewData> ());
     
     sharedData->smallButtonSize = wxSize (11, 11);
     sharedData->imgSplitH = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(split-horz), wxART_TOOLBAR,
@@ -154,10 +154,15 @@ namespace nutogui
       sharedData->imgContentViewButtonImages[i] = wxArtProvider::GetBitmap (contentTypeArtNames[i],
 									    wxART_TOOLBAR);
     }
+    
+    this->sharedDataBase = sharedData;
   }
 
   void ResultViewerImpl::ViewPanel::CreateChildren ()
   {
+    boost::shared_ptr<SharedViewData> sharedData (
+      boost::shared_static_cast<SharedViewData> (this->sharedDataBase));
+    
     contentsSizer = new wxBoxSizer (wxVERTICAL);
     
     topBarSizer = new wxBoxSizer (wxHORIZONTAL);
@@ -244,6 +249,9 @@ namespace nutogui
 
   void ResultViewerImpl::ViewPanel::OnToggleMaximization (wxCommandEvent& event)
   {
+    boost::shared_ptr<SharedViewData> sharedData (
+      boost::shared_static_cast<SharedViewData> (this->sharedDataBase));
+    
     bool isMaximized = splitMgr->ToggleMaximization (this);
     if (isMaximized)
     {
@@ -268,6 +276,9 @@ namespace nutogui
 
   void ResultViewerImpl::ViewPanel::OnContentViewPopup (wxAuiToolBarEvent& event)
   {
+    boost::shared_ptr<SharedViewData> sharedData (
+      boost::shared_static_cast<SharedViewData> (this->sharedDataBase));
+    
     wxPoint popupPos (contentViewBar->GetToolRect (ID_ContentViewPopup).GetBottomLeft());
     popupPos = contentViewBar->ClientToScreen (popupPos);
     popupPos = ScreenToClient (popupPos);
@@ -315,6 +326,8 @@ namespace nutogui
     childPanel = newChild;
     childPanel->SetData (data);
     
+    boost::shared_ptr<SharedViewData> sharedData (
+      boost::shared_static_cast<SharedViewData> (this->sharedDataBase));
     contentViewBar->SetToolBitmap (ID_ContentViewPopup,
 				   sharedData->imgContentViewButtonImages[newContentType]);
     
