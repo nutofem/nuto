@@ -11,13 +11,13 @@
 #include "View3D.h"
 
 #include "Data.h"
-#include "DataSetEdgeExtractor.h"
-#include "DataSetEdgeIterator.h"
-#include "DataSetFaceExtractor.h"
-#include "DataSetHelpers.h"
-#include "DisplacementDirectionSizePanel.h"
-#include "Gradients.h"
-#include "UnstructuredGridWithQuadsClippingToPoly.h"
+#include "View3D/DataSetEdgeExtractor.h"
+#include "View3D/DataSetEdgeIterator.h"
+#include "View3D/DataSetFaceExtractor.h"
+#include "View3D/DataSetHelpers.h"
+#include "View3D/DisplacementDirectionSizePanel.h"
+#include "View3D/Gradients.h"
+#include "View3D/UnstructuredGridWithQuadsClippingToPoly.h"
 
 #include "uicommon/Quote.h"
 

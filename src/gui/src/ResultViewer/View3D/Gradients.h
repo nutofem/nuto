@@ -10,7 +10,7 @@
 #ifndef __GRADIENTS_H__
 #define __GRADIENTS_H__
 
-#include "View3D.h"
+#include "../View3D.h"
 
 #include <wx/string.h>
 
