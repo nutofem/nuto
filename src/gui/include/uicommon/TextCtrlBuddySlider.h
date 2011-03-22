@@ -22,6 +22,7 @@ namespace uicommon
   {
   protected:
     wxTextCtrl* buddy;
+    wxEvtHandler* oldBuddyEvtHandler;
     int rangeMin, rangeMax;
     int currentValue;
     
@@ -44,6 +45,7 @@ namespace uicommon
 		         const wxPoint& pos = wxDefaultPosition,
 		         const wxSize& size = wxDefaultSize,
 			 long sliderStyle = wxSL_HORIZONTAL);
+    ~TextCtrlBuddySlider ();
     
     int GetValue() const;
     void SetValue (int value);

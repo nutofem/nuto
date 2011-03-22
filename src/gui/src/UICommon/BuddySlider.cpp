@@ -30,6 +30,7 @@ namespace uicommon
     sliderCtrl = new wxSlider (this, wxID_ANY, 0, 0, 1,
 			       wxDefaultPosition, wxDefaultSize,
 			       sliderStyle);
+    oldSliderEventHandler = sliderCtrl->GetEventHandler ();
     sliderCtrl->SetEventHandler (this);
     
     // Create sizer ...
@@ -39,6 +40,11 @@ namespace uicommon
     sizer->AddSpacer (0);
     
     SetSizer (sizer);
+  }
+  
+  BuddySlider::~BuddySlider ()
+  {
+    sliderCtrl->SetEventHandler (oldSliderEventHandler);
   }
 
   void BuddySlider::SetToolTip (const wxString& tip)

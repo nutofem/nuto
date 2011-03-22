@@ -37,6 +37,7 @@ namespace uicommon
 			    wxDefaultPosition, wxDefaultSize,
 			    EDIT_STYLE);
     buddy->SetValidator (wxTextValidator (wxFILTER_NUMERIC));
+    oldBuddyEvtHandler = buddy->GetEventHandler();
     buddy->SetEventHandler (this);
     
     /* Make text control font a bit smaller (text controls are usually quite
@@ -50,6 +51,11 @@ namespace uicommon
     UpdateTextCtrlMinSize ();
     SetBuddy (buddy);
     SetValue (value);
+  }
+  
+  TextCtrlBuddySlider::~TextCtrlBuddySlider ()
+  {
+    buddy->SetEventHandler (oldBuddyEvtHandler);
   }
   
   void TextCtrlBuddySlider::SliderValueChanged (int newValue)

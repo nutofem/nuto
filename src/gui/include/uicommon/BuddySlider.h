@@ -23,6 +23,7 @@ namespace uicommon
   {
   private:
     wxSlider* sliderCtrl;
+    wxEvtHandler* oldSliderEventHandler;
     
   protected:
     /// Get slider minimum value from derived implementations
@@ -52,6 +53,7 @@ namespace uicommon
   public:
     BuddySlider (wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition,
 		 const wxSize& size = wxDefaultSize, long sliderStyle = wxSL_HORIZONTAL);
+    ~BuddySlider ();
 
     // Shadow wxWindow method, forward tip to children
     void SetToolTip (const wxString& tip);
