@@ -71,7 +71,8 @@ namespace nutogui
   }
 
   ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, ViewPanel* cloneFrom)
-   : wxPanel (parent), splitMgr (cloneFrom->splitMgr), sharedData (cloneFrom->sharedData)
+   : wxPanel (parent), splitMgr (cloneFrom->splitMgr), 
+     data (cloneFrom->data), sharedData (cloneFrom->sharedData)
   {
     contentType = cloneFrom->contentType;
     childPanel = cloneFrom->childPanel->Clone (this);
