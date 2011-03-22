@@ -32,6 +32,7 @@
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCellPicker.h>
 #include <vtkClipDataSet.h>
 #include <vtkCommand.h>
 #include <vtkDataSetMapper.h>
@@ -85,6 +86,33 @@ namespace nutogui
     void Execute (vtkObject* caller, unsigned long eventId, void* callData)
     {
       view->ClipPlaneChanged ();
+    }
+  };
+  
+  //-------------------------------------------------------------------
+  
+  class ResultViewerImpl::View3D::RenderViewMouseCallback : public vtkCommand
+  {
+  public:
+    View3D* view;
+    
+    static RenderViewMouseCallback* New ()
+    {
+      return new RenderViewMouseCallback ();
+    }
+    
+    void Execute (vtkObject* caller, unsigned long eventId, void* callData)
+    {
+      vtkRenderWindowInteractor* iren = reinterpret_cast<vtkRenderWindowInteractor*> (caller);
+      int x, y;
+      iren->GetEventPosition (x, y);
+      
+      switch (eventId)
+      {
+      case vtkCommand::MouseMoveEvent:
+	view->HandleMouseMove (x, y);
+	break;
+      }
     }
   };
   
@@ -224,6 +252,8 @@ namespace nutogui
     {
       this->data = cloneFrom->data;
     }
+    
+    cellPicker = vtkSmartPointer<vtkCellPicker>::New();
   }
   
   ResultViewerImpl::View3D::~View3D ()
@@ -560,6 +590,10 @@ namespace nutogui
   {
     renderer = vtkSmartPointer<vtkRenderer>::New ();
     GetRenderWidget()->GetRenderWindow()->AddRenderer (renderer);
+    
+    vtkSmartPointer<RenderViewMouseCallback> mouseCallback = vtkSmartPointer<RenderViewMouseCallback>::New ();
+    mouseCallback->view = this;
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::MouseMoveEvent, mouseCallback);
     
     vtkSmartPointer<vtkInteractorStyleSwitch> istyle = vtkSmartPointer<vtkInteractorStyleSwitch>::New ();
     istyle->SetCurrentStyleToTrackballCamera ();
@@ -1372,6 +1406,14 @@ namespace nutogui
     }
   }
   
+  void ResultViewerImpl::View3D::HandleMouseMove (int x, int y)
+  {
+    cellPicker->Pick (x, y, 0, renderer);
+    
+    std::cerr << "cellId: " << cellPicker->GetCellId() << std::endl;
+    std::cerr << "subId: " << cellPicker->GetSubId() << std::endl;
+  }
+
   //-------------------------------------------------------------------------
   
   ResultViewerImpl::View3D::DataSetMapperWithEdges::DataSetMapperWithEdges ()

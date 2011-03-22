@@ -23,6 +23,7 @@
 class vtkAbstractArray;
 class vtkActor;
 class vtkCamera;
+class vtkCellPicker;
 class vtkDataArray;
 class vtkDataSet;
 class vtkDataSetMapper;
@@ -155,6 +156,8 @@ namespace nutogui
     vtkSmartPointer<vtkPlane> clipPlane;
     bool useClipper;
     
+    vtkSmartPointer<vtkCellPicker> cellPicker;
+    
     void OnWindowCreate (wxWindowCreateEvent& event);
     void SetupVTKRenderer ();
     void SetupRenderer ();
@@ -188,7 +191,7 @@ namespace nutogui
     bool SetLinkView (bool flag);
 
     void OnDisplayDataChanged (wxCommandEvent& event);
-
+    
     void OnVisOptionChanged (wxCommandEvent& event);
     void UpdateVisOptionChoice (size_t dataIndex, int initialSel);
     void SetVisComponent (size_t dataIndex, int visComp);
@@ -232,6 +235,9 @@ namespace nutogui
     void OnDataSetSelectionChanged (wxScrollEvent& event);
     void OnLinkedDataSetChanged (wxCommandEvent& event);
     void SetDisplayedDataSet (size_t index);
+    
+    class RenderViewMouseCallback;
+    void HandleMouseMove (int x, int y);
     
     /**
      * Class to handle commands from gradient menu.
