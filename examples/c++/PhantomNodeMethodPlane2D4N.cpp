@@ -95,6 +95,7 @@ int main()
 
 		myStructure.Info();
 	    // merge crack into elements
+	    /*
 	    NuTo::Structure::elementBasePtrSet_t crackedElems;
 	    myStructure.InitiateCrack(crack1, crackedElems);
 	    
@@ -102,6 +103,9 @@ int main()
 	    	    myStructure.ElementSetIntegrationType(thisCrackedElem->ElementGetId(),"2D4Nconst100Ip","NOIPDATA");
 
 	    myStructure.InitiatePhantomNodeMethod(crackedElems);
+		*/
+		
+		myStructure.InitiatePhantomNodeMethod(1000);
 
 	    //~ myStructure.NodeInfo(5);
 	    //~ myStructure.ElementInfo(5);

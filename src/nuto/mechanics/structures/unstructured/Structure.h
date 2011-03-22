@@ -357,15 +357,19 @@ public:
     //! @param rIdent ... crack identifier
     int CrackCreate();
 
+    //! @brief ... create a new crack with given node-Id's
+    //! @param rNodes ... vector of node-Id's
+    int CrackCreate(NuTo::FullMatrix<int>& rNodes);
+
     //! @brief ... delete an existing crack
     //! @param rIdent ... crack identifier
     void CrackDelete(int rIdent);
 
     //! @brief ... extends an existing crack
-    //! @param rIdent ... crack identifier
-    //! @param rNode ... pointer to the node to be attended to the crack
-    void CrackPushBack(int rIdent, NodeBase* rNode);
-    void CrackPushFront(int rIdent, NodeBase* rNode);
+    //! @param rIdent (Input) ... crack identifier
+    //! @param rNode (Input) ... node Id to be attended to the crack
+    void CrackPushBack(const int rIdent, const int rNodeNumber);
+    void CrackPushFront(const int rIdent, const int rNodeNumber);
 
     //! @brief ... shortens an existing crack
     //! @param rIdent ... crack identifier
@@ -374,13 +378,28 @@ public:
 
     //! @brief ... merge all cracks to the existing structure
     void InitiateCracks();
+    //! @brief ... merge specified crack to the existing structure
+    //! @param rIdent ... crack identifier
+    void InitiateCrack(const int rIdent);
+
+    //! @brief ... Initialize the PhantomNodeMethod to the structure
+    void InitiatePhantomNodeMethod();
+
+    //! @brief ... take cracked elements and initiate PhantomNodeMethod
+    //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
+    //! @return  ... id vector of cracked elements
+    NuTo::FullMatrix<int> InitiatePhantomNodeMethod(int rNumIp);
+#ifndef SWIG
+    //! @brief ... extends an existing crack
+    //! @param rIdent ... crack identifier
+    //! @param rNode ... pointer to the node to be attended to the crack
+    void CrackPushBack(int rIdent, NodeBase* rNode);
+    void CrackPushFront(int rIdent, NodeBase* rNode);
+
     //! @brief ... merge all cracks to the existing structure
     //! @param rCrackedElems (Output) ... vector of cracked elements
     void InitiateCracks(elementBasePtrSet_t & rCrackedElems);
 
-    //! @brief ... merge specified crack to the existing structure
-    //! @param rIdent ... crack identifier
-    void InitiateCrack(const int rIdent);
     //! @brief ... merge specified crack to the existing structure
     //! @param rIdent (Input) ... crack identifier
     //! @param rCrackedElems (Output) ... vector of cracked elements
@@ -390,7 +409,6 @@ public:
     //! @param rCrackedElems (Input) ... vector of cracked elements
     void InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedElems);
 
-#ifndef SWIG
     //! @brief returns a reference to a crack
     //! @param identifier
     //! @return reference to a crack
