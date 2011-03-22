@@ -393,11 +393,6 @@ namespace nutogui
     SetDisplayedDataSet (0);
   }
 
-  ResultViewerImpl::ViewPanel::Content* ResultViewerImpl::View3D::Clone (ViewPanel* parent)
-  {
-    return new View3D (parent, this);
-  }
-
   wxWindow* ResultViewerImpl::View3D::CreateTopTools (wxWindow* parentWindow)
   {
     topBar = new wxPanel (parentWindow);

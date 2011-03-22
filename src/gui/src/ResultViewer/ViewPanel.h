@@ -101,6 +101,7 @@ namespace nutogui
       
       numContentTypes
     };
+    Content* CreateChild (ContentType contentType);
     ContentType contentType;
     Content* childPanel;
     void CreateChildren ();

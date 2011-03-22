@@ -40,11 +40,6 @@ namespace nutogui
   {
   }
 
-  ResultViewerImpl::ViewPanel::Content* ResultViewerImpl::ViewPlot::Clone (ViewPanel* parent)
-  {
-    return new ViewPlot (parent);
-  }
-
   wxWindow* ResultViewerImpl::ViewPlot::CreateTopTools (wxWindow* parentWindow)
   {
     return nullptr;

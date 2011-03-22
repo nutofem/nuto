@@ -66,7 +66,7 @@ namespace nutogui
   {
     SetupSharedData ();
     contentType = content3D;
-    childPanel = new View3D (this);
+    childPanel = CreateChild (contentType);
     CreateChildren ();
   }
 
@@ -75,8 +75,9 @@ namespace nutogui
      data (cloneFrom->data), sharedDataBase (cloneFrom->sharedDataBase)
   {
     contentType = cloneFrom->contentType;
-    childPanel = cloneFrom->childPanel->Clone (this);
+    childPanel = CreateChild (contentType);
     CreateChildren ();
+    SetData (data);
   }
 
   void ResultViewerImpl::ViewPanel::SetData (const DataConstPtr& data)
@@ -156,6 +157,24 @@ namespace nutogui
     }
     
     this->sharedDataBase = sharedData;
+  }
+
+  ResultViewerImpl::ViewPanel::Content* ResultViewerImpl::ViewPanel::CreateChild (ContentType contentType)
+  {
+    Content* newChild = nullptr;
+    switch (contentType)
+    {
+    case content3D:
+      newChild = new View3D (this);
+      break;
+    case contentPlot:
+      newChild = new ViewPlot (this);
+      break;
+    case numContentTypes:
+      break;
+    }
+    assert (newChild);
+    return newChild;
   }
 
   void ResultViewerImpl::ViewPanel::CreateChildren ()
@@ -291,19 +310,7 @@ namespace nutogui
     ContentType newContentType = ContentType (event.GetId() - ID_ContentViewFirst);
     if (contentType == newContentType) return;
     
-    Content* newChild = nullptr;
-    switch (newContentType)
-    {
-    case content3D:
-      newChild = new View3D (this);
-      break;
-    case contentPlot:
-      newChild = new ViewPlot (this);
-      break;
-    case numContentTypes:
-      break;
-    }
-    assert (newChild);
+    Content* newChild = CreateChild (newContentType);
     if (!newChild) return;
     contentType = newContentType;
     

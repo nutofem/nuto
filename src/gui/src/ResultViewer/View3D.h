@@ -254,7 +254,6 @@ namespace nutogui
     ~View3D ();
     
     void SetData (const DataConstPtr& data);
-    Content* Clone (ViewPanel* parent);
     wxWindow* CreateTopTools (wxWindow* parentWindow);
 			      
     DECLARE_EVENT_TABLE()

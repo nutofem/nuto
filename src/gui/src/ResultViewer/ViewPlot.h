@@ -29,7 +29,6 @@ namespace nutogui
     ViewPlot (ViewPanel* parent);
 
     void SetData (const DataConstPtr& data);
-    Content* Clone (ViewPanel* parent);
     wxWindow* CreateTopTools (wxWindow* parentWindow);
   };
 } // namespace nutogui
