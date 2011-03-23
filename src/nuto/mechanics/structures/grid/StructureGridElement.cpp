@@ -98,7 +98,7 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
                     //set youngsModulus and add on material on counter
                     youngsModulus[numCoeffMat]=rColorToMaterialData(imageValues(countVoxels,0),0);
                     rBaseCoefficientMatrix0.Info();
-                    std::cout<<__FILE__<<" " <<__LINE__<<" "<<"  "<<youngsModulus[numCoeffMat]<<std::endl;
+                    std::cout<<__FILE__<<" " <<__LINE__<<" "<<" Young's modulus "<<youngsModulus[numCoeffMat]<<std::endl;
                     stiffnessMatrixHelp = rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat];
                     //std::cout<<__FILE__<<" " <<__LINE__<<" "<< stiffnessMatrixHelp <<std::endl;
                    this->mLocalCoefficientMatrix0.push_back(stiffnessMatrixHelp);

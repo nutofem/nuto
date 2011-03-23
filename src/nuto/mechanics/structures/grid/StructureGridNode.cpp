@@ -152,7 +152,7 @@ void NuTo::StructureGrid::NodeInfo(int mVerboseLevel) const
 }*/
 
 //! @brief create node grid without data free nodes
-void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
+void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs,int rThresholdMaterialValue)
 {
     int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
     int numMatNodes=0;//all existing nodes (with material)
@@ -169,8 +169,10 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs)
         	 // voxel exist (for boundary nodes)
              if (coincidentVoxels[count]>-1)
              {
-                   // voxel has material
-                 if(imageValues(coincidentVoxels[count],0)>130)//@TODO replace with variable for material boundary values
+                 // voxel has material
+            	 // color value 0 is material, 255 is air
+            	 // material value smaller than thresholdvalue
+                 if(imageValues(coincidentVoxels[count],0)<rThresholdMaterialValue)//@TODO replace with variable for material boundary values
                  {
                      flag=1;
                      count=8;

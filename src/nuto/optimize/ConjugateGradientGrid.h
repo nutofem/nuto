@@ -32,7 +32,7 @@ public:
         mMaxGradientCalls = INT_MAX,
         mMaxHessianCalls = INT_MAX,
         mMaxIterations = INT_MAX;
-        mShowSteps = 1;
+        mShowSteps = 100;
        	mUseDiagHessian =true;
 	}
 
@@ -126,7 +126,7 @@ public:
 
 
 protected:
-	void CalcScalingFactors(int& numHessianCalls, FullMatrix<double>& hessianOrig, Eigen::VectorXd& scaleFactorsInv);
+	void CalcScalingFactors(int& numHessianCalls, Eigen::VectorXd& scaleFactorsInv);
 
 	//! @brief ... calculate start gradient in element-by-element way
 	void CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig);

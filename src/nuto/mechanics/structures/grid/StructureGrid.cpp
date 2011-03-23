@@ -37,7 +37,7 @@ NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
 
 NuTo::StructureGrid::~StructureGrid()
 {
-	if(!mVoxelLocation)
+	if(mVoxelLocation)
 		delete mVoxelLocation;
 }
 
@@ -357,43 +357,47 @@ NuTo::FullMatrix<int>* NuTo::StructureGrid::GetVoxelNumAndLocMatrix()
 // EXIST matrix ?
 // yes: return pointer
 // no: allocate matrix, calculate matrix and return pointer
-	if (mVoxelLocation) return mVoxelLocation;
-	else {
+	if (mVoxelLocation)
+		return mVoxelLocation;
+	else
+	{
 		mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),4);
-		CalculateVoxelNumAndLocMatrix(*mVoxelLocation);
+		CalculateVoxelNumAndLocMatrix(mVoxelLocation);
 		return mVoxelLocation;
 	}
 }
 
 //! @brief Calculate VoxeLNumAndLocMatrix
 //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
-void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> &rVoxelLocation)
+void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelLocation)
 {
-    std::cout<<__FILE__<<" "<<__LINE__<<"in GetVoxelNumAndLocMatrix()"<<std::endl;
+    std::cout<<__FILE__<<" "<<__LINE__<<"in CalculateVoxelNumAndLocMatrix()"<<std::endl;
 	NuTo::ElementBase* actElem;
 	NuTo::Voxel8N* thisElement;
 	int actElemNum =0;
 	int loc[4];
-	for(int dim2 =0; dim2<mGridDimension[2];dim2++)
+	for(int dim2 =0; dim2<mGridDimension[2];++dim2)
 	{
 		loc[3]=dim2;
 
-		for(int dim1 =0; dim1<mGridDimension[1];dim1++)
+		for(int dim1 =0; dim1<mGridDimension[1];++dim1)
 		{
 			loc[2]=dim1;
-			for(int dim0 =0; dim0<mGridDimension[0];dim0++)
+			for(int dim0 =0; dim0<mGridDimension[0];++dim0)
 			{
+				//std::cout<<__FILE__<<" "<<__LINE__<<"in Schleife"<<std::endl;
 				loc[1]=dim0;
 				loc[0]=(dim0+1)+((dim1*mGridDimension[0])+1)+((dim2*mGridDimension[0]*mGridDimension[1])+1) -3;
 				actElem = ElementGetElementPtr(actElemNum);
 				thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(actElemNum));
-				//std::cout<<__FILE__<<" "<<__LINE__<<" numElem - Voxel - ber voxel "<< actElemNum <<"  "<<thisElement->GetVoxelID() <<" "<<loc[0]<<std::endl;
+				//std::cout<<__FILE__<<" "<<__LINE__<<" numElem - Voxel -  voxel "<< actElemNum <<"  "<<thisElement->GetVoxelID() <<" "<<loc[0]<<std::endl;
 				if (thisElement->GetVoxelID() == loc[0])
 				{
 				    for (int count=0; count<4; ++count)
 					{
-						rVoxelLocation(actElemNum,count) = loc[count];
+						(*rVoxelLocation)(actElemNum,count) = loc[count];
 					}
+				    //std::cout<<__FILE__<<" "<<__LINE__<<" "<<rVoxelLocation(actElemNum,0) <<" "<<rVoxelLocation(actElemNum,1) <<" "<<rVoxelLocation(actElemNum,2) <<" "<<rVoxelLocation(actElemNum,3) <<std::endl;
 					actElemNum++;
 				}
 			}
@@ -410,7 +414,7 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
         throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
  //   int corners[8];
 	if (mVerboseLevel>4)
-		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<  rVoxLoc[1]<<" "  <<rVoxLoc[2]<<" "<<rVoxLoc[3]<<" "<<rVoxLoc[0]<<std::endl;
+		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<" voxel location x: "<<  rVoxLoc[1]<<" y: "  <<rVoxLoc[2]<<" z: "<<rVoxLoc[3]<<" nbr: "<<rVoxLoc[0]<<std::endl;
 
 	corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
 	corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
@@ -423,7 +427,7 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
 	corners[7] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
 	if (mVerboseLevel>4)
 	{
-	    std::cout<<__FILE__<<" "<<__LINE__<<" Ecken: "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
+	    std::cout<<__FILE__<<" "<<__LINE__<<" Ecken des "<<rElementNumber<< ". Elements: "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
 	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
 	}
 }

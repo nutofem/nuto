@@ -109,7 +109,7 @@ public:
     FullMatrix<int>* GetVoxelNumAndLocMatrix();
 
     //! @brief Calculate VoxeLNumAndLocMatrix
-    void CalculateVoxelNumAndLocMatrix(FullMatrix<int> &rVoxelLocation);
+    void CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelLocation);
 
     //! @brief Get voxels corner numbers from bottom to top counter-clockwise
     //! @return array of number of corners with corner numbers
@@ -175,7 +175,7 @@ public:
 
     void NodeCreate(int rNodeNumber, int rNodeID, std::string rDOFs);
 
-    void CreateNodeGrid(std::string rDOFs);
+    void CreateNodeGrid(std::string rDOFs,int rThresholdMaterialValue);
 
     typedef std::vector<int> TCoincidentVoxelList;
     TCoincidentVoxelList GetCoincidenceVoxelIDs(int rNodeID);
