@@ -648,6 +648,7 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
 	{
 		throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Plane stress is to be implemented.");
 	}
+#ifdef DEBUG
     std::cout << "strain ";
     std::cout << engineeringStrain.mEngineeringStrain[0] << " " << engineeringStrain.mEngineeringStrain[1]<< " " << engineeringStrain.mEngineeringStrain[2]<< std::endl;
     std::cout << "stress ";
@@ -658,6 +659,7 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
             engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
            +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
            +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]) << std::endl<<std::endl;
+#endif //DEBUG
     return 0.5*(
     		engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
            +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]

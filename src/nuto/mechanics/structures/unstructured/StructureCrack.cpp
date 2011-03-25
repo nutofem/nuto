@@ -526,7 +526,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 							edgeCracked=true;
 							break; //!< now we have two intersections --> it's enough
 						}else{
-							this->NodeDelete(newCrackEnd);
+							this->NodeDelete(newCrackEnd,false);
 						}
 					}
 					if(!edgeCracked)
@@ -644,7 +644,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				//! @brief 6) delete the original element
 				this->ElementDelete(thisCrackedElem->ElementGetId());
 				//! if edge is cracked, the new element is introduced and the integration cell updated: Go to next cracked element
-				this->NodeDelete(tmpNodeId);
+				this->NodeDelete(tmpNodeId,false);
 
 //~ this->ElementInfo(newElPtrA,5);
 //~ this->ElementInfo(newElPtrB,5);
@@ -652,7 +652,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 
 			}
 			// delete the temporary point
-			this->NodeDelete(tmpNodeId);
+			this->NodeDelete(tmpNodeId,false);
 		}
     }
 #ifdef SHOW_TIME
@@ -842,7 +842,7 @@ NuTo::FullMatrix<int> NuTo::Structure::InitiatePhantomNodeMethod(int rNumIp)
 							edgeCracked=true;
 							break; //!< now we have two intersections --> it's enough
 						}else{
-							this->NodeDelete(newCrackEnd);
+							this->NodeDelete(newCrackEnd,false);
 						}
 					}
 					if(!edgeCracked)
@@ -964,7 +964,7 @@ NuTo::FullMatrix<int> NuTo::Structure::InitiatePhantomNodeMethod(int rNumIp)
 				BOOST_FOREACH(size_t ip, outsideIpsB)
 					intTypePtrB->DeleteIntegrationPoint(ip);
 				//! if edge is cracked, the new element is introduced and the integration cell updated: Go to next cracked element
-				this->NodeDelete(tmpNodeId);
+				this->NodeDelete(tmpNodeId,false);
 
 //~ this->ElementInfo(newElPtrA,5);
 //~ this->ElementInfo(newElPtrB,5);
@@ -972,7 +972,7 @@ NuTo::FullMatrix<int> NuTo::Structure::InitiatePhantomNodeMethod(int rNumIp)
 
 			}
 			// delete the temporary point
-			this->NodeDelete(tmpNodeId);
+			this->NodeDelete(tmpNodeId,false);
 		}
     }
 #ifdef SHOW_TIME

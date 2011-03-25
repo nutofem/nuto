@@ -427,14 +427,15 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
     {
     	if (checkElements)
     	{
-			/// Search for node in elements: using a loop over all elements
+    		NodeBase* nodePtr = itNode->second;
+    	 	/// Search for node in elements: using a loop over all elements
 			for(boost::ptr_map<int,ElementBase>::const_iterator elemIt=mElementMap.begin(); elemIt!=mElementMap.end(); ++elemIt)
 			{
 				// loop over all element nodes
 				for(unsigned short iNode=0; iNode<elemIt->second->GetNumNodes(); ++iNode)
 				{
 					// if the id of the node to be deleted is found, throw an error
-					if(rNodeNumber == this->NodeGetId(elemIt->second->GetNode(iNode)) )
+					if(nodePtr == elemIt->second->GetNode(iNode) )
 					{
 						std::stringstream outNode, outElement;
 						outNode << rNodeNumber;
