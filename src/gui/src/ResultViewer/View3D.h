@@ -150,6 +150,16 @@ namespace nutogui
     vtkSmartPointer<vtkActor> displaceDirectionsActor;
     float displacementDirScale;
     
+    /**\name Cell highlighting
+     * @{ */
+    /// Mapper for the highlighted cell
+    vtkSmartPointer<vtkDataSetMapper> highlightedCellMapper;
+    /// ID of highlighted cell
+    vtkIdType highlightedCellID;
+    /// Actor to render highlighting
+    vtkSmartPointer<vtkActor> highlightedCellActor;
+    /** @} */
+    
     vtkSmartPointer<vtkScalarBarWidget> scalarBar;
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationMarker;
     vtkSmartPointer<vtkPlaneWidget> clipPlaneWidget;
@@ -238,6 +248,7 @@ namespace nutogui
     
     class RenderViewMouseCallback;
     void HandleMouseMove (int x, int y);
+    void SetHighlightedCell (vtkIdType cellId);
     
     /**
      * Class to handle commands from gradient menu.

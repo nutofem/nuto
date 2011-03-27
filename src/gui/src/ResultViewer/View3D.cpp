@@ -50,6 +50,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkScalarBarActor.h>
 #include <vtkScalarBarWidget.h>
+#include <vtkUnstructuredGrid.h>
 
 namespace nutogui
 {
@@ -215,6 +216,7 @@ namespace nutogui
      displacementData ((size_t)~0),
      displaceDirectionsDataDS (0),
      displacementDirScale (1),
+     highlightedCellID (-1),
      useClipper (false),
      updatingCam (false),
      useLinkView (false),
@@ -384,6 +386,9 @@ namespace nutogui
       }
       displacementDirScale = minEdge;
     }
+    
+    // Set up cell highlighting
+    highlightedCellMapper = vtkSmartPointer<vtkDataSetMapper>::New ();
     
     displayDataChoice->Clear();
     displayDataChoice->Append (wxT ("Solid color"));
@@ -635,6 +640,16 @@ namespace nutogui
     origDataSetActor->GetProperty()->SetColor (0, 0, 0);
     origDataSetActor->GetProperty()->SetLighting (false);
     origDataSetActor->GetProperty()->SetEdgeVisibility (false);
+    
+    highlightedCellActor = vtkSmartPointer<vtkActor>::New ();
+    highlightedCellActor->SetMapper (highlightedCellMapper);
+    highlightedCellActor->GetProperty()->SetColor (1, 0, 0);
+    highlightedCellActor->GetProperty()->SetOpacity (0.5);
+    highlightedCellActor->GetProperty()->SetLighting (false);
+    highlightedCellActor->GetProperty()->SetEdgeVisibility (false);
+    highlightedCellActor->VisibilityOff();
+    highlightedCellActor->PickableOff();
+    renderer->AddActor (highlightedCellActor);
     
     renderer->SetBackground (0.6, 0.6, 0.6);
     
@@ -1159,12 +1174,18 @@ namespace nutogui
   {
     dataSetMapper.SetInput (displacedData);
     renderer->AddActor (origDataSetActor);
+
+    if (highlightedCellActor->GetVisibility())
+      SetHighlightedCell (highlightedCellID);
   }
   
   void ResultViewerImpl::View3D::HideDisplacementOffset ()
   {
     dataSetMapper.SetInput (data->GetDataSet (currentDataSet));
     renderer->RemoveActor (origDataSetActor);
+
+    if (highlightedCellActor->GetVisibility())
+      SetHighlightedCell (highlightedCellID);
   }
 
   void ResultViewerImpl::View3D::ComputeDisplacementOffset ()
@@ -1414,7 +1435,7 @@ namespace nutogui
     dataSetMapper.Update ();
     origDataSetFaces->SetInput (dataset);
     origDataSetMapper->Update ();
-    
+
     if (displacementDirection != ddNone)
     {
       ComputeDisplacementDirections ();
@@ -1428,14 +1449,55 @@ namespace nutogui
       ComputeDisplacementOffset ();
       ShowDisplacementOffset ();
     }
+
+    if (highlightedCellActor && highlightedCellActor->GetVisibility())
+      SetHighlightedCell (highlightedCellID);
   }
   
   void ResultViewerImpl::View3D::HandleMouseMove (int x, int y)
   {
     cellPicker->Pick (x, y, 0, renderer);
+    bool oldActorVis = highlightedCellActor->GetVisibility();
     
-    std::cerr << "cellId: " << cellPicker->GetCellId() << std::endl;
-    std::cerr << "subId: " << cellPicker->GetSubId() << std::endl;
+    vtkIdType cellId = cellPicker->GetCellId();
+    if (highlightedCellID == cellId) return;
+    std::cerr << "cellId: " << cellId << std::endl;
+    
+    if (cellId >= 0)
+    {
+      SetHighlightedCell (cellId);
+      highlightedCellActor->VisibilityOn();
+    }
+    else
+    {
+      highlightedCellActor->VisibilityOff();
+    }
+    
+    if ((highlightedCellActor->GetVisibility() != oldActorVis)
+	|| (highlightedCellID != cellId))
+      Render();
+    
+    highlightedCellID = cellId;
+  }
+  
+  void ResultViewerImpl::View3D::SetHighlightedCell (vtkIdType cellId)
+  {
+    if (cellId < 0) return;
+    
+    vtkDataSet* dataset =
+      useDisplaceData ? displacedData.GetPointer() : data->GetDataSet (currentDataSet);
+    vtkCell* theCell = dataset->GetCell (cellId);
+    
+    /* FIXME: Look into reusing a vtkUnstructuredGrid instance
+      * - didn't work last time I tried */
+    vtkSmartPointer<vtkUnstructuredGrid> highlightedCell = vtkUnstructuredGrid::New ();
+    
+    DataSetHelpers::CopyPoints (highlightedCell, dataset);
+    highlightedCell->GetPointData()->ShallowCopy (dataset->GetPointData());
+  
+    highlightedCell->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
+    
+    highlightedCellMapper->SetInput (highlightedCell);
   }
 
   //-------------------------------------------------------------------------
@@ -1476,6 +1538,7 @@ namespace nutogui
     edgesActor->GetProperty()->LightingOff();
     edgesActor->GetProperty()->SetRepresentation (VTK_WIREFRAME);
     edgesActor->VisibilityOff();
+    edgesActor->PickableOff();
     return edgesActor;
   }
       
