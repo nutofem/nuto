@@ -402,6 +402,18 @@ namespace nutogui
       if (data->IsDataArrayDisplacement (i))
       {
 	displacementData = i;
+	
+	// Get maximum displacement value
+	double displaceMagRange[2];
+	data->GetDataArrayMagnitudeRange (i, displaceMagRange);
+	/* Compute a default displacement scale which scales the maximum magnitude
+	 * to show up with a length of displacementDirScale */
+	float defaultDisplacementScale = displacementDirScale/displaceMagRange[1];
+	// But never downscale by default.
+	defaultDisplacementScale = std::max (defaultDisplacementScale, 1.0f);
+	
+	displacementSizePanel->SetDisplacementScale (defaultDisplacementScale);
+	
 	break;
       }
     }
