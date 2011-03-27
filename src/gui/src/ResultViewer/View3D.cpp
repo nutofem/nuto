@@ -583,6 +583,18 @@ namespace nutogui
       // Default render mode
       ApplyRenderMode ();
       SetUIRenderMode ();
+      
+      // Default displacement display to 'on'
+      if (displacementData != (size_t)~0)
+      {
+	useDisplaceData = true;
+	ComputeDisplacementOffset ();
+	ShowDisplacementOffset ();
+
+	CheckDisplacementSizePanelVisibility ();
+	
+	actorOptionsTB->ToggleTool (ID_DisplacementOffset, useDisplaceData);
+      }
     }
   }
 
