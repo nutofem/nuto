@@ -102,6 +102,12 @@ namespace nutogui
     TransferDataToWindow();
   }
 
+  void DisplacementDirectionSizePanel::SetDisplacementScale (float value)
+  {
+    scaleValue = value;
+    TransferDataToWindow ();
+  }
+
   void DisplacementDirectionSizePanel::OnScaleInputEnter (wxCommandEvent& event)
   {
     if (TransferDataFromWindow())

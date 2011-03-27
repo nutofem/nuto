@@ -56,6 +56,7 @@ namespace nutogui
     DisplacementDirectionSizePanel (wxWindow* parent, wxPoint position);
     
     float GetDisplacementScale() const { return scaleValue; }
+    void SetDisplacementScale (float value);
     
     DECLARE_EVENT_TABLE()
   };
