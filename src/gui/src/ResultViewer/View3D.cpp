@@ -1672,6 +1672,7 @@ namespace nutogui
       mapper->SetColorMode (edgesMapper->GetColorMode());
       mapper->SetScalarMode (edgesMapper->GetScalarMode());
       edgesMapper->SetColorModeToDefault();
+      edgesMapper->SetScalarModeToDefault();
       mapperActor->GetProperty()->SetLighting (edgesActor->GetProperty()->GetLighting());
       edgesActor->GetProperty()->LightingOff();
       edgesActor->GetProperty()->SetColor (0, 0, 0);
