@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include <cmath>
 #include <sstream>
 #include <iostream>
 
