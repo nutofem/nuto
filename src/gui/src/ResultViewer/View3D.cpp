@@ -680,6 +680,7 @@ namespace nutogui
     origDataSetActor->GetProperty()->SetColor (0, 0, 0);
     origDataSetActor->GetProperty()->SetLighting (false);
     origDataSetActor->GetProperty()->SetEdgeVisibility (false);
+    origDataSetActor->PickableOff();
     
     selectedCellActor = vtkSmartPointer<vtkActor>::New ();
     selectedCellActor->SetMapper (selectedCellMapper);
