@@ -15,6 +15,9 @@
 
 #include <vtkSmartPointer.h>
 
+class vtkChartXY;
+class vtkColorSeries;
+class vtkContextActor;
 class vtkRenderer;
 
 namespace nutogui
@@ -22,14 +25,26 @@ namespace nutogui
   class ResultViewerImpl::ViewPlot : public ViewPanelContentVTK
   {
   protected:
+    DataConstPtr data;
+    AllViewSharedDataPtr sharedAllData;
+    
+    vtkSmartPointer<vtkColorSeries> plotColors;
     vtkSmartPointer<vtkRenderer> renderer;
+    vtkSmartPointer<vtkContextActor> contextActor;
+    vtkSmartPointer<vtkChartXY> chart;
     void SetupVTKRenderer ();
     void SetupRenderer ();
+    
+    void SetupChart ();
+    
+    void OnSelectedCellsChanged (wxCommandEvent& event);
   public:
     ViewPlot (ViewPanel* parent);
 
     void SetData (const DataConstPtr& data);
     wxWindow* CreateTopTools (wxWindow* parentWindow);
+			      
+    DECLARE_EVENT_TABLE()
   };
 } // namespace nutogui
 

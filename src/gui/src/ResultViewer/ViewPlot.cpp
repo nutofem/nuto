@@ -11,9 +11,17 @@
 
 #include "ViewPlot.h"
 
+#include "AllViewSharedData.h"
+#include "Data.h"
+#include "SelectedCellsChangedEvent.h"
+
 #include "vtkwx.h"
 
+#include <boost/foreach.hpp>
+
+#include <vtkAxis.h>
 #include <vtkChartXY.h>
+#include <vtkColorSeries.h>
 #include <vtkContextActor.h>
 #include <vtkContextScene.h>
 #include <vtkFloatArray.h>
@@ -21,9 +29,15 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkTable.h>
+#include <vtkTextProperty.h>
+#include <vtkUnsignedIntArray.h>
 
 namespace nutogui
 {
+  BEGIN_EVENT_TABLE(ResultViewerImpl::ViewPlot, ViewPanelContentVTK)
+    EVT_SELECTEDCELLS_CHANGED(ResultViewerImpl::ViewPlot::OnSelectedCellsChanged)
+  END_EVENT_TABLE()
+
   ResultViewerImpl::ViewPlot::ViewPlot (ViewPanel* parent)
     : ViewPanelContentVTK (parent)
   {
@@ -34,10 +48,26 @@ namespace nutogui
     sizer->Add (renderWidget, 1, wxEXPAND);
     
     SetSizer (sizer);
+    
+    sharedAllData = AllViewSharedData::Setup (parent);
+    
+    plotColors = vtkSmartPointer<vtkColorSeries>::New ();
+    
+    chart = vtkSmartPointer<vtkChartXY>::New();
+    chart->GetAxis (0)->SetTitle ("");
+    chart->GetAxis (1)->SetTitle ("Frame");
+    chart->SetShowLegend (true);
+    
+    contextActor = vtkSmartPointer<vtkContextActor>::New();
+    // Set up a 2D scene, add an XY chart to it
+    vtkSmartPointer<vtkContextScene> scene = contextActor->GetScene();
+    scene->AddItem (chart.GetPointer());
   }
 
   void ResultViewerImpl::ViewPlot::SetData (const DataConstPtr& data)
   {
+    this->data = data;
+    SetupChart ();
   }
 
   wxWindow* ResultViewerImpl::ViewPlot::CreateTopTools (wxWindow* parentWindow)
@@ -59,55 +89,79 @@ namespace nutogui
     GetRenderWidget()->GetRenderWindow()->AddRenderer (renderer);
     renderer->SetBackground (1, 1, 1);
     
-    vtkSmartPointer<vtkContextActor> actor = vtkSmartPointer<vtkContextActor>::New();
-    renderer->AddActor(actor);
-    
-    // Code below is from VTK TestLinePlot example
-    
-    // Set up a 2D scene, add an XY chart to it
-    vtkSmartPointer<vtkContextScene> scene = actor->GetScene(); // We keep a pointer to this for convenience
-    
-    vtkSmartPointer<vtkChartXY> chart = vtkSmartPointer<vtkChartXY>::New();
-    scene->AddItem(chart.GetPointer());
+    renderer->AddActor (contextActor);
+  }
 
-    // Create a table with some points in it...
+  void ResultViewerImpl::ViewPlot::SetupChart ()
+  {
     vtkSmartPointer<vtkTable> table = vtkSmartPointer<vtkTable>::New ();
-    vtkSmartPointer<vtkFloatArray> arrX = vtkSmartPointer<vtkFloatArray>::New();
-    arrX->SetName("X Axis");
-    table->AddColumn(arrX.GetPointer());
-    vtkSmartPointer<vtkFloatArray> arrC = vtkSmartPointer<vtkFloatArray>::New();
-    arrC->SetName("Cosine");
-    table->AddColumn(arrC.GetPointer());
-    vtkSmartPointer<vtkFloatArray> arrS = vtkSmartPointer<vtkFloatArray>::New();
-    arrS->SetName("Sine");
-    table->AddColumn(arrS.GetPointer());
-    vtkSmartPointer<vtkFloatArray> arrS2 = vtkSmartPointer<vtkFloatArray>::New();
-    arrS2->SetName("Sine2");
-    table->AddColumn(arrS2.GetPointer());
-    // Test charting with a few more points...
-    int numPoints = 69;
-    float inc = 7.5 / (numPoints-1);
-    table->SetNumberOfRows(numPoints);
-    for (int i = 0; i < numPoints; ++i)
+    
+    vtkSmartPointer<vtkUnsignedIntArray> frameNumber = vtkSmartPointer<vtkUnsignedIntArray>::New();
+    frameNumber->SetName ("Dataset frame");
+    table->AddColumn (frameNumber);
+    
+    size_t dataArray = (size_t)~0;
+    size_t dataComponent = 0;
+    for (size_t i = 0; i < data->GetNumDataArrays(); i++)
+    {
+      if (data->GetDataArrayAssociation (i) == Data::perCell)
       {
-      table->SetValue(i, 0, i * inc);
-      table->SetValue(i, 1, cos(i * inc) + 0.0);
-      table->SetValue(i, 2, sin(i * inc) + 0.0);
-      table->SetValue(i, 3, sin(i * inc) + 0.5);
+	dataArray = i;
+	break;
       }
+    }
+    
+    std::vector<vtkIdType> plotData;
+    if (dataArray != (size_t)~0)
+    {
+      plotData.insert (plotData.begin(), sharedAllData->selectedCellIDs.begin(), sharedAllData->selectedCellIDs.end ());
+      std::sort (plotData.begin(), plotData.end());
+      
+      BOOST_FOREACH(vtkIdType cellID, plotData)
+      {
+	vtkSmartPointer<vtkFloatArray> cellData = vtkSmartPointer<vtkFloatArray>::New ();
+	wxString dataDescr (wxString::Format (wxT("Cell %lu"), (unsigned long)cellID));
+	cellData->SetName (dataDescr.mb_str ());
+	table->AddColumn (cellData);
+      }
+    }
+    
+    table->SetNumberOfRows (data->GetDataSetNum());
+    for (size_t frame = 0; frame < data->GetDataSetNum(); frame++)
+    {
+      table->SetValue (frame, 0, frame);
+      
+      if (dataArray != (size_t)~0)
+      {
+	vtkDataArray* frameData = data->GetDataArrayRawData (frame, dataArray);
+	for (size_t plot = 0; plot < plotData.size(); plot++)
+	{
+	  vtkIdType cellID = plotData[plot];
+	  float val = frameData->GetComponent (cellID, dataComponent);
+	  table->SetValue (frame, 1+plot, val);
+	}
+      }
+    }
 
-    // Add multiple line plots, setting the colors etc
-    vtkPlot *line = chart->AddPlot(vtkChart::LINE);
-    line->SetInput(table.GetPointer(), 0, 1);
-    line->SetColor(0, 255, 0, 255);
-    line->SetWidth(1.0);
-    line = chart->AddPlot(vtkChart::LINE);
-    line->SetInput(table.GetPointer(), 0, 2);
-    line->SetColor(255, 0, 0, 255);
-    line->SetWidth(5.0);
-    line = chart->AddPlot(vtkChart::LINE);
-    line->SetInput(table.GetPointer(), 0, 3);
-    line->SetColor(0, 0, 255, 255);
-    line->SetWidth(4.0);
+    /* Q: Why not use ClearPlots?
+     * A: It's broken (doesn't clear 'PlotCorners' member) */
+    while (chart->GetNumberOfPlots() > 0)
+    {
+      chart->RemovePlot (chart->GetNumberOfPlots()-1);
+    }
+    for (size_t plot = 0; plot < plotData.size(); plot++)
+    {
+      vtkPlot* line = chart->AddPlot (vtkChart::LINE);
+      line->SetInput (table.GetPointer(), 0, 1+plot);
+      line->SetWidth (2.0);
+      vtkColor3ub color = plotColors->GetColorRepeating (plotData[plot]);
+      line->SetColor (color.Red(), color.Green(), color.Blue(), 255);
+    }
+  }
+  
+  void ResultViewerImpl::ViewPlot::OnSelectedCellsChanged (wxCommandEvent& event)
+  {
+    SetupChart();
+    Render();
   }
 } // namespace nutogui
