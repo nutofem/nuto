@@ -10,7 +10,9 @@
 #include "common.h"
 #include "View3D.h"
 
+#include "AllViewSharedData.h"
 #include "Data.h"
+#include "SelectedCellsChangedEvent.h"
 #include "View3D/DataSetEdgeExtractor.h"
 #include "View3D/DataSetEdgeIterator.h"
 #include "View3D/DataSetFaceExtractor.h"
@@ -226,6 +228,8 @@ namespace nutogui
     
     EVT_COMMAND_SCROLL(ID_DataSetSlider, ResultViewerImpl::View3D::OnDataSetSelectionChanged)
     EVT_COMMAND(wxID_ANY, EVENT_DATASET_FRAME_CHANGED, ResultViewerImpl::View3D::OnLinkedDataSetChanged)
+    
+    EVT_SELECTEDCELLS_CHANGED(ResultViewerImpl::View3D::OnSelectedCellsChanged)
   END_EVENT_TABLE()
   
   ResultViewerImpl::View3D::View3D (ViewPanel* parent, const View3D* cloneFrom)
@@ -251,6 +255,7 @@ namespace nutogui
       SetupSharedData ();
       parent->SetSharedData (sharedData);
     }
+    sharedAllData = AllViewSharedData::Setup (parent);
     
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
     
@@ -637,6 +642,10 @@ namespace nutogui
 	
 	actorOptionsTB->ToggleTool (ID_DisplacementOffset, useDisplaceData);
       }
+      
+      /* There might already a set of selected cells from another view,
+       * so regenerate right away */
+      RegenerateSelectedCellDataSet();
     }
   }
 
@@ -1566,16 +1575,21 @@ namespace nutogui
 	 * the same, but highlightedCellID will be set to -1 when over a different cell */
 	if (highlightedCellID >= 0)
 	{
-	  SelectedCellsSet::iterator cellInSelection = selectedCellIDs.find (highlightedCellID);
-	  if (cellInSelection != selectedCellIDs.end())
+	  AllViewSharedData::SelectedCellsSet::iterator cellInSelection =
+	    sharedAllData->selectedCellIDs.find (highlightedCellID);
+	  if (cellInSelection != sharedAllData->selectedCellIDs.end())
 	  {
-	    selectedCellIDs.erase (cellInSelection);
+	    sharedAllData->selectedCellIDs.erase (cellInSelection);
 	  }
 	  else
 	  {
-	    selectedCellIDs.insert (highlightedCellID);
+	    sharedAllData->selectedCellIDs.insert (highlightedCellID);
 	  }
 	  RegenerateSelectedCellDataSet();
+	  
+	  SelectedCellsChangedEvent event;
+	  event.SetEventObject (this);
+	  PostToOthers (event);
 	  
 	  Render();
 	}
@@ -1612,22 +1626,37 @@ namespace nutogui
   
   void ResultViewerImpl::View3D::RegenerateSelectedCellDataSet ()
   {
-    vtkDataSet* dataset =
-      useDisplaceData ? displacedData.GetPointer() : data->GetDataSet (currentDataSet);
-      
-    selectedCellsDataSet = vtkUnstructuredGrid::New ();
-    DataSetHelpers::CopyPoints (selectedCellsDataSet, dataset);
-    selectedCellsDataSet->GetPointData()->ShallowCopy (dataset->GetPointData());
-    
-    BOOST_FOREACH(vtkIdType cellId, selectedCellIDs)
+    if (!sharedAllData->selectedCellIDs.empty())
     {
-      vtkCell* theCell = dataset->GetCell (cellId);
-      selectedCellsDataSet->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
+      vtkDataSet* dataset =
+	useDisplaceData ? displacedData.GetPointer() : data->GetDataSet (currentDataSet);
+	
+      selectedCellsDataSet = vtkUnstructuredGrid::New ();
+      DataSetHelpers::CopyPoints (selectedCellsDataSet, dataset);
+      selectedCellsDataSet->GetPointData()->ShallowCopy (dataset->GetPointData());
+      
+      BOOST_FOREACH(vtkIdType cellId, sharedAllData->selectedCellIDs)
+      {
+	vtkCell* theCell = dataset->GetCell (cellId);
+	selectedCellsDataSet->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
+      }
+      
+      selectedCellMapper->SetInput (selectedCellsDataSet);
+      
+      selectedCellActor->VisibilityOn();
     }
-    
-    selectedCellMapper->SetInput (selectedCellsDataSet);
-    
-    selectedCellActor->SetVisibility (!selectedCellIDs.empty());
+    else
+    {
+      selectedCellsDataSet = nullptr;
+      selectedCellMapper->SetInput (nullptr);
+      selectedCellActor->VisibilityOff();
+    }
+  }
+
+  void ResultViewerImpl::View3D::OnSelectedCellsChanged (wxCommandEvent& event)
+  {
+    RegenerateSelectedCellDataSet();
+    Render();
   }
 
   //-------------------------------------------------------------------------

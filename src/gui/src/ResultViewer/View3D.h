@@ -16,7 +16,6 @@
 #include "uicommon/ControlWithItemsClientDataWrapper.h"
 #include "uicommon/TextCtrlBuddySlider.h"
 
-#include <boost/unordered_set.hpp>
 #include <vector>
 
 #include <vtkSmartPointer.h>
@@ -63,6 +62,7 @@ namespace nutogui
     enum { numRenderModes = 5 };
     struct SharedViewData;
     boost::shared_ptr<SharedViewData> sharedData;
+    AllViewSharedDataPtr sharedAllData;
     void SetupSharedData ();
     
     wxAuiToolBar* visOptionEmpty;
@@ -154,9 +154,6 @@ namespace nutogui
     
     /**\name Cell highlighting
      * @{ */
-    typedef boost::unordered_set<vtkIdType> SelectedCellsSet;
-    /// Set of selected cells
-    SelectedCellsSet selectedCellIDs;
     vtkSmartPointer<vtkUnstructuredGrid> selectedCellsDataSet;
     /// Mapper for the selected cells
     vtkSmartPointer<vtkDataSetMapper> selectedCellMapper;
@@ -267,6 +264,8 @@ namespace nutogui
     
     void SetHighlightedCell (vtkIdType cellId);
     void RegenerateSelectedCellDataSet ();
+    
+    void OnSelectedCellsChanged (wxCommandEvent& event);
     
     /**
      * Class to handle commands from gradient menu.

@@ -29,6 +29,10 @@ namespace nutogui
     class ViewPlot;
     class ViewPanel;
     
+    struct AllViewSharedData;
+    typedef boost::shared_ptr<AllViewSharedData> AllViewSharedDataPtr;
+    class SelectedCellsChangedEvent;
+    
     class Data;
     typedef boost::shared_ptr<const Data> DataConstPtr;
     DataConstPtr data;
