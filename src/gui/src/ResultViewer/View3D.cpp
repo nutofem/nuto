@@ -24,6 +24,7 @@
 #include "vtkwx.h"
 #include <wx/artprov.h>
 #include <wx/aui/auibar.h>
+#include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/weak_ptr.hpp>
 
@@ -107,13 +108,34 @@ namespace nutogui
       vtkRenderWindowInteractor* iren = reinterpret_cast<vtkRenderWindowInteractor*> (caller);
       int x, y;
       iren->GetEventPosition (x, y);
-      
+
+      // When true, event is not given to other handlers
+      bool abort = false;
       switch (eventId)
       {
       case vtkCommand::MouseMoveEvent:
 	view->HandleMouseMove (x, y);
 	break;
+      case vtkCommand::LeftButtonPressEvent:
+	abort = view->HandleMouseDown (x, y, mbLeft);
+	break;
+      case vtkCommand::LeftButtonReleaseEvent:
+	abort = view->HandleMouseUp (x, y, mbLeft);
+	break;
+      case vtkCommand::RightButtonPressEvent:
+	abort = view->HandleMouseDown (x, y, mbRight);
+	break;
+      case vtkCommand::RightButtonReleaseEvent:
+	abort = view->HandleMouseUp (x, y, mbRight);
+	break;
+      case vtkCommand::MiddleButtonPressEvent:
+	abort = view->HandleMouseDown (x, y, mbMiddle);
+	break;
+      case vtkCommand::MiddleButtonReleaseEvent:
+	abort = view->HandleMouseUp (x, y, mbMiddle);
+	break;
       }
+      SetAbortFlag (abort);
     }
   };
   
@@ -217,6 +239,7 @@ namespace nutogui
      displaceDirectionsDataDS (0),
      displacementDirScale (1),
      highlightedCellID (-1),
+     mouseDownCellID (-1),
      useClipper (false),
      updatingCam (false),
      useLinkView (false),
@@ -388,6 +411,8 @@ namespace nutogui
     }
     
     // Set up cell highlighting
+    selectedCellMapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+    
     highlightedCellMapper = vtkSmartPointer<vtkDataSetMapper>::New ();
     
     displayDataChoice->Clear();
@@ -623,6 +648,12 @@ namespace nutogui
     vtkSmartPointer<RenderViewMouseCallback> mouseCallback = vtkSmartPointer<RenderViewMouseCallback>::New ();
     mouseCallback->view = this;
     GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::MouseMoveEvent, mouseCallback);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::LeftButtonPressEvent, mouseCallback);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::LeftButtonReleaseEvent, mouseCallback);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::RightButtonPressEvent, mouseCallback);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::RightButtonReleaseEvent, mouseCallback);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::MiddleButtonPressEvent, mouseCallback);
+    GetRenderWidget()->GetRenderWindow()->GetInteractor()->AddObserver (vtkCommand::MiddleButtonReleaseEvent, mouseCallback);
     
     vtkSmartPointer<vtkInteractorStyleSwitch> istyle = vtkSmartPointer<vtkInteractorStyleSwitch>::New ();
     istyle->SetCurrentStyleToTrackballCamera ();
@@ -640,6 +671,16 @@ namespace nutogui
     origDataSetActor->GetProperty()->SetColor (0, 0, 0);
     origDataSetActor->GetProperty()->SetLighting (false);
     origDataSetActor->GetProperty()->SetEdgeVisibility (false);
+    
+    selectedCellActor = vtkSmartPointer<vtkActor>::New ();
+    selectedCellActor->SetMapper (selectedCellMapper);
+    selectedCellActor->GetProperty()->SetColor (0, 0, 1);
+    selectedCellActor->GetProperty()->SetOpacity (0.3);
+    selectedCellActor->GetProperty()->SetLighting (false);
+    selectedCellActor->GetProperty()->SetEdgeVisibility (false);
+    selectedCellActor->VisibilityOff();
+    selectedCellActor->PickableOff();
+    renderer->AddActor (selectedCellActor);
     
     highlightedCellActor = vtkSmartPointer<vtkActor>::New ();
     highlightedCellActor->SetMapper (highlightedCellMapper);
@@ -1175,6 +1216,8 @@ namespace nutogui
     dataSetMapper.SetInput (displacedData);
     renderer->AddActor (origDataSetActor);
 
+    if (selectedCellActor->GetVisibility())
+      RegenerateSelectedCellDataSet ();
     if (highlightedCellActor->GetVisibility())
       SetHighlightedCell (highlightedCellID);
   }
@@ -1184,6 +1227,8 @@ namespace nutogui
     dataSetMapper.SetInput (data->GetDataSet (currentDataSet));
     renderer->RemoveActor (origDataSetActor);
 
+    if (selectedCellActor->GetVisibility())
+      RegenerateSelectedCellDataSet ();
     if (highlightedCellActor->GetVisibility())
       SetHighlightedCell (highlightedCellID);
   }
@@ -1450,6 +1495,8 @@ namespace nutogui
       ShowDisplacementOffset ();
     }
 
+    if (selectedCellActor && selectedCellActor->GetVisibility())
+      RegenerateSelectedCellDataSet ();
     if (highlightedCellActor && highlightedCellActor->GetVisibility())
       SetHighlightedCell (highlightedCellID);
   }
@@ -1460,6 +1507,15 @@ namespace nutogui
     bool oldActorVis = highlightedCellActor->GetVisibility();
     
     vtkIdType cellId = cellPicker->GetCellId();
+    
+    // Mouse button was pressed over a cell
+    if (mouseDownCellID >= 0)
+    {
+      // Mouse was moved over other cell, clear highlighting
+      if (cellId != mouseDownCellID)
+	cellId = -1;
+    }
+    
     if (highlightedCellID == cellId) return;
     std::cerr << "cellId: " << cellId << std::endl;
     
@@ -1480,6 +1536,60 @@ namespace nutogui
     highlightedCellID = cellId;
   }
   
+  bool ResultViewerImpl::View3D::HandleMouseDown (int x, int y, MouseButton button)
+  {
+    std::cerr << "mouse down: " << button << " @ " << x << "," << y << std::endl;
+    
+    if (button == mbLeft)
+    {
+      if (highlightedCellID >= 0)
+      {
+	mouseDownCellID = highlightedCellID;
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  bool ResultViewerImpl::View3D::HandleMouseUp (int x, int y, MouseButton button)
+  {
+    std::cerr << "mouse up:   " << button << " @ " << x << "," << y << std::endl;
+    if (button == mbLeft)
+    {
+      if (mouseDownCellID >= 0)
+      {
+	mouseDownCellID = -1;
+	
+	/* Use highlightedCellID as that considers whether the mouse is still over the
+	 * cell over which the mouse button was pressed originally; 
+	 * if the user moved the mouse with the button down, mouseDownCellID will stay
+	 * the same, but highlightedCellID will be set to -1 when over a different cell */
+	if (highlightedCellID >= 0)
+	{
+	  SelectedCellsSet::iterator cellInSelection = selectedCellIDs.find (highlightedCellID);
+	  if (cellInSelection != selectedCellIDs.end())
+	  {
+	    selectedCellIDs.erase (cellInSelection);
+	  }
+	  else
+	  {
+	    selectedCellIDs.insert (highlightedCellID);
+	  }
+	  RegenerateSelectedCellDataSet();
+	  
+	  Render();
+	}
+	else
+	{
+	  // Update highlight for new mouse coords
+	  HandleMouseMove (x, y);
+	}
+	return true;
+      }
+    }
+    return false;
+  }
+  
   void ResultViewerImpl::View3D::SetHighlightedCell (vtkIdType cellId)
   {
     if (cellId < 0) return;
@@ -1498,6 +1608,26 @@ namespace nutogui
     highlightedCell->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
     
     highlightedCellMapper->SetInput (highlightedCell);
+  }
+  
+  void ResultViewerImpl::View3D::RegenerateSelectedCellDataSet ()
+  {
+    vtkDataSet* dataset =
+      useDisplaceData ? displacedData.GetPointer() : data->GetDataSet (currentDataSet);
+      
+    selectedCellsDataSet = vtkUnstructuredGrid::New ();
+    DataSetHelpers::CopyPoints (selectedCellsDataSet, dataset);
+    selectedCellsDataSet->GetPointData()->ShallowCopy (dataset->GetPointData());
+    
+    BOOST_FOREACH(vtkIdType cellId, selectedCellIDs)
+    {
+      vtkCell* theCell = dataset->GetCell (cellId);
+      selectedCellsDataSet->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
+    }
+    
+    selectedCellMapper->SetInput (selectedCellsDataSet);
+    
+    selectedCellActor->SetVisibility (!selectedCellIDs.empty());
   }
 
   //-------------------------------------------------------------------------

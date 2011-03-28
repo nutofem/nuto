@@ -16,6 +16,7 @@
 #include "uicommon/ControlWithItemsClientDataWrapper.h"
 #include "uicommon/TextCtrlBuddySlider.h"
 
+#include <boost/unordered_set.hpp>
 #include <vector>
 
 #include <vtkSmartPointer.h>
@@ -39,6 +40,7 @@ class vtkProperty;
 class vtkRenderer;
 class vtkScalarBarWidget;
 class vtkScalarsToColors;
+class vtkUnstructuredGrid;
 
 class wxAuiToolBar;
 class wxAuiToolBarEvent;
@@ -152,12 +154,23 @@ namespace nutogui
     
     /**\name Cell highlighting
      * @{ */
+    typedef boost::unordered_set<vtkIdType> SelectedCellsSet;
+    /// Set of selected cells
+    SelectedCellsSet selectedCellIDs;
+    vtkSmartPointer<vtkUnstructuredGrid> selectedCellsDataSet;
+    /// Mapper for the selected cells
+    vtkSmartPointer<vtkDataSetMapper> selectedCellMapper;
+    /// Actor to render selection
+    vtkSmartPointer<vtkActor> selectedCellActor;
+    
     /// Mapper for the highlighted cell
     vtkSmartPointer<vtkDataSetMapper> highlightedCellMapper;
     /// ID of highlighted cell
     vtkIdType highlightedCellID;
     /// Actor to render highlighting
     vtkSmartPointer<vtkActor> highlightedCellActor;
+    /// Cell over which mouse button was pressed
+    vtkIdType mouseDownCellID;
     /** @} */
     
     vtkSmartPointer<vtkScalarBarWidget> scalarBar;
@@ -248,7 +261,12 @@ namespace nutogui
     
     class RenderViewMouseCallback;
     void HandleMouseMove (int x, int y);
+    enum MouseButton { mbLeft, mbRight, mbMiddle };
+    bool HandleMouseDown (int x, int y, MouseButton button);
+    bool HandleMouseUp (int x, int y, MouseButton button);
+    
     void SetHighlightedCell (vtkIdType cellId);
+    void RegenerateSelectedCellDataSet ();
     
     /**
      * Class to handle commands from gradient menu.
