@@ -41,9 +41,6 @@ class vtkScalarBarWidget;
 class vtkScalarsToColors;
 class vtkUnstructuredGrid;
 
-class wxAuiToolBar;
-class wxAuiToolBarEvent;
-
 namespace nutogui
 {
   class DataSetEdgeExtractor;
