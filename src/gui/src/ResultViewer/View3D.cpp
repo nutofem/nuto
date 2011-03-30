@@ -1371,6 +1371,7 @@ namespace nutogui
       vtkSmartPointer<vtkProperty> prop = vtkSmartPointer<vtkProperty>::New ();
       prop->SetColor (1, 1, 0);
       displaceDirectionsActor->SetProperty (prop);
+      displaceDirectionsActor->PickableOff();
     }
     displaceDirectionsActor->SetMapper (displaceDirectionsMapper);
   }
