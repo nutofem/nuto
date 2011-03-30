@@ -19,6 +19,7 @@ class vtkChartXY;
 class vtkColorSeries;
 class vtkContextActor;
 class vtkRenderer;
+class vtkTextActor;
 
 namespace nutogui
 {
@@ -32,6 +33,7 @@ namespace nutogui
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkContextActor> contextActor;
     vtkSmartPointer<vtkChartXY> chart;
+    vtkSmartPointer<vtkTextActor> noDataMessage;
     void SetupVTKRenderer ();
     void SetupRenderer ();
     

@@ -26,9 +26,11 @@
 #include <vtkContextScene.h>
 #include <vtkFloatArray.h>
 #include <vtkPlot.h>
+#include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkTable.h>
+#include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 #include <vtkUnsignedIntArray.h>
 
@@ -62,6 +64,17 @@ namespace nutogui
     // Set up a 2D scene, add an XY chart to it
     vtkSmartPointer<vtkContextScene> scene = contextActor->GetScene();
     scene->AddItem (chart.GetPointer());
+    
+    noDataMessage = vtkSmartPointer<vtkTextActor>::New();
+    noDataMessage->SetInput ("No cells selected");
+    noDataMessage->GetTextProperty()->SetJustificationToCentered();
+    noDataMessage->GetTextProperty()->SetVerticalJustificationToCentered();
+    noDataMessage->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
+    noDataMessage->GetPositionCoordinate()->SetValue (0.5, 0.5, 0);
+    vtkSmartPointer<vtkProperty2D> textProp2d;
+    textProp2d.TakeReference (vtkProperty2D::New ());
+    textProp2d->SetColor (0, 0, 0);
+    noDataMessage->SetProperty (textProp2d);
   }
 
   void ResultViewerImpl::ViewPlot::SetData (const DataConstPtr& data)
@@ -90,10 +103,20 @@ namespace nutogui
     renderer->SetBackground (1, 1, 1);
     
     renderer->AddActor (contextActor);
+    renderer->AddActor (noDataMessage);
   }
 
   void ResultViewerImpl::ViewPlot::SetupChart ()
   {
+    if (sharedAllData->selectedCellIDs.empty())
+    {
+      contextActor->VisibilityOff();
+      noDataMessage->VisibilityOn();
+      return;
+    }
+    contextActor->VisibilityOn();
+    noDataMessage->VisibilityOff();
+    
     vtkSmartPointer<vtkTable> table = vtkSmartPointer<vtkTable>::New ();
     
     vtkSmartPointer<vtkUnsignedIntArray> frameNumber = vtkSmartPointer<vtkUnsignedIntArray>::New();
