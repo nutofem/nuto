@@ -278,11 +278,6 @@ namespace nutogui
     // Is positioned later, once layouting has happened.
     displacementSizePanel->Hide();
     
-    if (cloneFrom)
-    {
-      this->data = cloneFrom->data;
-    }
-    
     cellPicker = vtkSmartPointer<vtkCellPicker>::New();
   }
   
@@ -379,7 +374,6 @@ namespace nutogui
   
   void ResultViewerImpl::View3D::SetData (const DataConstPtr& data)
   {
-    this->data = data;
     displacementData = (size_t)~0;
     
     dataSetMapper.InterpolateScalarsBeforeMappingOn ();
@@ -604,7 +598,7 @@ namespace nutogui
 		     wxCommandEventHandler (ResultViewerImpl::View3D::OnDisplacementDirCommand),
 		     nullptr, this);
     
-    if (data) SetData (data);
+    SetData (sharedAllData->data);
 
     return topBar;
   }
@@ -651,6 +645,7 @@ namespace nutogui
 
   void ResultViewerImpl::View3D::SetupRenderer ()
   {
+    DataConstPtr data (sharedAllData->data);
     renderer = vtkSmartPointer<vtkRenderer>::New ();
     GetRenderWidget()->GetRenderWindow()->AddRenderer (renderer);
     
@@ -862,6 +857,7 @@ namespace nutogui
     else
     {    
       visOptions = visOptionChoice;
+      DataConstPtr data (sharedAllData->data);
       
       switch (data->GetDataArrayAssociation (sel-1))
       {
@@ -916,6 +912,7 @@ namespace nutogui
 
   void ResultViewerImpl::View3D::UpdateVisOptionChoice (size_t arrayIndex, int initialSel)
   {
+    DataConstPtr data (sharedAllData->data);
     visChoiceCtrl->Clear ();
     visChoiceCtrl->Append (wxT ("Magnitude"));
     for (int i = 0; i < data->GetDataArrayComponents (arrayIndex); i++)
@@ -932,6 +929,7 @@ namespace nutogui
 
   void ResultViewerImpl::View3D::SetVisComponent (size_t arrayIndex, int visComp)
   {
+    DataConstPtr data (sharedAllData->data);
     vtkSmartPointer<vtkScalarsToColors> lut (dataSetMapper.GetLookupTable ());
     double range[2];
     if (visComp < 0)
@@ -1234,6 +1232,7 @@ namespace nutogui
   
   void ResultViewerImpl::View3D::HideDisplacementOffset ()
   {
+    DataConstPtr data (sharedAllData->data);
     dataSetMapper.SetInput (data->GetDataSet (currentDataSet));
     renderer->RemoveActor (origDataSetActor);
 
@@ -1247,6 +1246,7 @@ namespace nutogui
   {
     if (displacedData) return;
       
+    DataConstPtr data (sharedAllData->data);
     double scale = displacementSizePanel->GetDisplacementScale();
     vtkDataArray* displaceData = data->GetDataArrayRawData (currentDataSet, displacementData);
     
@@ -1317,6 +1317,7 @@ namespace nutogui
   
   void ResultViewerImpl::View3D::ComputeDisplacementDirections ()
   {
+    DataConstPtr data (sharedAllData->data);
     if (!sharedData->displaceDirectionGlyphSource)
     {
       sharedData->displaceDirectionGlyphSource = vtkSmartPointer<vtkArrowSource>::New ();
@@ -1484,6 +1485,7 @@ namespace nutogui
 
   void ResultViewerImpl::View3D::SetDisplayedDataSet (size_t index)
   {
+    DataConstPtr data (sharedAllData->data);
     currentDataSet = index;
     vtkDataSet* dataset = data->GetDataSet (currentDataSet);
     dataSetMapper.SetInput (dataset);
@@ -1609,6 +1611,7 @@ namespace nutogui
   {
     if (cellId < 0) return;
     
+    DataConstPtr data (sharedAllData->data);
     vtkDataSet* dataset =
       useDisplaceData ? displacedData.GetPointer() : data->GetDataSet (currentDataSet);
     vtkCell* theCell = dataset->GetCell (cellId);
@@ -1627,6 +1630,7 @@ namespace nutogui
   
   void ResultViewerImpl::View3D::RegenerateSelectedCellDataSet ()
   {
+    DataConstPtr data (sharedAllData->data);
     if (!sharedAllData->selectedCellIDs.empty())
     {
       vtkDataSet* dataset =

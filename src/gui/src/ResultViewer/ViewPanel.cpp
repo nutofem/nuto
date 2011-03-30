@@ -11,6 +11,7 @@
 
 #include "ViewPanel.h"
 
+#include "AllViewSharedData.h"
 #include "SplitManager.h"
 #include "View3D.h"
 #include "ViewPlot.h"
@@ -61,10 +62,15 @@ namespace nutogui
 		   ResultViewerImpl::ViewPanel::OnContentViewChange)
   END_EVENT_TABLE()
   
-  ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, SplitManager* splitMgr)
+  ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, SplitManager* splitMgr,
+					  const DataConstPtr& data)
    : wxPanel (parent), splitMgr (splitMgr)
   {
     SetupSharedData ();
+    
+    AllViewSharedDataPtr allSharedData = AllViewSharedData::Setup (this);
+    allSharedData->data = data;
+    
     contentType = content3D;
     childPanel = CreateChild (contentType);
     CreateChildren ();
@@ -72,18 +78,11 @@ namespace nutogui
 
   ResultViewerImpl::ViewPanel::ViewPanel (wxWindow* parent, ViewPanel* cloneFrom)
    : wxPanel (parent), splitMgr (cloneFrom->splitMgr), 
-     data (cloneFrom->data), sharedDataBase (cloneFrom->sharedDataBase)
+     sharedDataBase (cloneFrom->sharedDataBase)
   {
     contentType = cloneFrom->contentType;
     childPanel = CreateChild (contentType);
     CreateChildren ();
-    SetData (data);
-  }
-
-  void ResultViewerImpl::ViewPanel::SetData (const DataConstPtr& data)
-  {
-    this->data = data;
-    childPanel->SetData (data);
   }
 
   class ResultViewerImpl::ViewPanel::PostToOthersViewsTraverser : public SplitManager::ViewsTraverser
@@ -331,7 +330,6 @@ namespace nutogui
     
     delete childPanel;
     childPanel = newChild;
-    childPanel->SetData (data);
     
     boost::shared_ptr<SharedViewData> sharedData (
       boost::shared_static_cast<SharedViewData> (this->sharedDataBase));

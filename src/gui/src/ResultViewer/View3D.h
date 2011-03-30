@@ -64,6 +64,7 @@ namespace nutogui
     boost::shared_ptr<SharedViewData> sharedData;
     AllViewSharedDataPtr sharedAllData;
     void SetupSharedData ();
+    void SetData (const DataConstPtr& data);
     
     wxAuiToolBar* visOptionEmpty;
     wxAuiToolBar* visOptionChoice;
@@ -190,7 +191,6 @@ namespace nutogui
     class ClipPlaneChangedCallback;
     void ClipPlaneChanged ();
     
-    DataConstPtr data;
     size_t currentDataSet;
     wxChoice* displayDataChoice;
     struct VisOpt
@@ -287,7 +287,6 @@ namespace nutogui
     View3D (ViewPanel* parent, const View3D* cloneFrom = nullptr);
     ~View3D ();
     
-    void SetData (const DataConstPtr& data);
     wxWindow* CreateTopTools (wxWindow* parentWindow);
 			      
     DECLARE_EVENT_TABLE()

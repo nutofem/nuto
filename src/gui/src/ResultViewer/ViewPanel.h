@@ -24,9 +24,8 @@ namespace nutogui
   public:
     class Content;
     
-    ViewPanel (wxWindow* parent, SplitManager* splitMgr);
-    
-    void SetData (const DataConstPtr& data);
+    ViewPanel (wxWindow* parent, SplitManager* splitMgr,
+	       const DataConstPtr& data);
     
     /// Post an event to content children of all other view panels
     void PostToOthers (wxEvent& event);
@@ -65,7 +64,6 @@ namespace nutogui
     class PostToOthersViewsTraverser;
     
     SplitManager* splitMgr;
-    DataConstPtr data;
 
     /**\name Generic shared data
      * @{ */

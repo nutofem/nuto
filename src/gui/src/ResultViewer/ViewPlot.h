@@ -26,7 +26,6 @@ namespace nutogui
   class ResultViewerImpl::ViewPlot : public ViewPanelContentVTK
   {
   protected:
-    DataConstPtr data;
     AllViewSharedDataPtr sharedAllData;
     
     vtkSmartPointer<vtkColorSeries> plotColors;
@@ -43,7 +42,6 @@ namespace nutogui
   public:
     ViewPlot (ViewPanel* parent);
 
-    void SetData (const DataConstPtr& data);
     wxWindow* CreateTopTools (wxWindow* parentWindow);
 			      
     DECLARE_EVENT_TABLE()

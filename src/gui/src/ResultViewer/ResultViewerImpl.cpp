@@ -40,8 +40,7 @@ namespace nutogui
     callback->SetCloseable (true);
     
     splitMgr = new SplitManager (parentWindow);
-    ViewPanel* firstView = new ViewPanel (splitMgr, splitMgr);
-    firstView->SetData (data);
+    ViewPanel* firstView = new ViewPanel (splitMgr, splitMgr, data);
     splitMgr->SetInitialView (firstView);
     return splitMgr;
   }

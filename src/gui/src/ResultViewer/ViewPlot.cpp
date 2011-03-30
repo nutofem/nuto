@@ -75,11 +75,7 @@ namespace nutogui
     textProp2d.TakeReference (vtkProperty2D::New ());
     textProp2d->SetColor (0, 0, 0);
     noDataMessage->SetProperty (textProp2d);
-  }
-
-  void ResultViewerImpl::ViewPlot::SetData (const DataConstPtr& data)
-  {
-    this->data = data;
+    
     SetupChart ();
   }
 
@@ -122,6 +118,8 @@ namespace nutogui
     vtkSmartPointer<vtkUnsignedIntArray> frameNumber = vtkSmartPointer<vtkUnsignedIntArray>::New();
     frameNumber->SetName ("Dataset frame");
     table->AddColumn (frameNumber);
+    
+    DataConstPtr data (sharedAllData->data);
     
     size_t dataArray = (size_t)~0;
     size_t dataComponent = 0;

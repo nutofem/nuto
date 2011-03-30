@@ -22,6 +22,8 @@ namespace nutogui
 {
   struct ResultViewerImpl::AllViewSharedData : public ViewPanel::SharedDataBase
   {
+    DataConstPtr data;
+
     typedef boost::unordered_set<vtkIdType> SelectedCellsSet;
     /// Set of selected cells
     SelectedCellsSet selectedCellIDs;
