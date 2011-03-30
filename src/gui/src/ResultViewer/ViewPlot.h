@@ -13,6 +13,9 @@
 #include "ResultViewerImpl.h"
 #include "ViewPanelContentVTK.h"
 
+#include "uicommon/ControlWithItemsClientDataWrapper.h"
+#include <vector>
+
 #include <vtkSmartPointer.h>
 
 class vtkChartXY;
@@ -36,9 +39,28 @@ namespace nutogui
     void SetupVTKRenderer ();
     void SetupRenderer ();
     
-    void SetupChart ();
+    wxAuiToolBar* toolbar;
+    uicommon::ControlWithItemsClientDataWrapper<size_t> displayDataChoice;
+    wxChoice* visChoiceCtrl;
+    void SetData (const DataConstPtr& data);
+    
+    bool SetupChart (size_t dataArray, int viscomp);
     
     void OnSelectedCellsChanged (wxCommandEvent& event);
+    
+    size_t currentDataArray;
+    int currentVisComp;
+    struct VisOpt
+    {
+      int comp;
+      
+      VisOpt() : comp (-1) {}
+    };
+    std::vector<VisOpt> lastVisOpt;
+    
+    void OnDisplayDataChanged (wxCommandEvent& event);
+    void OnVisOptionChanged (wxCommandEvent& event);
+    void UpdateVisOptionChoice (size_t dataIndex, int initialSel);
   public:
     ViewPlot (ViewPanel* parent);
 

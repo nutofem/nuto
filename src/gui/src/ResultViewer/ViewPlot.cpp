@@ -16,7 +16,7 @@
 #include "SelectedCellsChangedEvent.h"
 
 #include "vtkwx.h"
-
+#include <wx/aui/auibar.h>
 #include <boost/foreach.hpp>
 
 #include <vtkAxis.h>
@@ -36,12 +36,21 @@
 
 namespace nutogui
 {
+  enum
+  {
+    ID_Toolbar = 1,
+    ID_DisplayData,
+    ID_VisOption
+  };
+  
   BEGIN_EVENT_TABLE(ResultViewerImpl::ViewPlot, ViewPanelContentVTK)
     EVT_SELECTEDCELLS_CHANGED(ResultViewerImpl::ViewPlot::OnSelectedCellsChanged)
   END_EVENT_TABLE()
 
   ResultViewerImpl::ViewPlot::ViewPlot (ViewPanel* parent)
-    : ViewPanelContentVTK (parent)
+    : ViewPanelContentVTK (parent),
+      currentDataArray ((size_t)~0),
+      currentVisComp (-1)
   {
     wxSizer* sizer = new wxBoxSizer (wxVERTICAL);
     
@@ -75,13 +84,42 @@ namespace nutogui
     textProp2d.TakeReference (vtkProperty2D::New ());
     textProp2d->SetColor (0, 0, 0);
     noDataMessage->SetProperty (textProp2d);
-    
-    SetupChart ();
   }
 
   wxWindow* ResultViewerImpl::ViewPlot::CreateTopTools (wxWindow* parentWindow)
   {
-    return nullptr;
+    wxPanel* topBar = new wxPanel (parentWindow);
+    
+    wxSizer* topBarSizer = new wxBoxSizer (wxHORIZONTAL);
+    
+    toolbar = new wxAuiToolBar (topBar, ID_Toolbar, wxDefaultPosition, wxDefaultSize,
+				wxAUI_TB_HORZ_LAYOUT | wxAUI_TB_NO_AUTORESIZE);
+    wxChoice* displayDataChoiceCtrl = new wxChoice (toolbar, ID_DisplayData);
+    displayDataChoiceCtrl->SetToolTip (wxT ("Data"));
+    toolbar->AddControl (displayDataChoiceCtrl);
+    displayDataChoice.SetControl (displayDataChoiceCtrl);
+    
+    visChoiceCtrl = new wxChoice (toolbar, ID_VisOption);
+    visChoiceCtrl->SetToolTip (wxT ("Component"));
+    toolbar->AddControl (visChoiceCtrl);
+    
+    topBarSizer->Add (toolbar, wxSizerFlags(1).Expand());
+    
+    topBar->SetSizer (topBarSizer);
+    
+    // Connect events
+    topBar->Connect (ID_DisplayData,
+		     wxEVT_COMMAND_CHOICE_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::ViewPlot::OnDisplayDataChanged),
+		     nullptr, this);
+    topBar->Connect (ID_VisOption,
+		     wxEVT_COMMAND_CHOICE_SELECTED,
+		     wxCommandEventHandler (ResultViewerImpl::ViewPlot::OnVisOptionChanged),
+		     nullptr, this);
+    
+    SetData (sharedAllData->data);
+
+    return topBar;
   }
 
   void ResultViewerImpl::ViewPlot::SetupVTKRenderer ()
@@ -102,13 +140,67 @@ namespace nutogui
     renderer->AddActor (noDataMessage);
   }
 
-  void ResultViewerImpl::ViewPlot::SetupChart ()
+  void ResultViewerImpl::ViewPlot::SetData (const DataConstPtr& data)
   {
+    displayDataChoice.Clear();
+    
+    for (size_t i = 0; i < data->GetNumDataArrays(); i++)
+    {
+      if (data->GetDataArrayAssociation (i) != Data::perCell) continue;
+      displayDataChoice.Append (data->GetDataArrayName (i), i);
+    }
+    
+    lastVisOpt.clear ();
+    lastVisOpt.resize (displayDataChoice.GetCount());
+    
+    if (displayDataChoice.GetCount() == 0)
+    {
+      displayDataChoice.Append (wxT ("No plottable data"), 0);
+      displayDataChoice.GetControl()->Disable ();
+      visChoiceCtrl->Hide();
+      
+      // Display message instead of chart
+      contextActor->VisibilityOff();
+      noDataMessage->SetInput ("Sorry, no plottable data is available");
+      noDataMessage->VisibilityOn();
+    }
+    else
+    {
+      // Fill component choice
+      currentDataArray = displayDataChoice.GetClientData (0);
+      currentVisComp = lastVisOpt[0].comp;
+      UpdateVisOptionChoice (currentDataArray, currentVisComp);
+    }
+    
+    displayDataChoice.SetSelection (0);
+
+    // Choice box strings have changed, so update size
+    UpdateToolbarControlMinSize (displayDataChoice.GetControl(), toolbar);
+    
+    SetupChart (currentDataArray, currentVisComp);
+  }
+  
+  static double GetArrayTupleMagnitude (vtkDataArray* array, size_t element)
+  {
+    double mag = 0;
+    double* comps = array->GetTuple (element);
+    int numComp = array->GetNumberOfComponents();
+    for (int c = 0; c < numComp; c++)
+    {
+      mag += comps[c]*comps[c];
+    }
+    return sqrt (mag);
+  }
+
+  bool ResultViewerImpl::ViewPlot::SetupChart (size_t dataArray, int viscomp)
+  {
+    if (dataArray == (size_t)~0) return false;
+    
     if (sharedAllData->selectedCellIDs.empty())
     {
       contextActor->VisibilityOff();
       noDataMessage->VisibilityOn();
-      return;
+      return true;
     }
     contextActor->VisibilityOn();
     noDataMessage->VisibilityOff();
@@ -121,30 +213,16 @@ namespace nutogui
     
     DataConstPtr data (sharedAllData->data);
     
-    size_t dataArray = (size_t)~0;
-    size_t dataComponent = 0;
-    for (size_t i = 0; i < data->GetNumDataArrays(); i++)
-    {
-      if (data->GetDataArrayAssociation (i) == Data::perCell)
-      {
-	dataArray = i;
-	break;
-      }
-    }
-    
     std::vector<vtkIdType> plotData;
-    if (dataArray != (size_t)~0)
+    plotData.insert (plotData.begin(), sharedAllData->selectedCellIDs.begin(), sharedAllData->selectedCellIDs.end ());
+    std::sort (plotData.begin(), plotData.end());
+    
+    BOOST_FOREACH(vtkIdType cellID, plotData)
     {
-      plotData.insert (plotData.begin(), sharedAllData->selectedCellIDs.begin(), sharedAllData->selectedCellIDs.end ());
-      std::sort (plotData.begin(), plotData.end());
-      
-      BOOST_FOREACH(vtkIdType cellID, plotData)
-      {
-	vtkSmartPointer<vtkFloatArray> cellData = vtkSmartPointer<vtkFloatArray>::New ();
-	wxString dataDescr (wxString::Format (wxT("Cell %lu"), (unsigned long)cellID));
-	cellData->SetName (dataDescr.mb_str ());
-	table->AddColumn (cellData);
-      }
+      vtkSmartPointer<vtkFloatArray> cellData = vtkSmartPointer<vtkFloatArray>::New ();
+      wxString dataDescr (wxString::Format (wxT("Cell %lu"), (unsigned long)cellID));
+      cellData->SetName (dataDescr.mb_str ());
+      table->AddColumn (cellData);
     }
     
     table->SetNumberOfRows (data->GetDataSetNum());
@@ -152,15 +230,16 @@ namespace nutogui
     {
       table->SetValue (frame, 0, frame);
       
-      if (dataArray != (size_t)~0)
+      vtkDataArray* frameData = data->GetDataArrayRawData (frame, dataArray);
+      for (size_t plot = 0; plot < plotData.size(); plot++)
       {
-	vtkDataArray* frameData = data->GetDataArrayRawData (frame, dataArray);
-	for (size_t plot = 0; plot < plotData.size(); plot++)
-	{
-	  vtkIdType cellID = plotData[plot];
-	  float val = frameData->GetComponent (cellID, dataComponent);
-	  table->SetValue (frame, 1+plot, val);
-	}
+	vtkIdType cellID = plotData[plot];
+	float val;
+	if (viscomp >= 0)
+	  val = frameData->GetComponent (cellID, viscomp);
+	else
+	  val = GetArrayTupleMagnitude (frameData, cellID);
+	table->SetValue (frame, 1+plot, val);
       }
     }
 
@@ -178,11 +257,56 @@ namespace nutogui
       vtkColor3ub color = plotColors->GetColorRepeating (plotData[plot]);
       line->SetColor (color.Red(), color.Green(), color.Blue(), 255);
     }
+    
+    return true;
   }
   
   void ResultViewerImpl::ViewPlot::OnSelectedCellsChanged (wxCommandEvent& event)
   {
-    SetupChart();
-    Render();
+    if (SetupChart (currentDataArray, currentVisComp))
+      Render();
   }
+  
+  void ResultViewerImpl::ViewPlot::OnDisplayDataChanged (wxCommandEvent& event)
+  {
+    if (event.GetSelection() < 0) return;
+    
+    int sel = event.GetSelection();
+    currentDataArray = displayDataChoice.GetClientData (sel);
+    
+    currentVisComp = lastVisOpt[sel].comp;
+    UpdateVisOptionChoice (currentDataArray, currentVisComp);
+    
+    if (SetupChart (currentDataArray, currentVisComp))
+      Render();
+  }
+  
+  void ResultViewerImpl::ViewPlot::OnVisOptionChanged (wxCommandEvent& event)
+  {
+    int displaySel = displayDataChoice.GetSelection();
+    
+    currentVisComp = event.GetSelection()-1;
+    lastVisOpt[displaySel].comp = currentVisComp;
+    
+    if (SetupChart (currentDataArray, currentVisComp))
+      Render();
+  }
+
+  void ResultViewerImpl::ViewPlot::UpdateVisOptionChoice (size_t arrayIndex, int initialSel)
+  {
+    DataConstPtr data (sharedAllData->data);
+    visChoiceCtrl->Clear ();
+    visChoiceCtrl->Append (wxT ("Magnitude"));
+    for (int i = 0; i < data->GetDataArrayComponents (arrayIndex); i++)
+    {
+      visChoiceCtrl->Append (wxString::Format (wxT ("%d"), i + 1));
+    }
+    visChoiceCtrl->SetSelection (initialSel+1);
+    
+    /* WX 2.8 computes a slightly different height for visChoiceCtrl,
+       so manually force the desired height */
+    UpdateToolbarControlMinSize (visChoiceCtrl, toolbar,
+				 displayDataChoice.GetControl()->GetBestSize().GetHeight());
+  }
+
 } // namespace nutogui
