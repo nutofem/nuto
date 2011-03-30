@@ -226,6 +226,12 @@ namespace nutogui
     
     EVT_DIRECTION_SCALE_CHANGED(ResultViewerImpl::View3D::OnDisplacementScaleChange)
     
+    EVT_MENU_RANGE(ID_RenderModeFirst,
+		   ID_RenderModeFirst+ResultViewerImpl::View3D::numRenderModes-1,
+		   ResultViewerImpl::View3D::OnRenderModeCommand)
+    EVT_MENU_RANGE(ID_DisplacementDirModeFirst,
+		   ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
+		   ResultViewerImpl::View3D::OnDisplacementDirCommand)
     EVT_COMMAND_SCROLL(ID_DataSetSlider, ResultViewerImpl::View3D::OnDataSetSelectionChanged)
     EVT_COMMAND(wxID_ANY, EVENT_DATASET_FRAME_CHANGED, ResultViewerImpl::View3D::OnLinkedDataSetChanged)
     
@@ -551,11 +557,6 @@ namespace nutogui
 		     wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN,
 		     wxAuiToolBarEventHandler (ResultViewerImpl::View3D::OnRenderModeDropDown),
 		     nullptr, this);
-    topBar->Connect (ID_RenderModeFirst,
-		     ID_RenderModeFirst+ResultViewerImpl::View3D::numRenderModes-1,
-		     wxEVT_COMMAND_MENU_SELECTED,
-		     wxCommandEventHandler (ResultViewerImpl::View3D::OnRenderModeCommand),
-		     nullptr, this);
     topBar->Connect (ID_ShowLegend,
 		     wxEVT_COMMAND_MENU_SELECTED,
 		     wxCommandEventHandler (ResultViewerImpl::View3D::OnShowLegend),
@@ -591,11 +592,6 @@ namespace nutogui
     topBar->Connect (ID_DisplacementDirMode,
 		     wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN,
 		     wxAuiToolBarEventHandler (ResultViewerImpl::View3D::OnDisplacementDirDropDown),
-		     nullptr, this);
-    topBar->Connect (ID_DisplacementDirModeFirst,
-		     ID_DisplacementDirModeFirst+ResultViewerImpl::View3D::numDisplacementDirModes-1,
-		     wxEVT_COMMAND_MENU_SELECTED,
-		     wxCommandEventHandler (ResultViewerImpl::View3D::OnDisplacementDirCommand),
 		     nullptr, this);
     
     SetData (sharedAllData->data);
