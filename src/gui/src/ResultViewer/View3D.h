@@ -238,9 +238,6 @@ namespace nutogui
     void ComputeDisplacementDirections ();
     
     void DoToolDropDown (wxAuiToolBar* toolbar, int toolID, wxMenu* menu);
-    void UpdateToolbarControlMinSize (wxWindow* control,
-				      wxAuiToolBar* toolbar,
-				      int forceHeight = 0);
     
     class UpdateCameraEvent;
     typedef void (ResultViewerImpl::View3D::*UpdateCameraEventFunction)(UpdateCameraEvent&);

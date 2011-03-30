@@ -23,6 +23,13 @@ namespace nutogui
   protected:
     /// Post an event to all other view panel content children
     void PostToOthers (wxEvent& event);
+    
+    /**
+     * Helper function: update minimal size of a control in a toolbar
+     */
+    void UpdateToolbarControlMinSize (wxWindow* control,
+				      wxAuiToolBar* toolbar,
+				      int forceHeight = 0);
   };
 } // namespace nutogui
 
