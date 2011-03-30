@@ -296,10 +296,10 @@ namespace nutogui
   {
     DataConstPtr data (sharedAllData->data);
     visChoiceCtrl->Clear ();
-    visChoiceCtrl->Append (wxT ("Magnitude"));
+    visChoiceCtrl->Append (data->GetDataArrayComponentDisplayName (arrayIndex, Data::compMagnitude));
     for (int i = 0; i < data->GetDataArrayComponents (arrayIndex); i++)
     {
-      visChoiceCtrl->Append (wxString::Format (wxT ("%d"), i + 1));
+      visChoiceCtrl->Append (data->GetDataArrayComponentDisplayName (arrayIndex, i));
     }
     visChoiceCtrl->SetSelection (initialSel+1);
     

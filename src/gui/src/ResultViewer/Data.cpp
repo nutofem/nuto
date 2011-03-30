@@ -177,6 +177,18 @@ namespace nutogui
     }
   }
   
+  wxString ResultViewerImpl::Data::GetDataArrayComponentDisplayName (size_t i, int comp) const
+  {
+    switch (comp)
+    {
+    case compMagnitude:
+      return wxT ("Magnitude");
+    }
+    
+    // Default handling
+    return wxString::Format (wxT ("%d"), comp+1);
+  }
+  
   //-------------------------------------------------------------------------
   
   ResultViewerImpl::Data::DataArray::DataArray()

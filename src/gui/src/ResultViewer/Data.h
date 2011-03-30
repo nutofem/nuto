@@ -52,6 +52,14 @@ namespace nutogui
     
     bool IsDataArrayDisplacement (size_t i) const;
     vtkDataArray* GetDataArrayRawData (size_t setIndex, size_t i) const;
+    
+    /// Special component IDs
+    enum
+    {
+      compMagnitude = -1
+    };
+    /// Get display name (for human consumption) for an array component
+    wxString GetDataArrayComponentDisplayName (size_t i, int comp) const;
   private:
     struct DataArray
     {
