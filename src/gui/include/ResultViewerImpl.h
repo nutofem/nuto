@@ -39,8 +39,6 @@ namespace nutogui
     
     const wxString caption;
     
-    void ReadDataFromFile (const char* filename);
-    
     class SplitManager;
     SplitManager* splitMgr;
   public:
