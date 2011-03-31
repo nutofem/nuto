@@ -43,6 +43,7 @@ int main()
         // read entries
         //myGrid.NuTo::StructureGrid::ImportFromVtkASCIIFileHeader("../nuto/examples/c++/InputStructureGrid3D");
         myGrid.NuTo::StructureGrid::ImportFromVtkASCIIFileHeader("InputCheckerboard");
+        //myGrid.NuTo::StructureGrid::ImportFromVtkASCIIFileHeader("InputTest");
         numVoxel=myGrid.GetNumVoxels();
         voxelSpacing=myGrid.GetVoxelSpacing();
         gridOrigin=myGrid.GetGridOrigin();
@@ -52,6 +53,7 @@ int main()
         NuTo::FullMatrix<int> imageValues (numVoxel,1);
         //imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "../nuto/examples/c++/InputStructureGrid3D");
         imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "InputCheckerboard");
+        //imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "InputTest");
 
         std::cout<<"first value "<< imageValues(0,0) << std::endl;
         std::cout<<"numVoxel"<< numVoxel << std::endl;
@@ -129,27 +131,27 @@ int main()
         myHelpStruc.NodeBuildGlobalDofs();
 
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
-        NuTo::FullMatrix<double> dispForceVector;
-        myHelpStruc.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
+        NuTo::FullMatrix<double> stiffnessMatrix;
+        NuTo::FullMatrix<int> rows;
+        NuTo::FullMatrix<int> coluums;
+        myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
+        std::cout<<"Element Stiffness"<<std::endl;
+        stiffnessMatrix.Info(12,6);
 
-        stiffnessMatrix.RemoveZeroEntries(0,1e-14);
-         // stiffnessMatrix.Info();
-        //NuTo::FullMatrix A(stiffnessMatrix);
-        //A.WriteToFile("$HOME/develop/nuto/stiffnessMatrix.txt"," ");
+        //stiffnessMatrix.WriteToFile("stiffnessMatrix.txt"," ");
 
         //grid structure create
 
         //material values are smaller than threshold value
         //color values form 0 255
         //thresholdMaterialValues: 180, 188 ->last value with material
-        int thresholdMaterialValue=100; //last value for "air", voxel which does not get element
+        int thresholdMaterialValue=188; //last value for "air", voxel which does not get element
         myGrid.CreateNodeGrid("DISPLACEMENTS",thresholdMaterialValue);
 
         //myGrid.CreateNodeGrid("COORDINATES");
         std::cout<<"NodeGrid created"<<std::endl;
         int numNodes=myGrid.GetNumNodes();
-        std::cout<<"num nodes "<<myGrid.GetNumNodes()-1<<std::endl;
+        std::cout<<"num nodes "<<myGrid.GetNumNodes()<<std::endl;
         NuTo::NodeBase* myNode=myGrid.NodeGetNodePtr(numNodes-1);
         std::cout<<"corresponding voxel edge number "<<myNode->GetNodeGridNum()<<std::endl; //Gitterknoten
 
@@ -157,7 +159,7 @@ int main()
         //set Modul for each color
         NuTo::FullMatrix<double> myMapColorModul(256,1);
         for(count=0;count<thresholdMaterialValue;count++)
-            myMapColorModul(count,0)=100000;
+        	myMapColorModul(count,0)=100000.;
         for(count=thresholdMaterialValue;count<255;count++)
             myMapColorModul(count,0)=0.;
 
@@ -183,7 +185,7 @@ int main()
         int numGridNodes=(NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);
 		for (int count = 0;count<numGridNodes;count+= (NumElementsX + 1))
 		{
-			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint "<< count <<std::endl;
+			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint x"<< count <<std::endl;
 		   try
 			{
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
@@ -196,10 +198,11 @@ int main()
 		direction(0,0)= 0;
         direction(1,0)= 1;
         direction(2,0)= 0;
-//		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+        // Test Randbedingungen y=0
+        //for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
 		for (int count =0;count < numGridNodes;count+= (NumElementsX + 1)*(NumElementsY + 1))
 		{
-            //std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
+            //std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< count <<std::endl;
 			try
 			{
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
@@ -213,17 +216,13 @@ int main()
 		direction(0,0)= 0;
         direction(1,0)= 0;
         direction(2,0)= 1;
-        //delete false
-        //for (int countY = 0; countY < (NumElementsY); ++countY)
-        //{
-//			for (int count = 0;count<(NumElementsX + 1)*(NumElementsY+1);++count)
-		for (int count = 0;count<(NumElementsX + 1);++count)
+        // Test Randbedingungen z=0
+        //for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		for (int count = 0;count<(NumElementsX + 1)*(NumElementsY + 1);count+=(NumElementsX + 1))
 		{
-//			int node = count+countY*(NumElementsX + 1)*(NumElementsY + 1);
-			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< node <<std::endl;
+            //std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
 			try
 			{
-				//myNodeNumber=myGrid.NodeGetIdFromGridNum(node); //node from type NodeGridCoordinates
 				myNodeNumber=myGrid.NodeGetIdFromGridNum(count); //node from type NodeGridCoordinates
 				myGrid.ConstraintLinearSetDisplacementNode(myNodeNumber, direction, 0.0);
 			}
@@ -252,7 +251,7 @@ int main()
                 for(int yCount = 0; yCount < NumElementsY + 1; yCount++)
                 {
                     int node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX;
-                    //std::cout << "node: " << node << std::endl;
+                   // std::cout << "node displacement constraint: " << node << std::endl;
                     int myNodeNumber;
                     int flag=0;
                     try
@@ -377,16 +376,28 @@ int main()
         NuTo::FullMatrix<double> dispNode(3,1);
         for (int count=0; count<myGrid.GetNumNodes(); ++count)
         {
-        	myGrid.NodeGetDisplacements(count,dispNode);
+			myGrid.NodeGetDisplacements(count,dispNode);
+
         	dispAll.AppendRows(dispNode);
         }
         dispAll.WriteToFile("displacements.txt"," ");
+        //dispAll.Info(12,6);
         NuTo::FullMatrix<double> dispAnsys(myGrid.GetNumNodes(),1);
         //dispAnsys.ReadFromFile("disp_cube11_ansys.txt");
-        dispAnsys.ReadFromFile("solu_disp_checkerboard_cube11.txt");
-        NuTo::FullMatrix<double> dispAllDiff=dispAll-dispAnsys;
-        dispAllDiff.Info(12,5);
+        try{
+        	dispAnsys.ReadFromFile("solu_disp_checkerboard_cube11.txt");
+       NuTo::FullMatrix<double> dispAllDiff=dispAll-dispAnsys;
+        dispAllDiff.WriteToFile("displDiff.txt"," ");
+        Eigen::VectorXd diffVector;
+        Eigen::VectorXd dispAllVector;
+        diffVector=dispAllDiff.mEigenMatrix;
+        dispAllVector=dispAll.mEigenMatrix;
+        std::cout<<__FILE__<<" "<<__LINE__<<" diff norm " <<diffVector.norm()<<std::endl;
+        std::cout<<__FILE__<<" "<<__LINE__<<" error " <<diffVector.norm()/dispAllVector.norm()*100<<" %"<<std::endl;
         //returnVector.WriteToFile("ActiveDofdisplacements.txt"," ");
+        }
+		catch(NuTo::MechanicsException& e)
+		{}
 
         // visualize element
 		return 0;

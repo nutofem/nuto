@@ -233,7 +233,7 @@ public:
     //! @brief info about the elements in the Structure
     virtual void ElementInfo(int mVerboseLevel) const;
 
-    void CreateElementGrid(NuTo::SparseMatrixCSRGeneral<double>& rBaseCoefficientMatrix0,
+    void CreateElementGrid(NuTo::FullMatrix<double>& rBaseCoefficientMatrix0,
             const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
 
     //! @brief Creates an element

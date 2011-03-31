@@ -29,7 +29,10 @@ int NuTo::StructureGrid::GetNumElements() const
 NuTo::ElementBase* NuTo::StructureGrid::ElementGetElementPtr(int rElementNumber)
 {
     if (rElementNumber<0 || rElementNumber>=GetNumElements())
-        throw MechanicsException("[NuTo::StructureGrid::ElementGetElementPtr] Conversion from string to int did not yield valid element number.");
+    {
+    	std::cout<<" ElementNumber "<<rElementNumber<<std::endl;
+    	throw MechanicsException("[NuTo::StructureGrid::ElementGetElementPtr] Conversion from string to int did not yield valid element number.");
+    }
     return &mElementVec[rElementNumber];
 }
 
@@ -76,7 +79,7 @@ void NuTo::StructureGrid::ElementInfo(int mVerboseLevel)const
 
 //! @brief create element grid without data free elements
 //! @param reference to a base coefficient matrix, to a ColorToMaterialMatrix and to an element type
-void NuTo::StructureGrid::CreateElementGrid( NuTo::SparseMatrixCSRGeneral<double>& rBaseCoefficientMatrix0,
+void NuTo::StructureGrid::CreateElementGrid( NuTo::FullMatrix<double>& rBaseCoefficientMatrix0,
 const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType)
 {
     int numElements=0;       //counter for created elements
@@ -97,7 +100,6 @@ const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElement
                 {
                     //set youngsModulus and add on material on counter
                     youngsModulus[numCoeffMat]=rColorToMaterialData(imageValues(countVoxels,0),0);
-                    rBaseCoefficientMatrix0.Info();
                     std::cout<<__FILE__<<" " <<__LINE__<<" "<<" Young's modulus "<<youngsModulus[numCoeffMat]<<std::endl;
                     stiffnessMatrixHelp = rBaseCoefficientMatrix0 * youngsModulus[numCoeffMat];
                     //std::cout<<__FILE__<<" " <<__LINE__<<" "<< stiffnessMatrixHelp <<std::endl;

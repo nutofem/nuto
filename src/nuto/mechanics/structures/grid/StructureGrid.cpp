@@ -372,7 +372,6 @@ NuTo::FullMatrix<int>* NuTo::StructureGrid::GetVoxelNumAndLocMatrix()
 void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelLocation)
 {
     std::cout<<__FILE__<<" "<<__LINE__<<"in CalculateVoxelNumAndLocMatrix()"<<std::endl;
-	NuTo::ElementBase* actElem;
 	NuTo::Voxel8N* thisElement;
 	int actElemNum =0;
 	int loc[4];
@@ -388,7 +387,6 @@ void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelL
 				//std::cout<<__FILE__<<" "<<__LINE__<<"in Schleife"<<std::endl;
 				loc[1]=dim0;
 				loc[0]=(dim0+1)+((dim1*mGridDimension[0])+1)+((dim2*mGridDimension[0]*mGridDimension[1])+1) -3;
-				actElem = ElementGetElementPtr(actElemNum);
 				thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(actElemNum));
 				//std::cout<<__FILE__<<" "<<__LINE__<<" numElem - Voxel -  voxel "<< actElemNum <<"  "<<thisElement->GetVoxelID() <<" "<<loc[0]<<std::endl;
 				if (thisElement->GetVoxelID() == loc[0])
@@ -399,6 +397,12 @@ void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelL
 					}
 				    //std::cout<<__FILE__<<" "<<__LINE__<<" "<<rVoxelLocation(actElemNum,0) <<" "<<rVoxelLocation(actElemNum,1) <<" "<<rVoxelLocation(actElemNum,2) <<" "<<rVoxelLocation(actElemNum,3) <<std::endl;
 					actElemNum++;
+					if (actElemNum==GetNumElements())
+					{
+						dim0=mGridDimension[0];
+						dim1=mGridDimension[1];
+						dim2=mGridDimension[2];
+					}
 				}
 			}
 		}
