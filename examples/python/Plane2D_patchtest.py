@@ -20,8 +20,9 @@ Force = 5
 
 ElementType = "PLANE2D4N"
 #IntegragionType = "2D4NGauss4Ip"
-IntegragionType = "2D4NConst630Ip"
-IntegragionType2 = "2D4NMod10000Ip2"
+#IntegragionType2 = IntegragionType
+IntegragionType = "2D4NConst9Ip"
+IntegragionType2 = "2D4NMod4Ip"
 
 #StressState = "XX"
 StressState = "YY"
