@@ -392,6 +392,7 @@ namespace nutogui
     origDataSetEdges->SetInput (origDataSetFaces->GetOutput());
     origDataSetMapper = vtkSmartPointer<vtkDataSetMapper>::New ();
     origDataSetMapper->SetInput (origDataSetEdges->GetOutput());
+    origDataSetMapper->ScalarVisibilityOff();
     
     /* Set a scale for displacement direction arrows; use the min distance
        along all edges of the cells of the model for that. */
@@ -1644,6 +1645,7 @@ namespace nutogui
    : currentRepr (VTK_SURFACE), edgeVisibility (0)
   {
     mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+    mapper->ScalarVisibilityOff();
     
     // @@@ Not really the ideal place
     vtkMapper::SetResolveCoincidentTopologyToPolygonOffset ();
@@ -1659,6 +1661,7 @@ namespace nutogui
     
     edgesMapper = vtkSmartPointer<vtkDataSetMapper>::New ();
     edgesMapper->SetInput (faceExtract->GetOutput());
+    edgesMapper->ScalarVisibilityOff();
   }
   
   vtkActor* ResultViewerImpl::View3D::DataSetMapperWithEdges::CreateMapperActor ()
@@ -1800,6 +1803,7 @@ namespace nutogui
     {
       edgesMapper->SetColorMode (mapper->GetColorMode());
       edgesMapper->SetScalarMode (mapper->GetScalarMode());
+      edgesMapper->SetScalarVisibility (mapper->GetScalarVisibility());
       edgesActor->GetProperty()->SetLighting (mapperActor->GetProperty()->GetLighting());
       edgesActor->GetProperty()->SetColor (1, 1, 1);
       mapperActor->VisibilityOff();
@@ -1809,8 +1813,10 @@ namespace nutogui
     {
       mapper->SetColorMode (edgesMapper->GetColorMode());
       mapper->SetScalarMode (edgesMapper->GetScalarMode());
+      mapper->SetScalarVisibility (edgesMapper->GetScalarVisibility());
       edgesMapper->SetColorModeToDefault();
       edgesMapper->SetScalarModeToDefault();
+      edgesMapper->ScalarVisibilityOff();
       mapperActor->GetProperty()->SetLighting (edgesActor->GetProperty()->GetLighting());
       edgesActor->GetProperty()->LightingOff();
       edgesActor->GetProperty()->SetColor (0, 0, 0);
