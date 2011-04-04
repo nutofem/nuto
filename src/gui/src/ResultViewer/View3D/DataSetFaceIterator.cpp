@@ -30,7 +30,7 @@ namespace nutogui
       
       currentCell = GetCell (currentCellId);
      
-      if (!HasCellTypeFaces (currentCell->GetCellType()))
+      if (!HasCellFaces (currentCell))
       {
 	nextFaceCell = currentCell;
 	currentFaceCellId = currentCell->GetNumberOfFaces ()-1;
@@ -83,7 +83,7 @@ namespace nutogui
 	// Else, grab new cell.
 	currentCell = GetCell (currentCellId);
 	currentFaceCellId = 0;
-	if (!HasCellTypeFaces (currentCell->GetCellType()))
+	if (!HasCellFaces (currentCell))
 	{
 	  nextFaceCell = currentCell;
 	  currentFaceCellId = currentCell->GetNumberOfFaces ()-1;
@@ -93,7 +93,7 @@ namespace nutogui
     if (currentCell)
     {
       // Grab first face cell.
-      if (HasCellTypeFaces (currentCell->GetCellType()))
+      if (HasCellFaces (currentCell))
 	nextFaceCell = currentCell->GetFace (currentFaceCellId);
     }
     else
@@ -102,19 +102,9 @@ namespace nutogui
     }
   }
   
-  bool DataSetFaceIterator::HasCellTypeFaces (int cellType)
+  bool DataSetFaceIterator::HasCellFaces (vtkCell* cell)
   {
-    switch (cellType)
-    {
-    case VTK_HEXAHEDRON:
-    case VTK_WEDGE:
-    case VTK_PYRAMID:
-    case VTK_PENTAGONAL_PRISM:
-    case VTK_HEXAGONAL_PRISM:
-      return true;
-    }
-    
-    return false;
+    return cell->GetCellDimension() == 3;
   }
   
   vtkCell* DataSetFaceIterator::GetCell (vtkIdType index)

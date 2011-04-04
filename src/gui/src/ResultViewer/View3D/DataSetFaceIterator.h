@@ -40,10 +40,10 @@ namespace nutogui
     void Advance ();
     
     /**
-     * Return whether cells of the given cell type have faces.
+     * Return whether the given cell has faces.
      * (Cells without faces are returned straight away.)
      */
-    static bool HasCellTypeFaces (int cellType);
+    static bool HasCellFaces (vtkCell* cell);
     
     /**
      * Cells to receive cell data from data set.
