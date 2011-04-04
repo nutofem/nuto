@@ -15,6 +15,7 @@
 
 class vtkCell;
 class vtkDataSet;
+class vtkGenericCell;
 
 namespace nutogui
 {
@@ -37,6 +38,25 @@ namespace nutogui
     
     /// Advance to next point
     void Advance ();
+    
+    /**
+     * Return whether cells of the given cell type have faces.
+     * (Cells without faces are returned straight away.)
+     */
+    static bool HasCellTypeFaces (int cellType);
+    
+    /**
+     * Cells to receive cell data from data set.
+     * Some data sets always return the same vtkCell* pointer,
+     * but we need different ones each time.
+     * So cycle through a number of preallocated cells that are filled.
+     */
+    vtkSmartPointer<vtkGenericCell> cellStorage[2];
+    /// Next member of cellStorage to use
+    unsigned int nextStorage;
+    
+    /// Get a cell from data set. Uses cellStorage to save cell data.
+    vtkCell* GetCell (vtkIdType index);
   public:
     /// Construct iterator.
     DataSetFaceIterator (vtkDataSet* dataset);
