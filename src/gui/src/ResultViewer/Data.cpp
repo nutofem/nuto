@@ -13,6 +13,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
 
 #include <float.h>
@@ -80,6 +81,11 @@ namespace nutogui
 	
 	arrays.push_back (data);
       }
+    }
+    
+    for (size_t s = 0; s < dataSource->GetNumDataSets(); s++)
+    {
+      AddOriginalCellIDs (dataSource->GetDataSet (s));
     }
   }
   
@@ -187,6 +193,31 @@ namespace nutogui
     
     // Default handling
     return wxString::Format (wxT ("%d"), comp+1);
+  }
+  
+  static const char originalCellIDsArrayName[] = "_original_ID";
+  
+  vtkIdType ResultViewerImpl::Data::GetOriginalCell (vtkDataSet* dataset, vtkIdType cellID) const
+  {
+    vtkAbstractArray* array = dataset->GetCellData()->GetArray (originalCellIDsArrayName);
+    
+    vtkIdTypeArray* idArray = vtkIdTypeArray::SafeDownCast (array);
+    if (!array || (cellID < 0) || (cellID >= array->GetNumberOfTuples())) return -1;
+
+    return idArray->GetValue (cellID);
+  }
+
+  void ResultViewerImpl::Data::AddOriginalCellIDs (vtkDataSet* dataset)
+  {
+    vtkIdType numCells = dataset->GetNumberOfCells();
+    
+    vtkSmartPointer<vtkIdTypeArray> idArray = vtkSmartPointer<vtkIdTypeArray>::New();
+    idArray->SetName (originalCellIDsArrayName);
+    idArray->SetNumberOfValues (numCells);
+    for (vtkIdType c = 0; c < numCells; c++)
+      idArray->SetValue (c, c);
+    
+    dataset->GetCellData()->AddArray (idArray);
   }
   
   //-------------------------------------------------------------------------

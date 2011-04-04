@@ -92,10 +92,12 @@ namespace nutogui
       vtkActor* CreateEdgesActor ();
       
       void SetInput (vtkDataSet* dataset);
+      vtkDataSet* GetUsedInput ();
       void Update ();
       void GetBounds (double bounds[6]);
       
       void SetClipFunction (vtkImplicitFunction* clipFunc);
+      vtkImplicitFunction* GetClipFunction();
       
       void SetColorModeToDefault();
       void SetColorModeToMapScalars();

@@ -60,6 +60,13 @@ namespace nutogui
     };
     /// Get display name (for human consumption) for an array component
     wxString GetDataArrayComponentDisplayName (size_t i, int comp) const;
+    
+    /**
+     * Query the original cell ID for a cell from the dataset.
+     * The dataset must have some “ancestry” in a dataset a Data object.
+     * Returns an invalid cell ID otherwise.
+     */
+    vtkIdType GetOriginalCell (vtkDataSet* dataset, vtkIdType cellID) const;
   private:
     struct DataArray
     {
@@ -73,6 +80,13 @@ namespace nutogui
       
       DataArray();
     };
+    
+    /**
+     * Add a cell data array that contains the cell IDs.
+     * Useful when the original IDs have to be determined after the cells
+     * changed (e.g. after clipping).
+     */
+    void AddOriginalCellIDs (vtkDataSet* dataset);
   };
 } // namespace nutogui
 

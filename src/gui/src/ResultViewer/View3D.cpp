@@ -1112,6 +1112,9 @@ namespace nutogui
       useClipper = false;
     }
     
+    SetHighlightedCell (highlightedCellID);
+    RegenerateSelectedCellDataSet();
+    
     Render();
   }
 
@@ -1493,7 +1496,9 @@ namespace nutogui
     cellPicker->Pick (x, y, 0, renderer);
     bool oldActorVis = highlightedCellActor->GetVisibility();
     
-    vtkIdType cellId = cellPicker->GetCellId();
+    DataConstPtr data (sharedAllData->data);
+    vtkDataSet* dataset = dataSetMapper.GetUsedInput();
+    vtkIdType cellId = data->GetOriginalCell (dataset, cellPicker->GetCellId());
     
     // Mouse button was pressed over a cell
     if (mouseDownCellID >= 0)
@@ -1600,7 +1605,12 @@ namespace nutogui
   
     highlightedCell->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
     
-    highlightedCellMapper->SetInput (highlightedCell);
+    // Apply dataset clipping as last clipping
+    vtkImplicitFunction* clipFunc = dataSetMapper.GetClipFunction();
+    vtkSmartPointer<vtkDataSet> actualDS =
+      clipFunc ? (vtkDataSet*)ClipWrapDataSet (highlightedCell, clipFunc) : (vtkDataSet*)highlightedCell;
+    
+    highlightedCellMapper->SetInput (actualDS);
   }
   
   void ResultViewerImpl::View3D::RegenerateSelectedCellDataSet ()
@@ -1621,7 +1631,12 @@ namespace nutogui
 	selectedCellsDataSet->InsertNextCell (theCell->GetCellType(), theCell->GetPointIds());
       }
       
-      selectedCellMapper->SetInput (selectedCellsDataSet);
+      // Apply dataset clipping as last clipping
+      vtkImplicitFunction* clipFunc = dataSetMapper.GetClipFunction();
+      vtkSmartPointer<vtkDataSet> actualDS =
+	clipFunc ? (vtkDataSet*)ClipWrapDataSet (selectedCellsDataSet, clipFunc) : (vtkDataSet*)selectedCellsDataSet;
+      
+      selectedCellMapper->SetInput (actualDS);
       
       selectedCellActor->VisibilityOn();
     }
@@ -1691,6 +1706,11 @@ namespace nutogui
     SetClipFunction (lastClipper);
   }
   
+  vtkDataSet* ResultViewerImpl::View3D::DataSetMapperWithEdges::GetUsedInput ()
+  {
+    return mapper->GetInputAsDataSet();
+  }
+  
   void ResultViewerImpl::View3D::DataSetMapperWithEdges::Update ()
   {
     mapper->Update();
@@ -1715,6 +1735,11 @@ namespace nutogui
       edgesMapper->SetInput (faceExtract->GetOutput ());
     }
     lastClipper = clipFunc;
+  }
+
+  vtkImplicitFunction* ResultViewerImpl::View3D::DataSetMapperWithEdges::GetClipFunction ()
+  {
+    return lastClipper;
   }
       
   void ResultViewerImpl::View3D::DataSetMapperWithEdges::SetColorModeToDefault()
