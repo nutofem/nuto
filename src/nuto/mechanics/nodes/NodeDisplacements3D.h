@@ -53,9 +53,9 @@ public:
     //! @param rDisplacements displacements
     void GetDisplacements3D(double rDisplacements[3])const;
 
-    //! @brief writes the displacements of a node to the prescribed pointer
+    //! @brief get the displacement of a node
     //! the difference is e.g. using XFEM, when the nodal degrees of freedom are not identical
-    //! @param rDisplacements displacements
+    //! @param rIndexr displacement
     double GetDisplacement(short rIndex)const;
 
     //! @brief sets the global dofs

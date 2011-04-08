@@ -35,12 +35,12 @@ public:
     //! @return number of coordinates
     virtual int GetNumCoordinates()const;
 
-    //! @brief set the coordinates
-    //! @param rCoordinates  given coordinates
+    //! @brief set node id
+    //! @param rNodeId  given node id
     virtual void SetNodeId(int rNodeId);
 
-    //! @brief writes the coordinates of a node to the prescribed pointer
-    //! @param rCoordinates coordinates
+    //! @brief get the node id
+    //! @return id given node id
     virtual int GetNodeId()const;
 
     //! @brief writes the coordinates of a node to the prescribed pointer

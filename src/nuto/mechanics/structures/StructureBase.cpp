@@ -952,8 +952,9 @@ try
 
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
+#ifdef SHOW_TIME
     mySolver.SetShowTime(false);
-
+#endif
     //calculate stiffness
     this->SetLoadFactor(curLoadFactor);
     this->NodeBuildGlobalDofs();
@@ -1020,8 +1021,8 @@ try
 
     ToleranceZeroStiffness = (1e-14) * (fabs(maxValue)>fabs(minValue) ?  fabs(maxValue) : fabs(minValue));
     this->SetToleranceStiffnessEntries(ToleranceZeroStiffness);
-    int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-    int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
+    //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
+    //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
     //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
     //mySolver.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale") + std::string("0") + std::string(".vtk"));
@@ -1171,8 +1172,8 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
             std::cout << dispForceVector.Norm() << std::endl;
 //check stiffness
 CheckStiffness();
-            int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-            int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
+            //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
+            //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
             //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
         }
 
@@ -1265,8 +1266,8 @@ CheckStiffness();
             //update stiffness in order to calculate new dispForceVector, but still with previous displacement state
             this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 //CheckStiffness();
-            int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-            int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
+            //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
+            //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
             //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
             //update displacements of all nodes according to the new conre mat

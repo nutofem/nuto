@@ -47,15 +47,15 @@ int NuTo::NodeGrid3D::GetNumCoordinates()const
 	return 3;
 }
 
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
+//! @brief set the grid node number of this node
+//! @param rNodeGridNum  given grid node number
 void NuTo::NodeGrid3D::SetNodeGridNum(int rNodeGridNum)
 {
 	mNodeGridNum = rNodeGridNum;
 }
 
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
+//! @brief get the grid node number of this node
+//! @return NodeGridNum  grid node number
 int NuTo::NodeGrid3D::GetNodeGridNum()const
 {
 	return mNodeGridNum;

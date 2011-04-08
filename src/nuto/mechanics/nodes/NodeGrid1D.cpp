@@ -48,8 +48,8 @@ void NuTo::NodeGrid1D::SetNodeId(int rNodeId)
 	mNodeId = rNodeId;
 }
 
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
+//! @brief get the node id
+//! @return node id
 int NuTo::NodeGrid1D::GetNodeId()const
 {
 	return mNodeId;

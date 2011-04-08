@@ -36,12 +36,12 @@ public:
     //! @return number of coordinates
     virtual int GetNumCoordinates()const;
 
-    //! @brief set the coordinates
-    //! @param rCoordinates  given coordinates
+    //! @brief set the grid node number
+    //! @param rNodeGridNum  given grid node number
     virtual void SetNodeGridNum(int rNodeGridNum);
 
-    //! @brief writes the coordinates of a node to the prescribed pointer
-    //! @param rCoordinates coordinates
+    //! @brief get the grid node number
+    //! @return rNodeGridNum  given grid node number
     int GetNodeGridNum()const;
 
     //! @brief writes the coordinates of a node to the prescribed pointer

@@ -41,15 +41,15 @@ int NuTo::NodeGrid2D::GetNumCoordinates()const
 	return 2;
 }
 
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
+//! @brief set node id
+//! @param rNodeId  given node id
 void NuTo::NodeGrid2D::SetNodeId(int rNodeId)
 {
 	mNodeId = rNodeId;
 }
 
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
+//! @brief get node id
+//! @return id given node id
 int NuTo::NodeGrid2D::GetNodeId()const
 {
 	return mNodeId;

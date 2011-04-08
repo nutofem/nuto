@@ -136,9 +136,10 @@ try
 
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
+#ifdef SHOW_TIME
     if (PRINTRESULT)
         mySolver.SetShowTime(true);
-
+#endif //SHOWTIME
     //calculate stiffness
     myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
     //check stiffness
