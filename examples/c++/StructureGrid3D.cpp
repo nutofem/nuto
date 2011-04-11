@@ -22,8 +22,8 @@
 
 int main()
 {
-	double microTomm =0.001;
-//	double microTomm =1;
+//	double microTomm =0.001;
+	double microTomm =1;
 
 	//   int readFlag = false;
     double PoissonsRatio = 0.2;
@@ -284,7 +284,7 @@ int main()
         else
         {
             std::cout <<__FILE__<<" "<<__LINE__<< "Load control" << "not implemented"<<std::endl;
-            throw MechanicsException("[NuTo::StructureGrid3D] Loda control not implemented.");
+			return 1;
          /*   //! @TODO: Add special configurations if edge node not exist
             // apply load to nodes
             direction(0,0)= 1;
