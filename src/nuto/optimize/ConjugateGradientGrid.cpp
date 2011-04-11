@@ -506,7 +506,9 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 			for (int disp = 0;disp<numDofs;++disp)
 			{
 				//save global dof number in local ordering
-				dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
+				//no longer needed with new constraint saving
+				//dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
+				dofs[node*numDofs+disp]=3*corners[node]+disp;
 				//save diplacements of all dofs for one element
 				displacements(node*numDofs+disp,0)=locDispValues[disp];
 			}
@@ -518,16 +520,21 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
         for (int count =0; count <dofsElem;++count)
         {
 			//when global dof is active
-        	if (dofs[count]<mpGrid->GetNumActiveDofs())
+        	//changed with new constraint saving
+        	//if (dofs[count]<mpGrid->GetNumActiveDofs())
+        	//when dof is not constraint, then ...
+        	if (mpGrid->NodeGetConstraintSwitch(dofs[count]))
         		//subtract (r=f-Ku) locReturn for active dofs
         		//in dofs[count] is the active dof number of each element dof
         		gradientOrig(dofs[count],0) -= locReturn(count,0);
        }
 
          //get global external force vector
-        mpGrid->BuildGlobalExternalLoadVector(force);
+        //! @TODO add load vector
+        // ubpdate this routine
+        //mpGrid->BuildGlobalExternalLoadVector(force);
         //add global external force vector
-        gradientOrig+=force;
+        //gradientOrig+=force;
     }
 #else
 	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradient] Modul Mechanics is not loaded." );
@@ -602,7 +609,6 @@ void NuTo::ConjugateGradientGrid::CalculateMatrixVectorEBE(bool startSolution, N
 			//which DOFs belonging to this node of this element
 			for (int disp = 0;disp<numDofs;++disp)
 				//save global dof number in local ordering
-				//! TODO save global dofs number of each element?!
 				dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
         }
         //loop over all dofs of one element
@@ -644,7 +650,7 @@ void NuTo::ConjugateGradientGrid::CalculateMatrixVectorEBE(bool startSolution, N
 void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
 {
 #ifdef SHOW_TIME
-    std::clock_t start,end,between;
+    std::clock_t start,end;
     start=clock();
 #endif
 #ifdef ENABLE_MECHANICS
@@ -668,7 +674,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 	// return vector with all dofs of one element
 	FullMatrix<double> locReturn(dofsElem,1);
 	// return vector of all dofs
-	FullMatrix<double> activeReturn(mpGrid->GetNumActiveDofs(),1);
+	FullMatrix<double> allReturn(mpGrid->GetNumDofs(),1);
 
 	//local search direction
 	//replaced std::vector by FullMatrix for multiplication, but tests shows same results also for vector
@@ -698,15 +704,16 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 		{
 			//get pointer to this gridNum node
 //			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
-			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
+			//NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 
 			//which DOFs belonging to this node of this element
 			for (int disp = 0;disp<numDofs;++disp)
 			{
 				//save global dof number in local ordering
-				dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
+				dofs[node*numDofs+disp]=3*corners[node]+disp;
 				//save local search direction
-				if (dofs[node*numDofs+disp]<mpGrid->GetNumActiveDofs())
+				// if this dof is not constraint
+				if (mpGrid->NodeGetConstraintSwitch(3*corners[node]+disp))
 					searchDirectionLocal(node*numDofs+disp,0) = searchDirectionScaled(dofs[node*numDofs+disp]);
 				else
 					searchDirectionLocal(node*numDofs+disp,0) = 0;
@@ -718,12 +725,12 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 		for (int count =0; count <dofsElem;++count)
 		{
 			//when global dof is active
-			if (dofs[count]<mpGrid->GetNumActiveDofs())
+			if (mpGrid->NodeGetConstraintSwitch(dofs[count]))
 				//subtract (r=f-Ku) locReturn for active dofs
-				activeReturn(dofs[count],0) += locReturn(count,0);
+				allReturn(dofs[count],0) += locReturn(count,0);
 	   }
  	}
-	searchDirectionScaled = activeReturn.mEigenMatrix;
+	searchDirectionScaled = allReturn.mEigenMatrix;
 #else
  	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
 

@@ -99,7 +99,6 @@ public:
      //! @return NumMaterial
      const int GetNumMaterials() const;
 
-
     //! @brief Get LocalCoefficientMatrix0
     //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
     NuTo::FullMatrix<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
@@ -179,6 +178,16 @@ public:
 
     typedef std::vector<int> TCoincidentVoxelList;
     TCoincidentVoxelList GetCoincidenceVoxelIDs(int rNodeID);
+
+    //! @brief NodeSetConstraintSwitch
+    //! @param rGridNodeNum, rDirection, rConstraint
+    void NodeSetConstraintSwitch(int rGridNodeNum, int rDirection, bool rConstraint);
+
+    //! @brief NodeGetConstraintSwitch
+    //! @param rGlobalDof
+    //! @return switch for constraint
+    bool NodeGetConstraintSwitch(int rGlobalDof);
+
     //! @brief numbers the dofs in the structure
     void NodeBuildGlobalDofs();
 
@@ -314,7 +323,7 @@ public:
 
 protected:
     int mNumVoxel;  //number of voxels
-//! @TODO length of list in function of real dimension
+    //! @todo length of list in function of real dimension
     double mVoxelSpacing[3]; //spacing between center of neighbor voxels / dimension of each voxel
     int mGridDimension[3]; //dimension of the voxel model
     double mGridOrigin[3];// origin of the model , in the center of the first voxel
@@ -324,6 +333,7 @@ protected:
     int mNumMaterials;
     std::vector<FullMat> mLocalCoefficientMatrix0;
     NuTo::FullMatrix<int>* mVoxelLocation;
+    bool* mDofIsNotConstraint; //field of bool for all dofs, length 3xnumGridNodes, constraint dof = 0 = false
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer

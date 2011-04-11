@@ -33,12 +33,17 @@
 NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
 {
 	mVoxelLocation = 0;
+	mDofIsNotConstraint = 0;
 }
 
 NuTo::StructureGrid::~StructureGrid()
 {
 	if(mVoxelLocation)
 		delete mVoxelLocation;
+	mVoxelLocation = 0;
+//	if(mDofIsNotConstraint) //not needed
+		delete [] mDofIsNotConstraint;
+	mDofIsNotConstraint = 0;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -55,8 +60,14 @@ void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
     std::cout << "start serialization of grid structure" << std::endl;
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
        & BOOST_SERIALIZATION_NVP (mElementVec)
-       & BOOST_SERIALIZATION_NVP (mNodeVec);
-    std::cout << "finish serialization of grid structure" << std::endl;
+       & BOOST_SERIALIZATION_NVP (mNodeVec)
+       & BOOST_SERIALIZATION_NVP (mNumVoxel)
+       & BOOST_SERIALIZATION_NVP (mVoxelSpacing)
+       & BOOST_SERIALIZATION_NVP (mGridDimension)
+       & BOOST_SERIALIZATION_NVP (mNumMaterials)
+       & BOOST_SERIALIZATION_NVP (mLocalCoefficientMatrix0)
+       & BOOST_SERIALIZATION_NVP (mVoxelLocation);
+     std::cout << "finish serialization of grid structure" << std::endl;
 }
 
 //! @brief ... save the object to a file
@@ -274,7 +285,7 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
     try
     {
         using namespace boost::spirit::classic;
-
+#define LocToGlob
         // open file
         std::ifstream file(rFileName, std::ios::in);
         if (file.is_open() == false)
@@ -338,7 +349,7 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
        {
            throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader] error dimension is negative or zero.");
        }
-    }
+   }
     catch (MechanicsException &e)
     {
         throw e;

@@ -157,6 +157,9 @@ void NuTo::StructureGrid::CreateNodeGrid(std::string rDOFs,int rThresholdMateria
     int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
     int numMatNodes=0;//all existing nodes (with material)
     int numVoxel=mGridDimension[0]*mGridDimension[1]*mGridDimension[2];
+    int numGlobDofs=3*numGridNodes;
+    mDofIsNotConstraint = new bool [numGlobDofs];
+    memset(mDofIsNotConstraint,true,sizeof (mDofIsNotConstraint[0])*numGlobDofs );
     NuTo::FullMatrix<int> imageValues (numVoxel,1);
     imageValues.FullMatrix<int>::ImportFromVtkASCIIFile(mImageDataFile);
     for (int countNodes =0; countNodes<numGridNodes;countNodes++)//countNodes correspond to nodeID
@@ -383,9 +386,28 @@ void NuTo::StructureGrid::NodeCreate(int rNodeNumber,int rNodeGridNum,std::strin
     this->mNodeVec.push_back(nodePtr);
 
     //renumbering of dofs for global matrices not required, why not???
-    this->mNodeNumberingRequired  = true;
+    this->mNodeNumberingRequired  = false;
 
 
+}
+//! @brief NodeGetConstraintSwitch
+//! @param rGlobalDof
+//! @return switch for constraint
+bool NuTo::StructureGrid::NodeGetConstraintSwitch(int rGlobalDof)
+{
+	return mDofIsNotConstraint[rGlobalDof];
+}
+
+//! @brief NodeSetConstraintSwitch
+//! @brief rDirection goes from 0 to 2
+//! @param rGridNodeNum, rConstraint
+void NuTo::StructureGrid::NodeSetConstraintSwitch(int rGridNodeNum, int rDirection, bool rConstraint)
+{
+	assert(rDirection<mDimension);
+	assert(rGridNodeNum<(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1));
+	mDofIsNotConstraint[3*rGridNodeNum+rDirection]=rConstraint;
+	if (mVerboseLevel>3)
+		std::cout<<__FILE__<<__LINE__<<"dof is constraint: GridNode "<<rGridNodeNum<<" direction "<<rDirection<<" place in mDofIsNotConstraint "<<3*rGridNodeNum+rDirection<<std::endl;
 }
 
 
@@ -405,16 +427,29 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
 {
     // build initial node numbering
     this->mNumDofs = 0;
-    for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
+     for (boost::ptr_vector<NodeGrid3D>::iterator it = mNodeVec.begin(); it!= mNodeVec.end(); it++)
     {
         it->SetGlobalDofs(this->mNumDofs);
     }
-
     // build constraint matrix
     this->mNodeNumberingRequired = false;
-    this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
-    this->mNodeNumberingRequired = true;
+    //this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
+ //   std::cout<<__FILE__<<" "<<__LINE__<<" constraint matrix \n"<<(NuTo::FullMatrix<double> (this->mConstraintMatrix))<<"\n rhs \n"<<this->mConstraintRHS<<std::endl;
+   //get constraint dofs
+    // int numDependentDofs = this->mConstraintMatrix.GetNumRows();
 
+    int numDependentDofs=0;
+    int numGridNodes = (this->mGridDimension[0]+1)*(this->mGridDimension[1]+1)*(this->mGridDimension[2]+1);
+    for (int count = 0;count<3*numGridNodes;++count)
+    {
+    	if (!mDofIsNotConstraint[count])
+    		numDependentDofs++;
+    }
+
+    this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
+    //this->mConstraintMatrix=0;
+    //this->mNodeNumberingRequired = true;
+/*
     // perform gauss algorithm
     std::vector<int> mappingInitialToNewOrdering;
     std::vector<int> mappingNewToInitialOrdering;
@@ -422,8 +457,6 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
 
     // move dependent dofs at the end
     // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
-    int numDependentDofs = this->mConstraintMatrix.GetNumRows();
-    this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
     std::vector<int> tmpMapping;
     for (int dependentDofCount = 0; dependentDofCount < numDependentDofs; dependentDofCount++)
     {
@@ -463,6 +496,8 @@ void NuTo::StructureGrid::NodeBuildGlobalDofs()
     }
 
     mNodeNumberingRequired = false;
+    */
+
 }
 
 // merge dof values
