@@ -38,6 +38,14 @@ void NuTo::IpDataBase::SetFineScaleParameter(const std::string& rName, double rP
     throw NuTo::MechanicsException("[NuTo::IpDataBase::SetFineScaleParameter] This Ip data type has no fine scale model.");
 }
 
+//! @brief sets the fine scale parameter for all ips
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::IpDataBase::SetFineScaleParameter(const std::string& rName, std::string rParameter)
+{
+    throw NuTo::MechanicsException("[NuTo::IpDataBase::SetFineScaleParameter] This Ip data type has no fine scale model.");
+}
+
 //! @brief adds the weight to an integration point, eventually reallocates the data
 //! @param rNonlocalElement the Element (local number from the nonlocal elements)
 //! @param rNonlocalIp integration point of the nonlocal element

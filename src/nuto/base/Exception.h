@@ -10,7 +10,7 @@
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
+//! @author Jï¿½rg F. Unger, ISM
 //! @date July 2008
 //! @brief ... base class for all exceptions thrown in NuTo
 class Exception : public std::exception
@@ -52,7 +52,10 @@ public:
 
     //! @brief ... clone the exception (important, if called from the base class)
     //! @return ... a copy of the exception
-    virtual Exception* Clone()=0;
+    virtual Exception* Clone()
+    {
+    	return new Exception(*this);
+    }
 };
 } //namespace NuTo
 

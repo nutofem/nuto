@@ -18,7 +18,9 @@
 
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 #include <string>
+
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -976,6 +978,7 @@ try
 //    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
 //Check the stiffness matrix
 //CheckStiffness();
+std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::endl;
 
     //update displacements of all nodes according to the new conre mat
     {
@@ -1118,6 +1121,7 @@ try
 
                 rhsVector = extForceVector - intForceVector;
                 normResidual = rhsVector.Norm();
+                //std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::endl;
 
 //double energyElement(fineScaleStructure->ElementTotalGetTotalEnergy());
 //double energyConstraint(fineScaleStructure->ConstraintTotalGetTotalEnergy());
@@ -1161,6 +1165,8 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
             {
                 this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor);
                 convergenceStatus=1;
+                //CheckStiffness();
+
                 //NodeInfo(12);
                 break;
             }
@@ -1169,9 +1175,9 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
             normRHS = rhsVector.Norm();
             //build new stiffness matrix
             this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-            std::cout << dispForceVector.Norm() << std::endl;
+            //std::cout << dispForceVector.Norm() << std::endl;
 //check stiffness
-CheckStiffness();
+//CheckStiffness();
             //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
             //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
             //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;

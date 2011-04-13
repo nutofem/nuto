@@ -9,7 +9,7 @@ namespace NuTo
 {
 template <class T>
 class FullMatrix;
-class StructureIp;
+class StructureMultiscale;
 //! @author Joerg F. Unger, NU
 //! @date June 2010
 //! @brief ... class for constraints using augemented Lagrange for global crack opening to be nonnegative
@@ -23,7 +23,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLagrangeGlobalCrackOpening2D(const StructureIp* rStructure, double rPenaltyStiffness);
+    ConstraintLagrangeGlobalCrackOpening2D(const StructureMultiscale* rStructure, double rPenaltyStiffness);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -89,7 +89,7 @@ protected:
     //! @brief just for serialization
     ConstraintLagrangeGlobalCrackOpening2D(){};
     //! @brief structure storing the global crack
-    const StructureIp *mStructure;
+    const StructureMultiscale *mStructure;
     //! @brief Lagrange multipliers related to the normal crack opening
     double mLagrangeValue;
     //! @brief Lagrange multipliers dofs

@@ -17,7 +17,7 @@
 
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMultiscale2DPlaneStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 
 //! @brief constructor
 NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::ConstitutiveStaticDataMultiscale2DPlaneStrain()
@@ -66,13 +66,13 @@ const NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveSta
 }
 
 //! @brief return structure
-NuTo::StructureIp* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure()
+NuTo::StructureMultiscale* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure()
 {
     return mStructure;
 }
 
 //! @brief return structure
-const NuTo::StructureIp* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure()const
+const NuTo::StructureMultiscale* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure()const
 {
     return mStructure;
 }
@@ -90,7 +90,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     if (mStructure!=0)
         delete mStructure;
     // if this should be implemented for 3D, the original structure has to be given in order to determine the dimension
-    mStructure = new StructureIp(2);
+    mStructure = new StructureMultiscale(2);
 
     std::string typeIdString;
 
@@ -108,12 +108,11 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Serialization is switch off, can't restore the IP structure.");
 #endif //ENABLE_SERIALIZATION
 
-    //transform boundary nodes to multiscale nodes
-    mStructure->TransformBoundaryNodes();
-
     //set macroscopic length (sqrt of area of macroelement)
     mStructure->SetlCoarseScale(rMacroLength);
 
+    //transform boundary nodes to multiscale nodes
+    mStructure->TransformMultiscaleNodes();
     //check all the sections of the elements to a plane strain section
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
@@ -125,8 +124,6 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
     std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
     if (upperCaseName=="CRACKTRANSITIONRADIUS")
         mStructure->SetCrackTransitionRadius(rParameter);
-    else if (upperCaseName=="CRACKAVERAGERADIUS")
-        mStructure->SetCrackAverageRadius(rParameter);
     else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
         mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
     else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORCRACKANGLE")
@@ -160,6 +157,19 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
         throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
 }
 
+//! @brief sets the parameters of the fine scale model
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(const std::string& rName, std::string rParameter)
+{
+    std::string upperCaseName(rName);
+    std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
+    if (upperCaseName=="SETRESULTDIRECTORYAFTERLINESEARCH")
+        mStructure->SetResultDirectoryAfterLineSearch(rParameter);
+    else if (upperCaseName=="SETRESULTFILEAFTERCONVERGENCE")
+        mStructure->SetResultFileAfterConvergence(rParameter);
+    else
+        throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
+}
+
 //! @brief in case the fine scale model has not been initialized,
 //! an initial linear elastic model is used
 //! with this routine, the transition to the actual fine scale model is used
@@ -178,4 +188,15 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::UseNonlinearSolution()
     {
         throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::InitAlpha] Nonlinear solution is already turned on.");
     }
+}
+//! @brief return the previous hom strain
+const NuTo::EngineeringStrain2D& NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetPrevHomStrain()const
+{
+    return mPrevHomStrain;
+}
+
+//! @brief set the previous hom strain
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetPrevHomStrain(EngineeringStrain2D rPrevHomStrain)
+{
+    mPrevHomStrain = rPrevHomStrain;
 }

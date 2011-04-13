@@ -42,6 +42,11 @@ public:
     //! @parameter rParameter value of the parameter
     virtual void SetFineScaleParameter(const std::string& rName, double rParameter);
 
+    //! @brief sets the fine scale parameter
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    virtual void SetFineScaleParameter(const std::string& rName, std::string rParameter);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

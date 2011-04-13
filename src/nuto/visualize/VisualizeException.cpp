@@ -12,7 +12,7 @@ std::string NuTo::VisualizeException::ErrorMessage() const throw()
 
 //! @brief ... clone the exception (important, if called from the base class)
 //! @return ... a copy of the exception
-NuTo::VisualizeException* NuTo::VisualizeException::Clone()
+NuTo::Exception* NuTo::VisualizeException::Clone()
 {
     return new VisualizeException(*this);
 }

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/base/Exception.h"
 
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -23,8 +23,8 @@ public:
     MyStructureClass(int rDimension) : NuTo::Structure(rDimension)
     {
         //create the Structure
-        mlX = 10000;
-        mlY = 10000;
+        mlX = 200;
+        mlY = 200;
 
         //create structure
         SetShowTime(true);
@@ -82,10 +82,236 @@ public:
         ElementTotalSetConstitutiveLaw(myMatCoarseScale);
 
         //set fine scale model as ip data for all integration points
+        //create the fine scale model and save it as a binary
+        std::string nameOfBinaryFinescale("/home/unger3/develop/nuto_build/examples/c++/myStructureFineScale.bin");
+        //std::string nameOfBinaryFinescale("myStructureFineScale.bin");
+        CreateAndSaveFineScaleModel(nameOfBinaryFinescale);
+
         //myStructureCoarseScale.ElementTotalSetFineScaleModel("myStructureFineScale.bin");
-        ElementTotalSetFineScaleModel("/home/unger3/develop/nuto_build/examples/c++/myStructureFineScale.bin");
+        ElementTotalSetFineScaleModel(nameOfBinaryFinescale);
 
         resultMatrix.Resize(0,5);
+    }
+
+    //! @brief temporarily creates the fine scale model and saves it as a binary
+    //! this is then restored for each integration point of the fine scale model
+    void CreateAndSaveFineScaleModel(std::string rNameOfBinaryFinescale)
+    {
+    	try
+    	{
+    		//
+    	    bool square(false);
+    	    bool allNodesAsMultiscale(false);
+
+    	    //create structure
+    	    NuTo::StructureMultiscale myStructureFineScale(2);
+    	    myStructureFineScale.SetShowTime(false);
+    	    int GroupNodesBoundaryDamage(0);
+    	    int GroupNodesBoundaryHomogeneous(0);
+    	    int GroupNodesMultiscaleDamage(0);
+    	    int GroupNodesMultiscaleHomogeneous(0);
+    	    int GroupElementsDamage(0);
+    	    int GroupElementsHomogeneous(0);
+
+			//create section
+			double thickness(1);
+			int mySectionParticle = myStructureFineScale.SectionCreate("Plane_Strain");
+			myStructureFineScale.SectionSetThickness(mySectionParticle,thickness);
+
+			int mySectionMatrix = myStructureFineScale.SectionCreate("Plane_Strain");
+			myStructureFineScale.SectionSetThickness(mySectionMatrix,thickness);
+
+			//create damaged (structureTypeCount=0) and (homogeneous(structureTypeCount=1) fine scale structure
+    	    double shiftXDirection;
+			for (int structureTypeCount=0; structureTypeCount<2; structureTypeCount++)
+    	    {
+				if (structureTypeCount==0)
+					shiftXDirection = -60;
+				else
+					shiftXDirection = 60;
+
+				NuTo::FullMatrix<int> createdGroupIds;
+
+				if (structureTypeCount==0)
+				{
+					//damage model
+					if (square)
+					{
+						system("gmsh -2 -order 1 /home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleSquareDamage.geo");
+						myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleSquareDamage.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+
+				    }
+					else
+					{
+						system("gmsh -2 -order 1 /home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleRoundDamage.geo");
+						myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleRoundDamage.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+					}
+				}
+				else
+				{
+					//homogeneous model
+					if (square)
+					{
+						system("gmsh -2 -order 1 /home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleSquareHomogeneous.geo");
+						myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleSquareHomogeneous.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+					}
+					else
+					{
+						system("gmsh -2 -order 1 /home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleRoundHomogeneous.geo");
+						myStructureFineScale.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ConcurrentMultiscaleFineScaleRoundHomogeneous.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+					}
+				}
+
+				//create constitutive law nonlocal damage
+				int myMatDamage = myStructureFineScale.ConstitutiveLawCreate("NonlocalDamagePlasticity");
+				double YoungsModulusDamage(20000);
+				myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatDamage,YoungsModulusDamage);
+				myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.0);
+				double nonlocalRadius(8);
+				myStructureFineScale.ConstitutiveLawSetNonlocalRadius(myMatDamage,nonlocalRadius);
+				double fct(2);
+				myStructureFineScale.ConstitutiveLawSetTensileStrength(myMatDamage,fct);
+				myStructureFineScale.ConstitutiveLawSetCompressiveStrength(myMatDamage,fct*10);
+				myStructureFineScale.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,fct*12.5);
+				myStructureFineScale.ConstitutiveLawSetFractureEnergy(myMatDamage,.2);
+
+				//create constitutive law linear elastic (finally not used, since the elements are deleted)
+				int myMatLinear = myStructureFineScale.ConstitutiveLawCreate("LinearElastic");
+				double YoungsModulusLE(20000);
+				myStructureFineScale.ConstitutiveLawSetYoungsModulus(myMatLinear,YoungsModulusLE);
+				myStructureFineScale.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.0);
+
+				int groupIdMatrix= createdGroupIds(0,0);
+				//assign constitutive law
+			    myStructureFineScale.ElementGroupSetSection(groupIdMatrix,mySectionMatrix);
+			    //myStructureFineScale.ElementGroupSetConstitutiveLaw(groupIdMatrix,myMatLinear);
+			    myStructureFineScale.ElementGroupSetConstitutiveLaw(groupIdMatrix,myMatDamage);
+
+				//Build nonlocal elements
+				myStructureFineScale.BuildNonlocalData(myMatDamage);
+
+				int GrpNodes_Boundary;
+				int GroupNodes_Multiscale;
+				int GrpNodes_Model;
+				if (square)
+				{
+					//Create groups to apply the boundary conditions
+					double lX(100);
+					double lY(100);
+					//left boundary
+					int GrpNodes_Left = myStructureFineScale.GroupCreate("Nodes");
+					int direction = 0; //either 0,1,2
+					double min(shiftXDirection+0.);
+					double max(shiftXDirection+0.);
+					myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Left,direction,min,max);
+
+					//right boundary
+					int GrpNodes_Right = myStructureFineScale.GroupCreate("Nodes");
+					direction = 0; //either 0,1,2
+					min=shiftXDirection+lX;
+					max=shiftXDirection+lX;
+					myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Right,direction,min,max);
+
+					//top boundary
+					int GrpNodes_Top = myStructureFineScale.GroupCreate("Nodes");
+					direction=1;
+					min=lY;
+					max=lY;
+					myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Top,direction,min,max);
+
+					//bottom boundary
+					int GrpNodes_Bottom = myStructureFineScale.GroupCreate("Nodes");
+					direction=1;
+					min=0;
+					max=0;
+					myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Bottom,direction,min,max);
+
+					//join the groups
+					int GrpNodes_BottomTop = myStructureFineScale.GroupUnion(GrpNodes_Bottom,GrpNodes_Top);
+					int GrpNodes_LeftRight = myStructureFineScale.GroupUnion(GrpNodes_Left,GrpNodes_Right);
+					int GrpNodes_Boundarytmp = myStructureFineScale.GroupUnion(GrpNodes_BottomTop,GrpNodes_LeftRight);
+
+					//intersect with the nodes which are in the xrange from min to max
+					GrpNodes_Model = myStructureFineScale.GroupCreate("Nodes");
+					direction = 0; //either 0,1,2
+					min=shiftXDirection+0.;
+					max=shiftXDirection+lX;
+					myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Model,direction,min,max);
+
+					GrpNodes_Boundary = myStructureFineScale.GroupIntersection(GrpNodes_Boundarytmp,GrpNodes_Model);
+
+/*					std::cout << "all nodes are boundary nodes!!!!!!!!!!" << std::endl;
+					direction=1;
+					min=-1;
+					max=101;
+					GrpNodes_Boundary = myStructureFineScale.GroupCreate("Nodes");
+					myStructureFineScale.GroupAddNodeCoordinateRange(GrpNodes_Boundary,direction,min,max);
+*/
+				}
+				else
+				{
+					GrpNodes_Boundary = myStructureFineScale.GroupCreate("Nodes");
+					NuTo::FullMatrix<double> center(2,1);
+					center(0,0) = shiftXDirection+0.;
+					center(1,0) = 0.;
+			        double rmin=49.999;
+					//double rmin=0;
+					double rmax=50.001;
+					myStructureFineScale.GroupAddNodeRadiusRange(GrpNodes_Boundary,center,rmin,rmax);
+
+					GrpNodes_Model = myStructureFineScale.GroupCreate("Nodes");
+			        rmin=0.;
+					rmax=50.001;
+					myStructureFineScale.GroupAddNodeRadiusRange(GrpNodes_Model,center,rmin,rmax);
+				}
+
+				if (allNodesAsMultiscale)
+				{
+					GroupNodes_Multiscale = GrpNodes_Model;
+				}
+				else
+				{
+					GroupNodes_Multiscale = GrpNodes_Boundary;
+				}
+
+				if (structureTypeCount==0)
+				{
+					GroupNodesBoundaryDamage = GrpNodes_Boundary;
+	    	        GroupElementsDamage = groupIdMatrix;
+	    	        GroupNodesMultiscaleDamage = GroupNodes_Multiscale;
+				}
+				else
+				{
+					GroupNodesBoundaryHomogeneous = GrpNodes_Boundary;
+    	            GroupElementsHomogeneous = groupIdMatrix;
+	    	        GroupNodesMultiscaleHomogeneous = GroupNodes_Multiscale;
+				}
+    	    }
+			myStructureFineScale.SetGroupBoundaryNodesElements(GroupNodesBoundaryDamage,GroupNodesBoundaryHomogeneous,
+					GroupNodesMultiscaleDamage,GroupNodesMultiscaleHomogeneous,GroupElementsDamage,GroupElementsHomogeneous);
+    		//update conre mat
+    		myStructureFineScale.NodeBuildGlobalDofs();
+
+    		myStructureFineScale.AddVisualizationComponentSection();
+    		myStructureFineScale.AddVisualizationComponentConstitutive();
+    		myStructureFineScale.AddVisualizationComponentDisplacements();
+    		myStructureFineScale.AddVisualizationComponentEngineeringStrain();
+    		myStructureFineScale.AddVisualizationComponentEngineeringStress();
+    		myStructureFineScale.AddVisualizationComponentDamage();
+    		myStructureFineScale.AddVisualizationComponentEngineeringPlasticStrain();
+    		myStructureFineScale.AddVisualizationComponentPrincipalEngineeringStress();
+    		myStructureFineScale.Info();
+
+    	    //myStructureFineScale.Save("myStructureFineScale.xml","xml");
+    	    myStructureFineScale.Save(rNameOfBinaryFinescale,"binary");
+    	    //myStructureFineScale.Restore(rNameOfBinaryFinescale,"binary");
+    	    myStructureFineScale.ElementTotalUpdateTmpStaticData();
+    	    myStructureFineScale.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/ConcurrentMultiscaleInitialFineScaleModel.vtk"));
+    	}
+    	catch (NuTo::Exception& e)
+    	{
+    	    std::cout << e.ErrorMessage() << std::endl;
+    	}
     }
 
     //! @brief set the load factor (load or displacement control)
@@ -249,9 +475,8 @@ try
     MyStructureClass myStructureCoarseScale(2);
 
     //crack transition zone (radius)
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackTransitionRadius",5);
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackAverageRadius",15);
-    myStructureCoarseScale.ElementTotalSetFineScaleParameter("SquareCoarseScaleModel",1);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("CrackTransitionRadius",1);
+    myStructureCoarseScale.ElementTotalSetFineScaleParameter("SquareCoarseScaleModel",0);
 
     //penalty stiffness for crack angle
     double PenaltyStiffnessCrackAngle(1);
@@ -284,13 +509,18 @@ try
     strain(0,0) = 0.001;
     strain(1,0) = 0.00;
     strain(2,0) = 0.00;
+    //strain(0,0) = 0.00;
+    //strain(1,0) = 0.000001;
+    //strain(2,0) = 0.002;
 
     myStructureCoarseScale.SetTotalStrain(strain);
     myStructureCoarseScale.InitStructure();
-    int numLoadStepMacro=100;
+    int numLoadStepMacro=50;
     for (int loadstepMacro=1;loadstepMacro <= numLoadStepMacro; loadstepMacro++)
     {
         NuTo::FullMatrix<double> curStrain(strain*((double)loadstepMacro/(double)numLoadStepMacro));
+        std::cout << "new load step on the macroscale " << loadstepMacro << std::endl;
+        curStrain.Trans().Info(12,4);
         myStructureCoarseScale.SetTotalStrain(curStrain);
         double toleranceResidualForce = 1e-6;
         bool automaticLoadstepControl=true;
@@ -303,8 +533,8 @@ try
         bool saveStructureBeforeUpdate=false;
         myStructureCoarseScale.NewtonRaphson(toleranceResidualForce,automaticLoadstepControl,maxDeltaLoadFactor,maxNumNewtonIterations,decreaseFactor,
         minNumNewtonIterations,increaseFactor,minDeltaLoadFactor,saveStructureBeforeUpdate);
-        myStructureCoarseScale.ElementTotalUpdateStaticData();
-        double energy = myStructureCoarseScale.ElementTotalGetTotalEnergy();
+       myStructureCoarseScale.ElementTotalUpdateStaticData();
+       double energy = myStructureCoarseScale.ElementTotalGetTotalEnergy();
         std::cout << "total energy on the macroscale " << energy << std::endl;
         //system("paraview --state=/home/unger3/develop/nuto_build/examples/c++/test.pvsm");
     }

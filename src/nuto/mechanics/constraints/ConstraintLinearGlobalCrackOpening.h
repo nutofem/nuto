@@ -10,7 +10,7 @@
 
 namespace NuTo
 {
-class StructureIp;
+class StructureMultiscale;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
@@ -22,7 +22,7 @@ class ConstraintLinearGlobalCrackOpening : public ConstraintLinear
 
 public:
     //! @brief constructor
-    ConstraintLinearGlobalCrackOpening(const StructureIp* rStructure, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    ConstraintLinearGlobalCrackOpening(const StructureMultiscale* rStructure, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -58,7 +58,7 @@ protected:
     //! @brief direction of the applied constraint (normalized)
     double mDirection[2];
 
-    const StructureIp* mStructure;
+    const StructureMultiscale* mStructure;
 };
 }//namespace NuTo
 

@@ -6,7 +6,7 @@
 
 namespace NuTo
 {
-class StructureIp;
+class StructureMultiscale;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having displacements in a multiscale model (coarse and fine scale displacements)
@@ -19,7 +19,7 @@ class NodeDisplacementsMultiscale2D : virtual public NodeBase
 public:
 
     //! @brief constructor
-    NodeDisplacementsMultiscale2D(NuTo::StructureIp* rStructureIp);
+    NodeDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -101,13 +101,21 @@ public:
     //! @return enum
     virtual Node::eNodeType GetNodeType()const;
 
+    //! @brief returns, if the node is on the boundary of the cracked (true) or homogeneous domain (false)
+    bool IsInCrackedDomain()const
+    {
+    	return mCrackedDomain;
+    }
+
 protected:
     //! @brief constructor for serialize
     NodeDisplacementsMultiscale2D(){};
 
     double mFineScaleDisplacements[2];
     int mDOF[2];
-    StructureIp* mStructureIp;
+    //! @brief if set to true, the crack has an influence on the displacements, if false, it's just the homogeneous part
+    bool mCrackedDomain;
+    StructureMultiscale* mStructureMultiscale;
 };
 }
 #ifdef ENABLE_SERIALIZATION

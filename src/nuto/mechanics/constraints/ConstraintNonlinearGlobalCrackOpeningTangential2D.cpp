@@ -14,12 +14,12 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackOpeningTangential2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 
 // constructor
-NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D::ConstraintNonlinearGlobalCrackOpeningTangential2D(const StructureIp* rStructure,
+NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D::ConstraintNonlinearGlobalCrackOpeningTangential2D(const StructureMultiscale* rStructure,
         double rScalingFactor, double rPenaltyStiffness) : ConstraintNonlinear()
 {
     mStructure = rStructure;

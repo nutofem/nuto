@@ -38,6 +38,9 @@ public:
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleParameter(const std::string& rName, double rParameter);
 
+    //! @brief sets the fine scale model (deserialization from a binary file)
+    virtual void SetFineScaleParameter(const std::string& rName, std::string rParameter);
+
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain();
 

@@ -13,13 +13,13 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackAngle2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 
 #define UMAX 10.1 //0.03mm
 
-NuTo::ConstraintLagrangeGlobalCrackAngle2D::ConstraintLagrangeGlobalCrackAngle2D(const NuTo::StructureIp* rStructure) :
+NuTo::ConstraintLagrangeGlobalCrackAngle2D::ConstraintLagrangeGlobalCrackAngle2D(const NuTo::StructureMultiscale* rStructure) :
         ConstraintLagrange(NuTo::Constraint::EQUAL)
 {
     mStructure = rStructure;

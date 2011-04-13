@@ -14,11 +14,11 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackOpening.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 
 // constructor
-NuTo::ConstraintLinearGlobalCrackOpening::ConstraintLinearGlobalCrackOpening(const StructureIp* rStructure, const NuTo::FullMatrix<double>& rDirection, double rValue):
+NuTo::ConstraintLinearGlobalCrackOpening::ConstraintLinearGlobalCrackOpening(const StructureMultiscale* rStructure, const NuTo::FullMatrix<double>& rDirection, double rValue):
         ConstraintLinear()
 {
     mStructure = rStructure;

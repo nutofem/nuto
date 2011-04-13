@@ -281,6 +281,12 @@ public:
     //! @return enum
     virtual Node::eNodeType GetNodeType()const=0;
 
+    //! @brief only relevant for multiscale nodes, where they are either in the homogeneous (false) or cracked domain (true)
+    virtual bool IsInCrackedDomain()const
+    {
+    	throw MechanicsException("[NuTo::NodeBase::IsInCrackedDomain] not implemented for this type of nodes.");
+    }
+
 protected:
     //the base class of the nodes must not contain any data
 

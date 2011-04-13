@@ -14,11 +14,11 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 
 // constructor
-NuTo::ConstraintLinearGlobalTotalStrain::ConstraintLinearGlobalTotalStrain(const StructureIp* rStructure, const EngineeringStrain2D& rStrain):
+NuTo::ConstraintLinearGlobalTotalStrain::ConstraintLinearGlobalTotalStrain(const StructureMultiscale* rStructure, const EngineeringStrain2D& rStrain):
         ConstraintLinear()
 {
     mStructure = rStructure;

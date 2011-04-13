@@ -52,6 +52,18 @@ public:
 	//! @return group type
 	virtual std::string GetTypeString()const=0;
 
+	//! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
+	virtual Group<ElementBase>* AsGroupElement()=0;
+
+    //! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
+	virtual const Group<ElementBase>* AsGroupElement()const=0;
+
+    //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
+	virtual Group<NodeBase>* AsGroupNode()=0;
+
+    //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
+	virtual const Group<NodeBase>* AsGroupNode()const=0;
+
 	//! @brief gives the group type
 	//! @return group type
 	virtual void Info(int rVerboseLevel, const StructureBase* rStructure)const=0;

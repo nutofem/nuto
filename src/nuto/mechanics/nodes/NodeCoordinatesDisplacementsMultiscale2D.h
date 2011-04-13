@@ -20,7 +20,7 @@ class NodeCoordinatesDisplacementsMultiscale2D : public NodeCoordinates2D, publi
 public:
 
     //! @brief constructor
-    NodeCoordinatesDisplacementsMultiscale2D(NuTo::StructureIp* rStructureIp);
+    NodeCoordinatesDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -11,7 +11,7 @@
 
 namespace NuTo
 {
-class StructureIp;
+class StructureMultiscale;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
@@ -23,7 +23,7 @@ class ConstraintLinearGlobalTotalStrain : public ConstraintLinear
 
 public:
     //! @brief constructor
-    ConstraintLinearGlobalTotalStrain(const StructureIp* rStructure, const EngineeringStrain2D& rStrain);
+    ConstraintLinearGlobalTotalStrain(const StructureMultiscale* rStructure, const EngineeringStrain2D& rStrain);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -62,7 +62,7 @@ protected:
     //! @brief applied strain
     EngineeringStrain2D mStrain;
 
-    const StructureIp* mStructure;
+    const StructureMultiscale* mStructure;
 };
 }//namespace NuTo
 

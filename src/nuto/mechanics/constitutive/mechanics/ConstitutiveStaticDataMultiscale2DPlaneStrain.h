@@ -10,7 +10,7 @@
 //! @date December 2009
 namespace NuTo
 {
-class StructureIp;
+class StructureMultiscale;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain : public ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain
 {
 #ifdef ENABLE_SERIALIZATION
@@ -28,16 +28,25 @@ public:
     const ConstitutiveStaticDataMultiscale2DPlaneStrain* AsMultiscale2DPlaneStrain()const;
 
     //! @brief return structure
-    StructureIp* GetFineScaleStructure();
+    StructureMultiscale* GetFineScaleStructure();
 
     //! @brief return structure
-    const StructureIp* GetFineScaleStructure()const;
+    const StructureMultiscale* GetFineScaleStructure()const;
+
+    //! @brief return the previous hom strain
+    const EngineeringStrain2D& GetPrevHomStrain()const;
+
+    //! @brief set the previous hom strain
+    void SetPrevHomStrain(EngineeringStrain2D rHomStrain);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     void SetFineScaleModel(std::string rFileName, double rMacroLength);
 
     //! @brief sets the fine scale parameters
     void SetFineScaleParameter(const std::string& rName, double rParameter);
+
+    //! @brief sets the fine scale parameters
+    void SetFineScaleParameter(const std::string& rName, std::string rParameter);
 
     //! @brief in case the fine scale model has not been initialized,
     //! an initial linear elastic model is used
@@ -60,8 +69,12 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief fine scale structure repesentative for a macroscopic integration point
-    StructureIp* mStructure;
+    //! @brief fine scale structure representative for a macroscopic integration point
+    StructureMultiscale* mStructure;
+
+    //! @brief previous homogeneous strain
+    EngineeringStrain2D mPrevHomStrain;
+
     bool mNonlinearSolutionOn;
 };
 

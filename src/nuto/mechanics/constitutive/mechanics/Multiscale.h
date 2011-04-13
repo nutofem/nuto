@@ -9,7 +9,7 @@
 
 namespace NuTo
 {
-class StructureIp;
+class StructureMultiscale;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
@@ -351,14 +351,11 @@ protected:
     // calculate coefficients of the linear elastic material matrix
     void CalculateCoefficients3D(double& C11, double& C12, double& C33) const;
 
-    //! @brief ... solve for equilibrium using the new boundary conditions
-    void Solve(const ElementBase* rElement, int rIp, const NuTo::DeformationGradient2D& rDeformationGradient, double rTolerance,
-            std::stringstream& rStringStreamBeforeSolve, bool& rStringStreamBeforeSolveWritten)const;
     // this is just for debugging purposes
-    bool CheckStiffness(NuTo::StructureIp* rFineScaleStructure)const;
+    bool CheckStiffness(NuTo::StructureMultiscale* rFineScaleStructure)const;
 
     // this is just for debugging purposes
-    bool CheckGradient(NuTo::StructureIp* rFineScaleStructure)const;
+    bool CheckGradient(NuTo::StructureMultiscale* rFineScaleStructure)const;
     //! @brief tolerance for the solution of the fine scale problem
     double mTolerance;
 

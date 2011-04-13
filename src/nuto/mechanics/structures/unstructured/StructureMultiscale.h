@@ -1,7 +1,7 @@
 // $Id$
 
-#ifndef STRUCTUREIP_H
-#define STRUCTUREIP_H
+#ifndef STRUCTUREMULTISCALE_H
+#define STRUCTUREMULTISCALE_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
@@ -18,6 +18,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -29,7 +30,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures, which are used as fine scale models at an integration point
-class StructureIp : public Structure
+class StructureMultiscale : public Structure
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -38,7 +39,7 @@ class StructureIp : public Structure
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
-    StructureIp(int mDimension);
+    StructureMultiscale(int mDimension);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -65,11 +66,11 @@ public:
     //! @return    class name
     std::string GetTypeId()const
     {
-        return std::string("StructureIp");
+        return std::string("StructureMultiscale");
     }
 
     //************ Info routine         ***************
-    //**  defined in structures/StructureIp.cpp *********
+    //**  defined in structures/StructureMultiscale.cpp *********
     //*************************************************
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -78,7 +79,7 @@ public:
     //! @brief ... calculate the displacement based on the homogeneous strain
     //! @param rCoordinates ... coordinates of the point
     //! @param rCoarseDisplacements ... return array of displacements
-    void GetDisplacementsEpsilonHom2D(double rCoordinates[2], double rDisplacements[2])const;
+    void GetDisplacementsEpsilonHom2D(double rCoordinates[2], double rDisplacements[2], const boost::array<double,2>& rCenter)const;
 
     //! @brief ... calculate the displacement based on the crack opening
     //! @param rCoordinates ... coordinates of the point
@@ -88,7 +89,7 @@ public:
     //! @brief derivative of displacement with respect to homogeneous strain
     //! @param rdX_dEpsilonHom[3] return value, derivative of x-displacement with respect to homogeneous strain (exx, eyy, gxy)
     //! @param rdY_dEpsilonHom[3] return value, derivative of x-displacement with respect to homogeneous strain (exx, eyy, gxy)
-    void GetdDisplacementdEpsilonHom(double rCoordinates[2], double rdX_dEpsilonHom[3], double rdY_dEpsilonHom[3])const;
+    void GetdDisplacementdEpsilonHom(double rCoordinates[2], double rdX_dEpsilonHom[3], double rdY_dEpsilonHom[3], const boost::array<double,2>& rCenter)const;
 
     //! @brief derivative of displacement with respect to discontinuity (crack opening)
     //! @param rdX_dCrackOpening[2] return value, derivative of x-displacement with respect to crack opening (ux, uy)
@@ -113,10 +114,14 @@ public:
 
     //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
     //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
-    void TransformBoundaryNodes();
+    void TransformMultiscaleNodes(int rGroupBoundaryNodes, int rGroupNodes, int rGroupElements, boost::array<double,2>& rCenter, double& rLength, double& rArea, bool rCrackedDomain);
+
+    //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
+    //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
+    void TransformMultiscaleNodes();
 
 #ifndef SWIG
-    //! @brief numbers non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
+    //! @brief numbers non standard DOFs' e.g. in StructureMultiscale, for standard structures this routine is empty
     void NumberAdditionalGlobalDofs();
 
     //! @brief ...merge additional dof values
@@ -150,13 +155,13 @@ public:
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const;
 
-    //! @brief ... for a single element matrix, assemble the global matrix, consider here additionally the global degrees of freedom from Structureip (alpha, ux,uy) and eventually the macroscopic strain
+    //! @brief ... for a single element matrix, assemble the global matrix, consider here additionally the global degrees of freedom from StructureMultiscale (alpha, ux,uy) and eventually the macroscopic strain
     //! @param elementMatrix ...stiffness matrix of the element
     //! @param elementMatrixGlobalDofsRow ...corresponding row DOFs
     //! @param elementMatrixGlobalDofsColumn ...corresponding column DOFs
     //! @param elementVector ...gradient matrix of the element (internal force)
     //! @param mappingDofMultiscaleNode ...mapping of all Dofs to Multiscale dofs (either -1 for standard dofs or the entry in dDOF and dDOF2, where additional infos are stored)
-    //! @param dDOF ... derivatives of multiscale dofs with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
+    //! @param dDOF ... derivatives of multiscale dofs with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy [0..6] scaled derivatives [7..12]
     //! @param dDOF2 ...for each dof, the corresponding second order derivative (alpha^2, alpha ux, alpha uy)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
@@ -170,8 +175,8 @@ public:
             std::vector<int>& elementMatrixGlobalDofsColumn,
             NuTo::FullMatrix<double>& elementVector,
             std::vector<int>& mappingDofMultiscaleNode,
-            std::vector<std::array<double,6> >& dDOF,
-            std::vector<std::array<double,3> >& dDOF2,
+            std::vector<std::array<double,6> >& rDOF,
+            std::vector<std::array<double,3> >& rDOF2,
             NuTo::SparseMatrix<double>* rMatrixJJ,
             NuTo::SparseMatrix<double>* rMatrixJK,
             NuTo::SparseMatrix<double>* rMatrixKJ,
@@ -208,7 +213,7 @@ public:
 
     //! @brief calculate the derivative of the displacements at the nodes with respect to homogeneous strain, crack opening and crack orientation
     //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
-    //! @param rDOF return value, for each dof, the corresponding derivatives (ehomxx, ehomyy, gammahomxy, ux, uy, alpha)
+    //! @param rDOF return value, for each dof, the corresponding derivatives ehomxx, ehomyy, gammahomxy, ux, uy, alpha  [0..5]
     //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
     void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
 
@@ -227,19 +232,19 @@ public:
     void SetPrevTotalEngineeringStrain(EngineeringStrain2D& rPrevTotalEngineeringStrain);
 
     //! @brief returns the total strain
-    NuTo::EngineeringStrain2D GetTotalEngineeringStrain()const;
+    const NuTo::EngineeringStrain2D& GetTotalEngineeringStrain()const;
 
     //! @brief just for testing
     void SetGlobalCrackOpening(boost::array<double,2> ptr)const
     {
-        const_cast<StructureIp*>(this)->mCrackOpening[0] = ptr[0];
-        const_cast<StructureIp*>(this)->mCrackOpening[1] = ptr[1];
+        const_cast<StructureMultiscale*>(this)->mCrackOpening[0] = ptr[0];
+        const_cast<StructureMultiscale*>(this)->mCrackOpening[1] = ptr[1];
     }
 
     //! @brief just for testing
     void SetCrackAngle(double alpha)const
     {
-        const_cast<StructureIp*>(this)->mCrackAngle = alpha;
+        const_cast<StructureMultiscale*>(this)->mCrackAngle = alpha;
     }
 
     //! @brief return the previous crack angle
@@ -249,10 +254,7 @@ public:
     void SetPrevCrackAngle(double rPrevCrackAngle);
 
     //! @brief return the total strain
-    NuTo::EngineeringStrain2D GetTotalStrain()const;
-
-    //! @brief return the total strain
-    NuTo::EngineeringStrain2D GetHomogeneousEngineeringStrain()const;
+    const NuTo::EngineeringStrain2D& GetHomogeneousEngineeringStrain()const;
 
     //! @brief set the homgeneous strain (just for test purpose)
     void SetHomogeneousEngineeringStrain(NuTo::EngineeringStrain2D rStrain);
@@ -288,9 +290,14 @@ public:
         return mlCoarseScale;
     }
 
-    double GetAreaFineScale()const
+    double GetAreaDamage()const
     {
-        return mArea;
+        return mFineScaleAreaDamage;
+    }
+
+    double GetAreaHomogeneous()const
+    {
+        return mFineScaleAreaHomogeneous;
     }
 
     int GetDofCrackAngle()const
@@ -316,10 +323,46 @@ public:
     {
         return mDOFGlobalTotalStrain;
     }
-    void SetGroupBoundaryNodes(int rGroupId)
+
+    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdNodesDamage, int rGroupIdNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
     {
-        mGroupBoundaryNodes = rGroupId;
-        mBoundaryNodesAssigned = true;
+        mGroupBoundaryNodesDamage = rGroupIdBoundaryNodesDamage;
+        mGroupBoundaryNodesHomogeneous = rGroupIdBoundaryNodesHomogeneous;
+        mGroupNodesDamage = rGroupIdNodesDamage;
+        mGroupNodesHomogeneous = rGroupIdNodesHomogeneous;
+        mGroupElementsDamage = rGroupIdElementsDamage;
+        mGroupElementsHomogeneous = rGroupIdElementsHomogeneous;
+        mBoundaryNodesElementsAssigned = true;
+    }
+
+    int GetGroupElementsDamage()const
+    {
+    	return mGroupElementsDamage;
+    }
+
+    int GetGroupElementsHomogeneous()const
+    {
+    	return mGroupElementsHomogeneous;
+    }
+
+    int GetGroupBoundaryNodesDamage()const
+    {
+    	return mGroupBoundaryNodesDamage;
+    }
+
+    int GetGroupBoundaryNodesHomogeneous()const
+    {
+    	return mGroupBoundaryNodesHomogeneous;
+    }
+
+    double GetScalingFactorDamage()const
+    {
+        return mlCoarseScale/mlFineScaleDamage;
+    }
+
+    double GetScalingFactorHomogeneous()const
+    {
+    	return mlCoarseScale*(mlCoarseScale-mFineScaleAreaDamage/mlFineScaleDamage)/(mFineScaleAreaHomogeneous);
     }
 
     const std::string& GetIPName()const
@@ -333,11 +376,6 @@ public:
     void SetCrackTransitionRadius(double rCrackTransitionRadius)
     {
         mCrackTransitionRadius = rCrackTransitionRadius;
-    }
-
-    void SetCrackAverageRadius(double rCrackAverageRadius)
-    {
-        mCrackAverageRadius = rCrackAverageRadius;
     }
 
     //! @brief calculates the crack angle for elastic solutions
@@ -422,9 +460,49 @@ public:
         return mSavedToStringStream;
     }
 
+    double GetlFineScaleDamage()const
+    {
+        return mlFineScaleDamage;
+    }
+
+    double GetlFineScaleHomogeneous()const
+    {
+        return mlFineScaleHomogeneous;
+    }
+
+    const boost::array<double,2>& GetCenterDamage()const
+    {
+        return mCenterDamage;
+    }
+
+    const boost::array<double,2>& GetCenterHomogeneous()const
+    {
+        return mCenterHomogeneous;
+    }
+
+    //! @brief calculates the total energy of the system
+    //! @return total energy
+    double ElementTotalGetTotalEnergy()const;
+
+    //! @brief calculates the total energy of the system
+    //! @return total energy
+    double ElementGroupGetTotalEnergy(int rGroupId)const;
+
+    //! @brief sets the result directory where the results are written to
+    void SetResultDirectoryAfterLineSearch(std::string rResultDirectoryAfterLineSearch)
+    {
+    	mResultDirectoryAfterLineSearch = rResultDirectoryAfterLineSearch;
+    }
+
+    //! @brief sets the result file for the converged solution where the results are written to
+    void SetResultFileAfterConvergence(std::string rResultFileAfterConvergence)
+    {
+    	mResultFileAfterConvergence = rResultFileAfterConvergence;
+    }
+
 protected:
     //! @brief ... standard constructor just for the serialization routine
-    StructureIp()
+    StructureMultiscale()
     {}
 
     //! @brief Calculate the derivate of the homogeneous strain with respect to changes of the crack orientation and crack opening
@@ -445,6 +523,12 @@ protected:
     boost::array<int,3> mDOFGlobalTotalStrain;
     //! @brief this is the current homogeneous part of the strain
     EngineeringStrain2D mEpsilonHom;
+    //! @brief this is the previous homogeneous part of the strain (last update)
+    EngineeringStrain2D mPrevEpsilonHom;
+    //! @brief this is the previous average stress (last update)
+    EngineeringStress2D mPrevAverageStress;
+    //! @brief energy of the not discretized domain (VM-Vm) (already scaled with r^2-r)
+    double mPrevTotEnergyNotDiscretizedDomain;
     //! @brief true for an approximately square coarse scale model, false for a either triangular meshes or meshes not aligned with the axes
     //! in case the coarse scale element is well aligned, the ratio CrackLength/Area can be calculated exactly
     //! whereas for other shapes, an approximation has to be used (additional errors)
@@ -452,26 +536,39 @@ protected:
     //! @brief for mSquareCoarseScaleModel == edge length of the macroscale element (sqrt of the area of the macroscale element)
     //! for mSquareCoarseScaleModel==false ratio of the crack length divided by the area approximated by (sqrt of the area of the macroscale element)
     double mlCoarseScale;
+    //! @brief parameter length of the fine scale model related to the damage model
+    double mlFineScaleDamage;
+    //! @brief parameter length of the fine scale model related to the homogeneous model
+    double mlFineScaleHomogeneous;
     //! @brief length to regularize the Heaviside function
     double mCrackTransitionRadius;
-    //! @brief length to calculate the weighting function for the integration points
-    //! if IP within radius, w=1 otherwise w\approx l_coarse/l_fine
-    double mCrackAverageRadius;
     //! @brief center of the model
-    boost::array<double,2> mCenter;
+    boost::array<double,2> mCenterDamage;
+    //! @brief center of the model
+    boost::array<double,2> mCenterHomogeneous;
     //! @brief area of the fine scale model
     // this has to be stored, since for a round fine scale model (especially coarse scale) the real area is substantially
     // lower than the area of the circle
-    double mArea;
+    double mFineScaleAreaDamage;
+    double mFineScaleAreaHomogeneous;
+    //! @brief thickness of the structure
+    double mThickness;
     int mConstraintFineScaleX,
         mConstraintFineScaleY,
         mConstraintNormalCrackOpening,
         mConstraintTangentialCrackOpening,
         mConstraintCrackAngle,
         mConstraintTotalStrain;
-    bool mBoundaryNodesAssigned;
-    int mGroupBoundaryNodes;
+    bool mBoundaryNodesElementsAssigned;
+    int mGroupBoundaryNodesDamage;
+    int mGroupBoundaryNodesHomogeneous;
+    int mGroupNodesDamage;
+    int mGroupNodesHomogeneous;
+    int mGroupElementsDamage;
+    int mGroupElementsHomogeneous;
     std::string mIPName;
+    std::string mResultDirectoryAfterLineSearch;
+    std::string mResultFileAfterConvergence;
 
     //! @brief tolerance for difference between the principal strains, where
     //if difference is bigger, the angle is calculated from the largest principal strain
@@ -493,7 +590,7 @@ protected:
 }
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::StructureIp)
+BOOST_CLASS_EXPORT_KEY(NuTo::StructureMultiscale)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // STRUCTUREIP_H
+#endif // StructureMultiscale_H

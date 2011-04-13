@@ -13,11 +13,11 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackOpening2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 
-NuTo::ConstraintLagrangeGlobalCrackOpening2D::ConstraintLagrangeGlobalCrackOpening2D(const NuTo::StructureIp* rStructure, double rPenaltyStiffness) :
+NuTo::ConstraintLagrangeGlobalCrackOpening2D::ConstraintLagrangeGlobalCrackOpening2D(const NuTo::StructureMultiscale* rStructure, double rPenaltyStiffness) :
         ConstraintLagrange(NuTo::Constraint::EQUAL, rPenaltyStiffness)
 {
     mStructure = rStructure;

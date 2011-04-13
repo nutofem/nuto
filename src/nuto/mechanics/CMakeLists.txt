@@ -199,7 +199,7 @@ structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
-structures/unstructured/StructureIp.cpp
+structures/unstructured/StructureMultiscale.cpp
 structures/unstructured/StructureNode.cpp
 structures/grid/StructureGrid.cpp
 structures/grid/StructureGridNode.cpp

@@ -33,7 +33,7 @@ class EngineeringStrain2D
     friend class LinearElastic;
     friend class Multiscale;
     friend class NonlocalDamagePlasticity;
-    friend class StructureIp;
+    friend class StructureMultiscale;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure

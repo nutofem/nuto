@@ -124,6 +124,11 @@ public:
     //! @parameter rParameter value of the parameter
     void SetFineScaleParameter(int rIp, const std::string& rName, double rParameter);
 
+    //! @brief sets the fine scale parameter for all ips
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter);
+
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section

@@ -1,10 +1,5 @@
 # $Id$
 
-#myExample can be modified locally, but is never supposed to be added to the subversion repository
-#if it is empty, there is just an empty include
-#it is used for adding working examples locally, which should not be exposed to the public
-INCLUDE(myExample.txt OPTIONAL)
-
 # Operators
 ADD_EXECUTABLE(TestOperators TestOperators.cpp)
 TARGET_LINK_LIBRARIES(TestOperators NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
@@ -75,21 +70,6 @@ IF(MUMPS_FOUND)
 ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(ConcurrentMultiscale PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-ENDIF(MINGW)
-
-# Concurrent multiscale model, create the fine scale model
-ADD_EXECUTABLE(ConcurrentMultiscaleCreateFineScale ConcurrentMultiscaleCreateFineScale.cpp)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ConcurrentMultiscaleFineScale.msh
-    ${CMAKE_CURRENT_BINARY_DIR}/ConcurrentMultiscale.msh COPYONLY)
-TARGET_LINK_LIBRARIES(ConcurrentMultiscaleCreateFineScale NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(ConcurrentMultiscaleCreateFineScale NuToVisualize)
-ENDIF (ENABLE_VISUALIZE)
-IF(MUMPS_FOUND)
-  TARGET_LINK_LIBRARIES(ConcurrentMultiscaleCreateFineScale ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(MUMPS_FOUND)
-IF(MINGW)
-  SET_TARGET_PROPERTIES(ConcurrentMultiscaleCreateFineScale PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 
 # Test ConstraintsLagrange1D

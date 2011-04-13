@@ -9,7 +9,7 @@
 
 namespace NuTo
 {
-class StructureIp;
+class StructureMultiscale;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all constraints applied to a single node
@@ -21,7 +21,7 @@ class ConstraintNonlinearGlobalCrackAngle2D : public ConstraintNonlinear
 
 public:
     //! @brief constructor
-    ConstraintNonlinearGlobalCrackAngle2D(const StructureIp* rStructure, double rPenaltyStiffnessCrackAngle, double rScalingFactorPenaltyStiffnessCrackAngle);
+    ConstraintNonlinearGlobalCrackAngle2D(const StructureMultiscale* rStructure, double rPenaltyStiffnessCrackAngle, double rScalingFactorPenaltyStiffnessCrackAngle);
 
     ConstraintNonlinearGlobalCrackAngle2D* AsConstraintNonlinearGlobalCrackAngle2D();
 
@@ -63,7 +63,7 @@ protected:
     //! @brief just for serialization
     ConstraintNonlinearGlobalCrackAngle2D(){};
 
-    const StructureIp* mStructure;
+    const StructureMultiscale* mStructure;
     double mPenaltyStiffness;
     double mScalingFactor;
 };

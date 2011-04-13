@@ -19,7 +19,7 @@ OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" false)
-OPTION(ENABLE_SERIALIZATION "enables serialization" true)
+OPTION(ENABLE_SERIALIZATION "enables serialization" TRUE)
 OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" true)
 OPTION(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 OPTION(ENABLE_METAMODEL "enables the metamodel package" TRUE)
@@ -29,7 +29,8 @@ OPTION(ENABLE_EXAMPLES "enables examples" TRUE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
-OPTION(ENABLE_GUI "enable building the GUI application" TRUE)
+OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
+OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples" FALSE)
 
 IF(ENABLE_METAMODEL)
     SET(ENABLE_OPTIMIZE TRUE)
@@ -175,7 +176,7 @@ ENDIF(ENABLE_MKL)
 
 # boost
 MESSAGE(STATUS "Checking for Boost...")
-SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46")
+SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1")
 IF(ENABLE_STATIC_EXTERNALS)
   SET(Boost_USE_STATIC_LIBS TRUE)
 ENDIF(ENABLE_STATIC_EXTERNALS)
@@ -188,9 +189,9 @@ ENDIF(NUTO_EXTERNAL_LIBRARIES_ROOT)
 ENDIF(NOT BOOST_ROOT AND NOT DEFINED $ENV{BOOST_ROOT})
 
 IF(ENABLE_SERIALIZATION)
-  FIND_PACKAGE(Boost 1.44.0 COMPONENTS serialization REQUIRED)
+  FIND_PACKAGE(Boost 1.44.0 COMPONENTS serialization system filesystem REQUIRED)
 ELSE(ENABLE_SERIALIZATION)
-  FIND_PACKAGE(Boost 1.41.0 REQUIRED)
+  FIND_PACKAGE(Boost 1.41.0 filesystem system REQUIRED)
 ENDIF(ENABLE_SERIALIZATION)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 message(STATUS "...Boost_VERSION = ${Boost_VERSION}")
@@ -300,14 +301,21 @@ IF(ENABLE_METAMODEL)
 ENDIF(ENABLE_METAMODEL)
 
 
-IF(ENABLE_OPTIMIZE)
+IF(ENABLE_OPTIMIZE)  
   ADD_SUBDIRECTORY(test/optimize)
 ENDIF(ENABLE_OPTIMIZE)
-
 
 IF(ENABLE_EXAMPLES)
   ADD_SUBDIRECTORY(examples)
 ENDIF(ENABLE_EXAMPLES)
+
+#myExample can be modified locally, but is never supposed to be added to the subversion repository
+#if it is empty, there is just an empty include
+#it is used for adding working examples locally, which should not be exposed to the public
+IF(ENABLE_MY_EXAMPLES)
+  ADD_SUBDIRECTORY(myNutoExamples)
+ENDIF(ENABLE_MY_EXAMPLES)  
+
 
 #MESSAGE(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 #MESSAGE(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER}")

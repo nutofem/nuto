@@ -10,10 +10,11 @@
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 
 //! @brief constructor
-NuTo::NodeCoordinatesDisplacementsMultiscale2D::NodeCoordinatesDisplacementsMultiscale2D(NuTo::StructureIp* rStructureIp):
-    NuTo::NodeCoordinates2D::NodeCoordinates2D (), NuTo::NodeDisplacementsMultiscale2D::NodeDisplacementsMultiscale2D(rStructureIp)
+NuTo::NodeCoordinatesDisplacementsMultiscale2D::NodeCoordinatesDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain):
+    NuTo::NodeCoordinates2D::NodeCoordinates2D (), NuTo::NodeDisplacementsMultiscale2D::NodeDisplacementsMultiscale2D(rStructureMultiscale, rCrackedDomain)
 {
 }
 

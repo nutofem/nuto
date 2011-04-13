@@ -14,11 +14,11 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackAngle.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 
 // constructor
-NuTo::ConstraintLinearGlobalCrackAngle::ConstraintLinearGlobalCrackAngle(const StructureIp* rStructure):
+NuTo::ConstraintLinearGlobalCrackAngle::ConstraintLinearGlobalCrackAngle(const StructureMultiscale* rStructure):
         ConstraintLinear()
 {
     mStructure = rStructure;
@@ -41,7 +41,7 @@ void NuTo::ConstraintLinearGlobalCrackAngle::AddToConstraintMatrix(int& curConst
 {
     // set right hand side value
     // calcute principal direction of total strain
-    EngineeringStrain2D totalStrain(mStructure->GetTotalStrain());
+    EngineeringStrain2D totalStrain(mStructure->GetTotalEngineeringStrain());
     if (totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]!=0.)
         rRHS(curConstraintEquation,0) = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
     else
@@ -59,7 +59,7 @@ void NuTo::ConstraintLinearGlobalCrackAngle::Info(unsigned short rVerboseLevel) 
 {
     double anglePrescribed(0);
     // calcute principal direction of total strain
-    EngineeringStrain2D totalStrain(mStructure->GetTotalStrain());
+    EngineeringStrain2D totalStrain(mStructure->GetTotalEngineeringStrain());
     if (totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]!=0.)
         anglePrescribed = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
     else

@@ -10,16 +10,17 @@
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/nodes/NodeDisplacementsMultiscale2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 
 //! @brief constructor
-NuTo::NodeDisplacementsMultiscale2D::NodeDisplacementsMultiscale2D(NuTo::StructureIp* rStructureIp) : NodeBase ()
+NuTo::NodeDisplacementsMultiscale2D::NodeDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain) : NodeBase ()
 {
-    this->mFineScaleDisplacements[0]=0;
+	this->mCrackedDomain = rCrackedDomain;
+	this->mFineScaleDisplacements[0]=0;
     this->mFineScaleDisplacements[1]=0;
     this->mDOF[0]=-1;
     this->mDOF[1]=-1;
-    mStructureIp = rStructureIp;
+    mStructureMultiscale = rStructureMultiscale;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -38,8 +39,9 @@ void NuTo::NodeDisplacementsMultiscale2D::serialize(Archive & ar, const unsigned
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
        & BOOST_SERIALIZATION_NVP(mFineScaleDisplacements)
+       & BOOST_SERIALIZATION_NVP(mCrackedDomain)
        & BOOST_SERIALIZATION_NVP(mDOF)
-       & BOOST_SERIALIZATION_NVP(mStructureIp);
+       & BOOST_SERIALIZATION_NVP(mStructureMultiscale);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize NodeDisplacementsMultiscale2D" << std::endl;
 #endif
@@ -88,9 +90,15 @@ void NuTo::NodeDisplacementsMultiscale2D::GetDisplacements2D(double rDisplacemen
 {
     double coordinates[2], displacements[2];
     GetCoordinates2D(coordinates);
-
-    mStructureIp->GetDisplacementsEpsilonHom2D(coordinates, rDisplacements);
-    mStructureIp->GetDisplacementsCrack2D(coordinates, displacements);
+    if (mCrackedDomain)
+    {
+		mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, rDisplacements, mStructureMultiscale->GetCenterDamage());
+		mStructureMultiscale->GetDisplacementsCrack2D(coordinates, displacements);
+    }
+    else
+    {
+		mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, rDisplacements, mStructureMultiscale->GetCenterHomogeneous());
+    }
     rDisplacements[0] += displacements[0] + mFineScaleDisplacements[0];
     rDisplacements[1] += displacements[1] + mFineScaleDisplacements[1];
 }
@@ -103,10 +111,20 @@ double NuTo::NodeDisplacementsMultiscale2D::GetDisplacement(short rIndex)const
     double coordinates[2], displacements[2],displacementsCrack[2];
     GetCoordinates2D(coordinates);
 
-    mStructureIp->GetDisplacementsEpsilonHom2D(coordinates, displacements);
-    mStructureIp->GetDisplacementsCrack2D(coordinates, displacementsCrack);
-    displacements[0] += displacementsCrack[0] + mFineScaleDisplacements[0];
-    displacements[1] += displacementsCrack[1] + mFineScaleDisplacements[1];
+    if (mCrackedDomain)
+    {
+		mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, displacements, mStructureMultiscale->GetCenterDamage());
+		mStructureMultiscale->GetDisplacementsCrack2D(coordinates, displacementsCrack);
+	    displacements[0] += displacementsCrack[0] + mFineScaleDisplacements[0];
+	    displacements[1] += displacementsCrack[1] + mFineScaleDisplacements[1];
+    }
+    else
+    {
+		mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, displacements, mStructureMultiscale->GetCenterHomogeneous());
+	    displacements[0] += mFineScaleDisplacements[0];
+	    displacements[1] += mFineScaleDisplacements[1];
+    }
+
     if (rIndex==0 || rIndex==1)
         return displacements[rIndex];
     else

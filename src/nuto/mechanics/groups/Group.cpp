@@ -35,6 +35,63 @@ std::string Group<ElementBase>::GetTypeString()const
 {
     return std::string("Elements");
 }
+
+//! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
+template<>
+Group<ElementBase>* Group<ElementBase>::AsGroupElement()
+{
+    return this;
+}
+
+//! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
+template<>
+const Group<ElementBase>* Group<ElementBase>::AsGroupElement()const
+{
+    return this;
+}
+
+//! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
+template<>
+Group<NodeBase>* Group<ElementBase>::AsGroupNode()
+{
+    throw MechanicsException("[Group<ElementBase>::AsGroupNode] group is not a node group");
+}
+
+//! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
+template<>
+const Group<NodeBase>* Group<ElementBase>::AsGroupNode()const
+{
+    throw MechanicsException("[Group<ElementBase>::AsGroupNode] group is not a node group");
+}
+
+//! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
+template<>
+Group<ElementBase>* Group<NodeBase>::AsGroupElement()
+{
+    throw MechanicsException("[Group<NodeBase>::AsGroupNode] group is not an element group");
+}
+
+//! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
+template<>
+const Group<ElementBase>* Group<NodeBase>::AsGroupElement()const
+{
+    throw MechanicsException("[Group<NodeBase>::AsGroupNode] group is not an element group");
+}
+
+//! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
+template<>
+Group<NodeBase>* Group<NodeBase>::AsGroupNode()
+{
+    return this;
+}
+
+//! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
+template<>
+const Group<NodeBase>* Group<NodeBase>::AsGroupNode()const
+{
+    return this;
+}
+
 //! @brief info for group members
 //! @param rVerboseLevel verbose Level
 //! @param rStructure Structure that holds the members

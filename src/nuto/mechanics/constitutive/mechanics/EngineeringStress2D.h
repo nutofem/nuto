@@ -44,7 +44,7 @@ class EngineeringStress2D
     friend class ConstitutiveEngineeringStressStrain;
     friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
     friend class NonlocalDamagePlasticity;
-    friend class StructureIp;
+    friend class StructureMultiscale;
     friend class Multiscale;
 public:
     //! @brief ... constructor

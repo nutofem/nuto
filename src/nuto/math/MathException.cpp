@@ -2,12 +2,9 @@
 #include <string>
 #include "nuto/math/MathException.h"
 
-namespace NuTo
-{
-
 //! @brief ... return error message of the exception
 //! @return ... error message
-std::string MathException::ErrorMessage() const throw()
+std::string NuTo::MathException::ErrorMessage() const throw()
 {
     std::string tmp_message("Exception in Module Math\n"+message);
 
@@ -16,8 +13,7 @@ std::string MathException::ErrorMessage() const throw()
 
 //! @brief ... clone the exception (important, if called from the base class)
 //! @return ... a copy of the exception
-MathException* MathException::Clone()
+NuTo::Exception* NuTo::MathException::Clone()
 {
     return new MathException(*this);
 }
-} //namespace NuTo

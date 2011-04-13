@@ -490,7 +490,11 @@ public:
 
     //! @brief calculates the total energy of the system
     //! @return total energy
-    double ElementTotalGetTotalEnergy()const;
+    virtual double ElementTotalGetTotalEnergy()const;
+
+    //! @brief calculates the total energy of the system
+    //! @return total energy
+    virtual double ElementGroupGetTotalEnergy(int rGroupId)const;
 
     //! @brief calculates the elastic energy of the system
     //! @return elastic energy
@@ -502,11 +506,23 @@ public:
     //! @parameter rParameter value of the parameter
     void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, double rParameter);
 
+    //! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
+    //! @parameter rElement Element pointer
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, std::string rParameter);
+
     //! @brief sets the parameters  of the finescale model (structure ip) for all elements
     //! @parameter rElement Element pointer
     //! @parameter rName name of the parameter, e.g. YoungsModulus
     //! @parameter rParameter value of the parameter
     void ElementTotalSetFineScaleParameter(std::string rName, double rParameter);
+
+    //! @brief sets the parameters  of the finescale model (structure ip) for all elements
+    //! @parameter rElement Element pointer
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void ElementTotalSetFineScaleParameter(std::string rName, std::string rParameter);
 
 #ifndef SWIG
     //! @brief sets the parameters  of the finescale model (structure ip)
@@ -514,6 +530,12 @@ public:
     //! @parameter rName name of the parameter, e.g. YoungsModulus
     //! @parameter rParameter value of the parameter
     void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, double rParameter);
+
+    //! @brief sets the parameters  of the finescale model (structure ip)
+    //! @parameter rElement Element pointer
+    //! @parameter rName name of the parameter, e.g. YoungsModulus
+    //! @parameter rParameter value of the parameter
+    void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter);
 #endif
 
     //*************************************************

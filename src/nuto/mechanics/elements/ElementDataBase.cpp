@@ -55,6 +55,14 @@ void NuTo::ElementDataBase::SetFineScaleParameter(int rIp, const std::string& rN
     throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleParameter] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
+//! @brief sets the fine scale parameter for all ips
+//! @parameter rName name of the parameter, e.g. YoungsModulus
+//! @parameter rParameter value of the parameter
+void NuTo::ElementDataBase::SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter)
+{
+    throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleParameter] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point

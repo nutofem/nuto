@@ -14,12 +14,12 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackAngle2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 
 // constructor
-NuTo::ConstraintNonlinearGlobalCrackAngle2D::ConstraintNonlinearGlobalCrackAngle2D(const StructureIp* rStructure,
+NuTo::ConstraintNonlinearGlobalCrackAngle2D::ConstraintNonlinearGlobalCrackAngle2D(const StructureMultiscale* rStructure,
         double rPenaltyStiffness, double rScalingFactor):
         ConstraintNonlinear()
 {
@@ -54,7 +54,7 @@ void NuTo::ConstraintNonlinearGlobalCrackAngle2D::Info(unsigned short rVerboseLe
 {
     double anglePrescribed(0);
     // calcute principal direction of total strain
-    EngineeringStrain2D totalStrain(mStructure->GetTotalStrain());
+    EngineeringStrain2D totalStrain(mStructure->GetTotalEngineeringStrain());
     if (totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]!=0.)
         anglePrescribed = atan(totalStrain.mEngineeringStrain[2]/(totalStrain.mEngineeringStrain[0]-totalStrain.mEngineeringStrain[1]));
     else

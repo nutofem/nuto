@@ -32,7 +32,7 @@ public:
 
     //! @brief ... clone the exception (important, if called from the base class)
     //! @return ... a copy of the exception
-    MechanicsException* Clone();
+    Exception* Clone();
 };
 } //namespace NuTo
 #endif //NUTO_MECHANICS_EXCEPTION_H

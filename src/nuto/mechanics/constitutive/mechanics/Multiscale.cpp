@@ -41,7 +41,7 @@
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/structures/unstructured/StructureIp.h"
+#include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 
 #define sqrt3 1.732050808
 #define MAX_OMEGA 0.999
@@ -50,7 +50,7 @@
 NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 {
     SetParametersValid();
-    mToleranceResidualForce=2e-5;
+    mToleranceResidualForce=1e-6;
     mMaxDeltaLoadFactor = 1;
     mMaxNumNewtonIterations=20;
     mDecreaseFactor=0.5;
@@ -84,9 +84,6 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Multiscale)
 #endif // ENABLE_SERIALIZATION
 
-//************ constitutive routines    ***********
-//**  defined in structures/StructureIpConstitutive.cpp *********
-//*************************************************
 //  Engineering strain /////////////////////////////////////
 //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
 //! @param rElement ... element
@@ -182,7 +179,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
     else
     {
         //nonlinear solution
-        StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+        StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
 
         //Get and set previous total strain
@@ -205,13 +202,19 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
                 mIncreaseFactor, mMinLoadFactor, true);
 
         //calculate average stress
-        NuTo::FullMatrix<double> averageStress;
-
-        double area = fineScaleStructure->GetAreaFineScale();
-        fineScaleStructure->ElementTotalGetAverageStress(area,averageStress);
-        rEngineeringStress.mEngineeringStress[0] = averageStress(0,0);
-        rEngineeringStress.mEngineeringStress[1] = averageStress(1,0);
-        rEngineeringStress.mEngineeringStress[2] = averageStress(3,0);
+        NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
+        fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
+        fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
+        double scalingFactorDamage = fineScaleStructure->GetScalingFactorDamage();
+        double scalingFactorHomogeneous = fineScaleStructure->GetScalingFactorHomogeneous();
+        double sum(scalingFactorDamage+scalingFactorHomogeneous);
+        scalingFactorDamage/=sum;
+        scalingFactorHomogeneous/=sum;
+        averageStressDamage*=scalingFactorDamage;
+        averageStressHomogeneous*=scalingFactorHomogeneous;
+        rEngineeringStress.mEngineeringStress[0] = averageStressDamage(0,0)+averageStressHomogeneous(0,0);
+        rEngineeringStress.mEngineeringStress[1] = averageStressDamage(1,0)+averageStressHomogeneous(1,0);
+        rEngineeringStress.mEngineeringStress[2] = averageStressDamage(3,0)+averageStressHomogeneous(3,0);
 
         //restore previous state (only performed if the load had to be subdivided)
         if (fineScaleStructure->GetSavedToStringStream())
@@ -349,7 +352,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
     {
         //nonlinear solution
         const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
-        StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+        StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
 
         //Get and set previous total strain
         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
@@ -383,9 +386,9 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
                 matrixJJ, matrixJK, matrixKJ, matrixKK);
 
     /*
-        const_cast<StructureIp*> (fineScaleStructure)->ElementTotalUpdateTmpStaticData();
+        const_cast<StructureMultiscale*> (fineScaleStructure)->ElementTotalUpdateTmpStaticData();
         double totEnergy = fineScaleStructure->ElementTotalGetTotalEnergy();
-        const_cast<StructureIp*> (fineScaleStructure)->CalculateHomogeneousEngineeringStrain();
+        const_cast<StructureMultiscale*> (fineScaleStructure)->CalculateHomogeneousEngineeringStrain();
         //calculate average strain
         NuTo::FullMatrix<double> averageStrain,averageStress;
         double mlX, mlY;
@@ -453,7 +456,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             double interval(1e-7);
             NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
             NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-            StructureIp *fineScaleStructureNonConst = const_cast<StructureIp*> (fineScaleStructure);
+            StructureMultiscale *fineScaleStructureNonConst = const_cast<StructureMultiscale*> (fineScaleStructure);
 
             fineScaleStructureNonConst->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
             fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
@@ -562,7 +565,8 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         mumps.SchurComplement(stiffnessFineScale,schurIndicesMatrix,stiffness);
 
         //scale with the dimension of the structure (area)
-        double area = fineScaleStructure->GetAreaFineScale();
+        double area = fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+        		      fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous();
         stiffness*=1./(area);
         *(rTangent->AsConstitutiveTangentLocal3x3()) = stiffness;
 
@@ -656,7 +660,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
     // since the material law is a full structure whose bc change, this can either be implemented with a cast (as I did)
     // or by removing the const flag from all material routines (which I do not consider is good)
     const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
-    StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+    StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
     if (staticData->NonlinearSolutionOn()==false)
     {
         // linear solution - no static data to be updated, but strain is set as the total strain of the fine scale model
@@ -689,30 +693,45 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         double energy = staticData->GetPrevTotalEnergy();
         //calculate delta total energy (sigma1+sigma2)/2*delta_strain
         //calculate average stress
-        NuTo::FullMatrix<double> averageStress;
-        double area = fineScaleStructure->GetAreaFineScale();
-        fineScaleStructure->ElementTotalGetAverageStress(area,averageStress);
-        std::cout<<"Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain : average stress" << std::endl;
-        averageStress.Trans().Info(12,6);
-        EngineeringStress2D engineeringStress;
-        engineeringStress.mEngineeringStress[0] = averageStress(0,0);
-        engineeringStress.mEngineeringStress[1] = averageStress(1,0);
-        engineeringStress.mEngineeringStress[2] = averageStress(3,0);
+        NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
+        fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
+        std::cout << "average stress in damage domain" << std::endl;
+        averageStressDamage.Trans().Info(12,4);
+        fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
+        std::cout << "average stress in homogeneous domain" << std::endl;
+        averageStressHomogeneous.Trans().Info(12,4);
+        double scalingFactorDamage = fineScaleStructure->GetScalingFactorDamage();
+        double scalingFactorHomogeneous = fineScaleStructure->GetScalingFactorHomogeneous();
+        double sum(scalingFactorDamage+scalingFactorHomogeneous);
+        scalingFactorDamage/=sum;
+        scalingFactorHomogeneous/=sum;
+        averageStressDamage*=scalingFactorDamage;
+        averageStressHomogeneous*=scalingFactorHomogeneous;
+        EngineeringStress2D meanEngineeringStress, engineeringStress;
         const EngineeringStress2D& prevStress(staticData->GetPrevStress());
-        //std::cout << engineeringStress.mEngineeringStress[0] << " " << engineeringStress.mEngineeringStress[1] << " " << engineeringStress.mEngineeringStress[2] << std::endl;
-        //std::cout << engineeringStrain.mEngineeringStrain[0] << " " << engineeringStrain.mEngineeringStrain[1] << " " << engineeringStrain.mEngineeringStrain[2] << std::endl;
-        energy+=0.5*(
-            (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
-            (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
-            (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
-            );
+
+        engineeringStress.mEngineeringStress[0] = (averageStressDamage(0,0)+averageStressHomogeneous(0,0));
+        engineeringStress.mEngineeringStress[1] = (averageStressDamage(1,0)+averageStressHomogeneous(1,0));
+        engineeringStress.mEngineeringStress[2] = (averageStressDamage(3,0)+averageStressHomogeneous(3,0));
+
+        meanEngineeringStress.mEngineeringStress[0] = (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0]);
+        meanEngineeringStress.mEngineeringStress[1] = (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1]);
+        meanEngineeringStress.mEngineeringStress[2] = (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2]);
+
+        energy+=0.5*(meanEngineeringStress.mEngineeringStress[0]*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+                     meanEngineeringStress.mEngineeringStress[1]*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
+                     meanEngineeringStress.mEngineeringStress[2]*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2]));
+
+        std::cout << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy() << std::endl;
+        std::cout << "Energy of fine scale approx "  << energy * (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+        		                                                  fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous()) << std::endl;
+        std::cout << "total area of macroscale " <<  (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+                fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous()) << std::endl;
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStrain(engineeringStrain);
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStress(engineeringStress);
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevTotalEnergy(energy);
         fineScaleStructure->ElementTotalUpdateStaticData();
         fineScaleStructure->SetPrevCrackAngle(fineScaleStructure->GetCrackAngle());
-        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-
     }
 }
 //! @brief ... update static data (history variables) of the constitutive relationship
@@ -806,7 +825,7 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
         const DeformationGradient2D& rDeformationGradient) const
 {
     const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
-    StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
+    StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
 
     //Get and set previous total strain
      EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
@@ -830,20 +849,26 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 
     double energy = staticData->GetPrevTotalEnergy();
     //calculate delta total energy (sigma1+sigma2)/2*delta_strain
-     //calculate average stress
-    NuTo::FullMatrix<double> averageStress;
-    double area = fineScaleStructure->GetAreaFineScale();
-    fineScaleStructure->ElementTotalGetAverageStress(area,averageStress);
-    EngineeringStress2D engineeringStress;
-    engineeringStress.mEngineeringStress[0] = averageStress(0,0);
-    engineeringStress.mEngineeringStress[1] = averageStress(1,0);
-    engineeringStress.mEngineeringStress[2] = averageStress(3,0);
+    //calculate average stress
+    NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
+    fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
+    fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
+    double scalingFactorDamage = fineScaleStructure->GetScalingFactorDamage();
+    double scalingFactorHomogeneous = fineScaleStructure->GetScalingFactorHomogeneous();
+    double sum(scalingFactorDamage+scalingFactorHomogeneous);
+    scalingFactorDamage/=sum;
+    scalingFactorHomogeneous/=sum;
+    averageStressDamage*=scalingFactorDamage;
+    averageStressHomogeneous*=scalingFactorHomogeneous;
+    EngineeringStress2D meanEngineeringStress;
     const EngineeringStress2D& prevStress(staticData->GetPrevStress());
-    energy+=0.5*(
-        (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
-        (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
-        (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
-        );
+    meanEngineeringStress.mEngineeringStress[0] = (averageStressDamage(0,0)+averageStressHomogeneous(0,0)+prevStress.mEngineeringStress[0]);
+    meanEngineeringStress.mEngineeringStress[1] = (averageStressDamage(1,0)+averageStressHomogeneous(1,0)+prevStress.mEngineeringStress[1]);
+    meanEngineeringStress.mEngineeringStress[2] = (averageStressDamage(3,0)+averageStressHomogeneous(3,0)+prevStress.mEngineeringStress[2]);
+
+    energy+=0.5*(meanEngineeringStress.mEngineeringStress[0]*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+                 meanEngineeringStress.mEngineeringStress[1]*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
+                 meanEngineeringStress.mEngineeringStress[2]*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2]));
     //restore structure
     if (fineScaleStructure->GetSavedToStringStream())
     {
@@ -857,7 +882,8 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
     }
     std::cout << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy() << std::endl;
-    std::cout << "Energy of fine scale approx " << energy * area << std::endl;
+    std::cout << "Energy of fine scale approx "  << energy * (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+    		                                                  fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous()) << std::endl;
     return energy;
 }
 
@@ -981,535 +1007,6 @@ void NuTo::Multiscale::GetDeltaElasticEngineeringStrain(const ElementBase* rElem
     throw MechanicsException("[NuTo::Multiscale::GetDeltaElasticEngineeringStrain] not implemented.");
 }
 
-#define MAXNUMNEWTONITERATIONS 100
-#define PRINTRESULT true
-#define MIN_DELTA_STRAIN_FACTOR 1e-7
-void NuTo::Multiscale::Solve(const ElementBase* rElement, int rIp, const NuTo::DeformationGradient2D &rDeformationGradient, double rTolerance,
-        std::stringstream& rStringStreamBeforeSolve, bool& rStringStreamBeforeSolveWritten)const
-{
-    const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
-    StructureIp *fineScaleStructure = const_cast<StructureIp*>(staticData->GetFineScaleStructure());
-
-    //Get and set previous total strain
-    EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
-    fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
-
-    // calculate engineering strain
-    EngineeringStrain2D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-    EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
-    fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
-
-    fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-            true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-            mIncreaseFactor, mMinLoadFactor, true);
-
-#ifdef oldSolution
-    // write data to stringstream
-    rStringStreamBeforeSolveWritten = false;
-    //if there is a problem with memory this could be replaced by writing it to a file
-    //std::cout << "sizeof string " << stringStreamBeforeSolve.str().length() << std::endl;
-
-    // start analysis
-    double deltaStrainFactor(1.0);
-    double curStrainFactor(1.0);
-
-    const ConstitutiveStaticDataMultiscale2DPlaneStrain *oldStaticData = rElement->GetStaticData(rIp)->AsMultiscale2DPlaneStrain();
-    //EngineeringStrain2D prevStrain(oldStaticData->GetPrevStrain());
-
-    EngineeringStrain2D totalEngineeringStrain(engineeringStrain);
-
-    EngineeringStrain2D deltaEngineeringStrain;
-    deltaEngineeringStrain = engineeringStrain-prevStrain;
-
-    //update conre mat and set displacement according to linear constraints
-    fineScaleStructure->NodeBuildGlobalDofs();
-    {
-        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-        fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-        fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-        fineScaleStructure->ElementTotalUpdateTmpStaticData();
-    }
-/*
-    {
-        int count(0);
-        for (double alpha=0; alpha<2*M_PI ; alpha+=0.01*M_PI, count++)
-        {
-            fineScaleStructure->SetCrackAngle(alpha);
-            NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-            NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-            fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-            fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-            fineScaleStructure->ElementTotalUpdateTmpStaticData();
-            std::stringstream ss;
-            ss<<count;
-            fineScaleStructure->ExportVtkDataFile("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscaleCrack" +ss.str()+".vtk");
-        }
-
-        exit(0);
-    }
-*/
-    //set the total strain and calculate from the existing crack opening the homogeneous strain
-    fineScaleStructure->SetTotalEngineeringStrain(prevStrain);
-
-    //update tmpstatic data with zero displacements
-    fineScaleStructure->ElementTotalUpdateTmpStaticData();
-
-    //init some auxiliary variables
-    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-    NuTo::FullMatrix<double> dispForceVector;
-    NuTo::FullMatrix<double> intForceVector;
-    NuTo::FullMatrix<double> extForceVector;
-    NuTo::FullMatrix<double> rhsVector;
-
-    //allocate solver
-    NuTo::SparseDirectSolverMUMPS mySolver;
-    mySolver.SetShowTime(false);
-
-    //calculate stiffness
-    fineScaleStructure->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-//Check the stiffness matrix
-//CheckStiffness(fineScaleStructure);
-
-    //set the total strain and calculate from the existing crack opening the homogeneous strain
-    EngineeringStrain2D curEngineeringStrain(prevStrain+deltaEngineeringStrain*curStrainFactor);
-    fineScaleStructure->SetTotalEngineeringStrain(curEngineeringStrain);
-
-    //update conre mat
-    fineScaleStructure->NodeBuildGlobalDofs();
-
-    //update displacements of all nodes according to the new conre mat
-    {
-        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-        fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-        fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-        fineScaleStructure->ElementTotalUpdateTmpStaticData();
-    }
-
-    // build global external load vector and RHS vector
-    fineScaleStructure->BuildGlobalExternalLoadVector(extForceVector);
-    fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
-    // calculate residual
-    //std::cout << "initial intForceVector "  << std::endl;
-    //intForceVector.Trans().Info(10,8);
-    //fineScaleStructure->NodeInfo(10);
-    fineScaleStructure->ConstraintInfo(10);
-    /*
-    std::cout << "DOFs : alpha "<< fineScaleStructure->GetDofCrackAngle() << " crack opening "
-              << fineScaleStructure->GetDofGlobalCrackOpening2D()[0] << " "
-              << fineScaleStructure->GetDofGlobalCrackOpening2D()[1] << std::endl;
-    {
-        if(engineeringStrain.mEngineeringStrain[0]>0.01)
-        {
-            if (fineScaleStructure->GetDofCrackAngle()<fineScaleStructure->GetNumActiveDofs())
-            {
-                std::cout << " test different alphas " << std::endl;
-                NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-                NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-                fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-                double initAlpha(displacementsActiveDOFsCheck(fineScaleStructure->GetDofCrackAngle(),0));
-                for (double delta=-0.05; delta<=0.05 ; delta+=0.002)
-                {
-                    fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-                    displacementsActiveDOFsCheck(fineScaleStructure->GetDofCrackAngle(),0) = initAlpha + delta*M_PI;
-                    const_cast<StructureIp*> (fineScaleStructure)->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-                    const_cast<StructureIp*> (fineScaleStructure)->ElementTotalUpdateTmpStaticData();
-                    double energyElement(fineScaleStructure->ElementTotalGetTotalEnergy());
-                    double energyConstraint(fineScaleStructure->ConstraintTotalGetTotalEnergy());
-                    std::cout << "crack angle " << (initAlpha + delta*M_PI)*180./M_PI << " energy " << energyElement + energyConstraint
-                              << "(" << energyElement << "," << energyConstraint << ")" << std::endl;
-                }
-                displacementsActiveDOFsCheck(fineScaleStructure->GetDofCrackAngle(),0) = initAlpha;
-                const_cast<StructureIp*> (fineScaleStructure)->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-                const_cast<StructureIp*> (fineScaleStructure)->ElementTotalUpdateTmpStaticData();
-            }
-        }
-    }
-*/
-
-    rhsVector = extForceVector + dispForceVector - intForceVector;
-
-    //calculate absolute tolerance for matrix entries to be not considered as zero
-    double maxValue, minValue, ToleranceZeroStiffness;
-    stiffnessMatrixCSRVector2.Max(maxValue);
-    stiffnessMatrixCSRVector2.Min(minValue);
-    //std::cout << "min and max " << minValue << " , " << maxValue << std::endl;
-
-    ToleranceZeroStiffness = (1e-14) * (fabs(maxValue)>fabs(minValue) ?  fabs(maxValue) : fabs(minValue));
-    fineScaleStructure->SetToleranceStiffnessEntries(ToleranceZeroStiffness);
-    int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-    int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-    //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
-
-    fineScaleStructure->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale") + std::string("0") + std::string(".vtk"));
-
-    //repeat until max displacement is reached
-    bool convergenceStatusLoadSteps(false);
-    int loadstep(1);
-    NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
-    fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
-    while (!convergenceStatusLoadSteps)
-    {
-
-        double normResidual(1);
-        double maxResidual(1);
-        int numNewtonIterations(0);
-        double normRHS(1.);
-        double alpha(1.);
-        int convergenceStatus(0);
-        //0 - not converged, continue Newton iteration
-        //1 - converged
-        //2 - stop iteration, decrease load step
-        while(convergenceStatus==0)
-        {
-            numNewtonIterations++;
-
-            if (numNewtonIterations>MAXNUMNEWTONITERATIONS)
-            {
-                if (PRINTRESULT)
-                {
-                    std::cout << "numNewtonIterations (" << numNewtonIterations << ") > MAXNUMNEWTONITERATIONS (" << MAXNUMNEWTONITERATIONS << ")" << std::endl;
-                }
-                convergenceStatus = 2; //decrease load step
-                break;
-            }
-
-            normRHS = rhsVector.Norm();
-
-            // solve
-            NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
-            NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
-            NuTo::FullMatrix<double> displacementsActiveDOFs;
-            NuTo::FullMatrix<double> displacementsDependentDOFs;
-            fineScaleStructure->NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
-            NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
-            NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSR);
-            {
-            std::cout << " stiffness" << std::endl;
-            stiffnessMatrixFull.Info(10,3);
-            //std::cout << " stiffness inv" << std::endl;
-            //stiffnessMatrixFull.Inverse().Info(10,3);
-            NuTo::FullMatrix<double> eigenValues;
-            stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
-            NuTo::FullMatrix<double> eigenVectors;
-            stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
-            // write displacements to node
-             //extract first eigenvector
-            //fineScaleStructure->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleEigenvector0.vtk"));
-            //NuTo::FullMatrix<double> eigenVector1 = stiffnessMatrixFull.GetColumn(0);
-            //displacementsActiveDOFs = oldDisplacementsActiveDOFs+eigenVector1*0.001;
-            //fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFs);
-            //fineScaleStructure->ElementTotalUpdateTmpStaticData();
-            //fineScaleStructure->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleEigenvector1.vtk"));
-            //std::cout << "Eigenvector 1" << std::endl;
-            //eigenVector1.Trans().Info(12,8);
-
-
-            std::cout << "DOFs : alpha "<< fineScaleStructure->GetDofCrackAngle() << " crack opening "
-                      << fineScaleStructure->GetDofGlobalCrackOpening2D()[0] << " "
-                      << fineScaleStructure->GetDofGlobalCrackOpening2D()[1] << std::endl;
-            std::cout << " eigenvalues" << std::endl;
-            eigenValues.Trans().Info(12,7);
-            std::cout << " eigenvectors" << std::endl;
-            eigenVectors.Info(10,3);
-            }
-            stiffnessMatrixCSR.SetOneBasedIndexing();
-            mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
-
-            //std::cout << " rhsVector" << std::endl;
-            //rhsVector.Trans().Info(10,3);
-            std::cout << " delta_disp" << std::endl;
-            deltaDisplacementsActiveDOFs.Trans().Info(10,3);
-            double deltaAlpha;
-            if (fineScaleStructure->GetDofCrackAngle()<deltaDisplacementsActiveDOFs.GetNumRows())
-            {
-                deltaAlpha=deltaDisplacementsActiveDOFs(fineScaleStructure->GetDofCrackAngle(),0);
-                std::cout << " delta_alpha " << deltaAlpha*180./M_PI <<std::endl;
-            }
-            else
-            {
-                deltaAlpha = 0;
-                //std::cout << " delta_alpha is dependent DOF" << std::endl;
-            }
-
-/*
-            if(engineeringStrain.mEngineeringStrain[0]>0.01)
-            {
-                std::cout << " test different cutback factors " << std::endl;
-                NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-                NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-                fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-                for (double cutback=0; cutback<=1 ; cutback+=0.02)
-                {
-                    //add new displacement state
-                    displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*(cutback);
-
-                    //std::cout << " displacementsActiveDOFs" << std::endl;
-                    //displacementsActiveDOFs.Trans().Info(10,3);
-                    fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFs);
-                    fineScaleStructure->ElementTotalUpdateTmpStaticData();
-
-                    // calculate residual
-                    fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
-                    std::cout << "intForceVector "  << std::endl;
-                    intForceVector.Trans().Info(10,3);
-                    //CheckGradient(fineScaleStructure);
-
-                    rhsVector = extForceVector - intForceVector;
-                    normResidual = rhsVector.Norm();
-
-                    double energyElement(fineScaleStructure->ElementTotalGetTotalEnergy());
-                    double energyConstraint(fineScaleStructure->ConstraintTotalGetTotalEnergy());
-                    std::cout << "cutback " << cutback << " norm gradient " << normResidual << " energy " << energyElement + energyConstraint
-                              << std::endl;
-
-                    std::stringstream ss;
-                    ss << (int)(cutback*50);
-                    fineScaleStructure->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscaleLineSearch") + ss.str() + std::string(".vtk"));
-                }
-                NuTo::EngineeringStrain2D homStrain = fineScaleStructure->GetHomogeneousEngineeringStrain();
-                fineScaleStructure->NodeMergeActiveDofValues(deltaDisplacementsActiveDOFs);
-                NuTo::EngineeringStrain2D homStrainZero;
-                fineScaleStructure->SetHomogeneousEngineeringStrain(homStrainZero);
-
-                fineScaleStructure->ElementTotalUpdateTmpStaticData();
-                fineScaleStructure->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscaleDeltaDisp.vtk"));
-            }
-*/
-
-            //perform a linesearch
-            alpha = 1.;
-            do
-            {
-                //add new displacement state
-                displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
-
-                //std::cout << " displacementsActiveDOFs" << std::endl;
-                //displacementsActiveDOFs.Trans().Info(10,3);
-                fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFs);
-                fineScaleStructure->ElementTotalUpdateTmpStaticData();
-
-                // calculate residual
-                fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
-                //std::cout << "intForceVector "  << std::endl;
-                //intForceVector.Trans().Info(10,3);
-
-                rhsVector = extForceVector - intForceVector;
-                normResidual = rhsVector.Norm();
-
-double energyElement(fineScaleStructure->ElementTotalGetTotalEnergy());
-double energyConstraint(fineScaleStructure->ConstraintTotalGetTotalEnergy());
-std::cout << "alpha " << alpha << " normResidual " << normResidual << " energy " << energyElement+energyConstraint <<"(" << energyElement << "," << energyConstraint << ")" << std::endl;
-
-                alpha*=0.5;
-            }
-            while(alpha>1e-5 && normResidual>normRHS*(1-0.5*alpha) && normResidual>rTolerance);
-
-            double energyElement(fineScaleStructure->ElementTotalGetTotalEnergy());
-            double energyConstraint(fineScaleStructure->ConstraintTotalGetTotalEnergy());
-            EngineeringStrain2D strainHom(fineScaleStructure->GetHomogeneousEngineeringStrain());
-            std::cout << "cutback factor " << alpha*2 << ", normResidual " << normResidual << ", normResidualInit "<< normRHS << ", normRHS*(1-0.5*alpha) " << normRHS*(1-0.5*alpha)
-                      << " energy " << energyConstraint+energyElement <<"(" << energyElement << ","<< energyConstraint <<")"
-                      << " hom strain " << strainHom.GetData()[0] << " "
-                      << strainHom.GetData()[1] << " " << strainHom.GetData()[2] << std::endl;
-            double crackAngle;
-            if (fineScaleStructure->GetDofCrackAngle()<deltaDisplacementsActiveDOFs.GetNumRows())
-            {
-                crackAngle=displacementsActiveDOFs(fineScaleStructure->GetDofCrackAngle(),0);
-            }
-            else
-            {
-                crackAngle = displacementsDependentDOFs(fineScaleStructure->GetDofCrackAngle()-deltaDisplacementsActiveDOFs.GetNumRows(),0);;
-            }
-
-            while (crackAngle>2.*M_PI)
-                crackAngle-=2.*M_PI;
-            while (crackAngle<0)
-                crackAngle+=2.*M_PI;
-
-            double crackOpeningN, crackOpeningT;
-            if (fineScaleStructure->GetDofGlobalCrackOpening2D()[0]<deltaDisplacementsActiveDOFs.GetNumRows())
-                crackOpeningT = displacementsActiveDOFs(fineScaleStructure->GetDofGlobalCrackOpening2D()[0],0);
-            else
-                crackOpeningT = displacementsDependentDOFs(fineScaleStructure->GetDofGlobalCrackOpening2D()[0]-deltaDisplacementsActiveDOFs.GetNumRows(),0);
-            if (fineScaleStructure->GetDofGlobalCrackOpening2D()[1]<deltaDisplacementsActiveDOFs.GetNumRows())
-                crackOpeningN = displacementsActiveDOFs(fineScaleStructure->GetDofGlobalCrackOpening2D()[1],0);
-            else
-                crackOpeningN = displacementsDependentDOFs(fineScaleStructure->GetDofGlobalCrackOpening2D()[1]-deltaDisplacementsActiveDOFs.GetNumRows(),0);
-
-            std::cout << "crack angle "<< crackAngle*180/M_PI << " crack opening "
-                      << crackOpeningT << " "
-                      << crackOpeningN << std::endl;
-
-            std::stringstream ss;
-            ss << numNewtonIterations;
-            fineScaleStructure->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale") + ss.str() + std::string(".vtk"));
-            //fineScaleStructure->NodeInfo(10);
-            //fineScaleStructure->ConstraintInfo(10);
-
-            if (normResidual>normRHS*(1-0.5*alpha) && normResidual>rTolerance)
-            {
-                convergenceStatus=2;
-                break;
-            }
-
-            maxResidual = rhsVector.Abs().Max();
-
-            //std::cout << std::endl << "Newton iteration " << numNewtonIterations << ", final alpha " << 2*alpha << ", normResidual " << normResidual<< ", maxResidual " << maxResidual<<std::endl;
-
-            //check convergence
-            if (normResidual<rTolerance || maxResidual<rTolerance)
-            {
-                if (PRINTRESULT)
-                {
-                    std::cout <<fineScaleStructure->GetIPName() << " Convergence after " << numNewtonIterations << " Newton iterations, curStrainFactor " << curStrainFactor << ", deltaStrainFactor "<< deltaStrainFactor << std::endl<< std::endl;
-                    fineScaleStructure->ConstraintInfo(10);
-                }
-                convergenceStatus=1;
-                break;
-            }
-
-            //convergence status == 0 (continue Newton iteration)
-            //build new stiffness matrix
-            fineScaleStructure->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-
-//check stiffness
-//CheckStiffness(fineScaleStructure);
-            int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-            int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-            std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
-        }
-
-        if (deltaStrainFactor<1e-7)
-            throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence, delta strain factor < 1e-7");
-
-        if (convergenceStatus==1)
-        {
-            // visualize results
-
-//#ifdef ENABLE_VISUALIZE
-//            std::cout << " store element id and ip in output file" << std::endl;
-//            this->ExportVtkDataFile(mIPName+std::string(".vtk"));
-//#endif
-//#ifdef ENABLE_SERIALIZATION
-//            this->Save(mIPName+std::string("bin"),"BINARY");
-//#endif // ENABLE_SERIALIZATION
-
-            fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
-            if (curStrainFactor==1)
-            {
-                convergenceStatusLoadSteps=true;
-            }
-            else
-            {
-                if (rStringStreamBeforeSolveWritten==false)
-                {
-                    fineScaleStructure->Save(rStringStreamBeforeSolve);
-                    rStringStreamBeforeSolveWritten=true;
-                }
-
-                // the update is only required to allow for a stepwise solution procedure in the fine scale model
-                // a final update is only required for an update on the macroscale, otherwise,the original state has
-                // to be reconstructed.
-                fineScaleStructure->ElementTotalUpdateStaticData();
-
-                //eventually increase load step
-                if (numNewtonIterations<MAXNUMNEWTONITERATIONS/3)
-                {
-                    deltaStrainFactor*=1.5;
-                }
-
-                //increase displacement
-                curStrainFactor+=deltaStrainFactor;
-                if (curStrainFactor>1)
-                {
-                    deltaStrainFactor -= curStrainFactor -1.;
-                    curStrainFactor=1;
-                }
-
-                curEngineeringStrain = prevStrain + deltaEngineeringStrain * curStrainFactor;
-
-                //old stiffness matrix is used in first step of next load increment in order to prevent spurious problems at the boundary
-                //std::cout << "press enter to next load increment, delta strain factor " << deltaStrainFactor << " max delta strain factor " <<  maxDeltaStrainFactor << std::endl << std::endl;
-                //char cDummy[100]="";
-                //std::cin.getline(cDummy, 100);
-            }
-            loadstep++;
-        }
-        else
-        {
-            assert(convergenceStatus==2);
-            //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
-            //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
-            //otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
-            curStrainFactor-=deltaStrainFactor;
-            curEngineeringStrain = prevStrain + deltaEngineeringStrain * curStrainFactor;
-
-            //set the total strain and calculate from the existing crack opening and the total strain the homogeneous strain
-            fineScaleStructure->SetTotalEngineeringStrain(curEngineeringStrain);
-
-            // build global dof numbering
-            fineScaleStructure->NodeBuildGlobalDofs();
-
-            //set previous converged displacements
-            fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-            fineScaleStructure->ElementTotalUpdateTmpStaticData();
-
-            //decrease load step
-            deltaStrainFactor*=0.5;
-            curStrainFactor+=deltaStrainFactor;
-            curEngineeringStrain = prevStrain + deltaEngineeringStrain * curStrainFactor;
-
-            //check for minimum delta (this mostly indicates an error in the software
-            if (deltaStrainFactor<MIN_DELTA_STRAIN_FACTOR)
-            {
-                deltaStrainFactor = 0;
-                //throw NuTo::MechanicsException("Example ConcurrentMultiscale : No convergence, delta strain factor < 1e-7");
-            }
-
-            //std::cout << "press enter to reduce load increment" << std::endl;
-            //char cDummy[100]="";
-            //std::cin.getline(cDummy, 100);;
-        }
-
-        if (!convergenceStatusLoadSteps)
-        {
-            //update new displacement of RHS
-            //set the total strain and calculate from the existing crack opening and the total strain the homogeneous strain
-            fineScaleStructure->SetTotalEngineeringStrain(curEngineeringStrain);
-
-            // build global dof numbering
-            fineScaleStructure->NodeBuildGlobalDofs();
-
-            //update stiffness in order to calculate new dispForceVector
-            fineScaleStructure->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-            int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-            int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-            //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
-
-            //update rhs vector for next Newton iteration
-            rhsVector = dispForceVector + extForceVector - intForceVector;
-
-            //update displacements of all nodes according to the new conre mat
-            NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-            NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-            fineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-            fineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-            fineScaleStructure->ElementTotalUpdateTmpStaticData();
-
-            // calculate initial residual for next load step
-            fineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector);
-
-            //update rhs vector for next Newton iteration
-            rhsVector = dispForceVector + extForceVector - intForceVector;
-        }
-    }
-#endif
-}
-///////////////////////////////////////////////////////////////////////////
-
 //! @brief ... get type of constitutive relationship
 //! @return ... type of constitutive relationship
 //! @sa eConstitutiveType
@@ -1561,7 +1058,7 @@ bool NuTo::Multiscale::IsNonlocalModel()const
     return false;
 }
 
-bool NuTo::Multiscale::CheckStiffness(NuTo::StructureIp* rFineScaleStructure)const
+bool NuTo::Multiscale::CheckStiffness(NuTo::StructureMultiscale* rFineScaleStructure)const
 {
     std::cout << "test of stiffness still included " << std::endl;
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
@@ -1630,7 +1127,7 @@ bool NuTo::Multiscale::CheckStiffness(NuTo::StructureIp* rFineScaleStructure)con
 }
 
 
-bool NuTo::Multiscale::CheckGradient(NuTo::StructureIp* rFineScaleStructure)const
+bool NuTo::Multiscale::CheckGradient(NuTo::StructureMultiscale* rFineScaleStructure)const
 {
     std::cout << "test of gradient still included " << std::endl;
 
@@ -1722,3 +1219,4 @@ void NuTo::Multiscale::CalculateCoefficients3D(double& C11, double& C12, double&
     C12 = factor * this->mNu;
     C33 = this->mE/(2*(1.0 + this->mNu));
 }
+

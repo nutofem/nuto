@@ -922,7 +922,8 @@ private:
     void WriteToFile ( std::ofstream& fileStream, std::string& delimiter_ ) const
     {
         // go through the matrix and store the values
-        for ( int count=0; count<GetNumRows(); count++ )
+    	fileStream.setf ( std::ios::scientific, std::ios::floatfield );
+    	for ( int count=0; count<GetNumRows(); count++ )
         {
             for ( int count2=0; count2<GetNumColumns(); count2++ )
             {

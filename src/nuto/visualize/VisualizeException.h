@@ -31,7 +31,7 @@ public:
 
     //! @brief ... clone the exception (important, if called from the base class)
     //! @return ... a copy of the exception
-    VisualizeException* Clone();
+    Exception* Clone();
 };
 
 }
