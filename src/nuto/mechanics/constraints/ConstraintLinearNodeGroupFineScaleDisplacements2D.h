@@ -34,6 +34,10 @@ public:
     //! @return number of constraints
     int GetNumLinearConstraints()const;
 
+    //!@brief sets/modifies the right hand side of the constraint equation
+    //!@param rRHS new right hand side
+    void SetRHS(double rRHS);
+
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
@@ -63,6 +67,8 @@ protected:
 
     //! @brief direction of the applied constraint (normalized)
     double mDirection[2];
+
+    double mRHS;
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

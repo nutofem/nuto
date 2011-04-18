@@ -30,6 +30,10 @@ public:
     //! @return number of constraints
     int GetNumLinearConstraints()const;
 
+    //!@brief sets/modifies the right hand side of the constraint equation
+    //!@param rRHS new right hand side
+    void SetRHS(double rRHS);
+
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
@@ -54,6 +58,8 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+
+    double mRHS;
     //! @brief ... just for serialize
     ConstraintLinearNodeGroupDisplacements1D(){};
 };

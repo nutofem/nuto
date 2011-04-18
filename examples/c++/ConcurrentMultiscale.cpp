@@ -303,8 +303,12 @@ public:
     		myStructureFineScale.Info();
 
     	    //myStructureFineScale.Save("myStructureFineScale.xml","xml");
-    	    myStructureFineScale.Save(rNameOfBinaryFinescale,"binary");
-    	    //myStructureFineScale.Restore(rNameOfBinaryFinescale,"binary");
+#ifdef ENABLE_SERIALIZATION
+    		myStructureFineScale.Save(rNameOfBinaryFinescale,"binary");
+#else
+    		throw MechanicsException("ConcurrentMultiscale - example requires serialization")
+#endif
+    		//myStructureFineScale.Restore(rNameOfBinaryFinescale,"binary");
     	    myStructureFineScale.ElementTotalUpdateTmpStaticData();
     	    myStructureFineScale.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/ConcurrentMultiscaleInitialFineScaleModel.vtk"));
     	}

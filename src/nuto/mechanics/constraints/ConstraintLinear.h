@@ -57,7 +57,7 @@ public:
 
     //!@brief sets/modifies the right hand side of the constraint equation
     //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
+    virtual void SetRHS(double rRHS);
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -76,7 +76,6 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    double mRHS;
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

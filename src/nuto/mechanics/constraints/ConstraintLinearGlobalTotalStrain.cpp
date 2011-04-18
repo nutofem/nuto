@@ -73,8 +73,7 @@ void NuTo::ConstraintLinearGlobalTotalStrain::serialize(Archive & ar, const unsi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinearGlobalTotalStrain" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
        & BOOST_SERIALIZATION_NVP(mStructure)
        & BOOST_SERIALIZATION_NVP(mStrain);
 #ifdef DEBUG_SERIALIZATION

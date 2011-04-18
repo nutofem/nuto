@@ -15,7 +15,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
-NuTo::ConstraintLinear::ConstraintLinear()
+NuTo::ConstraintLinear::ConstraintLinear() : ConstraintBase()
 {
 }
 
@@ -28,7 +28,7 @@ NuTo::ConstraintLinear::~ConstraintLinear()
 //!@param rRHS new right hand side
 void NuTo::ConstraintLinear::SetRHS(double rRHS)
 {
-    mRHS = rRHS;
+    throw MechanicsException("[NuTo::ConstraintLinear::SetRHS] not implemented for this linear constraint.");
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -45,8 +45,7 @@ void NuTo::ConstraintLinear::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinear" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_NVP(mRHS);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinear" << std::endl;
 #endif

@@ -68,6 +68,10 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mlCoarseScale = 0.;
     mlFineScaleDamage = 0.;
     mlFineScaleHomogeneous = 0.;
+    mCenterDamage[0] = 0.;
+    mCenterDamage[1] = 0.;
+    mCenterHomogeneous[0] = 0.;
+    mCenterHomogeneous[1] = 0.;
     mFineScaleAreaDamage = 0.;
     mFineScaleAreaHomogeneous = 0.;
     mCrackTransitionRadius = 0;
@@ -162,26 +166,33 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of StructureMultiscale" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Structure);
-    ar & BOOST_SERIALIZATION_NVP(mCrackAngle)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Structure)
+       & BOOST_SERIALIZATION_NVP(mCrackAngle)
        & BOOST_SERIALIZATION_NVP(mDOFCrackAngle)
+       & BOOST_SERIALIZATION_NVP(mPrevCrackAngle)
        & BOOST_SERIALIZATION_NVP(mCrackOpening)
        & BOOST_SERIALIZATION_NVP(mDOFCrackOpening)
-       & BOOST_SERIALIZATION_NVP(mEpsilonHom)
+       & BOOST_SERIALIZATION_NVP(mEpsilonTot)
        & BOOST_SERIALIZATION_NVP(mDOFGlobalTotalStrain)
+       & BOOST_SERIALIZATION_NVP(mEpsilonHom)
+       & BOOST_SERIALIZATION_NVP(mPrevEpsilonHom)
+       & BOOST_SERIALIZATION_NVP(mPrevAverageStress)
+       & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
+       & BOOST_SERIALIZATION_NVP(mlCoarseScale)
+       & BOOST_SERIALIZATION_NVP(mlFineScaleDamage)
+       & BOOST_SERIALIZATION_NVP(mlFineScaleHomogeneous)
+       & BOOST_SERIALIZATION_NVP(mCrackTransitionRadius)
+       & BOOST_SERIALIZATION_NVP(mCenterDamage)
+       & BOOST_SERIALIZATION_NVP(mCenterHomogeneous)
+       & BOOST_SERIALIZATION_NVP(mFineScaleAreaDamage)
+       & BOOST_SERIALIZATION_NVP(mFineScaleAreaHomogeneous)
+       & BOOST_SERIALIZATION_NVP(mThickness)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleX)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleY)
        & BOOST_SERIALIZATION_NVP(mConstraintNormalCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintTangentialCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintCrackAngle)
        & BOOST_SERIALIZATION_NVP(mConstraintTotalStrain)
-       & BOOST_SERIALIZATION_NVP(mlCoarseScale)
-       & BOOST_SERIALIZATION_NVP(mlFineScaleDamage)
-       & BOOST_SERIALIZATION_NVP(mlFineScaleHomogeneous)
-       & BOOST_SERIALIZATION_NVP(mFineScaleAreaDamage)
-       & BOOST_SERIALIZATION_NVP(mFineScaleAreaHomogeneous)
-       & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
-       & BOOST_SERIALIZATION_NVP(mCrackTransitionRadius)
        & BOOST_SERIALIZATION_NVP(mBoundaryNodesElementsAssigned)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodesDamage)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodesHomogeneous)
@@ -384,6 +395,10 @@ void NuTo::StructureMultiscale::RestoreStructure()
 //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
 void NuTo::StructureMultiscale::TransformMultiscaleNodes()
 {
+	if (GroupGetNumMembers(mGroupNodesDamage)+GroupGetNumMembers(mGroupNodesHomogeneous)!=GetNumNodes())
+		throw MechanicsException("[NuTo::StructureMultiscale::TransformMultiscaleNodes] there is something wrong with your node groups");
+	if (GroupGetNumMembers(mGroupElementsDamage)+GroupGetNumMembers(mGroupElementsHomogeneous)!=GetNumElements())
+		throw MechanicsException("[NuTo::StructureMultiscale::TransformMultiscaleNodes] there is something wrong with your elements");
 	TransformMultiscaleNodes(mGroupBoundaryNodesDamage, mGroupNodesDamage, mGroupElementsDamage, mCenterDamage, mlFineScaleDamage, mFineScaleAreaDamage, true);
 	TransformMultiscaleNodes(mGroupBoundaryNodesHomogeneous, mGroupNodesHomogeneous, mGroupElementsHomogeneous, mCenterHomogeneous, mlFineScaleHomogeneous, mFineScaleAreaHomogeneous,false);
 }
@@ -754,8 +769,8 @@ void NuTo::StructureMultiscale::BuildGlobalGradientInternalPotentialSubVectors(N
     // calculate for all multiscale dofs the derivatives
     // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,6> > dDOF;
-    std::vector<std::array<double,3> > dDOF2;
+    std::vector<boost::array<double,6> > dDOF;
+    std::vector<boost::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
     double bAlphaRow, bURow[2], bMRow[3];
 
@@ -946,7 +961,7 @@ void NuTo::StructureMultiscale::CalculateCohesiveForce(NuTo::FullMatrix<double>&
     // calculate for all multiscale dofs the derivatives
     // with respect to ux, uy without assuming this to be balanced with epsilon_hom
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,2> > dDOF;
+    std::vector<boost::array<double,2> > dDOF;
     CalculatedDispdCrackOpening(mappingDofMultiscaleNode,dDOF);
     double bURow[2];
 
@@ -1006,8 +1021,8 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     // calculate for all multiscale dofs the derivatives
     // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,6> > dDOF;
-    std::vector<std::array<double,3> > dDOF2;
+    std::vector<boost::array<double,6> > dDOF;
+    std::vector<boost::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
 
     // loop over all elements in the damaged region
@@ -1044,6 +1059,8 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
                 0,
                 0,
                 false);
+        std::cout << "rMatrixJK" << std::endl;
+        (NuTo::FullMatrix<double>(rMatrixJK)).Info(12,3);
 
     }
 
@@ -1081,6 +1098,8 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
                 0,
                 0,
                 false);
+        std::cout << "rMatrixJK" << std::endl;
+        (NuTo::FullMatrix<double>(rMatrixJK)).Info(12,3);
 
     }
 
@@ -1141,8 +1160,8 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     // calculate for all multiscale dofs the derivatives
     // with respect to alpha, ux, uy, ehomxx, ehomyy, gammahomxy
     std::vector<int> mappingDofMultiscaleNode;
-    std::vector<std::array<double,6> > dDOF;
-    std::vector<std::array<double,3> > dDOF2;
+    std::vector<boost::array<double,6> > dDOF;
+    std::vector<boost::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
 
     // loop over all elements in the damaged region
@@ -1259,8 +1278,8 @@ void NuTo::StructureMultiscale::AddElementMatrixToGlobalSubMatricesGeneral(
         std::vector<int>& elementMatrixGlobalDofsColumn,
         NuTo::FullMatrix<double>& elementVector,
         std::vector<int>& mappingDofMultiscaleNode,
-        std::vector<std::array<double,6> >&dDOF,
-        std::vector<std::array<double,3> >&dDOF2,
+        std::vector<boost::array<double,6> >&dDOF,
+        std::vector<boost::array<double,3> >&dDOF2,
         SparseMatrix<double>* rMatrixJJ,
         SparseMatrix<double>* rMatrixJK,
         SparseMatrix<double>* rMatrixKJ,
@@ -1696,6 +1715,7 @@ void NuTo::StructureMultiscale::AddElementMatrixToGlobalSubMatricesGeneral(
                         {
                             assert(mDOFGlobalTotalStrain[1]>=this->mNumActiveDofs);
                             assert(mDOFGlobalTotalStrain[2]>=this->mNumActiveDofs);
+                            std::cout << "add "<< bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0] << std::endl;
                             rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[0]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[0]);
                             rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[1]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[1]);
                             rMatrixJK->AddEntry(mDOFCrackOpening[1], mDOFGlobalTotalStrain[2]- this->mNumActiveDofs, bURow[1] * elementMatrix(rowCount, colCount) * bMCol[2]);
@@ -1955,7 +1975,7 @@ void NuTo::StructureMultiscale::AddElementMatrixToGlobalSubMatricesGeneral(
 //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening without considering this to be balanced by epsilon_hom
 //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
 //! @param rDOF return value, for each dof, the corresponding derivatives (ux, uy)
-void NuTo::StructureMultiscale::CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<std::array<double,2> >& rDOF)const
+void NuTo::StructureMultiscale::CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<boost::array<double,2> >& rDOF)const
 {
     rMappingDofMultiscaleNode.resize(mNumDofs,-1);
 
@@ -2006,7 +2026,7 @@ void NuTo::StructureMultiscale::CalculatedDispdCrackOpening(std::vector<int>& rM
 //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
 //! @param rDOF return value, for each dof, the corresponding derivatives alpha, ux, uy, exx, eyy, gamma_xy  [0..5]
 //! @param r2DOF return value, for each dof, the corresponding second order derivative (alpha^2, alpha ux, alpha uy)
-void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const
+void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<boost::array<double,6> >& rDOF, std::vector<boost::array<double,3> >& rDOF2)const
 {
     rMappingDofMultiscaleNode.resize(mNumDofs,-1);
 
@@ -2329,6 +2349,17 @@ void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMap
             rDOF[countMultiscaleDofs+1][4]   = dDOFdEpsilonHomY[1];
             rDOF[countMultiscaleDofs+1][5]   = dDOFdEpsilonHomY[2];
 
+            if (nodeInCrackedDomain)
+            {
+                std::cout << "coordinates cra "<< coord[0]-mCenterDamage[0] << " " <<  coord[1]-mCenterDamage[1] << std::endl;
+            }
+            else
+            {
+                std::cout << "coordinates hom "<< coord[0]-mCenterHomogeneous[0] << " " <<  coord[1]-mCenterHomogeneous[1] << std::endl;
+            }
+            std::cout << "   derivatives for x dof "<< itNode->second->GetDofFineScaleDisplacement(0) <<" "<< rDOF[countMultiscaleDofs][3] << " " <<  rDOF[countMultiscaleDofs][4] << " " << rDOF[countMultiscaleDofs][5] << std::endl;
+            std::cout << "   derivatives for y dof "<< itNode->second->GetDofFineScaleDisplacement(1) <<" "<< rDOF[countMultiscaleDofs+1][4] << " " << rDOF[countMultiscaleDofs+1][5] << std::endl;
+
             //calculate second order derivatives
             //second derivative of displacement with respect to discontinuity (crack orientation)
             if (nodeInCrackedDomain)
@@ -2383,7 +2414,6 @@ void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMap
 #ifdef MYDEBUG
     std::cout << "End of routine" << std::endl << std::endl;
 #endif
-
     if (countMultiscaleDofs!=numMultiscaleDofs)
         throw MechanicsException("[NuTo::StructureMultiscale::CalculatedDispdGlobalDofs] countMultiscaleDofs!=numMultiscaleDofs internal error.");
 }
@@ -2410,8 +2440,8 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0Symmetric(NuTo
 //! @param rCoarseDisplacements ... return array of displacements
 void NuTo::StructureMultiscale::GetDisplacementsEpsilonHom2D(double rCoordinates[2], double rDisplacements[2], const boost::array<double,2>& rCenter)const
 {
-	rDisplacements[0] = mEpsilonHom.mEngineeringStrain[0] * (rCoordinates[0]-rCenter[0]) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[1]-rCenter[0]);
-    rDisplacements[1] = mEpsilonHom.mEngineeringStrain[1] * (rCoordinates[1]-rCenter[1]) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[0]-rCenter[1]);
+	rDisplacements[0] = mEpsilonHom.mEngineeringStrain[0] * (rCoordinates[0]-rCenter[0]) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[1]-rCenter[1]);
+    rDisplacements[1] = mEpsilonHom.mEngineeringStrain[1] * (rCoordinates[1]-rCenter[1]) + 0.5 * mEpsilonHom.mEngineeringStrain[2] * (rCoordinates[0]-rCenter[0]);
 }
 
 //! @brief ... calculate the displacement based on the crack opening
@@ -2454,11 +2484,11 @@ void NuTo::StructureMultiscale::GetdDisplacementdEpsilonHom(double rCoordinates[
 {
     rdX_dEpsilonHom[0] = rCoordinates[0]-rCenter[0];
     rdX_dEpsilonHom[1] = 0.;
-    rdX_dEpsilonHom[2] = 0.5 * (rCoordinates[1]-rCenter[0]);
+    rdX_dEpsilonHom[2] = 0.5 * (rCoordinates[1]-rCenter[1]);
 
     rdY_dEpsilonHom[0] = 0.;
     rdY_dEpsilonHom[1] = rCoordinates[1]-rCenter[1];
-    rdY_dEpsilonHom[2] = 0.5 * (rCoordinates[0]-rCenter[1]);
+    rdY_dEpsilonHom[2] = 0.5 * (rCoordinates[0]-rCenter[0]);
 }
 
 //! @brief derivative of displacement with respect to discontinuity (crack opening)

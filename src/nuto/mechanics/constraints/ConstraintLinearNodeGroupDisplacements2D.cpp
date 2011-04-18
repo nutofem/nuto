@@ -44,6 +44,13 @@ int NuTo::ConstraintLinearNodeGroupDisplacements2D::GetNumLinearConstraints()con
     return mGroup->GetNumMembers();
 }
 
+//!@brief sets/modifies the right hand side of the constraint equation
+//!@param rRHS new right hand side
+void NuTo::ConstraintLinearNodeGroupDisplacements2D::SetRHS(double rRHS)
+{
+	mRHS=rRHS;
+}
+
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)

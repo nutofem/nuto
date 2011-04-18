@@ -512,7 +512,7 @@ void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElem
     // calculate current strain
     EngineeringStrain3D curTotalEngineeringStrain;
     rDeformationGradient.GetEngineeringStrain(curTotalEngineeringStrain);
-    const double *total_strain(curTotalEngineeringStrain.mEngineeringStrain);
+    const double *total_strain(&(curTotalEngineeringStrain.mEngineeringStrain[0]));
 
     //get old static data
     const ConstitutiveStaticDataMisesPlasticity3D* rOldStaticData;

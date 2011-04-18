@@ -118,6 +118,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
        & BOOST_SERIALIZATION_NVP(mSectionMap)
        & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
+       & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
        & BOOST_SERIALIZATION_NVP(mNumDofs)
        & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
        & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)
@@ -125,8 +126,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP(mConstraintRHS)
        & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData)
        & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired)
-       & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries)
-       & BOOST_SERIALIZATION_NVP(mVisualizeComponents);
+       & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structure base" << std::endl;
 #endif
@@ -675,6 +675,14 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
 
         // build equivalent load vector
         rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
+        std::cout << "dependent " << std::endl;
+        dependentDofValues.Trans().Info(12,10);
+        std::cout << "mConstraintRHS " << std::endl;
+        mConstraintRHS.Trans().Info(12,10);
+        std::cout << "delta " << std::endl;
+        (dependentDofValues - this->mConstraintRHS).Trans().Info(12,10);
+        std::cout << "coefficientMatrixJK" << std::endl;
+        (NuTo::FullMatrix<double>(coefficientMatrixJK)).Info(12,3);
     }
     else
     {
@@ -976,9 +984,11 @@ try
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 //    std::cout << "initial stiffness" << std::endl;
 //    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
+    std::cout << "disp force vector "<< std::endl;
+    dispForceVector.Trans().Info(12,10);
 //Check the stiffness matrix
 //CheckStiffness();
-std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::endl;
+//std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::endl;
 
     //update displacements of all nodes according to the new conre mat
     {
@@ -999,7 +1009,9 @@ std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::e
     //for the linesearch this internal force has to be considered in order to obtain for a linesearch
     //factor of zero the normRHS
     double normRHS = rhsVector.Norm();
+    rhsVector.Trans().Info(12,10);
     rhsVector = extForceVector + dispForceVector;
+    rhsVector.Trans().Info(12,10);
 
 /*    {
         double energy;
@@ -1091,9 +1103,9 @@ std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::e
             }
 
             //std::cout << " rhsVector" << std::endl;
-            //rhsVector.Trans().Info(10,3);
+            rhsVector.Trans().Info(10,3);
             //std::cout << " delta_disp" << std::endl;
-            //deltaDisplacementsActiveDOFs.Trans().Info(10,3);
+            deltaDisplacementsActiveDOFs.Trans().Info(10,3);
 
             //perform a linesearch
             alpha = 1.;
@@ -1103,7 +1115,7 @@ std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::e
                 displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
 
                 //std::cout << " displacementsActiveDOFs" << std::endl;
-                //displacementsActiveDOFs.Trans().Info(10,3);
+                displacementsActiveDOFs.Trans().Info(10,3);
                 this->NodeMergeActiveDofValues(displacementsActiveDOFs);
                 this->ElementTotalUpdateTmpStaticData();
 
@@ -1121,6 +1133,8 @@ std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::e
 
                 rhsVector = extForceVector - intForceVector;
                 normResidual = rhsVector.Norm();
+                maxResidual = rhsVector.Abs().Max();
+
                 //std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::endl;
 
 //double energyElement(fineScaleStructure->ElementTotalGetTotalEnergy());
@@ -1130,11 +1144,11 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
 
                 alpha*=0.5;
             }
-            while(alpha>1e-5 && normResidual>normRHS*(1-0.5*alpha) && normResidual>rToleranceResidualForce);
+            while(alpha>1e-5 && normResidual>normRHS*(1-0.5*alpha) && normResidual>rToleranceResidualForce && maxResidual>rToleranceResidualForce);
 
             this->PostProcessDataAfterLineSearch(loadStep, numNewtonIterations, 2.*alpha, curLoadFactor);
 
-            if (normResidual>normRHS*(1-0.5*alpha) && normResidual>rToleranceResidualForce)
+            if (normResidual>normRHS*(1-0.5*alpha) && normResidual>rToleranceResidualForce && maxResidual>rToleranceResidualForce)
             {
                 convergenceStatus=2;
                 {
@@ -1156,7 +1170,6 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
                 break;
             }
 
-            maxResidual = rhsVector.Abs().Max();
 
             //std::cout << std::endl << "Newton iteration " << numNewtonIterations << ", final alpha " << 2*alpha << ", normResidual " << normResidual<< ", maxResidual " << maxResidual<<std::endl;
 
@@ -1166,7 +1179,6 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
                 this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor);
                 convergenceStatus=1;
                 //CheckStiffness();
-
                 //NodeInfo(12);
                 break;
             }

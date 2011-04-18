@@ -183,8 +183,8 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
 
         //Get and set previous total strain
-         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
-         fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
+        EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
+        fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
 
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
@@ -403,141 +403,68 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         fineScaleStructure->NodeInfo(10);
         fineScaleStructure->ExportVtkDataFile("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale.vtk");
     */
-    /*    {
-        std::cout << "matrixJJ algo "<< std::endl;
-        NuTo::FullMatrix<double> matrixJJFull(matrixJJ);
-        matrixJJFull.Info(12,3);
+    /*  {
+        //std::cout << "matrixJJ algo "<< std::endl;
+        //NuTo::FullMatrix<double> matrixJJFull(matrixJJ);
+        //matrixJJFull.Info(12,3);
 
-        std::cout << "matrixKJ algo "<< std::endl;
-        NuTo::FullMatrix<double> matrixKJFull(matrixKJ);
-        matrixKJFull.Info(12,3);
+        //std::cout << "matrixKJ algo "<< std::endl;
+        //NuTo::FullMatrix<double> matrixKJFull(matrixKJ);
+        //matrixKJFull.Info(12,3);
 
-        std::cout << "matrixMJ algo "<< std::endl;
-        NuTo::FullMatrix<double> matrixMJFull(matrixMJ);
-        matrixMJFull.Info(12,3);
+        std::cout << "matrixKK algo "<< std::endl;
+        NuTo::FullMatrix<double> matrixKKFull(matrixKK);
+        matrixKKFull.Info(12,3);
+        }
 
-        std::cout << "matrixJM algo "<< std::endl;
-        NuTo::FullMatrix<double> matrixJMFull(matrixJM);
-        matrixJMFull.Info(12,3);
+		//check the Global Matrix
+		NuTo::FullMatrix<double> matrixJJCDF(fineScaleStructure->GetNumActiveDofs(),fineScaleStructure->GetNumActiveDofs());
+		NuTo::FullMatrix<double> matrixKJCDF(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(),fineScaleStructure->GetNumActiveDofs());
+		//std::cout<<"stiffness matrix" << std::endl;
+		//stiffnessMatrixCSRVector2Full.Info(10,3);
+		double interval(1e-5);
+		NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+		NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+		StructureMultiscale *fineScaleStructureNonConst = const_cast<StructureMultiscale*> (fineScaleStructure);
 
-        std::cout << "matrixKM algo "<< std::endl;
-        NuTo::FullMatrix<double> matrixKMFull(matrixKM);
-        matrixKMFull.Info(12,3);
+		fineScaleStructureNonConst->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+		fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+		fineScaleStructureNonConst->ElementTotalUpdateTmpStaticData();
 
-        std::cout << "matrixMM algo "<< std::endl;
-        NuTo::FullMatrix<double> matrixMMFull(matrixMM);
-        matrixMMFull.Info(12,3);
-    }
-    */
+		NuTo::FullMatrix<double> activeGrad1(displacementsActiveDOFsCheck),
+								 dependentGrad1(displacementsDependentDOFsCheck),
+								 activeGrad2(displacementsActiveDOFsCheck),
+								 dependentGrad2(displacementsDependentDOFsCheck);
+		fineScaleStructureNonConst->BuildGlobalGradientInternalPotentialSubVectors(activeGrad1,dependentGrad1);
+		for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
+		{
+			displacementsActiveDOFsCheck(count,0)+=interval;
+			fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+			fineScaleStructureNonConst->ElementTotalUpdateTmpStaticData();
+			fineScaleStructureNonConst->BuildGlobalGradientInternalPotentialSubVectors(activeGrad2,dependentGrad2);
+			matrixJJCDF.SetColumn(count,(activeGrad2-activeGrad1)*(1./interval));
+			matrixKJCDF.SetColumn(count,(dependentGrad2-dependentGrad1)*(1./interval));
 
-        // build global matrix
-        //SparseMatrixCSRVector2General<double> constraintMatrixVector2 (fineScaleStructure->GetConstraintMatrix());
-        //SparseMatrixCSRVector2General<double> transConstraintMatrixVector2 (constraintMatrixVector2.Transpose());
+			displacementsActiveDOFsCheck(count,0)-=interval;
+		}
+		fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 
-        //matrixJJ -= transConstraintMatrixVector2 * matrixKJ + matrixJK * constraintMatrixVector2;
-        //matrixJJ += transConstraintMatrixVector2 * matrixKK * constraintMatrixVector2;
+		//std::cout << "matrixJJ cdf "<< std::endl;
+		//matrixJJCDF.Info(12,3);
 
+		//std::cout << "matrixKJ cdf "<< std::endl;
+		//matrixKJCDF.Info(12,3);
+
+		std::cout << "maxError JJ " << (matrixJJCDF-NuTo::FullMatrix<double>(matrixJJ)).Abs().Max() << std::endl;
+		std::cout << "maxError KJ " << (matrixKJCDF-NuTo::FullMatrix<double>(matrixKJ)).Abs().Max() << std::endl;
+
+        }
+*/
         //append matrices
         matrixJJ.ConcatenateColumns(matrixJK);
         matrixKJ.ConcatenateColumns(matrixKK);
         matrixJJ.ConcatenateRows(matrixKJ);
 
-        /*
-        {
-            //check the Global Matrix
-            NuTo::FullMatrix<double> matrixJJCDF(fineScaleStructure->GetNumActiveDofs(),fineScaleStructure->GetNumActiveDofs());
-            NuTo::FullMatrix<double> matrixKJCDF(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(),fineScaleStructure->GetNumActiveDofs());
-            NuTo::FullMatrix<double> matrixMJCDF(3,fineScaleStructure->GetNumActiveDofs());
-            NuTo::FullMatrix<double> matrixJMCDF(fineScaleStructure->GetNumActiveDofs(),3);
-            NuTo::FullMatrix<double> matrixKMCDF(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(),3);
-            NuTo::FullMatrix<double> matrixMMCDF(3,3);
-            //std::cout<<"stiffness matrix" << std::endl;
-            //stiffnessMatrixCSRVector2Full.Info(10,3);
-            double interval(1e-7);
-            NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-            NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-            StructureMultiscale *fineScaleStructureNonConst = const_cast<StructureMultiscale*> (fineScaleStructure);
-
-            fineScaleStructureNonConst->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-            fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-            fineScaleStructureNonConst->ElementTotalUpdateTmpStaticData();
-
-            NuTo::FullMatrix<double> activeGrad1(displacementsActiveDOFsCheck),
-                                     dependentGrad1(displacementsDependentDOFsCheck),
-                                     epsilonMGrad1(3,1),
-                                     activeGrad2(displacementsActiveDOFsCheck),
-                                     dependentGrad2(displacementsDependentDOFsCheck),
-                                     epsilonMGrad2(3,1);
-            fineScaleStructureNonConst->BuildGlobalGradientInternalPotentialSubVectors(activeGrad1,dependentGrad1,&epsilonMGrad1);
-            for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
-            {
-                displacementsActiveDOFsCheck(count,0)+=interval;
-                fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-                fineScaleStructureNonConst->ElementTotalUpdateTmpStaticData();
-                fineScaleStructureNonConst->BuildGlobalGradientInternalPotentialSubVectors(activeGrad2,dependentGrad2,&epsilonMGrad2);
-                matrixJJCDF.SetColumn(count,(activeGrad2-activeGrad1)*(1./interval));
-                matrixKJCDF.SetColumn(count,(dependentGrad2-dependentGrad1)*(1./interval));
-                matrixMJCDF.SetColumn(count,(epsilonMGrad2-epsilonMGrad1)*(1./interval));
-
-                displacementsActiveDOFsCheck(count,0)-=interval;
-            }
-            fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-
-            std::cout << "matrixJJ cdf "<< std::endl;
-            matrixJJCDF.Info(12,3);
-
-            std::cout << "matrixKJ cdf "<< std::endl;
-            matrixKJCDF.Info(12,3);
-
-            std::cout << "matrixMJ cdf "<< std::endl;
-            matrixMJCDF.Info(12,3);
-
-            fineScaleStructureNonConst->BuildGlobalGradientInternalPotentialSubVectors(activeGrad1,dependentGrad1,&epsilonMGrad1);
-            NuTo::EngineeringStrain2D strain(fineScaleStructure->GetTotalEngineeringStrain());
-
-            interval = 0.1;
-            std::cout << "active grad 1" << std::endl;
-            activeGrad1.Trans().Info(12,3);
-            std::cout << "dependent grad 1" << std::endl;
-            dependentGrad1.Trans().Info(12,3);
-            std::cout << "epsilonMGrad 1" << std::endl;
-            epsilonMGrad1.Trans().Info(12,3);
-            for (int count=0; count<3; count++)
-            {
-                strain.mEngineeringStrain[count]+=interval;
-                fineScaleStructureNonConst->SetTotalEngineeringStrain(strain);
-                fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-                fineScaleStructureNonConst->ElementTotalUpdateTmpStaticData();
-                fineScaleStructureNonConst->BuildGlobalGradientInternalPotentialSubVectors(activeGrad2,dependentGrad2,&epsilonMGrad2);
-                matrixJMCDF.SetColumn(count,(activeGrad2-activeGrad1)*(1./interval));
-                matrixKMCDF.SetColumn(count,(dependentGrad2-dependentGrad1)*(1./interval));
-                matrixMMCDF.SetColumn(count,(epsilonMGrad2-epsilonMGrad1)*(1./interval));
-
-                strain.mEngineeringStrain[count]-=interval;
-                fineScaleStructureNonConst->SetTotalEngineeringStrain(strain);
-
-                std::cout << "active grad 2" << std::endl;
-                activeGrad2.Trans().Info(12,3);
-                std::cout << "dependent grad 2" << std::endl;
-                dependentGrad2.Trans().Info(12,3);
-                std::cout << "epsilonMGrad 2" << std::endl;
-                epsilonMGrad2.Trans().Info(12,3);
-            }
-            fineScaleStructureNonConst->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-            std::cout << "matrixJM cdf "<< std::endl;
-            matrixJMCDF.Info(12,3);
-
-            std::cout << "matrixKM cdf "<< std::endl;
-            matrixKMCDF.Info(12,3);
-
-            std::cout << "matrixMM cdf "<< std::endl;
-            matrixMMCDF.Info(12,3);
-
-            exit(0);
-
-        }
-    */
-    /*
         {
         std::cout << "stiffness before solution" << std::endl;
         NuTo::FullMatrix<double> matrixJJFull(matrixJJ);
@@ -550,7 +477,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         std::cout << "eigenvectors " << std::endl;
         eigenvectors.Info(12,3);
         }
-    */
+
         //calculate schur complement
         NuTo::FullMatrix<int> schurIndicesMatrix(3,1);
         NuTo::FullMatrix<double> stiffness(3,3);
@@ -558,7 +485,11 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         schurIndicesMatrix(0,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[0];
         schurIndicesMatrix(1,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[1];
         schurIndicesMatrix(2,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[2];
+        std::cout <<"Schur indices" << std::endl;
+        schurIndicesMatrix.Info(12,3);
+        exit(0);
 
+        std::cout << "dimension of JJ" << std::endl;
         NuTo::SparseDirectSolverMUMPS mumps;
         NuTo::SparseMatrixCSRGeneral<double> stiffnessFineScale(matrixJJ);
         stiffnessFineScale.SetOneBasedIndexing();
@@ -570,11 +501,23 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         stiffness*=1./(area);
         *(rTangent->AsConstitutiveTangentLocal3x3()) = stiffness;
 
-    /*
+
         //just for test purpose, calculate stiffness via resforces
         EngineeringStress2D stress1, stress2;
+        //restore previous state (only performed if the load had to be subdivided)
+        if (fineScaleStructure->GetSavedToStringStream())
+        {
+            fineScaleStructure->RestoreStructure();
+        }
+        else
+        {
+            //set load factor to zero in order to get the same ordering of the displacements as before the routine
+            fineScaleStructure->SetLoadFactor(0);
+            fineScaleStructure->NodeBuildGlobalDofs();
+            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        }
         GetEngineeringStressFromEngineeringStrain(rElement, rIp, rDeformationGradient, stress1);
-        double delta(1e-8);
+        double delta(1e-3);
         NuTo::FullMatrix<double> stiffnessCDF(3,3);
         for (int count=0; count<3; count++)
         {
@@ -594,6 +537,18 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             default:
                 throw MechanicsException("");
             }
+            //restore previous state (only performed if the load had to be subdivided)
+            if (fineScaleStructure->GetSavedToStringStream())
+            {
+                fineScaleStructure->RestoreStructure();
+            }
+            else
+            {
+                //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                fineScaleStructure->SetLoadFactor(0);
+                fineScaleStructure->NodeBuildGlobalDofs();
+                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            }
             GetEngineeringStressFromEngineeringStrain(rElement, rIp, deformationGradient, stress2);
 
             for (int count2=0; count2<3; count2++)
@@ -601,11 +556,11 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
                 stiffnessCDF(count2,count) = (stress2.GetData()[count2]- stress1.GetData()[count2])/delta;
             }
         }
-    */
         std::cout << "Schur stiffness algo" << std::endl;
         stiffness.Info(12,3);
-    //    std::cout << "Schur stiffness cdf" << std::endl;
-    //    stiffnessCDF.Info(12,3);
+        std::cout << "Schur stiffness cdf" << std::endl;
+        stiffnessCDF.Info(12,3);
+        exit(0);
         //restore previous state (only performed if the load had to be subdivided)
         if (fineScaleStructure->GetSavedToStringStream())
         {

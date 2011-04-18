@@ -94,13 +94,15 @@ void NuTo::NodeDisplacementsMultiscale2D::GetDisplacements2D(double rDisplacemen
     {
 		mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, rDisplacements, mStructureMultiscale->GetCenterDamage());
 		mStructureMultiscale->GetDisplacementsCrack2D(coordinates, displacements);
+	    rDisplacements[0] += displacements[0] + mFineScaleDisplacements[0];
+	    rDisplacements[1] += displacements[1] + mFineScaleDisplacements[1];
     }
     else
     {
 		mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, rDisplacements, mStructureMultiscale->GetCenterHomogeneous());
+	    rDisplacements[0] += mFineScaleDisplacements[0];
+	    rDisplacements[1] += mFineScaleDisplacements[1];
     }
-    rDisplacements[0] += displacements[0] + mFineScaleDisplacements[0];
-    rDisplacements[1] += displacements[1] + mFineScaleDisplacements[1];
 }
 
 //! @brief writes the displacements of a node to the prescribed pointer

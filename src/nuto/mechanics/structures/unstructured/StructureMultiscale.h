@@ -10,11 +10,6 @@
 #include <boost/array.hpp>
 #endif //Serialize
 
-#include <boost/ptr_container/ptr_map.hpp>
-
-#include <set>
-#include <array>
-
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
@@ -175,8 +170,8 @@ public:
             std::vector<int>& elementMatrixGlobalDofsColumn,
             NuTo::FullMatrix<double>& elementVector,
             std::vector<int>& mappingDofMultiscaleNode,
-            std::vector<std::array<double,6> >& rDOF,
-            std::vector<std::array<double,3> >& rDOF2,
+            std::vector<boost::array<double,6> >& rDOF,
+            std::vector<boost::array<double,3> >& rDOF2,
             NuTo::SparseMatrix<double>* rMatrixJJ,
             NuTo::SparseMatrix<double>* rMatrixJK,
             NuTo::SparseMatrix<double>* rMatrixKJ,
@@ -215,12 +210,12 @@ public:
     //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
     //! @param rDOF return value, for each dof, the corresponding derivatives ehomxx, ehomyy, gammahomxy, ux, uy, alpha  [0..5]
     //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
-    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<std::array<double,6> >& rDOF, std::vector<std::array<double,3> >& rDOF2)const;
+    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<boost::array<double,6> >& rDOF, std::vector<boost::array<double,3> >& rDOF2)const;
 
     //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening without considering this to be balanced by epsilon_hom
     //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
     //! @param rDOF return value, for each dof, the corresponding derivatives (ux, uy)
-    void CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<std::array<double,2> >& rDOF)const;
+    void CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<boost::array<double,2> >& rDOF)const;
 
     //! @brief set the total current strain
     void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
@@ -527,8 +522,6 @@ protected:
     EngineeringStrain2D mPrevEpsilonHom;
     //! @brief this is the previous average stress (last update)
     EngineeringStress2D mPrevAverageStress;
-    //! @brief energy of the not discretized domain (VM-Vm) (already scaled with r^2-r)
-    double mPrevTotEnergyNotDiscretizedDomain;
     //! @brief true for an approximately square coarse scale model, false for a either triangular meshes or meshes not aligned with the axes
     //! in case the coarse scale element is well aligned, the ratio CrackLength/Area can be calculated exactly
     //! whereas for other shapes, an approximation has to be used (additional errors)
