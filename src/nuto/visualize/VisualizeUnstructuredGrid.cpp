@@ -95,7 +95,6 @@ unsigned int NuTo::VisualizeUnstructuredGrid::AddHexahedronCell(const unsigned i
 void NuTo::VisualizeUnstructuredGrid::ExportVtkDataFile(const std::string& rFilename) const
 {
     std::ofstream file(rFilename.c_str());
-    std::cout <<  rFilename << std::endl;
     if (!file.is_open())
     {
         throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::ExportVtkDatafile] Error opening file");

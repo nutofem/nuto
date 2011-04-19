@@ -546,6 +546,18 @@ public:
     //! @param ConstraintId constraint id
     void ConstraintDelete(int ConstraintId);
 
+#ifndef SWIG
+    //! @brief adds a constraint to the map
+    //! @param ConstraintId constraint id
+    //! @param
+    void ConstraintAdd(int rConstraintId, NuTo::ConstraintBase* rConstraint);
+#endif
+
+    //! @brief releases a constraint, (remove from the list but don't delete it)
+    //!@param rConstraintEquation id of the constraint equation
+    //! @return ptr to constraint
+    NuTo::ConstraintBase* ConstraintRelease(int rConstraintId);
+
     //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
     //! @param ConstraintId constraint id
     //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)

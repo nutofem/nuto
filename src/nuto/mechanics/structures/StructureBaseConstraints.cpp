@@ -1226,13 +1226,40 @@ void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
 //!@brief deletes a constraint equation
 //!@param rConstraintEquation id of the constraint equation
 //!@param rCrackOpening new crack opening (x,y)
-void NuTo::StructureBase::ConstraintDelete(int ConstraintId)
+void NuTo::StructureBase::ConstraintDelete(int rConstraintId)
 {
     this->mNodeNumberingRequired = true;
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(ConstraintId);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
     if (it==mConstraintMap.end())
     {
         throw MechanicsException("[NuTo::StructureBase::ConstraintDelete] Constraint equation does not exist.");
     }
     mConstraintMap.erase(it);
+}
+
+//! @brief releases a constraint, (remove from the list but don't delete it)
+//!@param rConstraintEquation id of the constraint equation
+//! @return ptr to constraint
+NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
+    if (it==mConstraintMap.end())
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintRelease] Constraint equation does not exist.");
+    }
+    boost::ptr_map<int,ConstraintBase>::auto_type ptr = mConstraintMap.release(it);
+    return ptr.release();
+}
+
+//! @brief adds a constraint to the map
+//! @param ConstraintId constraint id
+//! @param
+void NuTo::StructureBase::ConstraintAdd(int rConstraintId, NuTo::ConstraintBase* rConstraint)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
+    if (it!=mConstraintMap.end())
+    	throw MechanicsException("[NuTo::StructureBase::ConstraintAdd] Id already exists in constraint map.");
+    mConstraintMap.insert(rConstraintId, rConstraint);
+
 }

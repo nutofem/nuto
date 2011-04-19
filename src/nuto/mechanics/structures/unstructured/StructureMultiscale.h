@@ -242,11 +242,11 @@ public:
         const_cast<StructureMultiscale*>(this)->mCrackAngle = alpha;
     }
 
-    //! @brief return the previous crack angle
-    double GetPrevCrackAngle()const;
+    //! @brief return the initial crack angle
+    double GetInitCrackAngle()const;
 
-    //! @brief sets the previous crack angle
-    void SetPrevCrackAngle(double rPrevCrackAngle);
+    //! @brief sets the initial crack angle
+    void SetInitCrackAngle(double rInitCrackAngle);
 
     //! @brief return the total strain
     const NuTo::EngineeringStrain2D& GetHomogeneousEngineeringStrain()const;
@@ -319,12 +319,12 @@ public:
         return mDOFGlobalTotalStrain;
     }
 
-    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdNodesDamage, int rGroupIdNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
+    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdMultiscaleNodesDamage, int rGroupIdMultiscaleNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
     {
         mGroupBoundaryNodesDamage = rGroupIdBoundaryNodesDamage;
         mGroupBoundaryNodesHomogeneous = rGroupIdBoundaryNodesHomogeneous;
-        mGroupNodesDamage = rGroupIdNodesDamage;
-        mGroupNodesHomogeneous = rGroupIdNodesHomogeneous;
+        mGroupMultiscaleNodesDamage = rGroupIdMultiscaleNodesDamage;
+        mGroupMultiscaleNodesHomogeneous = rGroupIdMultiscaleNodesHomogeneous;
         mGroupElementsDamage = rGroupIdElementsDamage;
         mGroupElementsHomogeneous = rGroupIdElementsHomogeneous;
         mBoundaryNodesElementsAssigned = true;
@@ -372,9 +372,6 @@ public:
     {
         mCrackTransitionRadius = rCrackTransitionRadius;
     }
-
-    //! @brief calculates the crack angle for elastic solutions
-    double CalculateCrackAngleElastic()const;
 
     //! @brief calculates the difference between the crack angle of the elastic solution and the current angle
     //! attention, the periodicity of the crack angle has to be taken into account
@@ -509,7 +506,7 @@ protected:
 
 
     double mCrackAngle;
-    double mPrevCrackAngle;
+    double mInitCrackAngle;
     int mDOFCrackAngle;
     boost::array<double,2> mCrackOpening; //UT UN
     boost::array<int,2> mDOFCrackOpening;
@@ -555,8 +552,8 @@ protected:
     bool mBoundaryNodesElementsAssigned;
     int mGroupBoundaryNodesDamage;
     int mGroupBoundaryNodesHomogeneous;
-    int mGroupNodesDamage;
-    int mGroupNodesHomogeneous;
+    int mGroupMultiscaleNodesDamage;
+    int mGroupMultiscaleNodesHomogeneous;
     int mGroupElementsDamage;
     int mGroupElementsHomogeneous;
     std::string mIPName;

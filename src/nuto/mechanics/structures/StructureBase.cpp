@@ -675,7 +675,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
 
         // build equivalent load vector
         rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
-        std::cout << "dependent " << std::endl;
+/*        std::cout << "dependent " << std::endl;
         dependentDofValues.Trans().Info(12,10);
         std::cout << "mConstraintRHS " << std::endl;
         mConstraintRHS.Trans().Info(12,10);
@@ -683,6 +683,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
         (dependentDofValues - this->mConstraintRHS).Trans().Info(12,10);
         std::cout << "coefficientMatrixJK" << std::endl;
         (NuTo::FullMatrix<double>(coefficientMatrixJK)).Info(12,3);
+*/
     }
     else
     {
@@ -984,8 +985,8 @@ try
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 //    std::cout << "initial stiffness" << std::endl;
 //    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
-    std::cout << "disp force vector "<< std::endl;
-    dispForceVector.Trans().Info(12,10);
+//    std::cout << "disp force vector "<< std::endl;
+//    dispForceVector.Trans().Info(12,10);
 //Check the stiffness matrix
 //CheckStiffness();
 //std::cout << "total energy of system " << ElementTotalGetTotalEnergy() << std::endl;
@@ -1009,9 +1010,9 @@ try
     //for the linesearch this internal force has to be considered in order to obtain for a linesearch
     //factor of zero the normRHS
     double normRHS = rhsVector.Norm();
-    rhsVector.Trans().Info(12,10);
+//    rhsVector.Trans().Info(12,10);
     rhsVector = extForceVector + dispForceVector;
-    rhsVector.Trans().Info(12,10);
+//    rhsVector.Trans().Info(12,10);
 
 /*    {
         double energy;
@@ -1103,9 +1104,9 @@ try
             }
 
             //std::cout << " rhsVector" << std::endl;
-            rhsVector.Trans().Info(10,3);
+            //rhsVector.Trans().Info(10,3);
             //std::cout << " delta_disp" << std::endl;
-            deltaDisplacementsActiveDOFs.Trans().Info(10,3);
+            //deltaDisplacementsActiveDOFs.Trans().Info(10,3);
 
             //perform a linesearch
             alpha = 1.;
@@ -1115,7 +1116,7 @@ try
                 displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
 
                 //std::cout << " displacementsActiveDOFs" << std::endl;
-                displacementsActiveDOFs.Trans().Info(10,3);
+                //displacementsActiveDOFs.Trans().Info(10,3);
                 this->NodeMergeActiveDofValues(displacementsActiveDOFs);
                 this->ElementTotalUpdateTmpStaticData();
 

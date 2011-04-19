@@ -76,7 +76,7 @@ void NuTo::ConstraintNonlinearGlobalCrackAngle2D::CalculateCoefficientMatrix_0(N
         std::vector<int>& rGlobalDofs)const
 {
     //crack angle
-    int dof(1);
+    int dof(4);
     rResult.Resize(dof,dof);
     rGlobalDofs.resize(dof,1);
 

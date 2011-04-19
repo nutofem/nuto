@@ -376,14 +376,18 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
                 mIncreaseFactor, mMinLoadFactor, true);
 
         // use Schur complement to calculate the stiffness
-        SparseMatrixCSRVector2General<double>
-            matrixJJ(fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumActiveDofs()),
-            matrixJK(fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs()),
-            matrixKJ(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumActiveDofs()),
-            matrixKK(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs());
 
-        fineScaleStructure->BuildGlobalCoefficientSubMatrices0General(
-                matrixJJ, matrixJK, matrixKJ, matrixKK);
+        //no change the constraints the way that the total strain is no longer fixed
+        ConstraintBase* linearTotalStrainConstraintPtr = fineScaleStructure->ConstraintRelease(fineScaleStructure->GetConstraintTotalStrain()); // now this is not deleted
+        fineScaleStructure->NodeBuildGlobalDofs();
+        SparseMatrixCSRVector2General<double>
+            matrixJJ(fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumActiveDofs());
+        FullMatrix<double> rhsVector(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(),1);
+        fineScaleStructure->BuildGlobalCoefficientMatrix0(matrixJJ, rhsVector);
+        if (rhsVector.Abs().Max()>1e-6)
+        {
+        	throw MechanicsException("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] RHS vector not zero, previous equilibrium iteration was not successfull.");
+        }
 
     /*
         const_cast<StructureMultiscale*> (fineScaleStructure)->ElementTotalUpdateTmpStaticData();
@@ -460,12 +464,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
 
         }
 */
-        //append matrices
-        matrixJJ.ConcatenateColumns(matrixJK);
-        matrixKJ.ConcatenateColumns(matrixKK);
-        matrixJJ.ConcatenateRows(matrixKJ);
-
-        {
+/*        {
         std::cout << "stiffness before solution" << std::endl;
         NuTo::FullMatrix<double> matrixJJFull(matrixJJ);
         matrixJJFull.Info(12,3);
@@ -477,7 +476,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         std::cout << "eigenvectors " << std::endl;
         eigenvectors.Info(12,3);
         }
-
+*/
         //calculate schur complement
         NuTo::FullMatrix<int> schurIndicesMatrix(3,1);
         NuTo::FullMatrix<double> stiffness(3,3);
@@ -485,9 +484,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         schurIndicesMatrix(0,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[0];
         schurIndicesMatrix(1,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[1];
         schurIndicesMatrix(2,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[2];
-        std::cout <<"Schur indices" << std::endl;
-        schurIndicesMatrix.Info(12,3);
-        exit(0);
 
         std::cout << "dimension of JJ" << std::endl;
         NuTo::SparseDirectSolverMUMPS mumps;
@@ -501,9 +497,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         stiffness*=1./(area);
         *(rTangent->AsConstitutiveTangentLocal3x3()) = stiffness;
 
-
-        //just for test purpose, calculate stiffness via resforces
-        EngineeringStress2D stress1, stress2;
         //restore previous state (only performed if the load had to be subdivided)
         if (fineScaleStructure->GetSavedToStringStream())
         {
@@ -511,67 +504,90 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         }
         else
         {
-            //set load factor to zero in order to get the same ordering of the displacements as before the routine
+            //reinsert the total strain constraint set load factor to zero in order to get the same ordering of the displacements as before the routine
+            fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintTotalStrain(),linearTotalStrainConstraintPtr);
             fineScaleStructure->SetLoadFactor(0);
             fineScaleStructure->NodeBuildGlobalDofs();
             fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
         }
-        GetEngineeringStressFromEngineeringStrain(rElement, rIp, rDeformationGradient, stress1);
-        double delta(1e-3);
-        NuTo::FullMatrix<double> stiffnessCDF(3,3);
-        for (int count=0; count<3; count++)
-        {
-           DeformationGradient2D deformationGradient(rDeformationGradient);
-           switch(count)
-            {
-            case 0:
-                deformationGradient.mDeformationGradient[0]+=delta;
-                break;
-            case 1:
-                deformationGradient.mDeformationGradient[3]+=delta;
-                break;
-            case 2:
-                deformationGradient.mDeformationGradient[1]+=0.5*delta;
-                deformationGradient.mDeformationGradient[2]+=0.5*delta;
-                break;
-            default:
-                throw MechanicsException("");
-            }
-            //restore previous state (only performed if the load had to be subdivided)
-            if (fineScaleStructure->GetSavedToStringStream())
-            {
-                fineScaleStructure->RestoreStructure();
-            }
-            else
-            {
-                //set load factor to zero in order to get the same ordering of the displacements as before the routine
-                fineScaleStructure->SetLoadFactor(0);
-                fineScaleStructure->NodeBuildGlobalDofs();
-                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-            }
-            GetEngineeringStressFromEngineeringStrain(rElement, rIp, deformationGradient, stress2);
 
-            for (int count2=0; count2<3; count2++)
-            {
-                stiffnessCDF(count2,count) = (stress2.GetData()[count2]- stress1.GetData()[count2])/delta;
-            }
-        }
-        std::cout << "Schur stiffness algo" << std::endl;
-        stiffness.Info(12,3);
-        std::cout << "Schur stiffness cdf" << std::endl;
-        stiffnessCDF.Info(12,3);
-        exit(0);
-        //restore previous state (only performed if the load had to be subdivided)
-        if (fineScaleStructure->GetSavedToStringStream())
+        if (1==1)
         {
-            fineScaleStructure->RestoreStructure();
-        }
-        else
-        {
-            //set load factor to zero in order to get the same ordering of the displacements as before the routine
-            fineScaleStructure->SetLoadFactor(0);
-            fineScaleStructure->NodeBuildGlobalDofs();
-            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+			//just for test purpose, calculate stiffness via resforces
+			EngineeringStress2D stress1, stress2;
+			GetEngineeringStressFromEngineeringStrain(rElement, rIp, rDeformationGradient, stress1);
+			double delta(1e-8);
+			NuTo::FullMatrix<double> stiffnessCDF(3,3);
+			for (int count=0; count<3; count++)
+			{
+			   DeformationGradient2D deformationGradient(rDeformationGradient);
+			   switch(count)
+				{
+				case 0:
+					deformationGradient.mDeformationGradient[0]+=delta;
+					break;
+				case 1:
+					deformationGradient.mDeformationGradient[3]+=delta;
+					break;
+				case 2:
+					deformationGradient.mDeformationGradient[1]+=0.5*delta;
+					deformationGradient.mDeformationGradient[2]+=0.5*delta;
+					break;
+				default:
+					throw MechanicsException("");
+				}
+				//restore previous state (only performed if the load had to be subdivided)
+				if (fineScaleStructure->GetSavedToStringStream())
+				{
+					fineScaleStructure->RestoreStructure();
+				}
+				else
+				{
+					//set load factor to zero in order to get the same ordering of the displacements as before the routine
+					fineScaleStructure->SetLoadFactor(0);
+					fineScaleStructure->NodeBuildGlobalDofs();
+					fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+				}
+				GetEngineeringStressFromEngineeringStrain(rElement, rIp, deformationGradient, stress2);
+
+				for (int count2=0; count2<3; count2++)
+				{
+					stiffnessCDF(count2,count) = (stress2.GetData()[count2]- stress1.GetData()[count2])/delta;
+				}
+			}
+			std::cout << "Schur stiffness algo" << std::endl;
+			stiffness.Info(12,3);
+			std::cout << "Schur stiffness cdf" << std::endl;
+			stiffnessCDF.Info(12,3);
+			if ((stiffness-stiffnessCDF).Abs().Max()>1e-4*mE)
+				std::cout << "Multiscale stiffness not correct" << std::endl;
+			else
+				std::cout << "Multiscale stiffness is correct" << std::endl;
+            NuTo::FullMatrix<double> eigenValues;
+            stiffness.EigenValuesSymmetric(eigenValues);
+            std::cout << "eigenvalues" << std::endl;
+            eigenValues.Trans().Info(12,3);
+            NuTo::FullMatrix<double> eigenVectors;
+            stiffness.EigenVectorsSymmetric(eigenVectors);
+            std::cout << "eigenvector 1" << std::endl;
+            eigenVectors.GetColumn(0).Trans().Info(12,3);
+            std::cout << "eigenvector 2" << std::endl;
+            eigenVectors.GetColumn(1).Trans().Info(12,3);
+            std::cout << "eigenvector 3" << std::endl;
+            eigenVectors.GetColumn(2).Trans().Info(12,3);
+
+			//restore previous state (only performed if the load had to be subdivided)
+			if (fineScaleStructure->GetSavedToStringStream())
+			{
+				fineScaleStructure->RestoreStructure();
+			}
+			else
+			{
+				//set load factor to zero in order to get the same ordering of the displacements as before the routine
+				fineScaleStructure->SetLoadFactor(0);
+				fineScaleStructure->NodeBuildGlobalDofs();
+				fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+			}
         }
     }//nonlinear solution
 #else
@@ -686,7 +702,6 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStress(engineeringStress);
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevTotalEnergy(energy);
         fineScaleStructure->ElementTotalUpdateStaticData();
-        fineScaleStructure->SetPrevCrackAngle(fineScaleStructure->GetCrackAngle());
     }
 }
 //! @brief ... update static data (history variables) of the constitutive relationship

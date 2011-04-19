@@ -179,7 +179,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::UseNonlinearSolution()
     if (mNonlinearSolutionOn==false)
     {
         double alpha = mStructure->CalculateInitialCrackAngleElastic();
-        mStructure->SetPrevCrackAngle(alpha);
+        mStructure->SetInitCrackAngle(alpha);
         mStructure->SetCrackAngle(alpha);
         mNonlinearSolutionOn = true;
         std::cout << "initial alpha is " << alpha*180./M_PI << std::endl;
