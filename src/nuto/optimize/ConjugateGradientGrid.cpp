@@ -59,7 +59,10 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	if (mVerboseLevel>3)
 		std::cout<<__FILE__<<" "<<__LINE__<<" gradient accuracy "<<mAccuracyGradientScaled <<std::endl;
 
-	SetMaxGradientCalls(GetNumParameters()*GetNumParameters());
+	int localMaxGradientCalls=2*GetNumParameters();
+	if (localMaxGradientCalls<mMaxGradientCalls)
+		SetMaxGradientCalls(localMaxGradientCalls);
+
 	//check, if callback handler is set
 	if (mpCallbackHandler==0)
 		throw OptimizeException("[ConjugateGradientGrid::Optimize] Callback handler not set to determine objective function and derivatives.");
@@ -150,6 +153,8 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		//initialize searchDirectionScaled with gradientScaled,
 		//needed as input for CalculateScaledSearchDirection
 		searchDirectionScaled = gradientScaled;
+		if (mVerboseLevel>5 && curCycle>0)
+			std::cout<< "   Restart after " <<curCycle << " cycles " << std::endl;
 		curCycle = 0;
 		}
 
@@ -158,8 +163,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		CalculateScaledSearchDirection(searchDirectionScaled);
 		alphaDenominator = searchDirectionOrig.dot(searchDirectionScaled);
 		alpha = alphaNumerator/alphaDenominator;
-		if (mVerboseLevel>5 && curCycle>0)
-			std::cout<< "   Restart after " <<curCycle << " cycles, " << std::endl;
 
 		// store previous parameter
 		prevParameters = mvParameters.mEigenMatrix;
@@ -182,7 +185,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			returnValue = NORMGRADIENT;
 			break;
 		}
-		curCycle = 0;
 
 		if (beta<0)
 		{
@@ -473,7 +475,7 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 	// return vector of active dofs
 	std::vector<double> activeReturn;
 	// global external force vector (active dofs)
-	FullMatrix<double>  force(mpGrid->GetNumActiveDofs(),1);
+	FullMatrix<double>  force(mpGrid->GetNumDofs(),1);
 
 	//loop over all elements
 	for (int elementNumber=0;elementNumber<numElems;elementNumber++)
@@ -494,23 +496,27 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
         NuTo::FullMatrix<double> *matrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
 
  		//loop over all nodes of one element
+		FullMatrix<double> locDispValues(3,1);
         for (int node=0;node<thisElement->GetNumNodes();++node)
         {
 			//get pointer to this gridNum node
-			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
-
-			double locDispValues[3]={0};
 			//get displacements of one node
+        	int thisNodeId =mpGrid->NodeGetIdFromGridNum(corners[node]);
+			mpGrid->NodeGetDisplacements(thisNodeId,locDispValues);
+			/* slower than variant above:
+			double locDispValues[3]={0};
+			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 			thisNode->GetDisplacements3D(locDispValues);
+			 */
 			//which DOFs belonging to this node of this element
 			for (int disp = 0;disp<numDofs;++disp)
 			{
 				//save global dof number in local ordering
 				//no longer needed with new constraint saving
 				//dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
-				dofs[node*numDofs+disp]=3*corners[node]+disp;
+				dofs[node*numDofs+disp]=3*thisNodeId+disp;
 				//save diplacements of all dofs for one element
-				displacements(node*numDofs+disp,0)=locDispValues[disp];
+				displacements(node*numDofs+disp,0)=locDispValues(disp,0);
 			}
         }
         //calculate local return vector with all dofs: r=Ku
@@ -520,15 +526,12 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
         for (int count =0; count <dofsElem;++count)
         {
 			//when global dof is active
-        	//changed with new constraint saving
-        	//if (dofs[count]<mpGrid->GetNumActiveDofs())
         	//when dof is not constraint, then ...
         	if (mpGrid->NodeGetConstraintSwitch(dofs[count]))
         		//subtract (r=f-Ku) locReturn for active dofs
         		//in dofs[count] is the active dof number of each element dof
         		gradientOrig(dofs[count],0) -= locReturn(count,0);
        }
-
          //get global external force vector
         //! @TODO add load vector
         // ubpdate this routine
@@ -570,7 +573,6 @@ void NuTo::ConjugateGradientGrid::CalculateMatrixVectorEBE(bool startSolution, N
 	int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
     voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
-
     int thisvoxelLocation[4]={0};
     int corners[8]={0};
 	//array with global dof number of each dof of this element
