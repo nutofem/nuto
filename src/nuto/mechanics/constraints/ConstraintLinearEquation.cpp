@@ -76,6 +76,7 @@ template<class Archive> void NuTo::ConstraintLinearEquation::serialize(Archive &
     std::cout << "start serialize ConstraintLinearEquation" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+       & BOOST_SERIALIZATION_NVP(mRhsValue)
        & BOOST_SERIALIZATION_NVP(mTerms);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearEquation" << std::endl;

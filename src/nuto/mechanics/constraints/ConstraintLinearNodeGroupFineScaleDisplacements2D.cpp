@@ -63,16 +63,19 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
-        rRHS(curConstraintEquation,0) = mRHS;
-        if ((*itNode)->GetNumFineScaleDisplacements()!=2)
+    	rRHS(curConstraintEquation,0) = mRHS;
+        if (itNode->second->GetNumFineScaleDisplacements()!=2)
         {
-            std::cout << "node ptr " << (*itNode) << std::endl;
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] Node does not have fine scale displacements or has more than two displacement components.");
         }
         if (fabs(mDirection[0])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofFineScaleDisplacement(0),mDirection[0]);
+        {
+            rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofFineScaleDisplacement(0),mDirection[0]);
+        }
         if (fabs(mDirection[1])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofFineScaleDisplacement(1),mDirection[1]);
+        {
+            rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofFineScaleDisplacement(1),mDirection[1]);
+        }
 
         curConstraintEquation++;
     }
@@ -94,6 +97,7 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::serialize(Archive 
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+       & BOOST_SERIALIZATION_NVP(mRHS)
        & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeGroupFineScaleDisplacements2D" << std::endl;

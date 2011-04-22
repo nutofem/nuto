@@ -1230,9 +1230,14 @@ public:
     //! @brief returns the a reference to the constraint matrix
     const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
 
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
-    //! @parameters rAuxRoutines additional routines (defined by the user) to increment loads and plot/store data in between
-    //! @return success flag
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control) no save for updates in between time steps
+    //! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
+    //! @parameters rAutomaticLoadstepControl yes, if the step length should be adapted
+    //! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton iteration
+    //! @parameters rDecreaseFactor factor to decrease the load factor in case of no convergence with the prescribed number of Newton iterations
+    //! @parameters rMinNumNewtonIterations if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
+    //! @parameters rIncreaseFactor by this factor
+    //! @parameters rMinLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
     void NewtonRaphson(double rToleranceResidualForce=1e-6,
             bool rAutomaticLoadstepControl=true,
             double rMaxDeltaLoadFactor=1.,
@@ -1240,8 +1245,31 @@ public:
             double rDecreaseFactor=0.5,
             int rMinNumNewtonIterations=7,
             double rIncreaseFactor=1.5,
-            double rMinDeltaLoadFactor=1e-6,
-            bool rSaveStructureBeforeUpdate=false);
+            double rMinDeltaLoadFactor=1e-6);
+
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+    //! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
+    //! @parameters rAutomaticLoadstepControl yes, if the step length should be adapted
+    //! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton iteration
+    //! @parameters rDecreaseFactor factor to decrease the load factor in case of no convergence with the prescribed number of Newton iterations
+    //! @parameters rMinNumNewtonIterations if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
+    //! @parameters rIncreaseFactor by this factor
+    //! @parameters rMinLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
+    //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
+    //! @parameters rSaveStringStream stringstream the routine is saved to
+    //! @parameters rIsSaved return parameter describing, if the routine actually had to to a substepping and consequently had to store the initial state into rSaveStringStream
+
+    void NewtonRaphson(double rToleranceResidualForce,
+            bool rAutomaticLoadstepControl,
+            double rMaxDeltaLoadFactor,
+            int rMaxNumNewtonIterations,
+            double rDecreaseFactor,
+            int rMinNumNewtonIterations,
+            double rIncreaseFactor,
+            double rMinDeltaLoadFactor,
+            bool rSaveStructureBeforeUpdate,
+            std::stringstream& rSaveStringStream,
+            bool& rIsSaved);
 
     //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
     virtual void InitBeforeNewtonRaphson()
@@ -1252,8 +1280,16 @@ public:
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
     //this routine saves the current state before an update in the Newton Raphson iteration is performed
     //this only happens for more than one load step (either prescibed or with automatic load control)
-    virtual void SaveStructure()const
-    {}
+    virtual void SaveStructure(std::stringstream& rSaveStringStream)const
+    {
+    	throw MechanicsException("[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
+    }
+
+    virtual void RestoreStructure(std::stringstream& rSaveStringStream)
+    {
+    	throw MechanicsException("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
+    }
+
     //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
     //! @param load factor
     virtual void SetLoadFactor(double rLoadFactor);
@@ -1330,6 +1366,7 @@ protected:
     StructureBase()
     {}
 
+#ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
      //! @param rElements ... vector of element pointer
      virtual void GetElementsTotal(std::vector<const ElementBase*>& rElements) const = 0;
@@ -1344,7 +1381,16 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
+    virtual void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodes) const = 0;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
     virtual void GetNodesTotal(std::vector<NodeBase*>& rNodes) = 0;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
+#endif
 
     //! @brief ... store all elements of a group in a vector
     //! @param rElementGroup ... element group

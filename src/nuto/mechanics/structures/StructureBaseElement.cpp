@@ -663,12 +663,13 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
     {
         try
         {
-        	ElementSetConstitutiveLaw(*itElement,itConstitutive->second);
+        	ElementSetConstitutiveLaw(itElement->second,itConstitutive->second);
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Error setting constitutive law  for element "
             	+ ss.str() + ".");
             throw e;
@@ -676,7 +677,8 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
         	throw NuTo::MechanicsException
         	   ("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Error setting constitutive law for element " + ss.str() + ".");
         }
@@ -802,14 +804,15 @@ void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::st
     {
         try
         {
-            double rLengthCoarseScale = sqrt((*itElement)->CalculateArea());
-            for (int theIp=0; theIp<(*itElement)->GetNumIntegrationPoints(); theIp++)
-                ElementIpSetFineScaleModel(*itElement, theIp, rFileName, rLengthCoarseScale);
+            double rLengthCoarseScale = sqrt(itElement->second->CalculateArea());
+            for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
+                ElementIpSetFineScaleModel(itElement->second, theIp, rFileName, rLengthCoarseScale);
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Error setting fine scale model for element "
                 + ss.str() + ".");
             throw e;
@@ -817,7 +820,8 @@ void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::st
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Error setting fine scale model for element " + ss.str() + ".");
         }
@@ -948,12 +952,13 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
     {
         try
         {
-        	ElementSetSection(*itElement,itSection->second);
+        	ElementSetSection(itElement->second,itSection->second);
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Error setting section for element "
             	+ ss.str() + ".");
             throw e;
@@ -961,7 +966,8 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
         	throw NuTo::MechanicsException
         	   ("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Error setting section for element " + ss.str() + ".");
         }
@@ -1116,12 +1122,13 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
     {
         try
         {
-        	ElementSetIntegrationType(*itElement,GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
+        	ElementSetIntegrationType(itElement->second,GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupSetIntegrationType] Error setting integration type for element "
             	+ ss.str() + ".");
             throw e;
@@ -1129,7 +1136,8 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
        	    throw NuTo::MechanicsException
         	   ("[NuTo::StructureBase::ElementGroupSetIntegrationType] Error setting integration type for element " + ss.str() + ".");
         }
@@ -1487,24 +1495,26 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
     NuTo::FullMatrix<double> elementEngineeringStress;
     rEngineeringStress.Resize(6,1);
 
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         try
         {
-            (*itElement)->GetIntegratedStress(elementEngineeringStress);
+        	itElement->second->GetIntegratedStress(elementEngineeringStress);
             rEngineeringStress+=elementEngineeringStress;
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupGetAverageStress] Error calculating integrated stress  for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementGroupGetAverageStress] Error calculating integrated stress  for element " + ss.str() + ".");
         }
@@ -1589,24 +1599,26 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
     NuTo::FullMatrix<double> elementEngineeringStrain;
     rEngineeringStrain.Resize(6,1);
 
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         try
         {
-            (*itElement)->GetIntegratedStrain(elementEngineeringStrain);
+        	itElement->second->GetIntegratedStrain(elementEngineeringStrain);
             rEngineeringStrain+=elementEngineeringStrain;
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error calculating integrated strain  for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error calculating integrated strain  for element " + ss.str() + ".");
         }
@@ -1686,11 +1698,11 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)const
     double totalEnergy(0);
     NuTo::FullMatrix<double> ipEnergy;
 
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         try
         {
-            (*itElement)->GetIpData(NuTo::IpData::TOTAL_ENERGY,ipEnergy);
+        	itElement->second->GetIpData(NuTo::IpData::TOTAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
@@ -1699,14 +1711,16 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)const
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupGetTotalEnergy] Error calculating integrated strain  for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementGroupGetTotalEnergy] Error calculating integrated strain  for element " + ss.str() + ".");
         }
@@ -1875,20 +1889,22 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
     {
         try
         {
-            for (int theIp=0; theIp<(*itElement)->GetNumIntegrationPoints(); theIp++)
-                (*itElement)->SetFineScaleParameter(theIp, rName, rParameter);
+            for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
+            	itElement->second->SetFineScaleParameter(theIp, rName, rParameter);
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::SetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error setting fine scale parameter for element " + ss.str() + ".");
         }
@@ -1923,20 +1939,22 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
     {
         try
         {
-            for (int theIp=0; theIp<(*itElement)->GetNumIntegrationPoints(); theIp++)
-                (*itElement)->SetFineScaleParameter(theIp, rName, rParameter);
+            for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
+            	itElement->second->SetFineScaleParameter(theIp, rName, rParameter);
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::SetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error setting fine scale parameter for element " + ss.str() + ".");
         }

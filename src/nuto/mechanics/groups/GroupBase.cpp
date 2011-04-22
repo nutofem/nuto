@@ -12,52 +12,22 @@ NuTo::GroupBase::GroupBase()
 
 //! @brief Adds a node to the group, is only implemented for Node groups in group.cpp, otherwise throws an exception
 //! @param rNodePtr Node pointer
-void NuTo::GroupBase::AddMember(NodeBase* rNodePtr)
+void NuTo::GroupBase::AddMember(int rId, NodeBase* rNodePtr)
 {
 	throw MechanicsException("[NuTo::GroupBase::AddMember] adding a node is only allowed for node groups.");
 }
 
 //! @brief Adds a node to the group, is only implemented for Node groups in group.cpp, otherwise throws an exception
 //! @param rNodePtr Node pointer
-void NuTo::GroupBase::AddMember(ElementBase* rElementPtr)
+void NuTo::GroupBase::AddMember(int rId, ElementBase* rElementPtr)
 {
 	throw MechanicsException("[NuTo::GroupBase::AddMember] adding an element is only allowed for element groups.");
-}
-
-//! @brief Removes a node from the group, is only implemented for Node groups in group.cpp, otherwise throws an exception
-//! @param rNodePtr Node pointer
-void NuTo::GroupBase::RemoveMember(NodeBase* rNodePtr)
-{
-	throw MechanicsException("[NuTo::GroupBase::RemoveMember] removing a node is only allowed for node groups.");
-}
-
-//! @brief Removes an element from the group, is only implemented for Element groups in group.cpp, otherwise throws an exception
-//! @param rElementPtr Element pointer
-void NuTo::GroupBase::RemoveMember(ElementBase* rElementPtr)
-{
-	throw MechanicsException("[NuTo::GroupBase::RemoveMember] removing an element is only allowed for element groups.");
-}
-
-//! @brief check if a group contains the entry
-//! @param rElementPtr Element pointer
-//! @return TRUE if rMember is in the group, FALSE otherwise
-bool NuTo::GroupBase::Contain(NodeBase* rNodePtr)
-{
-	throw MechanicsException("[NuTo::GroupBase::Contain] looking for a node is only allowed for node groups.");
-}
-
-//! @brief check if a group contains the entry
-//! @param rElementPtr Element pointer
-//! @return TRUE if rMember is in the group, FALSE otherwise
-bool NuTo::GroupBase::Contain(ElementBase* rElementPtr)
-{
-	throw MechanicsException("[NuTo::GroupBase::Contain] looking for an element is only allowed for element groups.");
 }
 
 //! @brief replaces a ptr by another one
 //! @param rOldPtr
 //! @param rNewPtr
-void NuTo::GroupBase::ExchangePtr(ElementBase* rOldElementPtr, ElementBase* rNewElementPtr)
+void NuTo::GroupBase::ExchangePtr(int rId, ElementBase* rOldElementPtr, ElementBase* rNewElementPtr)
 {
     throw MechanicsException("[NuTo::GroupBase::ExchangePtr] Exchanging element ptr is only allowed for element groups.");
 }
@@ -65,7 +35,7 @@ void NuTo::GroupBase::ExchangePtr(ElementBase* rOldElementPtr, ElementBase* rNew
 //! @brief replaces a ptr by another one
 //! @param rOldPtr
 //! @param rNewPtr
-void NuTo::GroupBase::ExchangePtr(NodeBase* rOldNodePtr, NodeBase* rNewNodePtr)
+void NuTo::GroupBase::ExchangePtr(int rId, NodeBase* rOldNodePtr, NodeBase* rNewNodePtr)
 {
     throw MechanicsException("[NuTo::GroupBase::ExchangePtr] Exchanging node ptr is only allowed for node groups.");
 }

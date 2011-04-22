@@ -451,8 +451,9 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
         //! remove the entry from all groups
         for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
         	if(groupIt->second->GetType()==NuTo::Groups::Nodes){
-        		if(groupIt->second->Contain(itNode->second)){
-        			groupIt->second->RemoveMember(itNode->second);
+        		if(groupIt->second->Contain(itNode->first))
+        		{
+        			groupIt->second->RemoveMember(itNode->first);
         		}
         	}
         }
@@ -579,7 +580,7 @@ void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActive
 	this->mUpdateTmpStaticDataRequired=true;
 
     // calculate dependent dof values
-    FullMatrix<double> dependentDofValues;
+	FullMatrix<double> dependentDofValues;
     if (mNumActiveDofs>0)
         dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
     else
@@ -634,6 +635,19 @@ void NuTo::Structure::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
 }
 
 // store all nodes of a structure in a vector
+void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int, const NodeBase*> >& rNodes) const
+{
+	rNodes.reserve(mNodeMap.size());
+    rNodes.resize(0);
+	boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
+    while (NodeIter != this->mNodeMap.end())
+    {
+    	rNodes.push_back(std::pair<int, const NodeBase*>(NodeIter->first,NodeIter->second));
+        NodeIter++;
+    }
+}
+
+// store all nodes of a structure in a vector
 void NuTo::Structure::GetNodesTotal(std::vector<NodeBase*>& rNodes)
 {
 	rNodes.reserve(mNodeMap.size());
@@ -642,6 +656,19 @@ void NuTo::Structure::GetNodesTotal(std::vector<NodeBase*>& rNodes)
     while (NodeIter != this->mNodeMap.end())
     {
     	rNodes.push_back(NodeIter->second);
+        NodeIter++;
+    }
+}
+
+// store all nodes of a structure in a vector
+void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes)
+{
+	rNodes.reserve(mNodeMap.size());
+	rNodes.resize(0);
+    boost::ptr_map<int,NodeBase>::iterator NodeIter = this->mNodeMap.begin();
+    while (NodeIter != this->mNodeMap.end())
+    {
+    	rNodes.push_back(std::pair<int, NodeBase*>(NodeIter->first,NodeIter->second));
         NodeIter++;
     }
 }
@@ -728,7 +755,7 @@ void NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues(FullMatrix<double
 
 //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
 //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-void NuTo::Structure::NodeExchangePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
+void NuTo::Structure::NodeExchangePtr(int rId, NodeBase* rOldPtr, NodeBase* rNewPtr)
 {
     //in node map
     //find it
@@ -750,7 +777,7 @@ void NuTo::Structure::NodeExchangePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
     {
         if(groupIt->second->GetType()==NuTo::Groups::Nodes)
         {
-            groupIt->second->ExchangePtr(rOldPtr, rNewPtr);
+            groupIt->second->ExchangePtr(rId, rOldPtr, rNewPtr);
         }
     }
 

@@ -80,13 +80,13 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullM
 			switch (rDisplacements.GetNumRows())
 			{
 			case 1:
-				(*itNode)->SetDisplacements1D(rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements1D(rDisplacements.mEigenMatrix.data());
 			break;
 			case 2:
-				(*itNode)->SetDisplacements2D(rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements2D(rDisplacements.mEigenMatrix.data());
 			break;
 			case 3:
-				(*itNode)->SetDisplacements3D(rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements3D(rDisplacements.mEigenMatrix.data());
 			break;
 			default:
 				throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");
@@ -208,13 +208,13 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatr
 
 	if (nodeGroup->GetNumMembers()==0)
 		throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] Node group is empty.");
-	rNodeForce.Resize((*(nodeGroup->begin()))->GetNumDisplacements(),1);
+	rNodeForce.Resize(nodeGroup->begin()->second->GetNumDisplacements(),1);
 
     for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
     {
 		try
 		{
-			NodeInternalForce(*itNode, nodeForceLocal);
+			NodeInternalForce(itNode->second, nodeForceLocal);
 			if (nodeForceLocal.GetNumRows()!=rNodeForce.GetNumRows())
 				throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] The number of displacement components is not equal for all members of the group.");
 			rNodeForce+=nodeForceLocal;

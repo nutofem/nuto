@@ -24,6 +24,37 @@ NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::ConstitutiveS
 	mEpsilonP[1] = 0.;
 	mEpsilonP[2] = 0.;
 	mEpsilonP[3] = 0.;
+
+	mTmpdEpsilonPdEpsilon[0] = 0.;
+	mTmpdEpsilonPdEpsilon[1] = 0.;
+	mTmpdEpsilonPdEpsilon[2] = 0.;
+	mTmpdEpsilonPdEpsilon[3] = 0.;
+	mTmpdEpsilonPdEpsilon[4] = 0.;
+	mTmpdEpsilonPdEpsilon[5] = 0.;
+	mTmpdEpsilonPdEpsilon[6] = 0.;
+	mTmpdEpsilonPdEpsilon[7] = 0.;
+	mTmpdEpsilonPdEpsilon[8] = 0.;
+	mTmpdEpsilonPdEpsilon[9] = 0.;
+	mTmpdEpsilonPdEpsilon[10] = 0.;
+	mTmpdEpsilonPdEpsilon[11] = 0.;
+	mTmpdEpsilonPdEpsilon[12] = 0.;
+	mTmpdEpsilonPdEpsilon[13] = 0.;
+	mTmpdEpsilonPdEpsilon[14] = 0.;
+	mTmpdEpsilonPdEpsilon[15] = 0.;
+
+	mTmpKappa = 0.;
+
+	mTmpEpsilonP[0] = 0.;
+	mTmpEpsilonP[1] = 0.;
+	mTmpEpsilonP[2] = 0.;
+	mTmpEpsilonP[3] = 0.;
+
+	mTmpLeq = 0.;
+
+	mTmpdLeqdEpsilon[0] = 0.;
+	mTmpdLeqdEpsilon[1] = 0.;
+	mTmpdLeqdEpsilon[2] = 0.;
+	mTmpdLeqdEpsilon[3] = 0.;
 }
 
 #ifdef ENABLE_SERIALIZATION

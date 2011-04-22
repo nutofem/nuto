@@ -151,7 +151,7 @@ void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
     if (itGroup->second->GetType()!=Groups::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] A node can be added only to a node group.");
 
-    itGroup->second->AddMember(NodeGetNodePtr(rIdNode));
+    itGroup->second->AddMember(rIdNode, NodeGetNodePtr(rIdNode));
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -179,13 +179,13 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     if(rDirection<0 || rDirection>mDimension)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] The direction is either 0(x),1(Y) or 2(Z) and has to be smaller than the dimension of the structure.");
 
-    std::vector<NodeBase*> nodeVector;
+    std::vector<std::pair<int,NodeBase*> > nodeVector;
     this->GetNodesTotal(nodeVector);
     double coordinates[3];
 
     for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
     {
-    	NodeBase* nodePtr(nodeVector[countNode]);
+    	NodeBase* nodePtr(nodeVector[countNode].second);
     	if (nodePtr->GetNumCoordinates()<1)
     		continue;
     	switch (mDimension)
@@ -203,7 +203,7 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     		throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] unsupported dimension of the structure.");
     	}
     	if (coordinates[rDirection]>=rMin && coordinates[rDirection]<=rMax)
-            itGroup->second->AddMember(nodePtr);
+            itGroup->second->AddMember(nodeVector[countNode].first,nodePtr);
     }
 #ifdef SHOW_TIME
     end=clock();
@@ -235,7 +235,7 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMat
     if(rMin>rMax)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] The minimum radius must not be larger than the maximum radius.");
 
-    std::vector<NodeBase*> nodeVector;
+    std::vector<std::pair<int,NodeBase*> > nodeVector;
     this->GetNodesTotal(nodeVector);
     double coordinates[3];
     double rMin2 = rMin*rMin;
@@ -243,7 +243,7 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMat
 
     for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
     {
-        NodeBase* nodePtr(nodeVector[countNode]);
+        NodeBase* nodePtr(nodeVector[countNode].second);
         if (nodePtr->GetNumCoordinates()<1)
             continue;
         double r2(0.);
@@ -268,7 +268,7 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMat
             throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] unsupported dimension of the structure.");
         }
         if (r2>=rMin2 && r2<=rMax2)
-            itGroup->second->AddMember(nodePtr);
+            itGroup->second->AddMember(nodeVector[countNode].first,nodePtr);
     }
 #ifdef SHOW_TIME
     end=clock();
@@ -293,7 +293,7 @@ void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
     if (itGroup->second->GetType()!=Groups::Elements)
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group.");
 
-    itGroup->second->AddMember(ElementGetElementPtr(rIdElement));
+    itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)

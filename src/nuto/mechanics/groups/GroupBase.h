@@ -73,39 +73,30 @@ public:
 // *********************************************************************
 	//! @brief Adds a node to the group, is only implemented for Node groups in group.cpp, otherwise throws an exception
 	//! @param rNodePtr Node pointer
-	virtual void AddMember(NodeBase* rNodePtr);
+	virtual void AddMember(int rId, NodeBase* rNodePtr);
 
 	//! @brief Adds an element to the group, is only implemented for Element groups, otherwise throws an exception
 	//! @param rNodePtr Node pointer
-	virtual void AddMember(ElementBase* rNodePtr);
+	virtual void AddMember(int rId, ElementBase* rNodePtr);
 
 	//! @brief Removes a node from the group
 	//! @param rNodePtr Node pointer
-	virtual void RemoveMember(NodeBase* rNodePtr);
-
-	//! @brief Removes an element from the group
-	//! @param rElementPtr Element pointer
-	virtual void RemoveMember(ElementBase* rElementPtr);
+	virtual void RemoveMember(int rId)=0;
 
 	//! @brief check if a group contains the entry
-	//! @param rNodePtr Node pointer
+	//! @param rId id of the entry
     //! @return TRUE if rMember is in the group, FALSE otherwise
-	virtual bool Contain(NodeBase* rNodePtr);
-
-	//! @brief check if a group contains the entry
-	//! @param rElementPtr Element pointer
-    //! @return TRUE if rMember is in the group, FALSE otherwise
-	virtual bool Contain(ElementBase* rElementPtr);
+	virtual bool Contain(int rId)=0;
 
     //! @brief replaces a ptr by another one
     //! @param rOldPtr
     //! @param rNewPtr
-    virtual void ExchangePtr(ElementBase* rOldElementPtr, ElementBase* rNewElementPtr);
+    virtual void ExchangePtr(int rId, ElementBase* rOldElementPtr, ElementBase* rNewElementPtr);
 
     //! @brief replaces a ptr by another one
     //! @param rOldPtr
     //! @param rNewPtr
-    virtual void ExchangePtr(NodeBase* rOldNodePtr, NodeBase* rNewNodePtr);
+    virtual void ExchangePtr(int rId, NodeBase* rOldNodePtr, NodeBase* rNewNodePtr);
 
 	//! @brief Unites two groups
 	//! @param rOther other group

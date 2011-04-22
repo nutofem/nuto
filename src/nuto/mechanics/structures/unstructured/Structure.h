@@ -210,9 +210,11 @@ public:
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     void NodeExtractDofSecondTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
 
+#ifndef SWIG
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-    void NodeExchangePtr(NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr);
+    void NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr);
+#endif //SWIG
 
 //*************************************************
 //************ Element routines     ***************
@@ -437,6 +439,7 @@ protected:
     Structure()
     {}
 
+#ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
@@ -451,7 +454,15 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodess) const;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
     void GetNodesTotal(std::vector<NodeBase*>& rNodes);
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes);
 
     //! @brief ... store all cracks of a structure in a vector
     //! @param rElements ... vector of const crack pointer
@@ -460,6 +471,7 @@ protected:
     //! @brief ... store all cracks of a structure in a vector
     //! @param rElements ... vector of crack pointer
     void GetCracksTotal(std::vector<CrackBase*>& rCracks);
+#endif
 
     //! @brief deletes a node
     //! @param rNodeNumber ... node number

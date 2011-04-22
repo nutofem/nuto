@@ -104,7 +104,7 @@ void Group<NodeBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStruct
     	std::cout << "    members :" <<std::endl;
     	for (Group<NodeBase>::const_iterator it=this->begin(); it!= this->end(); it++)
     	{
-    		std::cout << "      " << rStructure->NodeGetId(*it) << std::endl;
+    		std::cout << "      " << it->first << std::endl;
     	}
     }
 }
@@ -121,7 +121,7 @@ void Group<ElementBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStr
     	std::cout << "    members :" <<std::endl;
     	for (Group<ElementBase>::const_iterator it=this->begin(); it!= this->end(); it++)
     	{
-    		std::cout << "      " << rStructure->ElementGetId(*it) << std::endl;
+    		std::cout << "      " << it->first << std::endl;
     	}
     }
 }

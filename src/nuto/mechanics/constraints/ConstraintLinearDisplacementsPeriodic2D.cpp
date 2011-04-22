@@ -52,25 +52,25 @@ NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeri
     Group<NodeBase>* newGroup = dynamic_cast<Group<NodeBase>*>(rGroupTop->Intersection (rGroupLeft));
     if (newGroup->GetNumMembers()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Top left corner node can not be determined.");
-    mLeftUpperCorner = *(newGroup->begin());
+    mLeftUpperCorner = newGroup->begin()->second;
     delete newGroup;
 
     newGroup = dynamic_cast<Group<NodeBase>*>(rGroupTop->Intersection (rGroupRight));
     if (newGroup->GetNumMembers()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Top right corner node can not be determined.");
-    mRightUpperCorner = *(newGroup->begin());
+    mRightUpperCorner = newGroup->begin()->second;
     delete newGroup;
 
     newGroup = dynamic_cast<Group<NodeBase>*>(rGroupBottom->Intersection (rGroupLeft));
     if (newGroup->GetNumMembers()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Bottom left corner node can not be determined.");
-    mLeftLowerCorner = *(newGroup->begin());
+    mLeftLowerCorner = newGroup->begin()->second;
     delete newGroup;
 
     newGroup = dynamic_cast<Group<NodeBase>*>(rGroupBottom->Intersection (rGroupRight));
     if (newGroup->GetNumMembers()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D] Bottom right corner node can not be determined.");
-    mRightLowerCorner = *(newGroup->begin());
+    mRightLowerCorner = newGroup->begin()->second;
     delete newGroup;
 
     //get box coordinates
@@ -179,18 +179,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
     //calculate master nodes left boundary (green)
     mMasterNodesLeftBoundary.resize(0);
     mMasterNodesLeftBoundary.reserve(mGroupLeft->GetNumMembers());
-    for (Group<NodeBase>::iterator itNode=mGroupLeft->begin(); itNode!=mGroupLeft->end();itNode++)
+    for (Group<NodeBase>::const_iterator itNode=mGroupLeft->begin(); itNode!=mGroupLeft->end();itNode++)
     {
-        mMasterNodesLeftBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode));
+        mMasterNodesLeftBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
     }
     sort(mMasterNodesLeftBoundary.begin(), mMasterNodesLeftBoundary.end(), less_YCoordinate2D());
 
     //calculate master nodes bottom boundary (yellow-orange-blue)
     mMasterNodesBottomBoundary.resize(0);
     mMasterNodesBottomBoundary.reserve(mGroupBottom->GetNumMembers());
-    for (Group<NodeBase>::iterator itNode=mGroupBottom->begin(); itNode!=mGroupBottom->end();itNode++)
+    for (Group<NodeBase>::const_iterator itNode=mGroupBottom->begin(); itNode!=mGroupBottom->end();itNode++)
     {
-        mMasterNodesBottomBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode));
+        mMasterNodesBottomBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
     }
     sort(mMasterNodesBottomBoundary.begin(), mMasterNodesBottomBoundary.end(), less_XCoordinate2D());
 
@@ -202,15 +202,15 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         crackShift = length*tan((90-mAngle)*PI/180.);
         mSlaveNodesRightBoundary.reserve(mGroupRight->GetNumMembers());
         double coordinates[3];
-        for (Group<NodeBase>::iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
+        for (Group<NodeBase>::const_iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
         {
-            NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode);
+            NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
             nodePtr->GetCoordinates2D(coordinates);
             double DeltaX((length-crackShift)*0.5);
             double DeltaY(length-coordinates[1]);
 
             if (DeltaX*DeltaX + DeltaY*DeltaY >=mRadiusToCrackWithoutConstraints * mRadiusToCrackWithoutConstraints)
-                mSlaveNodesRightBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode));
+                mSlaveNodesRightBoundary.push_back((dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second)));
         }
     }
     else
@@ -219,14 +219,14 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         crackShift = length*tan((mAngle)*PI/180.);
         mSlaveNodesRightBoundary.reserve(mGroupRight->GetNumMembers()-1);
         double coordinates[3];
-        for (Group<NodeBase>::iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
+        for (Group<NodeBase>::const_iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
         {
-            if ((*itNode)!=mRightLowerCorner)
+            if (itNode->second!=mRightLowerCorner)
             {
-                NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode);
+                NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
                 nodePtr->GetCoordinates2D(coordinates);
                 if (fabs(coordinates[1]-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
-                    mSlaveNodesRightBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode));
+                    mSlaveNodesRightBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
             }
         }
     }
@@ -241,11 +241,11 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         crackShift = length*tan((90-mAngle)*PI/180.);
         mSlaveNodesTopBoundary.reserve(mGroupTop->GetNumMembers()-1);
         double coordinates[3];
-        for (Group<NodeBase>::iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
+        for (Group<NodeBase>::const_iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
         {
-            if ((*itNode)!=mLeftUpperCorner)
+            if (itNode->second!=mLeftUpperCorner)
             {
-                NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode);
+                NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
                 nodePtr->GetCoordinates2D(coordinates);
                 if (fabs(coordinates[0]-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
                     mSlaveNodesTopBoundary.push_back(nodePtr);
@@ -258,15 +258,15 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         crackShift = length*tan((mAngle)*PI/180.);
         mSlaveNodesTopBoundary.reserve(mGroupTop->GetNumMembers());
         double coordinates[3];
-        for (Group<NodeBase>::iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
+        for (Group<NodeBase>::const_iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
         {
-            NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode);
+            NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
             nodePtr->GetCoordinates2D(coordinates);
             double DeltaX(coordinates[0]-(length+crackShift)*0.5);
             double DeltaY((length-crackShift)*0.5);
 
             if (DeltaX*DeltaX + DeltaY*DeltaY >=mRadiusToCrackWithoutConstraints * mRadiusToCrackWithoutConstraints)
-                mSlaveNodesTopBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(*itNode));
+                mSlaveNodesTopBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
         }
 
     }
@@ -737,7 +737,7 @@ std::vector<NuTo::NodeBase*> NuTo::ConstraintLinearDisplacementsPeriodic2D::GetB
     int theNode(0);
     for (Group<NodeBase>::iterator itNode=boundaryNodes.begin(); itNode!=boundaryNodes.end();itNode++, theNode++)
     {
-        returnVector[theNode] = (*itNode);
+        returnVector[theNode] = itNode->second;
     }
     return returnVector;
 }

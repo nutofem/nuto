@@ -64,15 +64,15 @@ void NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix(int& 
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         rRHS(curConstraintEquation,0) = mRHS;
-        if ((*itNode)->GetNumDisplacements()==0)
+        if (itNode->second->GetNumDisplacements()==0)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix] Node does not have displacements or has more than three displacement components.");
 
         if (fabs(mDirection[0])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(0),mDirection[0]);
+            rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofDisplacement(0),mDirection[0]);
         if (fabs(mDirection[1])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(1),mDirection[1]);
+            rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofDisplacement(1),mDirection[1]);
         if (fabs(mDirection[2])>1e-18)
-            rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(2),mDirection[2]);
+            rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofDisplacement(2),mDirection[2]);
 
         curConstraintEquation++;
     }
@@ -93,8 +93,9 @@ void NuTo::ConstraintLinearNodeGroupDisplacements3D::serialize(Archive & ar, con
     std::cout << "start serialize ConstraintLinearNodeGroupDisplacements3D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
-    & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-    & BOOST_SERIALIZATION_NVP(mDirection);
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+       & BOOST_SERIALIZATION_NVP(mRHS)
+       & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeGroupDisplacements3D" << std::endl;
 #endif

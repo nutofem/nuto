@@ -84,9 +84,9 @@ void NuTo::ConstraintLinearGlobalCrackOpening::serialize(Archive & ar, const uns
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinearGlobalCrackOpening" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
        & BOOST_SERIALIZATION_NVP(mStructure)
+       & BOOST_SERIALIZATION_NVP(mRHS)
        & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearGlobalCrackOpening" << std::endl;

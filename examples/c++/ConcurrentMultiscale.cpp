@@ -306,7 +306,7 @@ public:
 #ifdef ENABLE_SERIALIZATION
     		myStructureFineScale.Save(rNameOfBinaryFinescale,"binary");
 #else
-    		throw MechanicsException("ConcurrentMultiscale - example requires serialization")
+    		throw std::exception("ConcurrentMultiscale - example requires serialization");
 #endif
     		//myStructureFineScale.Restore(rNameOfBinaryFinescale,"binary");
     	    myStructureFineScale.ElementTotalUpdateTmpStaticData();
@@ -534,9 +534,8 @@ try
         int minNumNewtonIterations=7;
         double increaseFactor=1.5;
         double minDeltaLoadFactor=1e-6;
-        bool saveStructureBeforeUpdate=false;
         myStructureCoarseScale.NewtonRaphson(toleranceResidualForce,automaticLoadstepControl,maxDeltaLoadFactor,maxNumNewtonIterations,decreaseFactor,
-        minNumNewtonIterations,increaseFactor,minDeltaLoadFactor,saveStructureBeforeUpdate);
+        minNumNewtonIterations,increaseFactor,minDeltaLoadFactor);
        myStructureCoarseScale.ElementTotalUpdateStaticData();
        double energy = myStructureCoarseScale.ElementTotalGetTotalEnergy();
         std::cout << "total energy on the macroscale " << energy << std::endl;

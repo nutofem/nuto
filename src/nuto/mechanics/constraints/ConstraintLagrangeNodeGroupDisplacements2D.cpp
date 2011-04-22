@@ -161,12 +161,12 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateCoefficientMatri
     rGlobalDofs.resize(dof,1);
     int curNodeEntry(0);
     int theNode(0);
-    for (Group<NodeBase>::iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=3, theNode++)
+    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=3, theNode++)
     {
         double disp[1];
-        int dofx((*itNode)->GetDofDisplacement(0));
-        int dofy((*itNode)->GetDofDisplacement(1));
-        (*itNode)->GetDisplacements2D(disp);
+        int dofx(itNode->second->GetDofDisplacement(0));
+        int dofy(itNode->second->GetDofDisplacement(1));
+        itNode->second->GetDisplacements2D(disp);
 
         rGlobalDofs[curNodeEntry] = mLagrangeDOF[theNode];
         rGlobalDofs[curNodeEntry+1] = dofx;
@@ -242,12 +242,12 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateGradientInternal
     rGlobalDofs.resize(dof);
     int curNodeEntry(0);
     int theNode(0);
-    for (Group<NodeBase>::iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=3, theNode++)
+    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=3, theNode++)
     {
         double disp[1];
-        int dofx((*itNode)->GetDofDisplacement(0));
-        int dofy((*itNode)->GetDofDisplacement(1));
-        (*itNode)->GetDisplacements2D(disp);
+        int dofx(itNode->second->GetDofDisplacement(0));
+        int dofy(itNode->second->GetDofDisplacement(1));
+        itNode->second->GetDisplacements2D(disp);
 
         rGlobalDofs[curNodeEntry] = mLagrangeDOF[theNode];
         rGlobalDofs[curNodeEntry+1] = dofx;

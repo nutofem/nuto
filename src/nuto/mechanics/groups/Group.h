@@ -11,9 +11,9 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/set.hpp>
+#include <boost/serialization/map.hpp>
 #else
-#include <set>
+#include <map>
 #endif // ENABLE_SERIALIZATION
 
 
@@ -28,7 +28,7 @@ class NodeBase;
 //! @date October 2009
 //! @brief ... standard abstract class for all groups
 template <class T>
-class Group : public GroupBase, public std::set<T*>
+class Group : public GroupBase, public std::map<int,T*>
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
@@ -36,7 +36,7 @@ class Group : public GroupBase, public std::set<T*>
 
 public:
     //! @brief constructor
-    Group() : GroupBase(), std::set<T*>(){};
+    Group() : GroupBase(), std::map<int, T*>(){};
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -48,7 +48,7 @@ public:
 #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialize Group<T>" << std::endl;
 #endif
-        ar & boost::serialization::make_nvp ("set",boost::serialization::base_object< std::set<T*> > ( *this ) )
+        ar & boost::serialization::make_nvp ("map",boost::serialization::base_object< std::map<int,T*> > ( *this ) )
            & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
 #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize Group<T>" << std::endl;
@@ -65,40 +65,44 @@ public:
 
     //! @brief adds a group member
     //! @param rMember new member
-    void AddMember(T* rMember)
+    void AddMember(int rId, T* rMember)
     {
-        if (!this->insert(rMember).second)
+    	if ((this->insert(std::pair<int,T*>(rId,rMember))).second==false)
             throw MechanicsException("[Group::AddMember] Group member already exists in the group.");
     }
 
     //! @brief removes a group member
     //! @param rMember member to be removed
-    void RemoveMember(T* rMember)
+    void RemoveMember(int rId)
     {
-        if (!this->erase(rMember))
+        if (!this->erase(rId))
             throw MechanicsException("[Group::AddMember] Group member to be deleted is not within the group.");
     }
-    
-	//! @brief check if a group contains the entry
-	//! @param rElementPtr Element pointer
+
+    //! @brief check if a group contains the entry
+    //! @param rElementPtr Element pointer
     //! @return TRUE if rMember is in the group, FALSE otherwise
-    bool Contain(T* rMember)
+    bool Contain(int rId)
     {
-        if (this->find(rMember)==this->end())	return false;
-        else							       	return true;
+        if (this->find(rId)==this->end())
+        	return false;
+        else
+        	return true;
     }
+
 
     //! @brief replaces a ptr by another one
     //! @param rOldPtr
     //! @param rNewPtr
-    void ExchangePtr(T* rOldMember, T* rNewMember)
+    void ExchangePtr(int rId, T* rOldMember, T* rNewMember)
     {
-        if (this->erase(rOldMember))
+        typename std::map<int,T*>::iterator it(this->find(rId));
+        if (it==this->end())
+        	throw MechanicsException("[Group::ExchangePtr] New group member can not be inserted.");
+        else
         {
-            if (this->insert(rNewMember).second==false)
-            {
-                throw MechanicsException("[Group::ExchangePtr] New group member can not be inserted.");
-            }
+        	assert(it->second==rOldMember);
+        	it->second=rNewMember;
         }
     }
 

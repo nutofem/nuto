@@ -426,10 +426,11 @@ public:
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
     //this routine saves the current state before an update in the Newton Raphson iteration is performed
     //this only happens for more than one load step (either prescibed or with automatic load control)
-    //if not alreaday saved, the structure is saved to an internal stream (be careful to not include this stream in the serialization routine)
-    void SaveStructure()const;
+    //if not already saved, the structure is saved to an internal stream
+    void SaveStructure(std::stringstream& rSaveStringStream)const;
 
-    void RestoreStructure();
+    //restores the structure previously saved into the string
+    void RestoreStructure(std::stringstream& rSaveStringStream);
 
     //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
     //! @param load factor
@@ -446,11 +447,6 @@ public:
 
     //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
     void InitBeforeNewtonRaphson();
-
-    bool GetSavedToStringStream()
-    {
-        return mSavedToStringStream;
-    }
 
     double GetlFineScaleDamage()const
     {
@@ -572,10 +568,11 @@ protected:
     EngineeringStrain2D mPrevEpsilonTot;
     //! @brief this is the delta strain (used in the load application of the Newton procedure)
     EngineeringStrain2D mDeltaEpsilonTot;
-    //! @brief set to true, if during an update in NR the structure had to be saved, otherwise unchanged
+/*    //! @brief set to true, if during an update in NR the structure had to be saved, otherwise unchanged
     mutable bool mSavedToStringStream;
     //! @brief structure is saved to that string stream
     mutable std::stringstream mSaveStringStream;
+*/
 };
 }
 #ifdef ENABLE_SERIALIZATION

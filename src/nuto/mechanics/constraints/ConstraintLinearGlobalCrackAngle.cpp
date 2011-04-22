@@ -83,7 +83,6 @@ void NuTo::ConstraintLinearGlobalCrackAngle::serialize(Archive & ar, const unsig
     std::cout << "start serialize ConstraintLinearGlobalCrackAngle" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
        & BOOST_SERIALIZATION_NVP(mStructure);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearGlobalCrackAngle" << std::endl;

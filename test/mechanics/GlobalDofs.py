@@ -38,21 +38,21 @@ myNode2 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullMatrix
 myNode3 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullMatrix(3,1,(10,0,0)))
 
 #create group of nodes
-myStructure.GroupCreate("myNodeGroup","Nodes")
-myStructure.GroupAddNode("myNodeGroup",myNode1)
-myStructure.GroupAddNode("myNodeGroup",myNode3)
+myNodeGroup = myStructure.GroupCreate("Nodes")
+myStructure.GroupAddNode(myNodeGroup,myNode1)
+myStructure.GroupAddNode(myNodeGroup,myNode3)
 
 #create constitutive law
-myStructure.ConstitutiveLawCreate("myMatLin","LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus("myMatLin",10)
-myStructure.ConstitutiveLawSetPoissonsRatio("myMatLin",0.1)
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
+myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 
 #add constraints for a single node
-Constraint1 = myStructure.ConstraintSetDisplacementNode(myNode2,nuto.DoubleFullMatrix(3,1,(1,1,-1)),0.5)
+Constraint1 = myStructure.ConstraintLinearSetDisplacementNode(myNode2,nuto.DoubleFullMatrix(3,1,(1,1,-1)),0.5)
 
 #add constraints for a group of nodes
-Constraint2 = myStructure.ConstraintSetDisplacementNodeGroup("myNodeGroup",nuto.DoubleFullMatrix(3,1,(1,0,0)),2)
-numConstraints = myStructure.ConstraintGetNumConstraintEquations()
+Constraint2 = myStructure.ConstraintLinearSetDisplacementNodeGroup(myNodeGroup,nuto.DoubleFullMatrix(3,1,(1,0,0)),2)
+numConstraints = myStructure.ConstraintGetNumLinearConstraints()
 if (printResult):
     print "Number of constraints : " + str(numConstraints) 
 if (numConstraints!=3):
@@ -60,8 +60,8 @@ if (numConstraints!=3):
         error = True;
 
 #number global dofs of the nodes
-myStructure.NodeNumberGlobalDofs()
-numberGlobalDofs = myStructure.NodeGetNumberGlobalDofs()
+myStructure.NodeBuildGlobalDofs()
+numberGlobalDofs = myStructure.GetNumDofs()
 if (printResult):
     print "Number of global dofs: " + str(numberGlobalDofs) 
 if (numberGlobalDofs!=15):
@@ -76,11 +76,11 @@ constraintMatrixFull = nuto.DoubleFullMatrix(constraintMatrixSparse)
 
 #correct constraint matrix
 constraintMatrixFullCorrect = nuto.DoubleFullMatrix(3,15)
-constraintMatrixFullCorrect.SetValue(0,3,1./sqrt(3))
-constraintMatrixFullCorrect.SetValue(0,4,1./sqrt(3))
-constraintMatrixFullCorrect.SetValue(0,5,-1./sqrt(3))
-constraintMatrixFullCorrect.SetValue(1,0,1)
-constraintMatrixFullCorrect.SetValue(2,9,1)
+constraintMatrixFullCorrect.SetValue(0,1,1./sqrt(3))
+constraintMatrixFullCorrect.SetValue(0,2,-1./sqrt(3))
+constraintMatrixFullCorrect.SetValue(0,12,1./sqrt(3))
+constraintMatrixFullCorrect.SetValue(1,13,1)
+constraintMatrixFullCorrect.SetValue(2,14,1)
 
 #correct rhs
 rhsCorrect = nuto.DoubleFullMatrix(3,1,(0.5,2,2))

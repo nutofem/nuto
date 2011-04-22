@@ -362,30 +362,21 @@ void NuTo::StructureMultiscale::Restore (const std::string &filename, std::strin
 #endif// ENABLE_SERIALIZATION
 
 
-void NuTo::StructureMultiscale::SaveStructure()const
+void NuTo::StructureMultiscale::SaveStructure(std::stringstream& rSaveStringStream)const
 {
 #ifdef ENABLE_SERIALIZATION
-    if (mSavedToStringStream==false)
-    {
-        boost::archive::binary_oarchive oba(mSaveStringStream);
-        oba << (*this);
-        mSavedToStringStream = true;
-    }
+    boost::archive::binary_oarchive oba(rSaveStringStream);
+    oba << (*this);
 #else
     throw MechanicsException("[NuTo::StructureMultiscale::Save] Serialization is required - switch it on in the CMakeFile.txt");
 #endif //ENABLE_SERIALIZATION
 }
 
-void NuTo::StructureMultiscale::RestoreStructure()
+void NuTo::StructureMultiscale::RestoreStructure(std::stringstream& rSaveStringStream)
 {
 #ifdef ENABLE_SERIALIZATION
-    if (mSavedToStringStream==true)
-    {
-        boost::archive::binary_iarchive iba(mSaveStringStream);
+        boost::archive::binary_iarchive iba(rSaveStringStream);
         iba >> (*this);
-        //delete string stream afterwards
-        mSaveStringStream.str("");
-    }
 #else
     throw MechanicsException("[NuTo::StructureMultiscale::Restore] Serialization is required - switch it on in the CMakeFile.txt");
 #endif //ENABLE_SERIALIZATION
@@ -431,9 +422,9 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
     if (nodeGroupBoundary->GetNumMembers()<3)
         throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] Number of nodes in the fine scale model has to be at least 3.");
     Group<NodeBase>::iterator itBoundaryNode=nodeGroupBoundary->begin();
-    (*itBoundaryNode)->GetCoordinates2D(coord1);itBoundaryNode++;
-    (*itBoundaryNode)->GetCoordinates2D(coord2);itBoundaryNode++;
-    (*itBoundaryNode)->GetCoordinates2D(coord3);
+    itBoundaryNode->second->GetCoordinates2D(coord1);itBoundaryNode++;
+    itBoundaryNode->second->GetCoordinates2D(coord2);itBoundaryNode++;
+    itBoundaryNode->second->GetCoordinates2D(coord3);
     //check for being on a straight line
     bool onLine(true);
     while (onLine)
@@ -448,7 +439,7 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
         	itBoundaryNode++;
             if (itBoundaryNode==nodeGroupBoundary->end())
                 throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] All nodes are on the same line.");
-            (*itBoundaryNode)->GetCoordinates2D(coord3);
+            itBoundaryNode->second->GetCoordinates2D(coord3);
         }
         else
             onLine = false;
@@ -482,7 +473,7 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
     for (Group<NodeBase>::iterator itNode=nodeGroupBoundary->begin(); itNode!=nodeGroupBoundary->end();itNode++)
     {
         double coordinates[2];
-        (*itNode)->GetCoordinates2D(coordinates);
+        itNode->second->GetCoordinates2D(coordinates);
         if (squareFineScaleModel==false)
         {
             if (fabs((rCenter[0]-coordinates[0])*(rCenter[0]-coordinates[0])+(rCenter[1]-coordinates[1])*(rCenter[1]-coordinates[1])-fineScaleRadius*fineScaleRadius)>0.001*fineScaleRadius*fineScaleRadius)
@@ -501,20 +492,21 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
         throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] Group for boundary nodes is not a node group.");
     Group<NodeBase>* nodeGroup = itGroup->second->AsGroupNode();
     //copy the boundary nodes first, since the iterators are invalidated in NodeExchangePtr
-    std::vector<NodeBase*> nodeVec(nodeGroup->size());
+    std::vector<std::pair<int, NodeBase*> >nodeVec(nodeGroup->size());
     unsigned int countNode=0;
     for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end(); itNode++, countNode++)
     {
-        nodeVec[countNode] = (*itNode);
+        nodeVec[countNode].first  = itNode->first;
+        nodeVec[countNode].second = itNode->second;
     }
 
     for (countNode=0; countNode<nodeVec.size(); countNode++)
     {
-        Node::eNodeType nodeType = nodeVec[countNode]->GetNodeType();
+        Node::eNodeType nodeType = nodeVec[countNode].second->GetNodeType();
         NodeBase* newNode(0);
 
         double coordinates[2];
-        nodeVec[countNode]->GetCoordinates2D(coordinates);
+        nodeVec[countNode].second->GetCoordinates2D(coordinates);
 
         switch (nodeType)
         {
@@ -540,8 +532,7 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
             }
             newNode->SetCoordinates2D(coordinates);
             //old node is deleted in Exchange routine when being removed from node table
-            std::cout << "change node " << NodeGetId(nodeVec[countNode]) << std::endl;
-            NodeExchangePtr(nodeVec[countNode],newNode);
+            NodeExchangePtr(nodeVec[countNode].first,nodeVec[countNode].second,newNode);
             break;
         case Node::NodeCoordinatesDisplacementsMultiscale2D:
             break;
@@ -589,7 +580,7 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
 
         for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
         {
-            (*itElement)->GetIntegrationPointVolume(volume);
+            itElement->second->GetIntegrationPointVolume(volume);
             for (unsigned int count=0; count< volume.size(); count++)
             {
             	rArea+= volume[count];
@@ -614,12 +605,13 @@ void NuTo::StructureMultiscale::NumberAdditionalGlobalDofs()
     // DOFs related to the crack angle and crack opening
     if (mDimension==2)
     {
-        mDOFCrackAngle = mNumDofs++;
+    	mDOFCrackAngle = mNumDofs++;
         mDOFCrackOpening[0] = mNumDofs++;
         mDOFCrackOpening[1] = mNumDofs++;
         mDOFGlobalTotalStrain[0] = mNumDofs++;
         mDOFGlobalTotalStrain[1] = mNumDofs++;
         mDOFGlobalTotalStrain[2] = mNumDofs++;
+        std::cout << "mDofs for crack angle "<< mDOFCrackAngle << std::endl;
     }
     else
         throw MechanicsException("[NuTo::StructureMultiscale::SetAdditionalGlobalDofs] Only implemented for 2D.");
@@ -652,6 +644,7 @@ void NuTo::StructureMultiscale::NodeMergeAdditionalGlobalDofValues(const FullMat
             value-=2.*M_PI;
         }
         this->mCrackAngle = value;
+        std::cout << "set crack angle to "  << value << std::endl;
 
 
         //merge crack opening
@@ -786,10 +779,10 @@ void NuTo::StructureMultiscale::BuildGlobalGradientInternalPotentialSubVectors(N
     const Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorDamage = this->GetScalingFactorDamage();
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         // calculate element contribution
-    	(*itElement)->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+    	itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
     	elementVector*=scalingFactorDamage;
         assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
         assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
@@ -869,10 +862,10 @@ void NuTo::StructureMultiscale::BuildGlobalGradientInternalPotentialSubVectors(N
     elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorHomogeneous = this->GetScalingFactorHomogeneous();
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         // calculate element contribution
-    	(*itElement)->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+    	itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
     	elementVector*=scalingFactorHomogeneous;
         assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
         assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
@@ -1028,6 +1021,9 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     std::vector<boost::array<double,3> > dDOF2;
     CalculatedDispdGlobalDofs(mappingDofMultiscaleNode,dDOF,dDOF2);
 
+    std::cout << "alpha "  << mCrackAngle << " crack opening "<< mCrackOpening[0] << " " << mCrackOpening[1] <<
+    		     " epsilon hom" << mEpsilonHom.GetData()[0] << " "<< mEpsilonHom.GetData()[1]<< " "<< mEpsilonHom.GetData()[2]<<std::endl;
+
     // loop over all elements in the damaged region
 	boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(mGroupElementsDamage);
     if (itGroup==mGroupMap.end())
@@ -1037,12 +1033,12 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     const Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorDamage = this->GetScalingFactorDamage();
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         // calculate element contribution
         bool symmetryFlag = false;
-        (*itElement)->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        (*itElement)->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+        itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+        itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
         elementMatrix*=scalingFactorDamage;
         elementVector*=scalingFactorDamage;
 
@@ -1073,12 +1069,12 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorHomogeneous = this->GetScalingFactorHomogeneous();
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         // calculate element contribution
         bool symmetryFlag = false;
-        (*itElement)->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        (*itElement)->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+        itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+        itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
         elementMatrix*=scalingFactorHomogeneous;
         elementVector*=scalingFactorHomogeneous;
 
@@ -1170,12 +1166,12 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     const Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorDamage = this->GetScalingFactorDamage();
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         // calculate element contribution
         bool symmetryFlag = false;
-        (*itElement)->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        (*itElement)->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+        itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+        itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
         elementMatrix*=scalingFactorDamage;
         elementVector*=scalingFactorDamage;
 
@@ -1205,12 +1201,12 @@ void NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices0General(Sparse
     elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorHomogeneous = this->GetScalingFactorHomogeneous();
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         // calculate element contribution
         bool symmetryFlag = false;
-        (*itElement)->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        (*itElement)->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+        itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+        itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
         elementMatrix*=scalingFactorHomogeneous;
         elementVector*=scalingFactorHomogeneous;
 
@@ -2924,7 +2920,8 @@ void NuTo::StructureMultiscale::GetdEpsilonHomdCrack(double rbHomAlpha[3], doubl
 //! @brief renumbers the global dofs in the structure after
 void NuTo::StructureMultiscale::ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
 {
-    mDOFCrackAngle = rMappingInitialToNewOrdering[mDOFCrackAngle];
+    std::cout << "renumber alpha=" <<  mDOFCrackAngle << " to " << rMappingInitialToNewOrdering[mDOFCrackAngle] << std::endl;
+	mDOFCrackAngle = rMappingInitialToNewOrdering[mDOFCrackAngle];
     mDOFCrackOpening[0] = rMappingInitialToNewOrdering[mDOFCrackOpening[0]];
     mDOFCrackOpening[1] = rMappingInitialToNewOrdering[mDOFCrackOpening[1]];
     mDOFGlobalTotalStrain[0]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[0]];
@@ -3185,7 +3182,6 @@ int NuTo::StructureMultiscale::ConstraintLinearGlobalTotalStrain(const Engineeri
 //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
 void NuTo::StructureMultiscale::InitBeforeNewtonRaphson()
 {
-    mSavedToStringStream = false;
     NewtonRaphsonInfo(10);
 }
 

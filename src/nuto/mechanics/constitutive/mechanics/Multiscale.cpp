@@ -197,9 +197,11 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+        std::stringstream saveStream;
+        bool hasBeenSaved(false);
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
                 true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-                mIncreaseFactor, mMinLoadFactor, true);
+                mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);
 
         //calculate average stress
         NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
@@ -217,9 +219,9 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         rEngineeringStress.mEngineeringStress[2] = averageStressDamage(3,0)+averageStressHomogeneous(3,0);
 
         //restore previous state (only performed if the load had to be subdivided)
-        if (fineScaleStructure->GetSavedToStringStream())
+        if (hasBeenSaved)
         {
-            fineScaleStructure->RestoreStructure();
+            fineScaleStructure->RestoreStructure(saveStream);
         }
         else
         {
@@ -363,6 +365,9 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
         fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        std::cout << "dof of alpha " << fineScaleStructure->GetDofCrackAngle() << std::endl;
+        std::cout << "active dofs " << std::endl;
+        FullMatrix<double>(activeDOF).Trans().Info(12,3);
 
 
         //Get and set previous delta strain
@@ -371,10 +376,23 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+        std::stringstream saveStream;
+        bool hasBeenSaved(false);
+
+        if (1==1)
+        {//just for test purpose
+        fineScaleStructure->SaveStructure(saveStream);
+        fineScaleStructure->GroupInfo(10);
+        //std::string str;
+        //getline (std::cin,str);
+    	fineScaleStructure->RestoreStructure(saveStream);
+        fineScaleStructure->GroupInfo(10);
+    	exit(0);
+        }
+
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
                 true,  mMaxDeltaLoadFactor, mMaxNumNewtonIterations,mDecreaseFactor, mMinNumNewtonIterations,
-                mIncreaseFactor, mMinLoadFactor, true);
-
+                mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);
         // use Schur complement to calculate the stiffness
 
         //no change the constraints the way that the total strain is no longer fixed
@@ -485,7 +503,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         schurIndicesMatrix(1,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[1];
         schurIndicesMatrix(2,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[2];
 
-        std::cout << "dimension of JJ" << std::endl;
         NuTo::SparseDirectSolverMUMPS mumps;
         NuTo::SparseMatrixCSRGeneral<double> stiffnessFineScale(matrixJJ);
         stiffnessFineScale.SetOneBasedIndexing();
@@ -498,9 +515,10 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         *(rTangent->AsConstitutiveTangentLocal3x3()) = stiffness;
 
         //restore previous state (only performed if the load had to be subdivided)
-        if (fineScaleStructure->GetSavedToStringStream())
+        if (hasBeenSaved)
         {
-            fineScaleStructure->RestoreStructure();
+        	fineScaleStructure->RestoreStructure(saveStream);
+            std::cout << "restore data " << std::endl;
         }
         else
         {
@@ -509,9 +527,10 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             fineScaleStructure->SetLoadFactor(0);
             fineScaleStructure->NodeBuildGlobalDofs();
             fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            std::cout << "reinitialize data " << std::endl;
         }
 
-        if (1==1)
+        if (1==0)
         {
 			//just for test purpose, calculate stiffness via resforces
 			EngineeringStress2D stress1, stress2;
@@ -535,18 +554,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
 					break;
 				default:
 					throw MechanicsException("");
-				}
-				//restore previous state (only performed if the load had to be subdivided)
-				if (fineScaleStructure->GetSavedToStringStream())
-				{
-					fineScaleStructure->RestoreStructure();
-				}
-				else
-				{
-					//set load factor to zero in order to get the same ordering of the displacements as before the routine
-					fineScaleStructure->SetLoadFactor(0);
-					fineScaleStructure->NodeBuildGlobalDofs();
-					fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
 				}
 				GetEngineeringStressFromEngineeringStrain(rElement, rIp, deformationGradient, stress2);
 
@@ -575,19 +582,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             eigenVectors.GetColumn(1).Trans().Info(12,3);
             std::cout << "eigenvector 3" << std::endl;
             eigenVectors.GetColumn(2).Trans().Info(12,3);
-
-			//restore previous state (only performed if the load had to be subdivided)
-			if (fineScaleStructure->GetSavedToStringStream())
-			{
-				fineScaleStructure->RestoreStructure();
-			}
-			else
-			{
-				//set load factor to zero in order to get the same ordering of the displacements as before the routine
-				fineScaleStructure->SetLoadFactor(0);
-				fineScaleStructure->NodeBuildGlobalDofs();
-				fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-			}
         }
     }//nonlinear solution
 #else
@@ -657,9 +651,11 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+        std::stringstream saveStream;
+        bool hasBeenSaved(false);
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
                 true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-                mIncreaseFactor, mMinLoadFactor, false);
+                mIncreaseFactor, mMinLoadFactor, false, saveStream, hasBeenSaved);
 
         double energy = staticData->GetPrevTotalEnergy();
         //calculate delta total energy (sigma1+sigma2)/2*delta_strain
@@ -813,9 +809,11 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
     EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
     fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+    std::stringstream saveStream;
+    bool hasBeenSaved(false);
     fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
             true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-            mIncreaseFactor, mMinLoadFactor, true);
+            mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);
 
     double energy = staticData->GetPrevTotalEnergy();
     //calculate delta total energy (sigma1+sigma2)/2*delta_strain
@@ -840,9 +838,9 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
                  meanEngineeringStress.mEngineeringStress[1]*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
                  meanEngineeringStress.mEngineeringStress[2]*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2]));
     //restore structure
-    if (fineScaleStructure->GetSavedToStringStream())
+    if (hasBeenSaved)
     {
-        fineScaleStructure->RestoreStructure();
+        fineScaleStructure->RestoreStructure(saveStream);
     }
     else
     {

@@ -55,11 +55,11 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
         rRHS(curConstraintEquation,0) = mRHS;
 
         // add constraint to constrain matrix
-        if ((*itNode)->GetNumDisplacements()!=1)
+        if (itNode->second->GetNumDisplacements()!=1)
         {
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }
-        rConstraintMatrix.AddEntry(curConstraintEquation,(*itNode)->GetDofDisplacement(0),1);
+        rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofDisplacement(0),1);
 
         // increase constraint equation number
         curConstraintEquation++;
@@ -81,7 +81,8 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::serialize(Archive & ar, con
     std::cout << "start serialize ConstraintLinearNodeGroupDisplacements1D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNodeGroup)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+       & BOOST_SERIALIZATION_NVP(mRHS);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeGroupDisplacements1D" << std::endl;
 #endif

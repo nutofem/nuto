@@ -147,10 +147,10 @@ void NuTo::StructureBase::Info()const
 // store all elements of a group in a vector
 void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const
 {
-    Group<ElementBase>::iterator ElementIter = rElementGroup->begin();
+    Group<ElementBase>::const_iterator ElementIter = rElementGroup->begin();
     while (ElementIter != rElementGroup->end())
     {
-        rElements.push_back(*ElementIter);
+        rElements.push_back(ElementIter->second);
         ElementIter++;
     }
 }
@@ -886,6 +886,30 @@ void NuTo::StructureBase::PostProcessDataAfterLineSearch(int rLoadStep, int rNew
     throw MechanicsException("[NuTo::StructureBase::PostProcessDataAfterLineSearch] not implemented - overload this function in your derived Structure class.");
 }
 
+//! @brief performs a Newton Raphson iteration (displacement and/or load control) - structure is not saved before update
+//! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
+//! @parameters rAutomaticLoadstepControl yes, if the step length should be adapted
+//! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton iteration
+//! @parameters rDecreaseFactor factor to decrease the load factor in case of no convergence with the prescribed number of Newton iterations
+//! @parameters rMinNumNewtonIterations if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
+//! @parameters rIncreaseFactor by this factor
+//! @parameters rMinLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
+void NuTo::StructureBase::NewtonRaphson(double rToleranceResidualForce,
+        bool rAutomaticLoadstepControl,
+        double rMaxDeltaLoadFactor,
+        int rMaxNumNewtonIterations,
+        double rDecreaseFactor,
+        int rMinNumNewtonIterations,
+        double rIncreaseFactor,
+        double rMinDeltaLoadFactor)
+{
+	std::stringstream saveStringStream;
+	bool saveStructureBeforeUpdate(false);
+	bool isSaved(false);
+	NewtonRaphson(rToleranceResidualForce,rAutomaticLoadstepControl,rMaxDeltaLoadFactor,rMaxNumNewtonIterations,rDecreaseFactor,
+			rMinNumNewtonIterations,rIncreaseFactor,rMinDeltaLoadFactor,saveStructureBeforeUpdate,saveStringStream,isSaved);
+}
+
 //! @brief performs a Newton Raphson iteration (displacement and/or load control)
 //! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
 //! @parameters rAutomaticLoadstepControl yes, if the step length should be adapted
@@ -904,7 +928,9 @@ void NuTo::StructureBase::NewtonRaphson(double rToleranceResidualForce,
         int rMinNumNewtonIterations,
         double rIncreaseFactor,
         double rMinDeltaLoadFactor,
-        bool rSaveStructureBeforeUpdate)
+        bool rSaveStructureBeforeUpdate,
+        std::stringstream& rSaveStringStream,
+        bool& rIsSaved)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -964,7 +990,7 @@ try
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
 #ifdef SHOW_TIME
-    mySolver.SetShowTime(false);
+   mySolver.SetShowTime(false);
 #endif
     //calculate stiffness
     this->SetLoadFactor(curLoadFactor);
@@ -1042,6 +1068,9 @@ try
     //std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
     //mySolver.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale") + std::string("0") + std::string(".vtk"));
+
+    //store the structure only once in order to be able to restore the situation before entering the routine
+    rIsSaved = false;
 
     //repeat until max displacement is reached
     bool convergenceStatusLoadSteps(false);
@@ -1211,9 +1240,11 @@ std::cout << "alpha " << alpha << " normResidual " << normResidual << " normInit
                 //this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
                 //for an update on the coarse scale
                 //as a consequence, in an iterative solution with updates in between, the initial state has to be restored after leaving the routine
-                if (rSaveStructureBeforeUpdate==true)
+                if (rSaveStructureBeforeUpdate==true && rIsSaved==false)
                 {
-                    this->SaveStructure();
+                    //store the structure only once in order to be able to restore the situation before entering the routine
+                	this->SaveStructure(rSaveStringStream);
+                	rIsSaved = true;
                 }
 
                 // the update is only required to allow for a stepwise solution procedure in the fine scale model

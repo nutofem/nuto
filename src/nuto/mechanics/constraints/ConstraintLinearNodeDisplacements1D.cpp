@@ -84,8 +84,9 @@ void NuTo::ConstraintLinearNodeDisplacements1D::serialize(Archive & ar, const un
     std::cout << "start serialize ConstraintLinearNodeDisplacements1D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode)
-    & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-    & BOOST_SERIALIZATION_NVP(mDirection);
+       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
+       & BOOST_SERIALIZATION_NVP(mRHS)
+       & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeDisplacements1D" << std::endl;
 #endif

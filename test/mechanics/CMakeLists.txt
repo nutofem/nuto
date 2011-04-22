@@ -6,7 +6,7 @@ IF(ENABLE_PYTHON_TESTS)
   ADD_TEST(mechanics::ConstitutiveLaws                  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstitutiveLaws.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::CreateNodesAndGroupOperations     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CreateNodesAndGroupOperations.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::ConstraintsLagrange1D             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstraintsLagrange1D.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
- #ADD_TEST(mechanics::GlobalDofs                        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GlobalDofs.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(mechanics::GlobalDofs                        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GlobalDofs.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::NonlocalDamagePlasticity          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NonlocalDamagePlasticity.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Plane2D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Plane2D4N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -24,7 +24,7 @@ IF(ENABLE_PYTHON_TESTS)
   mechanics::ConstitutiveLaws
   mechanics::CreateNodesAndGroupOperations
   mechanics::ConstraintsLagrange1D
-  #mechanics::GlobalDofs
+  mechanics::GlobalDofs
   mechanics::NonlocalDamagePlasticity
   mechanics::Plane2D3N
   mechanics::Plane2D4N

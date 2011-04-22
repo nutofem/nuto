@@ -434,19 +434,20 @@ void NuTo::Structure::ElementGroupDelete (int rGroupNumber, bool deleteNodes)
         	//save the nodes, which are eventually to be removed
         	if (deleteNodes)
         	{
-        		for (int countNode=0; countNode<(*itElement)->GetNumNodes(); countNode++)
+        		for (int countNode=0; countNode<itElement->second->GetNumNodes(); countNode++)
         		{
-        			NodeBase* nodePtr = (*itElement)->GetNode(countNode);
+        			NodeBase* nodePtr = itElement->second->GetNode(countNode);
         			potentialNodesToBeRemoved.insert(nodePtr);
 
         		}
         	}
-        	ElementDeleteInternal((*itElement)->ElementGetId());
+        	ElementDeleteInternal(itElement->second->ElementGetId());
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupDelete] Error deleting element "
             	+ ss.str() + ".");
             throw e;
@@ -454,7 +455,8 @@ void NuTo::Structure::ElementGroupDelete (int rGroupNumber, bool deleteNodes)
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(*itElement);
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
         	throw NuTo::MechanicsException
         	   ("[NuTo::StructureBase::ElementGroupDelete] Error deleting element " + ss.str() + ".");
         }
@@ -500,9 +502,9 @@ void NuTo::Structure::ElementDeleteInternal(int rElementId)
 		{
 			if(groupIt->second->GetType()==NuTo::Groups::Elements)
 			{
-				if(groupIt->second->Contain(itElement->second))
+				if(groupIt->second->Contain(rElementId))
 				{
-					groupIt->second->RemoveMember(itElement->second);
+					groupIt->second->RemoveMember(rElementId);
 				}
 			}
 		}

@@ -335,6 +335,7 @@ protected:
     NuTo::FullMatrix<int>* mVoxelLocation;
     bool* mDofIsNotConstraint; //field of bool for all dofs, length 3xnumGridNodes, constraint dof = 0 = false
 
+#ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<ElementBase*>& rElements);
@@ -345,11 +346,20 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const;
+    void GetNodesTotal(std::vector<const NodeBase*>& rNodes) const;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodes) const;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
     void GetNodesTotal(std::vector<NodeBase*>& rNodes);
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes);
+#endif //SWIG
 
     //! @brief ... create local coefficient matrix 0 for a voxel and save a pointer to the matrix
     void BuildLocalCoefficientMatrix0() const;
