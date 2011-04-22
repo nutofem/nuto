@@ -1283,7 +1283,7 @@ void NuTo::StructureMultiscale::AddElementMatrixToGlobalSubMatricesGeneral(
     assert(rMatrixJK!=0);
     //either both are zero or both are nonzero
     assert(!rCalcMatrixKJ_KK || ((rMatrixKJ!=0) && (rMatrixKK!=0)));
-    double bAlphaRow, bURow[2], bMRow[3], bAlphaCol, bUCol[2], bMCol[3];
+    double bAlphaRow(0), bURow[2]={ 0, 0}, bMRow[3]={0,0,0}, bAlphaCol(0), bUCol[2]={0,0}, bMCol[3]={0,0,0};
 
     // write element contribution to global matrix
     for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
