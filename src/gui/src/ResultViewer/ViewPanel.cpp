@@ -138,8 +138,8 @@ namespace nutogui
     };
     static const wxChar* const contentTypeArtNames[numContentTypes] =
     {
-      wxART_MISSING_IMAGE,
-      wxART_MISSING_IMAGE
+      wxART_MAKE_ART_ID(view-3d),
+      wxART_MAKE_ART_ID(view-plot)
     };
     for (size_t i = 0; i < numContentTypes; i++)
     {
