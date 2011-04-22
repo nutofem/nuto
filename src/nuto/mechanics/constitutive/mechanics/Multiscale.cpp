@@ -365,10 +365,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
         fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-        std::cout << "dof of alpha " << fineScaleStructure->GetDofCrackAngle() << std::endl;
-        std::cout << "active dofs " << std::endl;
-        FullMatrix<double>(activeDOF).Trans().Info(12,3);
-
 
         //Get and set previous delta strain
         EngineeringStrain2D engineeringStrain;
@@ -382,14 +378,10 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         if (1==1)
         {//just for test purpose
         fineScaleStructure->SaveStructure(saveStream);
-        fineScaleStructure->GroupInfo(10);
         //std::string str;
         //getline (std::cin,str);
     	fineScaleStructure->RestoreStructure(saveStream);
-        fineScaleStructure->GroupInfo(10);
-    	exit(0);
         }
-
         fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
                 true,  mMaxDeltaLoadFactor, mMaxNumNewtonIterations,mDecreaseFactor, mMinNumNewtonIterations,
                 mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);

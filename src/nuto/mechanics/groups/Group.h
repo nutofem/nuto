@@ -98,7 +98,7 @@ public:
     {
         typename std::map<int,T*>::iterator it(this->find(rId));
         if (it==this->end())
-        	throw MechanicsException("[Group::ExchangePtr] New group member can not be inserted.");
+        	throw MechanicsException("[Group::ExchangePtr] New group member can not be inserted, since the id does not exist in group.");
         else
         {
         	assert(it->second==rOldMember);

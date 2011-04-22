@@ -568,24 +568,9 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
     }
     else
     {
-        rArea = 0.;
         boost::ptr_map<int,ElementBase>::iterator elementIter;
-        std::vector<double> volume;
-        boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupElements);
-        if (itGroup==mGroupMap.end())
-            throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] Element group id does not exist.");
-        if (itGroup->second->GetType()!=Groups::Elements)
-            throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] Element group id is not an element group.");
-        Group<ElementBase>* elementGroup = itGroup->second->AsGroupElement();
-
-        for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
-        {
-            itElement->second->GetIntegrationPointVolume(volume);
-            for (unsigned int count=0; count< volume.size(); count++)
-            {
-            	rArea+= volume[count];
-            }
-        }
+        //this area calculation takes into account the missing area between the circle and the secants
+        rArea = nodeGroupBoundary->GetNumMembers()*fineScaleRadius*fineScaleRadius*0.5*sin(2.*M_PI/nodeGroupBoundary->GetNumMembers());
         if (mlCoarseScale<=0)
             throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] coarse length is not correct (<=0)");
         rLength = 2.*fineScaleRadius;
@@ -644,8 +629,6 @@ void NuTo::StructureMultiscale::NodeMergeAdditionalGlobalDofValues(const FullMat
             value-=2.*M_PI;
         }
         this->mCrackAngle = value;
-        std::cout << "set crack angle to "  << value << std::endl;
-
 
         //merge crack opening
         for (int count=0; count<2; count++)
@@ -2920,7 +2903,6 @@ void NuTo::StructureMultiscale::GetdEpsilonHomdCrack(double rbHomAlpha[3], doubl
 //! @brief renumbers the global dofs in the structure after
 void NuTo::StructureMultiscale::ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
 {
-    std::cout << "renumber alpha=" <<  mDOFCrackAngle << " to " << rMappingInitialToNewOrdering[mDOFCrackAngle] << std::endl;
 	mDOFCrackAngle = rMappingInitialToNewOrdering[mDOFCrackAngle];
     mDOFCrackOpening[0] = rMappingInitialToNewOrdering[mDOFCrackOpening[0]];
     mDOFCrackOpening[1] = rMappingInitialToNewOrdering[mDOFCrackOpening[1]];

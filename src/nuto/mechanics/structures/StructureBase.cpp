@@ -500,8 +500,6 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         throw e;
     }
 
-    std::cout << "active " << mNumActiveDofs << " dependent " << mNumDofs-mNumActiveDofs << std::endl;
-
 //    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
    // resize output objects
     if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
@@ -1091,7 +1089,7 @@ try
         {
             numNewtonIterations++;
 
-            if (numNewtonIterations>rMaxNumNewtonIterations)
+            if (numNewtonIterations>rMaxNumNewtonIterations && alpha<0.25)
             {
                 if (mVerboseLevel>5)
                 {

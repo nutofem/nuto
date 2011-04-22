@@ -861,7 +861,7 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
                     + ss.str() + ".");
             throw e;
         }
-/*        catch(...)
+        catch(...)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
@@ -869,7 +869,6 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
                ("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
                        + ss.str() + ".");
         }
-*/
     }
 #ifdef SHOW_TIME
     end=clock();

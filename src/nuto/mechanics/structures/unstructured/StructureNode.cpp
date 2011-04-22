@@ -777,7 +777,8 @@ void NuTo::Structure::NodeExchangePtr(int rId, NodeBase* rOldPtr, NodeBase* rNew
     {
         if(groupIt->second->GetType()==NuTo::Groups::Nodes)
         {
-            groupIt->second->ExchangePtr(rId, rOldPtr, rNewPtr);
+        	if (groupIt->second->Contain(rId))
+                groupIt->second->ExchangePtr(rId, rOldPtr, rNewPtr);
         }
     }
 
