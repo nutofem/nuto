@@ -303,7 +303,7 @@ struct ThreadRPC
     MainThreadRunnerBasePtr GetShared() { return shared_from_this(); }
   };
   
-  static void InstallMainThreadEventHandler ();
+  static PLATFORM_EXPORTED void InstallMainThreadEventHandler ();
   
   template<typename Class>
   class MainThreadRunner : public MainThreadRunnerBase
