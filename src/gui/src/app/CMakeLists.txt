@@ -16,5 +16,6 @@ set_target_properties(nutogui
 		      PROPERTIES
 		      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_link_libraries(nutogui UIShared ScriptRunner)
+target_link_libraries(nutogui vtkIO) # for vtkDataSetReader
 split_debug_info(nutogui)
 install(TARGETS nutogui DESTINATION bin)

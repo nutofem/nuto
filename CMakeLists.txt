@@ -13,6 +13,7 @@ if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
 endif()
 
 # options
+OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" FALSE)
 OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" TRUE)
 OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)

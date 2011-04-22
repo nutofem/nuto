@@ -49,4 +49,12 @@ foreach(dep ${UIShared_deps})
 endforeach()
 
 target_link_libraries(UIShared ${wxWidgets_LIBRARIES})
-set_target_properties(UIShared PROPERTIES LINK_INTERFACE_LIBRARIES "")
+set_target_properties(UIShared
+		      PROPERTIES
+		      LINK_INTERFACE_LIBRARIES ""
+		      LIBRARY_OUTPUT_NAME "nutogui_UIShared")
+if(BUILD_SHARED_LIBS)
+  install(TARGETS UIShared
+	  RUNTIME DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+	  LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
+endif()
