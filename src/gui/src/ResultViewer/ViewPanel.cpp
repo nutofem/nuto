@@ -208,7 +208,7 @@ namespace nutogui
 			     wxT ("Select how to display the data"));
     contentViewBar->SetToolDropDown (ID_ContentViewPopup, true);
     contentViewBar->Realize ();
-    topBarSizer->Add (contentViewBar, wxSizerFlags (0));
+    topBarSizer->Add (contentViewBar, wxSizerFlags (0).Expand());
     
     topBarContentTools = childPanel->CreateTopTools (this);
     if (topBarContentTools)
