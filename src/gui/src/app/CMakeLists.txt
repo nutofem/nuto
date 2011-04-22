@@ -17,3 +17,4 @@ set_target_properties(nutogui
 		      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_link_libraries(nutogui UIShared ScriptRunner)
 split_debug_info(nutogui)
+install(TARGETS nutogui DESTINATION bin)
