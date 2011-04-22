@@ -19,7 +19,13 @@ namespace nutogui
   public:
     Content (ViewPanel* parent);
     
+    /// Create window to be displayed in top tool bar (between panel splitting controls)
     virtual wxWindow* CreateTopTools (wxWindow* parentWindow) = 0;
+    /**
+     * Destroy any data associated with the window created by CreateTopTools.
+     * The window itself must not be destroyed/deleted!
+     */
+    virtual void DestroyTopTools (wxWindow* tools) {}
   protected:
     /// Post an event to all other view panel content children
     void PostToOthers (wxEvent& event);

@@ -325,6 +325,7 @@ namespace nutogui
     // @@@ Hardcoded sizer item index
     topBarSizer->Replace (2, topBarContentSizerItem);
     
+    childPanel->DestroyTopTools (topBarContentTools);
     delete topBarContentTools;
     topBarContentTools = newTopBarContentTools;
     

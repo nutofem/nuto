@@ -121,6 +121,12 @@ namespace nutogui
 
     return topBar;
   }
+  
+  void ResultViewerImpl::ViewPlot::DestroyTopTools (wxWindow* tools)
+  {
+    displayDataChoice.Clear();
+    displayDataChoice.SetControl (nullptr);
+  }
 
   void ResultViewerImpl::ViewPlot::SetupVTKRenderer ()
   {

@@ -65,6 +65,7 @@ namespace nutogui
     ViewPlot (ViewPanel* parent);
 
     wxWindow* CreateTopTools (wxWindow* parentWindow);
+    void DestroyTopTools (wxWindow* tools);
 			      
     DECLARE_EVENT_TABLE()
   };
