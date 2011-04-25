@@ -306,7 +306,7 @@ public:
 #ifdef ENABLE_SERIALIZATION
     		myStructureFineScale.Save(rNameOfBinaryFinescale,"binary");
 #else
-    		throw std::exception("ConcurrentMultiscale - example requires serialization");
+    		throw NuTo::Exception("ConcurrentMultiscale - example requires serialization");
 #endif
     		//myStructureFineScale.Restore(rNameOfBinaryFinescale,"binary");
     	    myStructureFineScale.ElementTotalUpdateTmpStaticData();
