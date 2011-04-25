@@ -299,8 +299,7 @@ namespace nutogui
     
     sharedData->imgShowLegend = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(show-legend), wxART_TOOLBAR);
     sharedData->imgClipPlane = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(clip), wxART_TOOLBAR);
-    sharedData->imgLinkViews = wxArtProvider::GetBitmap (wxART_MISSING_IMAGE,
-							 wxART_TOOLBAR);
+    sharedData->imgLinkViews = wxArtProvider::GetBitmap (wxART_MAKE_ART_ID(link-views), wxART_TOOLBAR);
     
     static const wxChar* const renderModeNames[numRenderModes] =
     {
