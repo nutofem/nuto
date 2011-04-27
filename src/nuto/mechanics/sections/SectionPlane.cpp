@@ -53,11 +53,8 @@ void NuTo::SectionPlane::Info(unsigned short rVerboseLevel) const
     std::cout << "    section thickness: " << this->mThickness << std::endl;
     if (mSectionType==Section::PLANE_STRAIN)
         std::cout << "    section stress state: plane strain" << std::endl;
-    else
-    {
-        if (mSectionType==Section::PLANE_STRESS)
-            std::cout << "    section stress state: plane stress" << std::endl;
-    }
+    else if (mSectionType==Section::PLANE_STRESS)
+        std::cout << "    section stress state: plane stress" << std::endl;
 }
 
 #ifdef ENABLE_SERIALIZATION
