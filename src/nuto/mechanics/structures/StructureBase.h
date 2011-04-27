@@ -211,10 +211,15 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGroupSetDisplacements(int rIdent, const FullMatrix<double>& rDisplacements);
 
+    //! @brief gets the coordinates of a node
+    //! @param rNode node identifier
+    //! @param rCoordinates matrix (one column) with the coordinates
+    void NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>& rCoordinates)const;
+
     //! @brief gets the displacements of a node
-    //! @param rIdent node identifier
+    //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacements(int rId, NuTo::FullMatrix<double>& rDisplacements)const;
+    void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double>& rDisplacements)const;
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
