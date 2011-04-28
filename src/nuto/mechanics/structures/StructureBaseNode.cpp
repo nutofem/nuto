@@ -157,6 +157,54 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 #endif
 }
 
+//! @brief gets the coordinates of a node
+//! @param rNode node identifier
+//! @param rCoordinates matrix (one column) with the coordinates
+void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>& rCoordinates)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	const NodeBase* nodePtr = NodeGetNodePtr(rNode);
+
+	try
+	{
+		switch (nodePtr->GetNumCoordinates())
+		{
+		case 1:
+			rCoordinates.Resize(1,1);
+			nodePtr->GetCoordinates1D(rCoordinates.mEigenMatrix.data());
+		break;
+		case 2:
+			rCoordinates.Resize(2,1);
+			nodePtr->GetCoordinates2D(rCoordinates.mEigenMatrix.data());
+		break;
+		case 3:
+			rCoordinates.Resize(3,1);
+			nodePtr->GetCoordinates3D(rCoordinates.mEigenMatrix.data());
+		break;
+		case 0:
+			throw MechanicsException("[NuTo::StructureBase::NodeGetCoordinates] Node has no coordinates.");
+		break;
+		}
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+        b.AddMessage("[NuTo::StructureBase::NodeGetCoordinates] Error getting coordinates.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeGetCoordinates] Error getting coordinates of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeGetCoordinates] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 //! @brief calculate the internal force vector for a node
 //! @param rId ... node id
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
