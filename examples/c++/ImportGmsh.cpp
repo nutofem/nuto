@@ -24,8 +24,9 @@ try
 
     //create structure
     NuTo::Structure myStructure(2);
-    myStructure.SetShowTime(true);
-
+#ifdef SHOW_TIME
+	myStructure.SetShowTime(true);
+#endif //SHOW_TIME
     NuTo::FullMatrix<int> createdGroupIds;
     myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
     myStructure.Info();
@@ -148,7 +149,9 @@ try
 
 	//allocate solver
 	NuTo::SparseDirectSolverMUMPS mySolver;
+#ifdef SHOW_TIME
 	mySolver.SetShowTime(true);
+#endif //SHOW_TIME
 
     //calculate stiffness
 	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);

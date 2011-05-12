@@ -21,8 +21,9 @@ int main()
 		// create structure
 		NuTo::Structure myStructure(2);
 		myStructure.Info();
+#ifdef SHOW_TIME
 		myStructure.SetShowTime(true);
-
+#endif //SHOW_TIME
 		// create nodes
 		NuTo::FullMatrix<double> nodeCoordinates(2,1);
 		size_t node = 0;

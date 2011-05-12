@@ -27,8 +27,9 @@ public:
         mlY = 200;
 
         //create structure
-        SetShowTime(true);
-
+#ifdef SHOW_TIME
+		SetShowTime(true);
+#endif //SHOW_TIME
         //add visualization
         //myStructureCoarseScale.AddVisualizationComponentSection();
         //myStructureCoarseScale.AddVisualizationComponentConstitutive();
@@ -105,7 +106,9 @@ public:
 
     	    //create structure
     	    NuTo::StructureMultiscale myStructureFineScale(2);
-    	    myStructureFineScale.SetShowTime(false);
+#ifdef SHOW_TIME
+   	    myStructureFineScale.SetShowTime(false);
+#endif //SHOW_TIME
     	    int GroupNodesBoundaryDamage(0);
     	    int GroupNodesBoundaryHomogeneous(0);
     	    int GroupNodesMultiscaleDamage(0);
