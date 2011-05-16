@@ -9,6 +9,11 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeBase.h"
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include <boost/ptr_container/ptr_list.hpp>
+#endif // ENABLE_VISUALIZE
 
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/MechanicsException.h"
@@ -56,7 +61,7 @@ const NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveSta
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMultiscale2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
-void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength)
+void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");
 }
@@ -72,5 +77,15 @@ void NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter(const std::string& 
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter] Static data has no fine scale model");
 }
+
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::ConstitutiveStaticDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+    //do nothing if not multiscale static data
+}
+#endif
+
 
 

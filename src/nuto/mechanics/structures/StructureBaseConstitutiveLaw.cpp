@@ -145,7 +145,7 @@ void NuTo::StructureBase::ConstitutiveLawInfo(unsigned short rVerboseLevel) cons
     for (boost::ptr_map<int,ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it!= mConstitutiveLawMap.end(); it++)
     {
         std::cout << "  Constitutive law: " << it->first << std::endl;
-        it->second->Info(rVerboseLevel);
+        it->second->Info(rVerboseLevel,mLogger);
     }
 }
 
@@ -153,7 +153,7 @@ void NuTo::StructureBase::ConstitutiveLawInfo(int rIdent, unsigned short rVerbos
 {
     const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     std::cout << "  Constitutive law: " << rIdent << std::endl;
-    ConstitutiveLawPtr->Info(rVerboseLevel);
+    ConstitutiveLawPtr->Info(rVerboseLevel,mLogger);
 }
 
 // set density

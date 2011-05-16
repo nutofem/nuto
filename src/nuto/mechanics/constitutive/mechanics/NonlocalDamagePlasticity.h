@@ -10,6 +10,7 @@
 namespace NuTo
 {
 class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
+class Logger;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
 //! @brief ...
@@ -370,7 +371,7 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const;
+    void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -395,7 +396,8 @@ public:
             Eigen::Matrix<double,4,1>& rStress,
             Eigen::Matrix<double,4,1>& rEpsilonP,
                 double& rDeltaEqPlasticStrain,
-            Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon)const;
+            Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon,
+            Logger& rLogger)const;
 
     //! @brief calculates the rounded rankine yield surface
     //! @param rStress current stress

@@ -5,6 +5,10 @@
 
 #include <string>
 
+#ifdef ENABLE_VISUALIZE
+#include <boost/ptr_container/ptr_list.hpp>
+#endif // ENABLE_VISUALIZE
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -17,6 +21,8 @@ namespace NuTo
 {
 class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+class VisualizeUnstructuredGrid;
+class VisualizeComponentBase;
 
 class ConstitutiveStaticDataBase
 {
@@ -33,7 +39,7 @@ public:
     {};
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength);
+    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleParameter(const std::string& rName, double rParameter);
@@ -52,6 +58,13 @@ public:
 
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual const ConstitutiveStaticDataMultiscale2DPlaneStrain* AsMultiscale2DPlaneStrain()const;
+
+#ifdef ENABLE_VISUALIZE
+    //Visualize for all integration points the fine scale structure
+    virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
+#endif
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

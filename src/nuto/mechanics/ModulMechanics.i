@@ -9,6 +9,7 @@
 #include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/base/Logger.h"
 %}
 
 // convert python string to std::string

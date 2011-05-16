@@ -9,6 +9,7 @@
 #else
 #include <boost/array.hpp>
 #endif //Serialize
+#include "boost/filesystem.hpp"
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
@@ -364,6 +365,18 @@ public:
     {
         return mIPName;
     }
+
+    void SetIPName(std::string rIPName)
+    {
+        mIPName = rIPName;
+    }
+
+    void SetCenterMacro(double rCenterMacro[2])
+    {
+    	mCenterMacro[0] = rCenterMacro[0];
+    	mCenterMacro[1] = rCenterMacro[1];
+    }
+
     //calculate from the existing crack opening and orientation the cracking strain and the homogeneous strain
     //for test purpose in public section
     void CalculateHomogeneousEngineeringStrain();
@@ -437,16 +450,16 @@ public:
     void SetLoadFactor(double rLoadFactor);
 
     //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
-    void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const;
+    void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor)const;
+    void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual)const;
 
-    //! @brief only for debugging, info at some stages of the Newton Raphson iteration
-    void NewtonRaphsonInfo(int rVerboseLevel)const;
+    //! @brief do a postprocessing step in each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
+    void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual)const;
 
-    //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
-    void InitBeforeNewtonRaphson();
+    //! @brief initialize some stuff before a new load step (e.g. output directories for visualization, if required)
+    void InitBeforeNewLoadStep(int rLoadStep);
 
     double GetlFineScaleDamage()const
     {
@@ -477,18 +490,72 @@ public:
     double ElementGroupGetTotalEnergy(int rGroupId)const;
 
     //! @brief sets the result directory where the results are written to
-    void SetResultDirectoryAfterLineSearch(std::string rResultDirectoryAfterLineSearch)
+    void SetResultDirectory(std::string rResultDirectory);
+
+    //! @brief gets the result directory where the results are written to
+    std::string GetResultDirectory()const
     {
-    	mResultDirectoryAfterLineSearch = rResultDirectoryAfterLineSearch;
+    	return mResultDirectory;
     }
 
     //! @brief sets the result file for the converged solution where the results are written to
-    void SetResultFileAfterConvergence(std::string rResultFileAfterConvergence)
+    void SetResultLoadStepMacro(std::string rLoadStepMacro);
+
+    //! @brief gets the result file for the converged solution where the results are written to
+    std::string GetResultLoadStepMacro()const
     {
-    	mResultFileAfterConvergence = rResultFileAfterConvergence;
+    	return mLoadStepMacro;
+    }
+    //! @brief returns the file where the log is written to for each integration point
+    std::string GetFileForLog()const
+    {
+    	boost::filesystem::path resultDir(mResultDirectory);
+    	resultDir /= mIPName;
+    	resultDir /= std::string("output_") + mLoadStepMacro + std::string(".log");
+    	return resultDir.string();
     }
 
+    //! @brief returns the file where the visualization is written to for each integration point
+    std::string GetFileForVisualizationAfterLineSearch(int rLoadStep, int rNewtonIteration)const
+    {
+    	boost::filesystem::path resultDir(mResultDirectory);
+    	resultDir /= mIPName;
+    	std::stringstream ssLoadStep;
+    	ssLoadStep << rLoadStep;
+    	std::stringstream ssNewtonIteration;
+    	ssNewtonIteration << rNewtonIteration;
+    	resultDir /= std::string("Structure_") + mLoadStepMacro + "_" + ssLoadStep.str() +"_" + ssNewtonIteration.str() + std::string(".vtk");
+    	return resultDir.string();
+    }
+
+    //! @brief is only true for structure used as multiscale (structure in a structure)
+    virtual bool IsMultiscaleStructure()const
+    {
+    	return true;
+    }
+
+    //! @brief is only true for structure used as multiscale (structure in a structure)
+    void ScaleCoordinates(double rCoordinates[3])const;
+
+    //! @brief sets the center for scaling the coordinates either to the center of the damage model(true) or the homogeneous model (false)
+    void SetCenterScalingToDamage(bool rScaleWRTDamageCenter)
+    {
+    	mScaleWRTDamageCenter = rScaleWRTDamageCenter;
+    }
+
+    // visualizes the crack of the fine scale model
+    void VisualizeCrack(VisualizeUnstructuredGrid& rVisualize)const;
+
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+    //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
+    //!             be careful, store it only once, although the routine is called before every update
+    void NewtonRaphson(bool rSaveStructureBeforeUpdate,
+            std::stringstream& rSaveStringStream,
+            bool& rIsSaved);
+
 protected:
+
+
     //! @brief ... standard constructor just for the serialization routine
     StructureMultiscale()
     {}
@@ -532,6 +599,10 @@ protected:
     boost::array<double,2> mCenterDamage;
     //! @brief center of the model
     boost::array<double,2> mCenterHomogeneous;
+    //! @brief center of the model (ip coordinates)
+    boost::array<double,2> mCenterMacro;
+    //! @brief translate and scale the coordinates for ip visualization either with respect to the damage center of the homogeneous center
+    bool mScaleWRTDamageCenter;
     //! @brief area of the fine scale model
     // this has to be stored, since for a round fine scale model (especially coarse scale) the real area is substantially
     // lower than the area of the circle
@@ -553,8 +624,10 @@ protected:
     int mGroupElementsDamage;
     int mGroupElementsHomogeneous;
     std::string mIPName;
-    std::string mResultDirectoryAfterLineSearch;
-    std::string mResultFileAfterConvergence;
+    //result file for ips is stored in mResultDirectory/mIPName/mLoadStepMacro
+    std::string mResultDirectory;
+    //results for the whole structure are stored in mResultDirectory/mLoadStepMacro
+    std::string mLoadStepMacro;
 
     //! @brief tolerance for difference between the principal strains, where
     //if difference is bigger, the angle is calculated from the largest principal strain

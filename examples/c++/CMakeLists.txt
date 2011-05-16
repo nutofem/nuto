@@ -74,7 +74,7 @@ ENDIF(MINGW)
 
 # Test ConstraintsLagrange1D
 ADD_EXECUTABLE(ConstraintsLagrange1D ConstraintsLagrange1D)
-TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToBase NuToMechanics NuToMath ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
 IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)

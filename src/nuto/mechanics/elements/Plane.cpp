@@ -958,7 +958,8 @@ void NuTo::Plane::CheckElement()
         //std::cout << "Jacobian " << detJacobian << std::endl;
         if (detJacobian <= 0)
         {
-            throw MechanicsException("[NuTo::Plane::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
+            std::cout << "jac " << detJacobian << std::endl;
+        	throw MechanicsException("[NuTo::Plane::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
         }
         volume += this->GetIntegrationPointWeight(ipCount) * detJacobian;
     }

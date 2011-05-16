@@ -39,7 +39,7 @@ protected:
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeGroup)
+//BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeGroup)
 #endif // ENABLE_SERIALIZATION
 #endif //CONSTRAINTNODEGROUP_H
 

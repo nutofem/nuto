@@ -117,7 +117,7 @@ public:
     ConstitutiveBase* GetConstitutiveLaw(int rIp);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale);
+    void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName);
 
     //! @brief sets the fine scale parameter for all ips
     //! @parameter rName name of the parameter, e.g. YoungsModulus
@@ -334,6 +334,16 @@ public:
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+
+    //Visualize for all integration points the fine scale structure
+    void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
+
+    //! @brief returns the structure
+    const StructureBase* GetStructure()const
+    {
+    	return mStructure;
+    }
+
 #endif // ENABLE_VISUALIZE
 private:
     //! @brief returns the Element Data Vector

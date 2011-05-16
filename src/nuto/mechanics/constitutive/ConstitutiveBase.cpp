@@ -13,6 +13,7 @@
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 // constructor
@@ -253,9 +254,8 @@ const NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveBase::AsConst
 }
 
 // info routine
-void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel) const
+void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
-    std::cout << "    object pointer: " << this << std::endl;
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
 }
 

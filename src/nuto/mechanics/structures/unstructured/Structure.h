@@ -446,7 +446,15 @@ protected:
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<std::pair<int,const ElementBase*> >& rElements) const;
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<ElementBase*>& rElements);
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements);
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
@@ -454,7 +462,7 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodess) const;
+    void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodes) const;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer

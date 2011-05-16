@@ -12,7 +12,7 @@
 namespace NuTo
 {
 class ConstitutiveStaticDataMisesPlasticity3D;
-
+class Logger;
 //! @brief ... mises plasticity with isotropic and kinematic hardening
 //! @author Jörg F. Unger, ISM
 //! @date December 2009
@@ -257,7 +257,8 @@ public:
     		const DeformationGradient3D& rDeformationGradient,
     		EngineeringStress3D* rNewStress,
     		ConstitutiveTangentLocal6x6* rNewTangent,
-    		ConstitutiveStaticDataMisesPlasticity3D* rNewStaticData)const;
+    		ConstitutiveStaticDataMisesPlasticity3D* rNewStaticData,
+    		Logger& rLogger)const;
 
     // calculate coefficients of the material matrix
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
@@ -334,7 +335,8 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const;
+    //! @param rLogger stream for the output
+    void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation

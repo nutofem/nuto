@@ -60,10 +60,10 @@ NuTo::ElementDataIpBase::~ElementDataIpBase()
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale)
+void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName)
 {
     assert(rIp<mIntegrationType->GetNumIntegrationPoints());
-    mIpData[rIp].SetFineScaleModel(rFileName, rLengthCoarseScale);
+    mIpData[rIp].SetFineScaleModel(rFileName, rLengthCoarseScale, rCoordinates, rIPName);
 }
 
 //! @brief sets the fine scale parameter for all ips
@@ -83,6 +83,18 @@ void NuTo::ElementDataIpBase::SetFineScaleParameter(int rIp, const std::string& 
     assert(rIp<mIntegrationType->GetNumIntegrationPoints());
     mIpData[rIp].SetFineScaleParameter(rName, rParameter);
 }
+
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::ElementDataIpBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+    for (int ip=0; ip<mIntegrationType->GetNumIntegrationPoints();ip++)
+    {
+        mIpData[ip].VisualizeIpMultiscale(rVisualize, rWhat,rVisualizeDamage);
+    }
+}
+#endif
 
 //! @brief sets the integration type of an element
 //! implemented with an exception for all elements, reimplementation required for those elements

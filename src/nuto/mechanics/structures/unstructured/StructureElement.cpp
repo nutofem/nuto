@@ -528,6 +528,19 @@ void NuTo::Structure::GetElementsTotal(std::vector<const ElementBase*>& rElement
 }
 
 // store all elements of a structure in a vector
+void NuTo::Structure::GetElementsTotal(std::vector<std::pair<int, const ElementBase*> >& rElements) const
+{
+	rElements.reserve(mElementMap.size());
+	rElements.resize(0);
+	boost::ptr_map<int,ElementBase>::const_iterator ElementIter = this->mElementMap.begin();
+    while (ElementIter != this->mElementMap.end())
+    {
+    	rElements.push_back(std::pair<int, const ElementBase*>(ElementIter->first,ElementIter->second));
+        ElementIter++;
+    }
+}
+
+// store all elements of a structure in a vector
 void NuTo::Structure::GetElementsTotal(std::vector<ElementBase*>& rElements)
 {
     rElements.reserve(mElementMap.size());
@@ -539,3 +552,17 @@ void NuTo::Structure::GetElementsTotal(std::vector<ElementBase*>& rElements)
         ElementIter++;
     }
 }
+
+// store all elements of a structure in a vector
+void NuTo::Structure::GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements)
+{
+	rElements.reserve(mElementMap.size());
+	rElements.resize(0);
+	boost::ptr_map<int,ElementBase>::iterator ElementIter = this->mElementMap.begin();
+    while (ElementIter != this->mElementMap.end())
+    {
+    	rElements.push_back(std::pair<int, ElementBase*>(ElementIter->first,ElementIter->second));
+        ElementIter++;
+    }
+}
+

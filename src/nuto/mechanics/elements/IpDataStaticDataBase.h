@@ -35,7 +35,7 @@ public:
         mStaticData = rStaticData;
 	}
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength);
+    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIPName);
 
     //! @brief sets the fine scale parameter
     //! @parameter rName name of the parameter, e.g. YoungsModulus
@@ -46,6 +46,12 @@ public:
     //! @parameter rName name of the parameter, e.g. YoungsModulus
     //! @parameter rParameter value of the parameter
     virtual void SetFineScaleParameter(const std::string& rName, std::string rParameter);
+
+#ifdef ENABLE_VISUALIZE
+	//Visualize for all integration points the fine scale structure
+	void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+			const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
+#endif
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

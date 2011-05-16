@@ -97,7 +97,7 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtkDataFile(const std::string& rFile
     std::ofstream file(rFilename.c_str());
     if (!file.is_open())
     {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::ExportVtkDatafile] Error opening file");
+    	throw NuTo::VisualizeException(std::string("[NuTo::VisualizeUnstructuredGrid::ExportVtkDatafile] Error opening file ")+rFilename.c_str());
     }
     // header /////////////////////////////////////////////////////////////////
     file << "# vtk DataFile Version 3.0" << std::endl;

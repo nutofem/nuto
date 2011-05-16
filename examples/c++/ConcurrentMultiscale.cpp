@@ -529,16 +529,7 @@ try
         std::cout << "new load step on the macroscale " << loadstepMacro << std::endl;
         curStrain.Trans().Info(12,4);
         myStructureCoarseScale.SetTotalStrain(curStrain);
-        double toleranceResidualForce = 1e-6;
-        bool automaticLoadstepControl=true;
-        double maxDeltaLoadFactor=1;
-        int maxNumNewtonIterations=20;
-        double decreaseFactor=0.5;
-        int minNumNewtonIterations=7;
-        double increaseFactor=1.5;
-        double minDeltaLoadFactor=1e-6;
-        myStructureCoarseScale.NewtonRaphson(toleranceResidualForce,automaticLoadstepControl,maxDeltaLoadFactor,maxNumNewtonIterations,decreaseFactor,
-        minNumNewtonIterations,increaseFactor,minDeltaLoadFactor);
+        myStructureCoarseScale.NewtonRaphson();
        myStructureCoarseScale.ElementTotalUpdateStaticData();
        double energy = myStructureCoarseScale.ElementTotalGetTotalEnergy();
         std::cout << "total energy on the macroscale " << energy << std::endl;

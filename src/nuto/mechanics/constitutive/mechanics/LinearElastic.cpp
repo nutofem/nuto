@@ -9,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
@@ -1351,12 +1352,12 @@ void NuTo::LinearElastic::CheckPoissonsRatio(double rNu) const
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
-void NuTo::LinearElastic::Info(unsigned short rVerboseLevel) const
+void NuTo::LinearElastic::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
-    this->ConstitutiveBase::Info(rVerboseLevel);
-    std::cout << "    Young's modulus: " << this->mE << std::endl;
-    std::cout << "    Poisson's ratio: " << this->mNu << std::endl;
-    std::cout << "    Density        : " << this->mRho << std::endl;
+    this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
+    rLogger << "    Young's modulus: " << this->mE << "\n";
+    rLogger << "    Poisson's ratio: " << this->mNu << "\n";
+    rLogger << "    Density        : " << this->mRho << "\n";
 }
 
 // check parameters

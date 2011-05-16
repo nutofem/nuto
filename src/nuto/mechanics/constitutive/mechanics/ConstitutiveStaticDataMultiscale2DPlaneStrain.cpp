@@ -78,7 +78,7 @@ const NuTo::StructureMultiscale* NuTo::ConstitutiveStaticDataMultiscale2DPlaneSt
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std::string rFileName, double rMacroLength)
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
     // open file
     std::ifstream ifs ( rFileName.c_str(), std::ios_base::binary );
@@ -91,7 +91,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
         delete mStructure;
     // if this should be implemented for 3D, the original structure has to be given in order to determine the dimension
     mStructure = new StructureMultiscale(2);
-
+    //set string for output directory (IPName)
     std::string typeIdString;
 
 #ifdef ENABLE_SERIALIZATION
@@ -111,8 +111,13 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     //set macroscopic length (sqrt of area of macroelement)
     mStructure->SetlCoarseScale(rMacroLength);
 
+    mStructure->SetIPName(rIPName);
+
+    mStructure->SetCenterMacro(rCenter);
+
     //transform boundary nodes to multiscale nodes
     mStructure->TransformMultiscaleNodes();
+
     //check all the sections of the elements to a plane strain section
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
@@ -142,6 +147,10 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
         mStructure->SetPenaltyStiffnessTangentialCrackOpening(rParameter);
     else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORTANGENTIALCRACKOPENING")
         mStructure->SetPenaltyStiffnessScalingFactorTangentialCrackOpening(rParameter);
+    else if (upperCaseName=="LOGGERQUIET")
+        mStructure->LoggerSetQuiet(true);
+    else if (upperCaseName=="LOGGERNONQUIET")
+        mStructure->LoggerSetQuiet(false);
     else if (upperCaseName=="USENONLINEARSOLUTION")
         UseNonlinearSolution();
     else if (upperCaseName=="SQUARECOARSESCALEMODEL")
@@ -162,13 +171,33 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 {
     std::string upperCaseName(rName);
     std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
-    if (upperCaseName=="SETRESULTDIRECTORYAFTERLINESEARCH")
-        mStructure->SetResultDirectoryAfterLineSearch(rParameter);
-    else if (upperCaseName=="SETRESULTFILEAFTERCONVERGENCE")
-        mStructure->SetResultFileAfterConvergence(rParameter);
+    if (upperCaseName=="SETRESULTDIRECTORY")
+        mStructure->SetResultDirectory(rParameter);
+    else if (upperCaseName=="SETRESULTLOADSTEPMACRO")
+        mStructure->SetResultLoadStepMacro(rParameter);
     else
         throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
 }
+
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+	mStructure->ElementTotalUpdateTmpStaticData();
+	if (rVisualizeDamage)
+	{
+		mStructure->SetCenterScalingToDamage(true);
+		mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsDamage(),rVisualize, rWhat);
+	}
+	else
+	{
+		mStructure->SetCenterScalingToDamage(false);
+		mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsHomogeneous(),rVisualize, rWhat);
+	}
+	mStructure->VisualizeCrack(rVisualize);
+}
+#endif
 
 //! @brief in case the fine scale model has not been initialized,
 //! an initial linear elastic model is used

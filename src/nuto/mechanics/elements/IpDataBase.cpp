@@ -25,7 +25,7 @@ NuTo::IpDataBase::~IpDataBase()
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::IpDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength)
+void NuTo::IpDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIpName)
 {
     throw NuTo::MechanicsException("[NuTo::IpDataBase::IpDataBaseSetFineScaleModel] This Ip data type has no fine scale model.");
 }
@@ -45,6 +45,15 @@ void NuTo::IpDataBase::SetFineScaleParameter(const std::string& rName, std::stri
 {
     throw NuTo::MechanicsException("[NuTo::IpDataBase::SetFineScaleParameter] This Ip data type has no fine scale model.");
 }
+
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::IpDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+    //no fine scale structure
+}
+#endif
 
 //! @brief adds the weight to an integration point, eventually reallocates the data
 //! @param rNonlocalElement the Element (local number from the nonlocal elements)

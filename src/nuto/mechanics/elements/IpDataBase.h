@@ -7,6 +7,12 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeBase.h"
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include <boost/ptr_container/ptr_list.hpp>
+#endif // ENABLE_VISUALIZE
+
 #include <string>
 #include <vector>
 
@@ -17,6 +23,7 @@ namespace NuTo
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementBase;
+class VisualizeComponentBase;
 //! @author Joerg F. Unger
 //! @date Apr 28, 2010
 //! @brief ...
@@ -54,7 +61,7 @@ public :
     virtual const NuTo::IpData::eIpDataType GetIpDataType()const;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength);
+    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIPName);
 
     //! @brief sets the fine scale parameter for all ips
     //! @parameter rName name of the parameter, e.g. YoungsModulus
@@ -65,6 +72,12 @@ public :
     //! @parameter rName name of the parameter, e.g. YoungsModulus
     //! @parameter rParameter value of the parameter
     virtual void SetFineScaleParameter(const std::string& rName, std::string rParameter);
+
+#ifdef ENABLE_VISUALIZE
+	//Visualize for all integration points the fine scale structure
+	virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+			const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
+#endif
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

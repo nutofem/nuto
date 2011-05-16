@@ -116,33 +116,33 @@ void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vecto
 //! @brief info about the elements in the Structure
 void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 {
-    std::cout<<"number of nodes   : " << mNodeMap.size() <<std::endl;
+    mLogger <<"number of nodes   : " << mNodeMap.size() <<"\n";
     if (rVerboseLevel>3)
     {
-    	std::cout << "\t\tnodes :" <<std::endl;
+    	mLogger << "\t\tnodes :" <<"\n";
     	for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     	{
-			std::cout << "\t\t" << it->first;
+    		mLogger << "\t\t" << it->first;
 			if (rVerboseLevel>4)
 			{
-				std::cout << "\t:";
+				mLogger << "\t:";
 				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
 					std::cout << "\t" << it->second->GetCoordinate(iDof);
                 if (it->second->GetNumDisplacements()>0 || it->second->GetNumFineScaleDisplacements()>0)
                 {
-                    std::cout << "\t:";
+                	mLogger << "\t:";
                     for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements()+it->second->GetNumFineScaleDisplacements(); ++iDof)
                     {
-                        std::cout << "\t" << it->second->GetDisplacement(iDof) ;
+                    	mLogger << "\t" << it->second->GetDisplacement(iDof) ;
                         if (it->second->GetNumDisplacements()>0)
-                            std::cout << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
+                        	mLogger << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
                         if (it->second->GetNumFineScaleDisplacements()>0)
-                            std::cout << "("<< it->second->GetDofFineScaleDisplacement(iDof)<< ")" ;
+                        	mLogger << "("<< it->second->GetDofFineScaleDisplacement(iDof)<< ")" ;
 
                     }
                 }
 			}
-			std::cout << std::endl;
+			mLogger << "\n";
     	}
 
     }
@@ -466,7 +466,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::Structure::NodeDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        mLogger<<"[NuTo::Structure::NodeDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -562,7 +562,7 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::Structure::NodeBuildGlobalDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        mLogger<<"[NuTo::Structure::NodeBuildGlobalDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 

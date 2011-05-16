@@ -14,9 +14,6 @@
 namespace NuTo
 {
 // forward declarations
-template<class T>
-class FullMatrix;
-class StructureBase;
 class ConstitutiveEngineeringStressStrain;
 class ConstitutiveTangentLocal1x1;
 class ConstitutiveTangentLocal3x3;
@@ -24,14 +21,18 @@ class ConstitutiveTangentLocal6x6;
 class DeformationGradient1D;
 class DeformationGradient2D;
 class DeformationGradient3D;
+class ElementBase;
+class EngineeringStrain3D;
 class EngineeringStress1D;
 class EngineeringStress2D;
 class EngineeringStress3D;
+template<class T>
+class FullMatrix;
+class Logger;
 class SecondPiolaKirchhoffStress1D;
 class SecondPiolaKirchhoffStress2D;
 class SecondPiolaKirchhoffStress3D;
-class EngineeringStrain3D;
-class ElementBase;
+class StructureBase;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Stefan Eckardt, ISM
@@ -194,7 +195,7 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    virtual void Info(unsigned short rVerboseLevel) const;
+    virtual void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation

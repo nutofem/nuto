@@ -38,6 +38,6 @@ void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize ConstraintNode" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNode)
+//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNode)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNode)
 #endif // ENABLE_SERIALIZATION

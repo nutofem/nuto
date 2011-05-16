@@ -42,7 +42,7 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int 
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementDataBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale)
+void NuTo::ElementDataBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName)
 {
     throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleModel] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
@@ -63,6 +63,14 @@ void NuTo::ElementDataBase::SetFineScaleParameter(int rIp, const std::string& rN
     throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleParameter] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::ElementDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+	// no fine scale structure - do nothing
+}
+#endif
 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point

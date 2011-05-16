@@ -131,9 +131,12 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)
 	}
 }
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale)
+void NuTo::ElementBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName)
 {
-    mElementData->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale);
+    double coordinates[3];
+    GetGlobalIntegrationPointCoordinates(rIp, coordinates);
+    //there is actually a three 3 coordinate, but only the first 2 are used in the subsequent routines
+	mElementData->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale, coordinates, rIPName);
 }
 
 //! @brief sets the fine scale parameter for all ips
@@ -151,6 +154,15 @@ void NuTo::ElementBase::SetFineScaleParameter(int rIp, const std::string& rName,
 {
     mElementData->SetFineScaleParameter(rIp, rName, rParameter);
 }
+
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::ElementBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+    mElementData->VisualizeIpMultiscale(rVisualize, rWhat, rVisualizeDamage);
+}
+#endif
 
 //! @brief sets the section of an element
 //! implemented with an exception for all elements, reimplementation required for those elements
@@ -326,6 +338,10 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             break;
         case 2:
             this->InterpolateCoordinatesFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], GlobalPointCoor);
+            if (mStructure->IsMultiscaleStructure())
+            {
+                mStructure->ScaleCoordinates(GlobalPointCoor);
+            }
             break;
         case 3:
             this->InterpolateCoordinatesFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], GlobalPointCoor);

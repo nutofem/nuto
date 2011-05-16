@@ -372,6 +372,7 @@ protected:
     int mMinNumNewtonIterations;
     double mIncreaseFactor;
     double mMinLoadFactor;
+    double mMinLineSearchFactorFactor;
 };
 }
 

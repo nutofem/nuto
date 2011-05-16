@@ -76,7 +76,7 @@ void NuTo::ConstraintNonlinearGlobalCrackAngle2D::CalculateCoefficientMatrix_0(N
         std::vector<int>& rGlobalDofs)const
 {
     //crack angle
-    int dof(4);
+    int dof(1);
     rResult.Resize(dof,dof);
     rGlobalDofs.resize(dof,1);
 
@@ -87,6 +87,21 @@ void NuTo::ConstraintNonlinearGlobalCrackAngle2D::CalculateCoefficientMatrix_0(N
     double ratioSquare(delta_alpha/mScalingFactor);
     ratioSquare*=ratioSquare;
     rResult.AddEntry(0,0, mPenaltyStiffness*exp(-ratioSquare));
+
+/*    //check stiffness
+    double delta(1e-8);
+    NuTo::FullMatrix<double> gradient1, gradient2;
+    CalculateGradientInternalPotential(gradient1, rGlobalDofs);
+    double alpha = mStructure->GetCrackAngle();
+    alpha+=delta;
+    mStructure->SetCrackAngle(alpha);
+    CalculateGradientInternalPotential(gradient2, rGlobalDofs);
+    alpha-=delta;
+    mStructure->SetCrackAngle(alpha);
+    std::cout << "constraint gradient alpha " << gradient1(0,0) << std::endl;
+    std::cout << "constraint stiffness alpha analytical " << mPenaltyStiffness*exp(-ratioSquare) << std::endl;
+    std::cout << "constraint stiffness alpha cdf        " << (gradient2(0,0)-gradient1(0,0))/delta << std::endl;
+*/
 }
 
 //! @brief calculates the gradient of the internal potential

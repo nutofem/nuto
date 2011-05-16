@@ -40,13 +40,20 @@ public:
     void SetPrevHomStrain(EngineeringStrain2D rHomStrain);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(std::string rFileName, double rMacroLength);
+    void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIpName);
 
     //! @brief sets the fine scale parameters
     void SetFineScaleParameter(const std::string& rName, double rParameter);
 
     //! @brief sets the fine scale parameters
     void SetFineScaleParameter(const std::string& rName, std::string rParameter);
+
+#ifdef ENABLE_VISUALIZE
+    //! @brief Visualize for all integration points the fine scale structure
+    //! either visualize the damage zone (rVisualizeDamage=true) or the homogogeneous zone (rVisualizeDamage=false)
+    void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
+#endif
 
     //! @brief in case the fine scale model has not been initialized,
     //! an initial linear elastic model is used

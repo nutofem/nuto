@@ -1,6 +1,7 @@
 # $Id$
 SET(NuToBase_SOURCES
   Exception.cpp
+  Logger.cpp
 )
 
 SET(NuToBase_SWIG_MODULES

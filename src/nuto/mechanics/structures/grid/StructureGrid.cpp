@@ -214,6 +214,16 @@ void NuTo::StructureGrid::GetElementsTotal(std::vector<ElementBase*>& rElements)
     }
 }
 
+// store all elements of a structure in a vector
+void NuTo::StructureGrid::GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements)
+{
+	rElements.reserve(mElementVec.size());
+    for (unsigned int id=0; id< this->mElementVec.size();id++)
+    {
+    	rElements.push_back(std::pair<int, ElementBase*>(id,&(mElementVec[id])));
+    }
+}
+
 //! @brief  store all elements of a structure in a vector
 void NuTo::StructureGrid::GetElementsTotal(std::vector<const ElementBase*>& rElements) const
 {
@@ -222,6 +232,16 @@ void NuTo::StructureGrid::GetElementsTotal(std::vector<const ElementBase*>& rEle
     {
         rElements.push_back(&(*ElementIter));
         ElementIter++;
+    }
+}
+
+// store all elements of a structure in a vector
+void NuTo::StructureGrid::GetElementsTotal(std::vector<std::pair<int, const ElementBase*> >& rElements) const
+{
+	rElements.reserve(mElementVec.size());
+    for (unsigned int id=0; id< this->mElementVec.size();id++)
+    {
+    	rElements.push_back(std::pair<int, const ElementBase*>(id,&(mElementVec[id])));
     }
 }
 

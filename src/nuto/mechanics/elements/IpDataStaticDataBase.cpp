@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 {
@@ -24,9 +25,12 @@ NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength)
+void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIpName)
 {
-    mStaticData->SetFineScaleModel(rFileName, rMacroLength);
+    if (mStaticData!=0)
+	    mStaticData->SetFineScaleModel(rFileName, rMacroLength, rCoordinates, rIpName);
+    else
+    	throw NuTo::MechanicsException("[NuTo::IpDataStaticDataBase::SetFineScaleModel] Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
 }
 
 //! @brief sets the fine scale parameter for all ips
@@ -34,7 +38,11 @@ void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName, double
 //! @parameter rParameter value of the parameter
 void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName, double rParameter)
 {
-    mStaticData->SetFineScaleParameter(rName, rParameter);
+    if (mStaticData!=0)
+        mStaticData->SetFineScaleParameter(rName, rParameter);
+    else
+    	throw NuTo::MechanicsException("[NuTo::IpDataStaticDataBase::SetFineScaleParameter] Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
+
 }
 
 //! @brief sets the fine scale parameter for all ips
@@ -42,8 +50,22 @@ void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName,
 //! @parameter rParameter value of the parameter
 void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName, std::string rParameter)
 {
-    mStaticData->SetFineScaleParameter(rName, rParameter);
+    if (mStaticData!=0)
+        mStaticData->SetFineScaleParameter(rName, rParameter);
+    else
+    	throw NuTo::MechanicsException("[NuTo::IpDataStaticDataBase::SetFineScaleParameter] Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
+
 }
+
+#ifdef ENABLE_VISUALIZE
+//Visualize for all integration points the fine scale structure
+void NuTo::IpDataStaticDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
+{
+    if (mStaticData!=0)
+        mStaticData->VisualizeIpMultiscale(rVisualize, rWhat, rVisualizeDamage);
+}
+#endif
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

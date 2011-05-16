@@ -528,7 +528,8 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const;
+    //! @param rLogger stream for the output
+    void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation

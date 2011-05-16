@@ -5,7 +5,13 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/ptr_container/ptr_list.hpp>
 #endif  // ENABLE_SERIALIZATION
+
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include <boost/ptr_container/ptr_list.hpp>
+#endif // ENABLE_VISUALIZE
 
 #include <string>
 #include <vector>
@@ -22,6 +28,7 @@ class CrackBase;
 class IntegrationTypeBase;
 class ElementBase;
 class IpDataBase;
+class VisualizeComponentBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -49,7 +56,7 @@ public:
     virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale);
+    virtual void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName);
 
     //! @brief sets the fine scale parameter for all ips
     //! @parameter rName name of the parameter, e.g. YoungsModulus
@@ -60,6 +67,12 @@ public:
     //! @parameter rName name of the parameter, e.g. YoungsModulus
     //! @parameter rParameter value of the parameter
     virtual void SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter);
+
+#ifdef ENABLE_VISUALIZE
+    //Visualize for all integration points the fine scale structure
+    virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
+#endif
 
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element

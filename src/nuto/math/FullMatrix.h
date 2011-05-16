@@ -26,6 +26,7 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/base/Logger.h"
 #include "nuto/math/Matrix.h"
 #include "nuto/math/NuToMath.h"
 #include "nuto/math/MathException.h"
@@ -390,16 +391,33 @@ public:
     //! @param width ... total width of the each entry in the matrix when printed
     //! @param precision ... precision (number of fractional digits)
     //! @param rScientific ... switch for scientific notation
-    void Info ( int width, int precision, bool rScientific = false ) const
+    void Info ( int rWidth, int rPrecision, bool rScientific = false ) const
     {
         for ( int count=0; count<GetNumRows(); count++ )
         {
             for ( int count2=0; count2<GetNumColumns(); count2++ )
             {
-                std::cout << this->Convert2String ( mEigenMatrix.data() [count2*GetNumRows() +count], rScientific, precision, width) <<" ";
+                std::cout << this->Convert2String ( mEigenMatrix.data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
             }
             std::cout<<std::endl;
         }
+    }
+
+    //! @brief ... print info about the object into logger class
+    //! @param width ... total width of the each entry in the matrix when printed
+    //! @param precision ... precision (number of fractional digits)
+    //! @param rScientific ... switch for scientific notation
+    void Out(NuTo::Logger& rLogger, int rWidth, int rPrecision, bool rScientific = false )const
+    {
+        for ( int count=0; count<GetNumRows(); count++ )
+        {
+            for ( int count2=0; count2<GetNumColumns(); count2++ )
+            {
+            	rLogger << this->Convert2String ( mEigenMatrix.data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
+            }
+
+        }
+        rLogger << "\n";
     }
 
     //! @brief ... reads a matrix from a file

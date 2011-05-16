@@ -9,6 +9,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
+#include <stdio.h>
 
 #include <eigen2/Eigen/LU>
 #include <eigen2/Eigen/Array>
@@ -56,7 +57,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mDecreaseFactor=0.5;
     mMinNumNewtonIterations=7;
     mIncreaseFactor=1.5;
-    mMinLoadFactor=1e-6;
+    mMinLoadFactor=1e-3;
+    mMinLineSearchFactorFactor=1e-3;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -76,7 +78,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mDecreaseFactor)
           & BOOST_SERIALIZATION_NVP(mMinNumNewtonIterations)
           & BOOST_SERIALIZATION_NVP(mIncreaseFactor)
-          & BOOST_SERIALIZATION_NVP(mMinLoadFactor);
+          & BOOST_SERIALIZATION_NVP(mMinLoadFactor)
+          & BOOST_SERIALIZATION_NVP(mMinLineSearchFactorFactor);
 #ifdef DEBUG_SERIALIZATION
        std::cout << "finish serialize Multiscale" << std::endl;
 #endif
@@ -197,11 +200,57 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+        fineScaleStructure->SetNewtonRaphsonToleranceResidualForce(mToleranceResidualForce);
+        fineScaleStructure->SetNewtonRaphsonAutomaticLoadStepControl(true);
+        fineScaleStructure->SetNewtonRaphsonMaxDeltaLoadFactor(mMaxDeltaLoadFactor);
+        fineScaleStructure->SetNewtonRaphsonMaxNumNewtonIterations(mMaxNumNewtonIterations);
+        fineScaleStructure->SetNewtonRaphsonDecreaseFactor(mDecreaseFactor);
+        fineScaleStructure->SetNewtonRaphsonMinNumNewtonIterations(mMinNumNewtonIterations);
+        fineScaleStructure->SetNewtonRaphsonIncreaseFactor(mIncreaseFactor);
+        fineScaleStructure->SetNewtonRaphsonMinDeltaLoadFactor(mMinLoadFactor);
+        fineScaleStructure->SetNewtonRaphsonMinLineSearchFactor(mMinLineSearchFactorFactor);
+
         std::stringstream saveStream;
         bool hasBeenSaved(false);
-        fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-                true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-                mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);
+
+        fineScaleStructure->GetLogger().OpenFile();
+        fineScaleStructure->GetLogger() << "\n"<< "*******************************************" << "\n";
+        fineScaleStructure->GetLogger() << " GetEngineeringStressFromEngineeringStrain " << "\n";
+        fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
+        		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
+        		                            <<  engineeringStrain.mEngineeringStrain[2]  << "\n";
+        fineScaleStructure->GetLogger() << " deltaStrain strain " <<  deltaStrain.mEngineeringStrain[0] << " "
+        		                            <<  deltaStrain.mEngineeringStrain[1] << " "
+        		                            <<  deltaStrain.mEngineeringStrain[2] << "\n";
+        fineScaleStructure->GetLogger() << " prevStrain strain "  <<  staticData->GetPrevStrain().mEngineeringStrain[0] << " "
+        		                            <<  staticData->GetPrevStrain().mEngineeringStrain[1] << " "
+        		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2] << "\n";
+        try
+        {
+            fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved);
+        }
+        catch(NuTo::MechanicsException& e)
+        {
+        	//restore structure
+            if (hasBeenSaved)
+            {
+                fineScaleStructure->RestoreStructure(saveStream);
+            }
+            else
+            {
+                //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                fineScaleStructure->SetLoadFactor(0);
+                fineScaleStructure->NodeBuildGlobalDofs();
+                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            }
+            std::cout << std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
+            e.AddMessage(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+        	throw e;
+        }
+        catch(...)
+        {
+        	throw MechanicsException(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+        }
 
         //calculate average stress
         NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
@@ -230,6 +279,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
             fineScaleStructure->NodeBuildGlobalDofs();
             fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
         }
+        fineScaleStructure->GetLogger().CloseFile();
     }
 }
 
@@ -276,7 +326,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
 void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
                                   const DeformationGradient1D& rDeformationGradient, double& rDamage) const
 {
-    throw MechanicsException("[NuTo::Multiscale::GetDamage] not implemented.");
+	rDamage=0.;
 }
 
 //  Damage /////////////////////////////////////
@@ -288,7 +338,7 @@ void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
 void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
                                   const DeformationGradient2D& rDeformationGradient, double& rDamage) const
 {
-    throw MechanicsException("[NuTo::Multiscale::GetDamage] not implemented.");
+	rDamage=0.;
 }
 
 //  Damage /////////////////////////////////////
@@ -300,7 +350,7 @@ void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
 void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
                                   const DeformationGradient3D& rDeformationGradient, double& rDamage) const
 {
-    throw MechanicsException("[NuTo::Multiscale::GetDamage] not implemented.");
+	rDamage=0.;
 }
 
 //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
@@ -355,6 +405,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         //nonlinear solution
         const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
         StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
+        fineScaleStructure->GetLogger().OpenFile();
 
         //Get and set previous total strain
         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
@@ -372,19 +423,57 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         EngineeringStrain2D deltaStrain(engineeringStrain-staticData->GetPrevStrain());
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+        fineScaleStructure->SetNewtonRaphsonToleranceResidualForce(mToleranceResidualForce);
+        fineScaleStructure->SetNewtonRaphsonAutomaticLoadStepControl(true);
+        fineScaleStructure->SetNewtonRaphsonMaxDeltaLoadFactor(mMaxDeltaLoadFactor);
+        fineScaleStructure->SetNewtonRaphsonMaxNumNewtonIterations(mMaxNumNewtonIterations);
+        fineScaleStructure->SetNewtonRaphsonDecreaseFactor(mDecreaseFactor);
+        fineScaleStructure->SetNewtonRaphsonMinNumNewtonIterations(mMinNumNewtonIterations);
+        fineScaleStructure->SetNewtonRaphsonIncreaseFactor(mIncreaseFactor);
+        fineScaleStructure->SetNewtonRaphsonMinDeltaLoadFactor(mMinLoadFactor);
+        fineScaleStructure->SetNewtonRaphsonMinLineSearchFactor(mMinLineSearchFactorFactor);
+
         std::stringstream saveStream;
         bool hasBeenSaved(false);
 
-        if (1==1)
-        {//just for test purpose
-        fineScaleStructure->SaveStructure(saveStream);
-        //std::string str;
-        //getline (std::cin,str);
-    	fineScaleStructure->RestoreStructure(saveStream);
+        try
+        {
+            fineScaleStructure->GetLogger() << "\n" << "************************************************" << "\n";
+            fineScaleStructure->GetLogger() << " GetTangent_EngineeringStress_EngineeringStrain " << "\n";
+            fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
+            		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
+            		                            <<  engineeringStrain.mEngineeringStrain[2] << "\n";
+            fineScaleStructure->GetLogger() << " deltaStrain strain " <<  deltaStrain.mEngineeringStrain[0] << " "
+            		                            <<  deltaStrain.mEngineeringStrain[1] << " "
+            		                            <<  deltaStrain.mEngineeringStrain[2] << "\n";
+            fineScaleStructure->GetLogger() << " prevStrain strain "  <<  staticData->GetPrevStrain().mEngineeringStrain[0] << " "
+            		                            <<  staticData->GetPrevStrain().mEngineeringStrain[1] << " "
+            		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2] << "\n"  << "\n";
+            fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved);
         }
-        fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-                true,  mMaxDeltaLoadFactor, mMaxNumNewtonIterations,mDecreaseFactor, mMinNumNewtonIterations,
-                mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);
+        catch(NuTo::MechanicsException& e)
+        {
+            //restore structure
+            if (hasBeenSaved)
+            {
+                fineScaleStructure->RestoreStructure(saveStream);
+            }
+            else
+            {
+                //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                fineScaleStructure->SetLoadFactor(0);
+                fineScaleStructure->NodeBuildGlobalDofs();
+                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            }
+            std::cout << std::string("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
+            e.AddMessage(std::string("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] No convergence in multiscale for ip ") + fineScaleStructure->GetIPName());
+        	throw e;
+        }
+        catch(...)
+        {
+        	throw MechanicsException(std::string("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+        }
+
         // use Schur complement to calculate the stiffness
 
         //no change the constraints the way that the total strain is no longer fixed
@@ -510,7 +599,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         if (hasBeenSaved)
         {
         	fineScaleStructure->RestoreStructure(saveStream);
-            std::cout << "restore data " << std::endl;
         }
         else
         {
@@ -519,8 +607,9 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             fineScaleStructure->SetLoadFactor(0);
             fineScaleStructure->NodeBuildGlobalDofs();
             fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-            std::cout << "reinitialize data " << std::endl;
         }
+		//std::cout << "Schur stiffness algo" << std::endl;
+		//stiffness.Info(12,3);
 
         if (1==0)
         {
@@ -575,6 +664,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             std::cout << "eigenvector 3" << std::endl;
             eigenVectors.GetColumn(2).Trans().Info(12,3);
         }
+        fineScaleStructure->GetLogger().CloseFile();
     }//nonlinear solution
 #else
     throw MechanicsException("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] MUMPS solver required to calculate Schur complement.");
@@ -627,6 +717,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
     }
     else
     {
+        fineScaleStructure->GetLogger().OpenFile();
         //Get and set previous total strain
         EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
         fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
@@ -643,22 +734,66 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
         fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+        fineScaleStructure->SetNewtonRaphsonToleranceResidualForce(mToleranceResidualForce);
+        fineScaleStructure->SetNewtonRaphsonAutomaticLoadStepControl(true);
+        fineScaleStructure->SetNewtonRaphsonMaxDeltaLoadFactor(mMaxDeltaLoadFactor);
+        fineScaleStructure->SetNewtonRaphsonMaxNumNewtonIterations(mMaxNumNewtonIterations);
+        fineScaleStructure->SetNewtonRaphsonDecreaseFactor(mDecreaseFactor);
+        fineScaleStructure->SetNewtonRaphsonMinNumNewtonIterations(mMinNumNewtonIterations);
+        fineScaleStructure->SetNewtonRaphsonIncreaseFactor(mIncreaseFactor);
+        fineScaleStructure->SetNewtonRaphsonMinDeltaLoadFactor(mMinLoadFactor);
+        fineScaleStructure->SetNewtonRaphsonMinLineSearchFactor(mMinLineSearchFactorFactor);
+
         std::stringstream saveStream;
         bool hasBeenSaved(false);
-        fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-                true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-                mIncreaseFactor, mMinLoadFactor, false, saveStream, hasBeenSaved);
+
+        fineScaleStructure->GetLogger() << "\n" << "******************************************************" << "\n";
+        fineScaleStructure->GetLogger() << " UpdateStaticData_EngineeringStress_EngineeringStrain " << "\n";
+        fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
+        		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
+        		                            <<  engineeringStrain.mEngineeringStrain[2]  << "\n";
+        fineScaleStructure->GetLogger() << " deltaStrain strain " <<  deltaStrain.mEngineeringStrain[0] << " "
+        		                            <<  deltaStrain.mEngineeringStrain[1] << " "
+        		                            <<  deltaStrain.mEngineeringStrain[2] <<  "\n";
+        fineScaleStructure->GetLogger() << " prevStrain strain "  <<  staticData->GetPrevStrain().mEngineeringStrain[0] << " "
+        		                            <<  staticData->GetPrevStrain().mEngineeringStrain[1] << " "
+        		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2]  << "\n"  << "\n";
+        try
+        {
+            fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved);
+        }
+        catch(NuTo::MechanicsException& e)
+        {
+            //restore structure
+            if (hasBeenSaved)
+            {
+                fineScaleStructure->RestoreStructure(saveStream);
+            }
+            else
+            {
+                //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                fineScaleStructure->SetLoadFactor(0);
+                fineScaleStructure->NodeBuildGlobalDofs();
+                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            }
+            e.AddMessage(std::string("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip") + fineScaleStructure->GetIPName());
+        	throw e;
+        }
+        catch(...)
+        {
+        	throw MechanicsException(std::string("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip") + fineScaleStructure->GetIPName());
+        }
 
         double energy = staticData->GetPrevTotalEnergy();
         //calculate delta total energy (sigma1+sigma2)/2*delta_strain
         //calculate average stress
         NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
         fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
-        std::cout << "average stress in damage domain" << std::endl;
-        averageStressDamage.Trans().Info(12,4);
+        fineScaleStructure->GetLogger() << "average stress in damage domain"  << "\n";
+        fineScaleStructure->GetLogger().Out(averageStressDamage.Trans(),12,4);
         fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
-        std::cout << "average stress in homogeneous domain" << std::endl;
-        averageStressHomogeneous.Trans().Info(12,4);
+        fineScaleStructure->GetLogger() << "average stress in homogeneous domain"  << "\n";
+        fineScaleStructure->GetLogger().Out(averageStressHomogeneous.Trans(),12,4);
         double scalingFactorDamage = fineScaleStructure->GetScalingFactorDamage();
         double scalingFactorHomogeneous = fineScaleStructure->GetScalingFactorHomogeneous();
         double sum(scalingFactorDamage+scalingFactorHomogeneous);
@@ -681,15 +816,16 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
                      meanEngineeringStress.mEngineeringStress[1]*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
                      meanEngineeringStress.mEngineeringStress[2]*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2]));
 
-        std::cout << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy() << std::endl;
-        std::cout << "Energy of fine scale approx "  << energy * (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
-        		                                                  fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous()) << std::endl;
-        std::cout << "total area of macroscale " <<  (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
-                fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous()) << std::endl;
+        fineScaleStructure->GetLogger() << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy()  << "\n";
+        fineScaleStructure->GetLogger() << "Energy of fine scale approx "  << energy * (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+        		                                                  fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous())  << "\n";
+        fineScaleStructure->GetLogger() << "total area of macroscale " <<  (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+                fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous())  << "\n";
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStrain(engineeringStrain);
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStress(engineeringStress);
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevTotalEnergy(energy);
         fineScaleStructure->ElementTotalUpdateStaticData();
+        fineScaleStructure->GetLogger().CloseFile();
     }
 }
 //! @brief ... update static data (history variables) of the constitutive relationship
@@ -784,6 +920,7 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 {
     const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
     StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
+    fineScaleStructure->GetLogger().OpenFile();
 
     //Get and set previous total strain
      EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
@@ -801,11 +938,54 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
     EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
     fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
 
+    fineScaleStructure->SetNewtonRaphsonToleranceResidualForce(mToleranceResidualForce);
+    fineScaleStructure->SetNewtonRaphsonAutomaticLoadStepControl(true);
+    fineScaleStructure->SetNewtonRaphsonMaxDeltaLoadFactor(mMaxDeltaLoadFactor);
+    fineScaleStructure->SetNewtonRaphsonMaxNumNewtonIterations(mMaxNumNewtonIterations);
+    fineScaleStructure->SetNewtonRaphsonDecreaseFactor(mDecreaseFactor);
+    fineScaleStructure->SetNewtonRaphsonMinNumNewtonIterations(mMinNumNewtonIterations);
+    fineScaleStructure->SetNewtonRaphsonIncreaseFactor(mIncreaseFactor);
+    fineScaleStructure->SetNewtonRaphsonMinDeltaLoadFactor(mMinLoadFactor);
+    fineScaleStructure->SetNewtonRaphsonMinLineSearchFactor(mMinLineSearchFactorFactor);
+
     std::stringstream saveStream;
     bool hasBeenSaved(false);
-    fineScaleStructure->NewtonRaphson(mToleranceResidualForce,
-            true, mMaxDeltaLoadFactor, mMaxNumNewtonIterations, mDecreaseFactor, mMinNumNewtonIterations,
-            mIncreaseFactor, mMinLoadFactor, true, saveStream, hasBeenSaved);
+    fineScaleStructure->GetLogger() << "\n" << "****************************************************" << "\n";
+    fineScaleStructure->GetLogger() << " GetTotalEnergy_EngineeringStress_EngineeringStrain "  << "\n";
+    fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
+    		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
+    		                            <<  engineeringStrain.mEngineeringStrain[2]  << "\n";
+    fineScaleStructure->GetLogger() << " deltaStrain strain " <<  deltaStrain.mEngineeringStrain[0] << " "
+    		                            <<  deltaStrain.mEngineeringStrain[1] << " "
+    		                            <<  deltaStrain.mEngineeringStrain[2] << "\n";
+    fineScaleStructure->GetLogger() << " prevStrain strain "  <<  staticData->GetPrevStrain().mEngineeringStrain[0] << " "
+    		                            <<  staticData->GetPrevStrain().mEngineeringStrain[1] << " "
+    		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2]  << "\n" << "\n";
+    try
+    {
+        fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved);
+    }
+    catch(MechanicsException& e)
+    {
+        //restore structure
+        if (hasBeenSaved)
+        {
+            fineScaleStructure->RestoreStructure(saveStream);
+        }
+        else
+        {
+            //set load factor to zero in order to get the same ordering of the displacements as before the routine
+            fineScaleStructure->SetLoadFactor(0);
+            fineScaleStructure->NodeBuildGlobalDofs();
+            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        }
+        e.AddMessage(std::string("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+    	throw e;
+    }
+    catch(...)
+    {
+    	throw MechanicsException(std::string("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+    }
 
     double energy = staticData->GetPrevTotalEnergy();
     //calculate delta total energy (sigma1+sigma2)/2*delta_strain
@@ -841,9 +1021,11 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
         fineScaleStructure->NodeBuildGlobalDofs();
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
     }
-    std::cout << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy() << std::endl;
-    std::cout << "Energy of fine scale approx "  << energy * (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
-    		                                                  fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous()) << std::endl;
+    fineScaleStructure->GetLogger() << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy()  << "\n";
+    fineScaleStructure->GetLogger() << "Energy of fine scale approx "  << energy * (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
+    		                                                  fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous())  << "\n";
+    fineScaleStructure->GetLogger().CloseFile();
+
     return energy;
 }
 

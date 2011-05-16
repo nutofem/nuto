@@ -10,6 +10,8 @@
 #include <boost/serialization/utility.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/base/Logger.h"
+#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
@@ -58,7 +60,7 @@ template<class Archive>
 void NuTo::ConstitutiveMisesPlasticity::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ConstitutiveMisesPlasticity" << std::endl;
+    rLogger << "start serialize ConstitutiveMisesPlasticity" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
        & BOOST_SERIALIZATION_NVP(mE)
@@ -66,7 +68,7 @@ void NuTo::ConstitutiveMisesPlasticity::serialize(Archive & ar, const unsigned i
        & BOOST_SERIALIZATION_NVP(mSigma)
        & BOOST_SERIALIZATION_NVP(mH);
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize ConstitutiveMisesPlasticity" << std::endl;
+    rLogger << "finish serialize ConstitutiveMisesPlasticity" << "\n";
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveMisesPlasticity)
@@ -107,7 +109,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const Elemen
 {
     // perform return mapping
 	ConstitutiveStaticDataMisesPlasticity3D  staticData;
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, &staticData);
+    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, &staticData,rElement->GetStructure()->GetLogger());
     rEngineeringPlasticStrain.mEngineeringStrain[0] = staticData.mEpsilonP[0];
     rEngineeringPlasticStrain.mEngineeringStrain[1] = staticData.mEpsilonP[1];
     rEngineeringPlasticStrain.mEngineeringStrain[2] = staticData.mEpsilonP[2];
@@ -192,7 +194,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
     // perform return mapping
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, &rEngineeringStress, 0, 0);
+    ReturnMapping3D(rElement, rIp, rDeformationGradient, &rEngineeringStress, 0, 0,rElement->GetStructure()->GetLogger());
 }
 
 //  Damage /////////////////////////////////////
@@ -281,7 +283,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
     }
 
     // perform return mapping
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , rTangent->AsConstitutiveTangentLocal6x6(), 0);
+    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , rTangent->AsConstitutiveTangentLocal6x6(), 0,rElement->GetStructure()->GetLogger());
     rTangent->SetSymmetry(true);
 }
 
@@ -323,8 +325,8 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 	    staticDataPtr(dynamic_cast<NuTo::ConstitutiveStaticDataMisesPlasticity3D* >(rElement->GetStaticData(rIp)));
 	if (staticDataPtr==0)
 		throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Static data is not derived from Mises3D.");
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, staticDataPtr);
-    std::cout<<"updated plastic strain " << staticDataPtr->mEpsilonP[0] << std::endl;
+    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, staticDataPtr,rElement->GetStructure()->GetLogger());
+    rElement->GetStructure()->GetLogger()<<"updated plastic strain " << staticDataPtr->mEpsilonP[0] << "\n";
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -433,7 +435,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetDeltaElasticEngineeringStrain(const E
 
 	// perform return mapping to calculate current plastic strain
 	ConstitutiveStaticDataMisesPlasticity3D newStaticData;
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, &newStaticData);
+    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, &newStaticData,rElement->GetStructure()->GetLogger());
 
 	//get previous data
 	const ConstitutiveStaticDataMisesPlasticityWithEnergy3D*
@@ -473,7 +475,8 @@ void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElem
 		const DeformationGradient3D& rDeformationGradient,
 		EngineeringStress3D* rNewStress,
 		ConstitutiveTangentLocal6x6* rNewTangent,
-		ConstitutiveStaticDataMisesPlasticity3D* rNewStaticData)const
+		ConstitutiveStaticDataMisesPlasticity3D* rNewStaticData,
+		Logger& rLogger)const
 {
     double sigma_trial[6],
     xi_trial[6],
@@ -646,11 +649,11 @@ void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElem
 
     if (i==100)
     {
-        std::cout << "yield condition " << yield_condition << " delta_gamma " << delta_gamma << std::endl;
-        std::cout << "epsilon_p_eq " << rOldStaticData->mEpsilonPEq;
-        std::cout << "total strain " << total_strain[0] << " " << total_strain[1] << " " << total_strain[2] << " " << total_strain[3] << " " << total_strain[4] << " " << total_strain[5] << " " <<std::endl;
-        std::cout << "plastic strain " << plastic_strain[0] << " " << plastic_strain[1] << " " << plastic_strain[2] << " " << plastic_strain[3] << " " << plastic_strain[4] << " " << plastic_strain[5] << " " <<std::endl;
-        std::cout << "back stress" << back_stress[0] << " " << back_stress[1] << " " << back_stress[2] << " " << back_stress[3] << " " << back_stress[4] << " " << back_stress[5] << " " <<std::endl;
+        rLogger << "yield condition " << yield_condition << " delta_gamma " << delta_gamma << "\n";
+        rLogger << "epsilon_p_eq " << rOldStaticData->mEpsilonPEq;
+        rLogger << "total strain " << total_strain[0] << " " << total_strain[1] << " " << total_strain[2] << " " << total_strain[3] << " " << total_strain[4] << " " << total_strain[5] << " " <<"\n";
+        rLogger << "plastic strain " << plastic_strain[0] << " " << plastic_strain[1] << " " << plastic_strain[2] << " " << plastic_strain[3] << " " << plastic_strain[4] << " " << plastic_strain[5] << " " <<"\n";
+        rLogger << "back stress" << back_stress[0] << " " << back_stress[1] << " " << back_stress[2] << " " << back_stress[3] << " " << back_stress[4] << " " << back_stress[5] << " " <<"\n";
         throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D] No convergence after 100 steps, check the source code.");
     }
 
@@ -1071,17 +1074,17 @@ void NuTo::ConstitutiveMisesPlasticity::CheckHardeningModulus(std::vector<std::p
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
-void NuTo::ConstitutiveMisesPlasticity::Info(unsigned short rVerboseLevel) const
+void NuTo::ConstitutiveMisesPlasticity::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
-    this->ConstitutiveBase::Info(rVerboseLevel);
-    std::cout << "    Young's modulus: " << this->mE << std::endl;
-    std::cout << "    Poisson's ratio: " << this->mNu << std::endl;
-	std::cout << "    multilinear yield strength: (interval,epsilon,sigma)" << std::endl;
+    this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
+    rLogger << "    Young's modulus: " << this->mE << "\n";
+    rLogger << "    Poisson's ratio: " << this->mNu << "\n";
+	rLogger << "    multilinear yield strength: (interval,epsilon,sigma)" << "\n";
     for (unsigned int count=0; count<mSigma.size(); count++)
-    	std::cout << "       " << count<< " : " << this->mSigma[count].first << "    " << this->mSigma[count].second << std::endl;
-	std::cout << "    multilinear hardening modulus: (interval,epsilon,H')" << std::endl;
+    	rLogger << "       " << count<< " : " << this->mSigma[count].first << "    " << this->mSigma[count].second << "\n";
+	rLogger << "    multilinear hardening modulus: (interval,epsilon,H')" << "\n";
     for (unsigned int count=0; count<mH.size(); count++)
-    	std::cout << "       " << count<< " : " << this->mH[count].first << "    " << this->mH[count].second << std::endl;
+    	rLogger << "       " << count<< " : " << this->mH[count].first << "    " << this->mH[count].second << "\n";
 }
 
 // check parameters

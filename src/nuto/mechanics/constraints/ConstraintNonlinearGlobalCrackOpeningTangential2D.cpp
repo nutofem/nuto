@@ -119,8 +119,7 @@ void NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D::serialize(Archive 
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintNonlinearGlobalCrackOpeningTangential2D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNonlinear)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNonlinear)
        & BOOST_SERIALIZATION_NVP(mStructure)
        & BOOST_SERIALIZATION_NVP(mScalingFactor)
        & BOOST_SERIALIZATION_NVP(mPenaltyStiffness);

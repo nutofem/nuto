@@ -38,7 +38,7 @@ protected:
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNode)
+//BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNode)
 #endif // ENABLE_SERIALIZATION
 
 #endif //CONSTRAINTNODE_H

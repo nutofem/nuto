@@ -14,6 +14,7 @@
 #include <boost/ptr_container/ptr_list.hpp>
 
 #include <string>
+#include "nuto/base/Logger.h"
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
@@ -42,6 +43,8 @@ template <class T> class SparseMatrixCSRVector2General;
 class EngineeringStrain2D;
 class NewtonRaphsonAuxRoutinesBase;
 class CrackBase;
+class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+class VisualizeUnstructuredGrid;
 
 class VisualizeComponentBase;
 
@@ -53,7 +56,6 @@ class StructureBase : public NuToObject
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -119,6 +121,15 @@ public:
     //! @param rWhat ... string which describes what to plot
     void ExportVtkDataFile(const std::string& rFileName) const;
 
+    //Visualize for all integration points the fine scale structure
+    void ElementGroupVisualizeIpMultiscale(int rGroupIdent, const std::string& rFileName, bool rVisualizeDamage)const;
+
+    //Visualize for all integration points the fine scale structure
+    void ElementGroupVisualizeIpMultiscaleDamage(int rGroupIdent, const std::string& rFileName)const;
+
+    //Visualize for all integration points the fine scale structure
+    void ElementGroupVisualizeIpMultiscaleHomogeneous(int rGroupIdent, const std::string& rFileName)const;
+
     //! @brief ... export an element group to Vtk data file
     //! @param rGroupIdent ... group ident
     //! @param rFileName ... file name
@@ -126,10 +137,29 @@ public:
     void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const;
 
 #ifndef SWIG
-    //! @brief ... export elements to Vtk data file
-    //! @param rElements ... vector of elements
-    //! @param rFileName ... file name
-    void ExportVtkDataFile(const std::vector<const ElementBase*>& rElements, const std::string& rFileName) const;
+    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents
+    void DefineVisualizeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements) const;
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+
+    //! @brief ... adds all the elements in a group to the data structure that is finally visualized
+    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementVectorAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat,
+    		const std::vector<const ElementBase*>& rElements, bool rVisualizeDamage) const;
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementTotalAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const;
+
+    //! @brief ... adds all the elements in a group to the data structure that is finally visualized
+    void ElementGroupAddToVisualizeIpMultiscale(int rGroupId, VisualizeUnstructuredGrid& rVisualize,
+    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const;
 #endif //SWIG
 #endif // ENABLE_VISUALIZE
 
@@ -394,7 +424,7 @@ public:
      //! @param rElement element pointer
      //! @param rIp integration point number
      //! @param rFileName binary file to be deserialize the structure from
-     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale);
+     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName);
  #endif //SWIG
 
      //! @brief modifies the section of a single element
@@ -1210,6 +1240,26 @@ public:
 #endif //SWIG
 
     //*************************************************
+    //************    Logger routines    ***************
+    //*************************************************
+	//! @brief opens a logger file for the output to a log file
+	//! @param rFileName file name
+	void LoggerOpenFile(std::string rFileName);
+
+	//! @brief set the logger to be quiet (output only to file, if set)
+	//! @param rQuiet (true for quiet logger, false for output to standard output)
+	void LoggerSetQuiet(bool rQuiet);
+
+#ifndef SWIG
+	//! @brief returns the logger
+	inline Logger& GetLogger()const
+	{
+		return mLogger;
+	}
+#endif //SWIG
+
+
+    //*************************************************
     //************ Basic routines     ***************
     //**  defined in structures/StructureBase.cpp **
     //*************************************************
@@ -1235,50 +1285,98 @@ public:
     //! @brief returns the a reference to the constraint matrix
     const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
 
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control) no save for updates in between time steps
+    //! @brief set parameters for the  Newton Raphson iteration
     //! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
-    //! @parameters rAutomaticLoadstepControl yes, if the step length should be adapted
-    //! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton iteration
-    //! @parameters rDecreaseFactor factor to decrease the load factor in case of no convergence with the prescribed number of Newton iterations
-    //! @parameters rMinNumNewtonIterations if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
-    //! @parameters rIncreaseFactor by this factor
-    //! @parameters rMinLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
-    void NewtonRaphson(double rToleranceResidualForce=1e-6,
-            bool rAutomaticLoadstepControl=true,
-            double rMaxDeltaLoadFactor=1.,
-            int rMaxNumNewtonIterations=20,
-            double rDecreaseFactor=0.5,
-            int rMinNumNewtonIterations=7,
-            double rIncreaseFactor=1.5,
-            double rMinDeltaLoadFactor=1e-6);
+    void SetNewtonRaphsonToleranceResidualForce(double rToleranceResidualForce)
+    {
+    	if (rToleranceResidualForce<=0)
+    	{
+    		std::cout << "tolerance residual force " << rToleranceResidualForce << std::endl;
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonToleranceResidualForce] tolerance has to be positive.");
+    	}
+    	mToleranceResidualForce = rToleranceResidualForce;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters rAutomaticLoadstepControl true, if the step length should be adapted
+    void SetNewtonRaphsonAutomaticLoadStepControl(bool rAutomaticLoadstepControl)
+    {
+    	mAutomaticLoadstepControl = rAutomaticLoadstepControl;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters maximum of the delta_step length
+    void SetNewtonRaphsonMaxDeltaLoadFactor(double rMaxDeltaLoadFactor)
+    {
+    	if (rMaxDeltaLoadFactor<=0 || rMaxDeltaLoadFactor>1)
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMaxDeltaLoadFactor] factor has to be in the internal (0,1].");
+    	mMaxDeltaLoadFactor = rMaxDeltaLoadFactor;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton step
+    void SetNewtonRaphsonMaxNumNewtonIterations(double rMaxNumNewtonIterations)
+    {
+    	if (rMaxNumNewtonIterations<=0)
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMaxDeltaLoadFactor] maximum number of newton iterations has to be positive.");
+    	mMaxNumNewtonIterations = rMaxNumNewtonIterations;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters rDecreaseFactor decrease the load factor in case of no convergence with the prescribed number of Newton iterations
+    void SetNewtonRaphsonDecreaseFactor(double rDecreaseFactor)
+    {
+    	if (rDecreaseFactor<=0 || rDecreaseFactor>=1)
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonDecreaseFactor] factor has to be in the internal (0,1).");
+    	mDecreaseFactor= rDecreaseFactor;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters
+    void SetNewtonRaphsonMinNumNewtonIterations(double rMinNumNewtonIterations)
+    {
+    	if (rMinNumNewtonIterations<=0 )
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMinNumNewtonIterations] minimum number of newton iterations has to be positive.");
+    	mMinNumNewtonIterations = rMinNumNewtonIterations;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters rIncreaseFactor if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
+    void SetNewtonRaphsonIncreaseFactor(double rIncreaseFactor)
+    {
+    	if (rIncreaseFactor<=1)
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonIncreaseFactor] factor has to be greater than 1.");
+    	mIncreaseFactor= rIncreaseFactor;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters rMinDeltaLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
+    void SetNewtonRaphsonMinDeltaLoadFactor(double rMinDeltaLoadFactor)
+    {
+    	if (rMinDeltaLoadFactor<=0 || rMinDeltaLoadFactor>=1)
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMinDeltaLoadFactor] factor has to be in the interval (0,1).");
+    	mMinDeltaLoadFactor= rMinDeltaLoadFactor;
+    }
+
+    //! @brief set parameters for the  Newton Raphson iteration
+    //! @parameters rMinLineSearchFactor smallest line search factor, if normResidual does not fulfill the linesearch criterion with d(t+1)=d(t)+alpha*delta(t), step size is reduced
+    void SetNewtonRaphsonMinLineSearchFactor(double rMinLineSearchFactor)
+    {
+    	if (rMinLineSearchFactor<=0 || rMinLineSearchFactor>=1)
+    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMinLineSearchFactor] factor has to be in the interval (0,1).");
+    	mMinLineSearchFactor= rMinLineSearchFactor;
+    }
+
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control) no save for updates in between time steps
+    void NewtonRaphson();
 
     //! @brief performs a Newton Raphson iteration (displacement and/or load control)
-    //! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
-    //! @parameters rAutomaticLoadstepControl yes, if the step length should be adapted
-    //! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton iteration
-    //! @parameters rDecreaseFactor factor to decrease the load factor in case of no convergence with the prescribed number of Newton iterations
-    //! @parameters rMinNumNewtonIterations if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
-    //! @parameters rIncreaseFactor by this factor
-    //! @parameters rMinLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
     //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
     //! @parameters rSaveStringStream stringstream the routine is saved to
     //! @parameters rIsSaved return parameter describing, if the routine actually had to to a substepping and consequently had to store the initial state into rSaveStringStream
-
-    void NewtonRaphson(double rToleranceResidualForce,
-            bool rAutomaticLoadstepControl,
-            double rMaxDeltaLoadFactor,
-            int rMaxNumNewtonIterations,
-            double rDecreaseFactor,
-            int rMinNumNewtonIterations,
-            double rIncreaseFactor,
-            double rMinDeltaLoadFactor,
-            bool rSaveStructureBeforeUpdate,
+    virtual void NewtonRaphson(bool rSaveStructureBeforeUpdate,
             std::stringstream& rSaveStringStream,
             bool& rIsSaved);
-
-    //! @brief initializes some variables etc. before the Newton-Raphson routine is executed
-    virtual void InitBeforeNewtonRaphson()
-    {}
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
@@ -1300,15 +1398,35 @@ public:
     virtual void SetLoadFactor(double rLoadFactor);
 
     //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const;
+    virtual void PostProcessDataAfterUpdate(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual)const;
+
+    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
+    virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor)const;
+    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual)const;
+
+    //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
+    virtual void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual)const;
+
+    //! @brief initialize some stuff before a new load step (e.g. output directories for visualization, if required)
+    virtual void InitBeforeNewLoadStep(int rLoadStep);
 
     //! @brief only for debugging, info at some stages of the Newton Raphson iteration
     virtual void NewtonRaphsonInfo(int rVerboseLevel)const
     {}
 
+    //! @brief is only true for structure used as multiscale (structure in a structure)
+    virtual bool IsMultiscaleStructure()const
+    {
+    	return false;
+    }
+
+    //! @brief is only true for structure used as multiscale (structure in a structure)
+    virtual void ScaleCoordinates(double rCoordinates[3])const
+    {
+    	throw MechanicsException("[NuTo::StructureBase::ScaleCoordinates] only implemented for multiscale structures.");
+    }
 protected:
     int mDimension;
 
@@ -1367,18 +1485,51 @@ protected:
     //! values smaller than that one will not be added to the global matrix
     double mToleranceStiffnessEntries;
 
+    //*********************************************
+    //parameters of the Newton Raphson iteration
+    //! @brief convergence criterion for the force norm (or the maximum value of the residual force, both are checked)
+    double mToleranceResidualForce;
+    //! @brief use (true) automatic load step control (increase, decrease load step)
+    bool mAutomaticLoadstepControl;
+    //! @brief maximum delta load factor for automatic load step control
+    double mMaxDeltaLoadFactor;
+    //! @brief maximum number of Newton iterations before the loadstep is decreases (automatic load control) or error of no convergence
+    int mMaxNumNewtonIterations;
+    //! @brief decrease factor of automatic load control, if no convergence is achieved
+    double mDecreaseFactor;
+    //! @brief if number of Newton iterations is smaller than this value, the deltaLoadFactor is multiplied by mIncreaseFactor for the next iteration
+    int mMinNumNewtonIterations;
+    //! @brief see mMinNumNewtonIterations
+    double mIncreaseFactor;
+    //! @brief smallest load increment, if deltaLoadFactor<mMinDeltaLoadFactor -> no convergence
+    double mMinDeltaLoadFactor;
+    //! @brief smallest line search factor, if normResidual does not fulfill the linesearch criterion with d(t+1)=d(t)+alpha*delta(t), step size is reduced
+    double mMinLineSearchFactor;
+    //*********************************************
+
+    //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines
+    mutable Logger mLogger;
+
     //! @brief ... standard constructor just for the serialization routine
     StructureBase()
     {}
 
 #ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
-     //! @param rElements ... vector of element pointer
-     virtual void GetElementsTotal(std::vector<const ElementBase*>& rElements) const = 0;
+    //! @param rElements ... vector of element pointer
+    virtual void GetElementsTotal(std::vector<const ElementBase*>& rElements) const = 0;
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    virtual void GetElementsTotal(std::vector<std::pair<int,const ElementBase*> >& rElements) const = 0;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     virtual void GetElementsTotal(std::vector<ElementBase*>& rElements) = 0;
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    virtual void GetElementsTotal(std::vector<std::pair<int,ElementBase*> >&  rElements) = 0;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer

@@ -195,6 +195,7 @@ structures/StructureBaseElement.cpp
 structures/StructureBaseGroup.cpp
 structures/StructureBaseIntegrationTypes.cpp
 structures/StructureBaseLoad.cpp
+structures/StructureBaseLogger.cpp
 structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp

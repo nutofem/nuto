@@ -153,8 +153,6 @@ public:
     //! @return reference to a node
     const int NodeGetNodeNumberFromId(int rNodeId) const;
 
-
-
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
@@ -190,7 +188,6 @@ public:
 
     //! @brief numbers the dofs in the structure
     void NodeBuildGlobalDofs();
-
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
@@ -340,9 +337,17 @@ protected:
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<ElementBase*>& rElements);
 
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements);
+
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetElementsTotal(std::vector<std::pair<int,const ElementBase*> >& rElements) const;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer

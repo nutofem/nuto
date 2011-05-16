@@ -39,7 +39,7 @@ void NuTo::ConstraintNodeGroup::serialize(Archive & ar, const unsigned int versi
     std::cout << "finish serialize ConstraintNodeGroup" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeGroup)
+//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNodeGroup)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNodeGroup)
 
 #endif // ENABLE_SERIALIZATION

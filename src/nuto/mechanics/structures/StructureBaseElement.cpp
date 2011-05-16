@@ -418,11 +418,17 @@ bool NuTo::StructureBase::CheckStiffness()
         stiffnessMatrixCSRVector2_CDF.Info(10,3);
         std::cout<< std::endl << "error" << std::endl;
         (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Info(10);
-        std::cout << "maximum error is " << (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max() << std::endl;
+        double maxError;
+        int row,col;
+        maxError = (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max(row,col);
+        std::cout << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") " << std::endl;
         std::cout<< std::endl << "intForceVector algo" << std::endl;
         intForceVector1.Trans().Info(10);
         std::cout<< std::endl << "intForceVector cdf" << std::endl;
         intForceVectorCDF.Trans().Info(10);
+        maxError = (intForceVector1-intForceVectorCDF).Abs().Max(row,col);
+        std::cout << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << std::endl;
+
         //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
         std::cout << "stiffness is wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< std::endl;
         return false;
@@ -759,7 +765,11 @@ void NuTo::StructureBase::ElementIpSetFineScaleModel(int rElementId, int rIp, st
     try
     {
         double rLengthCoarseScale = sqrt(elementPtr->CalculateArea());
-        ElementIpSetFineScaleModel(elementPtr,rIp,rFileName,rLengthCoarseScale);
+        std::stringstream elementString;
+        elementString << rElementId;
+        std::stringstream rIPString;
+        rIPString << rIp;
+        ElementIpSetFineScaleModel(elementPtr,rIp,rFileName,rLengthCoarseScale, elementString.str()+std::string("_")+rIPString.str());
     }
     catch(NuTo::MechanicsException e)
     {
@@ -805,8 +815,14 @@ void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::st
         try
         {
             double rLengthCoarseScale = sqrt(itElement->second->CalculateArea());
+            std::stringstream elementString;
+            elementString << itElement->first;
             for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
-                ElementIpSetFineScaleModel(itElement->second, theIp, rFileName, rLengthCoarseScale);
+            {
+                std::stringstream rIPString;
+                rIPString << theIp;
+                ElementIpSetFineScaleModel(itElement->second, theIp, rFileName, rLengthCoarseScale, elementString.str()+std::string("_")+rIPString.str());
+            }
         }
         catch(NuTo::MechanicsException e)
         {
@@ -841,22 +857,26 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
     std::clock_t start,end;
     start=clock();
 #endif
-    std::vector<ElementBase*> elementVector;
+    std::vector<std::pair<int, ElementBase*> > elementVector;
     GetElementsTotal(elementVector);
     for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
     {
         try
         {
-            double lCoarseScale = sqrt(elementVector[countElement]->CalculateArea());
-            for (int theIp=0; theIp<elementVector[countElement]->GetNumIntegrationPoints(); theIp++)
+            double lCoarseScale = sqrt(elementVector[countElement].second->CalculateArea());
+            std::stringstream elementString;
+            elementString << elementVector[countElement].first;
+            for (int theIp=0; theIp<elementVector[countElement].second->GetNumIntegrationPoints(); theIp++)
             {
-                 ElementIpSetFineScaleModel(elementVector[countElement], theIp, rFileName, lCoarseScale);
+                std::stringstream rIPString;
+                rIPString << theIp;
+                ElementIpSetFineScaleModel(elementVector[countElement].second, theIp, rFileName, lCoarseScale, elementString.str()+std::string("_")+rIPString.str());
             }
         }
         catch(NuTo::MechanicsException e)
         {
             std::stringstream ss;
-            ss << ElementGetId(elementVector[countElement]);
+            ss << elementVector[countElement].first;
             e.AddMessage("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
                     + ss.str() + ".");
             throw e;
@@ -864,7 +884,7 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
         catch(...)
         {
             std::stringstream ss;
-            ss << ElementGetId(elementVector[countElement]);
+            ss << elementVector[countElement].first;
             throw NuTo::MechanicsException
                ("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
                        + ss.str() + ".");
@@ -880,9 +900,9 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
 //! @brief sets the constitutive law of a single element
 //! @param rElement element pointer
 //! @param rConstitutive material pointer
-void NuTo::StructureBase::ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale)
+void NuTo::StructureBase::ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName)
 {
-    rElement->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale);
+    rElement->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale, rIPName);
 }
 
 //! @brief sets the section of a single element
@@ -1896,7 +1916,15 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::SetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
+            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(NuTo::Exception e)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
@@ -1905,7 +1933,7 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
             throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error setting fine scale parameter for element " + ss.str() + ".");
+               ("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
         }
     }
 
@@ -1946,7 +1974,7 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::SetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
+            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
@@ -1955,7 +1983,7 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
             throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementGroupGetAverageStrain] Error setting fine scale parameter for element " + ss.str() + ".");
+               ("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
         }
     }
 
@@ -1981,3 +2009,85 @@ void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, st
 void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter)
 {
 }
+#ifdef ENABLE_VISUALIZE
+//! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+void NuTo::StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+{
+    std::vector<const ElementBase*> elementVec;
+    this->GetElementsTotal(elementVec);
+    ElementVectorAddToVisualize(rVisualize,rWhat,elementVec);
+}
+
+//! @brief ... adds all the elements in a group to the data structure that is finally visualized
+void NuTo::StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+{
+	// find group by name
+	const Group<ElementBase>* elementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupId));
+	std::vector<const ElementBase*> elementVec;
+	this->GetElementsByGroup(elementGroup,elementVec);
+    ElementVectorAddToVisualize(rVisualize,rWhat,elementVec);
+}
+
+//! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements) const
+{
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] First update of tmp static data required.");
+    }
+
+    if (mHaveTmpStaticData && mUpdateTmpStaticDataRequired)
+    {
+    	throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] Update of tmpStaticData required first.");
+    }
+
+    for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
+    {
+        rElements[ElementCount]->Visualize(rVisualize, rWhat);
+    }
+}
+
+//! @brief ... adds all the elements in a group to the data structure that is finally visualized
+void NuTo::StructureBase::ElementGroupAddToVisualizeIpMultiscale(int rGroupId, VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const
+{
+	// find group by name
+	const Group<ElementBase>* elementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupId));
+	std::vector<const ElementBase*> elementVec;
+	this->GetElementsByGroup(elementGroup,elementVec);
+	ElementVectorAddToVisualizeIpMultiscale(rVisualize,rWhat,elementVec,rVisualizeDamage);
+}
+
+//! @brief ... adds all the elements to the data structure that is finally visualized
+void NuTo::StructureBase::ElementTotalAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const
+{
+	// find group by name
+    std::vector<const ElementBase*> elementVec;
+    this->GetElementsTotal(elementVec);
+	ElementVectorAddToVisualizeIpMultiscale(rVisualize,rWhat,elementVec,rVisualizeDamage);
+}
+
+//! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+void NuTo::StructureBase::ElementVectorAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
+		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements, bool rVisualizeDamage) const
+{
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] First update of tmp static data required.");
+    }
+
+    if (mHaveTmpStaticData && mUpdateTmpStaticDataRequired)
+    {
+    	throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] Update of tmpStaticData required first.");
+    }
+
+    for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
+    {
+        rElements[ElementCount]->VisualizeIpMultiscale(rVisualize, rWhat, rVisualizeDamage);
+    }
+}
+
+#endif //VISUALIZE
