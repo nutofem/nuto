@@ -104,6 +104,13 @@ public:
     //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
     virtual int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0) = 0;
 
+    //! @brief ... returns true if the matrix allows parallel assembly using openmp with maximum independent sets
+    //! this is essentially true, if adding a value to a specific row does not change the storage position of values in other rows
+    //! until now, this is only true for SparseMatrixCSRVector2
+    virtual bool AllowParallelAssemblyUsingMaximumIndependentSets()const
+    {
+    	return false;
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

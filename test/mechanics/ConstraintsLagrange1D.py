@@ -109,6 +109,9 @@ deltaDispFactor = 0.2;
 maxDeltaDispFactor = 0.2;
 curDispFactor = 0.2;
 
+#calculate maximum independent sets for openmp parallelization
+myStructure.CalculateMaximumIndependentSets();
+
 #update conre mat
 myStructure.NodeBuildGlobalDofs();
 

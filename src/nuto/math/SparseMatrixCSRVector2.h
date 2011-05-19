@@ -430,6 +430,14 @@ public:
         return  mColumns;
     }
 
+    //! @brief ... returns true if the matrix allows parallel assembly using openmp with maximum independent sets
+    //! this is essentially true, if adding a value to a specific row does not change the storage position of values in other rows
+    //! until now, this is only true for SparseMatrixCSRVector2
+    bool AllowParallelAssemblyUsingMaximumIndependentSets()const
+    {
+    	return true;
+    }
+
 protected:
     //! @brief value of nonzero matrix entries
     std::vector<std::vector<T> > mValues;

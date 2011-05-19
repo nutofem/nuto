@@ -546,13 +546,13 @@ public:
     // visualizes the crack of the fine scale model
     void VisualizeCrack(VisualizeUnstructuredGrid& rVisualize)const;
 
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+/*    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
     //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
     //!             be careful, store it only once, although the routine is called before every update
     void NewtonRaphson(bool rSaveStructureBeforeUpdate,
             std::stringstream& rSaveStringStream,
             bool& rIsSaved);
-
+*/
 protected:
 
 

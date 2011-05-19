@@ -77,6 +77,9 @@ myStructure.ElementTotalSetConstitutiveLaw(myMatDamage)
 #Build nonlocal elements
 myStructure.BuildNonlocalData(myMatDamage)
 
+#Calculate maximum independent sets for parallelization (openmp)
+myStructure.CalculateMaximumIndependentSets();
+
 #visualize results (nonlocal weights)
 myStructure.AddVisualizationComponentNonlocalWeights(element1,0)
 myStructure.AddVisualizationComponentNonlocalWeights(element2,0)

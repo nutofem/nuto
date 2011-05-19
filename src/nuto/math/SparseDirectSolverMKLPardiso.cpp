@@ -30,11 +30,12 @@ NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirec
 #ifdef HAVE_MKL_PARDISO
 void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
 {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
     mkl_set_num_threads(2);
     std::cout << "number of threads: " << mkl_get_max_threads() << std::endl;
-
-    // timing
-    clock_t startTime = clock();
 
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
@@ -187,15 +188,13 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     {
         throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
-    if (this->mVerboseLevel > 0)
-    {
-        clock_t endTime = clock();
-        std::cout << "[SparseDirectSolverMKLPardiso::solve] Time for reordering and symbolic factorization: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
-        startTime = endTime;
-    }
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverMKLPardiso::solve] Time for reordering and symbolic factorization: "
+                  << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
 
     // Numerical factorization.
     phase = 22;
@@ -219,15 +218,13 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     {
         throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " + this->GetErrorString(error) + ".");
     }
-    if (this->mVerboseLevel > 0)
-    {
-        clock_t endTime = clock();
-        std::cout << "[SparseDirectSolverMKLPardiso::solve] Time for numerical factorization: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds."
-                  << std::endl;
-        startTime = endTime;
-    }
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverMKLPardiso::solve] Time for numerical factorization: "
+                  << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
 
     // Back substitution and iterative refinement.
     phase = 33;
@@ -251,56 +248,54 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     {
         throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Back substitution and iterative refinement phase: " + this->GetErrorString(error) + ".");
     }
-    if (this->mVerboseLevel > 0)
-    {
-        clock_t endTime = clock();
-        std::cout << "[SparseDirectSolverMKLPardiso::solve] Time for back substitution and iterative refinement: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
-        startTime = endTime;
-        if (this->mVerboseLevel > 1)
-        {
-            std::cout << "[SparseDirectSolverMKLPardiso::solve] Peak memory symbolic factorization: "
-                      << parameters[14] << " KBytes"
-                      << std::endl;
-            std::cout << "[SparseDirectSolverMKLPardiso::solve] Permanent memory symbolic factorization: "
-                      << parameters[15] << " KBytes"
-                      << std::endl;
-            std::cout << "[SparseDirectSolverMKLPardiso::solve] Memory numerical factorization and solution: "
-                      << parameters[16] << " KBytes"
-                      << std::endl;
-            if (this->mVerboseLevel > 2)
-            {
-                std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of floating point operations required for factorization: "
-                          << parameters[18] << " MFLOS"
-                          << std::endl;
-                if (matrixType == -2)
-                {
-                    std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of positive eigenvalues: "
-                              << parameters[21]
-                              << std::endl;
-                    std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of negative eigenvalues: "
-                              << parameters[22]
-                              << std::endl;
-                    std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of zero eigenvalues: "
-                              << matrixDimension - parameters[21] - parameters[22]
-                              << std::endl;
-                }
-                std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of nonzeros in factors: "
-                          << parameters[17]
-                          << std::endl;
-                std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of performed iterative refinement steps: "
-                          << parameters[6]
-                          << std::endl;
-                if (matrixType != 2)
-                {
-                    std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of perturbed pivots: "
-                              << parameters[13]
-                              << std::endl;
-                }
-            }
-        }
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverMKLPardiso::solve] Time for back substitution and iterative refinement: "
+                  << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
+	if (this->mVerboseLevel > 1)
+	{
+		std::cout << "[SparseDirectSolverMKLPardiso::solve] Peak memory symbolic factorization: "
+				  << parameters[14] << " KBytes"
+				  << std::endl;
+		std::cout << "[SparseDirectSolverMKLPardiso::solve] Permanent memory symbolic factorization: "
+				  << parameters[15] << " KBytes"
+				  << std::endl;
+		std::cout << "[SparseDirectSolverMKLPardiso::solve] Memory numerical factorization and solution: "
+				  << parameters[16] << " KBytes"
+				  << std::endl;
+		if (this->mVerboseLevel > 2)
+		{
+			std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of floating point operations required for factorization: "
+					  << parameters[18] << " MFLOS"
+					  << std::endl;
+			if (matrixType == -2)
+			{
+				std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of positive eigenvalues: "
+						  << parameters[21]
+						  << std::endl;
+				std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of negative eigenvalues: "
+						  << parameters[22]
+						  << std::endl;
+				std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of zero eigenvalues: "
+						  << matrixDimension - parameters[21] - parameters[22]
+						  << std::endl;
+			}
+			std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of nonzeros in factors: "
+					  << parameters[17]
+					  << std::endl;
+			std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of performed iterative refinement steps: "
+					  << parameters[6]
+					  << std::endl;
+			if (matrixType != 2)
+			{
+				std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of perturbed pivots: "
+						  << parameters[13]
+						  << std::endl;
+			}
+		}
     }
 
     // Termination and release of memory

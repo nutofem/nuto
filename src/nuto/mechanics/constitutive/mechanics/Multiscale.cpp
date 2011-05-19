@@ -588,7 +588,6 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         NuTo::SparseMatrixCSRGeneral<double> stiffnessFineScale(matrixJJ);
         stiffnessFineScale.SetOneBasedIndexing();
         mumps.SchurComplement(stiffnessFineScale,schurIndicesMatrix,stiffness);
-
         //scale with the dimension of the structure (area)
         double area = fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
         		      fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous();

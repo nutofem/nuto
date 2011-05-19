@@ -163,6 +163,10 @@ public:
 #endif //SWIG
 #endif // ENABLE_VISUALIZE
 
+    //@brief determines the maximum independent sets and stores it at the structure
+    // is only relevant for openmp, otherwise the routine is just empty
+    void CalculateMaximumIndependentSets();
+
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
@@ -1506,6 +1510,11 @@ protected:
     //! @brief smallest line search factor, if normResidual does not fulfill the linesearch criterion with d(t+1)=d(t)+alpha*delta(t), step size is reduced
     double mMinLineSearchFactor;
     //*********************************************
+
+#ifdef _OPENMP
+    //@brief maximum independent sets used for parallel assembly of the stiffness resforce etc.
+    mutable std::vector<std::vector<ElementBase*> > mMIS;
+#endif
 
     //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines
     mutable Logger mLogger;

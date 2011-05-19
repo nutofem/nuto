@@ -56,6 +56,9 @@ elementIncidence = nuto.IntFullMatrix(3,10,(
 5,7,6 ))
 myStructure.ElementsCreate("PLANE2D3N", elementIncidence)
 
+#Calculate maximum independent sets for parallelization (openmp)
+myStructure.CalculateMaximumIndependentSets();
+
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
@@ -83,9 +86,10 @@ myStructure.Info()
 myStructure.NodeBuildGlobalDofs()
 
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
+stiffnessMatrixCSRVector2 = nuto.DoubleSparseMatrixCSRVector2General(0,0)
 dispForceVector = nuto.DoubleFullMatrix()
-myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
+myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector)
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrixCSRVector2)
 
 # build global external load vector
 extForceVector = nuto.DoubleFullMatrix()

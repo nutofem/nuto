@@ -21,6 +21,10 @@
     #include <ctime>
 #endif
 
+# ifdef _OPENMP
+    #include <omp.h>
+# endif
+
 #include <algorithm>
 #include <sstream>
 #include <iostream>
@@ -29,6 +33,7 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "nuto/math/SparseDirectSolverMKLPardiso.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/elements/ElementBase.h"
@@ -523,6 +528,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     //check for dof numbering and build of tmp static data
@@ -588,8 +596,14 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
     }
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 
@@ -598,6 +612,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     //check for dof numbering and build of tmp static data
@@ -662,8 +679,14 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
     }
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 
@@ -672,6 +695,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     //check for dof numbering and build of tmp static data
@@ -747,8 +773,14 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
     }
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 
@@ -800,6 +832,9 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     // check dof numbering
@@ -841,8 +876,14 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
     }
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 
@@ -956,6 +997,9 @@ void NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
 try
@@ -979,12 +1023,13 @@ try
 
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
-#ifdef SHOW_TIME
+    //NuTo::SparseDirectSolverMKLPardiso mySolver;
+    #ifdef SHOW_TIME
     if (mShowTime==true)
         mySolver.SetShowTime(true);
     else
         mySolver.SetShowTime(false);
-#endif
+    #endif
     bool convergenceInitialLoadStep(false);
     int loadStep(1);
     InitBeforeNewLoadStep(loadStep);
@@ -1458,11 +1503,135 @@ catch (MechanicsException& e)
 }
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::NewtonRaphson] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::NewtonRaphson] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif
 }
 
+#ifdef _OPENMP
+//@brief determines the maximum independent sets and stores it at the structure
+void NuTo::StructureBase::CalculateMaximumIndependentSets()
+{
+#define UNDONE 1
+#define SELECTED 2
+#define DELETED 3
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+try
+{
+	std::vector<ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+
+/*    //for test purpose
+	mMIS.resize(elementVector.size());
+	for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
+	{
+		mMIS[elementCount].resize(1);
+		mMIS[elementCount][0] = elementVector[elementCount];
+	}
+	return;
+	*/
+
+    //Build the connectivity graph
+    //First get for all nodes all the elements
+    std::map<NodeBase*, std::vector<unsigned int> > elementsPerNode;
+    for (unsigned int elementCount = 0; elementCount< elementVector.size(); elementCount++)
+    {
+    	for (int nodeCount = 0; nodeCount< elementVector[elementCount]->GetNumNodes(); nodeCount++)
+    	{
+    		elementsPerNode[elementVector[elementCount]->GetNode(nodeCount)].push_back(elementCount);
+    	}
+    }
+
+    //Get the neighboring elements (always referring to the location in the vector elementVector)
+    std::vector< std::vector<int> > NeighborElements(elementVector.size());
+    for (auto itNode = elementsPerNode.begin(); itNode!=elementsPerNode.end(); itNode++)
+    {
+    	for (unsigned int elementCount1 = 0; elementCount1 < itNode->second.size(); elementCount1++)
+    	{
+        	for (unsigned int elementCount2 = elementCount1+1; elementCount2 < itNode->second.size(); elementCount2++)
+        	{
+        		NeighborElements[itNode->second[elementCount1]].push_back(itNode->second[elementCount2]);
+        		NeighborElements[itNode->second[elementCount2]].push_back(itNode->second[elementCount1]);
+        	}
+    	}
+    }
+
+    //build the maximum independent sets
+    std::vector<int> elementState(elementVector.size());
+    for (unsigned int count=0; count<elementState.size(); count++)
+    	elementState[count] = UNDONE;
+
+    unsigned int numDeleted=0;
+    unsigned int curMIS = 0;
+    mMIS.resize(10);
+    while (numDeleted<elementVector.size())
+    {
+    	if (mMIS.size()<=curMIS)
+            	mMIS.resize(curMIS+1);
+     	for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+        {
+        	if (elementState[countElement]!=UNDONE)
+        		continue;
+
+        	//add element to the set
+        	//std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS << std::endl;
+        	(mMIS[curMIS]).push_back(elementVector[countElement]);
+        	elementState[countElement] = DELETED;
+        	numDeleted++;
+
+        	//mark all the neighboring elements as selected, which prevents them to being added to this set
+        	for (unsigned int theNeighborCount=0; theNeighborCount<NeighborElements[countElement].size(); theNeighborCount++)
+        	{
+        		if (elementState[NeighborElements[countElement][theNeighborCount]]==UNDONE)
+        			elementState[NeighborElements[countElement][theNeighborCount]] = SELECTED;
+        	}
+        }
+        //reset the selected elements to be undone
+        for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+        {
+        	if (elementState[countElement]==SELECTED)
+        		elementState[countElement]=UNDONE;
+
+        }
+        curMIS++;
+    }
+    mMIS.resize(curMIS);
+/*    std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
+    for (unsigned int count=0; count<mMIS.size(); count++)
+    {
+    	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
+    	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
+    		std::cout << ElementGetId(mMIS[count][count2]) << " ";
+    	std::cout << std::endl;
+    }
+*/
+}
+catch (MechanicsException& e)
+{
+    e.AddMessage("[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
+    throw e;
+}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::CalculateMaximumIndependentSets] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+#else
+//@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without openmp
+void NuTo::StructureBase::CalculateMaximumIndependentSets()
+{
+}
+#endif
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

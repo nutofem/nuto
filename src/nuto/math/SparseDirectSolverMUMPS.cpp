@@ -3,6 +3,10 @@
     #include <ctime>
 #endif
 
+# ifdef _OPENMP
+#include <omp.h>
+# endif
+
 #ifdef HAVE_MUMPS
 extern "C"
 {
