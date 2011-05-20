@@ -16,7 +16,7 @@
 #include <string>
 #include "nuto/base/Logger.h"
 #include "nuto/base/NuToObject.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseMatrixCSRGeneral_Def.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/groups/GroupBase.h"
@@ -39,7 +39,8 @@ class ElementBase;
 template <class T> class FullMatrix;
 class NodeBase;
 template<class T> class SparseMatrixCSRSymmetric;
-template <class T> class SparseMatrixCSRVector2General;
+template<class T> class SparseMatrixCSRVector2General;
+template<class T> class SparseMatrixCSRVector2Symmetric;
 class EngineeringStrain2D;
 class NewtonRaphsonAuxRoutinesBase;
 class CrackBase;
@@ -181,6 +182,11 @@ public:
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
     void BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    void BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector

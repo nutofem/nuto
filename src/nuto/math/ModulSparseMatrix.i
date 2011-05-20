@@ -9,6 +9,7 @@
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseMatrixCSRVector2.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 %}
 
 // convert python string to std::string
@@ -25,9 +26,10 @@
 %include "nuto/math/SparseMatrix.h"
 %include "nuto/math/SparseMatrixCSR.h"
 %include "nuto/math/SparseMatrixCSRGeneral_Def.h"
-%include "nuto/math/SparseMatrixCSRSymmetric.h"
+%include "nuto/math/SparseMatrixCSRSymmetric_Def.h"
 %include "nuto/math/SparseMatrixCSRVector2.h"
 %include "nuto/math/SparseMatrixCSRVector2General_Def.h"
+%include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
 %template(DoubleSparseMatrix) NuTo::SparseMatrix<double>;
 %template(IntSparseMatrix) NuTo::SparseMatrix<int>;
 %template(DoubleSparseMatrixCSR) NuTo::SparseMatrixCSR<double>;
@@ -40,3 +42,5 @@
 %template(IntSparseMatrixCSRVector2) NuTo::SparseMatrixCSRVector2<int>;
 %template(DoubleSparseMatrixCSRVector2General) NuTo::SparseMatrixCSRVector2General<double>;
 %template(IntSparseMatrixCSRVector2General) NuTo::SparseMatrixCSRVector2General<int>;
+%template(DoubleSparseMatrixCSRVector2Symmetric) NuTo::SparseMatrixCSRVector2Symmetric<double>;
+%template(IntSparseMatrixCSRVector2Symmetric) NuTo::SparseMatrixCSRVector2Symmetric<int>;

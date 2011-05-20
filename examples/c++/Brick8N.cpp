@@ -1,24 +1,29 @@
 // $Id$
 
 #include <iostream>
+#include "nuto/base/Exception.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
 int main()
+{
+try
 {
     int readFlag = false;
     if(readFlag)
     {
     NuTo::FullMatrix<double> a;
     a.ReadFromFile("stiffnessMatrix.txt");
-    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(a);
+    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2(a);
     NuTo::FullMatrix<double> rhsVector;
     rhsVector.ReadFromFile("rhsVector.txt");
     NuTo::SparseDirectSolverMUMPS mySolver;
     NuTo::FullMatrix<double> displacementVector;
     //stiffnessMatrix.SetOneBasedIndexing();
+    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
     mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
     displacementVector.WriteToFile("disp.txt"," ");
     a = rhsVector - stiffnessMatrix * displacementVector;
@@ -174,10 +179,11 @@ int main()
         myStructure.NodeBuildGlobalDofs();
 
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
+        NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2;
         NuTo::FullMatrix<double> dispForceVector;
-        myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
-        stiffnessMatrix.RemoveZeroEntries(0,1e-14);
+        myStructure.CalculateMaximumIndependentSets();
+        myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVector2, dispForceVector);
+        stiffnessMatrixVector2.RemoveZeroEntries(0,1e-14);
         //NuTo::FullMatrix<double> A(stiffnessMatrix);
         //A.WriteToFile("stiffnessMatrix.txt"," ");
         //stiffnessMatrix.Info();
@@ -195,6 +201,7 @@ int main()
         // solve
         NuTo::SparseDirectSolverMUMPS mySolver;
         NuTo::FullMatrix<double> displacementVector;
+        NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
         stiffnessMatrix.SetOneBasedIndexing();
         mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
         displacementVector.WriteToFile("displacementVector.txt"," ");
@@ -214,6 +221,13 @@ int main()
         myStructure.AddVisualizationComponentEngineeringStress();
         myStructure.ExportVtkDataFile("Plane2D4N.vtk");
     }
-    return 0;
+}
+catch (NuTo::Exception& e)
+{
+	std::cout << "Error executing ConcurrentMultiscale "<< std::endl;
+	std::cout << e.ErrorMessage() << std::endl;
+	return(-1);
+}
+return 0;
 }
 

@@ -9,7 +9,7 @@
 
 #include "nuto/math/FullMatrix.h"
 //#include "nuto/math/SparseMatrixCSRSymmetric_Def.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
+//#include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/MathException.h"
 
 //! @brief ... constructor
@@ -566,7 +566,7 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Nu
 template<class T>
 NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::Transpose() const
 {
-	return this;
+	return *this;
 }
 
 template<class T>

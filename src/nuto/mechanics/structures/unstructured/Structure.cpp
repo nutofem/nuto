@@ -263,13 +263,13 @@ void NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<dou
 	std::vector<int> elementMatrixGlobalDofsColumn;
 
 #ifdef _OPENMP
-#pragma omp parallel
 	if (mMIS.size()==0)
     	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] maximum independent set not calculated.");
     if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
     	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
     if (rMatrixJK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
     	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+#pragma omp parallel
     for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
     {
         std::vector<ElementBase*>::iterator elementIter;

@@ -115,8 +115,14 @@ oldTime = curTime
 curTime = time()
 print "time required for dof numbering: " + str(curTime - oldTime) + " s"
 
+#build maximum independent sets
+myStructure.CalculateMaximumIndependentSets()
+oldTime = curTime
+curTime = time()
+print "time required for calculating maximum independent sets: " + str(curTime - oldTime) + " s"
+
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
 dispForceVector = nuto.DoubleFullMatrix()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 oldTime = curTime
@@ -139,8 +145,9 @@ print "time required for calculating right-hand-side vector: " + str(curTime - o
 # solve
 mySolver = nuto.SparseDirectSolverMUMPS()
 displacementVector = nuto.DoubleFullMatrix()
-stiffnessMatrix.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
+stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
+stiffnessMatrixCSR.SetOneBasedIndexing()
+mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
 oldTime = curTime
 curTime = time()
 print "time required for solving: " + str(curTime - oldTime) + " s"

@@ -151,6 +151,11 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mLogger << "number of constraints after reading in conversion " << mConstraintMap.size() << "\n";
 }
 
+NuTo::StructureMultiscale::StructureMultiscale()
+{
+
+}
+
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::StructureMultiscale::Info()const
 {

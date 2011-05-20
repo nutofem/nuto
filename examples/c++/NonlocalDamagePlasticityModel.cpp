@@ -5,6 +5,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
 #include <eigen2/Eigen/Core>
 
 

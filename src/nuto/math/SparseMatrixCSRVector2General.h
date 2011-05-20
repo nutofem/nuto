@@ -10,6 +10,7 @@
 #include "nuto/math/FullMatrix.h"
 //#include "nuto/math/SparseMatrixCSRGeneral_Def.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 #include "nuto/math/MathException.h"
 
 //! @brief ... constructor
@@ -206,6 +207,46 @@ void NuTo::SparseMatrixCSRVector2General<T>::WriteEntriesToFullMatrix(FullMatrix
 			}
 		}
 	}
+}
+
+//! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
+//! @return symmetric part
+template<class T>
+NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2General<T>::SymmetricPart() const
+{
+
+	if (this->mNumColumns!=(int)this->mValues.size())
+		throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::SymmetricPart] matrix has to be square.");
+	SparseMatrixCSRVector2Symmetric<T> symmetricMatrix(this->mNumColumns,this->mNumColumns);
+	if (this->mOneBasedIndexing)
+	{
+		symmetricMatrix.SetOneBasedIndexing();
+		for (unsigned int row=0; row<this->mColumns.size(); row++)
+		{
+			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
+			{
+				if (row<=this->mColumns[row][col_count]-1)
+				    symmetricMatrix.AddEntry(row, this->mColumns[row][col_count]-1, 0.5*this->mValues[row][col_count]);
+				if (row>=this->mColumns[row][col_count]-1)
+				    symmetricMatrix.AddEntry(this->mColumns[row][col_count]-1,row, 0.5*this->mValues[row][col_count]);
+			}
+		}
+	}
+	else
+	{
+		symmetricMatrix.SetZeroBasedIndexing();
+		for (unsigned int row=0; row<this->mColumns.size(); row++)
+		{
+			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
+			{
+				if (row<=this->mColumns[row][col_count])
+				    symmetricMatrix.AddEntry(row, this->mColumns[row][col_count], 0.5*this->mValues[row][col_count]);
+				if (row>=this->mColumns[row][col_count])
+				    symmetricMatrix.AddEntry(this->mColumns[row][col_count],row, 0.5*this->mValues[row][col_count]);
+			}
+		}
+	}
+	return symmetricMatrix;
 }
 
 //! @brief ... add two matrices

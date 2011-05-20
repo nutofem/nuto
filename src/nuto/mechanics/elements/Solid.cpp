@@ -744,7 +744,6 @@ void NuTo::Solid::CheckElement()
         this->GetLocalIntegrationPointCoordinates(ipCount, localIPCoord);
         this->CalculateDerivativeShapeFunctionsLocal(localIPCoord, derivativeShapeFunctionsLocal);
         this->CalculateJacobian(derivativeShapeFunctionsLocal,nodeCoord, invJacobian, detJacobian);
-        std::cout << "detJac=" << detJacobian << std::endl;
         if (detJacobian <= 0)
         {
             std::cout << "error due to detJac=" << detJacobian << std::endl;

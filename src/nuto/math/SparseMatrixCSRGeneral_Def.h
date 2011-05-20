@@ -4,9 +4,8 @@
 #define SPARSE_MATRIX_CSR_GENERAL_DEF_H
 
 #include "nuto/math/SparseMatrixCSR.h"
-
-//the template class SparseMatrixCSRVector2General is split into definition and implementation, include only the definition here
 #include "nuto/math/FullMatrix.h"
+//the template class SparseMatrixCSRVector2General is split into definition and implementation, include only the definition here
 #include "nuto/math/SparseMatrixCSRVector2General_Def.h"
 
 namespace NuTo
@@ -145,7 +144,7 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-    	ar & boost::serialization::make_nvp("SparseMatrixCSR",boost::serialization::base_object< SparseMatrixCSR<T> >(*this));
+    	ar & boost::serialization::make_nvp("SparseMatrixCSRGeneral",boost::serialization::base_object< SparseMatrixCSR<T> >(*this));
     	ar & BOOST_SERIALIZATION_NVP(mNumColumns);
     }
 

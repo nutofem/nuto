@@ -74,7 +74,7 @@ constraint_right_side = myStructure.ConstraintLinearSetDisplacementNodeGroup(Nod
 #loop over boundaryDisplacement
 max_disp = 2.
 num_steps = 10
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
 dispForceVector = nuto.DoubleFullMatrix()
 extForceVector = nuto.DoubleFullMatrix()
 mySolver = nuto.SparseDirectSolverMUMPS()
@@ -90,6 +90,7 @@ myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringPlasticStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
+myStructure.CalculateMaximumIndependentSets()
 for i in range(0, num_steps):
     boundaryDisplacement = max_disp*(i+1)/num_steps
     print "boundary displacement :" + str(boundaryDisplacement)
@@ -119,7 +120,8 @@ for i in range(0, num_steps):
         rhsVector = dispForceVector + extForceVector - intForceVector
 
         # solve
-        mySolver.Solve(stiffnessMatrix, rhsVector, deltaDisplacementVector)
+        stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
+        mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementVector)
 
         #add delta
         displacementVector+=deltaDisplacementVector

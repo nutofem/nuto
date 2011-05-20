@@ -557,8 +557,7 @@ protected:
 
 
     //! @brief ... standard constructor just for the serialization routine
-    StructureMultiscale()
-    {}
+    StructureMultiscale();
 
     //! @brief Calculate the derivate of the homogeneous strain with respect to changes of the crack orientation and crack opening
     //! this is due to the constraint equation relating total strain, homogeneous strain and cracking strain

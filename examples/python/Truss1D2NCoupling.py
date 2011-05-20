@@ -42,12 +42,15 @@ id = myStructure.ConstraintLinearEquationCreate(2, "x_displacement", 1, 0)
 myStructure.ConstraintLinearEquationAddTerm(id, 3, "x_displacement", -1)
 myStructure.LoadCreateNodeForce(4, direction, 1)
 
+#build maximum independent sets
+myStructure.CalculateMaximumIndependentSets()
+
 # start analysis
 myStructure.NodeBuildGlobalDofs()
 
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 print "build stiffness matrix"
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRSymmetric()
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
 dispForceVector = nuto.DoubleFullMatrix()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 stiffnessMatrix.RemoveZeroEntries(0,1e-14)
@@ -65,8 +68,9 @@ rhsVector = dispForceVector + extForceVector
 print "solve"
 mySolver = nuto.SparseDirectSolverMUMPS()
 displacementVector = nuto.DoubleFullMatrix()
-stiffnessMatrix.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
+stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
+stiffnessMatrixCSR.SetOneBasedIndexing()
+mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
 
 # write displacements to node
 print "merge displacements"

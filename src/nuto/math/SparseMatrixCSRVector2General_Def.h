@@ -4,6 +4,7 @@
 #define SPARSE_MATRIX_CSR_VECTOR2_GENERAL_DEF_H
 
 #include "nuto/math/SparseMatrixCSRVector2.h"
+#include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
 
 //the template class SparseMatrixCSRVector2General is split into definition and implementation, include only the definition here
 #include "nuto/math/FullMatrix.h"
@@ -62,6 +63,10 @@ public:
     //! @brief ... write nonzero matrix entries into a full matrix
     //! @param rFullMatrix ... the full matrix
     void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const;
+
+    //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
+    //! @return symmetric part
+    SparseMatrixCSRVector2Symmetric<T> SymmetricPart() const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file

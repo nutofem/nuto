@@ -308,10 +308,12 @@ myStructure.LoadCreateNodeForce(31, direction, 1)
 # start analysis
 myStructure.NodeBuildGlobalDofs()
 
+#Calculate maximum independent sets for parallelization (openmp)
+myStructure.CalculateMaximumIndependentSets();
+
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 print "build stiffness matrix"
-#stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRSymmetric()
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
 dispForceVector = nuto.DoubleFullMatrix()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 stiffnessMatrix.RemoveZeroEntries(0,1e-14)
@@ -329,8 +331,9 @@ rhsVector = dispForceVector + extForceVector
 print "solve"
 mySolver = nuto.SparseDirectSolverMUMPS()
 displacementVector = nuto.DoubleFullMatrix()
-stiffnessMatrix.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
+stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
+stiffnessMatrixCSR.SetOneBasedIndexing()
+mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
 
 # write displacements to node
 print "merge displacements"

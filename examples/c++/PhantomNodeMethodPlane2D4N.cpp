@@ -5,7 +5,7 @@
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
-
+#include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/base/Debug.h"
 
 int main()

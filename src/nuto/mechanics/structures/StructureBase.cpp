@@ -784,7 +784,92 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
 #endif
 }
 
+// build global coefficient matrix0
+void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    //check for dof numbering and build of tmp static data
+    BuildGlobalCoefficientMatrixCheck();
 
+    // get dof values stored at the nodes
+    FullMatrix<double> activeDofValues;
+    FullMatrix<double> dependentDofValues;
+    try
+    {
+        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+    }
+    catch (MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
+        throw e;
+    }
+
+//    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+   // resize output objects
+    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
+    {
+        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+    }
+    else
+    {
+        rMatrix.SetZeroEntries();
+    }
+
+    rVector.Resize(this->mNumActiveDofs, 1);
+    if (this->mConstraintMatrix.GetNumEntries() == 0)
+    {
+        //mLogger << "non-symmetric, zero constraint matrix" << "\n";
+
+        // define additional submatrix
+        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
+
+        // build submatrices
+        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+
+        // build equivalent load vector
+        rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
+    }
+    else
+    {
+    	//mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
+
+        // define additional submatrix
+        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
+        //TODO this should actually be a symmetric matrix, but the multiplications are not implemented
+        SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
+
+        // build submatrices
+        this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+
+        // build global matrix
+        SparseMatrixCSRVector2General<double> constraintMatrixVector2 (this->mConstraintMatrix);
+        SparseMatrixCSRVector2General<double> transConstraintMatrixVector2 (constraintMatrixVector2.Transpose());
+        rMatrix -= (coefficientMatrixJK * constraintMatrixVector2).SymmetricPart();
+
+        //this should be optimized to actually be performed as C^TKC returning a symmetric matrix - just don't have time right now to do that
+        rMatrix += (transConstraintMatrixVector2 * coefficientMatrixKK * constraintMatrixVector2).SymmetricPart();
+
+        // build equivalent load vector
+        rVector = (transConstraintMatrixVector2 * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - constraintMatrixVector2 * activeDofValues);
+    }
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+}
 // build global external load vector
 void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector)
 {

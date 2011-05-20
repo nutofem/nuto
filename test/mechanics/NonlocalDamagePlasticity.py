@@ -88,7 +88,7 @@ myStructure.AddVisualizationComponentNonlocalWeights(element2,2)
 myStructure.AddVisualizationComponentNonlocalWeights(element2,3)
 
 #calculate linear elastic matrix
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(0,0)
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General(0,0)
 dispForceVector = nuto.DoubleFullMatrix(0,0)
 
 myStructure.ElementTotalUpdateTmpStaticData()
@@ -211,7 +211,6 @@ for theLoadStep in range(0,3):
 
     #update the structure, and then recalculate stiffness
     myStructure.ElementTotalUpdateStaticData()
-
 
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()

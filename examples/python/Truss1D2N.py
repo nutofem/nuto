@@ -50,12 +50,15 @@ else:
     print "Load control"
     myStructure.LoadCreateNodeForce(NumElements, direction, Force)
 
+#build maximum independent sets
+myStructure.CalculateMaximumIndependentSets()
+
 # start analysis
 # build global dof numbering
 myStructure.NodeBuildGlobalDofs()
 
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
 dispForceVector = nuto.DoubleFullMatrix()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 
@@ -69,8 +72,9 @@ rhsVector = dispForceVector + extForceVector
 # solve
 mySolver = nuto.SparseDirectSolverMUMPS()
 displacementVector = nuto.DoubleFullMatrix()
-stiffnessMatrix.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
+stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
+stiffnessMatrixCSR.SetOneBasedIndexing()
+mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
 
 # write displacements to node
 myStructure.NodeMergeActiveDofValues(displacementVector)
