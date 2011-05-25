@@ -96,6 +96,9 @@ try
 
 	//update tmpstatic data with zero displacements
 	myStructure.ElementTotalUpdateTmpStaticData();
+    
+    //calculate maximum independent sets
+	myStructure.CalculateMaximumIndependentSets();
 
 	//init some auxiliary variables
 	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
