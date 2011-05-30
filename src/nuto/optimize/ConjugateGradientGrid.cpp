@@ -50,7 +50,9 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	Eigen::VectorXd prevGradientOrig(GetNumParameters());
 	Eigen::VectorXd gradientNew(GetNumParameters());
 	Eigen::VectorXd searchDirectionScaled(GetNumParameters());
+	Eigen::VectorXd searchDirectionScaledDiff(GetNumParameters());
 	Eigen::VectorXd searchDirectionOrig(GetNumParameters());
+	Eigen::VectorXd gradientScaledSave(GetNumParameters());
 
 	if (mVerboseLevel>2)
 		std::cout<< __FILE__<<" "<<__LINE__<< " Para "<< GetNumParameters() << std::endl;
@@ -106,8 +108,20 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			//calculate gradient as a start solution
 			if (mVerboseLevel>2)
 				std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction"<<std::endl;
+			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction EBE"<<std::endl;
 			CalculateStartGradient(gradientOrig);
+			//gradientOrig.Info();
+			FullMatrix<double> gradientOrigEBE(GetNumParameters(),1);
+			gradientOrigEBE	=gradientOrig;
+			gradientOrig.Resize(GetNumParameters(),1);
+			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction NBN"<<std::endl;
+			mpGrid->SetAllElementIds();
+			CalculateStartGradientNodeByNode(gradientOrig);
 
+			gradientOrigEBE.operator -=(gradientOrig);
+			std::cout << __FILE__<<" "<<__LINE__<<gradientOrigEBE.Norm() <<std::endl ;
+
+			//gradientOrigNBN.Info();
 			//with scaling
 			//gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
 			//no scaling
@@ -148,20 +162,61 @@ int NuTo::ConjugateGradientGrid::Optimize()
 				break;
 			}
 			alphaNumerator = gradientNew.dot(gradientScaled);
-		//update for start solution
-		searchDirectionOrig = gradientScaled;
-		//initialize searchDirectionScaled with gradientScaled,
-		//needed as input for CalculateScaledSearchDirection
-		searchDirectionScaled = gradientScaled;
-		if (mVerboseLevel>5 && curCycle>0)
-			std::cout<< "   Restart after " <<curCycle << " cycles " << std::endl;
-		curCycle = 0;
+			//update for start solution
+			searchDirectionOrig = gradientScaled;
+			//initialize searchDirectionScaled with gradientScaled,
+			//needed as input for CalculateScaledSearchDirection
+			searchDirectionScaled = gradientScaled;
+			if (mVerboseLevel>5 && curCycle>0)
+				std::cout<< "   Restart after " <<curCycle << " cycles " << std::endl;
+			curCycle = 0;
 		}
 
 		if (mVerboseLevel>2)
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc search direction"<<std::endl;
-		CalculateScaledSearchDirection(searchDirectionScaled);
-		alphaDenominator = searchDirectionOrig.dot(searchDirectionScaled);
+
+		int precision = 9;
+		int width = 14;
+		std::cout.precision(precision);
+
+		gradientScaledSave=searchDirectionScaled;
+		CalculateScaledSearchDirection(gradientScaledSave);
+		//gradientScaledSave=searchDirectionScaled;
+		//searchDirectionScaled = gradientScaled;
+
+		CalculateScaledSearchDirectionNodeByNode(searchDirectionScaled);
+/*
+		std::cout << std::setw(width)<< "EBE searchDirectionScaled  " ;
+		for (int count=0; count<GetNumParameters(); count++)
+		{
+			std::cout << std::setw(width)<< searchDirectionScaled(count) << "   " ;
+		}
+		std::cout << std::endl;
+		std::cout << std::setw(width)<< "NBN gradientScaledSave     " ;
+		for (int count=0; count<GetNumParameters(); count++)
+		{
+			std::cout << std::setw(width)<< gradientScaledSave(count) << "   " ;
+		}
+		std::cout << std::endl;
+*/
+	    gradientScaledSave-=searchDirectionScaled;
+/*
+	    std::cout << std::setw(width)<< "gradientScaledDiff     " ;
+		for (int count=0; count<GetNumParameters(); count++)
+		{
+			std::cout << std::setw(width)<< gradientScaledSave(count) << "   " ;
+		}
+		std::cout << std::endl;
+*/
+
+	    if(gradientScaledSave.norm() >tol)
+	    {
+	    	std::cout << std::setw(width)<< "gradientScaledDiff norm    "<< gradientScaledSave.norm() <<std::endl ;
+	    	std::cout<<__FILE__<<" "<<__LINE__<<" error different results."<<std::endl;
+	    	return 1;
+	    }
+
+	    alphaDenominator = searchDirectionOrig.dot(searchDirectionScaled);
 		alpha = alphaNumerator/alphaDenominator;
 
 		// store previous parameter
@@ -271,7 +326,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		std::cout<< "Number of Gradient Calls......... " << numGradientCalls << std::endl;
 		std::cout<< "Number of Hessian Calls.......... " << numHessianCalls << std::endl;
 		std::cout<< "Number of Iterations............. " << curIteration << std::endl;
-		std::cout<< "Norm of preconditioned gradient.. " << gradientScaled.norm() << std::endl;
 		std::cout<< "Active convergence criterion..... " ;
 		switch (returnValue)
 		{
@@ -300,7 +354,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 				std::cout<< "Unknown convergence criterion." << std::endl;
 		}
 		std::cout << std::endl;
-		int precision = 3;
+		int precision = 6;
 		int width = 10;
 		std::cout.precision(precision);
 		std::cout << std::setw(width)<< "displacements " ;
@@ -447,16 +501,13 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
-#endif
+#endif //SHOW_TIME
+
 #ifdef ENABLE_MECHANICS
 	if (mVerboseLevel>2)
 		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateStartGradient"<<std::endl;
 	int numElems=mpGrid->GetNumElements();
-    NuTo::FullMatrix<int> *voxelLoc;
-    voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
 
-    int thisvoxelLocation[4]={0};
-    int corners[8]={0};
 	//array with global dof number of each dof of this element
     int dofs[24]={0};
     //! @TODO replace static_cast
@@ -483,13 +534,6 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
     	//get pointer to each element
 		thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementNumber));
 
-        //get grid location and number of corresponding voxel
-        for (int count = 0;count<4;++count)
-        	thisvoxelLocation[count]= voxelLoc->GetValue(elementNumber,count);
-
-        //get grid corners of the voxel
-        mpGrid->GetCornersOfVoxel(elementNumber, thisvoxelLocation, corners);
-
         //get the number of the material
         int numStiff = thisElement->GetNumLocalStiffnessMatrix();
         //get the local stiffness matrix
@@ -497,12 +541,12 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 
  		//loop over all nodes of one element
 		FullMatrix<double> locDispValues(3,1);
+		int * nodeIds=thisElement->GetNodeIds();
+
         for (int node=0;node<thisElement->GetNumNodes();++node)
         {
-			//get pointer to this gridNum node
 			//get displacements of one node
-        	int thisNodeId =mpGrid->NodeGetIdFromGridNum(corners[node]);
-			mpGrid->NodeGetDisplacements(thisNodeId,locDispValues);
+			mpGrid->NodeGetDisplacements(nodeIds[node],locDispValues);
 			/* slower than variant above:
 			double locDispValues[3]={0};
 			NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
@@ -514,7 +558,7 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 				//save global dof number in local ordering
 				//no longer needed with new constraint saving
 				//dofs[node*numDofs+disp]=(thisNode->GetGlobalDofs())[disp];
-				dofs[node*numDofs+disp]=3*thisNodeId+disp;
+				dofs[node*numDofs+disp]=3*nodeIds[node]+disp;
 				//save diplacements of all dofs for one element
 				displacements(node*numDofs+disp,0)=locDispValues(disp,0);
 			}
@@ -545,8 +589,108 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradient] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradient] " << difftime(end,start)/CLOCKS_PER_SEC << "sec  " << std::endl;
 #endif
+}
+
+//! @brief ... calculate start gradient in node-by-node way
+void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode(NuTo::FullMatrix<double> &gradientOrig)
+{
+#ifdef ENABLE_MECHANICS
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (mVerboseLevel>2)
+		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateStartGradientNodeByNode"<<std::endl;
+	int numNodes=mpGrid->GetNumNodes();
+    int* elementIds;
+	//array with global dof number of each dof of this node
+    int numDofs=3; //for dofs array needed
+
+	// array of all three nodal displacements
+	FullMatrix<double> displacements(24,1);
+	// global external force vector (active dofs)
+	FullMatrix<double>  force(mpGrid->GetNumDofs(),1);
+
+	FullMatrix<double> locDispValues(3,1);
+	//local field with edge location of the node in the eight elements
+	int elemEdge[8]={6,7,4,5,2,3,0,1};
+
+	//loop over all nodes
+	for (int nodeNumber=0;nodeNumber<numNodes;++nodeNumber)
+    {
+		//when dof is active
+		if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs)||mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+1)||mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+2))
+		{
+			// return vector with all dofs of one node
+			FullMatrix<double> locReturn(numDofs,1);
+			//get pointer to each node
+			NodeGrid3D* thisNode =mpGrid->NodeGridGetNodePtr(nodeNumber);
+			//mpGrid->NodeGetDisplacements(nodeNumber,locDispValues);
+			//get belonging elements
+			elementIds=thisNode->GetElementIds();
+	//		int numElems=thisNode->GetNumElems();
+			//get stiffness
+			for (int element=0;element<8;++element)
+			{
+				NuTo::FullMatrix<double> matrix(3,24);
+				Voxel8N* thisElement;
+				//element exists
+				if (elementIds[element]>=0)
+				{
+					thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementIds[element]));
+
+					//get the number of the material
+					int numStiff = thisElement->GetNumLocalStiffnessMatrix();
+					//get the local stiffness matrix
+
+					//Get 3X24 Block with location of node * numDofs (3)
+					NuTo::FullMatrix<double> *elemMatrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
+					matrix= (elemMatrix->GetBlock(elemEdge[element]*numDofs,0,3,24));
+					//get displacement vector for this element
+					//loop over all nodes of one element
+					FullMatrix<double> locDispValues(3,1);
+					int * nodeIds=thisElement->GetNodeIds();
+					for (int node=0;node<thisElement->GetNumNodes();++node)
+					{
+						mpGrid->NodeGetDisplacements(nodeIds[node],locDispValues);
+						displacements(node*3,0)=locDispValues(0,0);
+						displacements(node*3+1,0)=locDispValues(1,0);
+						displacements(node*3+2,0)=locDispValues(2,0);
+					}
+					//calculate nodal return vector and sum up
+					locReturn.operator += (matrix.operator *(displacements));
+
+				}
+			}
+			//update gradient vector for undependant dofs
+			for (int count =0; count <numDofs;++count)
+			{
+				//when global dof is active
+				//when dof is not constraint, then ...
+				if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+count))
+					//subtract (r=f-Ku) locReturn for active dofs
+					//in dofs[count] is the active dof number of each element dof
+					gradientOrig(nodeNumber*numDofs+count,0) -= locReturn(count,0);
+			}
+
+		}
+		//get global external force vector
+		//! @TODO add load vector
+		// ubdate this routine
+		//mpGrid->BuildGlobalExternalLoadVector(force);
+		//add global external force vector
+		//gradientOrig+=force;
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+#else
+	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradientNodeByNode] Modul Mechanics is not loaded." );
+#endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate matix-vector product in element-by-element way
@@ -658,12 +802,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 #ifdef ENABLE_MECHANICS
 	if (mVerboseLevel>2)
 		std::cout<<__FILE__<<" "<<__LINE__<<" "<<"in CalculateScaledSearchDirection"<<std::endl;
-   int numElems=mpGrid->GetNumElements();
-	NuTo::FullMatrix<int> *voxelLoc;
-	voxelLoc=mpGrid->GetVoxelNumAndLocMatrix();
-
-	int thisvoxelLocation[4]={0};
-	int corners[8]={0};
+    int numElems=mpGrid->GetNumElements();
 	//array with global dof number of each dof of this element
 	int dofs[24]={0};
 	int numDofs=3; //for dofs array needed
@@ -689,33 +828,24 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 		//get pointer to each element
 		thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementNumber));
 
-		//get grid location and number of corresponding voxel
-		for (int count = 0;count<4;++count)
-			thisvoxelLocation[count]= voxelLoc->GetValue(elementNumber,count);
-
-		//get grid corners of the voxel
-		mpGrid->GetCornersOfVoxel(elementNumber, thisvoxelLocation, corners);
-
 		//get the number of the material
 		int numStiff = thisElement->GetNumLocalStiffnessMatrix();
 		//get the local stiffness matrix
 		NuTo::FullMatrix<double> *matrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
+		int * nodeIds=thisElement->GetNodeIds();
 
 		//loop over all nodes of one element
 		for (int node=0;node<thisElement->GetNumNodes();++node)
 		{
-			//get pointer to this gridNum node
-//			NodeBase* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
-			//NodeGrid3D* thisNode =mpGrid->NodeGetNodePtrFromGridNum(corners[node]);
 
 			//which DOFs belonging to this node of this element
 			for (int disp = 0;disp<numDofs;++disp)
 			{
 				//save global dof number in local ordering
-				dofs[node*numDofs+disp]=3*corners[node]+disp;
+				dofs[node*numDofs+disp]=3*nodeIds[node]+disp;
 				//save local search direction
 				// if this dof is not constraint
-				if (mpGrid->NodeGetConstraintSwitch(3*corners[node]+disp))
+				if (mpGrid->NodeGetConstraintSwitch(3*nodeIds[node]+disp))
 					searchDirectionLocal(node*numDofs+disp,0) = searchDirectionScaled(dofs[node*numDofs+disp]);
 				else
 					searchDirectionLocal(node*numDofs+disp,0) = 0;
@@ -742,6 +872,102 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
     if (mShowTime)
        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
+}
+
+//! @brief ... calculate search direction in node-by-node way
+void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNode(Eigen::VectorXd& searchDirectionScaled)
+{
+#ifdef ENABLE_MECHANICS
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (mVerboseLevel>2)
+		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateScaledSearchDirectionNodeByNode"<<std::endl;
+	int numNodes=mpGrid->GetNumNodes();
+    int* elementIds;
+	//array with global dof number of each dof of this node
+    int numDofs=3; //for dofs array needed
+	// return vector of all dofs
+	FullMatrix<double> allReturn(mpGrid->GetNumDofs(),1);
+	// global external force vector (active dofs)
+	FullMatrix<double>  force(mpGrid->GetNumDofs(),1);
+	//local field with edge location of the node in the eight elements
+	int elemEdge[8]={6,7,4,5,2,3,0,1};
+
+	//loop over all nodes
+	for (int nodeNumber=0;nodeNumber<numNodes;++nodeNumber)
+    {
+		// array of all three nodal values of searchDirection
+		FullMatrix<double> searchDirectionLocal(24,1);
+		// return vector with all dofs of one node
+		FullMatrix<double> locReturn(numDofs,1);
+		//get pointer to each node
+		NodeGrid3D* thisNode =mpGrid->NodeGridGetNodePtr(nodeNumber);
+		//get belonging elements
+		elementIds=thisNode->GetElementIds();
+		//get stiffness
+		for (int element=0;element<8;++element)
+		{
+			//element exists
+			if (elementIds[element]>=0)
+			{
+				Voxel8N* thisElement;
+				thisElement= static_cast<Voxel8N*>( mpGrid->ElementGetElementPtr(elementIds[element]));
+
+				//get the number of the material
+				int numStiff = thisElement->GetNumLocalStiffnessMatrix();
+				//get the local stiffness matrix
+
+				//Get 3X24 Block with location of node * numDofs (3)
+				NuTo::FullMatrix<double> *elemMatrix = mpGrid->GetLocalCoefficientMatrix0(numStiff);
+				NuTo::FullMatrix<double> matrix(3,24);
+				matrix= (elemMatrix->GetBlock(elemEdge[element]*numDofs,0,3,24));
+				//loop over all nodes of one element
+				int * nodeIds=thisElement->GetNodeIds();
+				for (int node=0;node<thisElement->GetNumNodes();++node)
+				{
+					//which DOFs belonging to this node of this element
+					for (int disp = 0;disp<numDofs;++disp)
+					{
+						// if this dof is not constraint
+							if (mpGrid->NodeGetConstraintSwitch(3*nodeIds[node]+disp))
+						{
+//			std::cout<<__LINE__<<"| node*numDofs+disp "<< node*numDofs+disp<<" 3*nodeIds[node]+disp "<<3*nodeIds[node]+disp<<std::endl;
+							searchDirectionLocal(node*numDofs+disp,0)= searchDirectionScaled(3*nodeIds[node]+disp);
+						}
+						else
+							searchDirectionLocal(node*numDofs+disp,0) = 0;
+					}
+
+				}
+				//calculate nodal return vector and sum up
+				locReturn.operator += (matrix.operator *(searchDirectionLocal));
+			}
+		}
+		//update gradient vector for undependant dofs
+		for (int count =0; count <numDofs;++count)
+		{
+			//when global dof is active
+			//when dof is not constraint, then ...
+			if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+count))
+			{	//subtract (r=f-Ku) locReturn for active dofs
+				//in dofs[count] is the active dof number of each element dof
+//				allReturn(nodeNumber*numDofs+count,0) += locReturn(count,0);
+				allReturn(nodeNumber*numDofs+count,0) = locReturn(count,0);
+			}
+		}
+
+	}
+	searchDirectionScaled = allReturn.mEigenMatrix;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+#else
+	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradientNodeByNode] Modul Mechanics is not loaded." );
+#endif // ENABLE_MECHANICS
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -43,6 +43,16 @@ NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent)
 //! @brief a reference to a node
 //! @param identifier
 //! @return reference to a node
+NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGridGetNodePtr(int rIdent)
+{
+    if (rIdent<0 || rIdent>=GetNumNodes())
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Conversion from string to int did not yield valid node number.");
+     return &mNodeVec[rIdent];
+}
+
+//! @brief a reference to a node
+//! @param identifier
+//! @return reference to a node
 const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent) const
 {
     if (rIdent<0 || rIdent>=GetNumNodes())
@@ -292,7 +302,7 @@ NuTo::StructureGrid::TCoincidentVoxelList  NuTo::StructureGrid::GetCoincidenceVo
         coincidentVoxels[6]=-1;
         coincidentVoxels[7]=-1;
     }
-    if (mVerboseLevel>2)
+    if (mVerboseLevel>3)
     {
     	std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: ";
     	for (int count=0;count<8;count++)

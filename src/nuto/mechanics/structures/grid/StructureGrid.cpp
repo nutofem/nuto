@@ -34,6 +34,7 @@ NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
 {
 	mVoxelLocation = 0;
 	mDofIsNotConstraint = 0;
+	mCalcVoxelLocation = 0;
 }
 
 NuTo::StructureGrid::~StructureGrid()
@@ -416,53 +417,55 @@ NuTo::FullMatrix<int>* NuTo::StructureGrid::GetVoxelNumAndLocMatrix()
 		return mVoxelLocation;
 	else
 	{
-		mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),4);
-		CalculateVoxelNumAndLocMatrix(mVoxelLocation);
+		CalculateVoxelLocations();
 		return mVoxelLocation;
 	}
 }
 
-//! @brief Calculate VoxeLNumAndLocMatrix
-//! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
-void NuTo::StructureGrid::CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelLocation)
+//! @brief Calculate VoxelLocations for all elements
+//! @param int[3] number in x, y,z direction
+void NuTo::StructureGrid::CalculateVoxelLocations()
 {
-    std::cout<<__FILE__<<" "<<__LINE__<<"in CalculateVoxelNumAndLocMatrix()"<<std::endl;
-	NuTo::Voxel8N* thisElement;
-	int actElemNum =0;
-	int loc[4];
-	for(int dim2 =0; dim2<mGridDimension[2];++dim2)
-	{
-		loc[3]=dim2;
-
-		for(int dim1 =0; dim1<mGridDimension[1];++dim1)
-		{
-			loc[2]=dim1;
-			for(int dim0 =0; dim0<mGridDimension[0];++dim0)
-			{
-				//std::cout<<__FILE__<<" "<<__LINE__<<"in Schleife"<<std::endl;
-				loc[1]=dim0;
-				loc[0]=(dim0+1)+((dim1*mGridDimension[0])+1)+((dim2*mGridDimension[0]*mGridDimension[1])+1) -3;
-				thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(actElemNum));
-				//std::cout<<__FILE__<<" "<<__LINE__<<" numElem - Voxel -  voxel "<< actElemNum <<"  "<<thisElement->GetVoxelID() <<" "<<loc[0]<<std::endl;
-				if (thisElement->GetVoxelID() == loc[0])
-				{
-				    for (int count=0; count<4; ++count)
-					{
-						(*rVoxelLocation)(actElemNum,count) = loc[count];
-					}
-				    //std::cout<<__FILE__<<" "<<__LINE__<<" "<<rVoxelLocation(actElemNum,0) <<" "<<rVoxelLocation(actElemNum,1) <<" "<<rVoxelLocation(actElemNum,2) <<" "<<rVoxelLocation(actElemNum,3) <<std::endl;
-					actElemNum++;
-					if (actElemNum==GetNumElements())
-					{
-						dim0=mGridDimension[0];
-						dim1=mGridDimension[1];
-						dim2=mGridDimension[2];
-					}
-				}
-			}
-		}
-	}
-
+#ifdef SHOW_TIME
+	clock_t start=clock();
+	timespec startn,endn,diffn;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+#endif
+	if(mVerboseLevel>3)
+   std::cout<<__FILE__<<" "<<__LINE__<<"in  StructureGrid::CalculateVoxelLocations()"<< std::endl;
+    int numElems= GetNumElements();
+	mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),4);
+    for (int element=0;element<numElems;++element)
+    {
+    	Voxel8N* thisElement;
+        thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
+        int voxelID=thisElement->GetVoxelID();
+		int numDimxy=voxelID/((mGridDimension[0])*(mGridDimension[1]));
+		int numDimx=0;
+		int residual1=voxelID%((mGridDimension[0])*(mGridDimension[1]));
+		int residual2=0;
+		numDimx=residual1/(mGridDimension[0]);
+		residual2=residual1%(mGridDimension[0]);
+		int rVoxelLocation[3]={0};
+		rVoxelLocation[0]=residual2;
+		rVoxelLocation[1]=numDimx;
+		rVoxelLocation[2]=numDimxy;
+		thisElement->SetVoxelLocation(rVoxelLocation);
+		//also for global vector
+		(*mVoxelLocation)(element,0)=voxelID;
+		(*mVoxelLocation)(element,1)=rVoxelLocation[0];
+		(*mVoxelLocation)(element,1)=rVoxelLocation[1];
+		(*mVoxelLocation)(element,2)=rVoxelLocation[2];
+		if(mVerboseLevel>4)
+			std::cout<<__FILE__<<" "<<__LINE__<<"loc "<<rVoxelLocation[0]<<", "<<rVoxelLocation[1]<<", "<<rVoxelLocation[2]<<std::endl;
+    }
+#ifdef SHOW_TIME
+    clock_t end=clock();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    if (mShowTime)
+       std::cout<<"[NuTo::StructureGrid::CalculateVoxelLocations] " <<difftime(end,start)<<   "sec, exakt: "<< diffn.tv_sec <<"sec:"<<diffn.tv_nsec/1000<<" µsec"<<std::endl;
+#endif
 }
 
 //! @brief Get voxels corner numbers from bottom to top counter-clockwise
@@ -473,22 +476,105 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
         throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
  //   int corners[8];
 	if (mVerboseLevel>4)
-		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<" voxel location x: "<<  rVoxLoc[1]<<" y: "  <<rVoxLoc[2]<<" z: "<<rVoxLoc[3]<<" nbr: "<<rVoxLoc[0]<<std::endl;
+		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<" voxel location x: "<<  rVoxLoc[0]<<" y: "  <<rVoxLoc[1]<<" z: "<<rVoxLoc[2]<<std::endl;
 
-	corners[0] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
-	corners[1] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-	corners[2] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1] +1;
-	corners[3] = rVoxLoc[3]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
+	corners[0] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0];
+	corners[1] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0]+1;
+	corners[2] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0] +1;
+	corners[3] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0];
 
-	corners[4] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1];
-	corners[5] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[2]     * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-	corners[6] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1]+1;
-	corners[7] = (rVoxLoc[3]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[2]+1) * (mGridDimension[1]+1) + rVoxLoc[1];
+	corners[4] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0];
+	corners[5] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0]+1;
+	corners[6] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0]+1;
+	corners[7] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0];
 	if (mVerboseLevel>4)
 	{
 	    std::cout<<__FILE__<<" "<<__LINE__<<" Ecken des "<<rElementNumber<< ". Elements: "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
 	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
 	}
+}
+
+//! @brief Set NodeIds for all nodes at all elements
+void NuTo::StructureGrid::SetAllNodeIds()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (mDimension != 3)
+        throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
+	Voxel8N* thisElement;
+	for (int element=0;element<GetNumElements();++element)
+	{
+		thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
+		int * locVoxLoc=thisElement->GetVoxelLocation();
+		//get grid corners of the voxel
+	    int corners[8]={0};
+	    GetCornersOfVoxel(element, locVoxLoc, corners);
+		int nodeIds[8];
+		for (int node=0;node<thisElement->GetNumNodes();++node)
+		{
+			//get pointer to this gridNum node
+			nodeIds[node] =NodeGetIdFromGridNum(corners[node]);
+		}
+		thisElement->SetNodeIds(nodeIds);
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief Set ElementIds for the elements at each nodes
+void NuTo::StructureGrid::SetAllElementIds()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (mDimension != 3)
+        throw MechanicsException("[StructureGrid::SetAllElementIds] error dimension must be 3.");
+	NodeGrid3D* thisNode;
+	if (mVerboseLevel>2)
+		std::cout<<__FILE__<<" "<<__LINE__<<"in SetAllElementIds() "<<std::endl;
+	for (int node=0;node<GetNumNodes();++node)
+	{
+		thisNode=NodeGridGetNodePtr(node);
+//		int gridNum= thisNode->GetNodeGridNum();
+        TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(node);
+/*
+		int voxelIds[8];
+		voxelIds[0]=gridNum-mGridDimension[0]-1;
+		voxelIds[1]=gridNum-mGridDimension[0];
+		voxelIds[2]=gridNum;
+		voxelIds[3]=gridNum-1;
+		voxelIds[4]=gridNum-mGridDimension[0]+(mGridDimension[0]*mGridDimension[1])-1;
+		voxelIds[5]=gridNum-mGridDimension[0]+(mGridDimension[0]*mGridDimension[1]);
+		voxelIds[6]=gridNum+(mGridDimension[0]*mGridDimension[1]);
+		voxelIds[7]=gridNum+(mGridDimension[0]*mGridDimension[1])-1;
+*/
+        int elementIds[8];
+		for (int element=0;element<8;++element)
+		{
+			try
+			{
+				//get pointer to this element
+				elementIds[element] =ElementGetIdFromVoxelId(coincidentVoxels[element]);
+			}
+			catch (MechanicsException)
+			{
+				elementIds[element]=-1;
+			}
+
+		}
+		thisNode->SetElementIds(elementIds);
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 
 //! @brief Get LocalCoefficientMatrix0
@@ -497,7 +583,6 @@ NuTo::FullMatrix<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rN
 {
  	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
-// 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
 // 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
 }

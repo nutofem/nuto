@@ -103,6 +103,42 @@ int NuTo::Voxel8N::GetNumLocalStiffnessMatrix()
 	return mNumLocalCoefficientMatrix0;
 }
 
+//! @brief Get voxel location for this element
+//! @param int[3] number in x, y, z direction
+int* NuTo::Voxel8N::GetVoxelLocation()
+{
+	return mVoxelLocation;
+}
+
+//! @brief Set voxel location for this element
+//! @return int[3] number in x, y, z direction
+void NuTo::Voxel8N::SetVoxelLocation(int* rVoxelLocation)
+{
+	mVoxelLocation=new int[3];
+	mVoxelLocation[0]=rVoxelLocation[0];
+	mVoxelLocation[1]=rVoxelLocation[1];
+	mVoxelLocation[2]=rVoxelLocation[2];
+}
+
+//! @brief Get ids of all nodes of this element
+//! @brief sorted: bottom - top, each counterclockwise
+//! @return int* ids of all nodes
+int* NuTo::Voxel8N::GetNodeIds()
+{
+		return mNodeIds;
+}
+
+//! @brief Set ids of all nodes for this element
+//! @brief sorted: bottom - top, each counterclockwise
+//! @param  int* ids of all nodes
+void NuTo::Voxel8N::SetNodeIds(int * rNodeIds)
+{
+	mNodeIds=new int[8];
+	for (int count=0;count<8;++count)
+		mNodeIds[count]=rNodeIds[count];
+}
+
+
 //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
 //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
 void NuTo::Voxel8N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)

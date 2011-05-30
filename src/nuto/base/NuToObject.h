@@ -21,8 +21,8 @@ public:
 	{
 		mVerboseLevel = 0;
 #ifdef SHOW_TIME
-    //! @brief ... show for each executed command the time required for the execution
-        mShowTime = false;
+		//! @brief ... show for each executed command the time required for the execution
+        mShowTime = true;
 #endif
 		mVerboseLevel = 0;
 	}
@@ -44,6 +44,8 @@ public:
 		return mVerboseLevel;
 	}
 
+
+
 #ifdef SHOW_TIME
 	//! @brief ... sets the showtime option
     //! @param rShowTime ... show time option
@@ -58,6 +60,24 @@ public:
 	{
 		return mShowTime;
 	}
+
+	//! @brief ...get the difference for exact time function in timespec format for testing purpose
+	//! @param start, end ... time of begin and end
+	//! @return  ... difference of times
+	timespec diff(timespec start, timespec end)
+	{
+		timespec temp;
+		if ((end.tv_nsec-start.tv_nsec)<0) {
+			temp.tv_sec = end.tv_sec-start.tv_sec-1;
+			temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+		} else {
+			temp.tv_sec = end.tv_sec-start.tv_sec;
+			temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+		}
+		return temp;
+	}
+
+
 #endif
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)

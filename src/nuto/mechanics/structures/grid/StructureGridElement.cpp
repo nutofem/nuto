@@ -65,6 +65,26 @@ int NuTo::StructureGrid::ElementGetId(const ElementBase* rElement)const
     return elementNumber;
 }
 
+//! @brief a identifier to a element
+//! @param voxel id
+//! @return identifier
+const int NuTo::StructureGrid::ElementGetIdFromVoxelId(int rVoxelNum) const
+{
+    int numVoxels=(mGridDimension[0])*(mGridDimension[1])*(mGridDimension[2]);//all voxels of the grid
+    if (rVoxelNum<0 || rVoxelNum>= numVoxels)
+         throw MechanicsException("[NuTo::StructureGrid::ElementGetIdFromVoxelId] Voxel number is not valid.");
+    int id(0);
+     boost::ptr_vector<Voxel8N>::const_iterator it;
+     for (it = mElementVec.begin(); it!= mElementVec.end(); it++,id++)
+     {
+         if (it->GetVoxelID()==rVoxelNum)
+             break;
+     }
+     if (it== mElementVec.end())
+           throw MechanicsException("[NuTo::StructureGrid::ElementGetIdFromGridId] Element with this voxel id does not exist.");
+     return id;
+}
+
 //! @brief info about the elements in the Structure
 void NuTo::StructureGrid::ElementInfo(const ElementBase* rElement, int rVerboseLevel)const
 {
@@ -249,5 +269,6 @@ void NuTo::StructureGrid::ElementDelete(int rElementNumber)
     throw MechanicsException("[NuTo::StructureGrid::ElementDelete] Not implemented yet!!!");
 
 }
+
 
 

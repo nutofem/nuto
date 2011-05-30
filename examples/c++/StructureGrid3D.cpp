@@ -26,7 +26,7 @@ int main()
 	double microTomm =1;
 
 	//   int readFlag = false;
-    double PoissonsRatio = 0.2;
+    double PoissonsRatio = 0.3;
     //for local base stiffness matrix
     double YoungsModulus = 1.;
 
@@ -135,8 +135,7 @@ int main()
 
         std::cout<<"Element Stiffness created"<<std::endl;
         //stiffnessMatrix.Info(12,6);
-
-		//stiffnessMatrix.WriteToFile("stiffnessMatrix.txt"," ");
+  		//stiffnessMatrix.WriteToFile("stiffnessMatrix.txt"," ");
 
 		//grid structure create
 		//material values are smaller than threshold value
@@ -198,8 +197,8 @@ int main()
 		direction(1,0)= 1;
 		direction(2,0)= 0;
 		// Test Randbedingungen y=0
-		// for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
-		for (int count =0;count < numGridNodes;count+= (NumElementsX + 1)*(NumElementsY + 1))
+		 for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		//for (int count =0;count < numGridNodes;count+= (NumElementsX + 1)*(NumElementsY + 1))
 		{
 			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< count <<std::endl;
 			try
@@ -217,8 +216,8 @@ int main()
 		direction(1,0)= 0;
 		direction(2,0)= 1;
 		// Test Randbedingungen z=0
-		//  for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
-		for (int count = 0;count<(NumElementsX + 1)*(NumElementsY + 1);count+=(NumElementsX + 1))
+		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		//for (int count = 0;count<(NumElementsX + 1)*(NumElementsY + 1);count+=(NumElementsX + 1))
 		{
 			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
 			try
@@ -330,13 +329,11 @@ int main()
 		// start analysis
 		std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
 		// build global dof numbering
-		myGrid.SetVerboseLevel(2);
+		myGrid.SetVerboseLevel(1);
 		myGrid.NodeBuildGlobalDofs();
 
 		std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.GetNumDofs()<<std::endl;
 		std::cout<<__FILE__<<" "<<__LINE__<<" active dofs "<<myGrid.GetNumActiveDofs()<<std::endl;
-
-		myGrid.GetVoxelNumAndLocMatrix();
 
 		//NuTo::FullMatrix<int> *voxelLocation(myGrid.GetNumElements(),4);
 		//voxelLocation=myGrid.GetVoxelNumAndLocMatrix();
@@ -351,6 +348,8 @@ int main()
 		}
 		*/
 
+		myGrid.CalculateVoxelLocations();
+		myGrid.SetAllNodeIds();
 
 		NuTo::CallbackHandlerGrid myCallback;
 		std::cout<<__FILE__<<" "<<__LINE__<<"  callback created"<<std::endl;
@@ -386,7 +385,7 @@ int main()
 				}
 			}
 		}
-		myOptimizer.SetVerboseLevel(6);
+		myOptimizer.SetVerboseLevel(2);
 
 		myOptimizer.SetParameters(startVector);
 		std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set, Anzahl "<<myOptimizer.GetNumParameters()<<std::endl;

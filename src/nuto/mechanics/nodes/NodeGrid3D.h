@@ -44,7 +44,24 @@ public:
     //! @return rNodeGridNum  given grid node number
     int GetNodeGridNum()const;
 
-    //! @brief writes the coordinates of a node to the prescribed pointer
+    //! @brief Get the Number of belonging elements
+    //! @return Number of belonging elements
+    int GetNumElems();
+
+    //!@brief Set Number of belonging elements
+    //! @param Number of belonging elements
+    void SetNumElems(int rNumElems);
+
+
+    //! @brief Get Ids of the elements
+    //! @return int * Ids of the elements
+    int* GetElementIds();
+
+    //! @brief Set Ids of the elements
+    //! @param int * Ids of the elements
+    void SetElementIds(int * rElementIds);
+
+   //! @brief writes the coordinates of a node to the prescribed pointer
     //! @param rCoordinates coordinates
     virtual void GetCoordinates3D(double rCoordinates[3])const;
 
@@ -99,7 +116,8 @@ protected:
     //! @param grid number of the node
 
     int mNodeGridNum;
-
+    int mNumElems;
+    int* mElementIds;
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

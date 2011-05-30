@@ -34,6 +34,7 @@ public:
         mMaxIterations = INT_MAX;
         mShowSteps = 100;
        	mUseDiagHessian =true;
+       	mUseMultiGrid= false;
 	}
 
 #ifdef ENABLE_SERIALIZATION
@@ -51,7 +52,8 @@ public:
            & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
-           & BOOST_SERIALIZATION_NVP(mUseDiagHessian);
+           & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
+           & BOOST_SERIALIZATION_NVP(mUseMultiGrid);
     }
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
@@ -86,6 +88,11 @@ public:
     inline void SetShowSteps(int rShowSteps)
     {
         mShowSteps = rShowSteps;
+    }
+
+    inline void SetUseMultiGrid(bool rUseMultiGrid)
+    {
+    	mUseMultiGrid = rUseMultiGrid;
     }
 
 #ifdef ENABLE_MECHANICS
@@ -131,12 +138,17 @@ protected:
 	//! @brief ... calculate start gradient in element-by-element way
 	void CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig);
 
+	//! @brief ... calculate start gradient in element-by-element way
+	void CalculateStartGradientNodeByNode(NuTo::FullMatrix<double> &gradientOrig);
+
 	//! @brief ... calculate matix-vector product in element-by-element way
 	void CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector);
 
 	//! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
 	void CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled);
 
+	//! @brief ... calculate search direction in node-by-node way
+	void CalculateScaledSearchDirectionNodeByNode(Eigen::VectorXd& searchDirectionScaled);
 
 	#ifdef ENABLE_MECHANICS
 		StructureGrid *mpGrid;
@@ -149,6 +161,7 @@ protected:
 	int    mMaxIterations;
 	int    mShowSteps;
     bool   mUseDiagHessian;
+    bool   mUseMultiGrid;
 
 };
 } // namespace NuTo

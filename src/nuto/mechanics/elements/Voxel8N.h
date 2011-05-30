@@ -25,7 +25,17 @@ public:
             	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
     {
         mVoxelID = rElementID;
+        mVoxelLocation=0;
+        mNodeIds=0;
         mNumLocalCoefficientMatrix0 =rNumLocalCoefficientMatrix0;
+    }
+    //! @brief destructor
+    ~Voxel8N()
+    {
+        delete mVoxelLocation;
+        mVoxelLocation=0;
+        delete mNodeIds;
+        mNodeIds=0;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -140,11 +150,31 @@ public:
 
     int GetNumLocalStiffnessMatrix();
 
-protected:
+    //! @brief Get voxel location for this element
+    //! @return int number in x, y, z direction
+    int* GetVoxelLocation();
+
+    //! @brief Set voxel location for this element
+    //! @param int* number in x, y, z direction
+    void SetVoxelLocation(int * rVoxelLocation);
+
+    //! @brief Get ids of all nodes of this element
+    //! @brief sorted: bottom - top, each counterclockwise
+    //! @return int* ids of all nodes
+    int* GetNodeIds();
+
+    //! @brief Set ids of all nodes for this element
+    //! @brief sorted: bottom - top, each counterclockwise
+    //! @param  int* ids of all nodes
+    void SetNodeIds(int * rNodeIds);
+
+ protected:
     //! @brief ... just for serialization
     Voxel8N(){};
 
     int mVoxelID;
+    int* mVoxelLocation;
+    int* mNodeIds;
     int mNumLocalCoefficientMatrix0;
 };
 }

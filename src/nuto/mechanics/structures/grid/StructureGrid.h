@@ -107,12 +107,18 @@ public:
     //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
     FullMatrix<int>* GetVoxelNumAndLocMatrix();
 
-    //! @brief Calculate VoxeLNumAndLocMatrix
-    void CalculateVoxelNumAndLocMatrix(FullMatrix<int> *rVoxelLocation);
+   //! @brief Calculate ElementVoxelLocMatrix
+   void CalculateVoxelLocations();
 
     //! @brief Get voxels corner numbers from bottom to top counter-clockwise
     //! @return array of number of corners with corner numbers
     void GetCornersOfVoxel(int rElementNumber,int *rVoxLoc,int *corners);
+
+    //! @brief Set NodeIds for all nodes at all elements
+    void SetAllNodeIds();
+
+    //! @brief Set ElementIds for the elements at each nodes
+    void SetAllElementIds();
 
  //*************************************************
 //************ Node routines        ***************
@@ -123,10 +129,15 @@ public:
     int GetNumNodes() const;
 
 #ifndef SWIG
-    //! @brief returns a reference to a node
+    //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
     NodeBase* NodeGetNodePtr(int rIdent);
+
+    //! @brief returns a reference to a node
+    //! @param identifier
+    //! @return reference to a node
+    NodeGrid3D* NodeGridGetNodePtr(int rIdent);
 
     //! @brief returns a reference to a node
     //! @param identifier
@@ -230,6 +241,11 @@ public:
     //! @return identifier
     int ElementGetId(const ElementBase* rElement) const;
 
+    //! @brief a identifier to a element
+    //! @param voxel id
+    //! @return identifier
+    const int ElementGetIdFromVoxelId(int rVoxelNum) const;
+
     //! @brief info about one single element
     //! @param rElement (Input) ... pointer to the element
     //! @param rVerboseLevel (Input) ... level of verbosity
@@ -331,7 +347,7 @@ protected:
     std::vector<FullMat> mLocalCoefficientMatrix0;
     NuTo::FullMatrix<int>* mVoxelLocation;
     bool* mDofIsNotConstraint; //field of bool for all dofs, length 3xnumGridNodes, constraint dof = 0 = false
-
+    bool mCalcVoxelLocation; //true != 0 when already calculated
 #ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer

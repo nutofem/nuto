@@ -61,6 +61,38 @@ int NuTo::NodeGrid3D::GetNodeGridNum()const
 	return mNodeGridNum;
 }
 
+//! @brief Get the Number of belonging elements
+//! @return Number of belonging elements
+int NuTo::NodeGrid3D::GetNumElems()
+{
+	return mNumElems;
+}
+
+//!@brief Set Number of belonging elements
+//! @param Number of belonging elements
+void NuTo::NodeGrid3D::SetNumElems(int rNumElems)
+{
+	mNumElems=rNumElems;
+}
+
+
+//! @brief Get Ids of the elements
+//! @retutn int * Ids of the elements
+int* NuTo::NodeGrid3D::GetElementIds()
+{
+	return mElementIds;
+}
+
+//! @brief Set Ids of the elements
+//! @param int * Ids of the elements
+void NuTo::NodeGrid3D::SetElementIds(int * rElementIds)
+{
+	mElementIds=new int[8];
+	for (int count=0;count<8;++count)
+		mElementIds[count]=rElementIds[count];
+
+}
+
 //! @brief writes the coordinates of a node to the prescribed pointer
 //! @param rCoordinates coordinates
 void NuTo::NodeGrid3D::GetCoordinates3D(double rCoordinates[3])const
