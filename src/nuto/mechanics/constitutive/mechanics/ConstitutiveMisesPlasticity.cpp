@@ -294,7 +294,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+		const DeformationGradient1D& rDeformationGradient)const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] To be implemented.");
 }
@@ -306,7 +306,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+		const DeformationGradient2D& rDeformationGradient)const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] To be implemented.");
 }
@@ -318,7 +318,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+		const DeformationGradient3D& rDeformationGradient)const
 {
     // perform return mapping
 	ConstitutiveStaticDataMisesPlasticity3D*
@@ -335,7 +335,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+		const DeformationGradient1D& rDeformationGradient)const
 {
 	//no need to update tmp static data
 }
@@ -347,7 +347,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_En
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+		const DeformationGradient2D& rDeformationGradient)const
 {
 	//no need to update tmp static data
 }
@@ -358,7 +358,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_En
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+		const DeformationGradient3D& rDeformationGradient)const
 {
 	//no need to update tmp static data
 }

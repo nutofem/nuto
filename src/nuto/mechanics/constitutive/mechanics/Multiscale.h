@@ -302,6 +302,46 @@ public:
     //! @sa eConstitutiveType
     Constitutive::eConstitutiveType GetType() const;
 
+    //! @brief ... set the elastic matrix
+    //! @param rElasticStiffness... elastic matrix
+    NuTo::FullMatrix<double> GetElasticStiffness()const;
+
+    //! @brief ... set the elastic matrix
+    //! @param rElasticStiffness... elastic matrix
+    void SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness);
+
+    //! @brief ... return the binary file from which the fine scale model is eventually deserialized
+    //! @return name of the file
+    std::string GetMultiscaleFile()const;
+
+    //! @brief ... set the binary file from which the fine scale model is eventually deserialized
+    //! @param rFileName... name of the file
+    void SetMultiscaleFile(std::string rFileName);
+
+    //! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
+    //! @return crack transition radius
+    double GetCrackTransitionRadius()const;
+
+    //! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
+    //! @param rCrackTransitionRadius... crack transition radius
+    void SetCrackTransitionRadius(double rCrackTransitionRadius);
+
+    //! @brief ... get tensile strength
+    //! @return ... tensile strength
+    double GetTensileStrength() const;
+
+    //! @brief ... set tensile strength
+    //! @param rTensileStrength...  tensile strength
+    void SetTensileStrength(double rTensileStrength);
+
+    //! @brief ... get penalty stiffness crack angle
+    //! @return ... penalty stiffness crack angle
+    double GetPenaltyStiffnessCrackAngle() const;
+
+    //! @brief ... set PenaltyStiffnessCrackAngle
+    //! @param rPenaltyStiffnessCrackAngle...  penalty stiffness crack angle
+    void SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle);
+
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
 
@@ -331,22 +371,6 @@ public:
     //! @return ... see brief explanation
     bool IsNonlocalModel()const;
 
-    //! @brief ... get Young's modulus
-    //! @return ... Young's modulus
-    double GetYoungsModulus() const;
-
-    //! @brief ... set Young's modulus
-    //! @param rE ... Young's modulus
-    void SetYoungsModulus(double rE);
-
-    //! @brief ... get Poisson's ratio
-    //! @return ... Poisson's ratio
-    double GetPoissonsRatio() const;
-
-    //! @brief ... set Poisson's ratio
-    //! @param rNu ... Poisson's ratio
-    void SetPoissonsRatio(double rNu);
-
 protected:
     // calculate coefficients of the linear elastic material matrix
     void CalculateCoefficients3D(double& C11, double& C12, double& C33) const;
@@ -356,14 +380,29 @@ protected:
 
     // this is just for debugging purposes
     bool CheckGradient(NuTo::StructureMultiscale* rFineScaleStructure)const;
-    //! @brief tolerance for the solution of the fine scale problem
-    double mTolerance;
 
-    //! @brief ... Young's modulus \f$ E \f$ in case of linear elastic solution
-    double mE;
+    //move from elastic to nonlinear solution
+    void SwitchToNonlinear(ConstitutiveStaticDataMultiscale2DPlaneStrain *rStaticData, ElementBase* rElement, int rIp, EngineeringStrain2D& rEngineeringStrain)const;
 
-    //! @brief ... Poisson's ratio \f$ \nu \f$ in case of linear elastic solution
-    double mNu;
+    //! @brief elastic stiffness (before the model has to be transfered to the fine scale)
+    NuTo::FullMatrix<double> mElasticStiffness;
+
+    //! @brief stores the file to read in the fine scale model
+    std::string mFileName;
+
+    //! @brief stiffness of the augmented Lagrangian to prevent crack opening
+    double mAugmentedLagrangeStiffnessCrackOpening;
+
+    //! @brief tensile strength, this parameter should be chosen smaller than the actual value
+    //! it is used to determine the transition from the linear elastic model to the full mesoscale model
+    double mTensileStrength;
+
+    double mPenaltyStiffnessCrackAngle;
+    double mPenaltyStiffnessScalingFactorCrackAngle;
+
+
+    //! @brief crack transition radius
+    double mCrackTransitionRadius;
 
     double mToleranceResidualForce;
     int mMaxNumNewtonIterations;

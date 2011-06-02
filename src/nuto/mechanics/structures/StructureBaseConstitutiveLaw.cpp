@@ -543,3 +543,131 @@ void NuTo::StructureBase::ConstitutiveLawSetFractureEnergy(int rIdent, double rF
         throw e;
     }
 }
+
+//! @brief ... get elastic stiffness
+//! @param rFractureEnergy ...  fracture energy
+NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetElasticStiffness(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetElasticStiffness();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetElasticStiffness] error getting elastic stiffness.");
+		throw e;
+	}
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy ...  fracture energy
+void NuTo::StructureBase::ConstitutiveLawSetElasticStiffness(int rIdent, NuTo::FullMatrix<double> rElasticStiffness)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetElasticStiffness(rElasticStiffness);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetElasticStiffness] error setting elastic stiffness.");
+        throw e;
+    }
+}
+
+//! @brief ... get elastic stiffness
+//! @param rFractureEnergy ...  fracture energy
+std::string NuTo::StructureBase::ConstitutiveLawGetMultiscaleFile(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetMultiscaleFile();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetMultiscaleFile] error getting multiscale file.");
+		throw e;
+	}
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy ...  fracture energy
+void NuTo::StructureBase::ConstitutiveLawSetMultiscaleFile(int rIdent, std::string rFileName)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetMultiscaleFile(rFileName);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetMultiscaleFile] error setting multiscale file.");
+        throw e;
+    }
+}
+
+//! @brief ... get crack transition radius
+//! @param rIdent ...  identifier
+double NuTo::StructureBase::ConstitutiveLawGetCrackTransitionRadius(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetCrackTransitionRadius();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetCrackTransitionRadius] error getting crack transition radius.");
+		throw e;
+	}
+}
+
+//! @brief ... set crack transition radius
+//! @param rCrackTransitionRadius ...  fracture energy
+void NuTo::StructureBase::ConstitutiveLawSetCrackTransitionRadius(int rIdent, double rCrackTransitionRadius)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetCrackTransitionRadius(rCrackTransitionRadius);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetCrackTransitionRadius] error setting crack transition radius.");
+        throw e;
+    }
+}
+
+//! @brief ... get penalty stiffness for crack angle
+//! @param rIdent ...  identifier
+double NuTo::StructureBase::ConstitutiveLawGetPenaltyStiffnessCrackAngle(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetPenaltyStiffnessCrackAngle();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetPenaltyStiffnessCrackAngle] error getting penalty stiffness crack angle.");
+		throw e;
+	}
+}
+
+//! @brief ... set penalty stiffness for crack angle
+//! @param rPenaltyStiffnessCrackAngle ...  penalty stiffness for crack angle
+void NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle(int rIdent, double rPenaltyStiffnessCrackAngle)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetPenaltyStiffnessCrackAngle(rPenaltyStiffnessCrackAngle);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle] error setting penalty stiffness crack angle.");
+        throw e;
+    }
+}

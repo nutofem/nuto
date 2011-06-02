@@ -601,6 +601,7 @@ public:
     //! @brief releases a constraint, (remove from the list but don't delete it)
     //!@param rConstraintEquation id of the constraint equation
     //! @return ptr to constraint
+    //! @brief releases a constraint, (remove from the list but don't delete it)
     NuTo::ConstraintBase* ConstraintRelease(int rConstraintId);
 
     //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
@@ -1018,6 +1019,38 @@ public:
     //! @brief ... set fracture energy
     //! @param rFractureEnergy ...  fracture energy
     void ConstitutiveLawSetFractureEnergy(int rIdent, double rFractureEnergy);
+
+    //! @brief ... get elastic stiffness
+    //! @return ...  elastic stiffness
+    NuTo::FullMatrix<double> ConstitutiveLawGetElasticStiffness(int rIdent);
+
+    //! @brief ... set fracture energy
+    //! @param rElasticStiffness ...  fracture energy
+    void ConstitutiveLawSetElasticStiffness(int rIdent, NuTo::FullMatrix<double> rElasticStiffness);
+
+    //! @brief ... get elastic stiffness
+    //! @param rIdent ...  fracture energy
+    std::string ConstitutiveLawGetMultiscaleFile(int rIdent);
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy ...  file name
+    void ConstitutiveLawSetMultiscaleFile(int rIdent, std::string rFileName);
+
+    //! @brief ... get crack transition radius
+    //! @param rIdent ...  identifier
+    double ConstitutiveLawGetCrackTransitionRadius(int rIdent);
+
+    //! @brief ... set crack transition radius
+    //! @param rCrackTransitionRadius ...  fracture energy
+    void ConstitutiveLawSetCrackTransitionRadius(int rIdent, double rCrackTransitionRadius);
+
+    //! @brief ... get PenaltyStiffnessCrackAngle
+    //! @param rIdent ...  identifier
+    double ConstitutiveLawGetPenaltyStiffnessCrackAngle(int rIdent);
+
+    //! @brief ... set PenaltyStiffnessCrackAngle
+    //! @param rPenaltyStiffnessCrackAngle ...  PenaltyStiffnessCrackAngle
+    void ConstitutiveLawSetPenaltyStiffnessCrackAngle(int rIdent, double rPenaltyStiffnessCrackAngle);
 
 #ifndef SWIG
     //! @brief ... create a new section

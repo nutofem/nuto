@@ -3,6 +3,11 @@
 #ifdef SHOW_TIME
     #include <ctime>
 #endif
+
+# ifdef _OPENMP
+    #include <omp.h>
+# endif
+
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -1350,6 +1355,9 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     // build global tmp static data
@@ -1370,54 +1378,38 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
         }
     }
 
+	std::vector<ElementBase*> elementVector;
+	GetElementsTotal(elementVector);
 
 #ifdef _OPENMP
     int error(0);
     std::string errorTotal;
-#pragma omp parallel default(shared)
-	{
-		if (mMIS.size()==0)
-			throw MechanicsException("[NuTo::Structure::ElementTotalUpdateStaticData] maximum independent set not calculated.");
-		for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
-		{
-			std::vector<ElementBase*>::iterator elementIter;
-			#pragma omp parallel default(shared)
-			for (elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
-			{
-				#pragma omp single nowait
-				{
-					ElementBase* elementPtr = *elementIter;
-#else //_OPENMP
-				std::vector<ElementBase*> elementVector;
-				GetElementsTotal(elementVector);
-				for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
-				{
-					ElementBase* elementPtr = elementVector[countElement];
+    #pragma omp parallel default(shared)
+    #pragma omp for schedule(dynamic,1) nowait
 #endif //_OPENMP
-					try
-					{
-						elementPtr->UpdateStaticData(NuTo::Element::STATICDATA);
-					}
+	for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+	{
+		try
+		{
+			elementVector[countElement]->UpdateStaticData(NuTo::Element::STATICDATA);
+		}
 #ifdef _OPENMP
-					catch(NuTo::Exception& e)
-					{
-						std::stringstream ss;
-						ss << ElementGetId(elementPtr);
-						std::string errorLocal(e.ErrorMessage()
-								+"[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element " + ss.str() + ".");
-						error+=1;
-						errorTotal+=errorLocal;
-					}
-					catch(...)
-					{
-						std::stringstream ss;
-						ss << ElementGetId(elementPtr);
-						std::string errorLocal("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element " + ss.str() + ".");
-						error+=1;
-						errorTotal+=errorLocal;
-					}
-				}
-			}
+		catch(NuTo::Exception& e)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			std::string errorLocal(e.ErrorMessage()
+					+"[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element " + ss.str() + ".\n");
+			error+=1;
+			errorTotal+=errorLocal;
+		}
+		catch(...)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			std::string errorLocal("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element " + ss.str() + ".\n");
+			error+=1;
+			errorTotal+=errorLocal;
 		}
 	}
     if(error>0)
@@ -1425,28 +1417,36 @@ void NuTo::StructureBase::ElementTotalUpdateStaticData()
 	    throw MechanicsException(errorTotal);
     }
 #else
-					catch(NuTo::Exception& e)
-					{
-						std::stringstream ss;
-						ss << ElementGetId(elementVector[countElement]);
-						e.AddMessage("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element "
-								+ ss.str() + ".");
-						throw e;
-					}
-					catch(...)
-					{
-						std::stringstream ss;
-						ss << ElementGetId(elementVector[countElement]);
-						throw NuTo::MechanicsException
-						   ("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element "
-								   + ss.str() + ".");
-					}
-				}
+		catch(NuTo::Exception& e)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			e.AddMessage("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element "
+					+ ss.str() + ".");
+			throw e;
+		}
+		catch(...)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			throw NuTo::MechanicsException
+			   ("[NuTo::StructureBase::ElementTotalUpdateStaticData] Error updating static data for element "
+					   + ss.str() + ".");
+		}
+	}
 #endif
+
+
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalUpdateStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        mLogger<<"[NuTo::StructureBase::ElementTotalUpdateStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementTotalUpdateStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 

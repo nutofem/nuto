@@ -6,12 +6,6 @@
 #include "nuto/mechanics/MechanicsException.h"
 
 #ifdef ENABLE_SERIALIZATION
-#include <boost/ptr_container/serialize_ptr_vector.hpp>
-#else
-#include <boost/ptr_container/ptr_vector.hpp>
-#endif //ENABLE_SERIALIZATION
-
-#ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -19,7 +13,18 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+#else
+#include <boost/ptr_container/ptr_vector.hpp>
+#endif //ENABLE_SERIALIZATION
+
+#ifdef SHOW_TIME
+    #include <ctime>
+#endif
+
+# ifdef _OPENMP
+    #include <omp.h>
+# endif
 
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
@@ -427,9 +432,11 @@ NuTo::FullMatrix<int>* NuTo::StructureGrid::GetVoxelNumAndLocMatrix()
 void NuTo::StructureGrid::CalculateVoxelLocations()
 {
 #ifdef SHOW_TIME
-	clock_t start=clock();
-	timespec startn,endn,diffn;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
 #endif
 	if(mVerboseLevel>3)
    std::cout<<__FILE__<<" "<<__LINE__<<"in  StructureGrid::CalculateVoxelLocations()"<< std::endl;
@@ -460,11 +467,15 @@ void NuTo::StructureGrid::CalculateVoxelLocations()
 			std::cout<<__FILE__<<" "<<__LINE__<<"loc "<<rVoxelLocation[0]<<", "<<rVoxelLocation[1]<<", "<<rVoxelLocation[2]<<std::endl;
     }
 #ifdef SHOW_TIME
-    clock_t end=clock();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-    diffn=diff(startn,endn);
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-       std::cout<<"[NuTo::StructureGrid::CalculateVoxelLocations] " <<difftime(end,start)<<   "sec, exakt: "<< diffn.tv_sec <<"sec:"<<diffn.tv_nsec/1000<<" µsec"<<std::endl;
+        mLogger<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 

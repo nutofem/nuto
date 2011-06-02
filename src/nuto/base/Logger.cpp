@@ -168,9 +168,12 @@ void NuTo::Logger::OpenFile()
 {
     mLogFile.close();
     mLogFile.clear();
-	mLogFile.open(mLogFileName.c_str());
-	if (!mLogFile.is_open())
-		throw Exception ( "[NuTo::Logger::OpenFile]File could not be opened." );
+    if (mLogFileName.length()!=0)
+    {
+		mLogFile.open(mLogFileName.c_str());
+		if (!mLogFile.is_open())
+			throw Exception ( "[NuTo::Logger::OpenFile]File could not be opened." );
+    }
 }
 
 //! @brief ..open file

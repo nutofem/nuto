@@ -553,6 +553,8 @@ public:
             std::stringstream& rSaveStringStream,
             bool& rIsSaved);
 */
+    void CalculateStiffness(NuTo::FullMatrix<double>& rStiffness);
+
 protected:
 
 

@@ -338,13 +338,14 @@ public:
     //Visualize for all integration points the fine scale structure
     void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
 
+#endif // ENABLE_VISUALIZE
+
     //! @brief returns the structure
     const StructureBase* GetStructure()const
     {
     	return mStructure;
     }
 
-#endif // ENABLE_VISUALIZE
 private:
     //! @brief returns the Element Data Vector
     //! this was necessary due to recursive problems for serialization (nonlocal data)

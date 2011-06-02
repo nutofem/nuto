@@ -170,7 +170,39 @@ public:
     //! @brief ... set fracture energy
     //! @param rFractureEnergy... fracture energy
     virtual void SetFractureEnergy(double rFractureEnergy);
-   ///////////////////////////////////////////////////////////////////////////
+
+    //! @brief ... set the elastic matrix
+    //! @param rElasticStiffness... elastic matrix
+    virtual NuTo::FullMatrix<double> GetElasticStiffness()const;
+
+    //! @brief ... set the elastic matrix
+    //! @param rElasticStiffness... elastic matrix
+    virtual void SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness);
+
+    //! @brief ... return the binary file from which the fine scale model is eventually deserialized
+    //! @return name of the file
+    virtual std::string GetMultiscaleFile()const;
+
+    //! @brief ... set the binary file from which the fine scale model is eventually deserialized
+    //! @param rFileName... name of the file
+    virtual void SetMultiscaleFile(std::string rFileName);
+
+    //! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
+    //! @return crack transition radius
+    virtual double GetCrackTransitionRadius()const;
+
+    //! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
+    //! @param rCrackTransitionRadius... crack transition radius
+    virtual void SetCrackTransitionRadius(double rCrackTransitionRadius);
+
+    //! @brief ... get penalty stiffness crack angle
+    //! @return ... penalty stiffness crack angle
+    virtual double GetPenaltyStiffnessCrackAngle() const;
+
+    //! @brief ... set PenaltyStiffnessCrackAngle
+    //! @param rPenaltyStiffnessCrackAngle...  penalty stiffness crack angle
+    virtual void SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle);
+    ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship

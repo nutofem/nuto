@@ -68,12 +68,16 @@ const NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveSta
 //! @brief return structure
 NuTo::StructureMultiscale* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure()
 {
-    return mStructure;
+    if (mStructure==0)
+    	throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure] ip is still in the elastic range.");
+	return mStructure;
 }
 
 //! @brief return structure
 const NuTo::StructureMultiscale* NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure()const
 {
+    if (mStructure==0)
+    	throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetFineScaleStructure] ip is still in the elastic range.");
     return mStructure;
 }
 
@@ -115,9 +119,6 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
 
     mStructure->SetCenterMacro(rCenter);
 
-    //transform boundary nodes to multiscale nodes
-    mStructure->TransformMultiscaleNodes();
-
     //check all the sections of the elements to a plane strain section
     std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
@@ -125,58 +126,62 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
 //! @brief sets the parameters of the fine scale model
 void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(const std::string& rName, double rParameter)
 {
-    std::string upperCaseName(rName);
-    std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
-    if (upperCaseName=="CRACKTRANSITIONRADIUS")
-        mStructure->SetCrackTransitionRadius(rParameter);
-    else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
-        mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
-    else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORCRACKANGLE")
-        mStructure->SetPenaltyStiffnessScalingFactorCrackAngle(rParameter);
-    else if (upperCaseName=="TOLERANCEELASTICCRACKANGLELOW")
-        mStructure->SetToleranceElasticCrackAngleLow(rParameter);
-    else if (upperCaseName=="TOLERANCEELASTICCRACKANGLEHIGH")
-        mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
-    else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSCRACKANGLE")
-        mStructure->ConstraintNonlinearCrackAngle(rParameter,2.*M_PI);
-    else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
-        mStructure->ConstraintLagrangeCrackOpening(rParameter);
-    else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSTANGENTIALCRACKOPENING")
-        mStructure->ConstraintNonlinearTangentialCrackOpening(0.,rParameter);
-    else if (upperCaseName=="PENALTYSTIFFNESSTANGENTIALCRACKOPENING")
-        mStructure->SetPenaltyStiffnessTangentialCrackOpening(rParameter);
-    else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORTANGENTIALCRACKOPENING")
-        mStructure->SetPenaltyStiffnessScalingFactorTangentialCrackOpening(rParameter);
-    else if (upperCaseName=="LOGGERQUIET")
-        mStructure->LoggerSetQuiet(true);
-    else if (upperCaseName=="LOGGERNONQUIET")
-        mStructure->LoggerSetQuiet(false);
-    else if (upperCaseName=="USENONLINEARSOLUTION")
-        UseNonlinearSolution();
-    else if (upperCaseName=="SQUARECOARSESCALEMODEL")
+    if (mNonlinearSolutionOn)
     {
-        if (rParameter==0)
-            mStructure->SetSquareCoarseScaleModel(false);
-        else if (rParameter==1)
-            mStructure->SetSquareCoarseScaleModel(true);
-        else
-            throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter for SetSquareCoarseScaleModel is either 0 or 1");
+		std::string upperCaseName(rName);
+		std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
+		if (upperCaseName=="CRACKTRANSITIONRADIUS")
+			mStructure->SetCrackTransitionRadius(rParameter);
+		else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
+			mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
+		else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORCRACKANGLE")
+			mStructure->SetPenaltyStiffnessScalingFactorCrackAngle(rParameter);
+		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLELOW")
+			mStructure->SetToleranceElasticCrackAngleLow(rParameter);
+		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLEHIGH")
+			mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
+		else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSCRACKANGLE")
+			mStructure->ConstraintNonlinearCrackAngle(rParameter,2.*M_PI);
+		else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
+			mStructure->ConstraintLagrangeCrackOpening(rParameter);
+		else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSTANGENTIALCRACKOPENING")
+			mStructure->ConstraintNonlinearTangentialCrackOpening(0.,rParameter);
+		else if (upperCaseName=="PENALTYSTIFFNESSTANGENTIALCRACKOPENING")
+			mStructure->SetPenaltyStiffnessTangentialCrackOpening(rParameter);
+		else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORTANGENTIALCRACKOPENING")
+			mStructure->SetPenaltyStiffnessScalingFactorTangentialCrackOpening(rParameter);
+		else if (upperCaseName=="LOGGERQUIET")
+			mStructure->LoggerSetQuiet(true);
+		else if (upperCaseName=="LOGGERNONQUIET")
+			mStructure->LoggerSetQuiet(false);
+		else if (upperCaseName=="SQUARECOARSESCALEMODEL")
+		{
+			if (rParameter==0)
+				mStructure->SetSquareCoarseScaleModel(false);
+			else if (rParameter==1)
+				mStructure->SetSquareCoarseScaleModel(true);
+			else
+				throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter for SetSquareCoarseScaleModel is either 0 or 1");
+		}
+		else
+			throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
     }
-    else
-        throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
 }
 
 //! @brief sets the parameters of the fine scale model
 void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(const std::string& rName, std::string rParameter)
 {
-    std::string upperCaseName(rName);
-    std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
-    if (upperCaseName=="SETRESULTDIRECTORY")
-        mStructure->SetResultDirectory(rParameter);
-    else if (upperCaseName=="SETRESULTLOADSTEPMACRO")
-        mStructure->SetResultLoadStepMacro(rParameter);
-    else
-        throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
+    if (mNonlinearSolutionOn)
+    {
+		std::string upperCaseName(rName);
+		std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
+		if (upperCaseName=="SETRESULTDIRECTORY")
+			mStructure->SetResultDirectory(rParameter);
+		else if (upperCaseName=="SETRESULTLOADSTEPMACRO")
+			mStructure->SetResultLoadStepMacro(rParameter);
+		else
+			throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
+    }
 }
 
 #ifdef ENABLE_VISUALIZE
@@ -184,22 +189,25 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
 		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
 {
-	mStructure->ElementTotalUpdateTmpStaticData();
-	if (rVisualizeDamage)
+	if (mNonlinearSolutionOn)
 	{
-		mStructure->SetCenterScalingToDamage(true);
-		mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsDamage(),rVisualize, rWhat);
+		mStructure->ElementTotalUpdateTmpStaticData();
+		if (rVisualizeDamage)
+		{
+			mStructure->SetCenterScalingToDamage(true);
+			mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsDamage(),rVisualize, rWhat);
+		}
+		else
+		{
+			mStructure->SetCenterScalingToDamage(false);
+			mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsHomogeneous(),rVisualize, rWhat);
+		}
+		mStructure->VisualizeCrack(rVisualize);
 	}
-	else
-	{
-		mStructure->SetCenterScalingToDamage(false);
-		mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsHomogeneous(),rVisualize, rWhat);
-	}
-	mStructure->VisualizeCrack(rVisualize);
 }
 #endif
 
-//! @brief in case the fine scale model has not been initialized,
+/*//! @brief in case the fine scale model has not been initialized,
 //! an initial linear elastic model is used
 //! with this routine, the transition to the actual fine scale model is used
 //! with the initialization of the crack angle based on the previous elastic solution
@@ -207,7 +215,8 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::UseNonlinearSolution()
 {
     if (mNonlinearSolutionOn==false)
     {
-        double alpha = mStructure->CalculateInitialCrackAngleElastic();
+
+    	double alpha = mStructure->CalculateInitialCrackAngleElastic();
         mStructure->SetInitCrackAngle(alpha);
         mStructure->SetCrackAngle(alpha);
         mNonlinearSolutionOn = true;
@@ -218,14 +227,4 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::UseNonlinearSolution()
         throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::InitAlpha] Nonlinear solution is already turned on.");
     }
 }
-//! @brief return the previous hom strain
-const NuTo::EngineeringStrain2D& NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::GetPrevHomStrain()const
-{
-    return mPrevHomStrain;
-}
-
-//! @brief set the previous hom strain
-void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetPrevHomStrain(EngineeringStrain2D rPrevHomStrain)
-{
-    mPrevHomStrain = rPrevHomStrain;
-}
+*/

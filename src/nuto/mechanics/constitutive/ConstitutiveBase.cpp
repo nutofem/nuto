@@ -220,6 +220,61 @@ void NuTo::ConstitutiveBase::SetFractureEnergy(double rFractureEnergy)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFractureEnergy] The constitutive relationship does not have a fracture energy.");
 }
 
+//! @brief ... set the elastic matrix
+//! @param rElasticStiffness... elastic matrix
+NuTo::FullMatrix<double> NuTo::ConstitutiveBase::GetElasticStiffness()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetElasticStiffness] The constitutive relationship does not have an elastic stiffness as material parameter.");
+}
+
+//! @brief ... set the elastic matrix
+//! @param rElasticStiffness... elastic matrix
+void NuTo::ConstitutiveBase::SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetElasticStiffness] The constitutive relationship does not have an elastic stiffness as material parameter.");
+}
+
+//! @brief ... return the binary file from which the fine scale model is eventually deserialized
+//! @return name of the file
+std::string NuTo::ConstitutiveBase::GetMultiscaleFile()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMultiscaleFile] The constitutive relationship does not have a multiscale file.");
+}
+
+//! @brief ... set the binary file from which the fine scale model is eventually deserialized
+//! @param rFileName... name of the file
+void NuTo::ConstitutiveBase::SetMultiscaleFile(std::string rFileName)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMultiscaleFile] The constitutive relationship does not have a multiscale file.");
+}
+
+//! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
+//! @return crack transition radius
+double NuTo::ConstitutiveBase::GetCrackTransitionRadius()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetCrackTransitionRadius] The constitutive relationship does not have a crack transition radius.");
+}
+
+//! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
+//! @param rCrackTransitionRadius... crack transition radius
+void NuTo::ConstitutiveBase::SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetPenaltyStiffnessCrackAngle] The constitutive relationship does not have a penalty stiffness for the crack angle.");
+}
+//! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
+//! @return crack transition radius
+double NuTo::ConstitutiveBase::GetPenaltyStiffnessCrackAngle()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetPenaltyStiffnessCrackAngle] The constitutive relationship does not have a penalty stiffness for the crack angle.");
+}
+
+//! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
+//! @param rCrackTransitionRadius... crack transition radius
+void NuTo::ConstitutiveBase::SetCrackTransitionRadius(double rCrackTransitionRadius)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetCrackTransitionRadius] The constitutive relationship does not have a crack transition radius.");
+}
+
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
 {

@@ -89,8 +89,8 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mBoundaryNodesElementsAssigned = false;
     mThickness = 1.;
 
-    mToleranceElasticCrackAngleLow = 0.0;
-    mToleranceElasticCrackAngleHigh = 0.0;
+    mToleranceElasticCrackAngleLow = 1e-21;
+    mToleranceElasticCrackAngleHigh = 1e-20;
 
     // generate the constrain equation
     mConstraintTotalStrain = ConstraintLinearGlobalTotalStrain(NuTo::EngineeringStrain2D());
@@ -520,29 +520,29 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
 
         double coordinates[2];
         nodeVec[countNode].second->GetCoordinates2D(coordinates);
+        if (countNode==0)
+        {
+            minX = coordinates[0];
+            maxX = coordinates[0];
+            minY = coordinates[1];
+            maxY = coordinates[1];
+        }
+        else
+        {
+            if (minX > coordinates[0])
+                minX = coordinates[0];
+            if (maxX < coordinates[0])
+                maxX = coordinates[0];
+            if (minY > coordinates[1])
+                minY = coordinates[1];
+            if (maxY < coordinates[1])
+                maxY = coordinates[1];
+        }
 
         switch (nodeType)
         {
         case Node::NodeCoordinatesDisplacements2D:
             newNode = new NodeCoordinatesDisplacementsMultiscale2D(this, rCrackedDomain);
-            if (countNode==0)
-            {
-                minX = coordinates[0];
-                maxX = coordinates[0];
-                minY = coordinates[1];
-                maxY = coordinates[1];
-            }
-            else
-            {
-                if (minX > coordinates[0])
-                    minX = coordinates[0];
-                if (maxX < coordinates[0])
-                    maxX = coordinates[0];
-                if (minY > coordinates[1])
-                    minY = coordinates[1];
-                if (maxY < coordinates[1])
-                    maxY = coordinates[1];
-            }
             newNode->SetCoordinates2D(coordinates);
             //old node is deleted in Exchange routine when being removed from node table
             NodeExchangePtr(nodeVec[countNode].first,nodeVec[countNode].second,newNode);
@@ -3310,6 +3310,107 @@ void NuTo::StructureMultiscale::SetResultDirectory(std::string rResultDirectory)
 		if (!boost::filesystem::create_directory(resultDir))
 			throw MechanicsException("[NuTo::StructureMultiscale::SetResultDirectory] directory for ip could not be created in result directory.");
     }
+}
+
+void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rStiffness)
+{
+    mLogger.OpenFile();
+
+    //release the constraint for the total strain
+    ConstraintBase* linearTotalStrainConstraintPtr = ConstraintRelease(mConstraintTotalStrain); // now this is not deleted
+
+    //fix crack angle
+    int id(0);
+	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	int constraintCrackAngle = id;
+	ConstraintLinearGlobalCrackAngle *mConst = new NuTo::ConstraintLinearGlobalCrackAngle(this);
+
+	mConstraintMap.insert(id, mConst);
+
+    //and the crack opening in tangential
+    id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	int constraintCrackOpeningTangential = id;
+	NuTo::FullMatrix<double> direction(2,1);
+	direction(0,0) = 1.;
+	direction(1,0) = 0.;
+	ConstraintLinearGlobalCrackOpening *mConst2 = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, 0);
+    mConstraintMap.insert(id, mConst2);
+
+    //and the crack opening in normal direction
+    id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	int constraintCrackOpeningNormal = id;
+	direction(0,0) = 0.;
+	direction(1,0) = 1.;
+	ConstraintLinearGlobalCrackOpening *mConst3 = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, 0);
+    mConstraintMap.insert(id, mConst3);
+
+    // use Schur complement to calculate the stiffness
+    this->NodeBuildGlobalDofs();
+    NuTo::FullMatrix<double> activeDOF, dependentDOF;
+    this->NodeExtractDofValues(activeDOF,dependentDOF);
+    this->NodeMergeActiveDofValues(activeDOF);
+    this->ElementTotalUpdateTmpStaticData();
+    SparseMatrixCSRVector2General<double>  matrixJJ(this->GetNumActiveDofs(), this->GetNumActiveDofs());
+    FullMatrix<double> rhsVector(mNumDofs - mNumActiveDofs,1);
+    this->BuildGlobalCoefficientMatrix0(matrixJJ, rhsVector);
+    if (rhsVector.Abs().Max()>1e-6)
+    {
+    	throw MechanicsException("[NuTo::Multiscale::CalculateStiffness] RHS vector not zero, previous equilibrium iteration was not successfull.");
+    }
+
+    //calculate schur complement
+    NuTo::FullMatrix<int> schurIndicesMatrix(3,1);
+    NuTo::FullMatrix<double> stiffness(3,3);
+    //attention, the index is in the zero based indexing system
+    schurIndicesMatrix(0,0) = mDOFGlobalTotalStrain[0];
+    schurIndicesMatrix(1,0) = mDOFGlobalTotalStrain[1];
+    schurIndicesMatrix(2,0) = mDOFGlobalTotalStrain[2];
+
+    NuTo::SparseDirectSolverMUMPS mumps;
+    NuTo::SparseMatrixCSRGeneral<double> stiffnessFineScale(matrixJJ);
+
+    //std::cout << "stiffness " << matrixJJ.GetNumRows() << " " << matrixJJ.GetNumColumns() << std::endl;
+    //NuTo::FullMatrix<double> stiffnessFull(matrixJJ);
+    //stiffnessFull.Info(12,3);
+
+    //std::cout << "schurIndicesMatrix " <<  std::endl;
+    //schurIndicesMatrix.Trans().Info(12,3);
+
+    stiffnessFineScale.SetOneBasedIndexing();
+    mumps.SchurComplement(stiffnessFineScale,schurIndicesMatrix,rStiffness);
+    //scale with the dimension of the structure (area)
+    double area = mFineScaleAreaDamage*this->GetScalingFactorDamage()
+    		    + mFineScaleAreaHomogeneous*this->GetScalingFactorHomogeneous();
+    rStiffness*=1./(area);
+
+    std::cout << "Schur stiffness algo" << std::endl;
+	rStiffness.Info(12,3);
+
+	//delete the constraints again
+	this->ConstraintDelete(constraintCrackAngle);
+	this->ConstraintDelete(constraintCrackOpeningTangential);
+	this->ConstraintDelete(constraintCrackOpeningNormal);
+
+	//reinsert the constraint for the total strain
+	this->ConstraintAdd(mConstraintTotalStrain,linearTotalStrainConstraintPtr);
+    mLogger.CloseFile();
 }
 
 

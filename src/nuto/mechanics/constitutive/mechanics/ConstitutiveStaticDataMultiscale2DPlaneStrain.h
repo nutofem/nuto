@@ -33,12 +33,12 @@ public:
     //! @brief return structure
     const StructureMultiscale* GetFineScaleStructure()const;
 
-    //! @brief return the previous hom strain
+/*    //! @brief return the previous hom strain
     const EngineeringStrain2D& GetPrevHomStrain()const;
 
     //! @brief set the previous hom strain
     void SetPrevHomStrain(EngineeringStrain2D rHomStrain);
-
+*/
     //! @brief sets the fine scale model (deserialization from a binary file)
     void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIpName);
 
@@ -59,12 +59,18 @@ public:
     //! an initial linear elastic model is used
     //! with this routine, the transition to the actual fine scale model is used
     //! with the initialization of the crack angle based on the previous elastic solution
-    void UseNonlinearSolution();
+    //void UseNonlinearSolution();
 
     //return if the solution is either linear elastic or from the fine scale model
     bool NonlinearSolutionOn()const
     {
         return mNonlinearSolutionOn;
+    }
+
+    //return if the solution is either linear elastic or from the fine scale model
+    void SetNonlinearSolutionOn(bool rNonlinearSolution)
+    {
+        mNonlinearSolutionOn = rNonlinearSolution;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -78,9 +84,6 @@ public:
 protected:
     //! @brief fine scale structure representative for a macroscopic integration point
     StructureMultiscale* mStructure;
-
-    //! @brief previous homogeneous strain
-    EngineeringStrain2D mPrevHomStrain;
 
     bool mNonlinearSolutionOn;
 };
