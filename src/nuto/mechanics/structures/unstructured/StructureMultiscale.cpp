@@ -3276,13 +3276,13 @@ void NuTo::StructureMultiscale::ScaleCoordinates(double rCoordinates[3])const
 	//rCoordinates[2] is unchanged
 	if (mScaleWRTDamageCenter)
 	{
-		rCoordinates[0] = (rCoordinates[0]-mCenterDamage[0])*0.7*mlCoarseScale/mlFineScaleDamage + mCenterMacro[0];
-		rCoordinates[1] = (rCoordinates[1]-mCenterDamage[1])*0.7*mlCoarseScale/mlFineScaleDamage + mCenterMacro[1];
+		rCoordinates[0] = (rCoordinates[0]-mCenterDamage[0])*0.3*mlCoarseScale/mlFineScaleDamage + mCenterMacro[0];
+		rCoordinates[1] = (rCoordinates[1]-mCenterDamage[1])*0.3*mlCoarseScale/mlFineScaleDamage + mCenterMacro[1];
 	}
 	else
 	{
-		rCoordinates[0] = (rCoordinates[0]-mCenterHomogeneous[0])*0.7*mlCoarseScale/mlFineScaleHomogeneous + mCenterMacro[0];
-		rCoordinates[1] = (rCoordinates[1]-mCenterHomogeneous[1])*0.7*mlCoarseScale/mlFineScaleHomogeneous + mCenterMacro[1];
+		rCoordinates[0] = (rCoordinates[0]-mCenterHomogeneous[0])*0.3*mlCoarseScale/mlFineScaleHomogeneous + mCenterMacro[0];
+		rCoordinates[1] = (rCoordinates[1]-mCenterHomogeneous[1])*0.3*mlCoarseScale/mlFineScaleHomogeneous + mCenterMacro[1];
 	}
 }
 
