@@ -590,6 +590,9 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
         schurIndicesMatrix(2,0) = fineScaleStructure->GetDofGlobalTotalStrain2D()[2];
 
         NuTo::SparseDirectSolverMUMPS mumps;
+#ifdef SHOW_TIME
+        mumps.SetShowTime(false);
+#endif
         NuTo::SparseMatrixCSRGeneral<double> stiffnessFineScale(matrixJJ);
         stiffnessFineScale.SetOneBasedIndexing();
         mumps.SchurComplement(stiffnessFineScale,schurIndicesMatrix,stiffness);
@@ -1438,6 +1441,10 @@ void NuTo::Multiscale::SwitchToNonlinear(ConstitutiveStaticDataMultiscale2DPlane
 	fineScaleStructure->SetInitCrackAngle(alpha);
 	fineScaleStructure->SetCrackAngle(alpha);
 	fineScaleStructure->LoggerSetQuiet(true);
+
+#ifdef SHOW_TIME
+	fineScaleStructure->SetShowTime(false);
+#endif
 
 	//set constraint for negative crack opening
 	fineScaleStructure->ConstraintLagrangeCrackOpening(mAugmentedLagrangeStiffnessCrackOpening);

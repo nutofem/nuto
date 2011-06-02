@@ -1455,6 +1455,9 @@ void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
 	if (mHaveTmpStaticData)
@@ -1489,8 +1492,14 @@ void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 	mUpdateTmpStaticDataRequired = false;
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        mLogger<<"[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 

@@ -42,6 +42,10 @@ public:
     //! @return ... error message
     virtual std::string ErrorMessage() const throw();
 
+    virtual const char* what() const throw()
+    {
+        return ErrorMessage().c_str();
+    }
     //! @brief ... add a message to the exception (to be able to rethrow the exception afterwards)
     //! @param message_ ... message to add
     void AddMessage(const std::string &message_);
