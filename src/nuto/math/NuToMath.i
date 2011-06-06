@@ -4,6 +4,7 @@
 %{
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/NuToMath.h"
+#include <cstddef> // normally not necessary  
 %}
 
 // convert python string to std::string
