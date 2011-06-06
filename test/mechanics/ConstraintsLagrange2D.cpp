@@ -140,6 +140,8 @@ try
     if (PRINTRESULT)
         mySolver.SetShowTime(true);
 #endif //SHOWTIME
+    //calculate maximum independent sets for openmp (otherwise empty)
+    myStructure.CalculateMaximumIndependentSets();
     //calculate stiffness
     myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
     //check stiffness
