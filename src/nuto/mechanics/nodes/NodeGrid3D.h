@@ -61,7 +61,21 @@ public:
     //! @param int * Ids of the elements
     void SetElementIds(int * rElementIds);
 
-   //! @brief writes the coordinates of a node to the prescribed pointer
+    //! @brief Get Ids of the nodes
+    //! @return int * Ids of the nodes
+    int* GetNodeIds();
+
+    //! @brief Set Ids of the nodes
+    //! @param int * Ids of the nodes
+    void SetNodeIds(int * rNodeIds);
+
+    FullMatrix<double>* GetPartCoefficientMatrix0(int node);
+    double* GetPartCoefficient0(int node);
+
+    void SetPartCoefficientMatrix0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0);
+    void SetPartCoefficient0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0);
+
+    //! @brief writes the coordinates of a node to the prescribed pointer
     //! @param rCoordinates coordinates
     virtual void GetCoordinates3D(double rCoordinates[3])const;
 
@@ -118,6 +132,9 @@ protected:
     int mNodeGridNum;
     int mNumElems;
     int* mElementIds;
+    int* mNodeIds;
+    std::vector<FullMatrix<double>*> mCoefficientMatrix0;
+    double* mCoefficient0;
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

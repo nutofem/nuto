@@ -24,7 +24,6 @@ public:
 		//! @brief ... show for each executed command the time required for the execution
         mShowTime = true;
 #endif
-		mVerboseLevel = 0;
 	}
 
 	virtual ~NuToObject()

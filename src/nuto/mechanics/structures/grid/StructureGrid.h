@@ -117,8 +117,16 @@ public:
     //! @brief Set NodeIds for all nodes at all elements
     void SetAllNodeIds();
 
+    //! @brief Set NodeIds for all nodes at all nodes
+    void SetAllNodeIdsAtNode();
+
     //! @brief Set ElementIds for the elements at each nodes
     void SetAllElementIds();
+
+    //! @brief GetConstraintSwitch
+    //! @return switch field for constraint
+    bool* GetConstraintSwitch();
+
 
  //*************************************************
 //************ Node routines        ***************
@@ -196,6 +204,9 @@ public:
     //! @param rGlobalDof
     //! @return switch for constraint
     bool NodeGetConstraintSwitch(int rGlobalDof);
+
+    //! @brief Set partCoefficientmatrix for all nodes
+    void SetAllPartCoefficientMatrix0();
 
     //! @brief numbers the dofs in the structure
     void NodeBuildGlobalDofs();

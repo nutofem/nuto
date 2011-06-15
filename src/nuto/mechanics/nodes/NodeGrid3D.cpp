@@ -15,6 +15,9 @@
 NuTo::NodeGrid3D::NodeGrid3D(int rNodeGridNum)  : NodeBase ()
 {
 	mNodeGridNum = rNodeGridNum;
+	mElementIds =NULL;
+    mNodeIds =NULL;
+    mCoefficient0 =NULL;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -77,7 +80,7 @@ void NuTo::NodeGrid3D::SetNumElems(int rNumElems)
 
 
 //! @brief Get Ids of the elements
-//! @retutn int * Ids of the elements
+//! @return int * Ids of the elements
 int* NuTo::NodeGrid3D::GetElementIds()
 {
 	return mElementIds;
@@ -92,6 +95,126 @@ void NuTo::NodeGrid3D::SetElementIds(int * rElementIds)
 		mElementIds[count]=rElementIds[count];
 
 }
+
+//! @brief Get Ids of the nodes
+//! @return int * Ids of the nodes
+int* NuTo::NodeGrid3D::GetNodeIds()
+{
+	return mNodeIds;
+}
+
+//! @brief Set Ids of the nodes
+//! @param int * Ids of the nodes
+void NuTo::NodeGrid3D::SetNodeIds(int * rNodeIds)
+{
+	mNodeIds=new int[27];
+	for (int count=0;count<27;++count)
+		mNodeIds[count]=rNodeIds[count];
+
+}
+
+NuTo::FullMatrix<double>* NuTo::NodeGrid3D::GetPartCoefficientMatrix0(int node)
+{
+	if (!mCoefficientMatrix0[node])
+        throw MechanicsException("[NodeGrid3D::GetPartCoefficientMatrix0] error matrix does not exist.");
+	return (mCoefficientMatrix0[node]);
+}
+
+double* NuTo::NodeGrid3D::GetPartCoefficient0(int node)
+{
+	if (!mCoefficient0)
+        throw MechanicsException("[NodeGrid3D::GetPartCoefficient0] error coefficient matrix does not exist.");
+	return &mCoefficient0[9*node];
+}
+
+void NuTo::NodeGrid3D::SetPartCoefficientMatrix0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0)
+{
+	// test both variants
+	//bool var=true;
+	bool var=false;
+	if (var)
+	{
+		FullMatrix<double> locMatrix(3,3);
+		locMatrix=rCoefficientMatrix0;
+		// when vector size is null
+		if (mCoefficientMatrix0.size()==0)
+		{
+			mCoefficientMatrix0.assign(27,NULL);
+			//mCoefficientMatrix0[node]=new FullMatrix<double>(rCoefficientMatrix0);
+			mCoefficientMatrix0[node]=new FullMatrix<double>(locMatrix);
+
+		}
+		else
+		{
+			// when matrix exists
+			if (mCoefficientMatrix0[node])
+			{
+				(mCoefficientMatrix0[node])->operator+=(rCoefficientMatrix0);
+			}
+			else
+			{
+				mCoefficientMatrix0[node]=new FullMatrix<double>(locMatrix);
+			}
+		}
+	}
+	// or
+	else
+	{
+		// when matrix exists
+		// when vector size is null
+		if (mCoefficientMatrix0.size()==0)
+		{
+			mCoefficientMatrix0.assign(27,NULL);
+			mCoefficientMatrix0[node]=new FullMatrix<double>(3,3);
+		}
+		else
+		{
+
+			if (!mCoefficientMatrix0[node])
+				mCoefficientMatrix0[node]=new FullMatrix<double>(3,3);
+		}
+		int k=0;
+		for (int i=0;i<3;++i)
+		{
+			for (int j= k;j<3;++j)
+			{
+				(*mCoefficientMatrix0[node])(i,j)+=(rCoefficientMatrix0)(i,j);
+				if (i!=j)
+				(*mCoefficientMatrix0[node])(j,i)+=(rCoefficientMatrix0)(j,i);
+			}
+			++k;
+		}
+	}
+}
+
+void NuTo::NodeGrid3D::SetPartCoefficient0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0)
+{
+	// when vector size is null
+	if (!mCoefficient0)
+	{
+		mCoefficient0= new double[243];
+		memset(mCoefficient0,0,243);
+	}
+
+	int k=0;
+	for (int i=0;i<3;++i)
+	{
+		for (int j=0;j<3;++j)
+			mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+		k+=2;
+	}
+	/*
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	mCoefficient0[9*node+i+j+k]+=rCoefficientMatrix0(i,j);
+	*/
+}
+
 
 //! @brief writes the coordinates of a node to the prescribed pointer
 //! @param rCoordinates coordinates

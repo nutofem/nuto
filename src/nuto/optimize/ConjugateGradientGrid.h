@@ -141,6 +141,10 @@ protected:
 	//! @brief ... calculate start gradient in element-by-element way
 	void CalculateStartGradientNodeByNode(NuTo::FullMatrix<double> &gradientOrig);
 
+	//! @brief ... calculate start gradient in element-by-element way
+	//! @brief ... variante II: with 3x3 matrix at node
+	void CalculateStartGradientNodeByNodeII(NuTo::FullMatrix<double> &gradientOrig);
+
 	//! @brief ... calculate matix-vector product in element-by-element way
 	void CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector);
 
@@ -149,6 +153,9 @@ protected:
 
 	//! @brief ... calculate search direction in node-by-node way
 	void CalculateScaledSearchDirectionNodeByNode(Eigen::VectorXd& searchDirectionScaled);
+
+	//! @brief ... calculate search direction in node-by-node way second way
+	void CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled);
 
 	#ifdef ENABLE_MECHANICS
 		StructureGrid *mpGrid;

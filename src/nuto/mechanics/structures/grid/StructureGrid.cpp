@@ -504,6 +504,14 @@ void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int
 	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
 	}
 }
+//! @brief NodeGetConstraintSwitch
+//! @param rGlobalDof
+//! @return switch for constraint
+bool* NuTo::StructureGrid::GetConstraintSwitch()
+{
+	return mDofIsNotConstraint;
+}
+
 
 //! @brief Set NodeIds for all nodes at all elements
 void NuTo::StructureGrid::SetAllNodeIds()
@@ -522,7 +530,7 @@ void NuTo::StructureGrid::SetAllNodeIds()
 		//get grid corners of the voxel
 	    int corners[8]={0};
 	    GetCornersOfVoxel(element, locVoxLoc, corners);
-		int nodeIds[8];
+		int nodeIds[8]={-1};
 		for (int node=0;node<thisElement->GetNumNodes();++node)
 		{
 			//get pointer to this gridNum node
@@ -535,6 +543,128 @@ void NuTo::StructureGrid::SetAllNodeIds()
     if (mShowTime)
         std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
+}
+
+//! @brief Set NodeIds for all nodes at all nodes
+void NuTo::StructureGrid::SetAllNodeIdsAtNode()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (mDimension != 3)
+        throw MechanicsException("[StructureGrid::SetAllNodeIdsAtNode] error dimension must be 3.");
+	NodeGrid3D* thisNode;
+	//local node ids sorted after element and node of element
+	int orderNode[8][8]={
+		{0,1,4,3,9,10,13,12},
+		{1,2,5,4,10,11,14,13},
+		{4,5,8,7,13,14,17,16},
+		{3,4,7,6,12,13,16,15},
+		{9,10,13,12,18,19,22,21},
+		{10,11,14,13,19,20,23,22},
+		{13,14,17,16,22,23,26,25},
+		{12,13,16,15,21,22,25,24},
+	};
+	//field of 27 nodes which contain element and node of element
+	std::vector<FullMatrix<double>*> partMatrix;
+	if (mVerboseLevel>2)
+		std::cout<<__FILE__<<" "<<__LINE__<<" in SetAllNodeIdsAtNode() "<<std::endl;
+
+	for (int nodeNumber=0;nodeNumber<GetNumNodes();++nodeNumber)
+	{
+		thisNode=NodeGridGetNodePtr(nodeNumber);
+		int nodeIds[27];
+		for (int i=0;i<27;++i)
+			nodeIds[i]=-1;
+        int* elementIds=thisNode->GetElementIds();
+		for (int element=0;element<8;++element)
+		{
+			if (elementIds[element]>-1)
+			{
+				Voxel8N* thisElement;
+				thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(elementIds[element]));
+				int* localNodeIds=thisElement->GetNodeIds();
+				for(int node=0;node<8;++node)
+				{
+					nodeIds[orderNode[element][node]]=localNodeIds[node];// overhead,set id 4 times
+				}
+			}
+		}
+		thisNode->SetNodeIds(nodeIds);
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureGrid::SetAllNodeIdsAtNodes] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief Set partCoefficientmatrix for all nodes
+void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (mDimension != 3)
+        throw MechanicsException("[StructureGrid::SetAllPartCoefficientMatrix0] error dimension must be 3.");
+	if (mVerboseLevel>2)
+		std::cout<<__FILE__<<" "<<__LINE__<<" in SetAllPartCoefficientMatrix0 "<<std::endl;
+	// first field of 8 local nodes of one element
+	// second field of 8 local nodes of one element
+	// contains NBN ordering local node id
+	int orderNode[8][8]={
+		{13,14,17,16,22,23,26,25},
+		{12,13,16,15,21,22,25,24},
+		{9,10,13,12,18,19,22,21},
+		{10,11,14,13,19,20,23,22},
+		{4,5,8,7,13,14,17,16},
+		{3,4,7,6,12,13,16,15},
+		{0,1,4,3,9,10,13,12},
+		{1,2,5,4,10,11,14,13},
+	};
+
+	for (int element=0;element<GetNumElements();++element)
+	{
+		Voxel8N* thisElement;
+		thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
+		int numLocalStiffness =thisElement->GetNumLocalStiffnessMatrix();
+		FullMatrix<double>* matrix= GetLocalCoefficientMatrix0(numLocalStiffness);
+
+		int* nodeIds=thisElement->GetNodeIds();
+		NodeGrid3D* thisNodeI;
+		NodeGrid3D* thisNodeJ;
+		int k=0;
+		for (int i=0;i<8;++i)
+		{
+			thisNodeI=NodeGridGetNodePtr(nodeIds[i]);
+			for(int j=k;j<8;++j)
+			{
+				thisNodeJ=NodeGridGetNodePtr(nodeIds[j]);
+				//How does this work without copying a 3x3 matrix?
+				//Adress of a part of the matrix not possible
+				FullMatrix<double> partMatrix(3,3);
+				partMatrix=(matrix->GetBlock(i*3,j*3,3,3));
+				thisNodeI->SetPartCoefficientMatrix0(orderNode[i][j],partMatrix);
+				thisNodeI->SetPartCoefficient0(orderNode[i][j],partMatrix);
+				if (i!=j)
+				{
+					partMatrix=(matrix->GetBlock(j*3,i*3,3,3));
+					thisNodeJ->SetPartCoefficientMatrix0(orderNode[j][i],partMatrix);
+					thisNodeJ->SetPartCoefficient0(orderNode[j][i],partMatrix);
+				}
+			}
+			++k;
+		}
+	}
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureGrid::SetAllPartCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+
 }
 
 //! @brief Set ElementIds for the elements at each nodes
@@ -554,17 +684,6 @@ void NuTo::StructureGrid::SetAllElementIds()
 		thisNode=NodeGridGetNodePtr(node);
 //		int gridNum= thisNode->GetNodeGridNum();
         TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(node);
-/*
-		int voxelIds[8];
-		voxelIds[0]=gridNum-mGridDimension[0]-1;
-		voxelIds[1]=gridNum-mGridDimension[0];
-		voxelIds[2]=gridNum;
-		voxelIds[3]=gridNum-1;
-		voxelIds[4]=gridNum-mGridDimension[0]+(mGridDimension[0]*mGridDimension[1])-1;
-		voxelIds[5]=gridNum-mGridDimension[0]+(mGridDimension[0]*mGridDimension[1]);
-		voxelIds[6]=gridNum+(mGridDimension[0]*mGridDimension[1]);
-		voxelIds[7]=gridNum+(mGridDimension[0]*mGridDimension[1])-1;
-*/
         int elementIds[8];
 		for (int element=0;element<8;++element)
 		{
@@ -594,7 +713,6 @@ NuTo::FullMatrix<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rN
 {
  	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
-// 	std::cout<<__FILE__<<" "<<__LINE__<<"  "<< mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0] <<std::endl;
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
 }
 
