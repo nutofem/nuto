@@ -46,6 +46,11 @@ public:
      //! @return enum of ElementDataType
      const NuTo::ElementData::eElementDataType GetElementDataType()const;
 
+     //! @brief delete the nonlocal elements
+     //! @param rConstitutive  constitutive model
+     void DeleteNonlocalElements();
+
+
 #ifdef ENABLE_SERIALIZATION
 	//! @brief serializes the class
 	//! @param ar         archive

@@ -22,6 +22,7 @@
 
 namespace NuTo
 {
+template<class T> class  FullMatrix;
 class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
 class CrackBase;
@@ -123,6 +124,9 @@ public:
     //! @param rConstitutive constitutive model
     //! @return vector to nonlocal elements
     virtual const std::vector<const NuTo::ElementBase*>& GetNonlocalElements()const;
+
+    //! @brief delete the nonlocal elements
+    virtual void DeleteNonlocalElements();
 
     //! @brief gets the number of nonlocal elements for a constitutive model
     //! @param rConstitutive constitutive model

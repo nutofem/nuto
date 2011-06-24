@@ -13,16 +13,14 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/FullMatrix.h"
 
 // constructor
-NuTo::ConstraintLinearGlobalTotalStrain::ConstraintLinearGlobalTotalStrain(const StructureMultiscale* rStructure, const EngineeringStrain2D& rStrain):
+NuTo::ConstraintLinearGlobalTotalStrain::ConstraintLinearGlobalTotalStrain(const StructureMultiscale* rStructure):
         ConstraintLinear()
 {
     mStructure = rStructure;
-    mStrain = rStrain;
 }
 
 //! @brief returns the number of constraint equations
@@ -30,12 +28,6 @@ NuTo::ConstraintLinearGlobalTotalStrain::ConstraintLinearGlobalTotalStrain(const
 int NuTo::ConstraintLinearGlobalTotalStrain::GetNumLinearConstraints()const
 {
     return 3;
-}
-
-//! @brief sets the rhs of the constraint equation
-void NuTo::ConstraintLinearGlobalTotalStrain::SetRHS(const EngineeringStrain2D& rStrain)
-{
-    mStrain = rStrain;
 }
 
 //! @brief adds the constraint equations to the matrix
@@ -46,15 +38,16 @@ void NuTo::ConstraintLinearGlobalTotalStrain::AddToConstraintMatrix(int& curCons
         NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
         NuTo::FullMatrix<double>& rRHS)const
 {
-    rRHS(curConstraintEquation,0) = mStrain.mEngineeringStrain[0];
+    EngineeringStrain2D strain(mStructure->GetTotalEngineeringStrainConstraint());
+	rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[0]/mStructure->GetScalingFactorEpsilon();
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalTotalStrain2D()[0],1);
     curConstraintEquation++;
 
-    rRHS(curConstraintEquation,0) = mStrain.mEngineeringStrain[1];
+    rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[1]/mStructure->GetScalingFactorEpsilon();
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalTotalStrain2D()[1],1);
     curConstraintEquation++;
 
-    rRHS(curConstraintEquation,0) = mStrain.mEngineeringStrain[2];
+    rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[2]/mStructure->GetScalingFactorEpsilon();
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalTotalStrain2D()[2],1);
     curConstraintEquation++;
 }
@@ -74,8 +67,7 @@ void NuTo::ConstraintLinearGlobalTotalStrain::serialize(Archive & ar, const unsi
     std::cout << "start serialize ConstraintLinearGlobalTotalStrain" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mStructure)
-       & BOOST_SERIALIZATION_NVP(mStrain);
+       & BOOST_SERIALIZATION_NVP(mStructure);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearGlobalTotalStrain" << std::endl;
 #endif

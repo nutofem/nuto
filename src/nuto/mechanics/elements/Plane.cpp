@@ -559,7 +559,7 @@ void NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
 //! @brief Update the static data of an element
 void NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
 {
-    //calculate local coordinates
+	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
     CalculateLocalCoordinates(localNodeCoord);
 
@@ -603,7 +603,7 @@ void NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
         CalculateDeformationGradient(derivativeShapeFunctionsLocal, localNodeDisp, deformationGradient);
 
         //call constitutive law and calculate stress
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Plane::UpdateStaticData] Constitutive law can not deal with engineering stresses and strains");
         switch(rUpdateType)
@@ -613,6 +613,9 @@ void NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
         break;
         case NuTo::Element::TMPSTATICDATA:
             constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        break;
+        case NuTo::Element::SWITCHMULTISCALE2NONLINEAR:
+            constitutivePtr->MultiscaleSwitchToNonlinear(this, theIP, deformationGradient);
         break;
         default:
             throw MechanicsException("[NuTo::Plane::UpdateStaticData] update static data flag not known (neither static not tmpstatic data");

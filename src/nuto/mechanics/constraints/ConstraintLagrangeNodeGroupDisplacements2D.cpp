@@ -56,6 +56,15 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeMultiplier(Ful
             rLagrangeMultiplier(count,0) = mLagrangeValue[count];
 }
 
+//! @brief returns the Lagrange Multiplier dofs
+//! first col Lagrangedofs
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetDofsLagrangeMultiplier(FullMatrix<int>& rLagrangeMultiplier)const
+{
+    rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
+    for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
+        rLagrangeMultiplier(count,0) = mLagrangeDOF[count];
+}
+
 //!@brief sets/modifies the right hand side of the constraint equations
 //!@param rRHS new right hand side
 void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetRHS(double rRHS)

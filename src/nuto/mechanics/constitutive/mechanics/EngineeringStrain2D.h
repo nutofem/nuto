@@ -23,18 +23,19 @@ class EngineeringStrain2D
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class ConstraintLinearGlobalCrackAngle;
     friend class ConstraintLinearDisplacementsPeriodic2D;
     friend class ConstraintLinearGlobalTotalStrain;
-    friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
+    friend class ConstitutiveMisesPlasticity;
     friend class ConstraintNonlinearGlobalCrackAngle2D;
+    friend class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+    friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
     friend class LinearElastic;
     friend class Multiscale;
     friend class NonlocalDamagePlasticity;
     friend class StructureMultiscale;
-public:
+    public:
     //! @brief ... constructor
     //! @param pStructure ... structure
     //! @param pElement ... element

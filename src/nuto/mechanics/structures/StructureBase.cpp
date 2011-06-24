@@ -964,10 +964,10 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
 #ifdef _OPENMP
     double wend = omp_get_wtime ( );
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+        mLogger<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
 #else
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
 }
@@ -1050,7 +1050,7 @@ void NuTo::StructureBase::PostProcessDataAfterConvergence(int rLoadStep, int rNu
 }
 
 //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-void NuTo::StructureBase::PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual)const
+void NuTo::StructureBase::PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullMatrix<double>& rResidualVector)const
 {
 }
 
@@ -1139,6 +1139,7 @@ try
 			}
 			this->ElementTotalUpdateTmpStaticData();
 
+			//mLogger<<" calculate stiffness 1143" << "\n";
 			this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 		//    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
 		//    mLogger << "disp force vector "<< "\n";
@@ -1159,6 +1160,7 @@ try
 
 			// build global external load vector and RHS vector
 			this->BuildGlobalExternalLoadVector(extForceVector);
+			//mLogger<<" calculate gradient 1163" << "\n";
 			this->BuildGlobalGradientInternalPotentialVector(intForceVector);
 			convergenceInitialLoadStep = true;
 		}
@@ -1295,7 +1297,7 @@ try
 
             //mLogger << " rhsVector" << "\n";
             //rhsVector.Trans().Info(10,3);
-            //mLogger << " delta_disp" << "\n";
+            //std::cout << " delta_disp" << "\n";
             //deltaDisplacementsActiveDOFs.Trans().Info(10,3);
 
             //perform a linesearch
@@ -1320,6 +1322,7 @@ try
                 // calculate residual
                 try
                 {
+        			//mLogger<<" calculate gradient 1326" << "\n";
                     this->BuildGlobalGradientInternalPotentialVector(intForceVector);
                     //mLogger << "intForceVector "  << "\n";
                     //intForceVector.Trans().Info(10,3);
@@ -1339,9 +1342,13 @@ try
                 	}
                 	else
                 	{
-                		e.AddMessage("[NuTo::StructureBase::NewtonRaphson] Error calling the gradient (resforce) routine.");
+                		e.AddMessage("[NuTo::StructureBase::NewtonRaphson] NuTo::MechanicsException while calling the gradient (resforce) routine.");
                 		throw e;
                 	}
+                }
+                catch(...)
+                {
+                	throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] Error calling the gradient (resforce) routine.");
                 }
 
                 alpha*=0.5;
@@ -1351,7 +1358,7 @@ try
             if (convergenceStatus==2)
             	break;
 
-            this->PostProcessDataAfterLineSearch(loadStep, numNewtonIterations, 2.*alpha, curLoadFactor, normResidual);
+            this->PostProcessDataAfterLineSearch(loadStep, numNewtonIterations, 2.*alpha, curLoadFactor, normResidual, rhsVector);
     		//std::string str;
     		//getline (std::cin,str);
 
@@ -1386,16 +1393,30 @@ try
             //check convergence
             if (normResidual<mToleranceResidualForce || maxResidual<mToleranceResidualForce)
             {
-                this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
-                convergenceStatus=1;
-                //CheckStiffness();
-                //NodeInfo(12);
-                break;
+            	//this test is only relevant for problems with a model adaptation, otherwise, just assume a converged solution and continue
+            	if(AdaptModel())
+            	{
+            		mLogger << "adaptation is performed " << "\n";
+            		numNewtonIterations=0;
+                    this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+                    //mLogger << "intForceVector "  << "\n";
+                    //intForceVector.Trans().Info(10,3);
+                    rhsVector = extForceVector - intForceVector;
+            	}
+            	else
+            	{
+                    this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
+					convergenceStatus=1;
+					//CheckStiffness();
+					//NodeInfo(12);
+					break;
+            	}
             }
 
             //convergence status == 0 (continue Newton iteration)
             normRHS = rhsVector.Norm();
             //build new stiffness matrix
+			//mLogger<<" calculate stiffness 1403" << "\n";
             this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
             //mLogger << dispForceVector.Norm() << "\n";
 //check stiffness
@@ -1422,29 +1443,29 @@ try
             }
             else
             {
-            	this->ElementTotalUpdateStaticData();
-                this->PostProcessDataAfterUpdate(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
-                //store the last converged step in order to be able to go back to that state
-                displacementsActiveDOFsLastConverged  = displacementsActiveDOFs;
+				this->ElementTotalUpdateStaticData();
+				this->PostProcessDataAfterUpdate(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
+				//store the last converged step in order to be able to go back to that state
+				displacementsActiveDOFsLastConverged  = displacementsActiveDOFs;
 
-                //eventually increase load step
-                if (mAutomaticLoadstepControl)
-                {
-                    if (numNewtonIterations<mMinNumNewtonIterations)
-                    {
-                        deltaLoadFactor*=mIncreaseFactor;
-                    }
-                    if (deltaLoadFactor>mMaxDeltaLoadFactor)
-                        deltaLoadFactor = mMaxDeltaLoadFactor;
-                }
+				//eventually increase load step
+				if (mAutomaticLoadstepControl)
+				{
+					if (numNewtonIterations<mMinNumNewtonIterations)
+					{
+						deltaLoadFactor*=mIncreaseFactor;
+					}
+					if (deltaLoadFactor>mMaxDeltaLoadFactor)
+						deltaLoadFactor = mMaxDeltaLoadFactor;
+				}
 
-                //increase displacement
-                curLoadFactor+=deltaLoadFactor;
-                if (curLoadFactor>1)
-                {
-                    deltaLoadFactor -= curLoadFactor -1.;
-                    curLoadFactor=1;
-                }
+				//increase displacement
+				curLoadFactor+=deltaLoadFactor;
+				if (curLoadFactor>1)
+				{
+					deltaLoadFactor -= curLoadFactor -1.;
+					curLoadFactor=1;
+            	}
             }
             loadStep++;
             //initialize some stuff before a new load step (e.g. output directories for visualization, if required)
@@ -1509,6 +1530,7 @@ try
 					this->NodeBuildGlobalDofs();
 
 					//update stiffness in order to calculate new dispForceVector, but still with previous displacement state
+					//mLogger<<" calculate stiffness 1517" << "\n";
 					this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 		//CheckStiffness();
 					//int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
@@ -1523,7 +1545,8 @@ try
 					this->ElementTotalUpdateTmpStaticData();
 
 					// calculate initial residual for next load step
-					this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+					//mLogger<<" calculate gradient 1532" << "\n";
+                    this->BuildGlobalGradientInternalPotentialVector(intForceVector);
 					convergenceConstitutive = true;
 
 				}
@@ -1557,7 +1580,8 @@ try
 						//check for minimum delta (this mostly indicates an error in the software
 						if (deltaLoadFactor<mMinDeltaLoadFactor)
 						{
-							mLogger << "return with a MechanicsNoConvergenceException " << "\n";
+							mLogger << "return with a MechanicsNoConvergenceException 1560" << "\n";
+							mLogger << "curLoadFactor " << curLoadFactor << ", deltaLoadFactor " << deltaLoadFactor << "mMinDeltaLoadFactor" << mMinDeltaLoadFactor<< "\n";
 							throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence, delta strain factor smaller than minimum.",MechanicsException::NOCONVERGENCE);
 						}
 		            }

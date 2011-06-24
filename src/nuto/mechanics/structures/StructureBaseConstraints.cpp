@@ -6,7 +6,6 @@
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
-#include "nuto/mechanics/constraints/ConstraintLagrange.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements1D.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
@@ -19,6 +18,7 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 
 //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
 //! @param rGroupId group id
@@ -821,23 +821,23 @@ void NuTo::StructureBase::ConstraintsBuildGlobalCoefficientSubMatrices0General(S
 
             //same thing, but for the transpose
             int globalColumnDof = constraintMatrixGlobalDofs[rowCount];
-            if (globalColumnDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
-                {
-                    if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
-                    {
-                        int globalRowDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
-                        if (globalRowDof==globalColumnDof)
-                            continue;
-                        if (globalRowDof < this->mNumActiveDofs)
+			for (unsigned int colCount = 0; colCount < values[rowCount].size(); colCount++)
+			{
+				if (fabs(values[rowCount][colCount])>mToleranceStiffnessEntries)
+				{
+					int globalRowDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
+					if (globalRowDof==globalColumnDof)
+						continue;
+					if (globalRowDof < this->mNumActiveDofs)
+					{
+                        if (globalColumnDof < this->mNumActiveDofs)
                         {
                             // add upper triangle and diagonal
                             rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixJK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof , values[rowCount][colCount]);
+                            rMatrixJK.AddEntry(globalRowDof , globalColumnDof - this->mNumActiveDofs , values[rowCount][colCount]);
                         }
                     }
                 }
@@ -1137,9 +1137,9 @@ double NuTo::StructureBase::ConstraintTotalGetTotalEnergy()const
     for (boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate constraint contribution
-        if (constraintIter->second->GetNumLagrangeMultipliers()>0)
+        if (constraintIter->second->IsLinear()==false)
         {
-            const ConstraintLagrange* constraintPtr (constraintIter->second->AsConstraintLagrange());
+            const ConstraintNonlinear* constraintPtr (constraintIter->second->AsConstraintNonlinear());
 
             energy+=constraintPtr->CalculateTotalPotential();
         }
@@ -1207,15 +1207,14 @@ void NuTo::StructureBase::ConstraintLagrangeSetPenaltyStiffness(int ConstraintId
 //! @brief info about the elements in the Structure
 void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
 {
-    std::cout<<"number of constraints: " << mConstraintMap.size() <<std::endl;
+    mLogger <<"number of constraints: " << mConstraintMap.size() << "\n";
     if (rVerboseLevel>3)
     {
-        std::cout << "\tconstraints :" <<std::endl;
         for (boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.begin(); it!= mConstraintMap.end(); it++)
         {
             if (rVerboseLevel>4)
             {
-                std::cout << "\t\t";
+                mLogger << "\t constraint " << it->first << "\t";
                 it->second->Info(rVerboseLevel);
             }
         }

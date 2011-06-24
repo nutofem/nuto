@@ -65,6 +65,7 @@ int NuTo::ElementDataNonlocalBase::AddNonlocalElement(const ElementBase* rElemen
 	return mNonlocalElements.size()-1;
 }
 
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ElementDataNonlocalBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

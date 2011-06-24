@@ -371,7 +371,7 @@ public:
 
     //! @brief similiar to above, but this time the global matrix is checked, not the element matrices
     //! @return false, if stiffness is not correct
-    bool CheckStiffness();
+    virtual bool CheckStiffness();
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
@@ -581,6 +581,10 @@ public:
     //! @parameter rName name of the parameter, e.g. YoungsModulus
     //! @parameter rParameter value of the parameter
     void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter);
+
+    //! @brief modifies the finescale model of a multiscale element from the initial elastic solution phase to the nonlinear phase if principal stress is larger than tensile strength
+    //! @return true, if an adaptation has been performed, otherwise false
+    void ElementTotalMultiscaleSwitchToNonlinear();
 #endif
 
     //*************************************************
@@ -1052,6 +1056,46 @@ public:
     //! @param rPenaltyStiffnessCrackAngle ...  PenaltyStiffnessCrackAngle
     void ConstitutiveLawSetPenaltyStiffnessCrackAngle(int rIdent, double rPenaltyStiffnessCrackAngle);
 
+    //! @brief ... get scaling factor for the crack angle
+    //! @param rIdent ...  identifier
+    double ConstitutiveLawGetScalingFactorCrackAngle(int rIdent);
+
+    //! @brief ... set scaling factor for the crack angle
+    //! @param rScalingFactorCrackAngle ...  scaling factor
+    void ConstitutiveLawSetScalingFactorCrackAngle(int rIdent, double rScalingFactorCrackAngle);
+
+    //! @brief ... get scaling factor for the crack opening
+    //! @param rIdent ...  identifier
+    double ConstitutiveLawGetScalingFactorCrackOpening(int rIdent);
+
+    //! @brief ... set scaling factor for the crack opening
+    //! @param rScalingFactorCrackAngle ...  scaling factor
+    void ConstitutiveLawSetScalingFactorCrackOpening(int rIdent, double rScalingFactorCrackOpening);
+
+    //! @brief ... get scaling factor for the total strain
+    //! @param rIdent ...  identifier
+    double ConstitutiveLawGetScalingFactorEpsilon(int rIdent);
+
+    //! @brief ... set PenaltyStiffnessCrackAngle
+    //! @param rScalingFactorCrackAngle ...  scaling factor
+    void ConstitutiveLawSetScalingFactorEpsilon(int rIdent, double rScalingFactorEpsilon);
+
+    //! @brief ... get result directory for fine scale models in multiscale simulation
+    //! @param rIdent ...  identifier
+    std::string ConstitutiveLawGetResultDirectory(int rIdent);
+
+    //! @brief ... set ResultDirectory for fine scale models in multiscale simulation
+    //! @param rResultDirectory ...  ResultDirectory
+    void ConstitutiveLawSetResultDirectory(int rIdent, std::string rResultDirectory);
+
+    //! @brief ... get load step macro for fine scale models in multiscale simulation
+    //! @param rIdent ...  identifier
+    int ConstitutiveLawGetLoadStepMacro(int rIdent);
+
+    //! @brief ... set LoadStepMacro for fine scale models in multiscale simulation
+    //! @param rLoadStepMacro ...  LoadStepMacro
+    void ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadStepMacro);
+
 #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
@@ -1421,6 +1465,13 @@ public:
             std::stringstream& rSaveStringStream,
             bool& rIsSaved);
 
+    //! @brief performs an adaption of the model
+    //! @returns true, if the model has actually be changed, or false if no change has been made
+    virtual bool AdaptModel()
+    {
+    	return false;
+    }
+
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
@@ -1447,7 +1498,7 @@ public:
     virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual)const;
+    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullMatrix<double>& rResidualVector)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
     virtual void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual)const;
@@ -1470,6 +1521,13 @@ public:
     {
     	throw MechanicsException("[NuTo::StructureBase::ScaleCoordinates] only implemented for multiscale structures.");
     }
+
+    void SetUpdateTmpStaticDataRequired()
+    {
+    	mUpdateTmpStaticDataRequired = true;
+    }
+
+
 protected:
     int mDimension;
 

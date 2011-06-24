@@ -34,6 +34,10 @@ public:
     //! first col Lagrange, second column slack variables
     void GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const;
 
+    //! @brief returns the Lagrange Multiplier dofs
+    //! first col Lagrangedofs
+    void GetDofsLagrangeMultiplier(FullMatrix<int>& rLagrangeMultiplier)const;
+
     //! @brief cast to Lagrange constraint - the corresponding dofs are eliminated in the global system
     NuTo::ConstraintLagrange* AsConstraintLagrange();
 

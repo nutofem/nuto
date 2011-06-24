@@ -28,6 +28,7 @@ NuTo::ConstraintLagrangeGlobalCrackAngle2D::ConstraintLagrangeGlobalCrackAngle2D
     std::cout<< "scaling factor for ConstraintLagrangeGlobalCrackAngle2D has to be adapted" << std::endl;
     mScaling = 2.*M_PI/(UMAX);
     mScaling = 0.;
+    throw MechanicsException("[NuTo::ConstraintLagrangeGlobalCrackAngle2D::ConstraintLagrangeGlobalCrackAngle2D] scaling not implemented.");
 }
 
 //! @brief returns the number of constraint equations
@@ -43,6 +44,14 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::GetLagrangeMultiplier(FullMatri
 {
     rLagrangeMultiplier.Resize(1,1);
     rLagrangeMultiplier(0,0) = mLagrangeValue;
+}
+
+//! @brief returns the Lagrange Multiplier dofs
+//! first col Lagrangedofs
+void NuTo::ConstraintLagrangeGlobalCrackAngle2D::GetDofsLagrangeMultiplier(FullMatrix<int>& rLagrangeMultiplier)const
+{
+    rLagrangeMultiplier.Resize(1,1);
+    rLagrangeMultiplier(0,0) = mLagrangeDOF;
 }
 
 //! @brief sets the global dofs
@@ -302,12 +311,12 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateGradientInternalPotent
         //derivative with respect to lambda
         rResult(0,0)=-mLagrangeValue/mPenalty;
     }
-
+/*
     //check result matrix by calling the potential routine
     NuTo::FullMatrix<double> rResultFull(rResult);
     NuTo::FullMatrix<double> rResultCDF(rResult);
     double energy1,energy2;
-    double delta(1e-8);
+    double delta(-1e-8);
     energy1 = CalculateTotalPotential();
 
     const_cast<ConstraintLagrangeGlobalCrackAngle2D*>(this)->mLagrangeValue+=delta;
@@ -345,6 +354,7 @@ void NuTo::ConstraintLagrangeGlobalCrackAngle2D::CalculateGradientInternalPotent
         std::cout<< "constraint crack angle gradient cdf " << std::endl;
         rResultCDF.Info(10,5);
     }
+*/
 }
 
 //! @brief calculates the internal potential

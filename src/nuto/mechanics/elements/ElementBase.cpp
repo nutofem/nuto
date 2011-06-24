@@ -707,6 +707,12 @@ const std::vector<const NuTo::ElementBase*>& NuTo::ElementBase::GetNonlocalEleme
 	return this->mElementData->GetNonlocalElements();
 }
 
+//! @brief delete the nonlocal elements
+void NuTo::ElementBase::DeleteNonlocalElements()
+{
+    this->mElementData->DeleteNonlocalElements();
+}
+
 //! @brief returns a vector of the nonlocal elements
 //! @param rConstitutive constitutive model for the nonlocale elements
 //! @retrun nonlocal elements

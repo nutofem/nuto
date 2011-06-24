@@ -20,7 +20,7 @@ class ConstraintLinearGlobalCrackAngle : public ConstraintLinear
 
 public:
     //! @brief constructor
-    ConstraintLinearGlobalCrackAngle(const StructureMultiscale* rStructure);
+    ConstraintLinearGlobalCrackAngle(const StructureMultiscale* rStructure, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -49,6 +49,8 @@ public:
 protected:
     //! @brief just for serialization
     ConstraintLinearGlobalCrackAngle(){};
+
+    double mRHS;
 
     const StructureMultiscale* mStructure;
 };

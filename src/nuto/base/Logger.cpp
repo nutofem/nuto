@@ -170,7 +170,7 @@ void NuTo::Logger::OpenFile()
     mLogFile.clear();
     if (mLogFileName.length()!=0)
     {
-		mLogFile.open(mLogFileName.c_str());
+		mLogFile.open(mLogFileName.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
 		if (!mLogFile.is_open())
 			throw Exception ( "[NuTo::Logger::OpenFile]File could not be opened." );
     }

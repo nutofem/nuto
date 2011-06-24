@@ -50,7 +50,7 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementStiffness] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementStiffness] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -79,19 +79,20 @@ int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, Nu
     {
         try
         {
-        	//std::cout << "Element Id " << this->ElementGetId(elementVector[countElement]) << std::endl << std::endl;
+        	std::cout << "Element Id " << this->ElementGetId(elementVector[countElement]) << "\n" << "\n";
 
         	elementVector[countElement]->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
-        	//std::cout << "stiffnessAnalytic " << std::endl << stiffnessAnalytic << std::endl << std::endl;
+        	std::cout << "stiffnessAnalytic " << "\n" << stiffnessAnalytic << "\n" << "\n";
 
         	stiffnessCDF.Resize(stiffnessAnalytic.GetNumRows(),stiffnessAnalytic.GetNumColumns());
         	this->ElementCoefficientMatrix_0_Resforce(elementVector[countElement],rDelta,stiffnessCDF);
-        	//std::cout << "stiffnessCDF " << std::endl << stiffnessCDF << std::endl << std::endl;
+        	std::cout << "stiffnessCDF " << "\n" << stiffnessCDF << "\n" << "\n";
 
         	//check the maximum error
         	tmpDifference = (stiffnessCDF-stiffnessAnalytic)*(1./stiffnessAnalytic.Abs().Max());
-        	//std::cout << "difference "<< std::endl << tmpDifference <<std::endl << std::endl;
+        	std::cout << "difference "<< "\n" << tmpDifference <<"\n" << "\n";
         	double curError =  tmpDifference.Abs().Max();
+        	std::cout << "error " << curError << "\n";
         	if (curError>maxError)
         	{
         		maxError = curError;
@@ -119,7 +120,7 @@ int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, Nu
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
     return this->ElementGetId(elementVector[maxElement]);
 }
@@ -152,15 +153,15 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
     	NuTo::FullMatrix<double> stiffnessCDF;
     	bool symmetryFlag;
     	elementPtr->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
-    	//std::cout << "stiffnessAnalytic " << std::endl << stiffnessAnalytic << std::endl << std::endl;
+    	std::cout << "stiffnessAnalytic " << "\n" << stiffnessAnalytic << "\n" << "\n";
 
     	stiffnessCDF.Resize(stiffnessAnalytic.GetNumRows(),stiffnessAnalytic.GetNumColumns());
     	this->ElementCoefficientMatrix_0_Resforce(elementPtr,rDelta,stiffnessCDF);
-    	//std::cout << "stiffnessCDF " << std::endl << stiffnessCDF << std::endl << std::endl;
+    	std::cout << "stiffnessCDF " << "\n" << stiffnessCDF << "\n" << "\n";
 
     	//check the maximum error
     	rDifference = (stiffnessCDF-stiffnessAnalytic)*(1./stiffnessAnalytic.Abs().Max());
-    	//std::cout << "rDifference "<< std::endl << rDifference <<std::endl << std::endl;
+    	std::cout << "rDifference "<< "\n" << rDifference <<"\n" << "\n";
         maxError =  rDifference.Abs().Max();
     }
     catch(NuTo::MechanicsException e)
@@ -182,7 +183,7 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
     return maxError;
 }
@@ -204,7 +205,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(int rElementId, do
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -245,6 +246,8 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 		}
 	}
 	rElementPtr->CalculateGradientInternalPotential(resforce1,globalDofsRow);
+	//std::cout << "resforce 1" << std::endl;
+	//resforce1.Trans().Info(12,10);
 
 	int curCol(0);
 
@@ -254,11 +257,17 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 		{
 			NodeBase *theNode=const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->GetNode(countNode);
 			double disp[3];
-			assert(theNode->GetNumDisplacements()<=3);
-			for (int countDisp=0; countDisp<theNode->GetNumDisplacements(); countDisp++)
+			int numDisp = theNode->GetNumDisplacements()+theNode->GetNumFineScaleDisplacements();
+			assert(numDisp<=3);
+
+			for (int countDisp=0; countDisp<numDisp; countDisp++)
 			{
 				switch (theNode->GetNumDisplacements())
 				{
+				case 0:
+					assert(theNode->GetNumFineScaleDisplacements()==2);
+					theNode->GetFineScaleDisplacements2D(disp);
+					break;
 				case 1:
 					theNode->GetDisplacements1D(disp);
 					break;
@@ -274,6 +283,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 				disp[countDisp]+=rDelta;
 				switch (theNode->GetNumDisplacements())
 				{
+				case 0:
+					assert(theNode->GetNumFineScaleDisplacements()==2);
+					theNode->SetFineScaleDisplacements2D(disp);
+					break;
 				case 1:
 					theNode->SetDisplacements1D(disp);
 					break;
@@ -301,6 +314,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 					disp[countDisp]-=rDelta;
 					switch (theNode->GetNumDisplacements())
 					{
+					case 0:
+						assert(theNode->GetNumFineScaleDisplacements()==2);
+						theNode->SetFineScaleDisplacements2D(disp);
+						break;
 					case 1:
 						theNode->SetDisplacements1D(disp);
 						break;
@@ -348,11 +365,13 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 
 				}
 
+				//std::cout << "resforce 2" << std::endl;
+				//resforce2.Trans().Info(12,10);
 				//assemble the matrix
 				if (curCol>=stiffnessCDF.GetNumColumns())
 				{
-					std::cout << "num nonlocal elements " << nonlocalElements.size() << std::endl;
-					std::cout << "cur col " << curCol << " size of matrix " << stiffnessCDF.GetNumColumns() << std::endl;
+					std::cout << "num nonlocal elements " << nonlocalElements.size() << "\n";
+					std::cout << "cur col " << curCol << " size of matrix " << stiffnessCDF.GetNumColumns() << "\n";
 					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Allocated matrix for calculation of stiffness with finite differences has illegal size.");
 				}
 				stiffnessCDF.SetColumn(curCol,((resforce2-resforce1)*(1./rDelta)));
@@ -369,7 +388,7 @@ bool NuTo::StructureBase::CheckStiffness()
     //this is especially true for the first step of the Newton iteration in displacement control situation
     //where the stiffness of the old state is calulated on purpose and the multiplied by the difference between prescribed dependent dofs and actual dependent dofs
 
-    std::cout << "test of stiffness still included, node merge is called!!! " << std::endl;
+    mLogger << "test of stiffness still included, node merge is called!!! " << "\n";
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
     NuTo::FullMatrix<double> dispForceVector;
     NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
@@ -377,15 +396,19 @@ bool NuTo::StructureBase::CheckStiffness()
 
     //recalculate stiffness
     this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    //mLogger << "active dof values " << "\n";
+    //displacementsActiveDOFsCheck.Trans().Info(12,4);
+    //mLogger << "dependent dof values " << "\n";
+    //displacementsDependentDOFsCheck.Trans().Info(12,4);
     this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
     //this->ConstraintInfo(10);
 
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
-    //std::cout<<"stiffness matrix" << std::endl;
+    //std::cout<<"stiffness matrix" << "\n";
     //stiffnessMatrixCSRVector2Full.Info(10,3);
-    double interval(1e-8);
+    double interval(-1e-9);
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
@@ -393,19 +416,18 @@ bool NuTo::StructureBase::CheckStiffness()
     this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
-    std::cout << "check stiffness:: intForceVector1"<< std::endl;
-    intForceVector1.Trans().Info(10,6);
+    //this->NodeInfo(10);
     energy1 = this->ElementTotalGetTotalEnergy();
     energy1 += this->ConstraintTotalGetTotalEnergy();
-    std::cout << "check stiffness:: energy1 "<<  energy1 << std::endl;
+    //std::cout << "check stiffness:: energy1 "<<  energy1 << "\n";
 
     for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
     {
-        displacementsActiveDOFsCheck(count,0)+=interval;
+    	displacementsActiveDOFsCheck(count,0)+=interval;
         this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
         this->ElementTotalUpdateTmpStaticData();
         this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
-        //std::cout << "check stiffness:: intForceVector2"<< std::endl;
+        //std::cout << "check stiffness:: intForceVector2"<< "\n";
         //intForceVector2.Trans().Info(10,6);
         //this->ConstraintInfo(10);
         energy2 = this->ElementTotalGetTotalEnergy();
@@ -415,33 +437,52 @@ bool NuTo::StructureBase::CheckStiffness()
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
     this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-3)
-    //if (true)
+    this->ElementTotalUpdateTmpStaticData();
+
+    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
     {
-        std::cout << "globalStiffnessMatrix algo" << std::endl;
-        stiffnessMatrixCSRVector2Full.Info(10,3);
-        std::cout<< std::endl << "globalStiffnessMatrix cdf" << std::endl;
-        stiffnessMatrixCSRVector2_CDF.Info(10,3);
-        std::cout<< std::endl << "error" << std::endl;
-        (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Info(10);
+        if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
+        {
+			mLogger << "globalStiffnessMatrix algo" << "\n";
+			mLogger.Out(stiffnessMatrixCSRVector2Full,10,3,false);
+			mLogger << "\n" << "globalStiffnessMatrix cdf" << "\n";
+			mLogger.Out(stiffnessMatrixCSRVector2_CDF,10,3,false);
+			mLogger<< "\n" << "error" << "\n";
+			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
+        }
+        //extract the first 5x5 block
+        NuTo::FullMatrix<double> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
+        NuTo::FullMatrix<double> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
+        NuTo::FullMatrix<double> blockDelta(blockAlgo-blockCDF);
+
         double maxError;
         int row,col;
         maxError = (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max(row,col);
-        std::cout << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") " << std::endl;
-        std::cout<< std::endl << "intForceVector algo" << std::endl;
-        intForceVector1.Trans().Info(10);
-        std::cout<< std::endl << "intForceVector cdf" << std::endl;
-        intForceVectorCDF.Trans().Info(10);
+        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") " << "\n";
+
+        if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
+        {
+			mLogger<< "\n" << "intForceVector algo" << "\n";
+			mLogger.Out(intForceVector1.Trans(),10,3,false);
+			mLogger<< "\n" << "intForceVector cdf" << "\n";
+			mLogger.Out(intForceVectorCDF.Trans(),10,3,false);
+			mLogger << "\n" << "error" << "\n";
+			mLogger.Out((intForceVector1-intForceVectorCDF).Abs().Trans(),10,3);
+        }
         maxError = (intForceVector1-intForceVectorCDF).Abs().Max(row,col);
-        std::cout << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << std::endl;
+        mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
 
         //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
-        std::cout << "stiffness is wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< std::endl;
+        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
+        {
+        	NodeInfo(10);
+            mLogger << "stiffness is wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
+        }
         return false;
     }
     else
     {
-        std::cout << "stiffness is OK "<< std::endl;
+        mLogger << "stiffness is OK "<< "\n";
         return true;
     }
 
@@ -499,7 +540,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementCoefficientMatrix_0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -549,7 +590,7 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGradientInternalPotential] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGradientInternalPotential] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -646,7 +687,7 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -698,7 +739,7 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -721,6 +762,8 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
         try
         {
         	ElementSetConstitutiveLaw(elementVector[countElement],itConstitutive->second);
+        	if (elementVector[countElement]->GetNumNonlocalElements()>0)
+        	    elementVector[countElement]->DeleteNonlocalElements();
         }
         catch(NuTo::MechanicsException e)
         {
@@ -742,7 +785,7 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -751,7 +794,7 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
 //! @param rConstitutive material pointer
 void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive)
 {
-    //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << std::endl;
+    //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << "\n";
 	rElement->SetConstitutiveLaw(rConstitutive);
 }
 
@@ -795,7 +838,7 @@ void NuTo::StructureBase::ElementIpSetFineScaleModel(int rElementId, int rIp, st
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementIpSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementIpSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -851,7 +894,7 @@ void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::st
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -899,7 +942,7 @@ void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -948,7 +991,7 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementSetSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementSetSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1000,7 +1043,7 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1044,7 +1087,7 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1120,7 +1163,7 @@ void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 
 }
@@ -1170,7 +1213,7 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 
 }
@@ -1212,7 +1255,7 @@ void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rInt
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1262,7 +1305,7 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1304,7 +1347,7 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1346,7 +1389,7 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1488,7 +1531,7 @@ void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 			}
 		}
 	}
-	//std::cout << "NuTo::StructureBase::ElementTotalUpdateTmpStaticData " << mUpdateTmpStaticDataRequired << std::endl;
+	//std::cout << "NuTo::StructureBase::ElementTotalUpdateTmpStaticData " << mUpdateTmpStaticDataRequired << "\n";
 	mUpdateTmpStaticDataRequired = false;
 #ifdef SHOW_TIME
     end=clock();
@@ -1511,6 +1554,9 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     NuTo::FullMatrix<double> elementEngineeringStress;
@@ -1544,8 +1590,14 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        mLogger<<"[NuTo::StructureBase::ElementTotalGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementTotalGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 
@@ -1558,6 +1610,9 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
 
@@ -1598,11 +1653,16 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
     }
     rEngineeringStress*=(1./rVolume);
 
-
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        mLogger<<"[NuTo::StructureBase::ElementGroupGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementGroupGetAverageStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif
 }
 
@@ -1649,7 +1709,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1706,7 +1766,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 //! @brief calculates the total energy of the system
@@ -1751,7 +1811,7 @@ double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
     return totalEnergy;
 }
@@ -1806,7 +1866,7 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)const
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
     return totalEnergy;
 }
@@ -1853,7 +1913,7 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()const
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalGetElasticEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetElasticEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
     return elasticEnergy;
 }
@@ -1897,7 +1957,7 @@ void NuTo::StructureBase::ElementTotalSetFineScaleParameter(std::string rName, d
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1939,7 +1999,7 @@ void NuTo::StructureBase::ElementTotalSetFineScaleParameter(std::string rName, s
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -1998,7 +2058,7 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -2048,7 +2108,7 @@ void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::s
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -2067,6 +2127,94 @@ void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, st
 void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter)
 {
 }
+
+//! @brief modifies the finescale model of a multiscale element from the initial elastic solution phase to the nonlinear phase
+//! @parameter rElement Element pointer
+//! @return true, if an adaption has been performed, otherwise false
+void NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] First update of tmp static data required.");
+    }
+	std::vector<NuTo::ElementBase*> elementVector;
+	GetElementsTotal(elementVector);
+
+#ifdef _OPENMP
+    int error(0);
+    std::string errorTotal;
+    #pragma omp parallel default(shared)
+    #pragma omp for schedule(dynamic,1) nowait
+#endif //_OPENMP
+	for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+	{
+		try
+		{
+			elementVector[countElement]->UpdateStaticData(NuTo::Element::SWITCHMULTISCALE2NONLINEAR);
+		}
+#ifdef _OPENMP
+		catch(NuTo::Exception& e)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			std::string errorLocal(e.ErrorMessage()
+					+"[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switching to nonlinear for element " + ss.str() + ".\n");
+			error+=1;
+			errorTotal+=errorLocal;
+		}
+		catch(...)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			std::string errorLocal("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switching to nonlinear for element " + ss.str() + ".\n");
+			error+=1;
+			errorTotal+=errorLocal;
+		}
+	}
+    if(error>0)
+    {
+	    throw MechanicsException(errorTotal);
+    }
+#else
+		catch(NuTo::MechanicsException e)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			e.AddMessage("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switch to nonlinear for element "
+				+ ss.str() + ". ");
+			throw e;
+		}
+		catch(...)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			throw NuTo::MechanicsException
+			   ("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switch to nonlinear for element "
+						+ ss.str() + ". ");
+		}
+	}
+#endif //openmp
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+}
+
 #ifdef ENABLE_VISUALIZE
 //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
 void NuTo::StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const

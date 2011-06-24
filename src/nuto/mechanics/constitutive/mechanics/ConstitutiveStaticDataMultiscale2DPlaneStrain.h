@@ -11,6 +11,7 @@
 namespace NuTo
 {
 class StructureMultiscale;
+template<class T> class  FullMatrix;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain : public ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain
 {
 #ifdef ENABLE_SERIALIZATION
@@ -73,6 +74,31 @@ public:
         mNonlinearSolutionOn = rNonlinearSolution;
     }
 
+    //return if the solution is either linear elastic or from the fine scale model
+    double GetPrevCrackAngleElastic()const
+    {
+        return mPrevCrackAngleElastic;
+    }
+
+    //return if the solution is either linear elastic or from the fine scale model
+    void SetPrevCrackAngleElastic(double rPrevCrackAngleElastic)
+    {
+    	mPrevCrackAngleElastic = rPrevCrackAngleElastic;
+    }
+
+    //return if the solution is either linear elastic or from the fine scale model
+    double GetPrevCrackAngle()const
+    {
+        return mPrevCrackAngle;
+    }
+
+    //return if the solution is either linear elastic or from the fine scale model
+    void SetPrevCrackAngle(double rPrevCrackAngle)
+    {
+    	mPrevCrackAngle = rPrevCrackAngle;
+    }
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -86,6 +112,8 @@ protected:
     StructureMultiscale* mStructure;
 
     bool mNonlinearSolutionOn;
+    double mPrevCrackAngle;
+    double mPrevCrackAngleElastic;
 };
 
 }

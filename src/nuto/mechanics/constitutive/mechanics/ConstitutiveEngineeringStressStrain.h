@@ -249,6 +249,13 @@ public:
     virtual void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient) const=0;
 
+    //! @brief ... checks, if a model has to be switched from linear to nonlinear, and then performs the adaption
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    virtual void MultiscaleSwitchToNonlinear(ElementBase* rElement, int rIp,
+            const DeformationGradient2D& rDeformationGradient)const;
+
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const=0;

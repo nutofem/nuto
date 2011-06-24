@@ -23,14 +23,11 @@ class ConstraintLinearGlobalTotalStrain : public ConstraintLinear
 
 public:
     //! @brief constructor
-    ConstraintLinearGlobalTotalStrain(const StructureMultiscale* rStructure, const EngineeringStrain2D& rStrain);
+    ConstraintLinearGlobalTotalStrain(const StructureMultiscale* rStructure);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
     int GetNumLinearConstraints()const;
-
-    //! @brief sets the rhs of the constraint equation
-    void SetRHS(const EngineeringStrain2D& rStrain);
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -44,7 +41,7 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const
     {
-        std::cout << "ConstraintLinearGlobalCrackOpening" << std::endl;
+        std::cout << "ConstraintLinearGlobalTotalStrain" << std::endl;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -58,9 +55,6 @@ public:
 protected:
     //! @brief just for serialization
     ConstraintLinearGlobalTotalStrain(){};
-
-    //! @brief applied strain
-    EngineeringStrain2D mStrain;
 
     const StructureMultiscale* mStructure;
 };

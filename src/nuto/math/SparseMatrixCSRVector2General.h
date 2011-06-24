@@ -146,7 +146,6 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddEntry(int rRow, int rColumn, T r
 	}
 
 */
-	double newvalue(99);
     typename std::vector<int>::iterator it = lower_bound(this->mColumns[rRow].begin(),this->mColumns[rRow].end(),rColumn);
 	if (it==this->mColumns[rRow].end())
 	{
@@ -154,14 +153,12 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddEntry(int rRow, int rColumn, T r
 		unsigned int pos = it-this->mColumns[rRow].begin();
 		this->mColumns[rRow].insert(it, rColumn);
 		this->mValues[rRow].insert(this->mValues[rRow].begin() + pos, rValue);
-		newvalue = rValue;
 	}
 	else
 	{
 		if (*it==rColumn)
 		{
 			*(this->mValues[rRow].begin() + (it-this->mColumns[rRow].begin())) += rValue;
-	        newvalue = *(this->mValues[rRow].begin() + (it-this->mColumns[rRow].begin()));
 		}
 		else
 		{
@@ -169,7 +166,6 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddEntry(int rRow, int rColumn, T r
 			int pos = it-this->mColumns[rRow].begin();
 			this->mColumns[rRow].insert(it, rColumn);
 			this->mValues[rRow].insert(this->mValues[rRow].begin() + pos, rValue);
-	        newvalue = rValue;
 		}
 	}
 }

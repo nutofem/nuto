@@ -32,7 +32,10 @@ public:
 	//! @brief return the nonlocal weights
 	//! @param rNonlocalElement nonlocal element (between 0 and nonlocal elements.size stored in nonlocal element data)
 	//! @return nonlocal weights
-	virtual const std::vector<double>& GetNonlocalWeights(int rNonlocalElement)const;
+	const std::vector<double>& GetNonlocalWeights(int rNonlocalElement)const;
+
+	//! @brief delete the nonlocal weights
+	void DeleteNonlocalWeights();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

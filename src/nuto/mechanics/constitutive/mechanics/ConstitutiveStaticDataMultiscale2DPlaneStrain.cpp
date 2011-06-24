@@ -25,6 +25,7 @@ NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::ConstitutiveStaticDataMulti
 {
     mStructure = 0;
     mNonlinearSolutionOn = false;
+    mPrevCrackAngleElastic = 0.5*M_PI;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -45,7 +46,9 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::serialize(Archive & ar
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain)
        & BOOST_SERIALIZATION_NVP(mStructure)
-       & BOOST_SERIALIZATION_NVP(mNonlinearSolutionOn);
+       & BOOST_SERIALIZATION_NVP(mNonlinearSolutionOn)
+       & BOOST_SERIALIZATION_NVP(mPrevCrackAngle)
+       & BOOST_SERIALIZATION_NVP(mPrevCrackAngleElastic);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataMultiscale2DPlaneStrain" << std::endl;
 #endif
@@ -134,18 +137,14 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 			mStructure->SetCrackTransitionRadius(rParameter);
 		else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
 			mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
-		else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORCRACKANGLE")
-			mStructure->SetPenaltyStiffnessScalingFactorCrackAngle(rParameter);
 		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLELOW")
 			mStructure->SetToleranceElasticCrackAngleLow(rParameter);
 		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLEHIGH")
 			mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
-		else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSCRACKANGLE")
-			mStructure->ConstraintNonlinearCrackAngle(rParameter,2.*M_PI);
 		else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
-			mStructure->ConstraintLagrangeCrackOpening(rParameter);
+			mStructure->CreateConstraintLagrangeCrackOpening(rParameter);
 		else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSTANGENTIALCRACKOPENING")
-			mStructure->ConstraintNonlinearTangentialCrackOpening(0.,rParameter);
+			mStructure->CreateConstraintNonlinearTangentialCrackOpening(0.,rParameter);
 		else if (upperCaseName=="PENALTYSTIFFNESSTANGENTIALCRACKOPENING")
 			mStructure->SetPenaltyStiffnessTangentialCrackOpening(rParameter);
 		else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORTANGENTIALCRACKOPENING")

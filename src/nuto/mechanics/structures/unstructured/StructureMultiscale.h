@@ -21,8 +21,10 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
+
 namespace NuTo
 {
+template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures, which are used as fine scale models at an integration point
@@ -31,7 +33,8 @@ class StructureMultiscale : public Structure
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
-
+    //just for test purpose
+    friend class ConstraintNonlinearGlobalCrackAngle2D;
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -219,16 +222,22 @@ public:
     void CalculatedDispdCrackOpening(std::vector<int>& rMappingDofMultiscaleNode,std::vector<boost::array<double,2> >& rDOF)const;
 
     //! @brief set the total current strain
-    void SetTotalEngineeringStrain(EngineeringStrain2D& rTotalEngineeringStrain);
+    void SetTotalEngineeringStrain(const EngineeringStrain2D& rTotalEngineeringStrainConstraint);
+
+    //! @brief set the total current strain as a constraint, almost identical to totalStrain
+    void SetTotalEngineeringStrainConstraint(const EngineeringStrain2D& rTotalEngineeringStrainConstraint);
 
     //! @brief set the maximum total strain (used in the automatic increment of the Newton Raphson iteration multiplied by the load factor to give the totalEngineeringStrain)
-    void SetDeltaTotalEngineeringStrain(EngineeringStrain2D& rDeltaTotalEngineeringStrain);
+    void SetDeltaTotalEngineeringStrain(const EngineeringStrain2D& rDeltaTotalEngineeringStrain);
 
     //! @brief set the maximum total strain (used in the automatic increment of the Newton Raphson iteration multiplied by the load factor to give the totalEngineeringStrain)
-    void SetPrevTotalEngineeringStrain(EngineeringStrain2D& rPrevTotalEngineeringStrain);
+    void SetPrevTotalEngineeringStrain(const EngineeringStrain2D& rPrevTotalEngineeringStrain);
 
     //! @brief returns the total strain
     const NuTo::EngineeringStrain2D& GetTotalEngineeringStrain()const;
+
+    //! @brief returns the total strain
+    const NuTo::EngineeringStrain2D& GetTotalEngineeringStrainConstraint()const;
 
     //! @brief just for testing
     void SetGlobalCrackOpening(boost::array<double,2> ptr)const
@@ -243,11 +252,20 @@ public:
         const_cast<StructureMultiscale*>(this)->mCrackAngle = alpha;
     }
 
-    //! @brief return the initial crack angle
-    double GetInitCrackAngle()const;
+    //! @brief set crack angle
+    void SetCrackAngle(double alpha)
+    {
+        mCrackAngle = alpha;
+    }
 
-    //! @brief sets the initial crack angle
-    void SetInitCrackAngle(double rInitCrackAngle);
+    //! @brief return the initial crack angle
+    double GetCrackAngleElastic()const;
+
+    //! @brief return the previous crack angle
+    double GetPrevCrackAngle()const;
+
+    //! @brief sets the previous crack angle
+    void SetPrevCrackAngle(double rPrevCrackAngle);
 
     //! @brief return the total strain
     const NuTo::EngineeringStrain2D& GetHomogeneousEngineeringStrain()const;
@@ -390,27 +408,35 @@ public:
     //! attention, the periodicity of the crack angle has to be taken into account
     double CalculateDeltaCrackAngleElastic()const;
 
+    //! @brief calculates the difference between the crack angle of previous update state and the current angle
+    //! attention, the periodicity of the crack angle has to be taken into account
+    double CalculateDeltaCrackAnglePrev()const;
+
+    //! @brief calculates the derivative of the crack angle for elastic solutions (initial value, no scaling with previous crack angle) wrt the total strain
+    //! @return derivative
+    NuTo::FullMatrix<double> CalculateDDeltaCrackAngleElastic()const;
+
+    //! @brief calculates the second derivative of the crack angle for elastic solutions (initial value, no scaling with previous crack angle) wrt the total strain
+    //! @return derivative
+    NuTo::FullMatrix<double> CalculateD2DeltaCrackAngleElastic()const;
+
     //! @brief calculates the crack angle for elastic solutions (initial value, no scaling with previous crack angle)
     //! @return alpha crack angle in the range 0..Pi (return value)
-    double CalculateInitialCrackAngleElastic()const;
+    double  CalculateCrackAngleElastic()const;
 
     //! @brief add a constraint equation for alpha, which corresponds to an artificial spring
     //! @parameter rPenaltyStiffness penalty stiffness
-    //! @parameter rScalingFactor scaling factor
     //! @return id of the constraint
-    int ConstraintNonlinearCrackAngle(double rPenaltyStiffness, double rScalingFactor);
+    int CreateConstraintNonlinearCrackAngle(double rPenaltyStiffness, bool rCoupleToTotalStrain);
 
     //! @brief set the penalty stiffness for the nonlinear crack angle constraint
     void SetPenaltyStiffnessCrackAngle(double rParameter);
-
-    //! @brief set the scaling factor for the nonlinear crack angle constraint
-    void SetPenaltyStiffnessScalingFactorCrackAngle(double rParameter);
 
     //! @brief add a constraint equation for the tangential crack opening, which corresponds to an artificial spring
     //! @parameter rScalingFactor scaling factor
     //! @parameter rPenaltyStiffness penalty stiffness
     //! @return id of the constraint
-    int ConstraintNonlinearTangentialCrackOpening(double rScalingFactor, double rPenaltyStiffness);
+    int CreateConstraintNonlinearTangentialCrackOpening(double rScalingFactor, double rPenaltyStiffness);
 
     //! @brief set the penalty stiffness for the nonlinear TangentialCrackOpening constraint
     void SetPenaltyStiffnessTangentialCrackOpening(double rParameter);
@@ -427,12 +453,20 @@ public:
     //! @brief add a constraint equation for the crack opening (normal crack opening non negativ)
     //! @parameter rPenaltyStiffness penalty stiffness for augmented Lagrangian
     //! @return id of the constraint
-    int ConstraintLagrangeCrackOpening(double rPenaltyStiffness);
+    int CreateConstraintLagrangeCrackOpening(double rPenaltyStiffness);
 
     //! @brief add a constraint equation for the total strain
     //! @parameter rStrain applied strain (rhs)
     //! @return id of the constraint
-    int ConstraintLinearGlobalTotalStrain(const EngineeringStrain2D& rStrain);
+    int CreateConstraintLinearGlobalTotalStrain();
+
+    //! @brief add a linear constraint equation for the crack angle
+    //! @return id of the constraint
+    int CreateConstraintLinearGlobalCrackAngle(double rAngle);
+
+    //! @brief add a linear constraint equation for the crack opening
+    //! @return id of the constraint
+    int CreateConstraintLinearGlobalCrackOpening(double rRHS, const NuTo::FullMatrix<double>& rDirection);
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
@@ -453,7 +487,7 @@ public:
     void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual)const;
+    void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullMatrix<double>& rResidualVector)const;
 
     //! @brief do a postprocessing step in each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
     void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual)const;
@@ -555,6 +589,57 @@ public:
 */
     void CalculateStiffness(NuTo::FullMatrix<double>& rStiffness);
 
+    inline double GetPrevCrackAngleElastic()const
+    {
+    	return mPrevCrackAngleElastic;
+    }
+
+    inline void SetPrevCrackAngleElastic(double rPrevCrackAngleElastic)
+    {
+    	mPrevCrackAngleElastic = rPrevCrackAngleElastic;
+    }
+
+    inline void SetScalingFactorCrackAngle(double rScalingFactorCrackAngle)
+    {
+    	mScalingFactorCrackAngle = rScalingFactorCrackAngle;
+    }
+
+    inline double GetScalingFactorCrackAngle()const
+    {
+    	return mScalingFactorCrackAngle;
+    }
+
+    inline void SetScalingFactorCrackOpening(double rScalingFactorCrackOpening)
+    {
+    	mScalingFactorCrackOpening = rScalingFactorCrackOpening;
+    }
+
+    inline double GetScalingFactorCrackOpening()const
+    {
+    	return mScalingFactorCrackOpening;
+    }
+
+    inline void SetScalingFactorEpsilon(double rScalingFactorEpsilon)
+    {
+    	mScalingFactorEpsilon = rScalingFactorEpsilon;
+    }
+
+    inline double GetScalingFactorEpsilon()const
+    {
+    	return mScalingFactorEpsilon;
+    }
+
+
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+    //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
+    //!             be careful, store it only once
+    void NewtonRaphson(bool rSaveStructureBeforeUpdate,
+            std::stringstream& rSaveStringStream,
+            bool& rIsSaved);
+
+    //! @brief the global matrix is checked, not the element matrices
+    //! @return false, if stiffness is not correct
+    bool CheckStiffness();
 protected:
 
 
@@ -570,19 +655,30 @@ protected:
 
 
     double mCrackAngle;
-    double mInitCrackAngle;
+    double mCrackAngleElastic;
     int mDOFCrackAngle;
     boost::array<double,2> mCrackOpening; //UT UN
     boost::array<int,2> mDOFCrackOpening;
     //! @brief this is the current total strain
     EngineeringStrain2D mEpsilonTot;
+    //! @brief this is the strain related to the constrained, in general this is identical to mEpsilonTot
+    //! but only before the load application, the stiffness is to be calculated with the old strain, but the
+    //! constraint matrix with the new one
+    EngineeringStrain2D mEpsilonTotConstraint;
+
     boost::array<int,3> mDOFGlobalTotalStrain;
     //! @brief this is the current homogeneous part of the strain
     EngineeringStrain2D mEpsilonHom;
-    //! @brief this is the previous homogeneous part of the strain (last update)
-    EngineeringStrain2D mPrevEpsilonHom;
-    //! @brief this is the previous average stress (last update)
-    EngineeringStress2D mPrevAverageStress;
+    //scaling factor for alpha=mScalingFactorAlpha*DOFalpha
+    double mScalingFactorCrackAngle;
+    //scaling factor for un/ut=mScalingFactorCrackOpening*DOFun/ut
+    double mScalingFactorCrackOpening;
+    //scaling factor for epsilonTot=mScalingFactorEpsilon*DOFepsilonTot
+    double mScalingFactorEpsilon;
+    //! @brief prevCrackAngle (last update)
+    double mPrevCrackAngle;
+    //! @brief prevCrackAngleElastic (last update)
+    double mPrevCrackAngleElastic;
     //! @brief true for an approximately square coarse scale model, false for a either triangular meshes or meshes not aligned with the axes
     //! in case the coarse scale element is well aligned, the ratio CrackLength/Area can be calculated exactly
     //! whereas for other shapes, an approximation has to be used (additional errors)

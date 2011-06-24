@@ -15,8 +15,9 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

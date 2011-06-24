@@ -20,6 +20,7 @@
 
 namespace NuTo
 {
+template<class T> class  FullMatrix;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementBase;
@@ -44,6 +45,10 @@ public :
 	//! @param rNumIps number of integration points of the nonlocal element (for allocation purpose of not existing)
 	//! @param rWeight nonlocal weight
 	virtual void SetNonlocalWeight(int rNonlocalElement,int rNonlocalIp, int rNumIps, double rWeight);
+
+	//! @brief delete the nonlocal elements
+    //! @param rConstitutive  constitutive model
+	virtual void DeleteNonlocalWeights();
 
 	//! @brief return the nonlocal weights
 	//! @param rNonlocalElement nonlocal element (between 0 and nonlocal elements.size stored in nonlocal element data)

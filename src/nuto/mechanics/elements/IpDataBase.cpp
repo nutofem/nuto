@@ -65,6 +65,13 @@ void NuTo::IpDataBase::SetNonlocalWeight(int rElement,int rNonlocalIp,int rNumIp
 	throw NuTo::MechanicsException("[NuTo::IpDataBase::SetNonlocalWeight] This Ip data type cannot store nonlocal weights - check the ip data type.");
 }
 
+//! @brief delete the nonlocal elements
+//! @param rConstitutive  constitutive model
+void NuTo::IpDataBase::DeleteNonlocalWeights()
+{
+	throw NuTo::MechanicsException("[NuTo::IpDataBase::DeleteNonlocalWeights] This Ip data type cannot store nonlocal weights - check the ip data type.");
+}
+
 //! @brief return the nonlocal weights
 //! @param rNonlocalElement nonlocal element (between 0 and nonlocal elements.size stored in nonlocal element data)
 //! @return nonlocal weights

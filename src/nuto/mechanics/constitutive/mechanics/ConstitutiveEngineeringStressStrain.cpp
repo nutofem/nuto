@@ -278,3 +278,13 @@ const NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveEngineeringSt
 {
 	return this;
 }
+
+//! @brief ... checks, if a model has to be switched from linear to nonlinear, and then performs the adaption
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+void NuTo::ConstitutiveEngineeringStressStrain::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rIp,
+        const DeformationGradient2D& rDeformationGradient)const
+{
+	throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::MultiscaleSwitchToNonlinear] not implemented for this material routine.");
+}

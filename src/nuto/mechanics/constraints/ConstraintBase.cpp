@@ -113,6 +113,13 @@ void NuTo::ConstraintBase::SetStrain(const NuTo::EngineeringStrain2D& rStrain)
     throw MechanicsException("[NuTo::ConstraintBase] Set strain for this type of constraints not implemented.");
 }
 
+//!@brief get the strain of the strain for a constrain equation
+//!@return rStrain strain (e_xx,e_yy,gamma_xy)
+const NuTo::EngineeringStrain2D& NuTo::ConstraintBase::GetStrain()const
+{
+    throw MechanicsException("[NuTo::ConstraintBase] Get strain for this type of constraints not implemented.");
+}
+
 //!@brief set the crack opening of the periodic boundary conditions
 //!@param rCrackOpening (x,y)
 void NuTo::ConstraintBase::SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening)

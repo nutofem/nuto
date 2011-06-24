@@ -268,6 +268,9 @@ public:
     //! @rerun number of nonlocal elements
     int GetNumNonlocalElements()const;
 
+    //! @brief delete the nonlocal elements
+    void DeleteNonlocalElements();
+
     //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
     //! @return Area
     virtual double CalculateArea()const;

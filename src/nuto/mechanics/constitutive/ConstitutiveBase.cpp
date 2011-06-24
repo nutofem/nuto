@@ -275,6 +275,203 @@ void NuTo::ConstitutiveBase::SetCrackTransitionRadius(double rCrackTransitionRad
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetCrackTransitionRadius] The constitutive relationship does not have a crack transition radius.");
 }
 
+//! @brief ... get scaling factor for the dofs of the crack angle
+//! @return ... scaling factor
+double NuTo::ConstitutiveBase::GetScalingFactorCrackAngle() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetScalingFactorCrackAngle] The constitutive relationship does not have a scaling factor for the crack angle.");
+}
+
+//! @brief ... set scaling factor for the dofs of the crack angle
+//! @param rScalingFactor...  scaling factor
+void NuTo::ConstitutiveBase::SetScalingFactorCrackAngle(double rScalingFactorCrackAngle)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetScalingFactorCrackAngle] The constitutive relationship does not have a scaling factor for the crack angle.");
+}
+
+//! @brief ... get scaling factor for the dofs of the crack opening
+//! @return ... scaling factor
+double NuTo::ConstitutiveBase::GetScalingFactorCrackOpening() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetScalingFactorCrackOpening] The constitutive relationship does not have a scaling factor for the crack opening.");
+}
+
+//! @brief ... set scaling factor for the dofs of the crack opening
+//! @param rScalingFactor...  scaling factor
+void NuTo::ConstitutiveBase::SetScalingFactorCrackOpening(double rScalingFactorCrackOpening)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetScalingFactorCrackOpening] The constitutive relationship does not have a scaling factor for the crack opening.");
+}
+
+//! @brief ... get scaling factor for the dofs of total strain
+//! @return ... scaling factor
+double NuTo::ConstitutiveBase::GetScalingFactorEpsilon() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetScalingFactorEpsilon] The constitutive relationship does not have a scaling factor for the strain.");
+}
+
+//! @brief ... set scaling factor for the dofs of the total strain
+//! @param rScalingFactor...  scaling factor
+void NuTo::ConstitutiveBase::SetScalingFactorEpsilon(double rScalingFactorEpsilon)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetScalingFactorEpsilon] The constitutive relationship does not have a scaling factor for the strain.");
+}
+
+
+//! @brief ... get AugmentedLagrangeStiffnessCrackOpening
+//! @return ...AugmentedLagrangeStiffnessCrackOpening
+double NuTo::ConstitutiveBase::GetAugmentedLagrangeStiffnessCrackOpening() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetAugmentedLagrangeStiffnessCrackOpening] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set AugmentedLagrangeStiffnessCrackOpening
+//! @param rAugmentedLagrangeStiffnessCrackOpening...AugmentedLagrangeStiffnessCrackOpening
+void NuTo::ConstitutiveBase::SetAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAugmentedLagrangeStiffnessCrackOpening] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
+//! @return ...ToleranceResidualForce
+double NuTo::ConstitutiveBase::GetToleranceResidualForce() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetToleranceResidualForce] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
+//! @param rToleranceResidualForce... ToleranceResidualForce
+void NuTo::ConstitutiveBase::SetToleranceResidualForce(double rToleranceResidualForce)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetToleranceResidualForce] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+//! @return ...MaxNumNewtonIterations
+int NuTo::ConstitutiveBase::GetMaxNumNewtonIterations() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMaxNumNewtonIterations] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+//! @param rMaxNumNewtonIterations...MaxNumNewtonIterations
+void NuTo::ConstitutiveBase::SetMaxNumNewtonIterations(int rMaxNumNewtonIterations)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMaxNumNewtonIterations] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
+//! @return ...MaxDeltaLoadFactor
+double NuTo::ConstitutiveBase::GetMaxDeltaLoadFactor() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMaxDeltaLoadFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
+//! @param rMaxDeltaLoadFactor...MaxDeltaLoadFactor
+void NuTo::ConstitutiveBase::SetMaxDeltaLoadFactor(double rMaxDeltaLoadFactor)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMaxDeltaLoadFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get DecreaseFactor in Newton iteration (for multiscale constitutive model)
+//! @return ...DecreaseFactor
+double NuTo::ConstitutiveBase::GetDecreaseFactor() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDecreaseFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set DecreaseFactor in Newton iteration (for multiscale constitutive model)
+//! @param rDecreaseFactor...DecreaseFactor
+void NuTo::ConstitutiveBase::SetDecreaseFactor(double rDecreaseFactor)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDecreaseFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+//! @return ...MinNumNewtonIterations
+int NuTo::ConstitutiveBase::GetMinNumNewtonIterations() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMinNumNewtonIterations] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+//! @param rMinNumNewtonIterations...MinNumNewtonIterations
+void NuTo::ConstitutiveBase::SetMinNumNewtonIterations(int rMinNumNewtonIterations)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMinNumNewtonIterations] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get IncreaseFactor in Newton iteration (for multiscale constitutive model)
+//! @return ...IncreaseFactor
+double NuTo::ConstitutiveBase::GetIncreaseFactor() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetIncreaseFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set IncreaseFactor in Newton iteration (for multiscale constitutive model)
+//! @param rIncreaseFactor...
+void NuTo::ConstitutiveBase::SetIncreaseFactor(double rIncreaseFactor)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetIncreaseFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get MinLoadFactor in Newton iteration (for multiscale constitutive model)
+//! @return ...MinLoadFactor
+double NuTo::ConstitutiveBase::GetMinLoadFactor() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMinLoadFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set MinLoadFactor in Newton iteration (for multiscale constitutive model)
+//! @param rMinLoadFactor...MinLoadFactor
+void NuTo::ConstitutiveBase::SetMinLoadFactor(double rMinLoadFactor)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMinLoadFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
+//! @return ... MinLineSearchFactor
+double NuTo::ConstitutiveBase::GetMinLineSearchFactor() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMinLineSearchFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
+//! @param rMinLineSearchFactor...MinLineSearchFactor
+void NuTo::ConstitutiveBase::SetMinLineSearchFactor(double rMinLineSearchFactor)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMinLineSearchFactor] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get result directory (for results of finescale in multiscale simulations)
+//! @return ... ResultDirectory
+const std::string& NuTo::ConstitutiveBase::GetResultDirectory() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetResultDirectory] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set ResultDirectory (for results of finescale in multiscale simulations)
+//! @param rResultDirectory...ResultDirectory
+void NuTo::ConstitutiveBase::SetResultDirectory(const std::string& rResultDirectory)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetResultDirectory] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get load step macro
+//! @return ... LoadStepMacro
+int NuTo::ConstitutiveBase::GetLoadStepMacro() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetLoadStepMacro] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set LoadStepMacro
+//! @param LoadStepMacro...LoadStepMacro
+void NuTo::ConstitutiveBase::SetLoadStepMacro(int rLoadStepMacro)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetLoadStepMacro] The constitutive relationship does not have this parameter.");
+}
+
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
 {

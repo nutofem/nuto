@@ -415,7 +415,7 @@ public:
             {
             	rLogger << this->Convert2String ( mEigenMatrix.data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
             }
-
+            rLogger << "\n";
         }
         rLogger << "\n";
     }

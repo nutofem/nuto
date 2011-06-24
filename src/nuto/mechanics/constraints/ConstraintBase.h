@@ -73,6 +73,10 @@ public:
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
     virtual void SetStrain(const EngineeringStrain2D& rStrain);
 
+    //!@brief get the strain of a constrain equation
+    //!@param rStrain strain (e_xx,e_yy,gamma_xy)
+    virtual const EngineeringStrain2D& GetStrain()const;
+
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
     virtual void SetCrackOpening(const NuTo::FullMatrix<double>& rStrain);

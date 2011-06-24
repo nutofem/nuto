@@ -70,15 +70,15 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
        rLogger << "start serialize NonlocalDamagePlasticity" << "\n";
 #endif
        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
-           & BOOST_SERIALIZATION_NVP(mE)
-           & BOOST_SERIALIZATION_NVP(mNu)
-           & BOOST_SERIALIZATION_NVP(mNonlocalRadius)
-           & BOOST_SERIALIZATION_NVP(mTensileStrength)
-           & BOOST_SERIALIZATION_NVP(mCompressiveStrength)
-           & BOOST_SERIALIZATION_NVP(mBiaxialCompressiveStrength)
-           & BOOST_SERIALIZATION_NVP(mFractureEnergy)
-           & BOOST_SERIALIZATION_NVP(mYieldSurface)
-           & BOOST_SERIALIZATION_NVP(mDamage);
+          & BOOST_SERIALIZATION_NVP(mE)
+          & BOOST_SERIALIZATION_NVP(mNu)
+          & BOOST_SERIALIZATION_NVP(mNonlocalRadius)
+          & BOOST_SERIALIZATION_NVP(mTensileStrength)
+          & BOOST_SERIALIZATION_NVP(mCompressiveStrength)
+          & BOOST_SERIALIZATION_NVP(mBiaxialCompressiveStrength)
+          & BOOST_SERIALIZATION_NVP(mFractureEnergy)
+          & BOOST_SERIALIZATION_NVP(mYieldSurface)
+          & BOOST_SERIALIZATION_NVP(mDamage);
 #ifdef DEBUG_SERIALIZATION
        rLogger << "finish serialize NonlocalDamagePlasticity" << "\n";
 #endif
@@ -1428,8 +1428,8 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
 
 #define ACTIVE true
 #define INACTIVE false
-#define toleranceResidual 1e-8      //tolerance to decide whether the Newton iteration has converged
-#define toleranceYieldSurface 1e-8  //tolerance whether a point is on the yield surface or not (multiplied by the YoungsModulus)
+#define toleranceResidual 1e-7      //tolerance to decide whether the Newton iteration has converged
+#define toleranceYieldSurface 1e-9  //tolerance whether a point is on the yield surface or not (multiplied by the tensile strength)
 #define toleranceDeterminant 1e-20  //tolerance to decide if a matrix is not invertible (only required in the debugging version)
 #define maxSteps 25                 //maximum number of Newton iterations, until it is decided that there is no convergence and a cutback is performed
 #define minCutbackFactor 1e-3       //minimum cutback factor for the application of the total strain in steps
@@ -1616,11 +1616,19 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
             //rounded Rankine
             initYieldCondition(1) = YieldSurfaceRankine2DRounded(initTrialStress, f_ct);
 
+#ifdef ENABLE_DEBUG
+            rLogger << "initYieldCondition " << "\n" << initYieldCondition(0) << " " << initYieldCondition(1) << "\n";
+#endif
+
+
             if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
             {
                 //*************************************************
                 //*  thus we have elastic -------------> elastic  *
                 //*************************************************
+#ifdef ENABLE_DEBUG
+                rLogger << "linear elastic step" << "\n" << "\n";
+#endif
                 convergedInternal = true;
                 rEpsilonP =  lastPlastStrain;
                 rDeltaEqPlasticStrain = 0;
@@ -1629,9 +1637,13 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
                 {
                     rdEpsilonPdEpsilon.setZero(4,4);
                     rStress = trialStress;
+                    return;
                 }
+            }
+            else
+            {
 #ifdef ENABLE_DEBUG
-                rLogger << "linear elastic step" << "\n" << "\n";
+                rLogger << "plastic step" << "\n" << "\n";
 #endif
             }
 
@@ -1778,7 +1790,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #endif
 
                     //this is just for scaling with a relative norm
-                    double absResidual = residual.norm()*f_ct/e_mod;
+                    double absResidual = residual.norm()/f_ct*e_mod;
 
 #ifdef ENABLE_DEBUG
                     rLogger << iteration <<" residual " << absResidual << " yield condition " << yieldCondition.transpose() << "\n" << "\n";
@@ -2230,7 +2242,7 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
     }
     if (cutbackFactorExternal<=minCutbackFactor)
     {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] No convergence can be obtained in the return mapping procedure.");
+        throw MechanicsException("[NuTo::NonlocalDamagePlasticity::ReturnMapping2D] No convergence can be obtained in the return mapping procedure.",MechanicsException::NOCONVERGENCE);
     }
 }
 
@@ -2250,7 +2262,7 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
     double sigma_2(value_sum-0.5*value_sqrt);
     //* (rounded) Rankine
 #ifdef ENABLE_DEBUG
-    rLogger << "p1 " << sigma_1 << " p2 " << sigma_2 << " p3 " << rStress[3] << "\n" << "\n";
+    std::cout << "p1 " << sigma_1 << " p2 " << sigma_2 << " p3 " << rStress[3] << "\n" << "\n";
 #endif
     if (rStress[3]<0)
     {
@@ -2261,14 +2273,14 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
             if (rStress[3]>sigma_1)
             {
 #ifdef ENABLE_DEBUG
-                rLogger << "\n" << " all negative f1" << "\n";
+            	std::cout << "\n" << " all negative f1" << "\n";
 #endif
                 return rStress[3]-rFct;
             }
             else
             {
 #ifdef ENABLE_DEBUG
-                rLogger << "\n" << " all negative f3" << "\n";
+            	std::cout << "\n" << " all negative f3" << "\n";
 #endif
                 return sigma_1-rFct;
             }
@@ -2280,7 +2292,7 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
             {
                 //sigma_2 is negative
 #ifdef ENABLE_DEBUG
-                rLogger << "\n" << " f1" << "\n";
+            	std::cout << "\n" << " f1" << "\n";
 #endif
                 return sigma_1 - rFct;
             }
@@ -2288,7 +2300,7 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
             {
                 //sigma_2 is positive
 #ifdef ENABLE_DEBUG
-                rLogger << "\n" << " f1,f2" << "\n";
+            	std::cout << "\n" << " f1,f2" << "\n";
 #endif
                 return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2)-rFct;
             }
@@ -2301,7 +2313,7 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
         {
             // sigma_1 is negative and as a consequence sigma_2 is also negative
 #ifdef ENABLE_DEBUG
-            rLogger << "\n" << " f3" << "\n";
+        	std::cout << "\n" << " f3" << "\n";
 #endif
             return rStress[3]-rFct;
         }
@@ -2312,7 +2324,7 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
             {
                 //sigma_2 is negative
 #ifdef ENABLE_DEBUG
-                rLogger << "\n" << " f1,f3" << "\n";
+            	std::cout << "\n" << " f1,f3" << "\n";
 #endif
                 return sqrt(sigma_1*sigma_1 + rStress[3] * rStress[3]) - rFct;
             }
@@ -2320,7 +2332,7 @@ double NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRounded(Eigen::Matri
             {
                 //sigma_2 is positive
 #ifdef ENABLE_DEBUG
-                rLogger << "\n" << " f1,f2,f3" << "\n";
+            	std::cout << "\n" << " f1,f2,f3" << "\n";
 #endif
                 return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2 + rStress[3] * rStress[3])-rFct;
             }
@@ -2586,12 +2598,12 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
 
         if ((rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff()>1e-1)
         {
-            rLogger << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-            rLogger << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-            rLogger << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff() << "\n";
+            std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
+            std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
+            std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff() << "\n";
 
-            rLogger<< "rdF_dSigma " << "\n" << rdF_dSigma << "\n"<< "\n";
-            rLogger<< "rdF_dSigmaCDF " << "\n" << rdF_dSigmaCDF << "\n"<< "\n";
+            std::cout<< "rdF_dSigma " << "\n" << rdF_dSigma << "\n"<< "\n";
+            std::cout<< "rdF_dSigmaCDF " << "\n" << rdF_dSigmaCDF << "\n"<< "\n";
             throw MechanicsException("[NuTo::Mechanics::NonlocalDamagePlasticity] Error calculating first derivative of yield function.");
         }
 
@@ -2600,18 +2612,18 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
         {
             if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
             {
-                rLogger << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-                rLogger << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-                rLogger << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff() << "\n";
+            	std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
+            	std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
+            	std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff() << "\n";
 
-                rLogger<< "rd2F_d2SigmaCDF " << "\n" << rd2F_d2SigmaCDF << "\n"<< "\n";
-                rLogger<< "rd2F_d2Sigma " << "\n" << (*rd2F_d2Sigma) << "\n"<< "\n";
+            	std::cout<< "rd2F_d2SigmaCDF " << "\n" << rd2F_d2SigmaCDF << "\n"<< "\n";
+            	std::cout<< "rd2F_d2Sigma " << "\n" << (*rd2F_d2Sigma) << "\n"<< "\n";
                 throw MechanicsException("[NuTo::Mechanics::NonlocalDamagePlasticity] Error calculating second derivative of yield function.");
             }
         }
         else
         {
-            rLogger << "principal stresses close to zero, stiffness matrix is not reliable" << "\n";
+        	std::cout << "at least one principal stress close to zero, stiffness matrix is not reliable" << "\n";
         }
     }
 #endif

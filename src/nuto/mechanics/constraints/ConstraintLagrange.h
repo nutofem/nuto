@@ -41,6 +41,10 @@ public:
     //! first col Lagrange
     virtual void GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const=0;
 
+    //! @brief returns the Lagrange Multiplier dofs
+    //! first col Lagrangedofs
+    virtual void GetDofsLagrangeMultiplier(FullMatrix<int>& rLagrangeMultiplier)const=0;
+
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)=0;

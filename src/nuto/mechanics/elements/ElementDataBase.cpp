@@ -137,6 +137,12 @@ const std::vector<const NuTo::ElementBase*>& NuTo::ElementDataBase::GetNonlocalE
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalElements] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
 
+//! @brief delete the nonlocal elements
+void NuTo::ElementDataBase::DeleteNonlocalElements()
+{
+    throw MechanicsException("[NuTo::ElementDataBase::DeleteNonlocalElements] Not implemented for the ElementDataBase class - check the allocated element data type..");
+}
+
 //! @brief gets number of nonlocal elements for a constitutive model
 //! @param rConstitutive constitutive model
 //! @return number of nonlocal elements

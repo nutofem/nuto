@@ -60,7 +60,7 @@ void NuTo::ConstraintLinearGlobalCrackOpening::AddToConstraintMatrix(int& curCon
         NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
         NuTo::FullMatrix<double>& rRHS)const
 {
-    rRHS(curConstraintEquation,0) = mRHS;
+    rRHS(curConstraintEquation,0) = mRHS/mStructure->GetScalingFactorCrackOpening();
 
     if (fabs(mDirection[0])>1e-18)
         rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalCrackOpening2D()[0],mDirection[0]);

@@ -12,6 +12,7 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/IpDataEmpty.h"

@@ -52,7 +52,7 @@ void NuTo::ElementDataConstitutiveIpNonlocal::SetNonlocalWeight(int rLocalIpNumb
 
 	if (oldNumNonlocalElements!=(int)mNonlocalElements.size())
 	{
-	    //Got through all integration points and add zero weights
+	    //Go through all integration points and add zero weights
 		for (int theIp=0; theIp<(int)mIpData.size(); theIp++)
 		{
 		    // reallocate the vector of the weights for the additional element *by seting to the zeros integration point zero weight
@@ -77,6 +77,15 @@ const std::vector<double>& NuTo::ElementDataConstitutiveIpNonlocal::GetNonlocalW
 const NuTo::ElementData::eElementDataType NuTo::ElementDataConstitutiveIpNonlocal::GetElementDataType()const
 {
     return NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
+}
+
+//! @brief delete the nonlocal elements
+//! @param rConstitutive  constitutive model
+void NuTo::ElementDataConstitutiveIpNonlocal::DeleteNonlocalElements()
+{
+	mNonlocalElements.resize(0);
+	for (unsigned int ip=0; ip<mIpData.size(); ip++)
+		mIpData[ip].DeleteNonlocalWeights();
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -21,8 +21,10 @@ namespace NuTo
 {
 class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
+template<class T> class  FullMatrix;
 
 class ConstitutiveStaticDataBase
 {

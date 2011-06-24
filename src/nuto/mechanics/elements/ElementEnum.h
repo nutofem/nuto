@@ -21,9 +21,10 @@ enum eElementType
 
 enum eUpdateType
 {
-    STATICDATA=0,		//!< @ToDo[eUpdateType]: Description
-    TMPSTATICDATA,		//!< @ToDo[eUpdateType]: Description
-    CRACK				//!< update for crack informations
+    STATICDATA=0,		          //!< @ToDo[eUpdateType]: Description
+    TMPSTATICDATA,		          //!< @ToDo[eUpdateType]: Description
+    CRACK,				          //!< update for crack informations
+    SWITCHMULTISCALE2NONLINEAR    //!< move the fine scale model in a multiscale approach to the nonlinear part
 };
 }
 }

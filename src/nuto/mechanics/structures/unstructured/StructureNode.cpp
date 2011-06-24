@@ -127,7 +127,7 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 			{
 				mLogger << "\t:";
 				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
-					std::cout << "\t" << it->second->GetCoordinate(iDof);
+					mLogger << "\t" << it->second->GetCoordinate(iDof);
                 if (it->second->GetNumDisplacements()>0 || it->second->GetNumFineScaleDisplacements()>0)
                 {
                 	mLogger << "\t:";

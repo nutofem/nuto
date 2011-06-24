@@ -21,15 +21,13 @@ class ConstraintNonlinearGlobalCrackAngle2D : public ConstraintNonlinear
 
 public:
     //! @brief constructor
-    ConstraintNonlinearGlobalCrackAngle2D(const StructureMultiscale* rStructure, double rPenaltyStiffnessCrackAngle, double rScalingFactorPenaltyStiffnessCrackAngle);
+    ConstraintNonlinearGlobalCrackAngle2D(const StructureMultiscale* rStructure, double rPenaltyStiffnessCrackAngle, bool rCoupleToTotalStrain);
 
     ConstraintNonlinearGlobalCrackAngle2D* AsConstraintNonlinearGlobalCrackAngle2D();
 
     const ConstraintNonlinearGlobalCrackAngle2D* AsConstraintNonlinearGlobalCrackAngle2D()const;
 
     void SetPenaltyStiffness(double rPenaltyStiffness);
-
-    void SetScalingFactor(double rScalingFactor);
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
@@ -65,7 +63,7 @@ protected:
 
     const StructureMultiscale* mStructure;
     double mPenaltyStiffness;
-    double mScalingFactor;
+    bool mCoupleToTotalStrain;
 };
 }//namespace NuTo
 

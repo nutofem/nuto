@@ -204,6 +204,119 @@ public:
     //! @brief ... set PenaltyStiffnessCrackAngle
     //! @param rPenaltyStiffnessCrackAngle...  penalty stiffness crack angle
     virtual void SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle);
+
+    //! @brief ... get scaling factor for the dofs of the crack angle
+    //! @return ... scaling factor
+    virtual double GetScalingFactorCrackAngle() const;
+
+    //! @brief ... set scaling factor for the dofs of the crack angle
+    //! @param rScalingFactor...  scaling factor
+    virtual void SetScalingFactorCrackAngle(double rScalingFactorCrackAngle);
+
+    //! @brief ... get scaling factor for the dofs of the crack opening
+    //! @return ... scaling factor
+    virtual double GetScalingFactorCrackOpening() const;
+
+    //! @brief ... set scaling factor for the dofs of the crack opening
+    //! @param rScalingFactor...  scaling factor
+    virtual void SetScalingFactorCrackOpening(double rScalingFactorCrackOpening);
+
+    //! @brief ... get scaling factor for the dofs of total strain
+    //! @return ... scaling factor
+    virtual double GetScalingFactorEpsilon() const;
+
+    //! @brief ... set scaling factor for the dofs of the total strain
+    //! @param rScalingFactor...  scaling factor
+    virtual void SetScalingFactorEpsilon(double rScalingFactorEpsilon);
+
+    //! @brief ... get AugmentedLagrangeStiffnessCrackOpening
+    //! @return ...AugmentedLagrangeStiffnessCrackOpening
+    virtual double GetAugmentedLagrangeStiffnessCrackOpening() const;
+
+    //! @brief ... set AugmentedLagrangeStiffnessCrackOpening
+    //! @param rAugmentedLagrangeStiffnessCrackOpening...AugmentedLagrangeStiffnessCrackOpening
+    virtual void SetAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening);
+
+    //! @brief ... get ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
+    //! @return ...ToleranceResidualForce
+    virtual double GetToleranceResidualForce() const;
+
+    //! @brief ... set ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
+    //! @param rToleranceResidualForce... ToleranceResidualForce
+    virtual void SetToleranceResidualForce(double rToleranceResidualForce);
+
+    //! @brief ... get MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+    //! @return ...MaxNumNewtonIterations
+    virtual int GetMaxNumNewtonIterations() const;
+
+    //! @brief ... MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+    //! @param rMaxNumNewtonIterations...MaxNumNewtonIterations
+    virtual void SetMaxNumNewtonIterations(int rMaxNumNewtonIterations);
+
+    //! @brief ... get MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
+    //! @return ...MaxDeltaLoadFactor
+    virtual double GetMaxDeltaLoadFactor() const;
+
+    //! @brief ... set MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
+    //! @param rMaxDeltaLoadFactor...MaxDeltaLoadFactor
+    virtual void SetMaxDeltaLoadFactor(double rMaxDeltaLoadFactor);
+
+    //! @brief ... get DecreaseFactor in Newton iteration (for multiscale constitutive model)
+    //! @return ...DecreaseFactor
+    virtual double GetDecreaseFactor() const;
+
+    //! @brief ... set DecreaseFactor in Newton iteration (for multiscale constitutive model)
+    //! @param rDecreaseFactor...DecreaseFactor
+    virtual void SetDecreaseFactor(double rDecreaseFactor);
+
+    //! @brief ... get MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+    //! @return ...MinNumNewtonIterations
+    virtual int GetMinNumNewtonIterations() const;
+
+    //! @brief ... set MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
+    //! @param rMinNumNewtonIterations...MinNumNewtonIterations
+    virtual void SetMinNumNewtonIterations(int rMinNumNewtonIterations);
+
+    //! @brief ... get IncreaseFactor in Newton iteration (for multiscale constitutive model)
+    //! @return ...IncreaseFactor
+    virtual double GetIncreaseFactor() const;
+
+    //! @brief ... set IncreaseFactor in Newton iteration (for multiscale constitutive model)
+    //! @param rIncreaseFactor...
+    virtual void SetIncreaseFactor(double rIncreaseFactor);
+
+    //! @brief ... get MinLoadFactor in Newton iteration (for multiscale constitutive model)
+    //! @return ...MinLoadFactor
+    virtual double GetMinLoadFactor() const;
+
+    //! @brief ... set MinLoadFactor in Newton iteration (for multiscale constitutive model)
+    //! @param rMinLoadFactor...MinLoadFactor
+    virtual void SetMinLoadFactor(double rMinLoadFactor);
+
+    //! @brief ... get MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
+    //! @return ... MinLineSearchFactorFactor
+    virtual double GetMinLineSearchFactor() const;
+
+    //! @brief ... set MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
+    //! @param rMinLineSearchFactorFactor...MinLineSearchFactorFactor
+    virtual void SetMinLineSearchFactor(double rMinLineSearchFactorFactor);
+
+    //! @brief ... get result directory (for results of finescale in multiscale simulations)
+    //! @return ... ResultDirectory
+    virtual const std::string& GetResultDirectory() const;
+
+    //! @brief ... set ResultDirectory (for results of finescale in multiscale simulations)
+    //! @param rResultDirectory...ResultDirectory
+    virtual void SetResultDirectory(const std::string& rResultDirectory);
+
+    //! @brief ... get load step macro
+    //! @return ... LoadStepMacro
+    virtual int GetLoadStepMacro() const;
+
+    //! @brief ... set LoadStepMacro
+    //! @param LoadStepMacro...LoadStepMacro
+    virtual void SetLoadStepMacro(int rLoadStepMacro);
+
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship

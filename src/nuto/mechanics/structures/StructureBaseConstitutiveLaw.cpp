@@ -667,7 +667,168 @@ void NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle(int rIden
     }
     catch (NuTo::MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle] error setting penalty stiffness crack angle.");
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle] error setting scaling factor for crack angle.");
+        throw e;
+    }
+}
+
+//! @brief ... get scaling factor for the crack angle
+//! @param rIdent ...  identifier
+double NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackAngle(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetScalingFactorCrackAngle();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackAngle] error getting scaling factor for crack angle.");
+		throw e;
+	}
+}
+
+//! @brief ... set scaling factor for the crack angle
+//! @param rScalingFactorCrackAngle ...  scaling factor
+void NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackAngle(int rIdent, double rScalingFactorCrackAngle)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetScalingFactorCrackAngle(rScalingFactorCrackAngle);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackAngle] error setting scaling factor for crack angle.");
+        throw e;
+    }
+}
+
+//! @brief ... get scaling factor for the crack opening
+//! @param rIdent ...  identifier
+double NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackOpening(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetScalingFactorCrackOpening();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackOpening] error getting scaling factor for crack opening.");
+		throw e;
+	}
+}
+
+//! @brief ... set scaling factor for the crack opening
+//! @param rScalingFactorCrackAngle ...  scaling factor
+void NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackOpening(int rIdent, double rScalingFactorCrackOpening)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetScalingFactorCrackOpening(rScalingFactorCrackOpening);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackOpening] error setting scaling factor for crack opening.");
+        throw e;
+    }
+}
+
+//! @brief ... get scaling factor for the total strain
+//! @param rIdent ...  identifier
+double NuTo::StructureBase::ConstitutiveLawGetScalingFactorEpsilon(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetScalingFactorEpsilon();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetScalingFactorEpsilon] error getting scaling factor for strain.");
+		throw e;
+	}
+}
+
+//! @brief ... set PenaltyStiffnessCrackAngle
+//! @param rScalingFactorCrackAngle ...  scaling factor
+void NuTo::StructureBase::ConstitutiveLawSetScalingFactorEpsilon(int rIdent, double rScalingFactorEpsilon)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetScalingFactorEpsilon(rScalingFactorEpsilon);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetScalingFactorEpsilon] error setting scaling factor for strain.");
+        throw e;
+    }
+}
+
+//! @brief ... get result directory for fine scale models in multiscale simulation
+//! @param rIdent ...  identifier
+std::string NuTo::StructureBase::ConstitutiveLawGetResultDirectory(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetResultDirectory();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetResultDirectory] error getting result directory.");
+		throw e;
+	}
+}
+
+//! @brief ... set ResultDirectory for fine scale models in multiscale simulation
+//! @param rResultDirectory ...  ResultDirectory
+void NuTo::StructureBase::ConstitutiveLawSetResultDirectory(int rIdent, std::string rResultDirectory)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetResultDirectory(rResultDirectory);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetResultDirectory] error setting result directory.");
+        throw e;
+    }
+
+}
+
+//! @brief ... get LoadStepMacro for fine scale models in multiscale simulation
+//! @param rIdent ...  identifier
+int NuTo::StructureBase::ConstitutiveLawGetLoadStepMacro(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetLoadStepMacro();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetResultDirectory] error getting LoadStepMacro.");
+		throw e;
+	}
+}
+
+//! @brief ... set LoadStepMacro for fine scale models in multiscale simulation
+//! @param rLoadStepMacro ...  LoadStepMacro
+void NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadStepMacro)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetLoadStepMacro(rLoadStepMacro);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro] error setting LoadStepMacro.");
         throw e;
     }
 }

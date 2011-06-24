@@ -53,6 +53,12 @@ const std::vector<double>& NuTo::IpDataNonlocalBase::GetNonlocalWeights(int rNon
 	return mNonlocalWeights[rNonlocalElement];
 }
 
+//! @brief delete the nonlocal weights
+void NuTo::IpDataNonlocalBase::DeleteNonlocalWeights()
+{
+	mNonlocalWeights.resize(0);
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::IpDataNonlocalBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

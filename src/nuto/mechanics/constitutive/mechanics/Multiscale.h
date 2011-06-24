@@ -182,7 +182,6 @@ public:
     		const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
@@ -190,7 +189,6 @@ public:
             const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
@@ -198,12 +196,18 @@ public:
             const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
-    //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient) const;
+
+    //! @brief ... checks, if a model has to be switched from linear to nonlinear, and then performs the adaption
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rDeformationGradient ... deformation gradient
+    void MultiscaleSwitchToNonlinear(ElementBase* rElement, int rIp,
+            const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
@@ -310,6 +314,10 @@ public:
     //! @param rElasticStiffness... elastic matrix
     void SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness);
 
+    //! @brief ... check elastic stiffness
+    //! @param rElasticStiffness ... crack transition radius
+    void CheckElasticStiffness(const NuTo::FullMatrix<double>& rElasticStiffness) const;
+
     //! @brief ... return the binary file from which the fine scale model is eventually deserialized
     //! @return name of the file
     std::string GetMultiscaleFile()const;
@@ -326,6 +334,10 @@ public:
     //! @param rCrackTransitionRadius... crack transition radius
     void SetCrackTransitionRadius(double rCrackTransitionRadius);
 
+    //! @brief ... check if crack transition radius is positive
+    //! @param rCrackTransitionRadius ... crack transition radius
+    void CheckCrackTransitionRadius(double rCrackTransitionRadius) const;
+
     //! @brief ... get tensile strength
     //! @return ... tensile strength
     double GetTensileStrength() const;
@@ -334,6 +346,10 @@ public:
     //! @param rTensileStrength...  tensile strength
     void SetTensileStrength(double rTensileStrength);
 
+    //! @brief ... check if tensile strength is positive
+    //! @param rTensileStrength ... tensile strength
+    void CheckTensileStrength(double rTensileStrength) const;
+
     //! @brief ... get penalty stiffness crack angle
     //! @return ... penalty stiffness crack angle
     double GetPenaltyStiffnessCrackAngle() const;
@@ -341,6 +357,178 @@ public:
     //! @brief ... set PenaltyStiffnessCrackAngle
     //! @param rPenaltyStiffnessCrackAngle...  penalty stiffness crack angle
     void SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle);
+
+    //! @brief ... check if penalty stiffness crack angle is positive
+    //! @param rPenaltyStiffnessCrackAngle ... PenaltyStiffnessCrackAngle
+    void CheckPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle) const;
+
+    //! @brief ... get scaling factor for the dofs of the crack angle
+    //! @return ... scaling factor
+    double GetScalingFactorCrackAngle() const;
+
+    //! @brief ... set scaling factor for the dofs of the crack angle
+    //! @param rScalingFactor...  scaling factor
+    void SetScalingFactorCrackAngle(double rScalingFactorCrackAngle);
+
+    //! @brief ... check if ScalingFactorCrackAngle is positive
+    //! @param rScalingFactorCrackAngle ... ScalingFactorCrackAngle
+    void CheckScalingFactorCrackAngle(double rScalingFactorCrackAngle) const;
+
+    //! @brief ... get scaling factor for the dofs of the crack opening
+    //! @return ... scaling factor
+    double GetScalingFactorCrackOpening() const;
+
+    //! @brief ... set scaling factor for the dofs of the crack opening
+    //! @param rScalingFactor...  scaling factor
+    void SetScalingFactorCrackOpening(double rScalingFactorCrackOpening);
+
+    //! @brief ... check if ScalingFactorCrackOpening is positive
+    //! @param rScalingFactorCrackOpening ... ScalingFactorCrackOpening
+    void CheckScalingFactorCrackOpening(double rScalingFactorCrackOpening) const;
+
+    //! @brief ... get scaling factor for the dofs of total strain
+    //! @return ... scaling factor
+    double GetScalingFactorEpsilon() const;
+
+    //! @brief ... set scaling factor for the dofs of the total strain
+    //! @param rScalingFactor...  scaling factor
+    void SetScalingFactorEpsilon(double rScalingFactorEpsilon);
+
+    //! @brief ... check if ScalingFactorEpsilon is positive
+    //! @param rScalingFactorEpsilon ... ScalingFactorEpsilon
+    void CheckScalingFactorEpsilon(double rScalingFactorEpsilon) const;
+
+    //! @brief ... get AugmentedLagrangeStiffnessCrackOpening
+    //! @return ...AugmentedLagrangeStiffnessCrackOpening
+    double GetAugmentedLagrangeStiffnessCrackOpening() const;
+
+    //! @brief ... set AugmentedLagrangeStiffnessCrackOpening
+    //! @param rAugmentedLagrangeStiffnessCrackOpening...AugmentedLagrangeStiffnessCrackOpening
+    void SetAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening);
+
+    //! @brief ... check AugmentedLagrangeStiffnessCrackOpening
+    //! @param rAugmentedLagrangeStiffnessCrackOpening ...AugmentedLagrangeStiffnessCrackOpening
+    void CheckAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening) const;
+
+    //! @brief ... get ToleranceResidualForce
+    //! @return ...ToleranceResidualForce
+    double GetToleranceResidualForce() const;
+
+    //! @brief ... set ToleranceResidualForce
+    //! @param rToleranceResidualForce... ToleranceResidualForce
+    void SetToleranceResidualForce(double rToleranceResidualForce);
+
+    //! @brief ... check ToleranceResidualForce
+    //! @param r ...
+    void CheckToleranceResidualForce(double rToleranceResidualForce) const;
+
+    //! @brief ... get MaxNumNewtonIterations
+    //! @return ...MaxNumNewtonIterations
+    int GetMaxNumNewtonIterations() const;
+
+    //! @brief ... MaxNumNewtonIterations
+    //! @param rMaxNumNewtonIterations...MaxNumNewtonIterations
+    void SetMaxNumNewtonIterations(int rMaxNumNewtonIterations);
+
+    //! @brief ... check MaxNumNewtonIterations
+    //! @param rMaxNumNewtonIterations ...MaxNumNewtonIterations
+    void CheckMaxNumNewtonIterations(int rMaxNumNewtonIterations) const;
+
+    //! @brief ... get MaxDeltaLoadFactor
+    //! @return ...MaxDeltaLoadFactor
+    double GetMaxDeltaLoadFactor() const;
+
+    //! @brief ... set MaxDeltaLoadFactor
+    //! @param rMaxDeltaLoadFactor...MaxDeltaLoadFactor
+    void SetMaxDeltaLoadFactor(double rMaxDeltaLoadFactor);
+
+    //! @brief ... check MaxDeltaLoadFactor
+    //! @param rMaxDeltaLoadFactor ...MaxDeltaLoadFactor
+    void CheckMaxDeltaLoadFactor(double rMaxDeltaLoadFactor) const;
+
+    //! @brief ... get DecreaseFactor
+    //! @return ...DecreaseFactor
+    double GetDecreaseFactor() const;
+
+    //! @brief ... set DecreaseFactor
+    //! @param rDecreaseFactor...DecreaseFactor
+    void SetDecreaseFactor(double rDecreaseFactor);
+
+    //! @brief ... check DecreaseFactor
+    //! @param rDecreaseFactor ...DecreaseFactor
+    void CheckDecreaseFactor(double r) const;
+
+    //! @brief ... get MinNumNewtonIterations
+    //! @return ...MinNumNewtonIterations
+    int GetMinNumNewtonIterations() const;
+
+    //! @brief ... set MinNumNewtonIterations
+    //! @param rMinNumNewtonIterations...MinNumNewtonIterations
+    void SetMinNumNewtonIterations(double rMinNumNewtonIterations);
+
+    //! @brief ... check MinNumNewtonIterations
+    //! @param rMinNumNewtonIterations ...
+    void CheckMinNumNewtonIterations(int rMinNumNewtonIterations) const;
+
+    //! @brief ... get IncreaseFactor
+    //! @return ...IncreaseFactor
+    double GetIncreaseFactor() const;
+
+    //! @brief ... set IncreaseFactor
+    //! @param rIncreaseFactor...
+    void SetIncreaseFactor(double rIncreaseFactor);
+
+    //! @brief ... check IncreaseFactor
+    //! @param rIncreaseFactor ...IncreaseFactor
+    void CheckIncreaseFactor(double rIncreaseFactor) const;
+
+    //! @brief ... get MinLoadFactor
+    //! @return ...MinLoadFactor
+    double GetMinLoadFactor() const;
+
+    //! @brief ... set MinLoadFactor
+    //! @param rMinLoadFactor...MinLoadFactor
+    void SetMinLoadFactor(double rMinLoadFactor);
+
+    //! @brief ... check MinLoadFactor
+    //! @param rMinLoadFactor ...MinLoadFactor
+    void CheckMinLoadFactor(double rMinLoadFactor) const;
+
+    //! @brief ... get MinLineSearchFactor
+    //! @return ... MinLineSearchFactor
+    double GetMinLineSearchFactor() const;
+
+    //! @brief ... set MinLineSearchFactor
+    //! @param rMinLineSearchFactor...MinLineSearchFactor
+    void SetMinLineSearchFactor(double rMinLineSearchFactor);
+
+    //! @brief ... check MinLineSearchFactor
+    //! @param rMinLineSearchFactor ...MinLineSearchFactor
+    void CheckMinLineSearchFactor(double rMinLineSearchFactor) const;
+
+    //! @brief ... get result directory
+    //! @return ... ResultDirectory
+    const std::string& GetResultDirectory() const;
+
+    //! @brief ... set ResultDirectory
+    //! @param rResultDirectory...ResultDirectory
+    void SetResultDirectory(const std::string& rResultDirectory);
+
+    //! @brief ... check ResultDirectory
+    //! @param ResultDirectory ...ResultDirectory
+    void CheckResultDirectory(const std::string& rResultDirectory) const;
+
+    //! @brief ... get load step macro
+    //! @return ... LoadStepMacro
+    int GetLoadStepMacro() const;
+
+    //! @brief ... set LoadStepMacro
+    //! @param LoadStepMacro...LoadStepMacro
+    void SetLoadStepMacro(int rLoadStepMacro);
+
+    //! @brief ... check LoadStepMacro
+    //! @param LoadStepMacro ...LoadStepMacro
+    void CheckLoadStepMacro(int rLoadStepMacro) const;
 
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
@@ -397,13 +585,18 @@ protected:
     //! it is used to determine the transition from the linear elastic model to the full mesoscale model
     double mTensileStrength;
 
-    double mPenaltyStiffnessCrackAngle;
-    double mPenaltyStiffnessScalingFactorCrackAngle;
+    //! @brief scaling factof for the dofs in order to reflect the different dimensions (remember, the standard displacements are not scaled)
+    double mScalingFactorCrackAngle;
+    double mScalingFactorCrackOpening;
+    double mScalingFactorEpsilon;
 
+    //! @brief scaling factor m for the penalty constraint of the crack angle pot = m/2*(alpha-alpha_e)^2
+    double mPenaltyStiffnessCrackAngle;
 
     //! @brief crack transition radius
     double mCrackTransitionRadius;
 
+    //! @brief parameters for the Newton Raphson iteration on the fine scale
     double mToleranceResidualForce;
     int mMaxNumNewtonIterations;
     double mMaxDeltaLoadFactor;
@@ -411,7 +604,11 @@ protected:
     int mMinNumNewtonIterations;
     double mIncreaseFactor;
     double mMinLoadFactor;
-    double mMinLineSearchFactorFactor;
+    double mMinLineSearchFactor;
+
+    //directory, where all the results for the fine scale solutions are stored
+    std::string mResultDirectory;
+    int mLoadStepMacro;
 };
 }
 

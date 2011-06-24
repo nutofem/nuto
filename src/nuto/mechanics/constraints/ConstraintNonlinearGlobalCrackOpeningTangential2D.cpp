@@ -25,6 +25,8 @@ NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D::ConstraintNonlinearGlob
     mStructure = rStructure;
     mScalingFactor = rScalingFactor;
     mPenaltyStiffness = rPenaltyStiffness;
+    throw MechanicsException("[NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D::ConstraintNonlinearGlobalCrackOpeningTangential2D] scaling not implemented.");
+
 }
 
 NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D* NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D::AsConstraintNonlinearGlobalCrackOpeningTangential2D()

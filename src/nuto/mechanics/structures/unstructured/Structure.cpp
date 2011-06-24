@@ -764,6 +764,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 			//theWeight = elementIter->second->GetGlobalIntegrationPointWeight(theIp);
 			if (elementPtr->GetConstitutiveLaw(theIp)==rConstitutive)
 			{
+				elementPtr->DeleteNonlocalElements();
 				indexElement.push_back(elementPtr);
 				indexIp.push_back(theIp);
 				indexIpVolume.push_back(ipVolume[theIp]);
