@@ -1930,7 +1930,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	//initialize the crack angle and the previous crack angle to the current elastic solution
 	double alpha = fineScaleStructure->GetCrackAngleElastic();
 
-	alpha = 0.5*M_PI;
+//	alpha = 0.5*M_PI;
 	fineScaleStructure->SetCrackAngle(alpha);
 	staticData->SetPrevCrackAngle(alpha);
 	staticData->SetPrevCrackAngleElastic(alpha);
@@ -2036,6 +2036,8 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
     if (fabs(stressElastic.mEngineeringStress[0]-stressInElastic.mEngineeringStress[0])+fabs(stressElastic.mEngineeringStress[1]-stressInElastic.mEngineeringStress[1])+fabs(stressElastic.mEngineeringStress[2]-stressInElastic.mEngineeringStress[2])>
         0.1*fabs(stressElastic.mEngineeringStress[0]+stressInElastic.mEngineeringStress[0])+fabs(stressElastic.mEngineeringStress[1]+stressInElastic.mEngineeringStress[1])+fabs(stressElastic.mEngineeringStress[2]+stressInElastic.mEngineeringStress[2]))
     {
-    	throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] the difference between elastic and inelastic solution is too big.");
+        std::cout << "elastic solution: " << stressElastic.mEngineeringStress[0] << " " << stressElastic.mEngineeringStress[1] << " " <<  stressElastic.mEngineeringStress[2] << "\n";
+	std::cout << "inelastic solution: " << stressInElastic.mEngineeringStress[0] << " " << stressInElastic.mEngineeringStress[1] << " " <<  stressInElastic.mEngineeringStress[2] << "\n";
+        throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] the difference between elastic and inelastic solution is too big.",NuTo::MechanicsException::NOCONVERGENCE);
     }
 }
