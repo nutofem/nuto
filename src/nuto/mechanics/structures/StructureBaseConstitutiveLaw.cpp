@@ -832,3 +832,36 @@ void NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadS
         throw e;
     }
 }
+
+//! @brief ... get rSquareCoarseScaleModel
+//! @param rIdent ...  identifier
+bool NuTo::StructureBase::ConstitutiveLawGetSquareCoarseScaleModel(int rIdent)const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetSquareCoarseScaleModel();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetSquareCoarseScaleModel] error getting SquareCoarseScaleModel.");
+		throw e;
+	}
+}
+
+//! @brief ... set rSquareCoarseScaleModel
+//! @param rSquareCoarseScaleModel ...  rSquareCoarseScaleModel
+void NuTo::StructureBase::ConstitutiveLawSetSquareCoarseScaleModel(int rIdent, bool rSquareCoarseScaleModel)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetSquareCoarseScaleModel(rSquareCoarseScaleModel);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro] error setting SquareCoarseScaleModel.");
+        throw e;
+    }
+}
+

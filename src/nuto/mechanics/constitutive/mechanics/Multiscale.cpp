@@ -61,6 +61,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mAugmentedLagrangeStiffnessCrackOpening = 1e3;
     mCrackTransitionRadius = 0;
 
+    mSquareCoarseScaleModel = false;
+
     mTensileStrength = 0;
 
     mScalingFactorCrackAngle = 0;
@@ -85,6 +87,7 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mFileName)
           & BOOST_SERIALIZATION_NVP(mAugmentedLagrangeStiffnessCrackOpening)
           & BOOST_SERIALIZATION_NVP(mTensileStrength)
+          & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
           & BOOST_SERIALIZATION_NVP(mScalingFactorCrackAngle)
           & BOOST_SERIALIZATION_NVP(mScalingFactorCrackOpening)
           & BOOST_SERIALIZATION_NVP(mScalingFactorEpsilon)
@@ -273,14 +276,15 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
                 fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
             }
             std::cout << std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
+            std::cout << "no convergence exception?? " <<  (e.GetError()==NuTo::MechanicsException::NOCONVERGENCE) << "\n";
             e.AddMessage(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
         	throw e;
         }
-        catch(...)
+/*        catch(...)
         {
         	throw MechanicsException(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
         }
-
+*/
         //calculate average stress
         NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
         fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
@@ -333,7 +337,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
     }
     EngineeringStress2D engineeringStress2D;
     GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, engineeringStress2D);
-    //this is certainly not correct, since it is plane strain, but I do not care about the stress in thickness direction
+    //this is certainly not correct, since it is plane strain, but I do not care about the stress in thickness direction here
     rEngineeringStress.mEngineeringStress[0] = engineeringStress2D.mEngineeringStress[0];
     rEngineeringStress.mEngineeringStress[1] = engineeringStress2D.mEngineeringStress[1];
     rEngineeringStress.mEngineeringStress[2] = 0.;
@@ -1705,6 +1709,30 @@ void NuTo::Multiscale::CheckLoadStepMacro(int rLoadStepMacro) const
 
 }
 
+//! @brief ... get load step macro
+//! @return ... LoadStepMacro
+bool NuTo::Multiscale::GetSquareCoarseScaleModel() const
+{
+	return mSquareCoarseScaleModel;
+}
+
+//! @brief ... set LoadStepMacro
+//! @param LoadStepMacro...LoadStepMacro
+void NuTo::Multiscale::SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel)
+{
+    this->CheckSquareCoarseScaleModel(rSquareCoarseScaleModel);
+    this->mSquareCoarseScaleModel = rSquareCoarseScaleModel;
+    this->SetParametersValid();
+
+}
+
+//! @brief ... check LoadStepMacro
+//! @param LoadStepMacro ...LoadStepMacro
+void NuTo::Multiscale::CheckSquareCoarseScaleModel(bool rSquareCoarseScaleModel) const
+{
+
+}
+
 // check parameters
 void NuTo::Multiscale::CheckParameters()const
 {
@@ -1935,6 +1963,8 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	staticData->SetPrevCrackAngle(alpha);
 	staticData->SetPrevCrackAngleElastic(alpha);
 
+	fineScaleStructure->SetSquareCoarseScaleModel(mSquareCoarseScaleModel);
+
 #ifdef SHOW_TIME
 	fineScaleStructure->SetShowTime(false);
 #endif
@@ -1948,14 +1978,14 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	fineScaleStructure->CreateConstraintLinearGlobalCrackAngle(alpha);
 
 	//set constraint for crack opening
-	NuTo::FullMatrix<double> direction(2,1);
+/*	NuTo::FullMatrix<double> direction(2,1);
 	direction(0,0)=0;
 	direction(1,0)=1;
-	fineScaleStructure->CreateConstraintLinearGlobalCrackOpening(0,direction);
+    fineScaleStructure->CreateConstraintLinearGlobalCrackOpening(0,direction);
 	direction(0,0)=1;
 	direction(1,0)=0;
 	fineScaleStructure->CreateConstraintLinearGlobalCrackOpening(0,direction);
-
+*/
 	//set crack transition zone
 	fineScaleStructure->SetCrackTransitionRadius(mCrackTransitionRadius);
 

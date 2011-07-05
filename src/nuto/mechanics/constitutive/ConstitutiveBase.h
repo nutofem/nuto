@@ -317,6 +317,14 @@ public:
     //! @param LoadStepMacro...LoadStepMacro
     virtual void SetLoadStepMacro(int rLoadStepMacro);
 
+    //! @brief ... get square coarse scale model
+    //! @return ... square coarse scale model (yes or no)
+    virtual bool GetSquareCoarseScaleModel() const;
+
+    //! @brief ... set get square coarse scale model
+    //! @param square coarse scale model (yes or no)
+    virtual void SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel);
+
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship

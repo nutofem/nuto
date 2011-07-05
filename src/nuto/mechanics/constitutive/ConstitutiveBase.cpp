@@ -472,6 +472,20 @@ void NuTo::ConstitutiveBase::SetLoadStepMacro(int rLoadStepMacro)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetLoadStepMacro] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get square coarse scale model
+//! @return ... square coarse scale model (yes or no)
+bool NuTo::ConstitutiveBase::GetSquareCoarseScaleModel() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetSquareCoarseScaleModel] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set get square coarse scale model
+//! @param square coarse scale model (yes or no)
+void NuTo::ConstitutiveBase::SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetSquareCoarseScaleModel] The constitutive relationship does not have this parameter.");
+}
+
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
 {

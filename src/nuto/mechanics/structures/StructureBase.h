@@ -1096,6 +1096,14 @@ public:
     //! @param rLoadStepMacro ...  LoadStepMacro
     void ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadStepMacro);
 
+    //! @brief ... get if the macro elements are supposed to be square or not
+    //! @param rIdent ...  identifier
+    bool ConstitutiveLawGetSquareCoarseScaleModel(int rIdent)const;
+
+    //! @brief ... set if the macro elements are supposed to be square or not
+    //! @param rLoadStepMacro ...  LoadStepMacro
+    void ConstitutiveLawSetSquareCoarseScaleModel(int rIdent, bool rSquareCoarseScaleModel);
+
 #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier

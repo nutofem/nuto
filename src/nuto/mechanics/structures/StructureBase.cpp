@@ -1093,11 +1093,77 @@ try
     // start analysis
     double deltaLoadFactor(mMaxDeltaLoadFactor);
     double curLoadFactor;
+    int loadStep(1);
 
 	this->SetLoadFactor(0);
 	this->NodeBuildGlobalDofs();
-    NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
+	this->ElementTotalUpdateTmpStaticData();
+
+	NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
     this->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
+
+    if (mNumActiveDofs==0)
+	{
+		bool convergenceTotal = false;
+		while (convergenceTotal==false)
+		{
+			try
+			{
+				curLoadFactor+=deltaLoadFactor;
+				this->SetLoadFactor(curLoadFactor);
+				if (curLoadFactor>1)
+				{
+					deltaLoadFactor = 1.-(curLoadFactor-deltaLoadFactor);
+					curLoadFactor = 1.;
+				}
+				this->NodeBuildGlobalDofs();
+				NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+				NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+				this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+				this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+				this->ElementTotalUpdateTmpStaticData();
+				AdaptModel();
+				this->PostProcessDataAfterConvergence(loadStep, 0, curLoadFactor, deltaLoadFactor, 0);
+				this->ElementTotalUpdateStaticData();
+				this->PostProcessDataAfterUpdate(loadStep, 0, curLoadFactor, deltaLoadFactor, 0);
+				loadStep++;
+			}
+			catch(MechanicsException& e)
+			{
+	            if (e.GetError()==MechanicsException::NOCONVERGENCE)
+	            {
+	            	mLogger << "No convergence for current load factor  " << curLoadFactor << "\n";
+	            	curLoadFactor-=deltaLoadFactor;
+	            	//decrease load step
+					deltaLoadFactor*=mDecreaseFactor;
+
+					//restore initial state
+	            	mLogger << "Try with load factor  " << curLoadFactor << "\n";
+					this->SetLoadFactor(curLoadFactor);
+					this->NodeBuildGlobalDofs();
+					//this is a zero length vector anyway
+					this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+
+					//check for minimum delta (this mostly indicates an error in the software
+					if (deltaLoadFactor<mMinDeltaLoadFactor)
+					{
+						mLogger << "No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum " << "\n";
+						e.AddMessage("[NuTo::StructureBase::NewtonRaphson] No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum.");
+						throw e;
+					}
+	            }
+	            else
+	            {
+	            	e.AddMessage("[NuTo::StructureBase::NewtonRaphson] Error in Newton-Raphson iteration.");
+	            	throw e;
+	            }
+			}
+			if (curLoadFactor>1-1e-8)
+				convergenceTotal = true;
+		}
+		return;
+	}
+
 
     //init some auxiliary variables
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
@@ -1116,7 +1182,6 @@ try
         mySolver.SetShowTime(false);
     #endif
     bool convergenceInitialLoadStep(false);
-    int loadStep(1);
     InitBeforeNewLoadStep(loadStep);
     while (convergenceInitialLoadStep==false)
     {
@@ -1126,17 +1191,6 @@ try
 			curLoadFactor=deltaLoadFactor;
 			this->SetLoadFactor(curLoadFactor);
 			this->NodeBuildGlobalDofs();
-			if (mNumActiveDofs==0)
-			{
-				this->SetLoadFactor(1);
-				this->NodeBuildGlobalDofs();
-				NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-				NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-				this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-				this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-				this->ElementTotalUpdateTmpStaticData();
-				return;
-			}
 			this->ElementTotalUpdateTmpStaticData();
 
 			//mLogger<<" calculate stiffness 1143" << "\n";

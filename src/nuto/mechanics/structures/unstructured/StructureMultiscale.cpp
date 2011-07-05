@@ -157,7 +157,6 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mConstraintMap.insert(id, mConst2);
     mConstraintCrackAngle = id;
 */
-    mLogger << "number of constraints after reading in conversion " << mConstraintMap.size() << "\n";
 }
 
 NuTo::StructureMultiscale::StructureMultiscale()
@@ -4248,7 +4247,7 @@ try
                         stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
                         mLogger << "eigenvector 1" << "\n";
                         mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
-                        mLogger << "alpha " << (eigenVectors(mDOFCrackAngle,0)) << "\n";
+                        //mLogger << "alpha " << (eigenVectors(mDOFCrackAngle,0)) << "\n";
                     }
 
                 }
