@@ -27,9 +27,7 @@
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackOpening.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackOpening2D.h"
-#include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackAngle2D.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackAngle2D.h"
-#include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackOpeningTangential2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
 #include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -3443,69 +3441,6 @@ void NuTo::StructureMultiscale::SetPenaltyStiffnessCrackAngle(double rParameter)
     {
         throw MechanicsException("[NuTo::StructureMultiscale::SetPenaltyStiffnessCrackAngle] There is no constraint for the crack angle.");
     }
-}
-
-//! @brief add a constraint equation for the tangential crack opening, which corresponds to an artificial spring
-//! @parameter rPenaltyStiffness penalty stiffness
-//! @parameter rScalingFactor scaling factor
-//! @return id of the constraint
-int NuTo::StructureMultiscale::CreateConstraintNonlinearTangentialCrackOpening(double rScalingFactor, double rPenaltyStiffness)
-{
-    this->mNodeNumberingRequired = true;
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
-    if (it!=mConstraintMap.end())
-    {
-        mConstraintMap.erase(it);
-    }
-
-    int id = 1;
-    it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
-
-    ConstraintNonlinearGlobalCrackOpeningTangential2D *mConst = new NuTo::ConstraintNonlinearGlobalCrackOpeningTangential2D(this, rScalingFactor, rPenaltyStiffness);
-
-    mConstraintMap.insert(id, mConst);
-    mConstraintTangentialCrackOpening = id;
-    return id;
-}
-
-//! @brief set the penalty stiffness for the nonlinear TangentialCrackOpening
-void NuTo::StructureMultiscale::SetPenaltyStiffnessTangentialCrackOpening(double rParameter)
-{
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
-    if (it!=mConstraintMap.end())
-    {
-        ConstraintNonlinearGlobalCrackOpeningTangential2D *constraintPtr = dynamic_cast<ConstraintNonlinearGlobalCrackOpeningTangential2D*>(it->second);
-        if (constraintPtr==0)
-            throw MechanicsException("[NuTo::StructureMultiscale::SetPenaltyStiffnessTangentialCrackOpening] Constraint for the crack angle is not of the type ConstraintNonlinearGlobalCrackAngle2D.");
-        constraintPtr->SetPenaltyStiffness(rParameter);
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::StructureMultiscale::SetPenaltyStiffnessTangentialCrackOpening] There is no constraint for the crack angle.");
-    }
-}
-
-//! @brief set the scaling factor for the nonlinear TangentialCrackOpening
-void NuTo::StructureMultiscale::SetPenaltyStiffnessScalingFactorTangentialCrackOpening(double rParameter)
-{
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
-    if (it!=mConstraintMap.end())
-    {
-        ConstraintNonlinearGlobalCrackOpeningTangential2D *constraintPtr = dynamic_cast<ConstraintNonlinearGlobalCrackOpeningTangential2D*>(it->second);
-        if (constraintPtr==0)
-            throw MechanicsException("[NuTo::StructureMultiscale::SetPenaltyStiffnessScalingFactorTangentialCrackOpening] Constraint for the crack angle is not of the type ConstraintNonlinearGlobalCrackAngle2D.");
-        constraintPtr->SetScalingFactor(rParameter);
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::StructureMultiscale::SetPenaltyStiffnessScalingFactorTangentialCrackOpening] There is no constraint for the crack angle.");
-    }
-
 }
 
 //! @brief set the tolerance for the transition between crack angle from principal strain and previous strain

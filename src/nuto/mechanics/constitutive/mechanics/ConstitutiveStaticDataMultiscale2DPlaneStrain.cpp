@@ -143,12 +143,6 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 			mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
 		else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
 			mStructure->CreateConstraintLagrangeCrackOpening(rParameter);
-		else if (upperCaseName=="CONSTRAINTPENALTYSTIFFNESSTANGENTIALCRACKOPENING")
-			mStructure->CreateConstraintNonlinearTangentialCrackOpening(0.,rParameter);
-		else if (upperCaseName=="PENALTYSTIFFNESSTANGENTIALCRACKOPENING")
-			mStructure->SetPenaltyStiffnessTangentialCrackOpening(rParameter);
-		else if (upperCaseName=="PENALTYSTIFFNESSSCALINGFACTORTANGENTIALCRACKOPENING")
-			mStructure->SetPenaltyStiffnessScalingFactorTangentialCrackOpening(rParameter);
 		else if (upperCaseName=="LOGGERQUIET")
 			mStructure->LoggerSetQuiet(true);
 		else if (upperCaseName=="LOGGERNONQUIET")

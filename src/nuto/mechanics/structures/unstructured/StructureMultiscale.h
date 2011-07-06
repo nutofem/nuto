@@ -432,18 +432,6 @@ public:
     //! @brief set the penalty stiffness for the nonlinear crack angle constraint
     void SetPenaltyStiffnessCrackAngle(double rParameter);
 
-    //! @brief add a constraint equation for the tangential crack opening, which corresponds to an artificial spring
-    //! @parameter rScalingFactor scaling factor
-    //! @parameter rPenaltyStiffness penalty stiffness
-    //! @return id of the constraint
-    int CreateConstraintNonlinearTangentialCrackOpening(double rScalingFactor, double rPenaltyStiffness);
-
-    //! @brief set the penalty stiffness for the nonlinear TangentialCrackOpening constraint
-    void SetPenaltyStiffnessTangentialCrackOpening(double rParameter);
-
-    //! @brief set the scaling factor for the nonlinear TangentialCrackOpening constraint
-    void SetPenaltyStiffnessScalingFactorTangentialCrackOpening(double rParameter);
-
     //! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
     void SetToleranceElasticCrackAngleHigh(double rParameter);
 
