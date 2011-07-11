@@ -157,6 +157,8 @@ protected:
 	//! @brief ... calculate search direction in node-by-node way second way
 	void CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled);
 
+	//! @brief ... calculate search direction in node-by-node way second way
+	void CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled,int numNodes,int* globNodeIds,double* globArray,bool* constraint);
 	#ifdef ENABLE_MECHANICS
 		StructureGrid *mpGrid;
 	#endif // ENABLE_MECHANICS

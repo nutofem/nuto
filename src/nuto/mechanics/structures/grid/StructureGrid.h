@@ -24,6 +24,7 @@ class CrackBase;
 class ElementDataEnum;
 class ElementEnum;
 class NodeGrid3D;
+class Voxel8N;
 class IpDataEnum;
 class MechanicsException;
 
@@ -146,6 +147,11 @@ public:
     //! @param identifier
     //! @return reference to a node
     NodeGrid3D* NodeGridGetNodePtr(int rIdent);
+
+    //! @brief a reference to a node
+    //! @param identifier
+    //! @return reference to a node
+    const NuTo::NodeGrid3D* NodeGridGetNodePtr(int rIdent) const;
 
     //! @brief returns a reference to a node
     //! @param identifier
@@ -352,7 +358,8 @@ protected:
     int mGridDimension[3]; //dimension of the voxel model
     double mGridOrigin[3];// origin of the model , in the center of the first voxel
     boost::ptr_vector<NodeGrid3D> mNodeVec;
-    boost::ptr_vector<ElementBase> mElementVec;
+    boost::ptr_vector<Voxel8N> mElementVec;
+    //boost::ptr_vector<ElementBase> mElementVec;
     const char* mImageDataFile;
     int mNumMaterials;
     std::vector<FullMat> mLocalCoefficientMatrix0;

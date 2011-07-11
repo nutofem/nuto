@@ -335,7 +335,6 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
     try
     {
         using namespace boost::spirit::classic;
-#define LocToGlob
         // open file
         std::ifstream file(rFileName, std::ios::in);
         if (file.is_open() == false)
@@ -517,12 +516,17 @@ bool* NuTo::StructureGrid::GetConstraintSwitch()
 void NuTo::StructureGrid::SetAllNodeIds()
 {
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
+    //std::clock_t start,end;
+    //start=clock();
+	timespec startn,endn,diffn,diffsum;
+	diffsum.tv_sec=0.;
+	diffsum.tv_nsec=0.;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
 	Voxel8N* thisElement;
+	int nodeIds[8];
 	for (int element=0;element<GetNumElements();++element)
 	{
 		thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
@@ -530,18 +534,62 @@ void NuTo::StructureGrid::SetAllNodeIds()
 		//get grid corners of the voxel
 	    int corners[8]={0};
 	    GetCornersOfVoxel(element, locVoxLoc, corners);
-		int nodeIds[8]={-1};
-		for (int node=0;node<thisElement->GetNumNodes();++node)
+/*
+#ifdef SHOW_TIME
+   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    diffsum.tv_sec+=diffn.tv_sec;
+    diffsum.tv_nsec+=diffn.tv_nsec;
+    //end=clock();
+    if (mShowTime)
+        //std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds after get corners of ] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+#endif
+*/
+
+		nodeIds[0] =NodeGetIdFromGridNum(corners[0]);
+		nodeIds[1] =nodeIds[0]+1;
+		nodeIds[2] =NodeGetIdFromGridNum(corners[2]);
+		nodeIds[3] =nodeIds[2]-1;
+		nodeIds[4] =NodeGetIdFromGridNum(corners[4]);
+		nodeIds[5] =nodeIds[4]+1;
+		nodeIds[6] =NodeGetIdFromGridNum(corners[6]);
+		nodeIds[7] =nodeIds[6]-1;
+
+	/*
+		for (int node=0;node<8;++node)
 		{
 			//get pointer to this gridNum node
 			nodeIds[node] =NodeGetIdFromGridNum(corners[node]);
 		}
+		*/
+		//std::cout<<"SetNodeIds : element "<<element<<"nodes "<<		nodeIds[0] <<" ,"<<	nodeIds[1]<<" ,"<<	nodeIds[2]<<" ,"<<	nodeIds[3] <<" ,"<<			nodeIds[4] <<" ,"<<		nodeIds[5]<<" ,"<<			nodeIds[6] <<" ,"<<		nodeIds[7]<<" ,"<<	std::endl;
+
+/*
+#ifdef SHOW_TIME
+   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    diffsum.tv_sec+=diffn.tv_sec;
+    diffsum.tv_nsec+=diffn.tv_nsec;
+    //end=clock();
+    if (mShowTime)
+        //std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds before set id ] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+#endif
+*/
 		thisElement->SetNodeIds(nodeIds);
 	}
 #ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+	diffn=diff(startn,endn);
+	diffsum.tv_sec+=diffn.tv_sec;
+	diffsum.tv_nsec+=diffn.tv_nsec;
+	//end=clock();
+	if (mShowTime)
+        //std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << diffsum.tv_sec <<" sec: "<<diffsum.tv_nsec/1000000.<<" msec" << std::endl;
 #endif
 }
 
@@ -549,8 +597,10 @@ void NuTo::StructureGrid::SetAllNodeIds()
 void NuTo::StructureGrid::SetAllNodeIdsAtNode()
 {
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
+    //std::clock_t start,end;
+    //start=clock();
+	timespec startn,endn,diffn;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::SetAllNodeIdsAtNode] error dimension must be 3.");
@@ -587,16 +637,18 @@ void NuTo::StructureGrid::SetAllNodeIdsAtNode()
 				int* localNodeIds=thisElement->GetNodeIds();
 				for(int node=0;node<8;++node)
 				{
-					nodeIds[orderNode[element][node]]=localNodeIds[node];// overhead,set id 4 times
+					nodeIds[orderNode[element][node]]=localNodeIds[node];// overhead,set id 4 times, but slower with if clause
 				}
 			}
 		}
 		thisNode->SetNodeIds(nodeIds);
 	}
 #ifdef SHOW_TIME
-    end=clock();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    //end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllNodeIdsAtNodes] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::StructureGrid::SetAllNodeIdsAtNodes] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" <<std::endl;
 #endif
 }
 
@@ -604,8 +656,10 @@ void NuTo::StructureGrid::SetAllNodeIdsAtNode()
 void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
 {
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
+    //std::clock_t start,end;
+    //start=clock();
+	timespec startn,endn,diffn;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::SetAllPartCoefficientMatrix0] error dimension must be 3.");
@@ -646,12 +700,12 @@ void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
 				//Adress of a part of the matrix not possible
 				FullMatrix<double> partMatrix(3,3);
 				partMatrix=(matrix->GetBlock(i*3,j*3,3,3));
-				thisNodeI->SetPartCoefficientMatrix0(orderNode[i][j],partMatrix);
+				//thisNodeI->SetPartCoefficientMatrix0(orderNode[i][j],partMatrix);
 				thisNodeI->SetPartCoefficient0(orderNode[i][j],partMatrix);
 				if (i!=j)
 				{
 					partMatrix=(matrix->GetBlock(j*3,i*3,3,3));
-					thisNodeJ->SetPartCoefficientMatrix0(orderNode[j][i],partMatrix);
+					//thisNodeJ->SetPartCoefficientMatrix0(orderNode[j][i],partMatrix);
 					thisNodeJ->SetPartCoefficient0(orderNode[j][i],partMatrix);
 				}
 			}
@@ -660,9 +714,12 @@ void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
 	}
 
 #ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllPartCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+	diffn=diff(startn,endn);
+	//end=clock();
+	if (mShowTime)
+	    std::cout<<"[NuTo::StructureGrid::SetAllPartCoefficientMatrix0] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
+        //std::cout<<"[NuTo::StructureGrid::SetAllPartCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 
 }
@@ -671,8 +728,10 @@ void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
 void NuTo::StructureGrid::SetAllElementIds()
 {
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
+    //std::clock_t start,end;
+	//start=clock();
+	timespec startn,endn,diffn,diffsum;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::SetAllElementIds] error dimension must be 3.");
@@ -682,9 +741,20 @@ void NuTo::StructureGrid::SetAllElementIds()
 	for (int node=0;node<GetNumNodes();++node)
 	{
 		thisNode=NodeGridGetNodePtr(node);
-//		int gridNum= thisNode->GetNodeGridNum();
-        TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(node);
+		int gridNode =thisNode->GetNodeGridNum();
+        TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(gridNode);
         int elementIds[8];
+/*
+#ifdef SHOW_TIME
+   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    diffsum.tv_sec+=diffn.tv_sec;
+    diffsum.tv_nsec+=diffn.tv_nsec;
+     if (mShowTime)
+        std::cout<<"[NuTo::StructureGrid::SetAllElementIds: before element get id] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+#endif
+*/
 		for (int element=0;element<8;++element)
 		{
 			try
@@ -696,14 +766,30 @@ void NuTo::StructureGrid::SetAllElementIds()
 			{
 				elementIds[element]=-1;
 			}
-
 		}
+/*
+#ifdef SHOW_TIME
+   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    diffsum.tv_sec+=diffn.tv_sec;
+    diffsum.tv_nsec+=diffn.tv_nsec;
+     if (mShowTime)
+        std::cout<<"[NuTo::StructureGrid::SetAllElementIds: after element get id] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+#endif
+*/
 		thisNode->SetElementIds(elementIds);
 	}
 #ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+	diffn=diff(startn,endn);
+    diffsum.tv_sec+=diffn.tv_sec;
+    diffsum.tv_nsec+=diffn.tv_nsec;
+	//end=clock();
+	if (mShowTime)
+		//std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+//		std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
+		std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << diffsum.tv_sec <<" sec: "<<diffsum.tv_nsec/1000000.<<" msec" << std::endl;
 #endif
 }
 

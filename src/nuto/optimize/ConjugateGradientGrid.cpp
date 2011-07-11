@@ -39,6 +39,17 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		 numHessianCalls(0),    // number of hessian calls
 		 curIteration(0),       //number of iterations
 		 curCycle(0);           //number of iterations without restart
+    bool matrixFreeMethod=false; //false -EBE, true- NBN
+    //bool matrixFreeMethod=true; //false -EBE, true- NBN
+	if (mVerboseLevel>1)
+	{
+		std::cout<<__FILE__<<" "<<__LINE__<<" matrixFreeMethod is";
+		if (matrixFreeMethod)
+			std::cout<<" NBN "<<std::endl;
+		else
+			std::cout<<" EBE "<<std::endl;
+	}
+
 
 	optimization_return_attributes returnValue;
 
@@ -76,6 +87,48 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		converged = true;
 		returnValue = MAXHESSIANCALLS;
 	}
+
+/*
+ 	if (matrixFreeMethod)
+	{
+		// save essential data before iterate
+		int numDofs=3;
+		int numNodes=mpGrid->GetNumNodes();
+		double *globArray=new double [9*27*numNodes];
+		int *globNodeIds=new int[27*numNodes];
+		int *nodeIds=0;
+		double *array=new double [9*27];
+		bool *globConstraint = new bool[numNodes*numDofs];
+		globConstraint = mpGrid->GetConstraintSwitch();
+		//loop over all nodes
+		for (int nodeNumber=0;nodeNumber<numNodes;++nodeNumber)
+		{
+			//get pointer to each node
+			NodeGrid3D* thisNode =mpGrid->NodeGridGetNodePtr(nodeNumber);
+			//get belonging nodes
+			nodeIds=thisNode->GetNodeIds();
+			//get pointer to array of part coefficient matrix for all neighbor nodes
+			try
+			{
+				array= thisNode->GetPartCoefficient0(0);
+			}
+			catch(MechanicsException &)
+			{
+				std::cout<<"ConjugateGradientGrid "<<__LINE__<<" nodeNum "<<nodeNumber<<std::endl;
+				std::cout<<"neighbors: "<< nodeIds[0]<<", "<<nodeIds[1]<<", "<<nodeIds[2]<<", "<<nodeIds[3]<<", "<<nodeIds[4]<<", "<<nodeIds[5]<<", "<<nodeIds[6]<<", "<<nodeIds[7]<<", "<<nodeIds[8]<<", "<<nodeIds[9]<<", "<<nodeIds[10]<<", "<<nodeIds[11]<<", "<<nodeIds[12]<<", "<<nodeIds[13]<<", "<<nodeIds[14]<<", "<<nodeIds[15]<<", "<<nodeIds[16]<<", "<<nodeIds[17]<<", "<<nodeIds[18]<<", "<<nodeIds[19]<<", "<<nodeIds[20]<<", "<<nodeIds[21]<<", "<<nodeIds[22]<<", "<<nodeIds[23]<<", "<<nodeIds[24]<<", "<<nodeIds[25]<<", "<<nodeIds[26]<<std::endl;
+
+			}
+			for (int i=0;i<27;++i)
+			{
+				globNodeIds[27*nodeNumber+i]=nodeIds[i];
+				globArray[27*9*nodeNumber+i]= array[i];
+			}
+		}
+	}
+*/
+	//
+	//
+
 	while(!converged)
 	{
 		numGradientCalls++;
@@ -108,28 +161,32 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			//calculate gradient as a start solution
 			if (mVerboseLevel>2)
 				std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction"<<std::endl;
-			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction EBE"<<std::endl;
-			CalculateStartGradient(gradientOrig);
+
+			if (!matrixFreeMethod)
+				CalculateStartGradient(gradientOrig);
+			/*
 			FullMatrix<double> gradientOrigEBE(GetNumParameters(),1);
 			gradientOrigEBE	=gradientOrig;
 			gradientOrig.Resize(GetNumParameters(),1);
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction NBN"<<std::endl;
-			mpGrid->SetAllElementIds();
-			mpGrid->SetAllNodeIdsAtNode();
-			mpGrid->SetAllPartCoefficientMatrix0();
-			CalculateStartGradientNodeByNodeII(gradientOrig);
-			/*
+
+*/
+			if (matrixFreeMethod)
+			{
+				gradientOrig=mvParameters.mEigenMatrix;
+				CalculateStartGradientNodeByNodeII(gradientOrig);
+			}
+				/*
 			std::cout << __FILE__<<" "<<__LINE__<<"gradient EBE " <<std::endl ;
 			(gradientOrigEBE.Trans()).Info();
 			std::cout << __FILE__<<" "<<__LINE__<<"gradient NBN II " <<std::endl ;
 			(gradientOrig.Trans()).Info();
-*/
 			gradientOrigEBE.operator -=(gradientOrig);
 			//std::cout << __FILE__<<" "<<__LINE__<<gradientOrigEBE.Norm() <<std::endl ;
 			for (int count=0; count<GetNumParameters(); count++)
 			{
 				//std::cout << std::setw(width)<< gradientScaledSave(count) << "   " ;
-				if (gradientOrigEBE(count,0)>tol)
+				if (abs(gradientOrigEBE(count,0))>tol)
 					std::cout << " dof nr. "<< count << "   " << gradientOrigEBE(count,0)<<std::endl;
 
 			}
@@ -142,6 +199,8 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 			std::cout << std::endl;
 			//gradientOrigNBN.Info();
+
+*/
 			//with scaling
 			//gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
 			//no scaling
@@ -199,13 +258,14 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		int width = 8;
 		std::cout.precision(precision);
 
-		gradientScaledSave=searchDirectionScaled;
-		CalculateScaledSearchDirection(gradientScaledSave);
+//		gradientScaledSave=searchDirectionScaled;
+		if (!matrixFreeMethod)
+			CalculateScaledSearchDirection(searchDirectionScaled);
 		//gradientScaledSave=searchDirectionScaled;
 		//searchDirectionScaled = gradientScaled;
-
-		//CalculateScaledSearchDirectionNodeByNode(searchDirectionScaled);
-		CalculateScaledSearchDirectionNodeByNodeII(searchDirectionScaled);
+		if (matrixFreeMethod)
+			CalculateScaledSearchDirectionNodeByNodeII(searchDirectionScaled);
+			//CalculateScaledSearchDirectionNodeByNodeII(searchDirectionScaled,numNodes,globNodeIds,globArray,globConstraint);
 /*
 		std::cout << std::setw(width)<< "EBE searchDirectionScaled  " ;
 		for (int count=0; count<GetNumParameters(); count++)
@@ -220,7 +280,8 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		}
 		std::cout << std::endl;
 */
-	    gradientScaledSave-=searchDirectionScaled;
+/*
+ 	    gradientScaledSave-=searchDirectionScaled;
 
 		for (int count=0; count<GetNumParameters(); count++)
 		{
@@ -241,6 +302,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	    	std::cout<<__FILE__<<" "<<__LINE__<<" error different results."<<std::endl;
 	    	return 1;
 	    }
+	    */
 	    alphaDenominator = searchDirectionOrig.dot(searchDirectionScaled);
 		alpha = alphaNumerator/alphaDenominator;
 
@@ -567,7 +629,6 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
  		//loop over all nodes of one element
 		FullMatrix<double> locDispValues(3,1);
 		int * nodeIds=thisElement->GetNodeIds();
-
         for (int node=0;node<thisElement->GetNumNodes();++node)
         {
 			//get displacements of one node
@@ -729,11 +790,15 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNodeII(NuTo::FullM
 #endif
 	if (mVerboseLevel>2)
 		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateStartGradientNodeByNodeII"<<std::endl;
+	FullMatrix<double> gradientNew(GetNumParameters(),1);
 	int numNodes=mpGrid->GetNumNodes();
 	//nodeIds here ids of all neighbor nodes
     int* nodeIds;
 	//array with global dof number of each dof of this node
     int numDofs=3; //for dofs array needed
+
+	// part of matrix one dimensional 9 fields
+	double *array=new double [9*27];
 
 	// global external force vector (active dofs)
 //	FullMatrix<double>  force(mpGrid->GetNumDofs(),1);
@@ -744,33 +809,54 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNodeII(NuTo::FullM
 		// return vector with all dofs of one node
 		FullMatrix<double> locReturn(numDofs,1);
 		//get pointer to each node
-		NodeGrid3D* thisNode =mpGrid->NodeGridGetNodePtr(nodeNumber);
+		NodeGrid3D* thisNode;
+		thisNode =mpGrid->NodeGridGetNodePtr(nodeNumber);
 		//get belonging nodes
 		nodeIds=thisNode->GetNodeIds();
+//				std::cout<<" node "<<nodeNumber <<""<<std::endl;
 		for (int node=0;node<27;++node)
 		{
+			//NuTo::FullMatrix<double>* matrix;
+			//get pointer to array of part coefficient matrix for all neighbor nodes
+			array= thisNode->GetPartCoefficient0(0);
+//			matrix= thisNode->GetPartCoefficientMatrix0(node);
 			//node exists
+	/*
+			if (nodeNumber==62)
+			{
+				std::cout<<" node "<<nodeNumber <<"ids :"<<nodeIds[0]<<"  "<<nodeIds[1]<< std::endl;
+			}
+		*/
 			if (nodeIds[node]>=0)
 			{
-				NuTo::FullMatrix<double>* matrix;
-				matrix= thisNode->GetPartCoefficientMatrix0(node);
-				FullMatrix<double> locDispValues(3,1);
-				mpGrid->NodeGetDisplacements(nodeIds[node],locDispValues);
+				//FullMatrix<double> locDispValues(3,1);
+				//mpGrid->NodeGetDisplacements(nodeIds[node],locDispValues);
 				//calculate nodal return vector and sum up
-				locReturn.operator += (matrix->operator *(locDispValues));
+				locReturn(0,0)+=array[node*9+0]*gradientOrig(nodeIds[node]*numDofs,0) + array[node*9+1]*gradientOrig(nodeIds[node]*numDofs+1,0) + array[node*9+2]*gradientOrig(nodeIds[node]*numDofs+2,0);
+				locReturn(1,0)+=array[node*9+3]*gradientOrig(nodeIds[node]*numDofs,0) + array[node*9+4]*gradientOrig(nodeIds[node]*numDofs+1,0) + array[node*9+5]*gradientOrig(nodeIds[node]*numDofs+2,0);
+				locReturn(2,0)+=array[node*9+6]*gradientOrig(nodeIds[node]*numDofs,0) + array[node*9+7]*gradientOrig(nodeIds[node]*numDofs+1,0) + array[node*9+8]*gradientOrig(nodeIds[node]*numDofs+2,0);
+	//				locReturn.operator += (matrix->operator *(locDispValues));
+			/*
+				if (nodeNumber==62)
+				{
+					std::cout<<" node "<<nodeNumber <<" dof 0 locReturn :"<<locReturn(0,0)<<" at loc node "<<nodeIds[node]<< std::endl;
+					std::cout<<" gradOrig :"<<gradientOrig(nodeIds[node]*numDofs,0)<<" , "<< gradientOrig(nodeIds[node]*numDofs+1,0)<<" , "<<gradientOrig(nodeIds[node]*numDofs+2,0)<<std::endl;
+				}
+				*/
 			}
+
 		}
-		//update gradient vector for undependant dofs
-		for (int count =0; count <numDofs;++count)
-		{
-			//when global dof is active
-			//when dof is not constraint, then ...
-			if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+count))
-				//subtract (r=f-Ku) locReturn for active dofs
-				//in dofs[count] is the active dof number of each element dof
-				gradientOrig(nodeNumber*numDofs+count,0) = -locReturn(count,0);
-		}
+		//when global dof is active
+		//when dof is not constraint, then ...
+		//subtract (r=f-Ku) locReturn for active dofs
+		if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+0))
+			gradientNew(nodeNumber*numDofs+0,0) = -locReturn(0,0);
+		if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+1))
+			gradientNew(nodeNumber*numDofs+1,0) = -locReturn(1,0);
+		if (mpGrid->NodeGetConstraintSwitch(nodeNumber*numDofs+2))
+			gradientNew(nodeNumber*numDofs+2,0) = -locReturn(2,0);
 	}
+	gradientOrig=gradientNew;
 		//get global external force vector
 		//! @TODO add load vector
 		// ubdate this routine
@@ -890,12 +976,14 @@ void NuTo::ConjugateGradientGrid::CalculateMatrixVectorEBE(bool startSolution, N
 //! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
 void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
 {
+/*
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 	timespec startn,endn,diffn;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
+*/
 #ifdef ENABLE_MECHANICS
 	if (mVerboseLevel>2)
 		std::cout<<__FILE__<<" "<<__LINE__<<" "<<"in CalculateScaledSearchDirection"<<std::endl;
@@ -960,6 +1048,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
  	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
 
 #endif // ENABLE_MECHANICS
+/*
 #ifdef SHOW_TIME
     end=clock();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
@@ -968,6 +1057,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
         std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection            ] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
         //std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
+*/
 }
 
 //! @brief ... calculate search direction in node-by-node way
@@ -1143,12 +1233,14 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled)
 {
 #ifdef ENABLE_MECHANICS
+/*
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 	timespec startn,endn,diffn;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
+*/
 	if (mVerboseLevel>2)
 		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateScaledSearchDirectionNodeByNodeII"<<std::endl;
 	int numNodes=mpGrid->GetNumNodes();
@@ -1187,6 +1279,66 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 		}
 	}
 	searchDirectionScaled = allReturn.mEigenMatrix;
+/*
+#ifdef SHOW_TIME
+    end=clock();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
+    diffn=diff(startn,endn);
+    if (mShowTime)
+       std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
+ //      std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+*/
+#else
+	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
+#endif // ENABLE_MECHANICS
+}
+void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled,int numNodes, int* globNodeIds, double* globArray, bool* constraint)
+{
+#ifdef ENABLE_MECHANICS
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+	timespec startn,endn,diffn;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
+#endif
+		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateScaledSearchDirectionNodeByNodeII"<<std::endl;
+	if (mVerboseLevel>2)
+		std::cout<<__FILE__<<" "<<__LINE__<<" in Routine CalculateScaledSearchDirectionNodeByNodeII"<<std::endl;
+	//nodeIds here ids of all neighbor nodes
+    int* nodeIds;
+ 	//array with global dof number of each dof of this node
+    int numDofs=3; //for dofs array needed
+	// return vector of all dofs
+	FullMatrix<double> allReturn(numDofs*numNodes,1);
+	// part of matrix one dimensional 9 fields
+	double *array=new double [9*27];
+
+	//loop over all nodes
+	for (int nodeNumber=0;nodeNumber<numNodes;++nodeNumber)
+    {
+		//get belonging nodes
+		nodeIds=&(globNodeIds[nodeNumber*27]);
+		std::cout<<" node ids of node "<<nodeNumber <<": "<<std::endl;
+		//get pointer to array of part coefficient matrix for all neighbor nodes
+		array= &(array[nodeNumber*27*9]);
+		for (int node=0;node<27;++node)
+		{
+			std::cout<<nodeIds[node]<<" ," ;
+			//node exists
+			if (nodeIds[node]>=0)
+			{
+				if (constraint[nodeNumber*numDofs])
+					allReturn(nodeNumber*numDofs,0) += array[node*9+0]*searchDirectionScaled(numDofs*nodeIds[node]+0) + array[node*9+1]*searchDirectionScaled(numDofs*nodeIds[node]+1) + array[node*9+2]*searchDirectionScaled(numDofs*nodeIds[node]+2);
+				if (constraint[nodeNumber*numDofs+1])
+					allReturn(nodeNumber*numDofs+1,0) += array[node*9+3]*searchDirectionScaled(numDofs*nodeIds[node]+0) + array[node*9+4]*searchDirectionScaled(numDofs*nodeIds[node]+1) + array[node*9+5]*searchDirectionScaled(numDofs*nodeIds[node]+2);
+				if (constraint[nodeNumber*numDofs+2])
+					allReturn(nodeNumber*numDofs+2,0) += array[node*9+6]*searchDirectionScaled(numDofs*nodeIds[node]+0) +  array[node*9+7]*searchDirectionScaled(numDofs*nodeIds[node]+1) + array[node*9+8]*searchDirectionScaled(numDofs*nodeIds[node]+2);
+			}
+		}
+		std::cout<<std::endl;
+	}
+	searchDirectionScaled = allReturn.mEigenMatrix;
 #ifdef SHOW_TIME
     end=clock();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
@@ -1199,6 +1351,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
+
 
 
 #ifdef ENABLE_SERIALIZATION

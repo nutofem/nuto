@@ -10,8 +10,12 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#ifdef SHOW_TIME
+    #include <ctime>
+#endif
 
 #include <iostream>
+#include "nuto/base/NuToObject.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -22,11 +26,11 @@
 
 int main()
 {
-//	double microTomm =0.001;
-	double microTomm =1;
+	//double microTomm =0.001;
+		double microTomm =1;
 
 	//   int readFlag = false;
-    double PoissonsRatio = 0.3;
+    double PoissonsRatio = 0.2;
     //for local base stiffness matrix
     double YoungsModulus = 1.;
 
@@ -38,6 +42,10 @@ int main()
     // create structure
     try
     {
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
         NuTo::StructureGrid myGrid(3);
 
 		// read entries
@@ -134,7 +142,7 @@ int main()
         myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
 
         std::cout<<"Element Stiffness created"<<std::endl;
-        //stiffnessMatrix.Info(12,6);
+        stiffnessMatrix.Info(12,6);
   		//stiffnessMatrix.WriteToFile("stiffnessMatrix.txt"," ");
 
 		//grid structure create
@@ -197,8 +205,8 @@ int main()
 		direction(1,0)= 1;
 		direction(2,0)= 0;
 		// Test Randbedingungen y=0
-		 for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
-		//for (int count =0;count < numGridNodes;count+= (NumElementsX + 1)*(NumElementsY + 1))
+		// for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		for (int count =0;count < numGridNodes;count+= (NumElementsX + 1)*(NumElementsY + 1))
 		{
 			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint y "<< count <<std::endl;
 			try
@@ -216,8 +224,8 @@ int main()
 		direction(1,0)= 0;
 		direction(2,0)= 1;
 		// Test Randbedingungen z=0
-		for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
-		//for (int count = 0;count<(NumElementsX + 1)*(NumElementsY + 1);count+=(NumElementsX + 1))
+		//for (int count =0;count < (NumElementsX + 1)*(NumElementsY + 1)*(NumElementsZ + 1);++count)
+		for (int count = 0;count<(NumElementsX + 1)*(NumElementsY + 1);count+=(NumElementsX + 1))
 		{
 			//std::cout<<__FILE__<<" "<<__LINE__<<" node constraint z "<< count <<std::endl;
 			try
@@ -329,7 +337,7 @@ int main()
 		// start analysis
 		std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
 		// build global dof numbering
-		myGrid.SetVerboseLevel(1);
+		myGrid.SetVerboseLevel(2);
 		myGrid.NodeBuildGlobalDofs();
 
 		std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.GetNumDofs()<<std::endl;
@@ -350,8 +358,16 @@ int main()
 
 		myGrid.CalculateVoxelLocations();
 		myGrid.SetAllNodeIds();
+//		myGrid.SetAllElementIds();
+	//	myGrid.SetAllNodeIdsAtNode();
+		//myGrid.SetAllPartCoefficientMatrix0();
+#ifdef SHOW_TIME
+	end=clock();
+	std::cout<<"[NuTo::StructureGrid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 
 		NuTo::CallbackHandlerGrid myCallback;
+
 		std::cout<<__FILE__<<" "<<__LINE__<<"  callback created"<<std::endl;
 		NuTo::ConjugateGradientGrid myOptimizer((unsigned int) myGrid.GetNumDofs());
 		std::cout<<__FILE__<<" "<<__LINE__<<"  optimizer created"<<std::endl;
@@ -359,31 +375,10 @@ int main()
 		NuTo::FullMatrix<double> startVector(myGrid.GetNumDofs(),1);
 		NuTo::FullMatrix<double> rDisplacements(3,1);
 
-		for (int countGridNodes=0; countGridNodes<numGridNodes;++countGridNodes)
+		for (int myNode=0; myNode<numNodes;++myNode)
 		{
-			for(int countDof=0;countDof<3; ++countDof)
-			{
-				//if dof is constraint
-				try
-				{
-					int myNode = myGrid.NodeGetIdFromGridNum(countGridNodes);
-					// when false == 0, then set diplacement from node
-					if (!myGrid.NodeGetConstraintSwitch(3*countGridNodes+countDof))
-					{
-						myGrid.NodeGetDisplacements(myNode,rDisplacements);
-						startVector(3*countGridNodes+countDof,0)=rDisplacements(countDof,0);
-					}
-					else
-					{
-						startVector(countDof,0)=0;
-					}
-				}
-				catch(NuTo::Exception& e)
-				{
-					++countGridNodes;
-					//test
-				}
-			}
+			myGrid.NodeGetDisplacements(myNode,rDisplacements);
+			startVector.SetBlock(3*myNode,0,rDisplacements);
 		}
 		myOptimizer.SetVerboseLevel(2);
 

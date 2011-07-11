@@ -131,7 +131,7 @@ int* NuTo::Voxel8N::GetNodeIds()
 //! @brief Set ids of all nodes for this element
 //! @brief sorted: bottom - top, each counterclockwise
 //! @param  int* ids of all nodes
-void NuTo::Voxel8N::SetNodeIds(int * rNodeIds)
+void NuTo::Voxel8N::SetNodeIds(int *rNodeIds)
 {
 	mNodeIds=new int[8];
 	for (int count=0;count<8;++count)

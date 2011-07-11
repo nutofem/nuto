@@ -24,6 +24,9 @@ public:
    //! @brief constructor
     NodeGrid3D(int rNodeGridNum);
 
+    //! @brief destructor
+    ~ NodeGrid3D();
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

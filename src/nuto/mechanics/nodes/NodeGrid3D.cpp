@@ -20,6 +20,18 @@ NuTo::NodeGrid3D::NodeGrid3D(int rNodeGridNum)  : NodeBase ()
     mCoefficient0 =NULL;
 }
 
+//! @brief destructor
+NuTo::NodeGrid3D::~ NodeGrid3D()
+{
+	delete [] mElementIds;
+	mElementIds =NULL;
+	delete [] mNodeIds;
+    mNodeIds =NULL;
+	delete [] mCoefficient0;
+    mCoefficient0 =NULL;
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::NodeGrid3D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

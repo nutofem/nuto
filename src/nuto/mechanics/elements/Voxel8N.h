@@ -32,9 +32,9 @@ public:
     //! @brief destructor
     ~Voxel8N()
     {
-        delete mVoxelLocation;
+        delete [] mVoxelLocation;
         mVoxelLocation=0;
-        delete mNodeIds;
+        delete [] mNodeIds;
         mNodeIds=0;
     }
 
@@ -166,7 +166,7 @@ public:
     //! @brief Set ids of all nodes for this element
     //! @brief sorted: bottom - top, each counterclockwise
     //! @param  int* ids of all nodes
-    void SetNodeIds(int * rNodeIds);
+    void SetNodeIds(int *rNodeIds);
 
  protected:
     //! @brief ... just for serialization

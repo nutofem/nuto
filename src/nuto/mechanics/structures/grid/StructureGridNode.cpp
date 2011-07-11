@@ -35,9 +35,12 @@ int NuTo::StructureGrid::GetNumNodes() const
 //! @return reference to a node
 NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent)
 {
-    if (rIdent<0 || rIdent>=GetNumNodes())
-         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Conversion from string to int did not yield valid node number.");
-     return &mNodeVec[rIdent];
+	if (rIdent<0 || rIdent>=GetNumNodes())
+	{
+		std::cout<<"node number "<<rIdent<<std::endl;
+        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] (first) Conversion from string to int did not yield valid node number.");
+	}
+	return &mNodeVec[rIdent];
 }
 
 //! @brief a reference to a node
@@ -45,10 +48,22 @@ NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent)
 //! @return reference to a node
 NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGridGetNodePtr(int rIdent)
 {
-    if (rIdent<0 || rIdent>=GetNumNodes())
-         throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Conversion from string to int did not yield valid node number.");
-     return &mNodeVec[rIdent];
+	if (rIdent<0 || rIdent>=GetNumNodes())
+	{
+		std::cout<<"node number "<<rIdent<<std::endl;
+		throw MechanicsException("[NuTo::StructureGrid::NodeGridGetNodePtr] (sec) Conversion from string to int did not yield valid node number.");
+	}
+	return &mNodeVec[rIdent];
 }
+//! @brief a reference to a node
+//! @param identifier
+//! @return reference to a node
+const NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGridGetNodePtr(int rIdent) const
+{
+    if (rIdent<0 || rIdent>=GetNumNodes())
+     	throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] (third) Conversion from string to int did not yield valid node number.");
+    return &mNodeVec[rIdent];
+ }
 
 //! @brief a reference to a node
 //! @param identifier
@@ -56,10 +71,11 @@ NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGridGetNodePtr(int rIdent)
 const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtr(int rIdent) const
 {
     if (rIdent<0 || rIdent>=GetNumNodes())
-        throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] Conversion from string to int did not yield valid node number.");
+     	throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtr] (forth) Conversion from string to int did not yield valid node number.");
     return &mNodeVec[rIdent];
  }
 
+/*
 //! @brief a reference to a node
 //! @param node GridNum
 //! @return reference to a node
@@ -83,10 +99,52 @@ NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNu
     }
     return 0;
 }
+*/
+//! @brief a reference to a node
+//! @param node GridNum
+//! @return reference to a node
+NuTo::NodeGrid3D* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum)
+{
+
+	int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+	if (rNodeGridNum<0 || rNodeGridNum>= numGridNodes)
+	  throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Grid Node number is not valid.");
+	int it = rNodeGridNum;
+	if (it>=int (mNodeVec.size()))
+	it=mNodeVec.size()-1;
+
+	for (;it>=0;--it)
+	{
+		if(mNodeVec[it].GetNodeGridNum()==rNodeGridNum)
+			break;
+	}
+	if (it== -1)
+	throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Node with this node id does not exist.");
+	return &mNodeVec[it];
+}
 
 //! @brief a reference to a node
 //! @param node GridNum
 //! @return reference to a node
+const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum) const
+{
+    int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+    if (rNodeGridNum<0 || rNodeGridNum>= numGridNodes)
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Grid Node number is not valid.");
+    int it = rNodeGridNum;
+    if (it>=int (mNodeVec.size()))
+    	it=mNodeVec.size()-1;
+
+	for (;it>=0;--it)
+	{
+		if(mNodeVec[it].GetNodeGridNum()==rNodeGridNum)
+			break;
+	}
+    if (it== -1)
+    	throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Node with this node id does not exist.");
+    return &mNodeVec[it];
+}
+/*
 const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGridNum) const
 {
     int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
@@ -103,7 +161,7 @@ const NuTo::NodeBase* NuTo::StructureGrid::NodeGetNodePtrFromGridNum(int rNodeGr
            throw MechanicsException("[NuTo::StructureGrid::NodeGetNodePtrFromGridNum] Node with this node id  does not exist.");
     return &mNodeVec[nodeNumber];
 }
-
+*/
 //! @brief gives the identifier of a node
 //! @param reference to a node
 //! @return identifier
@@ -120,8 +178,7 @@ int NuTo::StructureGrid::NodeGetId(const NodeBase* rNode)const
         throw MechanicsException("[NuTo::StructureGrid::NodeGetId] Node does not exist.");
     return  nodeNumber;
 }
-
-
+/*
 //! @brief a identifier to a node
 //! @param node GridNum
 //! @return identifier
@@ -140,6 +197,28 @@ const int NuTo::StructureGrid::NodeGetIdFromGridNum(int rNodeGridNum) const
      if (it== mNodeVec.end())
            throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Node with this node id does not exist.");
      return id;
+}
+*/
+//! @brief a identifier to a node
+//! @param node GridNum
+//! @return identifier
+const int NuTo::StructureGrid::NodeGetIdFromGridNum(int rNodeGridNum) const
+{
+    int numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+    if (rNodeGridNum<0 || rNodeGridNum>= numGridNodes)
+         throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Grid Node number is not valid.");
+    int it = rNodeGridNum;
+    if (it>=int (mNodeVec.size()))
+    	it=mNodeVec.size()-1;
+
+	for (;it>=0;--it)
+	{
+		if(mNodeVec[it].GetNodeGridNum()==rNodeGridNum)
+			break;
+	}
+    if (it== -1)
+    	throw MechanicsException("[NuTo::StructureGrid::NodeGetIdFromGridNum] Node with this node id does not exist.");
+	return it;
 }
 
 //! @brief info about the nodes in the grid structure

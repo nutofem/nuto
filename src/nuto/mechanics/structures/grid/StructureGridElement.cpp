@@ -70,10 +70,23 @@ int NuTo::StructureGrid::ElementGetId(const ElementBase* rElement)const
 //! @return identifier
 const int NuTo::StructureGrid::ElementGetIdFromVoxelId(int rVoxelNum) const
 {
-    int numVoxels=(mGridDimension[0])*(mGridDimension[1])*(mGridDimension[2]);//all voxels of the grid
+
+	int numVoxels=(mGridDimension[0])*(mGridDimension[1])*(mGridDimension[2]);//all voxels of the grid
     if (rVoxelNum<0 || rVoxelNum>= numVoxels)
          throw MechanicsException("[NuTo::StructureGrid::ElementGetIdFromVoxelId] Voxel number is not valid.");
-    int id(0);
+	int it = rVoxelNum;
+	if (it>=int (mElementVec.size()))
+		it=mElementVec.size()-1;
+	for (;it>=0;--it)
+	{
+		if((mElementVec[it]).GetVoxelID()==rVoxelNum)
+			break;
+	}
+	if (it== -1)
+		throw MechanicsException("[NuTo::StructureGrid::ElementGetIdFromVoxelId] Element with this node id does not exist.");
+	return it;
+/*
+	 int id(0);
      boost::ptr_vector<Voxel8N>::const_iterator it;
      for (it = mElementVec.begin(); it!= mElementVec.end(); it++,id++)
      {
@@ -83,6 +96,7 @@ const int NuTo::StructureGrid::ElementGetIdFromVoxelId(int rVoxelNum) const
      if (it== mElementVec.end())
            throw MechanicsException("[NuTo::StructureGrid::ElementGetIdFromGridId] Element with this voxel id does not exist.");
      return id;
+*/
 }
 
 //! @brief info about the elements in the Structure
@@ -240,7 +254,8 @@ void NuTo::StructureGrid::ElementCreate (int rNumCoefficientMatrix0,int rElement
 		int rElementID, Element::eElementType rElementType, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
     // const IntegrationTypeBase *ptrIntegrationType;
-    ElementBase* ptrElement;
+//    ElementBase* ptrElement;
+    Voxel8N* ptrElement;
     switch (rElementType)
     {
      case NuTo::Element::VOXEL8N:
