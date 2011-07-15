@@ -26,6 +26,7 @@ class EngineeringStrain2D
     friend class ConstitutiveEngineeringStressStrain;
     friend class ConstraintLinearGlobalCrackAngle;
     friend class ConstraintLinearDisplacementsPeriodic2D;
+    friend class ConstraintLinearFineScaleDisplacementsPeriodic2D;
     friend class ConstraintLinearGlobalTotalStrain;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstraintNonlinearGlobalCrackAngle2D;

@@ -173,7 +173,7 @@ void NuTo::NeuralNetwork::Gradient(NuTo::FullMatrix<double>& rGradient)const
     std::vector<double> pO(numNeurons);       //store the current value of each neuron after having applied the transfer function
     std::vector<double> pSigma(numNeurons);   //store the derivative of the objective with respect to A of the current Neuron
     VectorXd pDelta(dimOutput);               //store the current difference between training and output data
-    const double *pCurWeight, *pCurBias;            //pointer to current weight
+    const double *pCurWeight(0), *pCurBias(0);            //pointer to current weight
     double *pGradientCurWeight, *pGradientCurBias; //pointer to gradient of current weight/biases
 
     //forward propagation of the inputs

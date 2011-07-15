@@ -255,7 +255,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc search direction"<<std::endl;
 
 		int precision = 6;
-		int width = 8;
+		//int width = 8;
 		std::cout.precision(precision);
 
 //		gradientScaledSave=searchDirectionScaled;
@@ -978,8 +978,6 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 {
 /*
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
 	timespec startn,endn,diffn;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
@@ -1050,12 +1048,10 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
 #endif // ENABLE_MECHANICS
 /*
 #ifdef SHOW_TIME
-    end=clock();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
      diffn=diff(startn,endn);
      if (mShowTime)
         std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection            ] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
-        //std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 */
 }
@@ -1235,8 +1231,6 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 #ifdef ENABLE_MECHANICS
 /*
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
 	timespec startn,endn,diffn;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
@@ -1281,13 +1275,11 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 	searchDirectionScaled = allReturn.mEigenMatrix;
 /*
 #ifdef SHOW_TIME
-    end=clock();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
     diffn=diff(startn,endn);
     if (mShowTime)
        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
- //      std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
+ #endif
 */
 #else
 	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
@@ -1297,8 +1289,8 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 {
 #ifdef ENABLE_MECHANICS
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
+    //std::clock_t start,end;
+    //start=clock();
 	timespec startn,endn,diffn;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
@@ -1340,7 +1332,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 	}
 	searchDirectionScaled = allReturn.mEigenMatrix;
 #ifdef SHOW_TIME
-    end=clock();
+    //end=clock();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
     diffn=diff(startn,endn);
     if (mShowTime)

@@ -73,6 +73,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         throw MechanicsException("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
     }
     mDimension = rDimension;
+    mNumActiveDofs = 0;
     mNumDofs   = 0;
     mNodeNumberingRequired = true;
 
@@ -1092,7 +1093,7 @@ try
 
     // start analysis
     double deltaLoadFactor(mMaxDeltaLoadFactor);
-    double curLoadFactor;
+    double curLoadFactor(0);
     int loadStep(1);
 
 	this->SetLoadFactor(0);
@@ -1102,6 +1103,7 @@ try
 	NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
     this->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
 
+    InitBeforeNewLoadStep(loadStep);
     if (mNumActiveDofs==0)
 	{
 		bool convergenceTotal = false;
@@ -1110,6 +1112,7 @@ try
 			try
 			{
 				curLoadFactor+=deltaLoadFactor;
+				InitBeforeNewLoadStep(loadStep);
 				this->SetLoadFactor(curLoadFactor);
 				if (curLoadFactor>1)
 				{
@@ -1182,7 +1185,6 @@ try
         mySolver.SetShowTime(false);
     #endif
     bool convergenceInitialLoadStep(false);
-    InitBeforeNewLoadStep(loadStep);
     while (convergenceInitialLoadStep==false)
     {
 		try
@@ -1195,7 +1197,7 @@ try
 
 			//mLogger<<" calculate stiffness 1143" << "\n";
 			this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-		//    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
+		    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
 		//    mLogger << "disp force vector "<< "\n";
 		//    dispForceVector.Trans().Info(12,10);
 		//Check the stiffness matrix

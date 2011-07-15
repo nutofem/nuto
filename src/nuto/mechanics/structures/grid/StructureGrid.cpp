@@ -731,6 +731,8 @@ void NuTo::StructureGrid::SetAllElementIds()
     //std::clock_t start,end;
 	//start=clock();
 	timespec startn,endn,diffn,diffsum;
+    diffsum.tv_sec=0.;
+    diffsum.tv_nsec=0.;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
 	if (mDimension != 3)

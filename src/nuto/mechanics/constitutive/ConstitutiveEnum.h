@@ -23,6 +23,14 @@ enum eNonlocalDamageYieldSurface
 	TWO_DP                      //!< two Drucker Prager cones
 };
 
+enum eSolutionPhaseType
+{
+	HOMOGENIZED_LINEAR_ELASTIC, //!< linear (homogenized tangent stiffness is used to calculate stiffness and stress)
+	NONLINEAR_NO_CRACK,         //!< nonlinear with disp boundary conditions, but no crack can localize
+	NONLINEAR_CRACKED           //!< nonlinear with crack enrichment
+};
+
+
 }
 }
 #endif /* CONSTITUTIVEENUM_H_ */

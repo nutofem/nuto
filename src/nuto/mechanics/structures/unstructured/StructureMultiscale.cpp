@@ -23,6 +23,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearFineScaleDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackAngle.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackOpening.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
@@ -53,6 +54,8 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mCrackAngleElastic = 0.5*M_PI;
     mPrevCrackAngle = 0.5*M_PI;
     mDOFCrackAngle = -1;
+    mShiftCenterDamage[0] = 0.0;
+    mShiftCenterDamage[1] = 0.;
     mCrackOpening[0] = 0.0;
     mCrackOpening[1] = 0.0;
     mDOFCrackOpening[0] = -1;
@@ -69,6 +72,7 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mDOFGlobalTotalStrain[2] = -1;
     mConstraintFineScaleX = -1;
     mConstraintFineScaleY = -1;
+    mConstraintFineScalePeriodic = -1;
     mConstraintCrackAngle = -1;
     mConstraintNormalCrackOpening = -1;
     mConstraintTangentialCrackOpening = -1;
@@ -186,6 +190,7 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Structure)
        & BOOST_SERIALIZATION_NVP(mCrackAngle)
        & BOOST_SERIALIZATION_NVP(mDOFCrackAngle)
+       & BOOST_SERIALIZATION_NVP(mShiftCenterDamage)
        & BOOST_SERIALIZATION_NVP(mCrackAngleElastic)
        & BOOST_SERIALIZATION_NVP(mCrackOpening)
        & BOOST_SERIALIZATION_NVP(mDOFCrackOpening)
@@ -212,6 +217,7 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mThickness)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleX)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleY)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScalePeriodic)
        & BOOST_SERIALIZATION_NVP(mConstraintNormalCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintTangentialCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintCrackAngle)
@@ -219,8 +225,8 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mBoundaryNodesElementsAssigned)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodesDamage)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodesHomogeneous)
-       & BOOST_SERIALIZATION_NVP(mGroupMultiscaleNodesDamage)
-       & BOOST_SERIALIZATION_NVP(mGroupMultiscaleNodesHomogeneous)
+       & BOOST_SERIALIZATION_NVP(mGroupNodesDamage)
+       & BOOST_SERIALIZATION_NVP(mGroupNodesHomogeneous)
        & BOOST_SERIALIZATION_NVP(mGroupElementsDamage)
        & BOOST_SERIALIZATION_NVP(mGroupElementsHomogeneous)
        & BOOST_SERIALIZATION_NVP(mIPName)
@@ -416,8 +422,8 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes()
 	}
 	if (GroupGetNumMembers(mGroupElementsDamage)+GroupGetNumMembers(mGroupElementsHomogeneous)!=GetNumElements())
 		throw MechanicsException("[NuTo::StructureMultiscale::TransformMultiscaleNodes] there is something wrong with your elements");
-	TransformMultiscaleNodes(mGroupBoundaryNodesDamage, mGroupMultiscaleNodesDamage, mGroupElementsDamage, mCenterDamage, mlFineScaleDamage, mFineScaleAreaDamage, true);
-	TransformMultiscaleNodes(mGroupBoundaryNodesHomogeneous, mGroupMultiscaleNodesHomogeneous, mGroupElementsHomogeneous, mCenterHomogeneous, mlFineScaleHomogeneous, mFineScaleAreaHomogeneous,false);
+	TransformMultiscaleNodes(mGroupBoundaryNodesDamage, mGroupBoundaryNodesDamage, mGroupElementsDamage, mCenterDamage, mlFineScaleDamage, mFineScaleAreaDamage, true);
+	TransformMultiscaleNodes(mGroupBoundaryNodesHomogeneous, mGroupBoundaryNodesHomogeneous, mGroupElementsHomogeneous, mCenterHomogeneous, mlFineScaleHomogeneous, mFineScaleAreaHomogeneous,false);
 }
 
 //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
@@ -503,6 +509,7 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
             {
                 mLogger << (rCenter[0]-coordinates[0])*(rCenter[0]-coordinates[0])+(rCenter[1]-coordinates[1])*(rCenter[1]-coordinates[1]) << " " << fineScaleRadius*fineScaleRadius << "\n";
                 squareFineScaleModel = true;
+                break;
             }
         }
     }
@@ -565,16 +572,20 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
         }
 
     }
-    NuTo::FullMatrix<double> direction(2,1);
-    direction(0,0) = 1.;
-    direction(1,0) = 0.;
-    mConstraintFineScaleX = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
+    //NuTo::FullMatrix<double> direction(2,1);
+    //direction(0,0) = 1.;
+    //direction(1,0) = 0.;
+    //mConstraintFineScaleX = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
-    direction(0,0) = 0.;
-    direction(1,0) = 1.;
-    mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
+    //direction(0,0) = 0.;
+    //direction(1,0) = 1.;
+    //mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
-    ConstraintInfo(10);
+    //zero strain
+    EngineeringStrain2D strain;
+    mConstraintFineScalePeriodic = this->ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(nodeGroupBoundary,strain);
+    //ConstraintInfo(10);
+
     if (minX==maxX || minY==maxY)
         throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] structure has zero width or height, either check your boundary group or the full structure.");
     if (squareFineScaleModel)
@@ -719,6 +730,17 @@ void NuTo::StructureMultiscale::NodeMergeAdditionalGlobalDofValues(const FullMat
     CalculateHomogeneousEngineeringStrain();
     mCrackAngleElastic = CalculateCrackAngleElastic();
 
+}
+
+void NuTo::StructureMultiscale::SetCrackOpening(NuTo::FullMatrix<double>& crackOpening)
+{
+	if (crackOpening.GetNumRows()!=2 || crackOpening.GetNumColumns()!=1)
+		throw MechanicsException("[NuTo::StructureMultiscale::SetCrackOpening] the matrix has to be of dimension (2,1).");
+	this->mCrackOpening[0] = crackOpening(0,0);
+	this->mCrackOpening[1] = crackOpening(1,0);
+
+    //update the homogeneous strain and the elastic crack angle
+    CalculateHomogeneousEngineeringStrain();
 }
 
 //! @brief extract dof values additional dof values
@@ -2185,7 +2207,7 @@ void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMap
             double dDOFdEpsilonHomY[3];
             if (nodeInCrackedDomain)
             {
-                GetdDisplacementdEpsilonHom(coord,dDOFdEpsilonHomX,dDOFdEpsilonHomY,mCenterDamage);
+            	GetdDisplacementdEpsilonHom(coord,dDOFdEpsilonHomX,dDOFdEpsilonHomY,mCenterDamage);
             }
             else
             {
@@ -2795,7 +2817,7 @@ void NuTo::StructureMultiscale::Getd2Displacementd2CrackOrientation(double rCoor
 //! @return distance to crack
 double NuTo::StructureMultiscale::CalculateDistanceToCrack2D(double rCoordinates[2])const
 {
-    return sin(mCrackAngle)*(mCenterDamage[0]-rCoordinates[0]) - cos(mCrackAngle)*(mCenterDamage[1]-rCoordinates[1]);
+    return sin(mCrackAngle)*(mCenterDamage[0]+mShiftCenterDamage[0]-rCoordinates[0]) - cos(mCrackAngle)*(mCenterDamage[1]+mShiftCenterDamage[1]-rCoordinates[1]);
 }
 
 //! @brief calculate the derivative of the distance of a point to the crack
@@ -2803,7 +2825,7 @@ double NuTo::StructureMultiscale::CalculateDistanceToCrack2D(double rCoordinates
 //! @return derivative of distance to crack
 double NuTo::StructureMultiscale::CalculatedDistanceToCrack2DdAlpha(double rCoordinates[2])const
 {
-    return cos(mCrackAngle)*(mCenterDamage[0]-rCoordinates[0]) + sin(mCrackAngle)*(mCenterDamage[1]-rCoordinates[1]);
+    return cos(mCrackAngle)*(mCenterDamage[0]+mShiftCenterDamage[0]-rCoordinates[0]) + sin(mCrackAngle)*(mCenterDamage[1]+mShiftCenterDamage[1]-rCoordinates[1]);
 }
 
 //! @brief calculate the second derivative of the distance of a point to the crack
@@ -2811,7 +2833,7 @@ double NuTo::StructureMultiscale::CalculatedDistanceToCrack2DdAlpha(double rCoor
 //! @return second derivative of distance to crack
 double NuTo::StructureMultiscale::Calculated2DistanceToCrack2Dd2Alpha(double rCoordinates[2])const
 {
-    return -sin(mCrackAngle)*(mCenterDamage[0]-rCoordinates[0]) + cos(mCrackAngle)*(mCenterDamage[1]-rCoordinates[1]);
+    return -sin(mCrackAngle)*(mCenterDamage[0]+mShiftCenterDamage[0]-rCoordinates[0]) + cos(mCrackAngle)*(mCenterDamage[1]+mShiftCenterDamage[1]-rCoordinates[1]);
 }
 
 //calculate from the existing crack opening and orientation the cracking strain
@@ -3062,9 +3084,9 @@ double  NuTo::StructureMultiscale::CalculateCrackAngleElastic()const
     {
     	return mPrevCrackAngleElastic;
     }
-    //
 
-//    strain.Info(12,5);
+    //std::cout << "strain " << "\n";
+    //strain.Info(12,5);
 
     NuTo::FullMatrix<double> eigenVectors;
     NuTo::FullMatrix<double> eigenValues;
@@ -3093,6 +3115,8 @@ double  NuTo::StructureMultiscale::CalculateCrackAngleElastic()const
     	while (fabs(alpha-mPrevCrackAngleElastic)>0.5*M_PI)
     	   alpha-=M_PI;
     //std::cout << " prevAngle " << mPrevCrackAngleElastic*180./M_PI << " alpha_mod " << alpha*180./M_PI << std::endl;
+    //std::cout << "alpha " << alpha*180./M_PI << "\n";
+
     return alpha;
 }
 
@@ -3462,7 +3486,7 @@ void NuTo::StructureMultiscale::SetToleranceElasticCrackAngleLow(double rParamet
 //! @brief add a constraint equation for the crack opening (normal crack opening non negativ)
 //! @parameter rPenaltyStiffness penalty stiffness for augmented Lagrangian
 //! @return id of the constraint
-int NuTo::StructureMultiscale::CreateConstraintLagrangeCrackOpening(double rPenaltyStiffness)
+int NuTo::StructureMultiscale::CreateConstraintLagrangeGlobalCrackOpeningNormal(double rPenaltyStiffness)
 {
     this->mNodeNumberingRequired = true;
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
@@ -3551,6 +3575,102 @@ int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackOpening(double r
     return id;
 }
 
+//! @brief add a linear constraint equation for the crack opening
+//! @return id of the constraint
+int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackOpeningTangential(double rRHS)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 0;
+    it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	NuTo::FullMatrix<double> direction(2,1);
+	direction(0,0)=1;
+	direction(1,0)=0;
+	ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, rRHS);
+    mConstraintMap.insert(id, mConst);
+    mConstraintTangentialCrackOpening = id;
+    return id;
+}
+
+//! @brief add a linear constraint equation for the crack opening
+//! @return id of the constraint
+int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackOpeningNormal(double rRHS)
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 0;
+    it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	NuTo::FullMatrix<double> direction(2,1);
+	direction(0,0)=0;
+	direction(1,0)=1;
+	ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, rRHS);
+    mConstraintMap.insert(id, mConst);
+    mConstraintNormalCrackOpening = id;
+    return id;
+}
+//! @brief delete the constraint for the tangential crack opening
+void NuTo::StructureMultiscale::ConstraintDeleteTangentialCrackOpening()
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintTangentialCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    mConstraintTangentialCrackOpening = -1;
+
+}
+
+//! @brief delete the constraint for the normal crack opening
+void NuTo::StructureMultiscale::ConstraintDeleteNormalCrackOpening()
+{
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    mConstraintNormalCrackOpening = -1;
+
+}
+
+//! @brief set periodic boundary conditions for a 2D structure
+//! @parameter rGroupBoundaryNodes ... boundary nodes
+//! @parameter rStrain ... strain
+int NuTo::StructureMultiscale::ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(Group<NodeBase>* rGroupBoundaryNodes, EngineeringStrain2D& rStrain)
+{
+    if (mDimension!=2)
+    	throw MechanicsException("[NuTo::StructureMultiscale::ConstraintLagrangeSetDisplacementNodeGroup] only implemented for 2D structures.");
+	this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D(rGroupBoundaryNodes,rStrain));
+
+    return id;
+}
 
 //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
 //! @param load factor
@@ -3574,10 +3694,17 @@ void NuTo::StructureMultiscale::PostProcessDataAfterConvergence(int rLoadStep, i
     NuTo::FullMatrix<double> multiplier;
     if (mConstraintNormalCrackOpening!=-1)
     {
-        ConstraintLagrangeGetMultiplier(mConstraintNormalCrackOpening,multiplier);
-        mLogger << " lambda crack opening " << multiplier(0,0)  <<  "\n";    //! @brief calculates the average stress
-
+    	boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
+    	if (it!=mConstraintMap.end())
+    	{
+    		if ((*it)->second->GetNumLagrangeMultipliers()>0)
+    		{
+				ConstraintLagrangeGetMultiplier(mConstraintNormalCrackOpening,multiplier);
+				mLogger << " lambda crack opening " << multiplier(0,0)  <<  "\n";    //! @brief calculates the average stress
+    		}
+    	}
     }
+
 
 /*    NuTo::FullMatrix<double> cohesiveForce(2,1);
     CalculateCohesiveForce(cohesiveForce);
@@ -3637,13 +3764,16 @@ void NuTo::StructureMultiscale::PostProcessDataAfterLineSearch(int rLoadStep, in
 	boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
 	if (it!=mConstraintMap.end())
 	{
-		NuTo::FullMatrix<double> multiplier;
-		(*it)->second->AsConstraintLagrange()->GetLagrangeMultiplier(multiplier);
-		NuTo::FullMatrix<int> multiplierDOF;
-		(*it)->second->AsConstraintLagrange()->GetDofsLagrangeMultiplier(multiplierDOF);
-		double value = multiplier(0,0);
-		int residual = rResidualVector(multiplierDOF(0,0),0);
-		mLogger << ", Lagrange multiplier " << value << "(F=" << residual << ")";
+		if ((*it)->second->GetNumLagrangeMultipliers()>0)
+		{
+			NuTo::FullMatrix<double> multiplier;
+			(*it)->second->AsConstraintLagrange()->GetLagrangeMultiplier(multiplier);
+			NuTo::FullMatrix<int> multiplierDOF;
+			(*it)->second->AsConstraintLagrange()->GetDofsLagrangeMultiplier(multiplierDOF);
+			double value = multiplier(0,0);
+			int residual = rResidualVector(multiplierDOF(0,0),0);
+			mLogger << ", Lagrange multiplier " << value << "(F=" << residual << ")";
+		}
 	}
 	mLogger << "\n";
 	int row, col;
@@ -3794,6 +3924,16 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
     {
     	throw MechanicsException("[NuTo::Multiscale::CalculateStiffness] RHS vector not zero, previous equilibrium iteration was not successfull.");
     }
+    //calculate absolute tolerance for matrix entries to be not considered as zero
+    double maxValue, minValue, ToleranceZeroStiffness;
+    matrixJJ.Max(maxValue);
+    matrixJJ.Min(minValue);
+    //mLogger << "min and max " << minValue << " , " << maxValue << "\n";
+
+    ToleranceZeroStiffness = (1e-14) * (fabs(maxValue)>fabs(minValue) ?  fabs(maxValue) : fabs(minValue));
+    this->SetToleranceStiffnessEntries(ToleranceZeroStiffness);
+    int numRemoved = matrixJJ.RemoveZeroEntries(ToleranceZeroStiffness,0);
+    std::cout << "number of entries removed in stiffness matrix (int %) for calculation of initial macroscopic elastic stiffness " << 100*numRemoved/(matrixJJ.GetNumEntries()+numRemoved) << "% with tolerance " << ToleranceZeroStiffness << "\n";
 
     //calculate schur complement
     NuTo::FullMatrix<int> schurIndicesMatrix(3,1);
@@ -3846,19 +3986,19 @@ void NuTo::StructureMultiscale::SetResultLoadStepMacro(std::string rLoadStepMacr
 
 void NuTo::StructureMultiscale::VisualizeCrack(VisualizeUnstructuredGrid& rVisualize)const
 {
-    double GlobalPointCoor1[3];
-    GlobalPointCoor1[0] = mCenterMacro[0]+0.5*mlCoarseScale*cos(mCrackAngle);
-    GlobalPointCoor1[1] = mCenterMacro[1]+0.5*mlCoarseScale*sin(mCrackAngle);
-    GlobalPointCoor1[2] = 0.;
+	double GlobalPointCoor1[3];
+	GlobalPointCoor1[0] = mCenterMacro[0]+mShiftCenterDamage[0]*0.3*mlCoarseScale/mlFineScaleDamage+0.4*mlCoarseScale*cos(mCrackAngle);
+	GlobalPointCoor1[1] = mCenterMacro[1]+mShiftCenterDamage[1]*0.3*mlCoarseScale/mlFineScaleDamage+0.4*mlCoarseScale*sin(mCrackAngle);
+	GlobalPointCoor1[2] = 0.;
 
-    double GlobalPointCoor2[3];
-    GlobalPointCoor2[0] = mCenterMacro[0]-0.5*mlCoarseScale*cos(mCrackAngle);
-    GlobalPointCoor2[1] = mCenterMacro[1]-0.5*mlCoarseScale*sin(mCrackAngle);
-    GlobalPointCoor2[2] = 0.;
-    unsigned int Points[2];
-    Points[0] = rVisualize.AddPoint(GlobalPointCoor1);
-    Points[1] = rVisualize.AddPoint(GlobalPointCoor2);
-    rVisualize.AddLineCell(Points);
+	double GlobalPointCoor2[3];
+	GlobalPointCoor2[0] = mCenterMacro[0]+mShiftCenterDamage[0]*0.3*mlCoarseScale/mlFineScaleDamage-0.4*mlCoarseScale*cos(mCrackAngle);
+	GlobalPointCoor2[1] = mCenterMacro[1]+mShiftCenterDamage[1]*0.3*mlCoarseScale/mlFineScaleDamage-0.4*mlCoarseScale*sin(mCrackAngle);
+	GlobalPointCoor2[2] = 0.;
+	unsigned int Points[2];
+	Points[0] = rVisualize.AddPoint(GlobalPointCoor1);
+	Points[1] = rVisualize.AddPoint(GlobalPointCoor2);
+	rVisualize.AddLineCell(Points);
 }
 
 //! @brief performs a Newton Raphson iteration (displacement and/or load control)
@@ -3901,7 +4041,7 @@ try
     //NuTo::SparseDirectSolverMKLPardiso mySolver;
     #ifdef SHOW_TIME
     if (mShowTime==true)
-        mySolver.SetShowTime(false);
+        mySolver.SetShowTime(true);
     else
         mySolver.SetShowTime(false);
     #endif
@@ -3988,9 +4128,9 @@ try
     //for the linesearch this internal force has to be considered in order to obtain for a linesearch
     //factor of zero the normRHS
     double normRHS = rhsVector.Norm();
-//    rhsVector.Trans().Info(12,10);
+    //rhsVector.Trans().Info(12,10);
     rhsVector = extForceVector + dispForceVector;
-//    rhsVector.Trans().Info(12,10);
+    //rhsVector.Trans().Info(12,10);
 
 /*    {
         double energy;

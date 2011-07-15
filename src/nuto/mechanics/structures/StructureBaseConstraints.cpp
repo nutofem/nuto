@@ -781,7 +781,6 @@ void NuTo::StructureBase::ConstraintsBuildGlobalCoefficientSubMatrices0General(S
     std::vector<int> constraintMatrixGlobalDofs;
 
     // loop over all constraints
-    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
@@ -858,8 +857,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
     std::vector<int> constraintMatrixGlobalDofs;
 
     // loop over all constraints
-    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
-    std::cout << "number of constraints " << mConstraintMap.size() << std::endl;
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
@@ -977,7 +974,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
     std::vector<int> constraintMatrixGlobalDofs;
 
     // loop over all elements
-    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution
@@ -1028,7 +1024,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
     std::vector<int> constraintMatrixGlobalDofs;
 
     // loop over all elements
-    boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin();
     for(boost::ptr_map<int,ConstraintBase>::const_iterator constraintIter = this->mConstraintMap.begin(); constraintIter != this->mConstraintMap.end(); constraintIter++)
     {
         // calculate element contribution

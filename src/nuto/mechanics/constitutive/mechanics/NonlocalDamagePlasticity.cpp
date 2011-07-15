@@ -1249,7 +1249,6 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
     l_eq_plane = mNonlocalRadius;
     l_eq_circ  = mNonlocalRadius*rElement->GetSection()->GetThickness()/l_element;
 
-    bool mixedPlane;
     double factor = 0.5*(rStress[0]-rStress[1]);
     double helpScalar = sqrt(factor*factor+rStress[2]*rStress[2]*0.25);
     double stressPlane;
@@ -1258,13 +1257,11 @@ double NuTo::NonlocalDamagePlasticity::CalculateEquivalentLength2D(const Element
     {
         // principal plastic strains in plane direction are both in tension -> mixed interpolation
         stressPlane = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+0.5*rStress[2]*rStress[2]);
-        mixedPlane = true;
     }
     else
     {
         // only the largest component is considered
         stressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
-        mixedPlane = false;
     }
 
     if (stressPlane >=rStress[3])
@@ -1314,7 +1311,6 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
     assert(l_eq_plane>0);
     assert(l_eq_circ>0);
 
-    bool mixedPlane;
     double factor = 0.5*(rStress[0]-rStress[1]);
     double helpScalar = sqrt(factor*factor+rStress[2]*rStress[2]*0.25);
     double StressPlane;
@@ -1327,7 +1323,6 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
     {
         // principal plastic strains in plane direction are both in tension -> mixed interpolation
         StressPlane = sqrt(rStress[0]*rStress[0]+rStress[1]*rStress[1]+0.5*rStress[2]*rStress[2]);
-        mixedPlane = true;
         d_stress_max_plane_d_stress_xx = rStress(0)/StressPlane;
         d_stress_max_plane_d_stress_yy = rStress(1)/StressPlane;
         d_stress_max_plane_d_stress_xy = 0.5*rStress(2)/StressPlane;
@@ -1336,7 +1331,6 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
     {
         // only the largest component is considered
         StressPlane = (rStress[0]+rStress[1])*0.5+helpScalar;
-        mixedPlane = false;
 
         factor=1./(2.*sqrt((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+rStress(2)*rStress(2)));
         d_stress_max_plane_d_stress_xx = 0.5+(rStress(0)-rStress(1))*factor;
@@ -1576,7 +1570,9 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 
     int numberOfExternalCutbacks(0);
     int numberOfInternalIterations(0);
+#ifdef ENABLE_DEBUG
     int prevNumberOfInternalIterations(0);
+#endif
     lastDeltaEqPlasticStrain = 0.;
     while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
     {
@@ -2198,8 +2194,8 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 #ifdef ENABLE_DEBUG
             rLogger << "numberOfInternalIterations " << numberOfInternalIterations -  prevNumberOfInternalIterations<< "(" << numberOfInternalIterations << ")" << "\n";
             rLogger << "convergence for external cutback factor" << "\n";
-#endif
             prevNumberOfInternalIterations = numberOfInternalIterations;
+#endif
 
             //update equivalente plastic strain
             deltaPlasticStrain = rEpsilonP - lastPlastStrain;

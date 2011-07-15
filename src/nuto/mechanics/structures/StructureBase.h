@@ -256,10 +256,20 @@ public:
     //! @param rCoordinates matrix (one column) with the coordinates
     void NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>& rCoordinates)const;
 
+    //! @brief gets the coordinates of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
+    //! @param rNodeGroup node group identifier
+    //! @param rCoordinates matrix (rows/nodes columns/coordinates)
+    void NodeGroupGetCoordinates(int rNodeGroup, NuTo::FullMatrix<double>& rCoordinates);
+
     //! @brief gets the displacements of a node
     //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double>& rDisplacements)const;
+
+    //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
+    //! @param rNodeGroup node group identifier
+    //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
+    void NodeGroupGetDisplacements(int rNodeGroup, NuTo::FullMatrix<double>& rDisplacements);
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)

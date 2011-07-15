@@ -271,6 +271,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     solver.icntl[5] = 0; // control an option for permuting and/or scaling the rMatrix (0 - no scaling due to Schur)
     solver.icntl[6] = 7; // determines the pivot order to be used for the factorization (7 -  automatic choice)
     solver.icntl[7] = 77; // set scaling strategy to automatic
+    //solver.icntl[13] = 1000; // additional fill in (1000%, standard is 20%) this might indicate that you have not removed the almost zero entries of your matrix
     solver.icntl[18] = 1; // centralized Schur complement
 
     // analysis phase
@@ -293,7 +294,8 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&solver);
     if (solver.info[0] < 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] Numerical factorization phase: " + this->GetErrorString(solver.info[0]) + ".");
+        std::cout << "solver info " << solver.info[0] << "\n";
+    	throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] Numerical factorization phase: " + this->GetErrorString(solver.info[0]) + ".");
     }
 
 #ifdef SHOW_TIME
@@ -327,6 +329,12 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
 
     switch (error)
     {
+    case -9:
+        return "main work array too small";
+        break;
+    case -10:
+        return "numerically singular matrix";
+        break;
     default:
         return "unknown error code";
     }

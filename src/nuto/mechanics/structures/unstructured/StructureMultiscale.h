@@ -290,6 +290,18 @@ public:
         return mConstraintTotalStrain;
     }
 
+    //! @brief returns the constraint equation for the tangential crack opening
+    int GetConstraintCrackOpeningTangential()const
+    {
+        return mConstraintTangentialCrackOpening;
+    }
+
+    //! @brief returns the constraint equation for the normal crack opening
+    int GetConstraintCrackOpeningNormal()const
+    {
+        return mConstraintNormalCrackOpening;
+    }
+
     void SetlCoarseScale(double rlCoarseScale)
     {
         mlCoarseScale = rlCoarseScale;
@@ -338,12 +350,12 @@ public:
         return mDOFGlobalTotalStrain;
     }
 
-    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdMultiscaleNodesDamage, int rGroupIdMultiscaleNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
+    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdNodesDamage, int rGroupIdNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
     {
         mGroupBoundaryNodesDamage = rGroupIdBoundaryNodesDamage;
         mGroupBoundaryNodesHomogeneous = rGroupIdBoundaryNodesHomogeneous;
-        mGroupMultiscaleNodesDamage = rGroupIdMultiscaleNodesDamage;
-        mGroupMultiscaleNodesHomogeneous = rGroupIdMultiscaleNodesHomogeneous;
+        mGroupNodesDamage = rGroupIdNodesDamage;
+        mGroupNodesHomogeneous = rGroupIdNodesHomogeneous;
         mGroupElementsDamage = rGroupIdElementsDamage;
         mGroupElementsHomogeneous = rGroupIdElementsHomogeneous;
         mBoundaryNodesElementsAssigned = true;
@@ -367,6 +379,16 @@ public:
     int GetGroupBoundaryNodesHomogeneous()const
     {
     	return mGroupBoundaryNodesHomogeneous;
+    }
+
+    int GetGroupNodesDamage()const
+    {
+    	return mGroupNodesDamage;
+    }
+
+    int GetGroupNodesHomogeneous()const
+    {
+    	return mGroupNodesHomogeneous;
     }
 
     double GetScalingFactorDamage()const
@@ -393,6 +415,20 @@ public:
     {
     	mCenterMacro[0] = rCenterMacro[0];
     	mCenterMacro[1] = rCenterMacro[1];
+    }
+
+    void SetShiftCenterDamage(double rShiftCenterDamage[2])
+    {
+    	mShiftCenterDamage[0] = rShiftCenterDamage[0];
+    	mShiftCenterDamage[1] = rShiftCenterDamage[1];
+    }
+
+    void SetCrackOpening(NuTo::FullMatrix<double>& crackOpening);
+
+    void GetShiftedCenterDamage(boost::array<double,2> rShiftedCenterDamage)const
+    {
+    	rShiftedCenterDamage[0] = mCenterDamage[0] + mShiftCenterDamage[0];
+    	rShiftedCenterDamage[1] = mCenterDamage[1] + mShiftCenterDamage[1];
     }
 
     //calculate from the existing crack opening and orientation the cracking strain and the homogeneous strain
@@ -441,7 +477,7 @@ public:
     //! @brief add a constraint equation for the crack opening (normal crack opening non negativ)
     //! @parameter rPenaltyStiffness penalty stiffness for augmented Lagrangian
     //! @return id of the constraint
-    int CreateConstraintLagrangeCrackOpening(double rPenaltyStiffness);
+    int CreateConstraintLagrangeGlobalCrackOpeningNormal(double rPenaltyStiffness);
 
     //! @brief add a constraint equation for the total strain
     //! @parameter rStrain applied strain (rhs)
@@ -455,6 +491,14 @@ public:
     //! @brief add a linear constraint equation for the crack opening
     //! @return id of the constraint
     int CreateConstraintLinearGlobalCrackOpening(double rRHS, const NuTo::FullMatrix<double>& rDirection);
+
+    //! @brief add a linear constraint equation for the crack opening in tangential direction
+    //! @return id of the constraint
+    int CreateConstraintLinearGlobalCrackOpeningTangential(double rRHS);
+
+    //! @brief add a linear constraint equation for the crack opening in tangential direction
+    //! @return id of the constraint
+    int CreateConstraintLinearGlobalCrackOpeningNormal(double rRHS);
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
@@ -617,8 +661,20 @@ public:
     	return mScalingFactorEpsilon;
     }
 
+    //! @brief delete the constraint for the tangential crack opening
+    void ConstraintDeleteTangentialCrackOpening();
 
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+    //! @brief delete the constraint for the normal crack opening
+	void ConstraintDeleteNormalCrackOpening();
+
+#ifndef SWIG
+	//! @brief set periodic boundary conditions for a 2D structure
+	//! @parameter rGroupBoundaryNodes ... boundary nodes
+	//! @parameter rStrain ... strain
+	int ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(Group<NodeBase>* rGroupBoundaryNodes, EngineeringStrain2D& rStrain);
+#endif
+
+	//! @brief performs a Newton Raphson iteration (displacement and/or load control)
     //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
     //!             be careful, store it only once
     void NewtonRaphson(bool rSaveStructureBeforeUpdate,
@@ -645,6 +701,7 @@ protected:
     double mCrackAngle;
     double mCrackAngleElastic;
     int mDOFCrackAngle;
+    boost::array<double,2>  mShiftCenterDamage; //relative to center
     boost::array<double,2> mCrackOpening; //UT UN
     boost::array<int,2> mDOFCrackOpening;
     //! @brief this is the current total strain
@@ -697,6 +754,7 @@ protected:
     double mThickness;
     int mConstraintFineScaleX,
         mConstraintFineScaleY,
+        mConstraintFineScalePeriodic,
         mConstraintNormalCrackOpening,
         mConstraintTangentialCrackOpening,
         mConstraintCrackAngle,
@@ -704,8 +762,8 @@ protected:
     bool mBoundaryNodesElementsAssigned;
     int mGroupBoundaryNodesDamage;
     int mGroupBoundaryNodesHomogeneous;
-    int mGroupMultiscaleNodesDamage;
-    int mGroupMultiscaleNodesHomogeneous;
+    int mGroupNodesDamage;
+    int mGroupNodesHomogeneous;
     int mGroupElementsDamage;
     int mGroupElementsHomogeneous;
     std::string mIPName;

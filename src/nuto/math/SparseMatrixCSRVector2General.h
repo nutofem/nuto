@@ -221,9 +221,9 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2General<T>:
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				if (row<=this->mColumns[row][col_count]-1)
+				if (row<=(unsigned int)this->mColumns[row][col_count]-1)
 				    symmetricMatrix.AddEntry(row, this->mColumns[row][col_count]-1, 0.5*this->mValues[row][col_count]);
-				if (row>=this->mColumns[row][col_count]-1)
+				if (row>=(unsigned int)this->mColumns[row][col_count]-1)
 				    symmetricMatrix.AddEntry(this->mColumns[row][col_count]-1,row, 0.5*this->mValues[row][col_count]);
 			}
 		}
@@ -235,9 +235,9 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2General<T>:
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				if (row<=this->mColumns[row][col_count])
+				if (row<=(unsigned int)this->mColumns[row][col_count])
 				    symmetricMatrix.AddEntry(row, this->mColumns[row][col_count], 0.5*this->mValues[row][col_count]);
-				if (row>=this->mColumns[row][col_count])
+				if (row>=(unsigned int)this->mColumns[row][col_count])
 				    symmetricMatrix.AddEntry(this->mColumns[row][col_count],row, 0.5*this->mValues[row][col_count]);
 			}
 		}

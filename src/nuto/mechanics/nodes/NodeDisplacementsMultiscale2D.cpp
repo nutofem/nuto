@@ -93,7 +93,7 @@ void NuTo::NodeDisplacementsMultiscale2D::GetDisplacements2D(double rDisplacemen
     if (mCrackedDomain)
     {
     	mStructureMultiscale->GetDisplacementsEpsilonHom2D(coordinates, rDisplacements, mStructureMultiscale->GetCenterDamage());
-		mStructureMultiscale->GetDisplacementsCrack2D(coordinates, displacements);
+    	mStructureMultiscale->GetDisplacementsCrack2D(coordinates, displacements);
 	    rDisplacements[0] += displacements[0] + mFineScaleDisplacements[0];
 	    rDisplacements[1] += displacements[1] + mFineScaleDisplacements[1];
     }

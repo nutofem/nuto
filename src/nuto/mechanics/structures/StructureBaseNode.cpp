@@ -157,6 +157,74 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 #endif
 }
 
+//! @brief gets the displacements of a group of nodes
+//! @param rNodeGroup node group identifier
+//! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
+void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<double>& rDisplacements)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+    assert(nodeGroup!=0);
+
+    //all nodes have to have the same dimension
+    if(nodeGroup->GetNumMembers()<1)
+    	throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] Group has no members.");
+
+    int numDisp= nodeGroup->begin()->second->GetNumDisplacements()+nodeGroup->begin()->second->GetNumFineScaleDisplacements();
+    //resize the matrix
+    rDisplacements.Resize(nodeGroup->GetNumMembers(),numDisp);
+	double disp[3];
+	int theNode(0);
+    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
+    {
+		try
+		{
+			switch (numDisp)
+			{
+			case 1:
+				itNode->second->GetDisplacements1D(disp);
+				rDisplacements(theNode,0)=disp[0];
+			break;
+			case 2:
+				itNode->second->GetDisplacements2D(disp);
+				rDisplacements(theNode,0)=disp[0];
+				rDisplacements(theNode,1)=disp[1];
+			break;
+			case 3:
+				itNode->second->GetDisplacements3D(disp);
+				rDisplacements(theNode,0)=disp[0];
+				rDisplacements(theNode,1)=disp[1];
+				rDisplacements(theNode,2)=disp[2];
+			break;
+			default:
+				throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] The number of displacement components is either 1, 2 or 3.");
+			}
+		}
+		catch(NuTo::MechanicsException & b)
+		{
+			b.AddMessage("[NuTo::StructureBase::NodeGroupGetDisplacements] Error getting displacements.");
+			throw b;
+		}
+		catch(...)
+		{
+			throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] Error getting displacements of node (unspecified exception).");
+		}
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::NodeGroupGetDisplacements] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 //! @brief gets the coordinates of a node
 //! @param rNode node identifier
 //! @param rCoordinates matrix (one column) with the coordinates
@@ -202,6 +270,74 @@ void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>
     end=clock();
     if (mShowTime && mVerboseLevel>3)
         std::cout<<"[NuTo::StructureBase::NodeGetCoordinates] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief gets the coordinates of a group of nodes
+//! @param rNodeGroup node group identifier
+//! @param rCoordinates matrix (rows/nodes columns/rCoordinates)
+void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<double>& rCoordinates)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+    assert(nodeGroup!=0);
+
+    //all nodes have to have the same dimension
+    if(nodeGroup->GetNumMembers()<1)
+    	throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] Group has no members.");
+
+    int numCoords= nodeGroup->begin()->second->GetNumCoordinates();
+    //resize the matrix
+    rCoordinates.Resize(nodeGroup->GetNumMembers(),numCoords);
+	double coord[3];
+	int theNode(0);
+    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
+    {
+		try
+		{
+			switch (numCoords)
+			{
+			case 1:
+				itNode->second->GetCoordinates1D(coord);
+				rCoordinates(theNode,0)=coord[0];
+			break;
+			case 2:
+				itNode->second->GetCoordinates2D(coord);
+				rCoordinates(theNode,0)=coord[0];
+				rCoordinates(theNode,1)=coord[1];
+			break;
+			case 3:
+				itNode->second->GetCoordinates3D(coord);
+				rCoordinates(theNode,0)=coord[0];
+				rCoordinates(theNode,1)=coord[1];
+				rCoordinates(theNode,2)=coord[2];
+			break;
+			default:
+				throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] The number of coordinates components is either 1, 2 or 3.");
+			}
+		}
+		catch(NuTo::MechanicsException & b)
+		{
+			b.AddMessage("[NuTo::StructureBase::NodeGroupGetCoordinates] Error getting coordinates.");
+			throw b;
+		}
+		catch(...)
+		{
+			throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] Error getting coordinates of node (unspecified exception).");
+		}
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::NodeGroupGetCoordinates] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
 

@@ -24,7 +24,7 @@ NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::ConstitutiveStaticDataMulti
    : NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain()
 {
     mStructure = 0;
-    mNonlinearSolutionOn = false;
+    mSolutionPhase = Constitutive::HOMOGENIZED_LINEAR_ELASTIC;
     mPrevCrackAngleElastic = 0.5*M_PI;
 }
 
@@ -46,7 +46,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::serialize(Archive & ar
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain)
        & BOOST_SERIALIZATION_NVP(mStructure)
-       & BOOST_SERIALIZATION_NVP(mNonlinearSolutionOn)
+       & BOOST_SERIALIZATION_NVP(mSolutionPhase)
        & BOOST_SERIALIZATION_NVP(mPrevCrackAngle)
        & BOOST_SERIALIZATION_NVP(mPrevCrackAngleElastic);
 #ifdef DEBUG_SERIALIZATION
@@ -129,7 +129,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
 //! @brief sets the parameters of the fine scale model
 void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(const std::string& rName, double rParameter)
 {
-    if (mNonlinearSolutionOn)
+    if (!LinearSolution())
     {
 		std::string upperCaseName(rName);
 		std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
@@ -142,7 +142,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLEHIGH")
 			mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
 		else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
-			mStructure->CreateConstraintLagrangeCrackOpening(rParameter);
+			mStructure->CreateConstraintLagrangeGlobalCrackOpeningNormal(rParameter);
 		else if (upperCaseName=="LOGGERQUIET")
 			mStructure->LoggerSetQuiet(true);
 		else if (upperCaseName=="LOGGERNONQUIET")
@@ -164,7 +164,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 //! @brief sets the parameters of the fine scale model
 void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(const std::string& rName, std::string rParameter)
 {
-    if (mNonlinearSolutionOn)
+    if (!LinearSolution())
     {
 		std::string upperCaseName(rName);
 		std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
@@ -182,20 +182,21 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
 		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
 {
-	if (mNonlinearSolutionOn)
+	if (!LinearSolution())
 	{
 		mStructure->ElementTotalUpdateTmpStaticData();
 		if (rVisualizeDamage)
 		{
 			mStructure->SetCenterScalingToDamage(true);
 			mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsDamage(),rVisualize, rWhat);
+			if (NonLinearSolutionCracked())
+			    mStructure->VisualizeCrack(rVisualize);
 		}
 		else
 		{
 			mStructure->SetCenterScalingToDamage(false);
 			mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsHomogeneous(),rVisualize, rWhat);
 		}
-		mStructure->VisualizeCrack(rVisualize);
 	}
 }
 #endif

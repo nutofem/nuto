@@ -3,6 +3,7 @@
 #ifndef CONSTITUTIVESTATICDATAMULTISCALE2DPLANESTRAIN_H
 #define CONSTITUTIVESTATICDATAMULTISCALE2DPLANESTRAIN_H
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
 
 //! @brief ... base class, storing the static data (history variables) of a constitutive relationship
@@ -62,16 +63,28 @@ public:
     //! with the initialization of the crack angle based on the previous elastic solution
     //void UseNonlinearSolution();
 
-    //return if the solution is either linear elastic or from the fine scale model
-    bool NonlinearSolutionOn()const
+    //return if the solution is linear elastic with the homogenized stiffness
+    bool LinearSolution()const
     {
-        return mNonlinearSolutionOn;
+        return (mSolutionPhase==Constitutive::HOMOGENIZED_LINEAR_ELASTIC);
     }
 
-    //return if the solution is either linear elastic or from the fine scale model
-    void SetNonlinearSolutionOn(bool rNonlinearSolution)
+    //return if the solution is nonlinear without a crack enrichment
+    bool NonLinearSolutionNoCrack()const
     {
-        mNonlinearSolutionOn = rNonlinearSolution;
+    	return (mSolutionPhase==Constitutive::NONLINEAR_NO_CRACK);
+    }
+
+    //return if the solution is nonlinear with a crack enrichment
+    bool NonLinearSolutionCracked()const
+    {
+    	return (mSolutionPhase==Constitutive::NONLINEAR_CRACKED);
+    }
+
+    //set the type of the solution phase
+    void SetSolutionPhase(Constitutive::eSolutionPhaseType rSolutionPhase)
+    {
+    	mSolutionPhase = rSolutionPhase;
     }
 
     //return if the solution is either linear elastic or from the fine scale model
@@ -111,7 +124,7 @@ protected:
     //! @brief fine scale structure representative for a macroscopic integration point
     StructureMultiscale* mStructure;
 
-    bool mNonlinearSolutionOn;
+    Constitutive::eSolutionPhaseType mSolutionPhase;
     double mPrevCrackAngle;
     double mPrevCrackAngleElastic;
 };
