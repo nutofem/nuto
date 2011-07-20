@@ -113,7 +113,6 @@ public:
         double coord1[2], coord2[2];
         nodePtr1->GetCoordinates2D(coord1);
         nodePtr2->GetCoordinates2D(coord2);
-        std::cout <<"coordinates " << coord1[0] << " " << coord1[1] << " " << coord2[0] << " " << coord2[1] << "\n";
         return coord1[0] < coord2[0];
     }
 };
@@ -146,7 +145,6 @@ public:
         double coord1[2], coord2[2];
         nodePtr1->GetCoordinates2D(coord1);
         nodePtr2->GetCoordinates2D(coord2);
-        std::cout <<"coordinates " << coord1[0] << " " << coord1[1] << " " << coord2[0] << " " << coord2[1] << "\n";
         return coord1[1] < coord2[1];
     }
 };
