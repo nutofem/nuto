@@ -523,7 +523,8 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 
         // reorder columns
         this->mConstraintMatrix.ReorderColumns(tmpMapping);
-
+        //NuTo::FullMatrix<double> constraintMatrixFull(mConstraintMatrix);
+        //constraintMatrixFull.Info(12,5);
         // remove columns of dependent dofs
         // check if the submatrix which is removed is a diagonal matrix
         const std::vector<int>& constraintMatrixRowIndex = this->mConstraintMatrix.GetRowIndex();
@@ -553,6 +554,11 @@ void NuTo::Structure::NodeBuildGlobalDofs()
         }
 
         mNodeNumberingRequired = false;
+    }
+    catch (MathException& e)
+    {
+        e.AddMessage("[NuTo::Structure::NodeBuildGlobalDofs] error building global dof numbering.");
+        throw e;
     }
     catch (MechanicsException& e)
     {

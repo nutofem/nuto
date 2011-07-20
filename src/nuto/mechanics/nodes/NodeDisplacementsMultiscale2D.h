@@ -101,17 +101,52 @@ public:
     //! @return enum
     virtual Node::eNodeType GetNodeType()const;
 
+    virtual NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()
+    {
+    	return this;
+    }
+
+    virtual const NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()const
+    {
+    	return this;
+    }
+
     //! @brief returns, if the node is on the boundary of the cracked (true) or homogeneous domain (false)
     bool IsInCrackedDomain()const
     {
     	return mCrackedDomain;
     }
 
+    //! @brief set the shape functions based on the actual oscillations
+    //! @parameter shape function number (0..2)
+    void SetShapeFunctionMultiscalePeriodic(int rShapeFunction);
+
+    //! @brief returns the shape function for the periodic bc for the nodes
+    const boost::array<double,3>& GetShapeFunctionMultiscalePeriodicX()const
+	{
+	    return mShapeFunctionX;
+	}
+
+    //! @brief returns the shape function for the periodic bc for the nodes
+    //! @parameter
+    const boost::array<double,3>& GetShapeFunctionMultiscalePeriodicY() const
+	{
+	    return mShapeFunctionY;
+	}
+
+    //! @brief scales the shape functions
+    //! @parameter rShapeFunction  (1..3 corresponding to macro strains exx, eyy, and gxy)
+    //! @parameter rScalingFactor rScalingFactor
+    void ScaleShapeFunctionMultiscalePeriodic(int rShapeFunction, double rScalingFactor);
+
 protected:
     //! @brief constructor for serialize
     NodeDisplacementsMultiscale2D(){};
 
     double mFineScaleDisplacements[2];
+    //these are the shape functions allowing for periodic boundary conditions due to constant strain in epsilon_xx, epsilon_yy, and gamma_xy
+    boost::array<double,3> mShapeFunctionX;
+    boost::array<double,3> mShapeFunctionY;
     int mDOF[2];
     //! @brief if set to true, the crack has an influence on the displacements, if false, it's just the homogeneous part
     bool mCrackedDomain;

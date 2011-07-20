@@ -1975,19 +1975,15 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		fineScaleStructure->CreateConstraintLinearGlobalCrackOpeningNormal(0);
 
 		//set constraint for crack angle
-		//bool coupleToTotalStrain(false);
-		//fineScaleStructure->CreateConstraintNonlinearCrackAngle(mPenaltyStiffnessCrackAngle,coupleToTotalStrain);
 		fineScaleStructure->CreateConstraintLinearGlobalCrackAngle(alpha);
 
-		//set constraint for crack opening
-	/*	NuTo::FullMatrix<double> direction(2,1);
-		direction(0,0)=0;
-		direction(1,0)=1;
-		fineScaleStructure->CreateConstraintLinearGlobalCrackOpening(0,direction);
-		direction(0,0)=1;
-		direction(1,0)=0;
-		fineScaleStructure->CreateConstraintLinearGlobalCrackOpening(0,direction);
-	*/
+		//periodic bc
+	    //EngineeringStrain2D strain;
+	    //fineScaleStructure->CreateConstraintLinearFineScaleDisplacementsPeriodic(strain);
+
+		//set constraint for fine scale fluctuations on the boundary
+		fineScaleStructure->CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions();
+
 		//set crack transition zone
 		fineScaleStructure->SetCrackTransitionRadius(mCrackTransitionRadius);
 
@@ -2000,8 +1996,8 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		fineScaleStructure->CalculateMaximumIndependentSets();
 
 		//set to nonlinear solution
-		//staticData->SetSolutionPhase(Constitutive::NONLINEAR_NO_CRACK);
-		staticData->SetSolutionPhase(Constitutive::NONLINEAR_CRACKED);
+		staticData->SetSolutionPhase(Constitutive::NONLINEAR_NO_CRACK);
+		//staticData->SetSolutionPhase(Constitutive::NONLINEAR_CRACKED);
 		fineScaleStructure->GetLogger().OpenFile();
 
 		//change the previous angle of the alpha-constraint
@@ -2013,6 +2009,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
 
 		fineScaleStructure->SetLoadFactor(0);
+		fineScaleStructure->ConstraintInfo(10);
 		fineScaleStructure->NodeBuildGlobalDofs();
 		NuTo::FullMatrix<double> activeDOF, dependentDOF;
 		fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
@@ -2071,7 +2068,8 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		{
 			std::cout << "elastic solution: " << stressElastic.mEngineeringStress[0] << " " << stressElastic.mEngineeringStress[1] << " " <<  stressElastic.mEngineeringStress[2] << "\n";
 		    std::cout << "inelastic solution: " << stressInElastic.mEngineeringStress[0] << " " << stressInElastic.mEngineeringStress[1] << " " <<  stressInElastic.mEngineeringStress[2] << "\n";
-			throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] the difference between elastic and inelastic solution is too big.",NuTo::MechanicsException::NOCONVERGENCE);
+		    std::cout << "********** reenable check for difference between elastic and nonlinear solution " << "\n";
+			//throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] the difference between elastic and inelastic solution is too big.",NuTo::MechanicsException::NOCONVERGENCE);
 		}
     }
     else
@@ -2120,7 +2118,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
             try
             {
                 fineScaleStructure->GetLogger() << "\n" << "************************************************" << "\n";
-                fineScaleStructure->GetLogger() << " Switch from nonlinear without crack to cracked solution  without crack" << "\n";
+                fineScaleStructure->GetLogger() << " Switch from nonlinear without crack to cracked solution" << "\n";
                 fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
                 		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
                 		                            <<  engineeringStrain.mEngineeringStrain[2] << "\n";
@@ -2172,7 +2170,6 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 
     		//initial crack angle from the maximum principal strain
     		double princAlpha = fineScaleStructure->GetCrackAngleElastic();
-
 
             std::clock_t start,end;
             start=clock();
@@ -2322,7 +2319,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
     	        fineScaleStructure->NodeBuildGlobalDofs();
     	        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
     	    }
-
+/*
     		//test the difference in average stress between the initial solution (no crack enrichment) and the enriched solution (crack enrichment at pos maxShift)
 
     		//so first remove the constraint for crack opening
@@ -2425,7 +2422,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	        //reinsert the constraints
 	    	fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackOpeningTangential(),constraintCrackOpeningTangential);
 	    	fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackOpeningNormal(),constraintCrackOpeningNormal);
-
+*/
     	    if (engineeringStrain.mEngineeringStrain[0]>0.0001)
 	    	//if ((averageStressWithCrack-averageStressNoCrack).Norm()>0.01*2)
     		//if (sqrt(crackOpening[0]*crackOpening[0]+crackOpening[1]*crackOpening[1])>0.0001)
@@ -2440,9 +2437,9 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 				fineScaleStructure->ConstraintDeleteTangentialCrackOpening();
 				fineScaleStructure->ConstraintDeleteNormalCrackOpening();
 				//delete linear constraint for normal crack opening and create constraint to avoid negative crack opening
-				fineScaleStructure->CreateConstraintLagrangeGlobalCrackOpeningNormal(mAugmentedLagrangeStiffnessCrackOpening);
+                fineScaleStructure->CreateConstraintLagrangeGlobalCrackOpeningNormal(mAugmentedLagrangeStiffnessCrackOpening);
 				//set the constraint for alpha to the new angle
-				fineScaleStructure->CreateConstraintLinearGlobalCrackAngle(maxAlpha);
+                fineScaleStructure->CreateConstraintLinearGlobalCrackAngle(maxAlpha);
 				//set to nonlinear solution with crack
 				staticData->SetSolutionPhase(Constitutive::NONLINEAR_CRACKED);
 				//this is a not so good way to say, that in the Newton Rapshon iteration should be continued, since an adaptation has been performed

@@ -336,18 +336,28 @@ public:
         return mCrackAngle;
     }
 
-    boost::array<int,2> GetDofGlobalCrackOpening2D()const
+    const boost::array<int,2>& GetDofGlobalCrackOpening2D()const
     {
         return mDOFCrackOpening;
     }
 
-    boost::array<double,2> GetGlobalCrackOpening2D()const
+    const boost::array<double,2>& GetGlobalCrackOpening2D()const
     {
         return mCrackOpening;
     }
-    boost::array<int,3> GetDofGlobalTotalStrain2D()const
+    const boost::array<int,3>& GetDofGlobalTotalStrain2D()const
     {
         return mDOFGlobalTotalStrain;
+    }
+
+    const boost::array<double,3>& GetPeriodicBoundaryDisplacements()const
+    {
+    	return mPeriodicBoundaryDisplacements;
+    }
+
+    const boost::array<int,3>& GetDOFPeriodicBoundaryDisplacements()const
+    {
+    	return mDOFPeriodicBoundaryDisplacements;
     }
 
     void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdNodesDamage, int rGroupIdNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
@@ -393,11 +403,13 @@ public:
 
     double GetScalingFactorDamage()const
     {
+    	assert(mlCoarseScale/mlFineScaleDamage>0);
         return mlCoarseScale/mlFineScaleDamage;
     }
 
     double GetScalingFactorHomogeneous()const
     {
+    	assert(mlCoarseScale*(mlCoarseScale-mFineScaleAreaDamage/mlFineScaleDamage)/(mFineScaleAreaHomogeneous)>0);
     	return mlCoarseScale*(mlCoarseScale-mFineScaleAreaDamage/mlFineScaleDamage)/(mFineScaleAreaHomogeneous);
     }
 
@@ -499,6 +511,13 @@ public:
     //! @brief add a linear constraint equation for the crack opening in tangential direction
     //! @return id of the constraint
     int CreateConstraintLinearGlobalCrackOpeningNormal(double rRHS);
+
+    //! @brief add a linear constraint equation for the additional shape functions depscribing the fluctuation boundary displacements
+    //! @return id of the constraint
+    int CreateConstraintLinearPeriodicBoundaryShapeFunctions(int rShapeFunction, double rRHS);
+
+    //! @brief set constraint for fine scale fluctuations on the boundary as a linear combination of the periodic bc with exx, eyy, gxy
+    void CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions();
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
@@ -621,6 +640,8 @@ public:
 */
     void CalculateStiffness(NuTo::FullMatrix<double>& rStiffness);
 
+    void CalculatePeriodicBoundaryShapeFunctions(double rDeltaStrain);
+
     inline double GetPrevCrackAngleElastic()const
     {
     	return mPrevCrackAngleElastic;
@@ -668,10 +689,13 @@ public:
 	void ConstraintDeleteNormalCrackOpening();
 
 #ifndef SWIG
+	//! @brief set periodic boundary conditions for the fine scale solution
+	void CreateConstraintLinearFineScaleDisplacementsPeriodic(const EngineeringStrain2D& rStrain);
+
 	//! @brief set periodic boundary conditions for a 2D structure
 	//! @parameter rGroupBoundaryNodes ... boundary nodes
 	//! @parameter rStrain ... strain
-	int ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(Group<NodeBase>* rGroupBoundaryNodes, EngineeringStrain2D& rStrain);
+	int ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(int rGroupBoundaryNodes, const EngineeringStrain2D& rStrain);
 #endif
 
 	//! @brief performs a Newton Raphson iteration (displacement and/or load control)
@@ -710,8 +734,12 @@ protected:
     //! but only before the load application, the stiffness is to be calculated with the old strain, but the
     //! constraint matrix with the new one
     EngineeringStrain2D mEpsilonTotConstraint;
-
+    //! @brief dofs for the total strain (used in the stiffness calculation, otherwise this is always constrained)
     boost::array<int,3> mDOFGlobalTotalStrain;
+    //! @brief dofs displacements of the boundary based on the solution with exx, eyy, and gxy
+    boost::array<int,3> mDOFPeriodicBoundaryDisplacements;
+    //! @brief corresponding displacements d=N(periodic shape functions of multiscale node)*mPeriodicBoundaryDisplacements
+    boost::array<double,3> mPeriodicBoundaryDisplacements;
     //! @brief this is the current homogeneous part of the strain
     EngineeringStrain2D mEpsilonHom;
     //scaling factor for alpha=mScalingFactorAlpha*DOFalpha
@@ -752,13 +780,17 @@ protected:
     double mFineScaleAreaHomogeneous;
     //! @brief thickness of the structure
     double mThickness;
-    int mConstraintFineScaleX,
-        mConstraintFineScaleY,
-        mConstraintFineScalePeriodic,
+    int mConstraintFineScaleDamageX,
+        mConstraintFineScaleDamageY,
+        mConstraintFineScaleHomogeneousX,
+        mConstraintFineScaleHomogeneousY,
+        mConstraintFineScalePeriodicDamage,
+        mConstraintFineScalePeriodicHomogeneous,
         mConstraintNormalCrackOpening,
         mConstraintTangentialCrackOpening,
         mConstraintCrackAngle,
-        mConstraintTotalStrain;
+        mConstraintTotalStrain,
+        mConstraintPeriodicBoundaryShapeFunctions[3];
     bool mBoundaryNodesElementsAssigned;
     int mGroupBoundaryNodesDamage;
     int mGroupBoundaryNodesHomogeneous;

@@ -65,6 +65,7 @@ constraints/ConstraintLinearNodeGroupDisplacements1D.cpp
 constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
 constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
 constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.cpp
+constraints/ConstraintLinearPeriodicBoundaryShapeFunctions.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNonlinear.cpp

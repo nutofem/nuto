@@ -866,8 +866,6 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
         nonlinearPtr->CalculateCoefficientMatrix_0(constraintMatrix, constraintMatrixGlobalDofs);
         assert(static_cast<unsigned int>(constraintMatrix.GetNumRows()) == constraintMatrixGlobalDofs.size());
         assert(static_cast<unsigned int>(constraintMatrix.GetNumColumns()) == constraintMatrixGlobalDofs.size());
-        NuTo::FullMatrix<double> constraintMatrixFull(constraintMatrix);
-        constraintMatrixFull.Info(12,3);
 
         const std::vector<std::vector<double> >& values(constraintMatrix.GetValues());
         const std::vector<std::vector<int> >& columns(constraintMatrix.GetColumns());

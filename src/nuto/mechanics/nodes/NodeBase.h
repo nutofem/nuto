@@ -6,15 +6,16 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
-#include <vector>
 
+#include <vector>
+#include <boost/array.hpp>
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 namespace NuTo
 {
 template <class T> class FullMatrix;
-
+class NodeDisplacementsMultiscale2D;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all nodes
@@ -281,10 +282,35 @@ public:
     //! @return enum
     virtual Node::eNodeType GetNodeType()const=0;
 
+    //! @brief set the shape functions based on the actual oscillations
+    //! @parameter shape function number (0..2)
+    virtual void SetShapeFunctionMultiscalePeriodic(int rShapeFunction);
+
+    //! @brief returns the shape function for the periodic bc for the nodes
+    virtual const boost::array<double,3>& GetShapeFunctionMultiscalePeriodicX()const;
+
+    //! @brief returns the shape function for the periodic bc for the nodes
+    virtual const boost::array<double,3>& GetShapeFunctionMultiscalePeriodicY() const;
+
+    //! @brief scales the shape functions
+    //! @parameter rShapeFunction  (1..3 corresponding to macro strains exx, eyy, and gxy)
+    //! @parameter rScalingFactor rScalingFactor
+    virtual void ScaleShapeFunctionMultiscalePeriodic(int rShapeFunction, double rScalingFactor);
+
     //! @brief only relevant for multiscale nodes, where they are either in the homogeneous (false) or cracked domain (true)
     virtual bool IsInCrackedDomain()const
     {
     	throw MechanicsException("[NuTo::NodeBase::IsInCrackedDomain] not implemented for this type of nodes.");
+    }
+
+    virtual NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()
+    {
+    	throw MechanicsException("[NuTo::NodeBase::AsNodeDisplacementsMultiscale2D] conversion can't be performed, types do not match.");
+    }
+
+    virtual const NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()const
+    {
+    	throw MechanicsException("[NuTo::NodeBase::AsNodeDisplacementsMultiscale2D] conversion can't be performed, types do not match.");
     }
 
 protected:

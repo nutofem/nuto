@@ -1815,7 +1815,6 @@ void NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
                         rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
                     }
 #endif
-
                     assert(fabs(hessian.determinant())>toleranceDeterminant);
                     hessian = hessian.inverse();
 #ifdef ENABLE_DEBUG

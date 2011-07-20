@@ -27,6 +27,8 @@
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackAngle.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalCrackOpening.h"
 #include "nuto/mechanics/constraints/ConstraintLinearGlobalTotalStrain.h"
+#include "nuto/mechanics/constraints/ConstraintLinearPeriodicBoundaryShapeFunctions.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeGlobalCrackOpening2D.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinearGlobalCrackAngle2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
@@ -70,12 +72,24 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mDOFGlobalTotalStrain[0] = -1;
     mDOFGlobalTotalStrain[1] = -1;
     mDOFGlobalTotalStrain[2] = -1;
-    mConstraintFineScaleX = -1;
-    mConstraintFineScaleY = -1;
-    mConstraintFineScalePeriodic = -1;
+    mDOFPeriodicBoundaryDisplacements[0] = -1.;
+    mDOFPeriodicBoundaryDisplacements[1] = -1.;
+    mDOFPeriodicBoundaryDisplacements[2] = -1.;
+    mPeriodicBoundaryDisplacements[0] = 0.;
+    mPeriodicBoundaryDisplacements[1] = 0.;
+    mPeriodicBoundaryDisplacements[2] = 0.;
+    mConstraintFineScaleDamageX = -1;
+    mConstraintFineScaleDamageY = -1;
+    mConstraintFineScaleHomogeneousX = -1;
+    mConstraintFineScaleHomogeneousY = -1;
+    mConstraintFineScalePeriodicDamage = -1;
+    mConstraintFineScalePeriodicHomogeneous = -1;
     mConstraintCrackAngle = -1;
     mConstraintNormalCrackOpening = -1;
     mConstraintTangentialCrackOpening = -1;
+    mConstraintPeriodicBoundaryShapeFunctions[0] = -1;
+    mConstraintPeriodicBoundaryShapeFunctions[1] = -1;
+    mConstraintPeriodicBoundaryShapeFunctions[2] = -1;
     mSquareCoarseScaleModel = false;
     mlCoarseScale = 0.;
     mlFineScaleDamage = 0.;
@@ -189,20 +203,22 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Structure)
        & BOOST_SERIALIZATION_NVP(mCrackAngle)
+       & BOOST_SERIALIZATION_NVP(mCrackAngleElastic)
        & BOOST_SERIALIZATION_NVP(mDOFCrackAngle)
        & BOOST_SERIALIZATION_NVP(mShiftCenterDamage)
-       & BOOST_SERIALIZATION_NVP(mCrackAngleElastic)
        & BOOST_SERIALIZATION_NVP(mCrackOpening)
        & BOOST_SERIALIZATION_NVP(mDOFCrackOpening)
        & BOOST_SERIALIZATION_NVP(mEpsilonTot)
        & BOOST_SERIALIZATION_NVP(mEpsilonTotConstraint)
        & BOOST_SERIALIZATION_NVP(mDOFGlobalTotalStrain)
+       & BOOST_SERIALIZATION_NVP(mDOFPeriodicBoundaryDisplacements)
+       & BOOST_SERIALIZATION_NVP(mPeriodicBoundaryDisplacements)
        & BOOST_SERIALIZATION_NVP(mEpsilonHom)
        & BOOST_SERIALIZATION_NVP(mScalingFactorCrackAngle)
        & BOOST_SERIALIZATION_NVP(mScalingFactorCrackOpening)
        & BOOST_SERIALIZATION_NVP(mScalingFactorEpsilon)
-       & BOOST_SERIALIZATION_NVP(mPrevCrackAngleElastic)
        & BOOST_SERIALIZATION_NVP(mPrevCrackAngle)
+       & BOOST_SERIALIZATION_NVP(mPrevCrackAngleElastic)
        & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
        & BOOST_SERIALIZATION_NVP(mlCoarseScale)
        & BOOST_SERIALIZATION_NVP(mlFineScaleDamage)
@@ -215,13 +231,17 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mFineScaleAreaDamage)
        & BOOST_SERIALIZATION_NVP(mFineScaleAreaHomogeneous)
        & BOOST_SERIALIZATION_NVP(mThickness)
-       & BOOST_SERIALIZATION_NVP(mConstraintFineScaleX)
-       & BOOST_SERIALIZATION_NVP(mConstraintFineScaleY)
-       & BOOST_SERIALIZATION_NVP(mConstraintFineScalePeriodic)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScaleDamageX)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScaleDamageY)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScaleHomogeneousX)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScaleHomogeneousY)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScalePeriodicDamage)
+       & BOOST_SERIALIZATION_NVP(mConstraintFineScalePeriodicHomogeneous)
        & BOOST_SERIALIZATION_NVP(mConstraintNormalCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintTangentialCrackOpening)
        & BOOST_SERIALIZATION_NVP(mConstraintCrackAngle)
        & BOOST_SERIALIZATION_NVP(mConstraintTotalStrain)
+       & BOOST_SERIALIZATION_NVP(mConstraintPeriodicBoundaryShapeFunctions)
        & BOOST_SERIALIZATION_NVP(mBoundaryNodesElementsAssigned)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodesDamage)
        & BOOST_SERIALIZATION_NVP(mGroupBoundaryNodesHomogeneous)
@@ -233,7 +253,10 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mResultDirectory)
        & BOOST_SERIALIZATION_NVP(mLoadStepMacro)
        & BOOST_SERIALIZATION_NVP(mToleranceElasticCrackAngleLow)
-       & BOOST_SERIALIZATION_NVP(mToleranceElasticCrackAngleHigh);
+       & BOOST_SERIALIZATION_NVP(mToleranceElasticCrackAngleHigh)
+       & BOOST_SERIALIZATION_NVP(mPrevEpsilonTot)
+       & BOOST_SERIALIZATION_NVP(mDeltaEpsilonTot)
+       ;
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of StructureMultiscale" << "\n";
 #endif
@@ -498,7 +521,11 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
         throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] calculation of midpoint is wrong.");
     double fineScaleRadius = sqrt((coord1[0]-rCenter[0])*(coord1[0]-rCenter[0])+(coord1[1]-rCenter[1])*(coord1[1]-rCenter[1]));
     //check for a round fine scale model
-    bool squareFineScaleModel = false;
+    bool squareFineScaleModel;
+    if (nodeGroupBoundary->GetNumMembers()==4)
+    	squareFineScaleModel = true;
+    else
+    	squareFineScaleModel = false;
     for (Group<NodeBase>::iterator itNode=nodeGroupBoundary->begin(); itNode!=nodeGroupBoundary->end();itNode++)
     {
         double coordinates[2];
@@ -581,11 +608,6 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
     //direction(1,0) = 1.;
     //mConstraintFineScaleY = this->ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup, direction, 0);
 
-    //zero strain
-    EngineeringStrain2D strain;
-    mConstraintFineScalePeriodic = this->ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(nodeGroupBoundary,strain);
-    //ConstraintInfo(10);
-
     if (minX==maxX || minY==maxY)
         throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] structure has zero width or height, either check your boundary group or the full structure.");
     if (squareFineScaleModel)
@@ -651,6 +673,9 @@ void NuTo::StructureMultiscale::NumberAdditionalGlobalDofs()
         mDOFGlobalTotalStrain[0] = mNumDofs++;
         mDOFGlobalTotalStrain[1] = mNumDofs++;
         mDOFGlobalTotalStrain[2] = mNumDofs++;
+        mDOFPeriodicBoundaryDisplacements[0] = mNumDofs++;
+        mDOFPeriodicBoundaryDisplacements[1] = mNumDofs++;
+        mDOFPeriodicBoundaryDisplacements[2] = mNumDofs++;
     }
     else
         throw MechanicsException("[NuTo::StructureMultiscale::SetAdditionalGlobalDofs] Only implemented for 2D.");
@@ -702,7 +727,9 @@ void NuTo::StructureMultiscale::NodeMergeAdditionalGlobalDofValues(const FullMat
             }
             value*=mScalingFactorCrackOpening;
             this->mCrackOpening[count] = value;
-        }
+
+
+         }
 
         //merge total strain
         for (int count=0; count<3; count++)
@@ -721,6 +748,24 @@ void NuTo::StructureMultiscale::NodeMergeAdditionalGlobalDofValues(const FullMat
             }
             value*=mScalingFactorEpsilon;
             this->mEpsilonTot.mEngineeringStrain[count] = value;
+        }
+
+        //merge global displacements for periodic bc
+        for (int count=0; count<3; count++)
+        {
+            int dof = this->mDOFPeriodicBoundaryDisplacements[count];
+            double value;
+            if (dof >= rActiveDofValues.GetNumRows())
+            {
+                dof -= rActiveDofValues.GetNumRows();
+                assert(dof < rDependentDofValues.GetNumRows());
+                value = rDependentDofValues(dof,0);
+            }
+            else
+            {
+                value = rActiveDofValues(dof,0);
+            }
+            this->mPeriodicBoundaryDisplacements[count] = value;
         }
     }
     else
@@ -781,6 +826,21 @@ void NuTo::StructureMultiscale::NodeExtractAdditionalGlobalDofValues(NuTo::FullM
         {
             int dof = this->mDOFGlobalTotalStrain[count];
             double value = this->mEpsilonTot.mEngineeringStrain[count]/mScalingFactorEpsilon;
+            if (dof >= rActiveDofValues.GetNumRows())
+            {
+                dof -= rActiveDofValues.GetNumRows();
+                assert(dof < rDependentDofValues.GetNumRows());
+                rDependentDofValues(dof,0) = value;
+            }
+            else
+            {
+                rActiveDofValues(dof,0) = value;
+            }
+        }
+        for (int count=0; count<3; count++)
+        {
+            int dof = this->mDOFPeriodicBoundaryDisplacements[count];
+            double value = this->mPeriodicBoundaryDisplacements[count];
             if (dof >= rActiveDofValues.GetNumRows())
             {
                 dof -= rActiveDofValues.GetNumRows();
@@ -3064,6 +3124,9 @@ void NuTo::StructureMultiscale::ReNumberAdditionalGlobalDofs(std::vector<int>& r
     mDOFGlobalTotalStrain[0]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[0]];
     mDOFGlobalTotalStrain[1]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[1]];
     mDOFGlobalTotalStrain[2]  = rMappingInitialToNewOrdering[mDOFGlobalTotalStrain[2]];
+    mDOFPeriodicBoundaryDisplacements[0] = rMappingInitialToNewOrdering[mDOFPeriodicBoundaryDisplacements[0]];
+    mDOFPeriodicBoundaryDisplacements[1] = rMappingInitialToNewOrdering[mDOFPeriodicBoundaryDisplacements[1]];
+    mDOFPeriodicBoundaryDisplacements[2] = rMappingInitialToNewOrdering[mDOFPeriodicBoundaryDisplacements[2]];
 }
 
 //! @brief calculates the crack angle for elastic solutions (initial value, no scaling with previous crack angle)
@@ -3507,6 +3570,7 @@ int NuTo::StructureMultiscale::CreateConstraintLagrangeGlobalCrackOpeningNormal(
 
     mConstraintMap.insert(id, mConst);
     mConstraintNormalCrackOpening = id;
+    mNodeNumberingRequired = true;
     return id;
 }
 
@@ -3532,6 +3596,7 @@ int NuTo::StructureMultiscale::CreateConstraintLinearGlobalTotalStrain()
 
     mConstraintMap.insert(id, new NuTo::ConstraintLinearGlobalTotalStrain(this));
     mConstraintTotalStrain = id;
+    mNodeNumberingRequired = true;
     return id;
 }
 
@@ -3556,6 +3621,7 @@ int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackAngle(double rAn
 
     mConstraintMap.insert(id, new NuTo::ConstraintLinearGlobalCrackAngle(this,rAngle));
     mConstraintCrackAngle = id;
+    mNodeNumberingRequired = true;
     return id;
 }
 
@@ -3571,6 +3637,7 @@ int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackOpening(double r
 		it = mConstraintMap.find(id);
 	}
 	ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, rDirection, rRHS);
+    mNodeNumberingRequired = true;
     mConstraintMap.insert(id, mConst);
     return id;
 }
@@ -3597,6 +3664,7 @@ int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackOpeningTangentia
 	direction(1,0)=0;
 	ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, rRHS);
     mConstraintMap.insert(id, mConst);
+    mNodeNumberingRequired = true;
     mConstraintTangentialCrackOpening = id;
     return id;
 }
@@ -3623,9 +3691,37 @@ int NuTo::StructureMultiscale::CreateConstraintLinearGlobalCrackOpeningNormal(do
 	direction(1,0)=1;
 	ConstraintLinearGlobalCrackOpening *mConst = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, rRHS);
     mConstraintMap.insert(id, mConst);
+    mNodeNumberingRequired = true;
     mConstraintNormalCrackOpening = id;
     return id;
 }
+
+//! @brief add a linear constraint equation for the additional shape functions depscribing the fluctuation boundary displacements
+//! @return id of the constraint
+int NuTo::StructureMultiscale::CreateConstraintLinearPeriodicBoundaryShapeFunctions(int rShapeFunction, double rRHS)
+{
+    if (rShapeFunction!=0 && rShapeFunction!=1 &&  rShapeFunction!=2)
+    	throw MechanicsException("[NuTo::StructureMultiscale::CreateConstraintLinearPeriodicBoundaryShapeFunctions] in 2D, there are only 3 additional boundary shape functions.");
+	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintPeriodicBoundaryShapeFunctions[rShapeFunction]);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    int id = 0;
+    it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	ConstraintLinearPeriodicBoundaryShapeFunctions *mConst = new NuTo::ConstraintLinearPeriodicBoundaryShapeFunctions(this, rShapeFunction, rRHS);
+    mConstraintMap.insert(id, mConst);
+    mConstraintPeriodicBoundaryShapeFunctions[rShapeFunction] = id;
+    mNodeNumberingRequired = true;
+    return id;
+}
+
 //! @brief delete the constraint for the tangential crack opening
 void NuTo::StructureMultiscale::ConstraintDeleteTangentialCrackOpening()
 {
@@ -3635,7 +3731,7 @@ void NuTo::StructureMultiscale::ConstraintDeleteTangentialCrackOpening()
         mConstraintMap.erase(it);
     }
     mConstraintTangentialCrackOpening = -1;
-
+    mNodeNumberingRequired = true;
 }
 
 //! @brief delete the constraint for the normal crack opening
@@ -3646,14 +3742,124 @@ void NuTo::StructureMultiscale::ConstraintDeleteNormalCrackOpening()
     {
         mConstraintMap.erase(it);
     }
+    mNodeNumberingRequired = true;
     mConstraintNormalCrackOpening = -1;
+}
+
+//! @brief set periodic boundary conditions for the fine scale solution
+void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsPeriodic(const EngineeringStrain2D& rStrain)
+{
+	this->mNodeNumberingRequired = true;
+
+	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintFineScalePeriodicDamage);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    mConstraintFineScalePeriodicDamage = -1;
+
+    //find unused integer id
+    int id(0);
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+    mConstraintFineScalePeriodicDamage = id;
+
+    ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(mGroupBoundaryNodesDamage,rStrain);
+
+	it = mConstraintMap.find(mConstraintFineScalePeriodicHomogeneous);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    mConstraintFineScalePeriodicHomogeneous = -1;
+
+    //find unused integer id
+    id = 0;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+    mConstraintFineScalePeriodicHomogeneous = id;
+
+    ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(mGroupBoundaryNodesHomogeneous,rStrain);
+    mNodeNumberingRequired = true;
+}
+
+//! @brief set constraint for fine scale fluctuations on the boundary
+void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions()
+{
+	this->mNodeNumberingRequired = true;
+
+	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintFineScalePeriodicDamage);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    mConstraintFineScalePeriodicDamage = -1;
+
+    it = mConstraintMap.find(mConstraintFineScalePeriodicHomogeneous);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    mConstraintFineScalePeriodicHomogeneous = -1;
+
+
+    //insert constraints for the damage domain
+    //find unused integer id
+    int id(0);
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(mGroupBoundaryNodesDamage);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions] Group(damage) with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions] Group(damage) is not an node group.");
+    const Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(this, nodeGroup));
+    mConstraintFineScalePeriodicDamage = id;
+
+    //insert constraints for the homogeneous domain
+    //find unused integer id
+    id = 0;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    itGroup = mGroupMap.find(mGroupBoundaryNodesHomogeneous);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions] Group(homogeneous) with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions] Group(homogeneous) is not an node group.");
+    nodeGroup = itGroup->second->AsGroupNode();
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(this, nodeGroup));
+    mConstraintFineScalePeriodicHomogeneous = id;
+    mNodeNumberingRequired = true;
+    return ;
 
 }
+
 
 //! @brief set periodic boundary conditions for a 2D structure
 //! @parameter rGroupBoundaryNodes ... boundary nodes
 //! @parameter rStrain ... strain
-int NuTo::StructureMultiscale::ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(Group<NodeBase>* rGroupBoundaryNodes, EngineeringStrain2D& rStrain)
+int NuTo::StructureMultiscale::ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(int rGroupBoundaryNodes, const EngineeringStrain2D& rStrain)
 {
     if (mDimension!=2)
     	throw MechanicsException("[NuTo::StructureMultiscale::ConstraintLagrangeSetDisplacementNodeGroup] only implemented for 2D structures.");
@@ -3667,7 +3873,13 @@ int NuTo::StructureMultiscale::ConstraintLinearSetFineScaleDisplacementsPeriodic
         it = mConstraintMap.find(id);
     }
 
-    mConstraintMap.insert(id, new NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D(rGroupBoundaryNodes,rStrain));
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupBoundaryNodes);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup] Group with the given identifier does not exist.");
+    Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D(nodeGroup,rStrain));
+    mNodeNumberingRequired = true;
 
     return id;
 }
@@ -3911,6 +4123,15 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
 	ConstraintLinearGlobalCrackOpening *mConst3 = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, 0);
     mConstraintMap.insert(id, mConst3);
 
+    //and periodic boundary conditions
+    EngineeringStrain2D strain;
+    CreateConstraintLinearFineScaleDisplacementsPeriodic(strain);
+
+    //fix the additional dofs related to the periodic boundary displacements
+    CreateConstraintLinearPeriodicBoundaryShapeFunctions(0, 0);
+    CreateConstraintLinearPeriodicBoundaryShapeFunctions(1, 0);
+    CreateConstraintLinearPeriodicBoundaryShapeFunctions(2, 0);
+
     // use Schur complement to calculate the stiffness
     this->NodeBuildGlobalDofs();
     NuTo::FullMatrix<double> activeDOF, dependentDOF;
@@ -3967,9 +4188,296 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
 	this->ConstraintDelete(constraintCrackAngle);
 	this->ConstraintDelete(constraintCrackOpeningTangential);
 	this->ConstraintDelete(constraintCrackOpeningNormal);
+	this->ConstraintDelete(mConstraintFineScalePeriodicDamage);
+	mConstraintFineScalePeriodicDamage = -1;
+	this->ConstraintDelete(mConstraintFineScalePeriodicHomogeneous);
+	mConstraintFineScalePeriodicHomogeneous = -1;
+	for (int count=0; count<3; count++)
+	{
+	    this->ConstraintDelete(mConstraintPeriodicBoundaryShapeFunctions[count]);
+	    this->mConstraintPeriodicBoundaryShapeFunctions[count] = -1;
+	}
 
 	//reinsert the constraint for the total strain
 	this->ConstraintAdd(mConstraintTotalStrain,linearTotalStrainConstraintPtr);
+    mLogger.CloseFile();
+}
+
+void NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions(double rDeltaStrain)
+{
+    mLogger.OpenFile();
+
+    //fix crack angle
+    int id(0);
+	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	int constraintCrackAngle = id;
+
+	//fix angle to zero, but direction actually does not matter since the crack opening is also set to zero
+	ConstraintLinearGlobalCrackAngle* mConst = new NuTo::ConstraintLinearGlobalCrackAngle(this,0.5*M_PI);
+
+	mConstraintMap.insert(id, mConst);
+
+    //and the crack opening in tangential
+    id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	int constraintCrackOpeningTangential = id;
+	NuTo::FullMatrix<double> direction(2,1);
+	direction(0,0) = 1.;
+	direction(1,0) = 0.;
+	ConstraintLinearGlobalCrackOpening *mConst2 = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, 0);
+    mConstraintMap.insert(id, mConst2);
+
+    //and the crack opening in normal direction
+    id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	int constraintCrackOpeningNormal = id;
+	direction(0,0) = 0.;
+	direction(1,0) = 1.;
+	ConstraintLinearGlobalCrackOpening *mConst3 = new NuTo::ConstraintLinearGlobalCrackOpening(this, direction, 0);
+    mConstraintMap.insert(id, mConst3);
+
+    //and periodic boundary conditions
+    EngineeringStrain2D strain;
+    CreateConstraintLinearFineScaleDisplacementsPeriodic(strain);
+
+/*    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(mGroupBoundaryNodesDamage);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(damage) with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::CalculatePeriodicBoundaryShapeFunctions] Group(damage) is not an node group.");
+    const Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+
+    it = mConstraintMap.find(mConstraintFineScaleDamageX);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+	it = mConstraintMap.find(mConstraintFineScaleDamageY);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+    //insert constraints for the x direction
+    //find unused integer id
+    id = 0;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    direction(0,0) = 1;
+    direction(1,0) = 0;
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,0));
+    mConstraintFineScaleDamageX = id;
+
+    //insert constraints for the y direction
+    //find unused integer id
+    id = 0;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    direction(0,0) = 0;
+    direction(1,0) = 1;
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,0));
+    mConstraintFineScaleDamageX = id;
+
+    //insert constraints for the homogeneous domain
+    itGroup = mGroupMap.find(mGroupBoundaryNodesHomogeneous);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) is not an node group.");
+    nodeGroup = itGroup->second->AsGroupNode();
+
+    //insert constraints for the homogeneous domain
+    it = mConstraintMap.find(mConstraintFineScaleHomogeneousX);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    it = mConstraintMap.find(mConstraintFineScaleHomogeneousY);
+    if (it!=mConstraintMap.end())
+    {
+        mConstraintMap.erase(it);
+    }
+
+    //insert constraints for the x direction
+    //find unused integer id
+    id = 0;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+    direction(0,0) = 1;
+    direction(1,0) = 0;
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,0));
+    mConstraintFineScaleHomogeneousX = id;
+
+    //insert constraints for the y direction
+    //find unused integer id
+    id = 0;
+    it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+    direction(0,0) = 0;
+    direction(1,0) = 1;
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,0));
+    mConstraintFineScaleHomogeneousY = id;
+*/
+
+    //fix the additional dofs related to the periodic boundary displacements
+    CreateConstraintLinearPeriodicBoundaryShapeFunctions(0, 0);
+    CreateConstraintLinearPeriodicBoundaryShapeFunctions(1, 0);
+    CreateConstraintLinearPeriodicBoundaryShapeFunctions(2, 0);
+
+    //ConstraintInfo(10);
+
+    for (int countShapeFunction=0; countShapeFunction<3; countShapeFunction++)
+    {
+        EngineeringStrain2D prevStrain;
+        this->SetPrevTotalEngineeringStrain(prevStrain);
+
+		SetLoadFactor(0);
+		NodeBuildGlobalDofs();
+		NuTo::FullMatrix<double> activeDOF, dependentDOF;
+		NodeExtractDofValues(activeDOF,dependentDOF);
+		NodeMergeActiveDofValues(activeDOF);
+
+		// calculate engineering strain
+		EngineeringStrain2D engineeringStrain;
+		engineeringStrain.mEngineeringStrain[countShapeFunction] = rDeltaStrain;
+		EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
+		SetDeltaTotalEngineeringStrain(deltaStrain);
+
+		std::stringstream saveStream;
+		bool hasBeenSaved(false);
+		GetLogger() << "\n" << "****************************************************" << "\n";
+		GetLogger() << " Calculate Stress for the fine scale solution to get the periodic boundary shape functions "  << "\n";
+		GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
+										<<  engineeringStrain.mEngineeringStrain[1] << " "
+										<<  engineeringStrain.mEngineeringStrain[2]  << "\n";
+		try
+		{
+		   NewtonRaphson(true, saveStream, hasBeenSaved);
+		}
+		catch(MechanicsException& e)
+		{
+		   e.AddMessage(std::string("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Error in performing Newton-iteration on fine scale for ip ") + GetIPName());
+           throw e;
+		}
+		catch(...)
+		{
+		    throw MechanicsException(std::string("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Error in performing Newton-iteration on fine scale for ip ") + GetIPName());
+		}
+        std::stringstream ss;
+        ss << countShapeFunction;
+        std::cout << "total number of elements " << mElementMap.size()<< " damage " << this->GroupGetNumMembers(mGroupElementsDamage)<< " homogeneous " << this->GroupGetNumMembers(mGroupElementsHomogeneous);
+        std::cout << ", active Dofs " << this->mNumActiveDofs << " dependent dofs " << this->mNumDofs-this->mNumActiveDofs << "\n";
+        ExportVtkDataFile(mResultDirectory + "/periodicBC" + ss.str() +".vtk");
+
+	    double max(0);
+	    // loop over all nodes in the damaged region
+		boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(mGroupBoundaryNodesDamage);
+	    if (itGroup==mGroupMap.end())
+	        throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(damage) with the given identifier does not exist.");
+	    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+	    	throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(damage) is not an node group.");
+	    Group<NodeBase> *nodeGroupDamage = itGroup->second->AsGroupNode();
+	    assert(nodeGroupDamage!=0);
+	    for (Group<NodeBase>::iterator itNode=nodeGroupDamage->begin(); itNode!=nodeGroupDamage->end();itNode++)
+	    {
+	    	itNode->second->SetShapeFunctionMultiscalePeriodic(countShapeFunction);
+	    	double X = itNode->second->GetShapeFunctionMultiscalePeriodicX()[countShapeFunction];
+	    	if (fabs(X)>max)
+	    		max=fabs(X);
+	    	double Y = itNode->second->GetShapeFunctionMultiscalePeriodicY()[countShapeFunction];
+	    	if (fabs(Y)>max)
+	    		max=fabs(Y);
+	    }
+	    // loop over all nodes in the homogeneous region
+		 itGroup = mGroupMap.find(mGroupBoundaryNodesHomogeneous);
+	    if (itGroup==mGroupMap.end())
+	        throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) with the given identifier does not exist.");
+	    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+	    	throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) is not an node group.");
+	    Group<NodeBase> *nodeGroupHomogeneous = itGroup->second->AsGroupNode();
+	    assert(nodeGroupHomogeneous!=0);
+	    for (Group<NodeBase>::iterator itNode=nodeGroupHomogeneous->begin(); itNode!=nodeGroupHomogeneous->end();itNode++)
+	    {
+	    	itNode->second->SetShapeFunctionMultiscalePeriodic(countShapeFunction);
+	    	double X = itNode->second->GetShapeFunctionMultiscalePeriodicX()[countShapeFunction];
+	    	if (fabs(X)>max)
+	    		max=fabs(X);
+	    	double Y = itNode->second->GetShapeFunctionMultiscalePeriodicY()[countShapeFunction];
+	    	if (fabs(Y)>max)
+	    		max=fabs(Y);
+	    }
+	    double scaleFactor(1./max);
+	    for (Group<NodeBase>::iterator itNode=nodeGroupDamage->begin(); itNode!=nodeGroupDamage->end();itNode++)
+	    {
+	    	itNode->second->ScaleShapeFunctionMultiscalePeriodic(countShapeFunction,scaleFactor);
+	    }
+	    for (Group<NodeBase>::iterator itNode=nodeGroupHomogeneous->begin(); itNode!=nodeGroupHomogeneous->end();itNode++)
+	    {
+	    	itNode->second->ScaleShapeFunctionMultiscalePeriodic(countShapeFunction,scaleFactor);
+	    }
+
+		//restore structure
+        if (hasBeenSaved)
+        {
+            throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] there should not be any nonlinearity here, check your input.");
+        }
+        else
+        {
+            //set load factor to zero in order to get the same ordering of the displacements as before the routine
+            SetLoadFactor(0);
+            NodeBuildGlobalDofs();
+            NodeMergeActiveDofValues(activeDOF);
+        }
+    }
+
+	//delete the constraints again
+	this->ConstraintDelete(constraintCrackAngle);
+	this->ConstraintDelete(constraintCrackOpeningTangential);
+	this->ConstraintDelete(constraintCrackOpeningNormal);
+	this->ConstraintDelete(mConstraintFineScalePeriodicDamage);
+	mConstraintFineScalePeriodicDamage = -1;
+	this->ConstraintDelete(mConstraintFineScalePeriodicHomogeneous);
+	mConstraintFineScalePeriodicHomogeneous = -1;
+	for (int count=0; count<3; count++)
+	{
+	    this->ConstraintDelete(mConstraintPeriodicBoundaryShapeFunctions[count]);
+	    this->mConstraintPeriodicBoundaryShapeFunctions[count] = -1;
+	}
+
+	//reinsert the constraint for the total strain
     mLogger.CloseFile();
 }
 
@@ -4224,8 +4732,15 @@ try
                 }
                 throw MechanicsException("[NuTo::StructureMultiscale::NewtonRaphson] Error solving system of equations using mumps.");
             }
-            /*NodeInfo(10);
+/*            NodeInfo(10);
     	    NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+
+    	    std::cout << "stiffness" << std::endl;
+            stiffnessMatrixFull.Info(15,7);
+
+            std::cout << "inverse stiffness" << std::endl;
+            stiffnessMatrixFull.Inverse().Info(15,7);
+
             NuTo::FullMatrix<double> eigenValues;
             stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
             mLogger << "eigenvalues" << "\n";
@@ -4235,12 +4750,7 @@ try
             stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
             mLogger << "eigenvector 1" << "\n";
             mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
-
-            NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
-            std::cout << "stiffness" << std::endl;
-            stiffnessMatrixFull.Info(15,7);
-            std::cout << "inverse stiffness" << std::endl;
-            stiffnessMatrixFull.Inverse().Info(15,7);
+            mLogger.Out(eigenVectors.GetColumn(1).Trans(),12,3);
 
             mLogger << " rhsVector" << "\n";
             mLogger.Out(rhsVector.Trans(),10,9,false);

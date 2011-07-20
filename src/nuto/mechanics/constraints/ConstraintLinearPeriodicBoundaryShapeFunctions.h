@@ -1,25 +1,21 @@
-// $Id: ConstraintNodeGroupFineScaleDisplacements2D.h 314 2010-09-27 16:31:43Z unger3 $
+// $Id: ConstraintNode.h 314 2010-09-27 16:31:43Z unger3 $
 
-#ifndef CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
-#define CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
+#ifndef CONSTRAINTLINEARPERIODICBOUNDARYSHAPEFUNCTIONS_H
+#define CONSTRAINTLINEARPERIODICBOUNDARYSHAPEFUNCTIONS_H
 
 #include <iostream>
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
-#include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
-class NodeBase;
-template <class T>
-class Group;
-template <class T>
-class FullMatrix;
 class StructureMultiscale;
 //! @author Jörg F. Unger, ISM
-//! @date October 2010
-//! @brief ... class for all displacement constraints applied to a group of nodes in 2D
-class ConstraintLinearNodeGroupFineScaleDisplacements2D : public ConstraintNodeGroup, public ConstraintLinear
+//! @date October 2009
+//! @brief ... introduces a constraint that limits the fluctuations in the multiscale nodes on the boundary to the corresponding dofs in the Multiscale structure
+//! these weights are given for each multiscale dof
+class ConstraintLinearPeriodicBoundaryShapeFunctions : public ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -27,12 +23,7 @@ class ConstraintLinearNodeGroupFineScaleDisplacements2D : public ConstraintNodeG
 
 public:
     //! @brief constructor
-    //! @param rDirection ... direction of the applied constraint
-    //! @param rValue ... direction of the applied constraint
-    ConstraintLinearNodeGroupFineScaleDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
-
-    //! @brief constructor constraints the multiscale fluctuations to be a linear combination of the periodic multiscale dofs
-    ConstraintLinearNodeGroupFineScaleDisplacements2D(const StructureMultiscale* rStructure, const Group<NodeBase>* rGroup);
+    ConstraintLinearPeriodicBoundaryShapeFunctions(const StructureMultiscale* rStructure, int rPeriodicShapeFunction, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -54,10 +45,10 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const
     {
-        std::cout<< "ConstraintLinearNodeGroupFineScaleDisplacements2D with periodic " << mConstrainToStructureMultiscalePeriodicDofs << std::endl;
+        std::cout << "ConstraintLinearPeriodicBoundaryShapeFunctions" << std::endl;
     }
 
-    #ifdef ENABLE_SERIALIZATION
+#ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
@@ -66,18 +57,20 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief ... just for serialize
-    ConstraintLinearNodeGroupFineScaleDisplacements2D(){};
+    //! @brief just for serialization
+    ConstraintLinearPeriodicBoundaryShapeFunctions(){};
 
-    //! @brief direction of the applied constraint (normalized)
-    double mDirection[2];
-    bool mConstrainToStructureMultiscalePeriodicDofs;
+    int mPeriodicShapeFunction;  //either 0,1 or 2
+
     double mRHS;
+
     const StructureMultiscale* mStructure;
 };
 }//namespace NuTo
+
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearPeriodicBoundaryShapeFunctions)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEGROUPFINESCALEDISPLACEMENTS2D_H
+
+#endif //CONSTRAINTLINEARPERIODICBOUNDARYSHAPEFUNCTIONS_H
 

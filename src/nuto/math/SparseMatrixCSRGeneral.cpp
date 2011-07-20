@@ -286,6 +286,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector
                 if (fabs(this->mValues[pos]) < tolerance)
                 {
                     this->RemoveEntry(tmpRow, this->mColumns[pos]);
+                    pos--;
                 }
             }
         }
@@ -342,13 +343,13 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector
                 }
             }
         }
-
         // remove zero entries
         for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
         {
-            if (fabs(this->mValues[pos]) < tolerance)
+        	if (fabs(this->mValues[pos]) < tolerance)
             {
                 this->RemoveEntry(row, this->mColumns[pos]);
+                pos--;
             }
         }
     }

@@ -39,6 +39,8 @@ void NuTo::NodeDisplacementsMultiscale2D::serialize(Archive & ar, const unsigned
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
        & BOOST_SERIALIZATION_NVP(mFineScaleDisplacements)
+       & BOOST_SERIALIZATION_NVP(mShapeFunctionX)
+       & BOOST_SERIALIZATION_NVP(mShapeFunctionY)
        & BOOST_SERIALIZATION_NVP(mCrackedDomain)
        & BOOST_SERIALIZATION_NVP(mDOF)
        & BOOST_SERIALIZATION_NVP(mStructureMultiscale);
@@ -242,4 +244,23 @@ std::string NuTo::NodeDisplacementsMultiscale2D::GetNodeTypeStr()const
 NuTo::Node::eNodeType NuTo::NodeDisplacementsMultiscale2D::GetNodeType()const
 {
     return Node::NodeDisplacementsMultiscale2D;
+}
+
+//! @brief scales the shape functions
+//! @parameter rShapeFunction  (1..3 corresponding to macro strains exx, eyy, and gxy)
+//! @parameter rScalingFactor rScalingFactor
+void NuTo::NodeDisplacementsMultiscale2D::ScaleShapeFunctionMultiscalePeriodic(int rShapeFunction, double rScalingFactor)
+{
+	assert(rShapeFunction>=0 && rShapeFunction<=2);
+	mShapeFunctionX[rShapeFunction]*=rScalingFactor;
+	mShapeFunctionY[rShapeFunction]*=rScalingFactor;
+}
+
+//! @brief set the shape functions based on the actual oscillations
+//! @parameter shape function number (0..2)
+void NuTo::NodeDisplacementsMultiscale2D::SetShapeFunctionMultiscalePeriodic(int rShapeFunction)
+{
+	assert(rShapeFunction>-1 && rShapeFunction<3);
+	mShapeFunctionX[rShapeFunction] = mFineScaleDisplacements[0];
+	mShapeFunctionY[rShapeFunction] = mFineScaleDisplacements[1];
 }
