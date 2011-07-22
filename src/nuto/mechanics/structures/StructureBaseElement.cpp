@@ -451,9 +451,9 @@ bool NuTo::StructureBase::CheckStiffness()
 			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
         }
         //extract the first 5x5 block
-        NuTo::FullMatrix<double> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
-        NuTo::FullMatrix<double> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
-        NuTo::FullMatrix<double> blockDelta(blockAlgo-blockCDF);
+        //NuTo::FullMatrix<double> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
+        //NuTo::FullMatrix<double> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
+        //NuTo::FullMatrix<double> blockDelta(blockAlgo-blockCDF);
 
         double maxError;
         int row,col;
@@ -1391,6 +1391,99 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+}
+
+
+//! @brief calculates the damage
+//! @param rElemIdent  identifier for the element
+//! @param rEngineeringStress damage (return value, always 1xnumIp matrix)
+void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& rDamage)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementGetDamage] First update of tmp static data required.");
+    }
+
+    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    try
+    {
+    	elementPtr->GetIpData(NuTo::IpData::DAMAGE, rDamage);
+    }
+    catch(NuTo::MechanicsException e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        e.AddMessage("[NuTo::StructureBase::ElementGetDamage] Error getting engineering strain for element "
+        	+ ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::StructureBase::ElementGetDamage] Error getting engineering strain for element " + ss.str() + ".");
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGetDamage] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief calculates the maximum damage in all elements
+//! @param rElemIdent  identifier for the element
+//! @return max damage value
+double NuTo::StructureBase::ElementTotalGetMaxDamage()const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementTotalGetMaxDamage] First update of tmp static data required.");
+    }
+	std::vector<const ElementBase*> elementVector;
+	GetElementsTotal(elementVector);
+	FullMatrix<double> damage;
+	double maxDamage(0);
+	for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+	{
+		try
+		{
+			elementVector[countElement]->GetIpData(NuTo::IpData::DAMAGE, damage);
+			if (damage.Max()>maxDamage)
+				maxDamage = damage.Max();
+		}
+		catch(NuTo::MechanicsException e)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			e.AddMessage("[NuTo::StructureBase::ElementTotalGetMaxDamage] Error getting damage for element "
+				+ ss.str() + ".");
+			throw e;
+		}
+		catch(...)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			throw NuTo::MechanicsException
+			   ("[NuTo::StructureBase::ElementTotalGetMaxDamage] Error getting engineering strain for element " + ss.str() + ".");
+		}
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetMaxDamage] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+	return maxDamage;
 }
 
 //! @brief updates the history data of a all elements

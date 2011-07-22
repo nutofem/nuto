@@ -354,7 +354,7 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
             }
             catch (MechanicsException& e)
             {
-                e.AddMessage("[NuTo::StructureBase::ConstraintGetConstraintMatrix] error building constraint matrix for constraint with nonzero number of linear components.");
+                e.AddMessage("[NuTo::StructureBase::ConstraintGetConstraintMatrix] mechanics exception while building constraint matrix for constraint with nonzero number of linear components.");
                 throw e;
             }
             catch (...)

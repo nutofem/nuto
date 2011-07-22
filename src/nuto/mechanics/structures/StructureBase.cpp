@@ -1197,7 +1197,7 @@ try
 
 			//mLogger<<" calculate stiffness 1143" << "\n";
 			this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-		    NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
+		//   NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
 		//    mLogger << "disp force vector "<< "\n";
 		//    dispForceVector.Trans().Info(12,10);
 		//Check the stiffness matrix
@@ -1534,6 +1534,9 @@ try
                 throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence with the prescribed number of Newton iterations.",MechanicsException::NOCONVERGENCE);
 
             mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
+            //mLogger << "check stiffness " << "\n";
+            //CheckStiffness();
+            //mLogger << "and continue with smaller load step " << "\n";
 
             //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
             //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used

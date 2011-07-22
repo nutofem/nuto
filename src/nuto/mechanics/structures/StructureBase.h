@@ -510,6 +510,16 @@ public:
     //! @param rEingineeringStress Engineering Stress (return value, always 6xnumIp matrix)
     void ElementGetEngineeringStress(int rElementId, NuTo::FullMatrix<double>& rEngineeringStress)const;
 
+    //! @brief calculates the damage
+    //! @param rElemIdent  identifier for the element
+    //! @param rDamage (return value, always 1xnumIp matrix)
+    void ElementGetDamage(int rElementId, FullMatrix<double>& rDamage)const;
+
+    //! @brief calculates the maximum damage in all elements
+    //! @param rElemIdent  identifier for the element
+    //! @return max damage value
+    double ElementTotalGetMaxDamage()const;
+
     //! @brief updates the history data of a all elements
     void ElementTotalUpdateStaticData();
 

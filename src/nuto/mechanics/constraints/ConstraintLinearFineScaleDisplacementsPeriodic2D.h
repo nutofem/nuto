@@ -54,10 +54,7 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const
-    {
-   	    std::cout << "NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D, strain. " <<  mStrain.mEngineeringStrain[0] << " " <<  mStrain.mEngineeringStrain[1] << " "<<  mStrain.mEngineeringStrain[2] <<std::endl;
-    }
+    void Info(unsigned short rVerboseLevel) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

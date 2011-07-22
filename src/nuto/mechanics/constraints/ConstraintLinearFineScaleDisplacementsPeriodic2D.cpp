@@ -74,7 +74,6 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::SetBoundaryVectors(
         if (maxY<coordinates[1])
         	maxY=coordinates[1];
     }
-	std::cout << "box, x=" <<  minX << "," << maxX << ", y=" << minY << ", " << maxY << "\n";
     //calculate master nodes left boundary (green)
     mMasterNodesLeftBoundary.resize(0);
     mSlaveNodesRightBoundary.resize(0);
@@ -305,6 +304,12 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::CalculateDeltaDisp(
     rDeltaDisp[1] = mStrain.mEngineeringStrain[1]*rCoordinates[1] + mStrain.mEngineeringStrain[2]*rCoordinates[0];
 }
 
+//! @brief ... print information about the object
+//! @param rVerboseLevel ... verbosity of the information
+void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::Info(unsigned short rVerboseLevel) const
+{
+	    std::cout << "NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D, strain. " <<  mStrain.mEngineeringStrain[0] << " " <<  mStrain.mEngineeringStrain[1] << " "<<  mStrain.mEngineeringStrain[2] <<std::endl;
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serialize

@@ -81,28 +81,45 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
     {
 		for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
 		{
-			rRHS(curConstraintEquation,0) = 0;
-			if (itNode->second->GetNumFineScaleDisplacements()!=2)
-			{
-				throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] Node does not have fine scale displacements or has more than two displacement components.");
-			}
-    		NodeDisplacementsMultiscale2D* nodePtr=itNode->second->AsNodeDisplacementsMultiscale2D();
-    		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[0],nodePtr->GetShapeFunctionMultiscalePeriodicX()[0]);
-    		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[1],nodePtr->GetShapeFunctionMultiscalePeriodicX()[1]);
-    		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[2],nodePtr->GetShapeFunctionMultiscalePeriodicX()[2]);
-			rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofFineScaleDisplacement(0),-1);
-    		//std::cout << "add constraint with " << itNode->second->GetDofFineScaleDisplacement(0) << " and " << mStructure->GetDOFPeriodicBoundaryDisplacements()[0] << " " << mStructure->GetDOFPeriodicBoundaryDisplacements()[1] << " "<<mStructure->GetDOFPeriodicBoundaryDisplacements()[2]<< std::endl;
+            try
+            {
+				rRHS(curConstraintEquation,0) = 0;
+				if (itNode->second->GetNumFineScaleDisplacements()!=2)
+				{
+					throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] Node does not have fine scale displacements or has more than two displacement components.");
+				}
+        		NodeDisplacementsMultiscale2D* nodePtr=itNode->second->AsNodeDisplacementsMultiscale2D();
+        		//std::cout << "add constraint with " << itNode->second->GetDofFineScaleDisplacement(0) << " and " << mStructure->GetDOFPeriodicBoundaryDisplacements()[0] << " " << mStructure->GetDOFPeriodicBoundaryDisplacements()[1] << " "<<mStructure->GetDOFPeriodicBoundaryDisplacements()[2]<< std::endl;
+        		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[0],nodePtr->GetShapeFunctionMultiscalePeriodicX()[0]);
+        		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[1],nodePtr->GetShapeFunctionMultiscalePeriodicX()[1]);
+        		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[2],nodePtr->GetShapeFunctionMultiscalePeriodicX()[2]);
+    			rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofFineScaleDisplacement(0),-1);
 
-    		curConstraintEquation++;
+        		curConstraintEquation++;
 
-    		rRHS(curConstraintEquation,0) = 0;
-    		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[0],nodePtr->GetShapeFunctionMultiscalePeriodicY()[0]);
-    		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[1],nodePtr->GetShapeFunctionMultiscalePeriodicY()[1]);
-    		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[2],nodePtr->GetShapeFunctionMultiscalePeriodicY()[2]);
-    		rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofFineScaleDisplacement(1),-1);
-    		//std::cout << "add constraint with " << itNode->second->GetDofFineScaleDisplacement(1) << " and " << mStructure->GetDOFPeriodicBoundaryDisplacements()[0] << " " << mStructure->GetDOFPeriodicBoundaryDisplacements()[1] << " "<<mStructure->GetDOFPeriodicBoundaryDisplacements()[2]<< std::endl;
+        		rRHS(curConstraintEquation,0) = 0;
+        		//std::cout << "add constraint with " << itNode->second->GetDofFineScaleDisplacement(1) << " and " << mStructure->GetDOFPeriodicBoundaryDisplacements()[0] << " " << mStructure->GetDOFPeriodicBoundaryDisplacements()[1] << " "<<mStructure->GetDOFPeriodicBoundaryDisplacements()[2]<< std::endl;
+        		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[0],nodePtr->GetShapeFunctionMultiscalePeriodicY()[0]);
+        		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[1],nodePtr->GetShapeFunctionMultiscalePeriodicY()[1]);
+        		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[2],nodePtr->GetShapeFunctionMultiscalePeriodicY()[2]);
+        		rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofFineScaleDisplacement(1),-1);
 
-    		curConstraintEquation++;
+        		curConstraintEquation++;
+            }
+            catch (MechanicsException& e)
+            {
+                e.AddMessage("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] mechanics exception while building constraint matrix.");
+                throw e;
+            }
+            catch (MathException& e)
+            {
+                e.AddMessage("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] math exception while building constraint matrix.");
+                throw e;
+            }
+            catch (...)
+            {
+                throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] error building constraint matrix for constraint with nonzero number of linear components.");
+            }
 		}
     }
     else

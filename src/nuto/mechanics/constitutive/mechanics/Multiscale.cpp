@@ -50,7 +50,7 @@
 NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 {
     SetParametersValid();
-    mToleranceResidualForce=1e-5;
+    mToleranceResidualForce=1e-6;
     mMaxDeltaLoadFactor = 1;
     mMaxNumNewtonIterations=20;
     mDecreaseFactor=0.5;
@@ -64,6 +64,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mSquareCoarseScaleModel = false;
 
     mTensileStrength = 0;
+
+    mDamageCrackInitiation = 1e-3;
 
     mScalingFactorCrackAngle = 0;
     mScalingFactorCrackOpening = 0;
@@ -102,7 +104,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mMinLoadFactor)
           & BOOST_SERIALIZATION_NVP(mMinLineSearchFactor)
           & BOOST_SERIALIZATION_NVP(mResultDirectory)
-          & BOOST_SERIALIZATION_NVP(mLoadStepMacro);
+          & BOOST_SERIALIZATION_NVP(mLoadStepMacro)
+          & BOOST_SERIALIZATION_NVP(mDamageCrackInitiation);
 #ifdef DEBUG_SERIALIZATION
        std::cout << "finish serialize Multiscale" << std::endl;
 #endif
@@ -2157,151 +2160,145 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
             	throw MechanicsException(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
             }
 
-            //calculate average stress
-            NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous, averageStressNoCrack;
-            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
-            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
-            double scalingFactorDamage = fineScaleStructure->GetScalingFactorDamage();
-            double scalingFactorHomogeneous = fineScaleStructure->GetScalingFactorHomogeneous();
-            double sum(scalingFactorDamage+scalingFactorHomogeneous);
-            scalingFactorDamage/=sum;
-            scalingFactorHomogeneous/=sum;
-            averageStressNoCrack=averageStressDamage*scalingFactorDamage+averageStressHomogeneous*scalingFactorHomogeneous;;
-
-    		//initial crack angle from the maximum principal strain
-    		double princAlpha = fineScaleStructure->GetCrackAngleElastic();
-
-            std::clock_t start,end;
-            start=clock();
-     		int numCountShift=150;
-    		int numAlpha=1;
-    		double rangeShiftNormal = 1.0*fineScaleStructure->GetlFineScaleDamage();
-    		double initShiftNormal(-0.5*rangeShiftNormal);
-    		//double initAlpha = princAlpha-M_PI*0.25;
-    		//double deltaAlpha = 0.5*M_PI/(numAlpha-1);
-    		double initAlpha = M_PI*0.5;
-    		double deltaAlpha = 0;
-
-    		double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
-    		double shift[2];
-    	    const boost::array<double,2>& centerDamage(fineScaleStructure->GetCenterDamage());
-
-    	    //get actual coordinates and disp of all nodes
-			NuTo::FullMatrix<double> coordinates;
-			NuTo::FullMatrix<double> displacementsTotalReal;
-			int nodeGroupDamage = fineScaleStructure->GetGroupNodesDamage();
-			fineScaleStructure->NodeGroupGetCoordinates(nodeGroupDamage,coordinates);
-			//std::cout << "coordinates " << "\n";
-			//coordinates.Info(12,3);
-			fineScaleStructure->NodeGroupGetDisplacements(nodeGroupDamage,displacementsTotalReal);
-			//std::cout << "displacementsTotalReal " << "\n";
-			//displacementsTotalReal.Info(12,6);
-			double maxNormCrackOpeningSquare = -1;
+            //check the damage state
+            double maxDamage = fineScaleStructure->ElementTotalGetMaxDamage();
 			double maxShift[2] = { 0,0 };
 			double maxAlpha = 0;
-			for (int countAlpha = 0; countAlpha<numAlpha; countAlpha++)
-			{
-				double alpha = initAlpha+countAlpha*deltaAlpha;
-				fineScaleStructure->SetCrackAngle(alpha);
-				for (int countShift=0; countShift<numCountShift; countShift++)
+            if (maxDamage>mDamageCrackInitiation)
+            {
+				//initial crack angle from the maximum principal strain
+				double princAlpha = fineScaleStructure->GetCrackAngleElastic();
+
+				std::clock_t start,end;
+				start=clock();
+				int numCountShift=1000;
+				int numAlpha=1;
+				double rangeShiftNormal = 1.0*fineScaleStructure->GetlFineScaleDamage();
+				double initShiftNormal(-0.5*rangeShiftNormal);
+				//double initAlpha = princAlpha-M_PI*0.25;
+				//double deltaAlpha = 0.5*M_PI/(numAlpha-1);
+				double initAlpha = M_PI*0.5;
+				double deltaAlpha = 0;
+
+				double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
+				double shift[2];
+				const boost::array<double,2>& centerDamage(fineScaleStructure->GetCenterDamage());
+
+				//get actual coordinates and disp of all nodes
+				NuTo::FullMatrix<double> coordinates;
+				NuTo::FullMatrix<double> displacementsTotalReal;
+				int nodeGroupDamage = fineScaleStructure->GetGroupNodesDamage();
+				fineScaleStructure->NodeGroupGetCoordinates(nodeGroupDamage,coordinates);
+				//std::cout << "coordinates " << "\n";
+				//coordinates.Info(12,3);
+				fineScaleStructure->NodeGroupGetDisplacements(nodeGroupDamage,displacementsTotalReal);
+				//std::cout << "displacementsTotalReal " << "\n";
+				//displacementsTotalReal.Info(12,6);
+				double maxNormCrackOpeningSquare = -1;
+				for (int countAlpha = 0; countAlpha<numAlpha; countAlpha++)
 				{
-					double normalShift(initShiftNormal+deltaShiftNormal*countShift);
+					double alpha = initAlpha+countAlpha*deltaAlpha;
 					fineScaleStructure->SetCrackAngle(alpha);
-					shift[0] = normalShift*sin(alpha);
-					shift[1] = -normalShift*cos(alpha);
-					fineScaleStructure->SetShiftCenterDamage(shift);
-
-					//calculate matrices according to d=A+B*([ut, un]^T)
-					int numNodes=coordinates.GetNumRows();
-					int numDisp = displacementsTotalReal.GetNumColumns();
-					assert(numDisp==2);
-					NuTo::FullMatrix<double> A(numDisp*numNodes,1);
-					NuTo::FullMatrix<double> B(numDisp*numNodes,2);
-
-					//set crack opening to zero
-					NuTo::FullMatrix<double> crackOpening(2,1);
-					crackOpening(0,0) = 0;
-					crackOpening(1,0) = 0;
-					//dont forget to recalculate the homogenous part of the strain
-					fineScaleStructure->SetCrackOpening(crackOpening);
-					for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
+					for (int countShift=0; countShift<numCountShift; countShift++)
 					{
-						double coordinatesNode[2];
-						coordinatesNode[0] = coordinates(countNode,0);
-						coordinatesNode[1] = coordinates(countNode,1);
-						double displacementsNodeHom[2];
-						fineScaleStructure->GetDisplacementsEpsilonHom2D(coordinatesNode, displacementsNodeHom, centerDamage);
-						A(countNode,0) = displacementsNodeHom[0];
-						A(countNode+numNodes,0) = displacementsNodeHom[1];
-					}
-					//std::cout << "displacements hom " << "\n";
-					//A.Info(12,6);
+						double normalShift(initShiftNormal+deltaShiftNormal*countShift);
+						fineScaleStructure->SetCrackAngle(alpha);
+						shift[0] = normalShift*sin(alpha);
+						shift[1] = -normalShift*cos(alpha);
+						fineScaleStructure->SetShiftCenterDamage(shift);
 
-					//set tangential crackopening to 1
-					crackOpening(0,0) = 1;
-					crackOpening(1,0) = 0;
-					//dont forget to recalculate the homogenous part of the strain
-					fineScaleStructure->SetCrackOpening(crackOpening);
-					for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
-					{
-						double coordinatesNode[2];
-						coordinatesNode[0] = coordinates(countNode,0);
-						coordinatesNode[1] = coordinates(countNode,1);
-						double displacementsNodeCrack[2],displacementsNodeHom[2];
-						//the homogeneous displacements change as well, since the crack opening changes the hom strain due to constant total strain
-						fineScaleStructure->GetDisplacementsCrack2D(coordinatesNode, displacementsNodeCrack);
-						fineScaleStructure->GetDisplacementsEpsilonHom2D(coordinatesNode, displacementsNodeHom, centerDamage);
-						B(countNode,0) = displacementsNodeCrack[0] + displacementsNodeHom[0]-A(countNode,0);
-						B(countNode+numNodes,0) = displacementsNodeCrack[1] + displacementsNodeHom[1]-A(countNode+numNodes,0);
-					}
+						//calculate matrices according to d=A+B*([ut, un]^T)
+						int numNodes=coordinates.GetNumRows();
+						int numDisp = displacementsTotalReal.GetNumColumns();
+						assert(numDisp==2);
+						NuTo::FullMatrix<double> A(numDisp*numNodes,1);
+						NuTo::FullMatrix<double> B(numDisp*numNodes,2);
 
-					//set normal crackopening to 1
-					crackOpening(0,0) = 0;
-					crackOpening(1,0) = 1;
-					//dont forget to recalculate the homogenous part of the strain
-					fineScaleStructure->SetCrackOpening(crackOpening);
-					for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
-					{
-						double coordinatesNode[2];
-						coordinatesNode[0] = coordinates(countNode,0);
-						coordinatesNode[1] = coordinates(countNode,1);
-						double displacementsNodeCrack[2],displacementsNodeHom[2];
-						//the homogeneous displacements change as well, since the crack opening changes the hom strain due to constant total strain
-						fineScaleStructure->GetDisplacementsCrack2D(coordinatesNode, displacementsNodeCrack);
-						fineScaleStructure->GetDisplacementsEpsilonHom2D(coordinatesNode, displacementsNodeHom, centerDamage);
-						B(countNode,1) = displacementsNodeCrack[0] + displacementsNodeHom[0]-A(countNode,0);
-						B(countNode+numNodes,1) = displacementsNodeCrack[1] + displacementsNodeHom[1]-A(countNode+numNodes,0);
-					}
-					//std::cout << "displacements crack " << "\n";
-					//B.Info(12,3);
+						//set crack opening to zero
+						NuTo::FullMatrix<double> crackOpening(2,1);
+						crackOpening(0,0) = 0;
+						crackOpening(1,0) = 0;
+						//dont forget to recalculate the homogenous part of the strain
+						fineScaleStructure->SetCrackOpening(crackOpening);
+						for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
+						{
+							double coordinatesNode[2];
+							coordinatesNode[0] = coordinates(countNode,0);
+							coordinatesNode[1] = coordinates(countNode,1);
+							double displacementsNodeHom[2];
+							fineScaleStructure->GetDisplacementsEpsilonHom2D(coordinatesNode, displacementsNodeHom, centerDamage);
+							A(countNode,0) = displacementsNodeHom[0];
+							A(countNode+numNodes,0) = displacementsNodeHom[1];
+						}
+						//std::cout << "displacements hom " << "\n";
+						//A.Info(12,6);
 
-					//solve the least squares problem to find un and ut
-					for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
-					{
-						A(countNode,0) = displacementsTotalReal(countNode,0) - A(countNode,0);
-						A(countNode+numNodes,0) = displacementsTotalReal(countNode,1) - A(countNode+numNodes,0);
-					}
-					NuTo::FullMatrix<double> sol;
-					sol = (B.Trans()*B).Inverse()*B.Trans()*A;
+						//set tangential crackopening to 1
+						crackOpening(0,0) = 1;
+						crackOpening(1,0) = 0;
+						//dont forget to recalculate the homogenous part of the strain
+						fineScaleStructure->SetCrackOpening(crackOpening);
+						for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
+						{
+							double coordinatesNode[2];
+							coordinatesNode[0] = coordinates(countNode,0);
+							coordinatesNode[1] = coordinates(countNode,1);
+							double displacementsNodeCrack[2],displacementsNodeHom[2];
+							//the homogeneous displacements change as well, since the crack opening changes the hom strain due to constant total strain
+							fineScaleStructure->GetDisplacementsCrack2D(coordinatesNode, displacementsNodeCrack);
+							fineScaleStructure->GetDisplacementsEpsilonHom2D(coordinatesNode, displacementsNodeHom, centerDamage);
+							B(countNode,0) = displacementsNodeCrack[0] + displacementsNodeHom[0]-A(countNode,0);
+							B(countNode+numNodes,0) = displacementsNodeCrack[1] + displacementsNodeHom[1]-A(countNode+numNodes,0);
+						}
 
-					//no negativ crack opening in normal direction
-					if (sol(1,0)<0)
-						sol(1,0) = 0;
+						//set normal crackopening to 1
+						crackOpening(0,0) = 0;
+						crackOpening(1,0) = 1;
+						//dont forget to recalculate the homogenous part of the strain
+						fineScaleStructure->SetCrackOpening(crackOpening);
+						for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
+						{
+							double coordinatesNode[2];
+							coordinatesNode[0] = coordinates(countNode,0);
+							coordinatesNode[1] = coordinates(countNode,1);
+							double displacementsNodeCrack[2],displacementsNodeHom[2];
+							//the homogeneous displacements change as well, since the crack opening changes the hom strain due to constant total strain
+							fineScaleStructure->GetDisplacementsCrack2D(coordinatesNode, displacementsNodeCrack);
+							fineScaleStructure->GetDisplacementsEpsilonHom2D(coordinatesNode, displacementsNodeHom, centerDamage);
+							B(countNode,1) = displacementsNodeCrack[0] + displacementsNodeHom[0]-A(countNode,0);
+							B(countNode+numNodes,1) = displacementsNodeCrack[1] + displacementsNodeHom[1]-A(countNode+numNodes,0);
+						}
+						//std::cout << "displacements crack " << "\n";
+						//B.Info(12,3);
 
-					//std::cout << "normalShift " << normalShift << " x " << shift[0] << " y " << shift[1] << " ut " << sol(0,0) << " un " << sol(1,0) << "\n";
-					double normCrackOpeningSquare(sol(0,0)*sol(0,0)+sol(1,0)*sol(1,0));
-					if (normCrackOpeningSquare>maxNormCrackOpeningSquare)
-					{
-						maxNormCrackOpeningSquare = normCrackOpeningSquare;
-						maxShift[0] = shift[0];
-						maxShift[1] = shift[1];
-						maxAlpha = alpha;
+						//solve the least squares problem to find un and ut
+						for (int countNode=0; countNode<coordinates.GetNumRows(); countNode++)
+						{
+							A(countNode,0) = displacementsTotalReal(countNode,0) - A(countNode,0);
+							A(countNode+numNodes,0) = displacementsTotalReal(countNode,1) - A(countNode+numNodes,0);
+						}
+						NuTo::FullMatrix<double> sol;
+						sol = (B.Trans()*B).Inverse()*B.Trans()*A;
+
+						//no negativ crack opening in normal direction
+						if (sol(1,0)<0)
+							sol(1,0) = 0;
+
+						//std::cout << "normalShift " << normalShift << " x " << shift[0] << " y " << shift[1] << " ut " << sol(0,0) << " un " << sol(1,0) << "\n";
+						double normCrackOpeningSquare(sol(0,0)*sol(0,0)+sol(1,0)*sol(1,0));
+						if (normCrackOpeningSquare>maxNormCrackOpeningSquare)
+						{
+							maxNormCrackOpeningSquare = normCrackOpeningSquare;
+							maxShift[0] = shift[0];
+							maxShift[1] = shift[1];
+							maxAlpha = alpha;
+						}
 					}
 				}
+				std::cout << "max crack opening for alpha=" << maxAlpha*180/M_PI << " and shift " <<  maxShift[0] << " " << maxShift[1] << "\n";
+				end=clock();
+				std::cout << "time for solving least squares problem " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
             }
-			std::cout << "max crack opening for alpha=" << maxAlpha*180/M_PI << " and shift " <<  maxShift[0] << " " << maxShift[1] << "\n";
-	        end=clock();
-	        std::cout << "time for solving least squares problem " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
     	    //restore structure
     	    if (hasBeenSaved)
     	    {
@@ -2423,10 +2420,11 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	    	fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackOpeningTangential(),constraintCrackOpeningTangential);
 	    	fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackOpeningNormal(),constraintCrackOpeningNormal);
 */
-    	    if (engineeringStrain.mEngineeringStrain[0]>0.0001)
+    	    //if (engineeringStrain.mEngineeringStrain[0]>0.0001)
 	    	//if ((averageStressWithCrack-averageStressNoCrack).Norm()>0.01*2)
     		//if (sqrt(crackOpening[0]*crackOpening[0]+crackOpening[1]*crackOpening[1])>0.0001)
-    	    {
+            if (maxDamage>mDamageCrackInitiation)
+            {
     			std::cout << "Add a crack with angle " << maxAlpha*180/M_PI << " with shift " << maxShift[0] << " " << maxShift[1] << ", press enter to continue"<< "\n";
     			//std::cin.getline (title,256);
 	    	    //set the crack shift

@@ -621,6 +621,9 @@ protected:
     double mMinLoadFactor;
     double mMinLineSearchFactor;
 
+    //! @brief criterion to add the crack enrichment function
+    double mDamageCrackInitiation;
+
     //directory, where all the results for the fine scale solutions are stored
     std::string mResultDirectory;
     int mLoadStepMacro;
