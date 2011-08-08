@@ -107,7 +107,8 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::SetBoundaryVectors(
     sort(mMasterNodesBottomBoundary.begin(), mMasterNodesBottomBoundary.end(), less_XCoordinate2D());
     sort(mSlaveNodesTopBoundary.begin(), mSlaveNodesTopBoundary.end(), less_XCoordinate2D());
 
-    //Info about the nodes
+    /*
+     //Info about the nodes
 	for (int countBoundary=0; countBoundary<4; countBoundary++)
 	{
 		std::vector<NodeCoordinatesDisplacementsMultiscale2D*>* nodeVectorPtr;
@@ -137,6 +138,7 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::SetBoundaryVectors(
 			std::cout << "  " << coordinates[0] << " " << coordinates[1] << std::endl;
 		}
     }
+*/
 }
 
 //! @brief adds the constraint equations to the matrix
@@ -247,13 +249,6 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::AddToConstraintMatr
 		deltaDisp[0] = (coordinatesCurMaster[1]-coordinatesSlave[1])*0.5*mStrain.mEngineeringStrain[2] ;
 		deltaDisp[1] = (coordinatesCurMaster[1]-coordinatesSlave[1])*mStrain.mEngineeringStrain[1] ;
 
-/*            std::cout << "constraint equation " << curConstraintEquation
-				<< ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
-				<< -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
-				<< w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
-				<< " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
-				<< std::endl;
-*/
 		//constrain x direction
 		rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofFineScaleDisplacement(0),1);
 		if (fabs(w)>MIN_CONSTRAINT)
@@ -280,6 +275,7 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::AddToConstraintMatr
 	//constrain x direction
 	rConstraintMatrix.AddEntry(curConstraintEquation,mMasterNodesBottomBoundary[0]->GetDofFineScaleDisplacement(0),1);
 	rConstraintMatrix.AddEntry(curConstraintEquation,mMasterNodesBottomBoundary[mMasterNodesBottomBoundary.size()-1]->GetDofFineScaleDisplacement(0),1);
+	//std::cout << "constraint " << curConstraintEquation << ":" << mMasterNodesBottomBoundary[0]->GetDofFineScaleDisplacement(0) << "+" << mMasterNodesBottomBoundary[mMasterNodesBottomBoundary.size()-1]->GetDofFineScaleDisplacement(0) << "=" << 0 << "\n";
 	rRHS(curConstraintEquation,0) = 0;
 	curConstraintEquation++;
 
@@ -287,6 +283,7 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::AddToConstraintMatr
 	rConstraintMatrix.AddEntry(curConstraintEquation,mMasterNodesLeftBoundary[0]->GetDofFineScaleDisplacement(1),1);
 	rConstraintMatrix.AddEntry(curConstraintEquation,mMasterNodesLeftBoundary[mMasterNodesLeftBoundary.size()-1]->GetDofFineScaleDisplacement(1),1);
 	rRHS(curConstraintEquation,0) = 0;
+	//std::cout << "constraint " << curConstraintEquation << ":" << mMasterNodesLeftBoundary[0]->GetDofFineScaleDisplacement(1) << "+" << mMasterNodesLeftBoundary[mMasterNodesLeftBoundary.size()-1]->GetDofFineScaleDisplacement(1) << "=" << 0 << "\n";
 	curConstraintEquation++;
 }
 

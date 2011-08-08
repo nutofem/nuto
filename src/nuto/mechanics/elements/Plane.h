@@ -213,6 +213,10 @@ public:
     //! @brief cast the base pointer to an Plane, otherwise throws an exception
     Plane* AsPlane();
 
+    //! @brief calculate the length of a crack passing through the center of gravity and intersecting two edges
+    //! @parameter alpha... angle of the crack
+    virtual double CalculateCrackLength2D(double rAlpha)const=0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

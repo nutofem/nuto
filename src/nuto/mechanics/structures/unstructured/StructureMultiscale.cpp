@@ -90,10 +90,8 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mConstraintPeriodicBoundaryShapeFunctions[0] = -1;
     mConstraintPeriodicBoundaryShapeFunctions[1] = -1;
     mConstraintPeriodicBoundaryShapeFunctions[2] = -1;
-    mSquareCoarseScaleModel = false;
-    mlCoarseScale = 0.;
-    mlFineScaleDamage = 0.;
-    mlFineScaleHomogeneous = 0.;
+    mlCoarseScaleCrack = 0.;
+    mlFineScaleCrack = 0.;
     mCenterDamage[0] = 0.;
     mCenterDamage[1] = 0.;
     mCenterHomogeneous[0] = 0.;
@@ -103,6 +101,7 @@ NuTo::StructureMultiscale::StructureMultiscale ( int rDimension)  : Structure ( 
     mScaleWRTDamageCenter = true;
     mFineScaleAreaDamage = 0.;
     mFineScaleAreaHomogeneous = 0.;
+    mCoarseScaleArea = 0.;
     mCrackTransitionRadius = 0;
     mIPName = std::string("fineScaleIp");
     mResultDirectory = std::string(".");
@@ -219,10 +218,8 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mScalingFactorEpsilon)
        & BOOST_SERIALIZATION_NVP(mPrevCrackAngle)
        & BOOST_SERIALIZATION_NVP(mPrevCrackAngleElastic)
-       & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
-       & BOOST_SERIALIZATION_NVP(mlCoarseScale)
-       & BOOST_SERIALIZATION_NVP(mlFineScaleDamage)
-       & BOOST_SERIALIZATION_NVP(mlFineScaleHomogeneous)
+       & BOOST_SERIALIZATION_NVP(mlCoarseScaleCrack)
+       & BOOST_SERIALIZATION_NVP(mlFineScaleCrack)
        & BOOST_SERIALIZATION_NVP(mCrackTransitionRadius)
        & BOOST_SERIALIZATION_NVP(mCenterDamage)
        & BOOST_SERIALIZATION_NVP(mCenterHomogeneous)
@@ -230,6 +227,7 @@ void NuTo::StructureMultiscale::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mScaleWRTDamageCenter)
        & BOOST_SERIALIZATION_NVP(mFineScaleAreaDamage)
        & BOOST_SERIALIZATION_NVP(mFineScaleAreaHomogeneous)
+       & BOOST_SERIALIZATION_NVP(mCoarseScaleArea)
        & BOOST_SERIALIZATION_NVP(mThickness)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleDamageX)
        & BOOST_SERIALIZATION_NVP(mConstraintFineScaleDamageY)
@@ -445,13 +443,13 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes()
 	}
 	if (GroupGetNumMembers(mGroupElementsDamage)+GroupGetNumMembers(mGroupElementsHomogeneous)!=GetNumElements())
 		throw MechanicsException("[NuTo::StructureMultiscale::TransformMultiscaleNodes] there is something wrong with your elements");
-	TransformMultiscaleNodes(mGroupBoundaryNodesDamage, mGroupBoundaryNodesDamage, mGroupElementsDamage, mCenterDamage, mlFineScaleDamage, mFineScaleAreaDamage, true);
-	TransformMultiscaleNodes(mGroupBoundaryNodesHomogeneous, mGroupBoundaryNodesHomogeneous, mGroupElementsHomogeneous, mCenterHomogeneous, mlFineScaleHomogeneous, mFineScaleAreaHomogeneous,false);
+	TransformMultiscaleNodes(mGroupBoundaryNodesDamage, mGroupBoundaryNodesDamage, mGroupElementsDamage, mCenterDamage, mFineScaleAreaDamage, true);
+	TransformMultiscaleNodes(mGroupBoundaryNodesHomogeneous, mGroupBoundaryNodesHomogeneous, mGroupElementsHomogeneous, mCenterHomogeneous, mFineScaleAreaHomogeneous,false);
 }
 
 //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
 //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
-void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes, int rGroupNodes, int rGroupElements, boost::array<double,2>& rCenter, double& rLength, double& rArea, bool rCrackedDomain)
+void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes, int rGroupNodes, int rGroupElements, boost::array<double,2>& rCenter, double& rArea, bool rCrackedDomain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -617,9 +615,6 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
         rCenter[0] = 0.5*(maxX+minX);
         rCenter[1] = 0.5*(maxY+minY);
         rArea = (maxX-minX)* (maxY-minY);
-        if (mlCoarseScale<=0)
-            throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] coarse length is not correct (<=0)");
-        rLength = maxX-minX;
         mLogger<< "square fine scale model" << "\n";
     }
     else
@@ -648,12 +643,9 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
         	else
         		throw MechanicsException("[NuTo::StructureMultiscale::TransformMultiscaleNodes] the area of the surrounding boundary is only calculated for linear and quadratric tringular meshes.");
         }
-        if (mlCoarseScale<=0)
-            throw MechanicsException("[NuTo::StructureMultiscale::TransformBoundaryNodes] coarse length is not correct (<=0)");
-        rLength = 2.*fineScaleRadius;
         mLogger << "round fine scale model" << "\n";
     }
-    mLogger<< "center of fine scale at (" << rCenter[0] << "," << rCenter[1] << "), area(" << rArea << "), fine scale length "<< rLength << "\n";
+    mLogger<< "center of fine scale at (" << rCenter[0] << "," << rCenter[1] << "), area(" << rArea << ")" << "\n";
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -2901,16 +2893,7 @@ void NuTo::StructureMultiscale::CalculateHomogeneousEngineeringStrain()
 {
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
-    double gamma(0.);
-    if (mSquareCoarseScaleModel)
-    {
-        gamma = 1./std::max(fabs(sinAlpha),fabs(cosAlpha));
-    }
-    else
-    {
-        gamma = 1.;
-    }
-    double factor=gamma/(mlCoarseScale);
+    double factor=mlCoarseScaleCrack/mCoarseScaleArea;
 
     mEpsilonHom.mEngineeringStrain[0] = mEpsilonTot.mEngineeringStrain[0] - factor * sinAlpha *(-cosAlpha*mCrackOpening[0]+sinAlpha*mCrackOpening[1]);
     mEpsilonHom.mEngineeringStrain[1] = mEpsilonTot.mEngineeringStrain[1] - factor * cosAlpha *(sinAlpha*mCrackOpening[0]+cosAlpha*mCrackOpening[1]);
@@ -3009,103 +2992,37 @@ void NuTo::StructureMultiscale::GetdEpsilonHomdCrack(double rbHomAlpha[3], doubl
     double sinAlpha(sin(mCrackAngle));
     double cosAlpha(cos(mCrackAngle));
 
-    if (mSquareCoarseScaleModel)
-    {
-        if (fabs(sinAlpha)>fabs(cosAlpha))
-        {
-            double signdivl = sinAlpha<0 ? 1./mlCoarseScale : -1./mlCoarseScale;
-            rbHomAlpha[0] = signdivl*(sinAlpha*mCrackOpening[0] + cosAlpha*mCrackOpening[1]);
-            rbHomAlpha[1] = signdivl*(-sinAlpha*mCrackOpening[0] +(cosAlpha/(sinAlpha*sinAlpha)*(cosAlpha*cosAlpha-2.))*mCrackOpening[1]);
-            rbHomAlpha[2] = signdivl*((cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.))*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
+	// coarse scale model is not a square or not aligned with the principal axes
+    double factor = -mlCoarseScaleCrack/mCoarseScaleArea;
+	rbHomAlpha[0] = factor*((1.-2.*cosAlpha*cosAlpha)*mCrackOpening[0] + 2.*sinAlpha*cosAlpha*mCrackOpening[1]);
+	rbHomAlpha[1] = -rbHomAlpha[0];
+	rbHomAlpha[2] = factor*((-4.*sinAlpha*cosAlpha)*mCrackOpening[0] + (2.-4.*cosAlpha*cosAlpha)*mCrackOpening[1]);
 
-            rbHomU[0] = signdivl*(-cosAlpha);
-            rbHomU[1] = signdivl*cosAlpha;
-            rbHomU[2] = signdivl*(2.*cosAlpha*cosAlpha-1.)/sinAlpha;
+	rbHomU[0] = factor*(-sinAlpha*cosAlpha);
+	rbHomU[1] = -rbHomU[0];
+	rbHomU[2] = factor*(2.*cosAlpha*cosAlpha-1.);
 
-            rbHomU[3] = signdivl*(sinAlpha);
-            rbHomU[4] = signdivl*(cosAlpha*cosAlpha)/sinAlpha;
-            rbHomU[5] = signdivl*(-2.*cosAlpha);
+	rbHomU[3] = factor*(sinAlpha*sinAlpha);
+	rbHomU[4] = factor*(cosAlpha*cosAlpha);
+	rbHomU[5] = factor*(-2.*sinAlpha*cosAlpha);
 
-            if (rbHessian!=0)
-            {
-                rbHessian[0] = signdivl*(cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);;
-                rbHessian[1] = signdivl*(-cosAlpha*mCrackOpening[0] + (cosAlpha*cosAlpha*(cosAlpha*cosAlpha-1.)+2.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[1]);
-                rbHessian[2] = signdivl*((cosAlpha*cosAlpha*(2.*cosAlpha*cosAlpha-3.)+3.)/(sinAlpha*sinAlpha*sinAlpha)*mCrackOpening[0] +2.* cosAlpha*mCrackOpening[1]);
+	//std::cout << "rbHomAlpha[0] "  << rbHomAlpha[0] << " " << rbHomAlpha[1] << " " << rbHomAlpha[2] << std::endl;
+	//std::cout << "rbHomU[0] "  << rbHomU[0] << " " << rbHomU[1] << " " << rbHomU[2] << std::endl;
+	//std::cout << "rbHomU[3] "  << rbHomU[3] << " " << rbHomU[4] << " " << rbHomU[5] << std::endl;
 
-                rbHessian[3] = signdivl*sinAlpha;
-                rbHessian[4] = -signdivl*sinAlpha;
-                rbHessian[5] = signdivl*(cosAlpha/(sinAlpha*sinAlpha)*(2.*cosAlpha*cosAlpha-3.));
+	if (rbHessian!=0)
+	{
+		rbHessian[0] = factor*(4.*sinAlpha*cosAlpha*mCrackOpening[0] + (4.*cosAlpha*cosAlpha-2.)*mCrackOpening[1]);
+		rbHessian[1] = -rbHessian[0];
+		rbHessian[2] = factor*((4.-8.*cosAlpha*cosAlpha)*mCrackOpening[0] + 8.*sinAlpha*cosAlpha*mCrackOpening[1]);
 
-                rbHessian[6] = signdivl*cosAlpha;
-                rbHessian[7] = signdivl*(cosAlpha*(cosAlpha*cosAlpha-2.)/(sinAlpha*sinAlpha));
-                rbHessian[8] = signdivl*2.* sinAlpha;
-            }
-        }
-        else
-        {
-            double signdivl = cosAlpha<0 ? 1./mlCoarseScale : -1./mlCoarseScale;
-            rbHomAlpha[0] = signdivl*(-cosAlpha*mCrackOpening[0] + ((cosAlpha*cosAlpha+1.)*sinAlpha/(cosAlpha*cosAlpha))*mCrackOpening[1]);
-            rbHomAlpha[1] = signdivl*( cosAlpha*mCrackOpening[0] - sinAlpha*mCrackOpening[1]);
-            rbHomAlpha[2] = signdivl*(-(sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1.))*mCrackOpening[0] -2.* cosAlpha*mCrackOpening[1]);
+		rbHessian[3] = factor*(1.-2.*cosAlpha*cosAlpha);
+		rbHessian[4] = -rbHessian[3];
+		rbHessian[5] = factor*(-4.*sinAlpha*cosAlpha);
 
-            rbHomU[0] = signdivl*(-sinAlpha);
-            rbHomU[1] = signdivl*sinAlpha;
-            rbHomU[2] = signdivl*(2.*cosAlpha*cosAlpha-1.)/cosAlpha;
-
-            rbHomU[3] = signdivl*(sinAlpha*sinAlpha)/cosAlpha;
-            rbHomU[4] = signdivl*(cosAlpha);
-            rbHomU[5] = signdivl*(-2.*sinAlpha);
-
-            if (rbHessian!=0)
-            {
-                rbHessian[0] = signdivl*(sinAlpha*mCrackOpening[0] +(cosAlpha*cosAlpha*(cosAlpha*cosAlpha-1.)+2.)/(cosAlpha*cosAlpha*cosAlpha)*mCrackOpening[1]);
-                rbHessian[1] = signdivl*(-sinAlpha*mCrackOpening[0] - cosAlpha*mCrackOpening[1]);
-                rbHessian[2] = signdivl*(-(cosAlpha*cosAlpha*(2.*cosAlpha*cosAlpha-1.)+2)/(cosAlpha*cosAlpha*cosAlpha)*mCrackOpening[0] +2.* sinAlpha*mCrackOpening[1]);
-
-                rbHessian[3] = -signdivl*cosAlpha;
-                rbHessian[4] = signdivl*cosAlpha;
-                rbHessian[5] = signdivl*(-sinAlpha/(cosAlpha*cosAlpha)*(2.*cosAlpha*cosAlpha+1.));
-
-                rbHessian[6] = signdivl*(sinAlpha*(cosAlpha*cosAlpha+1.)/(cosAlpha*cosAlpha));
-                rbHessian[7] = -signdivl*sinAlpha;
-                rbHessian[8] = -signdivl*(2.*cosAlpha);
-            }
-        }
-    }
-    else
-    {
-        // coarse scale model is not a square or not aligned with the principal axes
-        double factor = -1./(mlCoarseScale);
-        rbHomAlpha[0] = factor*((1.-2.*cosAlpha*cosAlpha)*mCrackOpening[0] + 2.*sinAlpha*cosAlpha*mCrackOpening[1]);
-        rbHomAlpha[1] = -rbHomAlpha[0];
-        rbHomAlpha[2] = factor*((-4.*sinAlpha*cosAlpha)*mCrackOpening[0] + (2.-4.*cosAlpha*cosAlpha)*mCrackOpening[1]);
-
-        rbHomU[0] = factor*(-sinAlpha*cosAlpha);
-        rbHomU[1] = -rbHomU[0];
-        rbHomU[2] = factor*(2.*cosAlpha*cosAlpha-1.);
-
-        rbHomU[3] = factor*(sinAlpha*sinAlpha);
-        rbHomU[4] = factor*(cosAlpha*cosAlpha);
-        rbHomU[5] = factor*(-2.*sinAlpha*cosAlpha);
-
-        //std::cout << "rbHomAlpha[0] "  << rbHomAlpha[0] << " " << rbHomAlpha[1] << " " << rbHomAlpha[2] << std::endl;
-        //std::cout << "rbHomU[0] "  << rbHomU[0] << " " << rbHomU[1] << " " << rbHomU[2] << std::endl;
-        //std::cout << "rbHomU[3] "  << rbHomU[3] << " " << rbHomU[4] << " " << rbHomU[5] << std::endl;
-
-        if (rbHessian!=0)
-        {
-            rbHessian[0] = factor*(4.*sinAlpha*cosAlpha*mCrackOpening[0] + (4.*cosAlpha*cosAlpha-2.)*mCrackOpening[1]);
-            rbHessian[1] = -rbHessian[0];
-            rbHessian[2] = factor*((4.-8.*cosAlpha*cosAlpha)*mCrackOpening[0] + 8.*sinAlpha*cosAlpha*mCrackOpening[1]);
-
-            rbHessian[3] = factor*(1.-2.*cosAlpha*cosAlpha);
-            rbHessian[4] = -rbHessian[3];
-            rbHessian[5] = factor*(-4.*sinAlpha*cosAlpha);
-
-            rbHessian[6] = factor*2.*sinAlpha*cosAlpha;
-            rbHessian[7] = -rbHessian[6];
-            rbHessian[8] = factor*(2.-4.*cosAlpha*cosAlpha);
-        }
+		rbHessian[6] = factor*2.*sinAlpha*cosAlpha;
+		rbHessian[7] = -rbHessian[6];
+		rbHessian[8] = factor*(2.-4.*cosAlpha*cosAlpha);
     }
 /*
     mLogger << "crack opening "  << mCrackOpening[0] << " " << mCrackOpening[1]  << "\n";
@@ -3855,6 +3772,108 @@ void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsUsin
 
 }
 
+//! @brief add constraints for the finescale displacement of the boundary nodes
+void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacements(double rDamageX, double rDamageY, double rHomogeneousX, double rHomogeneousY)
+{
+	boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(mGroupBoundaryNodesDamage);
+	if (itGroup==mGroupMap.end())
+		throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(damage) with the given identifier does not exist.");
+	if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+		throw MechanicsException("[NuTo::StructureBase::CalculatePeriodicBoundaryShapeFunctions] Group(damage) is not an node group.");
+	const Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+
+	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintFineScaleDamageX);
+	if (it!=mConstraintMap.end())
+	{
+		mConstraintMap.erase(it);
+	}
+	it = mConstraintMap.find(mConstraintFineScaleDamageY);
+	if (it!=mConstraintMap.end())
+	{
+		mConstraintMap.erase(it);
+	}
+	//insert constraints for the x direction
+	//find unused integer id
+	int id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+
+	NuTo::FullMatrix<double> direction(2,1);
+	direction(0,0) = 1;
+	direction(1,0) = 0;
+	mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,rDamageX));
+	mConstraintFineScaleDamageX = id;
+
+	//insert constraints for the y direction
+	//find unused integer id
+	id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+
+	direction(0,0) = 0;
+	direction(1,0) = 1;
+	mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,rDamageY));
+	mConstraintFineScaleDamageX = id;
+
+	//insert constraints for the homogeneous domain
+	itGroup = mGroupMap.find(mGroupBoundaryNodesHomogeneous);
+	if (itGroup==mGroupMap.end())
+		throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) with the given identifier does not exist.");
+	if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+		throw MechanicsException("[NuTo::StructureBase::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) is not an node group.");
+	nodeGroup = itGroup->second->AsGroupNode();
+
+	//insert constraints for the homogeneous domain
+	it = mConstraintMap.find(mConstraintFineScaleHomogeneousX);
+	if (it!=mConstraintMap.end())
+	{
+		mConstraintMap.erase(it);
+	}
+
+	it = mConstraintMap.find(mConstraintFineScaleHomogeneousY);
+	if (it!=mConstraintMap.end())
+	{
+		mConstraintMap.erase(it);
+	}
+
+	//insert constraints for the x direction
+	//find unused integer id
+	id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	direction(0,0) = 1;
+	direction(1,0) = 0;
+	mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,rHomogeneousX));
+	mConstraintFineScaleHomogeneousX = id;
+
+	//insert constraints for the y direction
+	//find unused integer id
+	id = 0;
+	it = mConstraintMap.find(id);
+	while (it!=mConstraintMap.end())
+	{
+		id++;
+		it = mConstraintMap.find(id);
+	}
+	direction(0,0) = 0;
+	direction(1,0) = 1;
+	mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,rHomogeneousY));
+	mConstraintFineScaleHomogeneousY = id;
+
+}
+
 
 //! @brief set periodic boundary conditions for a 2D structure
 //! @parameter rGroupBoundaryNodes ... boundary nodes
@@ -4036,13 +4055,15 @@ void NuTo::StructureMultiscale::ScaleCoordinates(double rCoordinates[3])const
 	//rCoordinates[2] is unchanged
 	if (mScaleWRTDamageCenter)
 	{
-		rCoordinates[0] = (rCoordinates[0]-mCenterDamage[0])*0.3*mlCoarseScale/mlFineScaleDamage + mCenterMacro[0];
-		rCoordinates[1] = (rCoordinates[1]-mCenterDamage[1])*0.3*mlCoarseScale/mlFineScaleDamage + mCenterMacro[1];
+		double ratio(0.3*sqrt(mCoarseScaleArea/mFineScaleAreaDamage));
+		rCoordinates[0] = (rCoordinates[0]-mCenterDamage[0])*ratio + mCenterMacro[0];
+		rCoordinates[1] = (rCoordinates[1]-mCenterDamage[1])*ratio + mCenterMacro[1];
 	}
 	else
 	{
-		rCoordinates[0] = (rCoordinates[0]-mCenterHomogeneous[0])*0.3*mlCoarseScale/mlFineScaleHomogeneous + mCenterMacro[0];
-		rCoordinates[1] = (rCoordinates[1]-mCenterHomogeneous[1])*0.3*mlCoarseScale/mlFineScaleHomogeneous + mCenterMacro[1];
+		double ratio(0.3*sqrt(mCoarseScaleArea/mFineScaleAreaHomogeneous));
+		rCoordinates[0] = (rCoordinates[0]-mCenterHomogeneous[0])*ratio + mCenterMacro[0];
+		rCoordinates[1] = (rCoordinates[1]-mCenterHomogeneous[1])*ratio + mCenterMacro[1];
 	}
 }
 
@@ -4072,7 +4093,7 @@ void NuTo::StructureMultiscale::SetResultDirectory(std::string rResultDirectory)
     }
 }
 
-void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rStiffness)
+void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rStiffness, bool rPeriodic)
 {
     mLogger.OpenFile();
 
@@ -4124,8 +4145,16 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
     mConstraintMap.insert(id, mConst3);
 
     //and periodic boundary conditions
-    EngineeringStrain2D strain;
-    CreateConstraintLinearFineScaleDisplacementsPeriodic(strain);
+    if (rPeriodic)
+    {
+		EngineeringStrain2D strain;
+		CreateConstraintLinearFineScaleDisplacementsPeriodic(strain);
+    }
+    else
+    {
+    	//set fine scale disp of all 2 boundary node groups (hom & damage) to zero (x & y)
+    	CreateConstraintLinearFineScaleDisplacements(0,0,0,0);
+    }
 
     //fix the additional dofs related to the periodic boundary displacements
     CreateConstraintLinearPeriodicBoundaryShapeFunctions(0, 0);
@@ -4192,6 +4221,16 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
 	mConstraintFineScalePeriodicDamage = -1;
 	this->ConstraintDelete(mConstraintFineScalePeriodicHomogeneous);
 	mConstraintFineScalePeriodicHomogeneous = -1;
+
+	this->ConstraintDelete(mConstraintFineScaleDamageX);
+	mConstraintFineScaleDamageX = -1;
+	this->ConstraintDelete(mConstraintFineScaleDamageY);
+	mConstraintFineScaleDamageY = -1;
+	this->ConstraintDelete(mConstraintFineScaleHomogeneousX);
+	mConstraintFineScaleHomogeneousX = -1;
+	this->ConstraintDelete(mConstraintFineScaleHomogeneousY);
+	mConstraintFineScaleHomogeneousY = -1;
+
 	for (int count=0; count<3; count++)
 	{
 	    this->ConstraintDelete(mConstraintPeriodicBoundaryShapeFunctions[count]);
@@ -4495,13 +4534,14 @@ void NuTo::StructureMultiscale::SetResultLoadStepMacro(std::string rLoadStepMacr
 void NuTo::StructureMultiscale::VisualizeCrack(VisualizeUnstructuredGrid& rVisualize)const
 {
 	double GlobalPointCoor1[3];
-	GlobalPointCoor1[0] = mCenterMacro[0]+mShiftCenterDamage[0]*0.3*mlCoarseScale/mlFineScaleDamage+0.4*mlCoarseScale*cos(mCrackAngle);
-	GlobalPointCoor1[1] = mCenterMacro[1]+mShiftCenterDamage[1]*0.3*mlCoarseScale/mlFineScaleDamage+0.4*mlCoarseScale*sin(mCrackAngle);
+	double ratio(0.3*sqrt(mCoarseScaleArea/mFineScaleAreaDamage));
+	GlobalPointCoor1[0] = mCenterMacro[0]+mShiftCenterDamage[0]*ratio+0.4*mlCoarseScaleCrack*cos(mCrackAngle);
+	GlobalPointCoor1[1] = mCenterMacro[1]+mShiftCenterDamage[1]*ratio+0.4*mlCoarseScaleCrack*sin(mCrackAngle);
 	GlobalPointCoor1[2] = 0.;
 
 	double GlobalPointCoor2[3];
-	GlobalPointCoor2[0] = mCenterMacro[0]+mShiftCenterDamage[0]*0.3*mlCoarseScale/mlFineScaleDamage-0.4*mlCoarseScale*cos(mCrackAngle);
-	GlobalPointCoor2[1] = mCenterMacro[1]+mShiftCenterDamage[1]*0.3*mlCoarseScale/mlFineScaleDamage-0.4*mlCoarseScale*sin(mCrackAngle);
+	GlobalPointCoor2[0] = mCenterMacro[0]+mShiftCenterDamage[0]*ratio-0.4*mlCoarseScaleCrack*cos(mCrackAngle);
+	GlobalPointCoor2[1] = mCenterMacro[1]+mShiftCenterDamage[1]*ratio-0.4*mlCoarseScaleCrack*sin(mCrackAngle);
 	GlobalPointCoor2[2] = 0.;
 	unsigned int Points[2];
 	Points[0] = rVisualize.AddPoint(GlobalPointCoor1);
@@ -4738,8 +4778,8 @@ try
     	    std::cout << "stiffness" << std::endl;
             stiffnessMatrixFull.Info(15,7);
 
-            std::cout << "inverse stiffness" << std::endl;
-            stiffnessMatrixFull.Inverse().Info(15,7);
+//            std::cout << "inverse stiffness" << std::endl;
+//            stiffnessMatrixFull.Inverse().Info(15,7);
 
             NuTo::FullMatrix<double> eigenValues;
             stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
@@ -4750,7 +4790,10 @@ try
             stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
             mLogger << "eigenvector 1" << "\n";
             mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
+            mLogger << "eigenvector 2" << "\n";
             mLogger.Out(eigenVectors.GetColumn(1).Trans(),12,3);
+            mLogger << "eigenvector 3" << "\n";
+            mLogger.Out(eigenVectors.GetColumn(2).Trans(),12,3);
 
             mLogger << " rhsVector" << "\n";
             mLogger.Out(rhsVector.Trans(),10,9,false);

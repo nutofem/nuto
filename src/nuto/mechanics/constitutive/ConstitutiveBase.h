@@ -317,13 +317,17 @@ public:
     //! @param LoadStepMacro...LoadStepMacro
     virtual void SetLoadStepMacro(int rLoadStepMacro);
 
-    //! @brief ... get square coarse scale model
-    //! @return ... square coarse scale model (yes or no)
-    virtual bool GetSquareCoarseScaleModel() const;
+    //! @brief ... get if additional periodic shape functions are used
+    //! @return ... true (periodic) or false (fixed displacements)
+    virtual bool GetUseAdditionalPeriodicShapeFunctions() const;
 
-    //! @brief ... set get square coarse scale model
-    //! @param square coarse scale model (yes or no)
-    virtual void SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel);
+    //! @brief ... set to use additional periodic shape functions
+    //! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
+    virtual void SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions);
+
+    //! @brief ... check
+    //! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
+    virtual void CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const;
 
     ///////////////////////////////////////////////////////////////////////////
 

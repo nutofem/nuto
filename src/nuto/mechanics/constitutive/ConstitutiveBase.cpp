@@ -472,19 +472,27 @@ void NuTo::ConstitutiveBase::SetLoadStepMacro(int rLoadStepMacro)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetLoadStepMacro] The constitutive relationship does not have this parameter.");
 }
 
-//! @brief ... get square coarse scale model
-//! @return ... square coarse scale model (yes or no)
-bool NuTo::ConstitutiveBase::GetSquareCoarseScaleModel() const
+//! @brief ... get if additional periodic shape functions are used
+//! @return ... true (periodic) or false (fixed displacements)
+bool NuTo::ConstitutiveBase::GetUseAdditionalPeriodicShapeFunctions() const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetSquareCoarseScaleModel] The constitutive relationship does not have this parameter.");
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
 }
 
-//! @brief ... set get square coarse scale model
-//! @param square coarse scale model (yes or no)
-void NuTo::ConstitutiveBase::SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel)
+//! @brief ... set to use additional periodic shape functions
+//! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
+void NuTo::ConstitutiveBase::SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions)
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetSquareCoarseScaleModel] The constitutive relationship does not have this parameter.");
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
 }
+
+//! @brief ... check
+//! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
+void NuTo::ConstitutiveBase::CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
+}
+
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()

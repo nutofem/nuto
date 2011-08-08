@@ -38,6 +38,7 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/Plane.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
@@ -61,8 +62,6 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mAugmentedLagrangeStiffnessCrackOpening = 1e3;
     mCrackTransitionRadius = 0;
 
-    mSquareCoarseScaleModel = false;
-
     mTensileStrength = 0;
 
     mDamageCrackInitiation = 1e-3;
@@ -72,6 +71,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mScalingFactorEpsilon = 0;
 
     mPenaltyStiffnessCrackAngle = 0;
+
+    mUseAdditionalPeriodicShapeFunctions = false;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -89,7 +90,6 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mFileName)
           & BOOST_SERIALIZATION_NVP(mAugmentedLagrangeStiffnessCrackOpening)
           & BOOST_SERIALIZATION_NVP(mTensileStrength)
-          & BOOST_SERIALIZATION_NVP(mSquareCoarseScaleModel)
           & BOOST_SERIALIZATION_NVP(mScalingFactorCrackAngle)
           & BOOST_SERIALIZATION_NVP(mScalingFactorCrackOpening)
           & BOOST_SERIALIZATION_NVP(mScalingFactorEpsilon)
@@ -105,7 +105,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mMinLineSearchFactor)
           & BOOST_SERIALIZATION_NVP(mResultDirectory)
           & BOOST_SERIALIZATION_NVP(mLoadStepMacro)
-          & BOOST_SERIALIZATION_NVP(mDamageCrackInitiation);
+          & BOOST_SERIALIZATION_NVP(mDamageCrackInitiation)
+          & BOOST_SERIALIZATION_NVP(mUseAdditionalPeriodicShapeFunctions);
 #ifdef DEBUG_SERIALIZATION
        std::cout << "finish serialize Multiscale" << std::endl;
 #endif
@@ -1711,29 +1712,31 @@ void NuTo::Multiscale::CheckLoadStepMacro(int rLoadStepMacro) const
 
 }
 
-//! @brief ... get load step macro
-//! @return ... LoadStepMacro
-bool NuTo::Multiscale::GetSquareCoarseScaleModel() const
+//! @brief ... get if additional periodic shape functions are used
+//! @return ... true (periodic) or false (fixed displacements)
+bool NuTo::Multiscale::GetUseAdditionalPeriodicShapeFunctions()const
 {
-	return mSquareCoarseScaleModel;
+	return mUseAdditionalPeriodicShapeFunctions;
+
 }
 
-//! @brief ... set LoadStepMacro
-//! @param LoadStepMacro...LoadStepMacro
-void NuTo::Multiscale::SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel)
+//! @brief ... set to use additional periodic shape functions
+//! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
+void NuTo::Multiscale::SetUseAdditionalPeriodicShapeFunctions(bool rUseAdditionalPeriodicShapeFunctions)
 {
-    this->CheckSquareCoarseScaleModel(rSquareCoarseScaleModel);
-    this->mSquareCoarseScaleModel = rSquareCoarseScaleModel;
+    this->CheckUseAdditionalPeriodicShapeFunctions(rUseAdditionalPeriodicShapeFunctions);
+    this->mUseAdditionalPeriodicShapeFunctions = rUseAdditionalPeriodicShapeFunctions;
     this->SetParametersValid();
 
 }
 
-//! @brief ... check LoadStepMacro
-//! @param LoadStepMacro ...LoadStepMacro
-void NuTo::Multiscale::CheckSquareCoarseScaleModel(bool rSquareCoarseScaleModel) const
+//! @brief ... check
+//! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
+void NuTo::Multiscale::CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const
 {
 
 }
+
 
 // check parameters
 void NuTo::Multiscale::CheckParameters()const
@@ -1755,6 +1758,7 @@ void NuTo::Multiscale::CheckParameters()const
 	this->CheckMinLoadFactor(mMinLoadFactor);
 	this->CheckResultDirectory(mResultDirectory);
 	this->CheckLoadStepMacro(mLoadStepMacro);
+	this->CheckUseAdditionalPeriodicShapeFunctions(mUseAdditionalPeriodicShapeFunctions);
 }
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
@@ -1930,9 +1934,6 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		if (princ_sigma<mTensileStrength)
 			return;
 
-		//calculate macro length
-		double macroLength = sqrt(rElement->CalculateArea());
-
 		//calculate center
 		double center[3];
 		rElement->GetGlobalIntegrationPointCoordinates(rIp, center);
@@ -1944,8 +1945,9 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		rIPString << rIp;
 		std::string iPName = elementString.str()+std::string("_")+rIPString.str();
 
+		double macroCrackLength = 0; //tmp value
 		rElement->GetStructure()->GetLogger() << "transform ip " << iPName << " to nonlinear structure " << "\n";
-		staticData->SetFineScaleModel(mFileName, macroLength, center, iPName);
+		staticData->SetFineScaleModel(mFileName, macroCrackLength, center, iPName);
 		StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
 		fineScaleStructure->LoggerSetQuiet(true);
 		fineScaleStructure->GetLogger().OpenFile();
@@ -1962,12 +1964,18 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		//initialize the crack angle and the previous crack angle to the current elastic solution
 		double alpha = fineScaleStructure->GetCrackAngleElastic();
 
+		//calculate macro length and area
+		macroCrackLength = rElement->AsPlane()->CalculateCrackLength2D(alpha);
+		double macroArea = rElement->AsPlane()->CalculateArea();
+		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
+		fineScaleStructure->SetCoarseScaleArea(macroArea);
+		if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
+			throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
+
 	//	alpha = 0.5*M_PI;
 		fineScaleStructure->SetCrackAngle(alpha);
 		staticData->SetPrevCrackAngle(alpha);
 		staticData->SetPrevCrackAngleElastic(alpha);
-
-		fineScaleStructure->SetSquareCoarseScaleModel(mSquareCoarseScaleModel);
 
 	#ifdef SHOW_TIME
 		fineScaleStructure->SetShowTime(false);
@@ -1980,12 +1988,16 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		//set constraint for crack angle
 		fineScaleStructure->CreateConstraintLinearGlobalCrackAngle(alpha);
 
-		//periodic bc
-	    //EngineeringStrain2D strain;
-	    //fineScaleStructure->CreateConstraintLinearFineScaleDisplacementsPeriodic(strain);
-
 		//set constraint for fine scale fluctuations on the boundary
-		fineScaleStructure->CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions();
+		if (mUseAdditionalPeriodicShapeFunctions)
+		    fineScaleStructure->CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions();
+		else
+		{
+		    fineScaleStructure->CreateConstraintLinearFineScaleDisplacements(0,0,0,0);
+		    fineScaleStructure->CreateConstraintLinearPeriodicBoundaryShapeFunctions(0,0);
+		    fineScaleStructure->CreateConstraintLinearPeriodicBoundaryShapeFunctions(1,0);
+		    fineScaleStructure->CreateConstraintLinearPeriodicBoundaryShapeFunctions(2,0);
+		}
 
 		//set crack transition zone
 		fineScaleStructure->SetCrackTransitionRadius(mCrackTransitionRadius);
@@ -2171,14 +2183,14 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 
 				std::clock_t start,end;
 				start=clock();
-				int numCountShift=1000;
-				int numAlpha=1;
-				double rangeShiftNormal = 1.0*fineScaleStructure->GetlFineScaleDamage();
+				int numCountShift=101;
+				int numAlpha=91;
+				double rangeShiftNormal = 0.9*sqrt(fineScaleStructure->GetAreaDamage());
 				double initShiftNormal(-0.5*rangeShiftNormal);
-				//double initAlpha = princAlpha-M_PI*0.25;
-				//double deltaAlpha = 0.5*M_PI/(numAlpha-1);
-				double initAlpha = M_PI*0.5;
-				double deltaAlpha = 0;
+				double initAlpha = princAlpha-M_PI*0.25;
+				double deltaAlpha = 0.5*M_PI/(numAlpha-1);
+				//double initAlpha = M_PI*0.5;
+				//double deltaAlpha = 0;
 
 				double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
 				double shift[2];
@@ -2431,6 +2443,11 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	    	    fineScaleStructure->SetShiftCenterDamage(maxShift);
 	    	    //set crack angle
 	    	    fineScaleStructure->SetCrackAngle(maxAlpha);
+	    		//calculate macro length
+	    		double macroCrackLength = rElement->AsPlane()->CalculateCrackLength2D(maxAlpha);
+	    		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
+	    		if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
+	    			throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
 				//delete constraints for crack opening
 				fineScaleStructure->ConstraintDeleteTangentialCrackOpening();
 				fineScaleStructure->ConstraintDeleteNormalCrackOpening();

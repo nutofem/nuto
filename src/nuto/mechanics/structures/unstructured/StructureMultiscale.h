@@ -113,7 +113,7 @@ public:
 
     //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
     //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
-    void TransformMultiscaleNodes(int rGroupBoundaryNodes, int rGroupNodes, int rGroupElements, boost::array<double,2>& rCenter, double& rLength, double& rArea, bool rCrackedDomain);
+    void TransformMultiscaleNodes(int rGroupBoundaryNodes, int rGroupNodes, int rGroupElements, boost::array<double,2>& rCenter, double& rArea, bool rCrackedDomain);
 
     //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
     //! the displacements are decomposed into a local displacement field and a global homogeneous/crack displacement
@@ -302,18 +302,14 @@ public:
         return mConstraintNormalCrackOpening;
     }
 
-    void SetlCoarseScale(double rlCoarseScale)
+    void SetlCoarseScaleCrack(double rlCoarseScaleCrack)
     {
-        mlCoarseScale = rlCoarseScale;
-    }
-    void SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel)
-    {
-        mSquareCoarseScaleModel = rSquareCoarseScaleModel;
+        mlCoarseScaleCrack = rlCoarseScaleCrack;
     }
 
-    double GetlCoarseScale()const
+    double GetlCoarseScaleCrack()const
     {
-        return mlCoarseScale;
+        return mlCoarseScaleCrack;
     }
 
     double GetAreaDamage()const
@@ -324,6 +320,16 @@ public:
     double GetAreaHomogeneous()const
     {
         return mFineScaleAreaHomogeneous;
+    }
+
+    double GetCoarseScaleArea()const
+    {
+        return mCoarseScaleArea;
+    }
+
+    void SetCoarseScaleArea(double rCoarseScaleArea)
+    {
+        mCoarseScaleArea=rCoarseScaleArea;
     }
 
     int GetDofCrackAngle()const
@@ -403,14 +409,24 @@ public:
 
     double GetScalingFactorDamage()const
     {
-    	assert(mlCoarseScale/mlFineScaleDamage>0);
-        return mlCoarseScale/mlFineScaleDamage;
+    	assert(mlCoarseScaleCrack/mlFineScaleCrack>0);
+    	//std::cout << "scaling Factor Dam " << mlCoarseScaleCrack/mlFineScaleCrack << "\n";
+    	//std::cout << "mlFineScaleCrack " <<mlFineScaleCrack << "\n";
+    	//std::cout << "mlCoarseScaleCrack " << mlCoarseScaleCrack << "\n";
+        return mlCoarseScaleCrack/mlFineScaleCrack;
     }
 
     double GetScalingFactorHomogeneous()const
     {
-    	assert(mlCoarseScale*(mlCoarseScale-mFineScaleAreaDamage/mlFineScaleDamage)/(mFineScaleAreaHomogeneous)>0);
-    	return mlCoarseScale*(mlCoarseScale-mFineScaleAreaDamage/mlFineScaleDamage)/(mFineScaleAreaHomogeneous);
+    	assert((mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleAreaDamage/mlFineScaleCrack)/(mFineScaleAreaHomogeneous)>0);
+    	//std::cout << "scaling Factor Hom " << (mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleAreaDamage/mlFineScaleCrack)/(mFineScaleAreaHomogeneous) << "\n";
+/*    	std::cout << "mCoarseScaleArea " << mCoarseScaleArea << "\n";
+    	std::cout << "mlCoarseScale " << mlCoarseScale << "\n";
+    	std::cout << "mFineScaleAreaDamage " << mFineScaleAreaDamage << "\n";
+    	std::cout << "mlFineScaleDamage " << mlFineScaleDamage << "\n";
+    	std::cout << "mFineScaleAreaHomogeneous " << mFineScaleAreaHomogeneous << "\n";
+*/
+    	return (mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleAreaDamage/mlFineScaleCrack)/(mFineScaleAreaHomogeneous);
     }
 
     const std::string& GetIPName()const
@@ -519,6 +535,9 @@ public:
     //! @brief set constraint for fine scale fluctuations on the boundary as a linear combination of the periodic bc with exx, eyy, gxy
     void CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions();
 
+    //! @brief add constraints for the finescale displacement of the boundary nodes
+    void CreateConstraintLinearFineScaleDisplacements(double rDamageX, double rDamageY, double rHomogeneousX, double rHomogeneousY);
+
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
@@ -546,14 +565,14 @@ public:
     //! @brief initialize some stuff before a new load step (e.g. output directories for visualization, if required)
     void InitBeforeNewLoadStep(int rLoadStep);
 
-    double GetlFineScaleDamage()const
+    double GetlFineScaleCrack()const
     {
-        return mlFineScaleDamage;
+        return mlFineScaleCrack;
     }
 
-    double GetlFineScaleHomogeneous()const
+    void SetlFineScaleCrack(double rlFineScaleCrack)
     {
-        return mlFineScaleHomogeneous;
+        mlFineScaleCrack = rlFineScaleCrack;
     }
 
     const boost::array<double,2>& GetCenterDamage()const
@@ -638,7 +657,7 @@ public:
             std::stringstream& rSaveStringStream,
             bool& rIsSaved);
 */
-    void CalculateStiffness(NuTo::FullMatrix<double>& rStiffness);
+    void CalculateStiffness(NuTo::FullMatrix<double>& rStiffness, bool rPeriodic);
 
     void CalculatePeriodicBoundaryShapeFunctions(double rDeltaStrain);
 
@@ -752,17 +771,11 @@ protected:
     double mPrevCrackAngle;
     //! @brief prevCrackAngleElastic (last update)
     double mPrevCrackAngleElastic;
-    //! @brief true for an approximately square coarse scale model, false for a either triangular meshes or meshes not aligned with the axes
-    //! in case the coarse scale element is well aligned, the ratio CrackLength/Area can be calculated exactly
-    //! whereas for other shapes, an approximation has to be used (additional errors)
-    bool mSquareCoarseScaleModel;
     //! @brief for mSquareCoarseScaleModel == edge length of the macroscale element (sqrt of the area of the macroscale element)
-    //! for mSquareCoarseScaleModel==false ratio of the crack length divided by the area approximated by (sqrt of the area of the macroscale element)
-    double mlCoarseScale;
-    //! @brief parameter length of the fine scale model related to the damage model
-    double mlFineScaleDamage;
-    //! @brief parameter length of the fine scale model related to the homogeneous model
-    double mlFineScaleHomogeneous;
+    //! for length of the crack in the coarse scale model
+    double mlCoarseScaleCrack;
+    //! @brief parameter length of the fine scale crack in the damage model
+    double mlFineScaleCrack;
     //! @brief length to regularize the Heaviside function
     double mCrackTransitionRadius;
     //! @brief center of the model
@@ -778,6 +791,7 @@ protected:
     // lower than the area of the circle
     double mFineScaleAreaDamage;
     double mFineScaleAreaHomogeneous;
+    double mCoarseScaleArea;
     //! @brief thickness of the structure
     double mThickness;
     int mConstraintFineScaleDamageX,

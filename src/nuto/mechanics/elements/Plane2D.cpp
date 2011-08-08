@@ -9,6 +9,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <algorithm>
+
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Plane2D.h"
@@ -171,6 +173,124 @@ bool NuTo::Plane2D::CheckPointInsidePolygon( const std::tuple<double,double> *rP
 	}
 
 	return inside;
+}
+
+//! @brief help function used in the Cracklength calculation to sort
+//! @parameter array1 (coordinates of point1 (x,y) and then the angle wrt mean
+bool CompareFunctionCrackAngle (const boost::array<double,3>&  array1, const boost::array<double,3>&  array2)
+{
+	return (array1[2]<array2[2]);
+}
+
+//! @brief calculate the length of a crack passing through the center of gravity and intersecting two edges
+//! @parameter alpha... angle of the crack
+double NuTo::Plane2D::CalculateCrackLength2D(double rAlpha)const
+{
+	//get all nodes and calculate mean
+	std::vector<boost::array<double,3> > coordinates;
+	coordinates.resize(GetNumNodes());
+	boost::array<double,2> mean = {{0.,0.}};
+	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	{
+		GetNode(theNode)->GetCoordinates2D(&(coordinates[theNode][0]));
+		mean[0]+=coordinates[theNode][0];
+		mean[1]+=coordinates[theNode][1];
+	}
+	mean[0]/=(double)GetNumNodes();
+	mean[1]/=(double)GetNumNodes();
+
+	//calculate angle wrt arithmetic center
+	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	{
+		coordinates[theNode][2]=atan2(coordinates[theNode][1]-mean[1],coordinates[theNode][0]-mean[0]);
+	}
+
+	//print unsorted
+//	std::cout << "before sort" << "\n";
+//	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+//	{
+//		std::cout << " coordinates " << coordinates[theNode][0] << " " << coordinates[theNode][1] << ", angle " << coordinates[theNode][2] << "\n";
+//	}
+
+	//sort wrt to angle
+    std::sort (coordinates.begin(), coordinates.end(), CompareFunctionCrackAngle);
+
+//	std::cout << "after sort" << "\n";
+//	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+//	{
+//		std::cout << " coordinates " << coordinates[theNode][0] << " " << coordinates[theNode][1] << ", angle " << coordinates[theNode][2] << "\n";
+//	}
+
+	//calculate center of gravity
+	coordinates.resize(GetNumNodes()+1);
+	coordinates[GetNumNodes()] = coordinates[0];
+	boost::array<double,2> centerOfGravity = {{0.,0.}};
+	double area(0);
+	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	{
+		double tmp(coordinates[theNode][0]*coordinates[theNode+1][1]-coordinates[theNode+1][0]*coordinates[theNode][1]);
+		area += tmp;
+		centerOfGravity[0] += (coordinates[theNode][0]+coordinates[theNode+1][0])*tmp;
+		centerOfGravity[1] += (coordinates[theNode][1]+coordinates[theNode+1][1])*tmp;
+	}
+    area*=0.5;
+    centerOfGravity[0]/=6.*area;
+    centerOfGravity[1]/=6.*area;
+
+    //std::cout << "area "<< area << "\n";
+    //std::cout << "center of gravity "<< centerOfGravity[0] << " " << centerOfGravity[1] << "\n";
+    //std::cout << "global angle "<< rAlpha*180./M_PI << "\n";
+
+    //calculate intersection with all edges
+    double u[2];
+    double v[2];
+    double w[2];
+    v[0] = cos(rAlpha);
+    v[1] = sin(rAlpha);
+    double s;
+    double denom;
+    double intersectionPoints[2][2];
+    int numIntersectionPoints(0);
+	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	{
+        u[0] = coordinates[theNode+1][0]-coordinates[theNode][0];
+        u[1] = coordinates[theNode+1][1]-coordinates[theNode][1];
+        w[0] = coordinates[theNode][0] - mean[0];
+        w[1] = coordinates[theNode][1] - mean[1];
+        denom = v[0]*u[1]-v[1]*u[0];
+        if (fabs(denom)>1e-10)
+        {
+            s = (v[1]*w[0]-v[0]*w[1])/denom;
+            if (s>=0 && s<1)
+            {
+            	if (numIntersectionPoints>1)
+            	{
+            		throw MechanicsException("[NuTo::Plane2D::CalculateCrackLength2D] Found more than two intersection points, there is something wrong.");
+            	}
+      //      	std::cout << "s " << s << " theNode " << theNode << "\n";
+      //      	std::cout << "coordinates 1 " << coordinates[theNode][0] << " " << coordinates[theNode][1] << "\n";
+      //      	std::cout << "coordinates 2 " << coordinates[theNode+1][0] << " " << coordinates[theNode+1][1] << "\n";
+      //      	std::cout << "u " << u[0] << " " << u[1] << "\n";
+            	intersectionPoints[numIntersectionPoints][0] = coordinates[theNode][0] + s*u[0];
+            	intersectionPoints[numIntersectionPoints][1] = coordinates[theNode][1] + s*u[1];
+      //      	std::cout << "intersection " << intersectionPoints[numIntersectionPoints][0] << " " << intersectionPoints[numIntersectionPoints][1] << "\n";
+
+            	numIntersectionPoints++;
+            }
+        }
+	}
+	if (numIntersectionPoints!=2)
+	{
+		throw MechanicsException("[NuTo::Plane2D::CalculateCrackLength2D] Did not found two intersection points, there is something wrong.");
+	}
+    //std::cout << "intersection point 1 "<< intersectionPoints[0][0] << " " << intersectionPoints[0][1] << "\n";
+    //std::cout << "intersection point 2 "<< intersectionPoints[1][0] << " " << intersectionPoints[1][1] << "\n";
+
+	//std::cout << "crack length " << sqrt((intersectionPoints[0][0]-intersectionPoints[1][0])*(intersectionPoints[0][0]-intersectionPoints[1][0])+
+	//	    (intersectionPoints[0][1]-intersectionPoints[1][1])*(intersectionPoints[0][1]-intersectionPoints[1][1]))<< "\n";
+	//calculate length of crack and return
+	return sqrt((intersectionPoints[0][0]-intersectionPoints[1][0])*(intersectionPoints[0][0]-intersectionPoints[1][0])+
+			    (intersectionPoints[0][1]-intersectionPoints[1][1])*(intersectionPoints[0][1]-intersectionPoints[1][1]));
 }
 
 

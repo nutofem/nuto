@@ -833,34 +833,34 @@ void NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadS
     }
 }
 
-//! @brief ... get rSquareCoarseScaleModel
-//! @param rIdent ...  identifier
-bool NuTo::StructureBase::ConstitutiveLawGetSquareCoarseScaleModel(int rIdent)const
+//! @brief ... get if the fine scale model is to be used with the linear elastic periodic boundary shape functions
+//! @return rUseAdditionalPeriodicShapeFunctions
+bool NuTo::StructureBase::ConstitutiveLawGetUseAdditionalPeriodicShapeFunctions(int rIdent)const
 {
 	try
 	{
 		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetSquareCoarseScaleModel();
+		return ConstitutiveLawPtr->GetUseAdditionalPeriodicShapeFunctions();
 	}
 	catch (NuTo::MechanicsException& e)
 	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetSquareCoarseScaleModel] error getting SquareCoarseScaleModel.");
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetUseAdditionalPeriodicShapeFunctions] error getting UseAdditionalPeriodicShapeFunctions.");
 		throw e;
 	}
 }
 
-//! @brief ... set rSquareCoarseScaleModel
-//! @param rSquareCoarseScaleModel ...  rSquareCoarseScaleModel
-void NuTo::StructureBase::ConstitutiveLawSetSquareCoarseScaleModel(int rIdent, bool rSquareCoarseScaleModel)
+//! @brief ... set if the fine scale model is to be used with the linear elastic periodic boundary shape functions
+//! @param rUseAdditionalPeriodicShapeFunctions ...  true or false
+void NuTo::StructureBase::ConstitutiveLawSetUseAdditionalPeriodicShapeFunctions(int rIdent, bool rUseAdditionalPeriodicShapeFunctions)
 {
     try
     {
         ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetSquareCoarseScaleModel(rSquareCoarseScaleModel);
+        ConstitutiveLawPtr->SetUseAdditionalPeriodicShapeFunctions(rUseAdditionalPeriodicShapeFunctions);
     }
     catch (NuTo::MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro] error setting SquareCoarseScaleModel.");
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro] error setting UseAdditionalPeriodicShapeFunctions.");
         throw e;
     }
 }

@@ -116,7 +116,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
 #endif //ENABLE_SERIALIZATION
 
     //set macroscopic length (sqrt of area of macroelement)
-    mStructure->SetlCoarseScale(rMacroLength);
+    //mStructure->SetlCoarseScale(rMacroLength);
 
     mStructure->SetIPName(rIPName);
 
@@ -147,15 +147,6 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 			mStructure->LoggerSetQuiet(true);
 		else if (upperCaseName=="LOGGERNONQUIET")
 			mStructure->LoggerSetQuiet(false);
-		else if (upperCaseName=="SQUARECOARSESCALEMODEL")
-		{
-			if (rParameter==0)
-				mStructure->SetSquareCoarseScaleModel(false);
-			else if (rParameter==1)
-				mStructure->SetSquareCoarseScaleModel(true);
-			else
-				throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter for SetSquareCoarseScaleModel is either 0 or 1");
-		}
 		else
 			throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter] Parameter " + upperCaseName + " not a valid expression.");
     }

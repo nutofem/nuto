@@ -530,17 +530,21 @@ public:
     //! @param LoadStepMacro ...LoadStepMacro
     void CheckLoadStepMacro(int rLoadStepMacro) const;
 
-    //! @brief ... get load step macro
-    //! @return ... LoadStepMacro
-    bool GetSquareCoarseScaleModel() const;
-
-    //! @brief ... set LoadStepMacro
-    //! @param LoadStepMacro...LoadStepMacro
-    void SetSquareCoarseScaleModel(bool rSquareCoarseScaleModel);
-
     //! @brief ... check LoadStepMacro
     //! @param LoadStepMacro ...LoadStepMacro
     void CheckSquareCoarseScaleModel(bool rSquareCoarseScaleModel) const;
+
+    //! @brief ... get if additional periodic shape functions are used
+    //! @return ... true (periodic) or false (fixed displacements)
+    bool GetUseAdditionalPeriodicShapeFunctions() const;
+
+    //! @brief ... set to use additional periodic shape functions
+    //! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
+    void SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions);
+
+    //! @brief ... check
+    //! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
+    void CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const;
 
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
@@ -593,9 +597,6 @@ protected:
     //! @brief stiffness of the augmented Lagrangian to prevent crack opening
     double mAugmentedLagrangeStiffnessCrackOpening;
 
-    //! @brief if true, scale the crack length of the fine scale model based on the crack angle
-    bool mSquareCoarseScaleModel;
-
     //! @brief tensile strength, this parameter should be chosen smaller than the actual value
     //! it is used to determine the transition from the linear elastic model to the full mesoscale model
     double mTensileStrength;
@@ -628,9 +629,8 @@ protected:
     std::string mResultDirectory;
     int mLoadStepMacro;
 
-    //! @brief if true, rotate strain into crack coordinate system, solve and rotate back
-    bool mRotateCrack;
-
+    //enrich the solution with
+    bool mUseAdditionalPeriodicShapeFunctions;
 };
 }
 

@@ -64,6 +64,10 @@ public:
     //! @param rPoint (input) ... a pointer to a vector of 2D tuples representing the polyline
     bool CheckPointInsidePolygon( const std::tuple<double,double> *rPoint, const std::vector<std::tuple<double,double> > * rPolygon)const;
 
+    //! @brief calculate the length of a crack passing through the center of gravity and intersecting two edges
+    //! @parameter alpha... angle of the crack
+    virtual double CalculateCrackLength2D(double rAlpha)const;
+
 protected:
     //! @brief ... just for serialization
     Plane2D(){};
