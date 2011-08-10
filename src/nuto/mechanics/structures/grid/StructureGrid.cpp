@@ -1,10 +1,4 @@
 // $Id$
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -13,9 +7,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_vector.hpp>
 #else
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
 #ifdef SHOW_TIME
@@ -29,15 +22,16 @@
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/elements/Voxel8N.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
-#include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
 
-
-NuTo::StructureGrid::StructureGrid(int rDimension) : StructureBase(rDimension)
+NuTo::StructureGrid::StructureGrid(int rDimension)
 {
-	mVoxelLocation = 0;
+   if (rDimension!=3)
+	{
+		throw MechanicsException("[StructureGrid::StructureGrid] The dimension of the grid structure is either so far 3.");
+	}
+    mDimension = rDimension;
+ 	mVoxelLocation = 0;
 	mDofIsNotConstraint = 0;
 	mCalcVoxelLocation = 0;
 }
@@ -52,6 +46,14 @@ NuTo::StructureGrid::~StructureGrid()
 	mDofIsNotConstraint = 0;
 }
 
+//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+void NuTo::StructureGrid::Info()const
+{
+   std::cout << "dimension : " << mDimension << "\n";
+
+   std::cout  << "num dofs : " << (mGridDimension[0]+1)*(mGridDimension[1]+1)* (mGridDimension[2]+1)<< "\n";
+}
+
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::StructureGrid::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::StructureGrid::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
@@ -62,11 +64,12 @@ template void NuTo::StructureGrid::serialize(boost::archive::text_iarchive & ar,
 template<class Archive>
 void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
 {
-  //  & BOOST_SERIALIZATION_NVP(mDimension);
     std::cout << "start serialization of grid structure" << std::endl;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
+       & BOOST_SERIALIZATION_NVP (mDimension)
        & BOOST_SERIALIZATION_NVP (mElementVec)
        & BOOST_SERIALIZATION_NVP (mNodeVec)
+       & BOOST_SERIALIZATION_NVP (mDimension)
        & BOOST_SERIALIZATION_NVP (mNumVoxel)
        & BOOST_SERIALIZATION_NVP (mVoxelSpacing)
        & BOOST_SERIALIZATION_NVP (mGridDimension)
@@ -207,94 +210,6 @@ void NuTo::StructureGrid::Restore (const std::string &filename, std::string rTyp
     }
 }
 #endif // ENABLE_SERIALIZATION
-
-
-//! @brief  store all elements of a structure in a vector
-void NuTo::StructureGrid::GetElementsTotal(std::vector<ElementBase*>& rElements)
-{
-    boost::ptr_vector<ElementBase>::iterator ElementIter = this->mElementVec.begin();
-    while (ElementIter != this->mElementVec.end())
-    {
-        rElements.push_back(&(*ElementIter));
-        ElementIter++;
-    }
-}
-
-// store all elements of a structure in a vector
-void NuTo::StructureGrid::GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements)
-{
-	rElements.reserve(mElementVec.size());
-    for (unsigned int id=0; id< this->mElementVec.size();id++)
-    {
-    	rElements.push_back(std::pair<int, ElementBase*>(id,&(mElementVec[id])));
-    }
-}
-
-//! @brief  store all elements of a structure in a vector
-void NuTo::StructureGrid::GetElementsTotal(std::vector<const ElementBase*>& rElements) const
-{
-    boost::ptr_vector<ElementBase>::const_iterator ElementIter = this->mElementVec.begin();
-    while (ElementIter != this->mElementVec.end())
-    {
-        rElements.push_back(&(*ElementIter));
-        ElementIter++;
-    }
-}
-
-// store all elements of a structure in a vector
-void NuTo::StructureGrid::GetElementsTotal(std::vector<std::pair<int, const ElementBase*> >& rElements) const
-{
-	rElements.reserve(mElementVec.size());
-    for (unsigned int id=0; id< this->mElementVec.size();id++)
-    {
-    	rElements.push_back(std::pair<int, const ElementBase*>(id,&(mElementVec[id])));
-    }
-}
-
-//! @brief  store all nodes of a structure in a vector
-void NuTo::StructureGrid::GetNodesTotal(std::vector<NodeBase*>& rNodes)
-{
-	rNodes.reserve(mNodeVec.size());
-    boost::ptr_vector<NodeBase>::iterator NodeIter = this->mNodeVec.begin();
-    while (NodeIter != this->mNodeVec.end())
-    {
-    	rNodes.push_back(&(*NodeIter));
-    	NodeIter++;
-    }
-}
-
-// store all nodes of a structure in a vector
-void NuTo::StructureGrid::GetNodesTotal(std::vector<std::pair<int, const NodeBase*> >& rNodes) const
-{
-	rNodes.reserve(mNodeVec.size());
-    for (unsigned int id=0; id< this->mNodeVec.size();id++)
-    {
-    	rNodes.push_back(std::pair<int, const NodeBase*>(id,&(mNodeVec[id])));
-    }
-}
-
-
-//! @brief  store all nodes of a structure in a vector
-void NuTo::StructureGrid::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
-{
-	rNodes.reserve(mNodeVec.size());
-    boost::ptr_vector<NodeBase>::const_iterator NodeIter = this->mNodeVec.begin();
-    while (NodeIter != this->mNodeVec.end())
-    {
-    	rNodes.push_back(&(*NodeIter));
-    	NodeIter++;
-    }
-}
-
-// store all nodes of a structure in a vector
-void NuTo::StructureGrid::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes)
-{
-	rNodes.reserve(mNodeVec.size());
-    for (unsigned int id=0; id< this->mNodeVec.size();id++)
-    {
-    	rNodes.push_back(std::pair<int, NodeBase*>(id,&(mNodeVec[id])));
-    }
-}
 
 //! @brief returns number of Voxels
 //! @return number of Voxels
@@ -440,40 +355,42 @@ void NuTo::StructureGrid::CalculateVoxelLocations()
 	if(mVerboseLevel>3)
    std::cout<<__FILE__<<" "<<__LINE__<<"in  StructureGrid::CalculateVoxelLocations()"<< std::endl;
     int numElems= GetNumElements();
-	mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),4);
+	mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),3);
+	Voxel8N* thisElement=0;
     for (int element=0;element<numElems;++element)
     {
-    	Voxel8N* thisElement;
-        thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
-        int voxelID=thisElement->GetVoxelID();
-		int numDimxy=voxelID/((mGridDimension[0])*(mGridDimension[1]));
-		int numDimx=0;
-		int residual1=voxelID%((mGridDimension[0])*(mGridDimension[1]));
-		int residual2=0;
-		numDimx=residual1/(mGridDimension[0]);
-		residual2=residual1%(mGridDimension[0]);
-		int rVoxelLocation[3]={0};
-		rVoxelLocation[0]=residual2;
-		rVoxelLocation[1]=numDimx;
-		rVoxelLocation[2]=numDimxy;
-		thisElement->SetVoxelLocation(rVoxelLocation);
-		//also for global vector
-		(*mVoxelLocation)(element,0)=voxelID;
-		(*mVoxelLocation)(element,1)=rVoxelLocation[0];
-		(*mVoxelLocation)(element,1)=rVoxelLocation[1];
-		(*mVoxelLocation)(element,2)=rVoxelLocation[2];
-		if(mVerboseLevel>4)
-			std::cout<<__FILE__<<" "<<__LINE__<<"loc "<<rVoxelLocation[0]<<", "<<rVoxelLocation[1]<<", "<<rVoxelLocation[2]<<std::endl;
+        thisElement= ElementGetPtr(element);
+        if (thisElement)
+        {
+			int numDimxy=element/((mGridDimension[0])*(mGridDimension[1]));
+			int numDimx=0;
+			int residual1=element%((mGridDimension[0])*(mGridDimension[1]));
+			int residual2=0;
+			numDimx=residual1/(mGridDimension[0]);
+			residual2=residual1%(mGridDimension[0]);
+			int rVoxelLocation[3]={0};
+			rVoxelLocation[0]=residual2;
+			rVoxelLocation[1]=numDimx;
+			rVoxelLocation[2]=numDimxy;
+			thisElement->SetVoxelLocation(rVoxelLocation);
+			//also for global vector
+			(*mVoxelLocation)(element,0)=rVoxelLocation[0];
+			(*mVoxelLocation)(element,1)=rVoxelLocation[1];
+			(*mVoxelLocation)(element,2)=rVoxelLocation[2];
+			if(mVerboseLevel>4)
+				std::cout<<__FILE__<<" "<<__LINE__<<"loc "<<rVoxelLocation[0]<<", "<<rVoxelLocation[1]<<", "<<rVoxelLocation[2]<<std::endl;
+
+        }
     }
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
     double wend = omp_get_wtime ( );
     if (mShowTime)
-        mLogger<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+    	std::cout<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
 #else
     if (mShowTime)
-        mLogger<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+    	std::cout<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
 }
@@ -529,57 +446,15 @@ void NuTo::StructureGrid::SetAllNodeIds()
 	int nodeIds[8];
 	for (int element=0;element<GetNumElements();++element)
 	{
-		thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
-		int * locVoxLoc=thisElement->GetVoxelLocation();
-		//get grid corners of the voxel
-	    int corners[8]={0};
-	    GetCornersOfVoxel(element, locVoxLoc, corners);
-/*
-#ifdef SHOW_TIME
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-    diffn=diff(startn,endn);
-    diffsum.tv_sec+=diffn.tv_sec;
-    diffsum.tv_nsec+=diffn.tv_nsec;
-    //end=clock();
-    if (mShowTime)
-        //std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds after get corners of ] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-*/
-
-		nodeIds[0] =NodeGetIdFromGridNum(corners[0]);
-		nodeIds[1] =nodeIds[0]+1;
-		nodeIds[2] =NodeGetIdFromGridNum(corners[2]);
-		nodeIds[3] =nodeIds[2]-1;
-		nodeIds[4] =NodeGetIdFromGridNum(corners[4]);
-		nodeIds[5] =nodeIds[4]+1;
-		nodeIds[6] =NodeGetIdFromGridNum(corners[6]);
-		nodeIds[7] =nodeIds[6]-1;
-
-	/*
-		for (int node=0;node<8;++node)
+		thisElement= ElementGetPtr(element);
+		if (thisElement)
 		{
-			//get pointer to this gridNum node
-			nodeIds[node] =NodeGetIdFromGridNum(corners[node]);
+			int * locVoxLoc=thisElement->GetVoxelLocation();
+			//get grid corners of the voxel
+			GetCornersOfVoxel(element, locVoxLoc, nodeIds);
+			//std::cout<<"SetNodeIds : element "<<element<<"nodes "<<		nodeIds[0] <<" ,"<<	nodeIds[1]<<" ,"<<	nodeIds[2]<<" ,"<<	nodeIds[3] <<" ,"<<			nodeIds[4] <<" ,"<<		nodeIds[5]<<" ,"<<			nodeIds[6] <<" ,"<<		nodeIds[7]<<" ,"<<	std::endl;
+			thisElement->SetNodeIds(nodeIds);
 		}
-		*/
-		//std::cout<<"SetNodeIds : element "<<element<<"nodes "<<		nodeIds[0] <<" ,"<<	nodeIds[1]<<" ,"<<	nodeIds[2]<<" ,"<<	nodeIds[3] <<" ,"<<			nodeIds[4] <<" ,"<<		nodeIds[5]<<" ,"<<			nodeIds[6] <<" ,"<<		nodeIds[7]<<" ,"<<	std::endl;
-
-/*
-#ifdef SHOW_TIME
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-    diffn=diff(startn,endn);
-    diffsum.tv_sec+=diffn.tv_sec;
-    diffsum.tv_nsec+=diffn.tv_nsec;
-    //end=clock();
-    if (mShowTime)
-        //std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds before set id ] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-*/
-		thisElement->SetNodeIds(nodeIds);
 	}
 #ifdef SHOW_TIME
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
@@ -605,6 +480,8 @@ void NuTo::StructureGrid::SetAllNodeIdsAtNode()
 	if (mDimension != 3)
         throw MechanicsException("[StructureGrid::SetAllNodeIdsAtNode] error dimension must be 3.");
 	NodeGrid3D* thisNode;
+	Voxel8N* thisElement;
+	int* localNodeIds=0;
 	//local node ids sorted after element and node of element
 	int orderNode[8][8]={
 		{0,1,4,3,9,10,13,12},
@@ -624,24 +501,29 @@ void NuTo::StructureGrid::SetAllNodeIdsAtNode()
 	for (int nodeNumber=0;nodeNumber<GetNumNodes();++nodeNumber)
 	{
 		thisNode=NodeGridGetNodePtr(nodeNumber);
-		int nodeIds[27];
-		for (int i=0;i<27;++i)
-			nodeIds[i]=-1;
-        int* elementIds=thisNode->GetElementIds();
-		for (int element=0;element<8;++element)
+		if (thisNode)
 		{
-			if (elementIds[element]>-1)
+			int nodeIds[27];
+			for (int i=0;i<27;++i)
+				nodeIds[i]=-1;
+			int* elementIds=thisNode->GetElementIds();
+			for (int element=0;element<8;++element)
 			{
-				Voxel8N* thisElement;
-				thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(elementIds[element]));
-				int* localNodeIds=thisElement->GetNodeIds();
-				for(int node=0;node<8;++node)
+				if(elementIds[element]>-1)
 				{
-					nodeIds[orderNode[element][node]]=localNodeIds[node];// overhead,set id 4 times, but slower with if clause
+					thisElement= ElementGetPtr(elementIds[element]);
+					if(thisElement)
+					{
+						localNodeIds=thisElement->GetNodeIds();
+						for(int node=0;node<8;++node)
+						{
+							nodeIds[orderNode[element][node]]=localNodeIds[node];// overhead,set id 4 times, but slower with if clause
+						}
+					}
 				}
 			}
+			thisNode->SetNodeIds(nodeIds);
 		}
-		thisNode->SetNodeIds(nodeIds);
 	}
 #ifdef SHOW_TIME
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
@@ -682,34 +564,41 @@ void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
 	for (int element=0;element<GetNumElements();++element)
 	{
 		Voxel8N* thisElement;
-		thisElement= static_cast<Voxel8N*>(ElementGetElementPtr(element));
-		int numLocalStiffness =thisElement->GetNumLocalStiffnessMatrix();
-		FullMatrix<double>* matrix= GetLocalCoefficientMatrix0(numLocalStiffness);
-
-		int* nodeIds=thisElement->GetNodeIds();
-		NodeGrid3D* thisNodeI;
-		NodeGrid3D* thisNodeJ;
-		int k=0;
-		for (int i=0;i<8;++i)
+		thisElement= ElementGetPtr(element);
+		if (thisElement)
 		{
-			thisNodeI=NodeGridGetNodePtr(nodeIds[i]);
-			for(int j=k;j<8;++j)
+			int numLocalStiffness =thisElement->GetNumLocalStiffnessMatrix();
+			FullMatrix<double>* matrix= GetLocalCoefficientMatrix0(numLocalStiffness);
+
+			int* nodeIds=thisElement->GetNodeIds();
+			NodeGrid3D* thisNodeI;
+			NodeGrid3D* thisNodeJ;
+			int k=0;
+			for (int i=0;i<8;++i)
 			{
-				thisNodeJ=NodeGridGetNodePtr(nodeIds[j]);
-				//How does this work without copying a 3x3 matrix?
-				//Adress of a part of the matrix not possible
-				FullMatrix<double> partMatrix(3,3);
-				partMatrix=(matrix->GetBlock(i*3,j*3,3,3));
-				//thisNodeI->SetPartCoefficientMatrix0(orderNode[i][j],partMatrix);
-				thisNodeI->SetPartCoefficient0(orderNode[i][j],partMatrix);
-				if (i!=j)
+				thisNodeI=NodeGridGetNodePtr(nodeIds[i]);
+				if (!thisNodeI)
+					std::cout<<" StrGrid  test  nod ptr print if 0"<<std::endl;
+				for(int j=k;j<8;++j)
 				{
-					partMatrix=(matrix->GetBlock(j*3,i*3,3,3));
-					//thisNodeJ->SetPartCoefficientMatrix0(orderNode[j][i],partMatrix);
-					thisNodeJ->SetPartCoefficient0(orderNode[j][i],partMatrix);
+					thisNodeJ=NodeGridGetNodePtr(nodeIds[j]);
+					if (!thisNodeJ)
+						std::cout<<" StrGrid  test  nod ptr print if 0"<<std::endl;
+					//How does this work without copying a 3x3 matrix?
+					//Adress of a part of the matrix not possible
+					FullMatrix<double> partMatrix(3,3);
+					partMatrix=(matrix->GetBlock(i*3,j*3,3,3));
+					//thisNodeI->SetPartCoefficientMatrix0(orderNode[i][j],partMatrix);
+					thisNodeI->SetPartCoefficient0(orderNode[i][j],partMatrix);
+					if (i!=j)
+					{
+						partMatrix=(matrix->GetBlock(j*3,i*3,3,3));
+						//thisNodeJ->SetPartCoefficientMatrix0(orderNode[j][i],partMatrix);
+						thisNodeJ->SetPartCoefficient0(orderNode[j][i],partMatrix);
+					}
 				}
+				++k;
 			}
-			++k;
 		}
 	}
 
@@ -740,12 +629,16 @@ void NuTo::StructureGrid::SetAllElementIds()
 	NodeGrid3D* thisNode;
 	if (mVerboseLevel>2)
 		std::cout<<__FILE__<<" "<<__LINE__<<"in SetAllElementIds() "<<std::endl;
+	int *elementIds=0;
 	for (int node=0;node<GetNumNodes();++node)
 	{
-		thisNode=NodeGridGetNodePtr(node);
-		int gridNode =thisNode->GetNodeGridNum();
-        TCoincidentVoxelList coincidentVoxels=GetCoincidenceVoxelIDs(gridNode);
-        int elementIds[8];
+       thisNode=NodeGridGetNodePtr(node);
+       if (thisNode)
+       {
+    	   elementIds=GetCoincidenceVoxelIDs(node);
+    	   thisNode->SetElementIds(elementIds);
+       }
+	}
 /*
 #ifdef SHOW_TIME
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
@@ -757,36 +650,11 @@ void NuTo::StructureGrid::SetAllElementIds()
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
 #endif
 */
-		for (int element=0;element<8;++element)
-		{
-			try
-			{
-				//get pointer to this element
-				elementIds[element] =ElementGetIdFromVoxelId(coincidentVoxels[element]);
-			}
-			catch (MechanicsException)
-			{
-				elementIds[element]=-1;
-			}
-		}
-/*
-#ifdef SHOW_TIME
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-    diffn=diff(startn,endn);
-    diffsum.tv_sec+=diffn.tv_sec;
-    diffsum.tv_nsec+=diffn.tv_nsec;
-     if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllElementIds: after element get id] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-*/
-		thisNode->SetElementIds(elementIds);
-	}
 #ifdef SHOW_TIME
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
 	diffn=diff(startn,endn);
-    diffsum.tv_sec+=diffn.tv_sec;
-    diffsum.tv_nsec+=diffn.tv_nsec;
+    diffsum.tv_sec=diffn.tv_sec;
+    diffsum.tv_nsec=diffn.tv_nsec;
 	//end=clock();
 	if (mShowTime)
 		//std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
@@ -802,327 +670,4 @@ NuTo::FullMatrix<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rN
  	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
-}
-
-void NuTo::StructureGrid::BuildLocalCoefficientMatrix0() const
-{
-// calculate stiffness for given Modulus
-    throw MechanicsException("[StructureGrid::BuildLocalCoefficientMatrix0] method is not yet implemented.");
-}
-
-//! @brief  based on the global dofs build submatrices of the global coefficent matrix0
-void NuTo::StructureGrid::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
-{
-    assert(this->mNodeNumberingRequired == false);
-    assert(rMatrixJJ.IsSymmetric() == false);
-    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumEntries() == 0);
-    assert(rMatrixJK.IsSymmetric() == false);
-    assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumEntries() == 0);
-
-    // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> elementMatrix;
-    std::vector<int> elementMatrixGlobalDofsRow;
-    std::vector<int> elementMatrixGlobalDofsColumn;
-
-    // loop over all elements
-    boost::ptr_vector<ElementBase>::const_iterator elementIter = this->mElementVec.begin();
-    while (elementIter != this->mElementVec.end())
-    {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        elementIter->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-
-        // write element contribution to global matrix
-        for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-        {
-            int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-                }
-            }
-        }
-        elementIter++;
-    }
-}
-
-// based on the global dofs build submatrices of the global coefficent matrix0
-void NuTo::StructureGrid::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK) const
-{
-    assert(this->mNodeNumberingRequired == false);
-    assert(rMatrixJJ.IsSymmetric() == false);
-    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumEntries() == 0);
-    assert(rMatrixJK.IsSymmetric() == false);
-    assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumEntries() == 0);
-    assert(rMatrixKJ.IsSymmetric() == false);
-    assert(rMatrixKJ.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixKJ.GetNumEntries() == 0);
-    assert(rMatrixKK.IsSymmetric() == false);
-    assert(rMatrixKK.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKK.GetNumEntries() == 0);
-
-    // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> elementMatrix;
-    std::vector<int> elementMatrixGlobalDofsRow;
-    std::vector<int> elementMatrixGlobalDofsColumn;
-
-    // loop over all elements
-    boost::ptr_vector<ElementBase>::const_iterator elementIter = this->mElementVec.begin();
-    while (elementIter != this->mElementVec.end())
-    {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        elementIter->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-
-        // write element contribution to global matrix
-        for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-        {
-            int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-
-                }
-            }
-            else
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
-                    }
-                    else
-                    {
-                        rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-                }
-            }
-        }
-        elementIter++;
-    }
-}
-
-
-// based on the global dofs build submatrices of the global coefficent matrix0
-void NuTo::StructureGrid::BuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
-{
-    assert(this->mNodeNumberingRequired == false);
-    assert(rMatrixJJ.IsSymmetric() == true);
-    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumEntries() == 0);
-    assert(rMatrixJK.IsSymmetric() == false);
-    assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumEntries() == 0);
-
-    // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> elementMatrix;
-    std::vector<int> elementMatrixGlobalDofsRow;
-    std::vector<int> elementMatrixGlobalDofsColumn;
-
-    // loop over all elements
-    boost::ptr_vector<ElementBase>::const_iterator elementIter = this->mElementVec.begin();
-    while (elementIter != this->mElementVec.end())
-    {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        elementIter->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-        if(symmetryFlag == false)
-        {
-            throw MechanicsException("[NuTo::StructureGrid::BuildGlobalCoefficientSubMatrices0Symmetric] element matrix is not symmetric (general sparse matrix required).");
-        }
-
-        // write element contribution to global matrix
-        for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-        {
-            int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        // add upper triangle and diagonal
-                        if(globalColumnDof >= globalRowDof)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-                        }
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-                }
-            }
-        }
-        elementIter++;
-    }
-}
-
-// based on the global dofs build submatrices of the global coefficent matrix0
-void NuTo::StructureGrid::BuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK) const
-{
-    assert(this->mNodeNumberingRequired == false);
-    assert(rMatrixJJ.IsSymmetric() == true);
-    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumEntries() == 0);
-    assert(rMatrixJK.IsSymmetric() == false);
-    assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumEntries() == 0);
-    assert(rMatrixKK.IsSymmetric() == true);
-    assert(rMatrixKK.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKK.GetNumEntries() == 0);
-
-    // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> elementMatrix;
-    std::vector<int> elementMatrixGlobalDofsRow;
-    std::vector<int> elementMatrixGlobalDofsColumn;
-
-    // loop over all elements
-    boost::ptr_vector<ElementBase>::const_iterator elementIter = this->mElementVec.begin();
-    while (elementIter != this->mElementVec.end())
-    {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        elementIter->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-        if(symmetryFlag == false)
-        {
-            throw MechanicsException("[NuTo::StructureGrid::BuildGlobalCoefficientSubMatrices0Symmetric] element matrix is not symmetric (general sparse matrix required).");
-        }
-
-        // write element contribution to global matrix
-        for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-        {
-            int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof < this->mNumActiveDofs)
-                    {
-                        // add upper triangle and diagonal
-                        if(globalColumnDof >= globalRowDof)
-                        {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-                        }
-                    }
-                    else
-                    {
-                        rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                    }
-
-                }
-            }
-            else
-            {
-                for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-                {
-                    int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-                    if (globalColumnDof >= this->mNumActiveDofs)
-                    {
-                        // add upper triangle and diagonal
-                        if(globalColumnDof >= globalRowDof)
-                        {
-                            rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-                        }
-                    }
-                }
-            }
-        }
-        elementIter++;
-    }
-}
-
-void NuTo::StructureGrid::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
-{
-    // initialize vectors
-    assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
-    assert(rActiveDofGradientVector.GetNumColumns() == 1);
-    for (int row = 0; row < rActiveDofGradientVector.GetNumRows(); row ++)
-    {
-        rActiveDofGradientVector(row,0) = 0.0;
-    }
-    assert(rDependentDofGradientVector.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rDependentDofGradientVector.GetNumColumns() == 1);
-    for (int row = 0; row < rDependentDofGradientVector.GetNumRows(); row ++)
-    {
-        rDependentDofGradientVector(row,0) = 0.0;
-    }
-
-    // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> elementVector;
-    std::vector<int> elementVectorGlobalDofs;
-
-    // loop over all elements
-    boost::ptr_vector<ElementBase>::const_iterator elementIter = this->mElementVec.begin();
-    while (elementIter != this->mElementVec.end())
-    {
-        // calculate element contribution
-        elementIter->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
-        assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
-        assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
-
-        // write element contribution to global vectors
-        for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
-        {
-            int globalRowDof = elementVectorGlobalDofs[rowCount];
-            if (globalRowDof < this->mNumActiveDofs)
-            {
-                rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
-            }
-            else
-            {
-                globalRowDof -= this->mNumActiveDofs;
-                assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-                rDependentDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
-            }
-        }
-        elementIter++;
-    }
 }

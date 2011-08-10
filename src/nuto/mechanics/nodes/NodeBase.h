@@ -270,10 +270,6 @@ public:
     //! @return global DOF
     virtual int GetDofTemperature(int rComponent)const;
 
-    //! @brief gives the grid number of the node, this is only implemented for the Grid node, since it stores the grid number
-    //! @return NodeGridNum
-    virtual int GetNodeGridNum()const;
-
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
     virtual std::string GetNodeTypeStr()const=0;

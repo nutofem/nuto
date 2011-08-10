@@ -355,13 +355,6 @@ int NuTo::NodeBase::GetDofTemperature(int rComponent)const
 	throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
-//! @brief gives the grid number of the node, this is only implemented for the Grid node, since it stores the grid number
-//! @return NodeGridNum
-int NuTo::NodeBase::GetNodeGridNum()const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNodeGridNum] Node of type " + GetNodeTypeStr() + " does not store his id - access the id via the structure.");
-}
-
 //! @brief set the shape functions based on the actual oscillations
 //! @parameter shape function number (0..2)
 void NuTo::NodeBase::SetShapeFunctionMultiscalePeriodic(int rShapeFunction)

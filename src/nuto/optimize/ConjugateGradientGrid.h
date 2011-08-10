@@ -145,9 +145,6 @@ protected:
 	//! @brief ... variante II: with 3x3 matrix at node
 	void CalculateStartGradientNodeByNodeII(NuTo::FullMatrix<double> &gradientOrig);
 
-	//! @brief ... calculate matix-vector product in element-by-element way
-	void CalculateMatrixVectorEBE(bool startSolution, NuTo::FullMatrix<double> &returnVector);
-
 	//! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
 	void CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled);
 

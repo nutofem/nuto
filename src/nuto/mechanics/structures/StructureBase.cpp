@@ -139,7 +139,9 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
        & BOOST_SERIALIZATION_NVP(mSectionMap)
        & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
+#ifdef ENABLE_VISUALIZE
        & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
+#endif //  ENABLE_VISUALIZE
        & BOOST_SERIALIZATION_NVP(mNumDofs)
        & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
        & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)

@@ -2,29 +2,26 @@
 #ifndef Voxel8N_H
 #define Voxel8N_H
 
-#include "nuto/mechanics/elements/Solid.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
+class StructureGrid;
 class ConstitutiveTangentLocal6x6;
 class EngineeringStress3D;
 
 //! @author Andrea Keßler, ISM
 //! @date April 2010
 //! @brief ... voxel element without nodes
-class Voxel8N : public Solid
+class Voxel8N
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    Voxel8N(NuTo::StructureBase* rStructure,int rElementID,int rNumLocalCoefficientMatrix0,
-            NuTo::ElementData::eElementDataType rElementDataType , IpData::eIpDataType rIpDataType):
-            	NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(), rIpDataType)
+    Voxel8N(NuTo::StructureGrid* rStructure,int rNumLocalCoefficientMatrix0)
     {
-        mVoxelID = rElementID;
         mVoxelLocation=0;
         mNodeIds=0;
         mNumLocalCoefficientMatrix0 =rNumLocalCoefficientMatrix0;
@@ -46,30 +43,12 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    //! @brief returns the enum (type of the element)
-    //! @return enum
-    NuTo::Element::eElementType GetEnumType()const
-    {
-        return NuTo::Element::VOXEL8N;
-    }
-
-    int GetVoxelID()const
-    {
-        return mVoxelID;
-    }
-
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
     int GetNumNodes() const
     {
         return 8;
     }
-
-    //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-    //! @param rOldPtr old node ptr
-    //! @param rNewPtr new node ptr
-    void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr);
 
     //! @brief returns the number of shape functions
     //! this is required for the calculation of the derivatives of the shape functions
@@ -101,53 +80,6 @@ public:
         return 24;
     }
 
-    //! @TODO change routine to find the nodes
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber)
-    {
-        throw NuTo::MechanicsException("[NuTo::Voxel8N::GetNode] implement first.");
-        /*
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<=7);
-        return mNodes[rLocalNodeNumber];
-         */
-    }
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber) const
-    {
-        throw NuTo::MechanicsException("[NuTo::Voxel8N::GetNode] implement first.");
-        /*
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<=7);
-        return mNodes[rLocalNodeNumber];
-        */
-    }
-
-    //! @brief sets the rLocalNodeNumber-th node of the element
-    //! @param local node number
-    //! @param pointer to the node
-    void SetNode(int rLocalNodeNumber, NodeBase* rNode)
-    {
-        throw NuTo::MechanicsException("[NuTo::Voxel8N::SetNode] implement first.");
-        /*
-       assert(rLocalNodeNumber>=0 && rLocalNodeNumber<=7);
-        mNodes[rLocalNodeNumber] = rNode;
-        */
-    }
-    //! @brief ... reorder nodes is not possible in gris structure
-    void ReorderNodes()
-    {
-        throw NuTo::MechanicsException("[NuTo::Voxel8N::ReorderNodes] Grid nodes can not be reordered.");
-    }
-
-
-    //! @brief returns the enum of the standard integration type for this element
-    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
-
     int GetNumLocalStiffnessMatrix();
 
     //! @brief Get voxel location for this element
@@ -172,7 +104,6 @@ public:
     //! @brief ... just for serialization
     Voxel8N(){};
 
-    int mVoxelID;
     int* mVoxelLocation;
     int* mNodeIds;
     int mNumLocalCoefficientMatrix0;

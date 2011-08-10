@@ -1,43 +1,21 @@
 // $Id$
 #ifndef STRUCTUREGRID_H
 #define STRUCTUREGRID_H
-
-
-//#include "nuto/mechanics/structures/StructureBase.h"
-//#include "nuto/mechanics/elements/ElementDataEnum.h"
-//#include "nuto/mechanics/elements/ElementEnum.h"
-//#include "nuto/mechanics/elements/IpDataEnum.h"
-//#include "nuto/mechanics/MechanicsException.h"
-//
-//#ifdef ENABLE_SERIALIZATION
-//#include <boost/ptr_container/serialize_ptr_vector.hpp>
-//#else
-//#include <boost/ptr_container/ptr_vector.hpp>
-//#endif //ENABLE_SERIALIZATION
-
+#include "nuto/base/NuToObject.h"
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/math/FullMatrix.h"
 namespace NuTo
 {
 
 //! @brief forward declaration to speed up compilation time
-class StructureBase;
-class CrackBase;
-class ElementDataEnum;
-class ElementEnum;
 class NodeGrid3D;
+class NodeGridDisplacements3D;
 class Voxel8N;
-class IpDataEnum;
-class MechanicsException;
-
-#ifdef ENABLE_SERIALIZATION
-class serialize_ptr_vector;
-#else
-class ptr_vector;
-#endif //ENABLE_SERIALIZATION
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... regular structure e.g. from pixel/voxel data
-class StructureGrid :  public StructureBase
+class StructureGrid: public NuToObject
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -49,8 +27,6 @@ public:
     StructureGrid(int rDimension);
 
     ~StructureGrid();
-
-    typedef NuTo::FullMatrix<double> FullMat ;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -102,7 +78,7 @@ public:
 
     //! @brief Get LocalCoefficientMatrix0
     //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-    NuTo::FullMatrix<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
+    FullMatrix<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
 
     //! @brief Get VoxeLNumAndLocMatrix
     //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
@@ -138,55 +114,32 @@ public:
     int GetNumNodes() const;
 
 #ifndef SWIG
-    //! @brief a reference to a node
-    //! @param identifier
-    //! @return reference to a node
-    NodeBase* NodeGetNodePtr(int rIdent);
 
-    //! @brief returns a reference to a node
+   //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
     NodeGrid3D* NodeGridGetNodePtr(int rIdent);
 
-    //! @brief a reference to a node
-    //! @param identifier
-    //! @return reference to a node
-    const NuTo::NodeGrid3D* NodeGridGetNodePtr(int rIdent) const;
-
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
-    const NodeBase* NodeGetNodePtr(int rIdent)const;
-
-    //! @brief a reference to a node
-    //! @param node GridNum
-    //! @return reference to a node
-    NuTo::NodeGrid3D* NodeGetNodePtrFromGridNum(int rNodeGridNum);
-
-    //! @brief a reference to a node
-    //! @param node GridNum
-    //! @return reference to a node
-    const NodeBase* NodeGetNodePtrFromGridNum(int rNodeGridNum) const;
-
-    //! @brief a reference to a node
-    //! @param node ID
-    //! @return reference to a node
-    int NodeGetNodeNumberFromId(int rNodeId);
-
-    //! @brief a reference to a node
-    //! @param node ID
-    //! @return reference to a node
-    const int NodeGetNodeNumberFromId(int rNodeId) const;
+    const NodeGrid3D* NodeGridGetNodePtr(int rIdent)const;
 
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
-    int NodeGetId(const NodeBase* rNode)const;
+    int NodeGetId(const NodeGrid3D* rNode)const;
 
-    //! @brief a identifier of a node
-    //! @param node GridNum
-    //! @return identifier
-    const int NodeGetIdFromGridNum(int rNodeGridNum) const;
+    //! @brief gets the displacements of a node
+     //! @param rNode node identifier
+     //! @param rDisplacements matrix (one column) with the displacements
+     void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double>& rDisplacements)const;
+
+     //! @brief sets the displacements of a node
+     //! @param rIdent node identifier
+     //! @param rDisplacements matrix (one column) with the displacements
+     void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double>& rDisplacements);
+
 
 #endif //SWIG
     //! @param rNodeNumber ... node number
@@ -195,12 +148,11 @@ public:
     //! @brief info about the nodes in the Structure
     virtual void NodeInfo(int mVerboseLevel) const;
 
-    void NodeCreate(int rNodeNumber, int rNodeID, std::string rDOFs);
+    void NodeCreate(bool flag, int rNodeID, std::string rDOFs);
 
     void CreateNodeGrid(std::string rDOFs,int rThresholdMaterialValue);
 
-    typedef std::vector<int> TCoincidentVoxelList;
-    TCoincidentVoxelList GetCoincidenceVoxelIDs(int rNodeID);
+    int* GetCoincidenceVoxelIDs(int rNodeID);
 
     //! @brief NodeSetConstraintSwitch
     //! @param rGridNodeNum, rDirection, rConstraint
@@ -214,6 +166,7 @@ public:
     //! @brief Set partCoefficientmatrix for all nodes
     void SetAllPartCoefficientMatrix0();
 
+/*
     //! @brief numbers the dofs in the structure
     void NodeBuildGlobalDofs();
 
@@ -224,7 +177,6 @@ public:
 
     //! @brief merge dof values
     void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues);
-/*
     //! @brief get internal forces
     void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const;
 
@@ -243,30 +195,20 @@ public:
     int GetNumElements() const;
 
 #ifndef SWIG
-    //! @brief returns a reference to an element
+     //! @brief returns a reference to an element
     //! @param identifier
     //! @return reference to an element
-    ElementBase* ElementGetElementPtr(int rIdent);
+    Voxel8N* ElementGetPtr(int rIdent);
 
     //! @brief returns a reference to an element
     //! @param identifier
     //! @return reference to an element
-    const ElementBase* ElementGetElementPtr(int rIdent) const;
+    const Voxel8N* ElementGetPtr(int rIdent) const;
 
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
-    int ElementGetId(const ElementBase* rElement) const;
-
-    //! @brief a identifier to a element
-    //! @param voxel id
-    //! @return identifier
-    const int ElementGetIdFromVoxelId(int rVoxelNum) const;
-
-    //! @brief info about one single element
-    //! @param rElement (Input) ... pointer to the element
-    //! @param rVerboseLevel (Input) ... level of verbosity
-    virtual void ElementInfo(const ElementBase* rElement, int rVerboseLevel)const;
+    int ElementGetId(Voxel8N* rElement);
 #endif //SWIG
 
     //! @brief info about the elements in the Structure
@@ -276,161 +218,41 @@ public:
             const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
 
     //! @brief Creates an element
+    //! @param number of local coefficient matrix
     //! @param rElementID identifier for the element
-    //! @param rElementNumber number of the element
-    //! @param rElementType element type
-    void ElementCreate (int rNumCoefficientMatrix0,int rElementNumber, int rElementID,
-    		const std::string& rElementType);
+     void ElementCreate (bool flag, int rNumCoefficientMatrix0, int rElementID);
 
     //! @brief Creates an element
+     //! @param number of local coefficient matrix
     //! @param rElementID identifier for the element
-    //! @param rElementNumber number of the element
     //! @param rElementType element type
-    //! @param rIpDataType ip type
-    void ElementCreate (int rNumCoefficientMatrix0,int rElementNumber, int rElementID,
-    		const std::string& rElementType, const std::string& rElementDataType, const std::string& rIpDataType);
-
-#ifndef SWIG
-    //! @brief Creates an element
-    //! @param rElementID identifier for the element
-    //! @param rElementNumber number of the element
-    //! @param rElementType element type
-    //! @param rIpDataType ip type
-    void ElementCreate (int rNumCoefficientMatrix0,int rElementNumber, int rElementID,
-    		Element::eElementType rElementType, NuTo::ElementData::eElementDataType rElementDataType, NuTo::IpData::eIpDataType rIpDataType);
-#endif //SWIG
+    void ElementCreate (bool flag, int rNumCoefficientMatrix0,int rElementID,const std::string& rElementType);
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
     void ElementDelete (int rElementNumber);
 
-    //! @brief Get node numbers of the element
-    //! @param rElementNumber element number
-    //! @return all node numbers of the element
-    int* GetNodeNum(int rElementNumber,FullMatrix<int> rVoxelLocation)
-	{
-    	throw MechanicsException("[NuTo::StructureGrid::GetNodNum] not implemented here.");
-
-	}
-
-    //*************************************************************
-    //************         Crack routines        ******************
-    //**  defined in structures/grid/StructureCrack.cpp **
-    //*************************************************************
-    //! @brief returns the number of cracks
-    //! @return number of cracks
-    unsigned int GetNumCracks() const
-	{
-    	throw MechanicsException("[NuTo::StructureGrid::GetNumCracks] not implemented here.");
-	}
-
-#ifndef SWIG
-    //! @brief returns a reference to a crack
-    //! @param identifier
-    //! @return reference to a crack
-    CrackBase* CrackGetCrackPtr(int rIdent)
-	{
-    	throw MechanicsException("[NuTo::StructureGrid::CrackGetCrackPtr] not implemented here.");
-	}
-
-    //! @brief returns a const reference to a crack
-    //! @param identifier
-    //! @return const reference to a crack
-    const CrackBase* CrackGetCrackPtr(int rIdent)const
-	{
-    	throw MechanicsException("[NuTo::StructureGrid::CrackGetCrackPtr] not implemented here.");
-	}
-
-    //! @brief gives the identifier of a crack
-    //! @param pointer to a crack
-    //! @return identifier
-    int CrackGetId(const CrackBase* rCrack)const
-	{
-    	throw MechanicsException("[NuTo::StructureGrid::CrackGetId] not implemented here.");
-	}
-#endif //SWIG
+    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+    void Info()const;
 
 
 protected:
+    int mDimension;
     int mNumVoxel;  //number of voxels
     //! @todo length of list in function of real dimension
     double mVoxelSpacing[3]; //spacing between center of neighbor voxels / dimension of each voxel
     int mGridDimension[3]; //dimension of the voxel model
     double mGridOrigin[3];// origin of the model , in the center of the first voxel
-    boost::ptr_vector<NodeGrid3D> mNodeVec;
-    boost::ptr_vector<Voxel8N> mElementVec;
+    std::vector<NodeGrid3D*> mNodeVec;
+    std::vector<Voxel8N*> mElementVec;
     //boost::ptr_vector<ElementBase> mElementVec;
     const char* mImageDataFile;
     int mNumMaterials;
-    std::vector<FullMat> mLocalCoefficientMatrix0;
+    typedef NuTo::FullMatrix<double> FullMat;
+    std::vector<FullMat > mLocalCoefficientMatrix0;
     NuTo::FullMatrix<int>* mVoxelLocation;
     bool* mDofIsNotConstraint; //field of bool for all dofs, length 3xnumGridNodes, constraint dof = 0 = false
     bool mCalcVoxelLocation; //true != 0 when already calculated
-#ifndef SWIG
-    //! @brief ... store all elements of a structure in a vector
-    //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<ElementBase*>& rElements);
-
-    //! @brief ... store all nodes of a structure in a vector
-    //! @param rNodes ... vector of element pointer
-    void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements);
-
-    //! @brief ... store all elements of a structure in a vector
-    //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
-
-    //! @brief ... store all nodes of a structure in a vector
-    //! @param rNodes ... vector of element pointer
-    void GetElementsTotal(std::vector<std::pair<int,const ElementBase*> >& rElements) const;
-
-    //! @brief ... store all nodes of a structure in a vector
-    //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<const NodeBase*>& rNodes) const;
-
-    //! @brief ... store all nodes of a structure in a vector
-    //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodes) const;
-
-    //! @brief ... store all nodes of a structure in a vector
-    //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<NodeBase*>& rNodes);
-
-    //! @brief ... store all nodes of a structure in a vector
-    //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes);
-#endif //SWIG
-
-    //! @brief ... create local coefficient matrix 0 for a voxel and save a pointer to the matrix
-    void BuildLocalCoefficientMatrix0() const;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    void BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    void BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    void BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const;
-
-    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
-    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
-    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    void BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const;
-
 };
 } //namespace NuTo
 #endif // STRUCTUREGRID_H

@@ -11,10 +11,10 @@
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeGrid3D.h"
 
+
 //! @brief constructor
-NuTo::NodeGrid3D::NodeGrid3D(int rNodeGridNum)  : NodeBase ()
+NuTo::NodeGrid3D::NodeGrid3D() : NodeBase ()
 {
-	mNodeGridNum = rNodeGridNum;
 	mElementIds =NULL;
     mNodeIds =NULL;
     mCoefficient0 =NULL;
@@ -31,7 +31,6 @@ NuTo::NodeGrid3D::~ NodeGrid3D()
     mCoefficient0 =NULL;
 }
 
-
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::NodeGrid3D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -46,8 +45,7 @@ template<class Archive>
     //! @param version    version
 void NuTo::NodeGrid3D::serialize(Archive & ar, const unsigned int version)
 {
-	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
-	& BOOST_SERIALIZATION_NVP(mNodeGridNum);
+	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase);
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeGrid3D)
 BOOST_CLASS_TRACKING(NuTo::NodeGrid3D, track_always)
@@ -61,35 +59,6 @@ int NuTo::NodeGrid3D::GetNumCoordinates()const
 {
 	return 3;
 }
-
-//! @brief set the grid node number of this node
-//! @param rNodeGridNum  given grid node number
-void NuTo::NodeGrid3D::SetNodeGridNum(int rNodeGridNum)
-{
-	mNodeGridNum = rNodeGridNum;
-}
-
-//! @brief get the grid node number of this node
-//! @return NodeGridNum  grid node number
-int NuTo::NodeGrid3D::GetNodeGridNum()const
-{
-	return mNodeGridNum;
-}
-
-//! @brief Get the Number of belonging elements
-//! @return Number of belonging elements
-int NuTo::NodeGrid3D::GetNumElems()
-{
-	return mNumElems;
-}
-
-//!@brief Set Number of belonging elements
-//! @param Number of belonging elements
-void NuTo::NodeGrid3D::SetNumElems(int rNumElems)
-{
-	mNumElems=rNumElems;
-}
-
 
 //! @brief Get Ids of the elements
 //! @return int * Ids of the elements
@@ -125,78 +94,11 @@ void NuTo::NodeGrid3D::SetNodeIds(int * rNodeIds)
 
 }
 
-NuTo::FullMatrix<double>* NuTo::NodeGrid3D::GetPartCoefficientMatrix0(int node)
-{
-	if (!mCoefficientMatrix0[node])
-        throw MechanicsException("[NodeGrid3D::GetPartCoefficientMatrix0] error matrix does not exist.");
-	return (mCoefficientMatrix0[node]);
-}
-
 double* NuTo::NodeGrid3D::GetPartCoefficient0(int node)
 {
 	if (!mCoefficient0)
         throw MechanicsException("[NodeGrid3D::GetPartCoefficient0] error coefficient matrix does not exist.");
 	return &mCoefficient0[9*node];
-}
-
-void NuTo::NodeGrid3D::SetPartCoefficientMatrix0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0)
-{
-	// test both variants
-	//bool var=true;
-	bool var=false;
-	if (var)
-	{
-		FullMatrix<double> locMatrix(3,3);
-		locMatrix=rCoefficientMatrix0;
-		// when vector size is null
-		if (mCoefficientMatrix0.size()==0)
-		{
-			mCoefficientMatrix0.assign(27,NULL);
-			//mCoefficientMatrix0[node]=new FullMatrix<double>(rCoefficientMatrix0);
-			mCoefficientMatrix0[node]=new FullMatrix<double>(locMatrix);
-
-		}
-		else
-		{
-			// when matrix exists
-			if (mCoefficientMatrix0[node])
-			{
-				(mCoefficientMatrix0[node])->operator+=(rCoefficientMatrix0);
-			}
-			else
-			{
-				mCoefficientMatrix0[node]=new FullMatrix<double>(locMatrix);
-			}
-		}
-	}
-	// or
-	else
-	{
-		// when matrix exists
-		// when vector size is null
-		if (mCoefficientMatrix0.size()==0)
-		{
-			mCoefficientMatrix0.assign(27,NULL);
-			mCoefficientMatrix0[node]=new FullMatrix<double>(3,3);
-		}
-		else
-		{
-
-			if (!mCoefficientMatrix0[node])
-				mCoefficientMatrix0[node]=new FullMatrix<double>(3,3);
-		}
-		int k=0;
-		for (int i=0;i<3;++i)
-		{
-			for (int j= k;j<3;++j)
-			{
-				(*mCoefficientMatrix0[node])(i,j)+=(rCoefficientMatrix0)(i,j);
-				if (i!=j)
-				(*mCoefficientMatrix0[node])(j,i)+=(rCoefficientMatrix0)(j,i);
-			}
-			++k;
-		}
-	}
 }
 
 void NuTo::NodeGrid3D::SetPartCoefficient0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0)
@@ -308,5 +210,5 @@ std::string NuTo::NodeGrid3D::GetNodeTypeStr()const
 //! @return enum
 NuTo::Node::eNodeType NuTo::NodeGrid3D::GetNodeType()const
 {
-    return Node::NodeGrid3D;
+	  return Node::NodeGrid3D;
 }

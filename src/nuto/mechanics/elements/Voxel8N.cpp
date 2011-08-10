@@ -9,8 +9,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/elements/Voxel8N.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeGrid3D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include <assert.h>
@@ -90,14 +91,6 @@ void NuTo::Voxel8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCo
     rDerivativeShapeFunctions[23] =  0.125 *minus_r *plus_s;
 }
 
-
-
-//! @brief returns the enum of the standard integration type for this element
-NuTo::IntegrationType::eIntegrationType NuTo::Voxel8N::GetStandardIntegrationType()
-{
-    return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
-}
-
 int NuTo::Voxel8N::GetNumLocalStiffnessMatrix()
 {
 	return mNumLocalCoefficientMatrix0;
@@ -138,14 +131,6 @@ void NuTo::Voxel8N::SetNodeIds(int *rNodeIds)
 		mNodeIds[count]=rNodeIds[count];
 }
 
-
-//! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-//! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-void NuTo::Voxel8N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
-{
-    //Nodes are not exchanged, because they are not stored at the element level
-}
-
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::Voxel8N::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -161,9 +146,7 @@ void NuTo::Voxel8N::serialize(Archive & ar, const unsigned int version)
     std::cout << "start serialize Voxel8N" << std::endl;
 #endif
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Solid)
-           & BOOST_SERIALIZATION_NVP(mVoxelID)
-           & BOOST_SERIALIZATION_NVP(mNumLocalCoefficientMatrix0);
+        ar & BOOST_SERIALIZATION_NVP(mNumLocalCoefficientMatrix0);
     }
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Voxel8N" << std::endl;

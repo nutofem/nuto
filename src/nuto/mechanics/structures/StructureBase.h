@@ -45,9 +45,11 @@ class EngineeringStrain2D;
 class NewtonRaphsonAuxRoutinesBase;
 class CrackBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
-class VisualizeUnstructuredGrid;
 
+#ifdef ENABLE_VISUALIZE
+class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
+#endif // ENABLE_VISUALIZE
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -1585,10 +1587,10 @@ protected:
 
     //! @brief ... a mapping from the enums of the predefined integration types to their corresponding string name
     std::vector<std::string> mMappingIntEnum2String;
-
+#ifdef ENABLE_VISUALIZE
     //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
     boost::ptr_list<NuTo::VisualizeComponentBase> mVisualizeComponents;
-
+#endif //ENABLE_VISUALIZE
     //! @brief ... total number of degrees of freedom of the structure
     int mNumDofs;
 

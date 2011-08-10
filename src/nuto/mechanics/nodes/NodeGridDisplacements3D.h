@@ -19,7 +19,7 @@ class NodeGridDisplacements3D : public NodeGrid3D, public NodeDisplacements3D
 public:
 
     //! @brief constructor
-    NodeGridDisplacements3D(int rNodeId) : NodeGrid3D (rNodeId), NodeDisplacements3D()
+    NodeGridDisplacements3D() : NodeGrid3D (), NodeDisplacements3D()
     {}
 
 #ifdef ENABLE_SERIALIZATION

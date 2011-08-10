@@ -5,7 +5,10 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
-#endif  // ENABLE_SERIALIZATION
+#include <boost/serialization/vector.hpp>
+#else
+#include <boost/vector.hpp>
+#endif //ENABLE_SERIALIZATION
 
 
 #include "nuto/mechanics/elements/ElementDataEnum.h"

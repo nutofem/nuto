@@ -10,19 +10,15 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for 3D reference nodes
-class NodeGrid3D : public virtual NodeBase
+class NodeGrid3D: public virtual NodeBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
-private:
-    //! @brief constructor
-     NodeGrid3D(){}
-
 public:
    //! @brief constructor
-    NodeGrid3D(int rNodeGridNum);
+    NodeGrid3D();
 
     //! @brief destructor
     ~ NodeGrid3D();
@@ -39,22 +35,13 @@ public:
     //! @return number of coordinates
     virtual int GetNumCoordinates()const;
 
-    //! @brief set the grid node number
-    //! @param rNodeGridNum  given grid node number
-    virtual void SetNodeGridNum(int rNodeGridNum);
-
-    //! @brief get the grid node number
-    //! @return rNodeGridNum  given grid node number
-    int GetNodeGridNum()const;
-
     //! @brief Get the Number of belonging elements
     //! @return Number of belonging elements
-    int GetNumElems();
+	int GetNumElems();
 
-    //!@brief Set Number of belonging elements
-    //! @param Number of belonging elements
+	//!@brief Set Number of belonging elements
+	//! @param Number of belonging elements
     void SetNumElems(int rNumElems);
-
 
     //! @brief Get Ids of the elements
     //! @return int * Ids of the elements
@@ -72,10 +59,8 @@ public:
     //! @param int * Ids of the nodes
     void SetNodeIds(int * rNodeIds);
 
-    FullMatrix<double>* GetPartCoefficientMatrix0(int node);
     double* GetPartCoefficient0(int node);
 
-    void SetPartCoefficientMatrix0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0);
     void SetPartCoefficient0(int node, NuTo::FullMatrix<double>& rCoefficientMatrix0);
 
     //! @brief writes the coordinates of a node to the prescribed pointer
@@ -129,14 +114,8 @@ public:
     virtual Node::eNodeType GetNodeType()const;
 
 protected:
-    //! @brief stores the grid number of the node
-    //! @param grid number of the node
-
-    int mNodeGridNum;
-    int mNumElems;
     int* mElementIds;
     int* mNodeIds;
-    std::vector<FullMatrix<double>*> mCoefficientMatrix0;
     double* mCoefficient0;
 };
 }//namespace NuTo
