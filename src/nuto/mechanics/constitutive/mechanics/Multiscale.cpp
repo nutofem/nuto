@@ -1967,7 +1967,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		//calculate macro length and area
 		macroCrackLength = rElement->AsPlane()->CalculateCrackLength2D(alpha);
 		double macroArea = rElement->AsPlane()->CalculateArea();
-/*		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
+		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
 		double microCrackLength;
 		if(fabs(cos(alpha))<fabs(sin(alpha)))
 		{
@@ -1982,7 +1982,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 
 		fineScaleStructure->SetlFineScaleCrack(microCrackLength);
 		fineScaleStructure->SetCoarseScaleArea(macroArea);
-*/
+
 		if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
 			throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
 
@@ -2208,13 +2208,13 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 
 				std::clock_t start,end;
 				start=clock();
-				int numCountShift=1;
+				int numCountShift=200;
 				int numAlpha=90;
-				//double rangeShiftNormal = 0.9*sqrt(fineScaleStructure->GetAreaDamage());
-				//double initShiftNormal(-0.5*rangeShiftNormal);
+				double rangeShiftNormal = 0.9*sqrt(fineScaleStructure->GetAreaDamage());
+				double initShiftNormal(-0.5*rangeShiftNormal);
 
-				double rangeShiftNormal = 0;
-				double initShiftNormal(0);
+				//double rangeShiftNormal = 0;
+				//double initShiftNormal(0);
 				double initAlpha = princAlpha-M_PI*0.25;
 				double deltaAlpha = 0.5*M_PI/(numAlpha-1);
 				//double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
@@ -2455,7 +2455,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 	            averageStressWithCrack=averageStressDamage*scalingFactorDamage+averageStressHomogeneous*scalingFactorHomogeneous;
 	            boost::array<double,2> crackOpening=fineScaleStructure->GetGlobalCrackOpening2D();
 
-	            char title[256];
+	            //char title[256];
 				std::cout << "average stress without crack enrichment";
 				averageStressWithoutCrack.Trans().Info(12,6);
 				std::cout << "average stress with crack enrichment";
