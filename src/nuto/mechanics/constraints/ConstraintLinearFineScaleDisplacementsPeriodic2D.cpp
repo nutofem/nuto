@@ -90,7 +90,6 @@ void NuTo::ConstraintLinearFineScaleDisplacementsPeriodic2D::SetBoundaryVectors(
             mMasterNodesBottomBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacementsMultiscale2D*>(itNode->second));
     	if (fabs(coordinates[1]-maxY)<tolerance && fabs(coordinates[0]-minX)>tolerance)
     		mSlaveNodesTopBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacementsMultiscale2D*>(itNode->second));
-        std::cout  << mMasterNodesLeftBoundary.size() << " " << mSlaveNodesRightBoundary.size() << " " << mMasterNodesBottomBoundary.size() << " " << mSlaveNodesTopBoundary.size() << "\n";
     }
 
     if (mMasterNodesLeftBoundary.size()<2)

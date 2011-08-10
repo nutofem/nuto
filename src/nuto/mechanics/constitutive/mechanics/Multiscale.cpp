@@ -57,14 +57,14 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mDecreaseFactor=0.5;
     mMinNumNewtonIterations=7;
     mIncreaseFactor=1.5;
-    mMinLoadFactor=1e-3;
+    mMinLoadFactor=1e-6;
     mMinLineSearchFactor=1e-3;
     mAugmentedLagrangeStiffnessCrackOpening = 1e3;
     mCrackTransitionRadius = 0;
 
     mTensileStrength = 0;
 
-    mDamageCrackInitiation = 1e-3;
+    mDamageCrackInitiation = -1e-3;
 
     mScalingFactorCrackAngle = 0;
     mScalingFactorCrackOpening = 0;
@@ -278,8 +278,8 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
                 fineScaleStructure->NodeBuildGlobalDofs();
                 fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
             }
-            std::cout << std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
-            std::cout << "no convergence exception?? " <<  (e.GetError()==NuTo::MechanicsException::NOCONVERGENCE) << "\n";
+            //std::cout << std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
+            //std::cout << "no convergence exception?? " <<  (e.GetError()==NuTo::MechanicsException::NOCONVERGENCE) << "\n";
             e.AddMessage(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
         	throw e;
         }
@@ -539,7 +539,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             matrixJJ(fineScaleStructure->GetNumActiveDofs(), fineScaleStructure->GetNumActiveDofs());
         FullMatrix<double> rhsVector(fineScaleStructure->GetNumDofs() - fineScaleStructure->GetNumActiveDofs(),1);
         fineScaleStructure->BuildGlobalCoefficientMatrix0(matrixJJ, rhsVector);
-        if (rhsVector.Abs().Max()>1e-6)
+        if (rhsVector.Abs().Max()>mToleranceResidualForce)
         {
         	throw MechanicsException("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] RHS vector not zero, previous equilibrium iteration was not successfull.");
         }
@@ -877,7 +877,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         //fineScaleStructure->GetLogger() << "total area of macroscale " <<  (fineScaleStructure->GetAreaDamage()*fineScaleStructure->GetScalingFactorDamage()+
         //        fineScaleStructure->GetAreaHomogeneous()*fineScaleStructure->GetScalingFactorHomogeneous())  << "\n";
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevCrackAngleElastic(fineScaleStructure->GetCrackAngleElastic());
-        std::cout << "actual crack angle " << fineScaleStructure->GetCrackAngle()*180./M_PI << "prev crack angle " << staticData->GetPrevCrackAngle()*180./M_PI << "\n";
+        //std::cout << "actual crack angle " << fineScaleStructure->GetCrackAngle()*180./M_PI << "prev crack angle " << staticData->GetPrevCrackAngle()*180./M_PI << "\n";
         const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevCrackAngle(fineScaleStructure->GetCrackAngle());
         fineScaleStructure->ElementTotalUpdateStaticData();
         fineScaleStructure->GetLogger().CloseFile();
@@ -1967,8 +1967,22 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		//calculate macro length and area
 		macroCrackLength = rElement->AsPlane()->CalculateCrackLength2D(alpha);
 		double macroArea = rElement->AsPlane()->CalculateArea();
-		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
+/*		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
+		double microCrackLength;
+		if(fabs(cos(alpha))<fabs(sin(alpha)))
+		{
+			std::cout << "[NuTo::Multiscale::MultiscaleSwitchToNonlinear] this works only for a square model " << "\n";
+			microCrackLength = 2*sqrt(fineScaleStructure->GetAreaDamage())/fabs(sin(alpha));
+		}
+		else
+		{
+			std::cout << "[NuTo::Multiscale::MultiscaleSwitchToNonlinear] this works only for a square model " << "\n";
+			microCrackLength = 2*sqrt(fineScaleStructure->GetAreaDamage())/fabs(cos(alpha));
+		}
+
+		fineScaleStructure->SetlFineScaleCrack(microCrackLength);
 		fineScaleStructure->SetCoarseScaleArea(macroArea);
+*/
 		if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
 			throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
 
@@ -2024,7 +2038,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 		fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
 
 		fineScaleStructure->SetLoadFactor(0);
-		fineScaleStructure->ConstraintInfo(10);
+		//fineScaleStructure->ConstraintInfo(10);
 		fineScaleStructure->NodeBuildGlobalDofs();
 		NuTo::FullMatrix<double> activeDOF, dependentDOF;
 		fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
@@ -2172,6 +2186,17 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
             	throw MechanicsException(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
             }
 
+            //calculate average stress
+            NuTo::FullMatrix<double> averageStressWithoutCrack, averageStressDamage, averageStressHomogeneous;
+            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
+            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
+            double scalingFactorDamage = fineScaleStructure->GetScalingFactorDamage();
+            double scalingFactorHomogeneous = fineScaleStructure->GetScalingFactorHomogeneous();
+            double sum = scalingFactorDamage + scalingFactorHomogeneous;
+            scalingFactorDamage/=sum;
+            scalingFactorHomogeneous/=sum;
+            averageStressWithoutCrack=averageStressDamage*scalingFactorDamage+averageStressHomogeneous*scalingFactorHomogeneous;
+
             //check the damage state
             double maxDamage = fineScaleStructure->ElementTotalGetMaxDamage();
 			double maxShift[2] = { 0,0 };
@@ -2183,16 +2208,21 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 
 				std::clock_t start,end;
 				start=clock();
-				int numCountShift=101;
-				int numAlpha=91;
-				double rangeShiftNormal = 0.9*sqrt(fineScaleStructure->GetAreaDamage());
-				double initShiftNormal(-0.5*rangeShiftNormal);
+				int numCountShift=1;
+				int numAlpha=90;
+				//double rangeShiftNormal = 0.9*sqrt(fineScaleStructure->GetAreaDamage());
+				//double initShiftNormal(-0.5*rangeShiftNormal);
+
+				double rangeShiftNormal = 0;
+				double initShiftNormal(0);
 				double initAlpha = princAlpha-M_PI*0.25;
 				double deltaAlpha = 0.5*M_PI/(numAlpha-1);
+				//double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
 				//double initAlpha = M_PI*0.5;
-				//double deltaAlpha = 0;
+				//double deltaAlpha = 0.;
+				double deltaShiftNormal = 0.;
 
-				double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
+
 				double shift[2];
 				const boost::array<double,2>& centerDamage(fineScaleStructure->GetCenterDamage());
 
@@ -2328,138 +2358,126 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
     	        fineScaleStructure->NodeBuildGlobalDofs();
     	        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
     	    }
-/*
-    		//test the difference in average stress between the initial solution (no crack enrichment) and the enriched solution (crack enrichment at pos maxShift)
 
-    		//so first remove the constraint for crack opening
-    	    NuTo::ConstraintBase* constraintCrackOpeningTangential = fineScaleStructure->ConstraintRelease(fineScaleStructure->GetConstraintCrackOpeningTangential());
-    	    NuTo::ConstraintBase* constraintCrackOpeningNormal = fineScaleStructure->ConstraintRelease(fineScaleStructure->GetConstraintCrackOpeningNormal());
-
-    	    //set the crack shift
-    	    fineScaleStructure->SetShiftCenterDamage(maxShift);
-
-    	    //set the crack angle
-    	    fineScaleStructure->SetCrackAngle(maxAlpha);
-
-            //change the previous angle of the alpha-constraint
-            fineScaleStructure->SetPrevCrackAngleElastic(staticData->GetPrevCrackAngleElastic());
-            fineScaleStructure->SetPrevCrackAngle(staticData->GetPrevCrackAngle());
-
-            //Get and set previous total strain
-            fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
-
-            fineScaleStructure->SetLoadFactor(0);
-            fineScaleStructure->NodeBuildGlobalDofs();
-            fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-
-            //Get and set previous delta strain
-            fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
-
-            hasBeenSaved = false;
-
-            try
-            {
-                fineScaleStructure->GetLogger() << "\n" << "************************************************" << "\n";
-                fineScaleStructure->GetLogger() << " Switch from nonlinear without crack to cracked solution with crack" << "\n";
-                fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
-                		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
-                		                            <<  engineeringStrain.mEngineeringStrain[2] << "\n";
-                fineScaleStructure->GetLogger() << " deltaStrain strain " <<  deltaStrain.mEngineeringStrain[0] << " "
-                		                            <<  deltaStrain.mEngineeringStrain[1] << " "
-                		                            <<  deltaStrain.mEngineeringStrain[2] << "\n";
-                fineScaleStructure->GetLogger() << " prevStrain strain "  <<  staticData->GetPrevStrain().mEngineeringStrain[0] << " "
-                		                            <<  staticData->GetPrevStrain().mEngineeringStrain[1] << " "
-                		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2] << "\n"  << "\n";
-                //std::clock_t start,end;
-                //start=clock();
-                fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved);
-                //end=clock();
-                //std::cout << "time for enriched Newton-Raphson solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-            }
-            catch(NuTo::MechanicsException& e)
-            {
-                //restore structure
-                if (hasBeenSaved)
-                {
-                    fineScaleStructure->RestoreStructure(saveStream);
-                }
-                else
-                {
-                    //set load factor to zero in order to get the same ordering of the displacements as before the routine
-                    fineScaleStructure->SetLoadFactor(0);
-                    fineScaleStructure->NodeBuildGlobalDofs();
-                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-                }
-                std::cout << std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
-                e.AddMessage(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] No convergence in multiscale for ip ") + fineScaleStructure->GetIPName());
-            	throw e;
-            }
-            catch(...)
-            {
-            	throw MechanicsException(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
-            }
-
-            //calculate average stress
-            NuTo::FullMatrix<double> averageStressWithCrack;
-            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
-            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
-            averageStressWithCrack=averageStressDamage*scalingFactorDamage+averageStressHomogeneous*scalingFactorHomogeneous;
-            boost::array<double,2> crackOpening=fineScaleStructure->GetGlobalCrackOpening2D();
-
-            char title[256];
-			std::cout << "average stress with crack enrichment";
-			averageStressNoCrack.Trans().Info(12,6);
-			std::cout << "average stress without crack enrichment";
-			averageStressWithCrack.Trans().Info(12,6);
-			std::cout << "delta - norm_delta=" << (averageStressNoCrack-averageStressWithCrack).Norm() << "\n";
-			(averageStressNoCrack-averageStressWithCrack).Trans().Info(12,6);
-			std::cout << "crack opening with enrichment " << crackOpening[0] << " " << crackOpening[1] << "\n";
-
-    	    //restore structure
-    	    if (hasBeenSaved)
-    	    {
-    	        fineScaleStructure->RestoreStructure(saveStream);
-    	    }
-    	    else
-    	    {
-    	    	//set load factor to zero in order to get the same ordering of the displacements as before the routine
-    	        fineScaleStructure->SetLoadFactor(0);
-    	        fineScaleStructure->NodeBuildGlobalDofs();
-    	        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-    	    }
-	        //reinsert the constraints
-	    	fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackOpeningTangential(),constraintCrackOpeningTangential);
-	    	fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackOpeningNormal(),constraintCrackOpeningNormal);
-*/
     	    //if (engineeringStrain.mEngineeringStrain[0]>0.0001)
 	    	//if ((averageStressWithCrack-averageStressNoCrack).Norm()>0.01*2)
     		//if (sqrt(crackOpening[0]*crackOpening[0]+crackOpening[1]*crackOpening[1])>0.0001)
             if (maxDamage>mDamageCrackInitiation)
             {
-    			std::cout << "Add a crack with angle " << maxAlpha*180/M_PI << " with shift " << maxShift[0] << " " << maxShift[1] << ", press enter to continue"<< "\n";
+            	fineScaleStructure->GetLogger() << "Add a crack with angle " << maxAlpha*180/M_PI << " with shift " << maxShift[0] << " " << maxShift[1] << "\n";
+            	std::cout << "Add a crack with angle " << maxAlpha*180/M_PI << " with shift " << maxShift[0] << " " << maxShift[1] << "\n";
     			//std::cin.getline (title,256);
 	    	    //set the crack shift
 	    	    fineScaleStructure->SetShiftCenterDamage(maxShift);
 	    	    //set crack angle
 	    	    fineScaleStructure->SetCrackAngle(maxAlpha);
 	    		//calculate macro length
+	    	    std::cout << "calculate macroCrackLength and microCrackLength still to be reimplemented for round fine scale structures." << "\n";
 	    		double macroCrackLength = rElement->AsPlane()->CalculateCrackLength2D(maxAlpha);
 	    		fineScaleStructure->SetlCoarseScaleCrack(macroCrackLength);
+	    		fineScaleStructure->SetlFineScaleCrack(sqrt(fineScaleStructure->GetAreaDamage()));
+
 	    		if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
 	    			throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
 				//delete constraints for crack opening
 				fineScaleStructure->ConstraintDeleteTangentialCrackOpening();
 				fineScaleStructure->ConstraintDeleteNormalCrackOpening();
 				//delete linear constraint for normal crack opening and create constraint to avoid negative crack opening
-                fineScaleStructure->CreateConstraintLagrangeGlobalCrackOpeningNormal(mAugmentedLagrangeStiffnessCrackOpening);
+                //std::cout << "Constraint Lagrange for crack opening removed " << "\n";
+				fineScaleStructure->CreateConstraintLagrangeGlobalCrackOpeningNormal(mAugmentedLagrangeStiffnessCrackOpening);
 				//set the constraint for alpha to the new angle
                 fineScaleStructure->CreateConstraintLinearGlobalCrackAngle(maxAlpha);
 				//set to nonlinear solution with crack
 				staticData->SetSolutionPhase(Constitutive::NONLINEAR_CRACKED);
-				//this is a not so good way to say, that in the Newton Rapshon iteration should be continued, since an adaptation has been performed
+				//this is a not so good way to say, that the Newton Rapshon iteration should be continued, since an adaptation has been performed
 				const_cast<StructureBase*>(rElement->GetStructure())->SetUpdateTmpStaticDataRequired();
-        	}
+
+	    		//test the difference in average stress between the initial solution (no crack enrichment) and the enriched solution (crack enrichment at pos maxShift)
+	            //Get and set previous total strain
+	            fineScaleStructure->SetPrevTotalEngineeringStrain(prevStrain);
+
+	            fineScaleStructure->SetLoadFactor(0);
+	            fineScaleStructure->NodeBuildGlobalDofs();
+	            fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+	            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+
+	            //Get and set previous delta strain
+	            fineScaleStructure->SetDeltaTotalEngineeringStrain(deltaStrain);
+
+	            hasBeenSaved = false;
+
+	            try
+	            {
+	                fineScaleStructure->GetLogger() << "\n" << "************************************************" << "\n";
+	                fineScaleStructure->GetLogger() << " Switch from nonlinear without crack to cracked solution with crack" << "\n";
+	                fineScaleStructure->GetLogger() << " engineering strain " <<  engineeringStrain.mEngineeringStrain[0] << " "
+	                		                            <<  engineeringStrain.mEngineeringStrain[1] << " "
+	                		                            <<  engineeringStrain.mEngineeringStrain[2] << "\n";
+	                fineScaleStructure->GetLogger() << " deltaStrain strain " <<  deltaStrain.mEngineeringStrain[0] << " "
+	                		                            <<  deltaStrain.mEngineeringStrain[1] << " "
+	                		                            <<  deltaStrain.mEngineeringStrain[2] << "\n";
+	                fineScaleStructure->GetLogger() << " prevStrain strain "  <<  staticData->GetPrevStrain().mEngineeringStrain[0] << " "
+	                		                            <<  staticData->GetPrevStrain().mEngineeringStrain[1] << " "
+	                		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2] << "\n"  << "\n";
+	                //std::clock_t start,end;
+	                //start=clock();
+	                fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved);
+	                //end=clock();
+	                //std::cout << "time for enriched Newton-Raphson solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+	            }
+	            catch(NuTo::MechanicsException& e)
+	            {
+	                //restore structure
+	                if (hasBeenSaved)
+	                {
+	                    fineScaleStructure->RestoreStructure(saveStream);
+	                }
+	                else
+	                {
+	                    //set load factor to zero in order to get the same ordering of the displacements as before the routine
+	                    fineScaleStructure->SetLoadFactor(0);
+	                    fineScaleStructure->NodeBuildGlobalDofs();
+	                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+	                }
+	                std::cout << std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
+	                e.AddMessage(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] No convergence in multiscale for ip ") + fineScaleStructure->GetIPName());
+	            	throw e;
+	            }
+	            catch(...)
+	            {
+	            	throw MechanicsException(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+	            }
+
+	            //calculate average stress
+	            NuTo::FullMatrix<double> averageStressWithCrack;
+	            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsDamage(),fineScaleStructure->GetAreaDamage(), averageStressDamage);
+	            fineScaleStructure->ElementGroupGetAverageStress(fineScaleStructure->GetGroupElementsHomogeneous(),fineScaleStructure->GetAreaHomogeneous(), averageStressHomogeneous);
+	            averageStressWithCrack=averageStressDamage*scalingFactorDamage+averageStressHomogeneous*scalingFactorHomogeneous;
+	            boost::array<double,2> crackOpening=fineScaleStructure->GetGlobalCrackOpening2D();
+
+	            char title[256];
+				std::cout << "average stress without crack enrichment";
+				averageStressWithoutCrack.Trans().Info(12,6);
+				std::cout << "average stress with crack enrichment";
+				averageStressWithCrack.Trans().Info(12,6);
+				std::cout << "norm_delta=" << (averageStressWithoutCrack-averageStressWithCrack).Norm() << "\n";
+				(averageStressWithoutCrack-averageStressWithCrack).Trans().Info(12,6);
+				std::cout << "crack opening with enrichment " << crackOpening[0] << " " << crackOpening[1] << "\n";
+
+	    	    //restore structure
+	    	    if (hasBeenSaved)
+	    	    {
+	    	        fineScaleStructure->RestoreStructure(saveStream);
+	    	    }
+	    	    else
+	    	    {
+	    	    	//set load factor to zero in order to get the same ordering of the displacements as before the routine
+	    	        fineScaleStructure->SetLoadFactor(0);
+	    	        fineScaleStructure->NodeBuildGlobalDofs();
+	    	        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+	    	    }
+
+            }
     	    else
     	    {
     			//std::cout << "continue without crack enrichment "<< (averageStressWithCrack-averageStressNoCrack).Norm() << "<"<< 0.01*2 << "\n";

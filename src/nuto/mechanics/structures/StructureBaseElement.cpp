@@ -458,7 +458,7 @@ bool NuTo::StructureBase::CheckStiffness()
         double maxError;
         int row,col;
         maxError = (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max(row,col);
-        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") " << "\n";
+        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << stiffnessMatrixCSRVector2Full(row,col) << "\n";
 
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
         {
@@ -476,7 +476,8 @@ bool NuTo::StructureBase::CheckStiffness()
         if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
         {
         	NodeInfo(10);
-            mLogger << "stiffness is wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
+            mLogger << "stiffness ist wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
+            exit(0);
         }
         return false;
     }
@@ -2247,11 +2248,12 @@ void NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear()
     #pragma omp parallel default(shared)
     #pragma omp for schedule(dynamic,1) nowait
 #endif //_OPENMP
-	for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+	for (unsigned int countElement=0;  countElement<elementVector.size() ;countElement++)
 	{
 		try
 		{
-			elementVector[countElement]->UpdateStaticData(NuTo::Element::SWITCHMULTISCALE2NONLINEAR);
+			//if (this->mUpdateTmpStaticDataRequired==false)
+			    elementVector[countElement]->UpdateStaticData(NuTo::Element::SWITCHMULTISCALE2NONLINEAR);
 		}
 #ifdef _OPENMP
 		catch(NuTo::Exception& e)

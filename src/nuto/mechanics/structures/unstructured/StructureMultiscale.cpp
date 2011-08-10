@@ -3668,7 +3668,7 @@ void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsPeri
 {
 	this->mNodeNumberingRequired = true;
 
-	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintFineScalePeriodicDamage);
+/*	boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(mConstraintFineScalePeriodicDamage);
     if (it!=mConstraintMap.end())
     {
         mConstraintMap.erase(it);
@@ -3684,10 +3684,10 @@ void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsPeri
         it = mConstraintMap.find(id);
     }
     mConstraintFineScalePeriodicDamage = id;
+*/
+    mConstraintFineScalePeriodicDamage = ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(mGroupBoundaryNodesDamage,rStrain);
 
-    ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(mGroupBoundaryNodesDamage,rStrain);
-
-	it = mConstraintMap.find(mConstraintFineScalePeriodicHomogeneous);
+/*	it = mConstraintMap.find(mConstraintFineScalePeriodicHomogeneous);
     if (it!=mConstraintMap.end())
     {
         mConstraintMap.erase(it);
@@ -3703,8 +3703,8 @@ void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacementsPeri
         it = mConstraintMap.find(id);
     }
     mConstraintFineScalePeriodicHomogeneous = id;
-
-    ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(mGroupBoundaryNodesHomogeneous,rStrain);
+*/
+    mConstraintFineScalePeriodicHomogeneous = ConstraintLinearSetFineScaleDisplacementsPeriodicNodeGroup(mGroupBoundaryNodesHomogeneous,rStrain);
     mNodeNumberingRequired = true;
 }
 
@@ -3821,14 +3821,14 @@ void NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacements(dou
 	direction(0,0) = 0;
 	direction(1,0) = 1;
 	mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(nodeGroup,direction,rDamageY));
-	mConstraintFineScaleDamageX = id;
+	mConstraintFineScaleDamageY = id;
 
 	//insert constraints for the homogeneous domain
 	itGroup = mGroupMap.find(mGroupBoundaryNodesHomogeneous);
 	if (itGroup==mGroupMap.end())
-		throw MechanicsException("[NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) with the given identifier does not exist.");
+		throw MechanicsException("[NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacements] Group(homogeneous) with the given identifier does not exist.");
 	if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
-		throw MechanicsException("[NuTo::StructureBase::CalculatePeriodicBoundaryShapeFunctions] Group(homogeneous) is not an node group.");
+		throw MechanicsException("[NuTo::StructureMultiscale::CreateConstraintLinearFineScaleDisplacements] Group(homogeneous) is not an node group.");
 	nodeGroup = itGroup->second->AsGroupNode();
 
 	//insert constraints for the homogeneous domain
@@ -3991,6 +3991,19 @@ void NuTo::StructureMultiscale::PostProcessDataAfterLineSearch(int rLoadStep, in
 	{
 		mLogger <<  mCrackOpening[1] << "[t], ";
 	}
+	mLogger  << "\n";
+	for (int count =0; count<3; count++)
+	{
+		if (mDOFPeriodicBoundaryDisplacements[count]<rResidualVector.GetNumRows())
+		{
+			mLogger << ", periodic boundary displacement " << count << ": "<< mPeriodicBoundaryDisplacements[count] << "(F="<< rResidualVector(mDOFPeriodicBoundaryDisplacements[count],0) << "\n";
+		}
+		else
+		{
+			mLogger << ", periodic boundary displacement " << count << ": "<< mPeriodicBoundaryDisplacements[count] << "\n";
+		}
+
+	}
 
 	boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.find(mConstraintNormalCrackOpening);
 	if (it!=mConstraintMap.end())
@@ -4010,6 +4023,7 @@ void NuTo::StructureMultiscale::PostProcessDataAfterLineSearch(int rLoadStep, in
 	int row, col;
 	double maxError = rResidualVector.Max(row,col);
 	mLogger << " max residual " << maxError << " at " << row << "\n";
+	mLogger << " scaling factor damage " << GetScalingFactorDamage() << " scaling factor homogeneous " << GetScalingFactorHomogeneous() << "\n";
 }
 
 //! @brief do a postprocessing step in each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
@@ -4026,6 +4040,7 @@ void NuTo::StructureMultiscale::InitBeforeNewLoadStep(int rLoadStep)
 {
 	mLogger <<"mDOF alpha " << mDOFCrackAngle << " mDOF crack opening " << mDOFCrackOpening[0] << " " << mDOFCrackOpening[1] ;
 	mLogger << " mDOF epsilontot " << mDOFGlobalTotalStrain[0] << " " << mDOFGlobalTotalStrain[1] << " " << mDOFGlobalTotalStrain[2] << "\n";
+	mLogger << " mDOFPeriodicBoundaryDisplacements " << mDOFPeriodicBoundaryDisplacements[0] << " " << mDOFPeriodicBoundaryDisplacements[1] << " " << mDOFPeriodicBoundaryDisplacements[2];
 }
 
 //! @brief calculates the total energy of the system
@@ -4217,19 +4232,24 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
 	this->ConstraintDelete(constraintCrackAngle);
 	this->ConstraintDelete(constraintCrackOpeningTangential);
 	this->ConstraintDelete(constraintCrackOpeningNormal);
-	this->ConstraintDelete(mConstraintFineScalePeriodicDamage);
-	mConstraintFineScalePeriodicDamage = -1;
-	this->ConstraintDelete(mConstraintFineScalePeriodicHomogeneous);
-	mConstraintFineScalePeriodicHomogeneous = -1;
-
-	this->ConstraintDelete(mConstraintFineScaleDamageX);
-	mConstraintFineScaleDamageX = -1;
-	this->ConstraintDelete(mConstraintFineScaleDamageY);
-	mConstraintFineScaleDamageY = -1;
-	this->ConstraintDelete(mConstraintFineScaleHomogeneousX);
-	mConstraintFineScaleHomogeneousX = -1;
-	this->ConstraintDelete(mConstraintFineScaleHomogeneousY);
-	mConstraintFineScaleHomogeneousY = -1;
+	if (rPeriodic)
+	{
+		this->ConstraintDelete(mConstraintFineScalePeriodicDamage);
+		mConstraintFineScalePeriodicDamage = -1;
+		this->ConstraintDelete(mConstraintFineScalePeriodicHomogeneous);
+		mConstraintFineScalePeriodicHomogeneous = -1;
+	}
+	else
+	{
+		this->ConstraintDelete(mConstraintFineScaleDamageX);
+		mConstraintFineScaleDamageX = -1;
+		this->ConstraintDelete(mConstraintFineScaleDamageY);
+		mConstraintFineScaleDamageY = -1;
+		this->ConstraintDelete(mConstraintFineScaleHomogeneousX);
+		mConstraintFineScaleHomogeneousX = -1;
+		this->ConstraintDelete(mConstraintFineScaleHomogeneousY);
+		mConstraintFineScaleHomogeneousY = -1;
+	}
 
 	for (int count=0; count<3; count++)
 	{
@@ -4535,13 +4555,13 @@ void NuTo::StructureMultiscale::VisualizeCrack(VisualizeUnstructuredGrid& rVisua
 {
 	double GlobalPointCoor1[3];
 	double ratio(0.3*sqrt(mCoarseScaleArea/mFineScaleAreaDamage));
-	GlobalPointCoor1[0] = mCenterMacro[0]+mShiftCenterDamage[0]*ratio+0.4*mlCoarseScaleCrack*cos(mCrackAngle);
-	GlobalPointCoor1[1] = mCenterMacro[1]+mShiftCenterDamage[1]*ratio+0.4*mlCoarseScaleCrack*sin(mCrackAngle);
+	GlobalPointCoor1[0] = mCenterMacro[0]+(mShiftCenterDamage[0]+1.0*mlFineScaleCrack*cos(mCrackAngle))*ratio;
+	GlobalPointCoor1[1] = mCenterMacro[1]+(mShiftCenterDamage[1]+1.0*mlFineScaleCrack*sin(mCrackAngle))*ratio;
 	GlobalPointCoor1[2] = 0.;
 
 	double GlobalPointCoor2[3];
-	GlobalPointCoor2[0] = mCenterMacro[0]+mShiftCenterDamage[0]*ratio-0.4*mlCoarseScaleCrack*cos(mCrackAngle);
-	GlobalPointCoor2[1] = mCenterMacro[1]+mShiftCenterDamage[1]*ratio-0.4*mlCoarseScaleCrack*sin(mCrackAngle);
+	GlobalPointCoor2[0] = mCenterMacro[0]+(mShiftCenterDamage[0]-1.0*mlFineScaleCrack*cos(mCrackAngle))*ratio;
+	GlobalPointCoor2[1] = mCenterMacro[1]+(mShiftCenterDamage[1]-1.0*mlFineScaleCrack*sin(mCrackAngle))*ratio;
 	GlobalPointCoor2[2] = 0.;
 	unsigned int Points[2];
 	Points[0] = rVisualize.AddPoint(GlobalPointCoor1);
@@ -4980,6 +5000,10 @@ try
 
                 //CheckStiffness();
             }
+            mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
+            mLogger << "check stiffness " << "\n";
+            CheckStiffness();
+            mLogger << "and continue with smaller load step " << "\n";
 
             //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
             //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
@@ -5146,9 +5170,9 @@ bool NuTo::StructureMultiscale::CheckStiffness()
     this->ElementTotalUpdateTmpStaticData();
 
     //check element stiffness
-    NuTo::FullMatrix<double> difference;
-    int maxErrorElement = ElementTotalCoefficientMatrix_0_Check(1e-8, difference);
-    std::cout << "maximum stiffness error in " << maxErrorElement;
+    //NuTo::FullMatrix<double> difference;
+    //int maxErrorElement = ElementTotalCoefficientMatrix_0_Check(1e-8, difference);
+    //std::cout << "maximum stiffness error in " << maxErrorElement;
 
     //calculate global stiffness
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
@@ -5157,7 +5181,7 @@ bool NuTo::StructureMultiscale::CheckStiffness()
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
     //std::cout<<"stiffness matrix" << "\n";
     //stiffnessMatrixCSRVector2Full.Info(10,3);
-    double interval(1e-9);
+    double interval(1e-11);
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
@@ -5201,24 +5225,27 @@ bool NuTo::StructureMultiscale::CheckStiffness()
 			mLogger<< "\n" << "error" << "\n";
 			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
         }
-        //extract the first 6x6 block
-        NuTo::FullMatrix<double> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,20,20));
-        NuTo::FullMatrix<double> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,20,20));
-        NuTo::FullMatrix<double> blockDelta(blockAlgo-blockCDF);
+        else
+        {
+			//extract the first 6x6 block
+			NuTo::FullMatrix<double> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,20,20));
+			NuTo::FullMatrix<double> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,20,20));
+			NuTo::FullMatrix<double> blockDelta(blockAlgo-blockCDF);
 
-        mLogger << "block algo " << "\n";
-        mLogger.Out(blockAlgo,10,3,false);
+			mLogger << "block algo " << "\n";
+			mLogger.Out(blockAlgo,10,3,false);
 
-        mLogger << "block cdf " << "\n";
-        mLogger.Out(blockCDF,10,3,false);
+			mLogger << "block cdf " << "\n";
+			mLogger.Out(blockCDF,10,3,false);
 
-        mLogger << "block delta " << "\n";
-        mLogger.Out(blockDelta,10,3,false);
+			mLogger << "block delta " << "\n";
+			mLogger.Out(blockDelta,10,3,false);
+        }
 
         double maxError;
         int row,col;
         maxError = (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max(row,col);
-        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") " << "\n";
+        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << stiffnessMatrixCSRVector2Full(row,col) << "\n";
 
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
         {
@@ -5229,26 +5256,30 @@ bool NuTo::StructureMultiscale::CheckStiffness()
 			mLogger << "\n" << "error" << "\n";
 			mLogger.Out((intForceVector1-intForceVectorCDF).Abs().Trans(),10,3);
         }
-        //extract the first 6x6 block
-        NuTo::FullMatrix<double> vecAlgo(intForceVector1.GetBlock(0,0,20,1));
-        NuTo::FullMatrix<double> vecCDF(intForceVectorCDF.GetBlock(0,0,20,1));
-        NuTo::FullMatrix<double> vecDelta(vecAlgo-vecCDF);
+        else
+        {
+			//extract the first 6x6 block
+			NuTo::FullMatrix<double> vecAlgo(intForceVector1.GetBlock(0,0,20,1));
+			NuTo::FullMatrix<double> vecCDF(intForceVectorCDF.GetBlock(0,0,20,1));
+			NuTo::FullMatrix<double> vecDelta(vecAlgo-vecCDF);
 
-        mLogger << "res algo " << "\n";
-        mLogger.Out(vecAlgo.Trans(),10,3,false);
+			mLogger << "res algo " << "\n";
+	        mLogger.Out(vecAlgo.Trans(),10,3,false);
 
-        mLogger << "res cdf " << "\n";
-        mLogger.Out(vecCDF.Trans(),10,3,false);
+	        mLogger << "res cdf " << "\n";
+	        mLogger.Out(vecCDF.Trans(),10,3,false);
 
-        mLogger << "res delta " << "\n";
-        mLogger.Out(vecDelta.Trans(),10,3,false);
+	        mLogger << "res delta " << "\n";
+	        mLogger.Out(vecDelta.Trans(),10,3,false);
+        }
+
         maxError = (intForceVector1-intForceVectorCDF).Abs().Max(row,col);
-        mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
+        mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << intForceVector1(row,col) << "\n";
 
         //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
         if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
         {
-        	NodeInfo(10);
+        	//NodeInfo(10);
             mLogger << "stiffness is wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
         }
         return false;

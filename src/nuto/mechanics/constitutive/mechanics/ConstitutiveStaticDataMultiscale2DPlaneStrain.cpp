@@ -123,7 +123,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel(std:
     mStructure->SetCenterMacro(rCenter);
 
     //check all the sections of the elements to a plane strain section
-    std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
+    //std::cout<<"[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleModel] Section type check still to be implemented." << std::endl;
 }
 
 //! @brief sets the parameters of the fine scale model

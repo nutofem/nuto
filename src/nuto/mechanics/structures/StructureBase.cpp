@@ -1456,10 +1456,47 @@ try
             	{
             		mLogger << "adaptation is performed " << "\n";
             		numNewtonIterations=0;
-                    this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+                    try
+                    {
+                    	this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+					}
+					catch(MechanicsException& e)
+					{
+						if (e.GetError()==MechanicsException::NOCONVERGENCE)
+						{
+							//decrease load step
+							deltaLoadFactor*=mDecreaseFactor;
+
+							//restore initial state
+							this->SetLoadFactor(0);
+							this->NodeBuildGlobalDofs();
+							this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+							convergenceStatus=2;
+
+							mLogger << "********************************************************************************" << "\n";
+							mLogger << "**************** reduce load step after adaptation is performed ****************" << "\n";
+							mLogger << "********************************************************************************" << "\n";
+
+							//check for minimum delta (this mostly indicates an error in the software
+							if (deltaLoadFactor<mMinDeltaLoadFactor)
+							{
+								mLogger << "[NuTo::StructureBase::NewtonRaphson] No convergence for gradient calculation after adaptation." << "\n";
+								e.AddMessage("[NuTo::StructureBase::NewtonRaphson] No convergence for gradient calculation after adaptation.");
+								throw e;
+							}
+						}
+						else
+						{
+							e.AddMessage("[NuTo::StructureBase::NewtonRaphson] error in gradient calculation after adaptation.");
+							throw e;
+						}
+					}
+
                     //mLogger << "intForceVector "  << "\n";
                     //intForceVector.Trans().Info(10,3);
                     rhsVector = extForceVector - intForceVector;
+        			mLogger<<" normRHS after adaptation" << rhsVector.Norm() << "\n";
+        			//exit(0);
             	}
             	else
             	{
@@ -1474,7 +1511,6 @@ try
             //convergence status == 0 (continue Newton iteration)
             normRHS = rhsVector.Norm();
             //build new stiffness matrix
-			//mLogger<<" calculate stiffness 1403" << "\n";
             this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
             //mLogger << dispForceVector.Norm() << "\n";
 //check stiffness
@@ -1535,7 +1571,7 @@ try
             if (mAutomaticLoadstepControl==false)
                 throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence with the prescribed number of Newton iterations.",MechanicsException::NOCONVERGENCE);
 
-            mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
+            //mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
             //mLogger << "check stiffness " << "\n";
             //CheckStiffness();
             //mLogger << "and continue with smaller load step " << "\n";
