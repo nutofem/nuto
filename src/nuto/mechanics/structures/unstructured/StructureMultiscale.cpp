@@ -4530,7 +4530,7 @@ void NuTo::StructureMultiscale::SetResultLoadStepMacro(std::string rLoadStepMacr
     mLogger.CloseFile();
 }
 
-
+#ifdef ENABLE_VISUALIZE
 void NuTo::StructureMultiscale::VisualizeCrack(VisualizeUnstructuredGrid& rVisualize)const
 {
 	double GlobalPointCoor1[3];
@@ -4548,6 +4548,7 @@ void NuTo::StructureMultiscale::VisualizeCrack(VisualizeUnstructuredGrid& rVisua
 	Points[1] = rVisualize.AddPoint(GlobalPointCoor2);
 	rVisualize.AddLineCell(Points);
 }
+#endif //ENABLE_VISUALIZE
 
 //! @brief performs a Newton Raphson iteration (displacement and/or load control)
 //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed

@@ -4,6 +4,11 @@
 #define CrackBase_H
 
 #include <string>
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/vector.hpp>
+#else
+#include <boost/vector.hpp>
+#endif //ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"

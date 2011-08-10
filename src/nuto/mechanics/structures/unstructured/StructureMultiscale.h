@@ -647,8 +647,10 @@ public:
     	mScaleWRTDamageCenter = rScaleWRTDamageCenter;
     }
 
+#ifdef ENABLE_VISUALIZE
     // visualizes the crack of the fine scale model
     void VisualizeCrack(VisualizeUnstructuredGrid& rVisualize)const;
+#endif //ENABLE_VISUALIZE
 
 /*    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
     //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
