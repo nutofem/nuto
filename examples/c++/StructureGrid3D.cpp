@@ -402,6 +402,7 @@ int main()
 		// myGrid.m
 		//<<std::endl;
 		return 0;
+		/*
 #ifdef ENABLE_VISUALIZE
 		// visualize element
 		myGrid.AddVisualizationComponentDisplacements();
@@ -409,7 +410,7 @@ int main()
 		myGrid.AddVisualizationComponentEngineeringStress();
 		myGrid.ExportVtkDataFile("Grid3D.vtk");
 #endif //ENABLE_VISUALIZE
-
+*/
 		std::cout<<"numpar "<<myOptimizer.GetNumParameters()<<std::endl;
 
 		//visualize results
