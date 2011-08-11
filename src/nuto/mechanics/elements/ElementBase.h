@@ -7,7 +7,7 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
 #else
-#include <boost/vector.hpp>
+#include <vector>
 #endif //ENABLE_SERIALIZATION
 
 
