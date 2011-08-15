@@ -2,8 +2,6 @@
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/vector.hpp>
-#else
-#include <boost/vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"

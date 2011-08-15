@@ -7,8 +7,6 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#else
-#include <boost/vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
 #ifdef SHOW_TIME
