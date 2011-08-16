@@ -156,9 +156,6 @@ int main()
     	NuTo::FullMatrix<int> colIndex;
     	myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
 
-
-
-
     }
     catch (NuTo::Exception& e)
     {

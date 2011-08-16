@@ -21,6 +21,22 @@ public:
     //! @brief constructor
     NodeCoordinatesDisplacements1D();
 
+    //! @brief copy constructor
+    NodeCoordinatesDisplacements1D(NodeCoordinatesDisplacements1D const& rOther)
+    {
+        (*this) = rOther;
+    }
+
+    //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
+    NodeCoordinatesDisplacements1D* Clone()const
+    {
+    	return new NodeCoordinatesDisplacements1D(*this);
+    }
+
+    //! @brief assignment operator
+    NodeCoordinatesDisplacements1D& operator= (NodeCoordinatesDisplacements1D const& rOther);
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

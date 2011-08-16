@@ -443,11 +443,11 @@ public:
     void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor)const
     {
         std::cout << " Macroscale Convergence after " << rNumNewtonIterations << " Newton iterations, curLoadFactor " << rLoadFactor << ", deltaLoadFactor "<< rDeltaLoadFactor << std::endl<< std::endl;
+#ifdef ENABLE_VISUALIZE
         std::stringstream ssLoadStep;
         ssLoadStep << rLoadStep;
         std::stringstream ssIteration;
         ssIteration << rNumNewtonIterations;
-#ifdef ENABLE_VISUALIZE
         ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentConverged") + ssLoadStep.str()+"_" + ssIteration.str() + std::string(".vtk"));
 #endif // ENABLE_VISUALIZE
     }
@@ -458,11 +458,11 @@ public:
         std::cout << " Macroscale step, iteration " << rNewtonIteration <<
                      ", line search factor " << rLineSearchFactor <<
                      ", load factor " << rLoadFactor << std::endl;
+#ifdef ENABLE_VISUALIZE
         std::stringstream ssLoadStep;
         ssLoadStep << rLoadStep;
         std::stringstream ssIteration;
         ssIteration << rNewtonIteration;
-#ifdef ENABLE_VISUALIZE
         this->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentMultiscale") + ssLoadStep.str()+"_" + ssIteration.str() + std::string(".vtk"));
 #endif // ENABLE_VISUALIZE
     }

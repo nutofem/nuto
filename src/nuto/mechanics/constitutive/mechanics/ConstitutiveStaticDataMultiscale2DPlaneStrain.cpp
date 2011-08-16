@@ -213,3 +213,24 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::UseNonlinearSolution()
     }
 }
 */
+
+//! @brief assignment operator
+NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain& NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::operator= (NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain const& rOther)
+{
+	throw MechanicsException("[NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::operator=] to be implemented.");
+}
+
+//! @brief check, if the static data is compatible with a given element and a given constitutive model
+bool NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const
+{
+	if (rConstitutiveType==NuTo::Constitutive::MULTISCALE)
+	{
+		if (rElementType==NuTo::Element::PLANE2D3N || rElementType==NuTo::Element::PLANE2D4N || rElementType==NuTo::Element::PLANE2D6N)
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+

@@ -133,6 +133,7 @@ DBG_PRINT_VAL(crack5)
 
 
         // visualize element
+#ifdef ENABLE_VISUALIZE
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentElement();
         myStructure.AddVisualizationComponentSection();
@@ -140,6 +141,7 @@ DBG_PRINT_VAL(crack5)
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
         myStructure.ExportVtkDataFile("CrackPlane2D4N.vtk");
+#endif
 	}
 	catch (NuTo::MathException& e)
 	{

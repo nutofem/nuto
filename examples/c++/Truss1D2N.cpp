@@ -96,11 +96,13 @@ int main()
 	NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
 	std::cout << "residual: " << residualVector.Norm() << std::endl;
 
+#ifdef ENABLE_VISUALIZE
 	// visualize results
     myStructure.AddVisualizationComponentDisplacements();
     myStructure.AddVisualizationComponentEngineeringStrain();
     myStructure.AddVisualizationComponentEngineeringStress();
 	myStructure.ExportVtkDataFile("Truss1D2N.vtk");
+#endif
 
 #else
     std::cout << "MUMPS not available - can't solve system of equations " << std::endl;

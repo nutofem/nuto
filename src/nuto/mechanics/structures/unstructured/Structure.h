@@ -427,6 +427,11 @@ public:
     int CrackGetId(const CrackBase* rCrack)const;
 #endif //SWIG
 
+    //! @brief copy and move the structure
+    //! most of the data is kept, but e.g. nonlocal data and
+    //! @param rOffset offset (dimension has to be identical with structure dimension)
+    void CopyAndTranslate(NuTo::FullMatrix<double> rOffset);
+
     //*************************************************
     //************ Info routine         ***************
     //**  defined in structures/Structure.cpp *********

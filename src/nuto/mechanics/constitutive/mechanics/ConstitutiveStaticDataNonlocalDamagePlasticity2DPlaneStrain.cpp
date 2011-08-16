@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
 NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain()
@@ -57,6 +58,43 @@ NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::ConstitutiveS
 	mTmpdLeqdEpsilon[3] = 0.;
 }
 
+NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain& NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::operator= (NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain const& rOther)
+{
+    NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::operator= (rOther);
+    mKappa = rOther.mKappa;
+    mEpsilonP[0] = rOther.mEpsilonP[0];
+    mEpsilonP[1] = rOther.mEpsilonP[1];
+    mEpsilonP[2] = rOther.mEpsilonP[2];
+    mEpsilonP[3] = rOther.mEpsilonP[3];
+	mTmpdEpsilonPdEpsilon[0] = rOther.mTmpdEpsilonPdEpsilon[0];
+	mTmpdEpsilonPdEpsilon[1] = rOther.mTmpdEpsilonPdEpsilon[1];
+	mTmpdEpsilonPdEpsilon[2] = rOther.mTmpdEpsilonPdEpsilon[2];
+	mTmpdEpsilonPdEpsilon[3] = rOther.mTmpdEpsilonPdEpsilon[3];
+	mTmpdEpsilonPdEpsilon[4] = rOther.mTmpdEpsilonPdEpsilon[4];
+	mTmpdEpsilonPdEpsilon[5] = rOther.mTmpdEpsilonPdEpsilon[5];
+	mTmpdEpsilonPdEpsilon[6] = rOther.mTmpdEpsilonPdEpsilon[6];
+	mTmpdEpsilonPdEpsilon[7] = rOther.mTmpdEpsilonPdEpsilon[7];
+	mTmpdEpsilonPdEpsilon[8] = rOther.mTmpdEpsilonPdEpsilon[8];
+	mTmpdEpsilonPdEpsilon[9] = rOther.mTmpdEpsilonPdEpsilon[9];
+	mTmpdEpsilonPdEpsilon[10] = rOther.mTmpdEpsilonPdEpsilon[10];
+	mTmpdEpsilonPdEpsilon[11] = rOther.mTmpdEpsilonPdEpsilon[11];
+	mTmpdEpsilonPdEpsilon[12] = rOther.mTmpdEpsilonPdEpsilon[12];
+	mTmpdEpsilonPdEpsilon[13] = rOther.mTmpdEpsilonPdEpsilon[13];
+	mTmpdEpsilonPdEpsilon[14] = rOther.mTmpdEpsilonPdEpsilon[14];
+	mTmpdEpsilonPdEpsilon[15] = rOther.mTmpdEpsilonPdEpsilon[15];
+    mTmpKappa = rOther.mTmpKappa;
+    mTmpEpsilonP[0] = rOther.mTmpEpsilonP[0];
+    mTmpEpsilonP[1] = rOther.mTmpEpsilonP[1];
+    mTmpEpsilonP[2] = rOther.mTmpEpsilonP[2];
+    mTmpEpsilonP[3] = rOther.mTmpEpsilonP[3];
+    mTmpLeq = rOther.mTmpLeq;
+    mTmpdLeqdEpsilon[0] = rOther.mTmpdLeqdEpsilon[0];
+    mTmpdLeqdEpsilon[1] = rOther.mTmpdLeqdEpsilon[1];
+    mTmpdLeqdEpsilon[2] = rOther.mTmpdLeqdEpsilon[2];
+    mTmpdLeqdEpsilon[3] = rOther.mTmpdLeqdEpsilon[3];
+    return *this;
+}
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive
@@ -99,3 +137,18 @@ const NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::C
 {
     return this;
 }
+
+//! @brief check, if the static data is compatible with a given element and a given constitutive model
+bool NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const
+{
+	if (rConstitutiveType==NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY)
+	{
+		if (rElementType==NuTo::Element::PLANE2D3N || rElementType==NuTo::Element::PLANE2D4N || rElementType==NuTo::Element::PLANE2D6N)
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+

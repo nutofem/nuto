@@ -22,6 +22,21 @@ public:
     //! @brief constructor
     NodeCoordinatesDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain);
 
+    //! @brief copy constructor
+    NodeCoordinatesDisplacementsMultiscale2D(NodeCoordinatesDisplacementsMultiscale2D const& rOther)
+    {
+        (*this) = rOther;
+    }
+
+    //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
+    NodeCoordinatesDisplacementsMultiscale2D* Clone()const
+    {
+    	return new NodeCoordinatesDisplacementsMultiscale2D(*this);
+    }
+
+    //! @brief assignment operator
+    NodeCoordinatesDisplacementsMultiscale2D& operator= (NodeCoordinatesDisplacementsMultiscale2D const& rOther);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

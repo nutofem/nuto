@@ -77,11 +77,13 @@ int main()
 	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	    myStructure.ElementTotalSetSection(mySection1);
 
+#ifdef ENABLE_VISUALIZE
             // visualize element
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
         myStructure.ExportVtkDataFile("Plane2D4N.vtk");
+#endif
 	}
 	catch (NuTo::MathException& e)
 	{

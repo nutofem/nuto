@@ -24,7 +24,7 @@ public:
 
     //! @brief returns the enum of IP data type
     //! @return enum of IPDataType
-    const NuTo::IpData::eIpDataType GetIpDataType()const;
+    NuTo::IpData::eIpDataType GetIpDataType()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

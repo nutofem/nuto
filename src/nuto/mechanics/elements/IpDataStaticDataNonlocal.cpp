@@ -38,7 +38,7 @@ void NuTo::IpDataStaticDataNonlocal::Initialize(const ElementBase* rElement, con
 
 //! @brief returns the enum of IP data type
 //! @return enum of IPDataType
-const NuTo::IpData::eIpDataType NuTo::IpDataStaticDataNonlocal::GetIpDataType()const
+NuTo::IpData::eIpDataType NuTo::IpDataStaticDataNonlocal::GetIpDataType()const
 {
     return NuTo::IpData::STATICDATANONLOCAL;
 }

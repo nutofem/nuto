@@ -26,7 +26,7 @@ void NuTo::IpDataEmpty::Initialize(const ElementBase* rElement, const Constituti
 
 //! @brief returns the enum of IP data type
 //! @return enum of IPDataType
-const NuTo::IpData::eIpDataType NuTo::IpDataEmpty::GetIpDataType()const
+NuTo::IpData::eIpDataType NuTo::IpDataEmpty::GetIpDataType()const
 {
     return NuTo::IpData::NOIPDATA;
 }

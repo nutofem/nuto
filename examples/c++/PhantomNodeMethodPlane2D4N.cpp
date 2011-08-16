@@ -116,6 +116,7 @@ int main()
 	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	    myStructure.ElementTotalSetSection(mySection1);
 
+#ifdef ENABLE_VISUALIZE
         // visualize element
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentElement();
@@ -124,6 +125,7 @@ int main()
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
         myStructure.ExportVtkDataFile("PhantomNodeMethodPlane2D4N.vtk");
+#endif
 
         // boundary conditions
         // x-direction
@@ -188,8 +190,10 @@ int main()
         NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
         std::cout << "residual: " << residualVector.Norm() << std::endl;
 
+#ifdef ENABLE_VISUALIZE
         // visualize results
         myStructure.ExportVtkDataFile("PhantomNodeMethodPlane2D4N-deformed.vtk");
+#endif
 	}
 	catch (NuTo::MathException& e)
 	{

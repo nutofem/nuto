@@ -18,6 +18,13 @@ NuTo::NodeCoordinatesDisplacementsMultiscale2D::NodeCoordinatesDisplacementsMult
 {
 }
 
+NuTo::NodeCoordinatesDisplacementsMultiscale2D& NuTo::NodeCoordinatesDisplacementsMultiscale2D::operator= (NuTo::NodeCoordinatesDisplacementsMultiscale2D const& rOther)
+{
+    NuTo::NodeCoordinates2D::operator= (rOther);
+    NuTo::NodeDisplacementsMultiscale2D::operator= (rOther);
+    return *this;
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::NodeCoordinatesDisplacementsMultiscale2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

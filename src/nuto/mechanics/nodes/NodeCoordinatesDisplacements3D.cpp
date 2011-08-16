@@ -19,6 +19,14 @@ NuTo::NodeCoordinatesDisplacements3D::NodeCoordinatesDisplacements3D():
 #endif
 }
 
+NuTo::NodeCoordinatesDisplacements3D& NuTo::NodeCoordinatesDisplacements3D::operator= (NuTo::NodeCoordinatesDisplacements3D const& rOther)
+{
+    NuTo::NodeCoordinates3D::operator= (rOther);
+    NuTo::NodeDisplacements3D::operator= (rOther);
+    return *this;
+}
+
+
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

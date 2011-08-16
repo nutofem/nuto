@@ -21,6 +21,24 @@ public:
     //! @brief constructor
     NodeDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain);
 
+    //! @brief assignment operator
+    void operator=(NodeDisplacementsMultiscale2D const& rOther)
+    {
+        mFineScaleDisplacements[0] = rOther.mFineScaleDisplacements[0];
+        mFineScaleDisplacements[1] = rOther.mFineScaleDisplacements[1];
+        mShapeFunctionX[0] = rOther.mShapeFunctionX[0];
+        mShapeFunctionX[1] = rOther.mShapeFunctionX[1];
+        mShapeFunctionX[2] = rOther.mShapeFunctionX[2];
+        mShapeFunctionY[0] = rOther.mShapeFunctionY[0];
+        mShapeFunctionY[1] = rOther.mShapeFunctionY[1];
+        mShapeFunctionY[2] = rOther.mShapeFunctionY[2];
+        mDOF[0] = rOther.mDOF[0];
+        mDOF[1] = rOther.mDOF[1];
+        mCrackedDomain = rOther.mCrackedDomain;
+        //the node is supposed to belong to the same Structure after the assignment
+        mStructureMultiscale = rOther.mStructureMultiscale;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

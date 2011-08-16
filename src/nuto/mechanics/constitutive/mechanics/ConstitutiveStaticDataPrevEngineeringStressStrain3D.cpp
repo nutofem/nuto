@@ -33,6 +33,26 @@ NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::ConstitutiveStaticDat
     mPrevElasticEnergy = 0.;
 }
 
+NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D& NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::operator= (NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D const& rOther)
+{
+    NuTo::ConstitutiveStaticDataBase::operator= (rOther);
+    mPrevSigma[0] = rOther.mPrevSigma[0];
+    mPrevSigma[1] = rOther.mPrevSigma[1];
+    mPrevSigma[2] = rOther.mPrevSigma[2];
+    mPrevSigma[3] = rOther.mPrevSigma[3];
+    mPrevSigma[4] = rOther.mPrevSigma[4];
+    mPrevSigma[5] = rOther.mPrevSigma[5];
+    mPrevStrain[0] = rOther.mPrevStrain[0];
+    mPrevStrain[1] = rOther.mPrevStrain[1];
+    mPrevStrain[2] = rOther.mPrevStrain[2];
+    mPrevStrain[3] = rOther.mPrevStrain[3];
+    mPrevStrain[4] = rOther.mPrevStrain[4];
+    mPrevStrain[5] = rOther.mPrevStrain[5];
+    mPrevTotalEnergy = rOther.mPrevTotalEnergy;
+    mPrevElasticEnergy = rOther.mPrevElasticEnergy;
+    return *this;
+}
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive

@@ -23,6 +23,12 @@ public:
     //! @brief destructor
     ~ NodeGrid3D();
 
+    //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
+    NodeGrid3D* Clone()const
+    {
+    	throw MechanicsException("[NodeGrid3D::Clone] to be implemented.");
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

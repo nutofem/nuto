@@ -11,6 +11,7 @@
 namespace NuTo
 {
 class ConstitutiveMisesPlasticity;
+class IpDataStaticDataBase;
 
 class ConstitutiveStaticDataMisesPlasticity3D : virtual public ConstitutiveStaticDataBase
 {
@@ -21,6 +22,24 @@ class ConstitutiveStaticDataMisesPlasticity3D : virtual public ConstitutiveStati
 public:
 	//! @brief constructor
 	ConstitutiveStaticDataMisesPlasticity3D();
+
+    //! @brief copy constructor
+	ConstitutiveStaticDataMisesPlasticity3D(ConstitutiveStaticDataMisesPlasticity3D const& rOther)
+    {
+        (*this) = rOther;
+    }
+
+    //! @brief clones (copies) the data
+    virtual ConstitutiveStaticDataMisesPlasticity3D* Clone()const
+    {
+    	return new ConstitutiveStaticDataMisesPlasticity3D(*this);
+    }
+
+    //! @brief check, if the static data is compatible with a given element and a given constitutive model
+    virtual bool CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const;
+
+    //! @brief assignment operator
+    ConstitutiveStaticDataMisesPlasticity3D& operator= (ConstitutiveStaticDataMisesPlasticity3D const& rOther);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

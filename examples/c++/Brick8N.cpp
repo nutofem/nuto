@@ -215,8 +215,8 @@ try
         NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
         std::cout << "residual: " << residualVector.Norm() << std::endl;
 
-        // visualize results
 #ifdef ENABLE_VISUALIZE
+        // visualize results
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();

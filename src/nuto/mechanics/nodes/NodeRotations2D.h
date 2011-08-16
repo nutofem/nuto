@@ -23,6 +23,13 @@ public:
     //! @brief constructor
     NodeRotations2D(const double rRotations[1]);
 
+    //! @brief assignment operator
+    void operator=(NodeRotations2D const& rOther)
+    {
+    	mRotations[0] = rOther.mRotations[0];
+    	mDOF[0] = -1;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

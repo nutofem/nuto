@@ -24,6 +24,17 @@ public:
     //! @brief constructor
     NodeDisplacements3D (const double rDisplacements[3]);
 
+    //! @brief assignment operator
+    void operator=(NodeDisplacements3D const& rOther)
+    {
+    	mDisplacements[0] = rOther.mDisplacements[0];
+    	mDisplacements[1] = rOther.mDisplacements[1];
+    	mDisplacements[2] = rOther.mDisplacements[2];
+    	mDOF[0] = -1;
+    	mDOF[1] = -1;
+    	mDOF[2] = -1;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

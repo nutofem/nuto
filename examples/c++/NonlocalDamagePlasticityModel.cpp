@@ -99,7 +99,6 @@ int main()
    	int myElement5 = myStructure.ElementCreate("PLANE2D3N",Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement5,"2D3NGauss1Ip","StaticDataNonlocal");
 
-
 	//create constitutive law
 	int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity");
 	myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9);
@@ -125,6 +124,7 @@ int main()
 	//Build nonlocal elements
 	myStructure.BuildNonlocalData(myMatDamage);
 
+#ifdef ENABLE_VISUALIZE
 	// visualize results
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement1,0);
 
@@ -132,9 +132,13 @@ int main()
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,1);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,2);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,3);
+#endif
+
+	//build maximum independent sets for openmp parallel assembly
+	myStructure.CalculateMaximumIndependentSets();
 
     //calculate linear elastic matrix
-	NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
+	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrix;
 	NuTo::FullMatrix<double> dispForceVector;
 
 	myStructure.ElementTotalUpdateTmpStaticData();
@@ -260,12 +264,24 @@ int main()
 		myStructure.ElementTotalUpdateStaticData();
 	}
 
+#ifdef ENABLE_VISUALIZE
 	myStructure.AddVisualizationComponentDisplacements();
 	myStructure.AddVisualizationComponentEngineeringStrain();
 	myStructure.AddVisualizationComponentEngineeringStress();
 	myStructure.AddVisualizationComponentDamage();
 	myStructure.AddVisualizationComponentEngineeringPlasticStrain();
 	myStructure.ExportVtkDataFile("NonlocalDamagePlasticityModel.vtk");
+#endif
+
+    NuTo::FullMatrix<double> shift(2,1);
+    shift(0,0) = 3+myStructure.ConstitutiveLawGetNonlocalRadius(myMatDamage);
+    shift(1,0) = 0;
+    myStructure.CopyAndTranslate(shift);
+
+#ifdef ENABLE_VISUALIZE
+	myStructure.ExportVtkDataFile("NonlocalDamagePlasticityModelCopied.vtk");
+#endif
+
     }
     catch (NuTo::Exception& e)
     {

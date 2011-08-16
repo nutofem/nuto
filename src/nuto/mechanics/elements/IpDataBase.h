@@ -63,7 +63,7 @@ public :
 
     //! @brief returns the enum of IP data type
     //! @return enum of IPDataType
-    virtual const NuTo::IpData::eIpDataType GetIpDataType()const;
+    virtual NuTo::IpData::eIpDataType GetIpDataType()const=0;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIPName);

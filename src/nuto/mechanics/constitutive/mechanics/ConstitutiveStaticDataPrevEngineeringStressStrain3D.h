@@ -21,6 +21,8 @@ public:
 	//! @brief constructor
     ConstitutiveStaticDataPrevEngineeringStressStrain3D();
 
+    NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D& operator= (NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D const& rOther);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

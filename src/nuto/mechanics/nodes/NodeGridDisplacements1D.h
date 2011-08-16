@@ -22,6 +22,12 @@ public:
     NodeGridDisplacements1D(int rNodeId) : NodeGrid1D (rNodeId), NodeDisplacements1D()
     {}
 
+    //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
+    NodeGridDisplacements1D* Clone()const
+    {
+    	throw MechanicsException("[NodeGridDisplacements1D::Clone] to be implemented.");
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

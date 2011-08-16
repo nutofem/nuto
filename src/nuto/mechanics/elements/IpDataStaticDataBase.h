@@ -34,6 +34,7 @@ public:
 	{
         mStaticData = rStaticData;
 	}
+
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIPName);
 

@@ -61,6 +61,12 @@ public:
     //! @return pointer to integration type
     const IntegrationTypeBase* GetIntegrationType()const;
 
+    //! @brief returns ip data type of the element
+    //! implemented with an exception for all element data, reimplementation required for those element data
+    //! which actually need an integration type
+    //! @return enum to ip data
+    NuTo::IpData::eIpDataType GetIpDataType(int  rIp)const;
+
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
@@ -70,6 +76,11 @@ public:
     //! @param rIp integration point
     //! @return static data
     const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+
+    //! @brief sets the static data for an integration point of an element
+    //! @param rIp integration point
+    //! @param rStaticData static data
+    virtual void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

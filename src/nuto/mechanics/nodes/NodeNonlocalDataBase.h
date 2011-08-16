@@ -21,6 +21,13 @@ public:
     //! @brief constructor
     NodeNonlocalDataBase();
 
+    //! @brief assignment operator
+    void operator=(NodeNonlocalDataBase const& rOther)
+    {
+    	//don't copy the nonlocal data, this has to be updated afterwards
+    	mConstitutive = 0;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

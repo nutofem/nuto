@@ -135,6 +135,18 @@ const NuTo::IntegrationTypeBase* NuTo::ElementDataIpBase::GetIntegrationType()co
 {
 	return mIntegrationType;
 }
+
+
+//! @brief returns ip data type of the element
+//! implemented with an exception for all element data, reimplementation required for those element data
+//! which actually need an integration type
+//! @return enum to ip data
+NuTo::IpData::eIpDataType NuTo::ElementDataIpBase::GetIpDataType(int  rIp)const
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+	return mIpData[rIp].GetIpDataType();
+}
+
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data
@@ -151,6 +163,15 @@ const NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataIpBase::GetStaticData(i
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
 	return mIpData[rIp].GetStaticData();
+}
+
+//! @brief sets the static data for an integration point of an element
+//! @param rIp integration point
+//! @param rStaticData static data
+void NuTo::ElementDataIpBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+	mIpData[rIp].SetStaticData(rStaticData);
 }
 
 #ifdef ENABLE_SERIALIZATION

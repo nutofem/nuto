@@ -23,6 +23,12 @@ public:
     //! @brief constructor
     NodeGrid2D(int rNodeID);
 
+    //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
+    NodeGrid2D* Clone()const
+    {
+    	throw MechanicsException("[NodeGrid2D::Clone] to be implemented.");
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

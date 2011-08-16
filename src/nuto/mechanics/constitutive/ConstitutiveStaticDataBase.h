@@ -4,6 +4,8 @@
 #define CONSTITUTIVESTATICDATABASE_H_
 
 #include <string>
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include <boost/ptr_container/ptr_list.hpp>
@@ -32,13 +34,21 @@ class ConstitutiveStaticDataBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    //!@ brief constructor
+    //! @brief constructor
     ConstitutiveStaticDataBase()
     {}
 
-    //!@ brief destructor (virtual, in order to make the class a polymorphic type)
+    //! @brief destructor (virtual, in order to make the class a polymorphic type)
     virtual ~ConstitutiveStaticDataBase()
     {};
+
+    //! @brief constructor
+    virtual ConstitutiveStaticDataBase* Clone()const=0;
+
+    NuTo::ConstitutiveStaticDataBase& operator= (NuTo::ConstitutiveStaticDataBase const& rOther);
+
+    //! @brief check, if the static data is compatible with a given element and a given constitutive model
+    virtual bool CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType constitutiveType, NuTo::Element::eElementType elementType)const=0;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName);

@@ -67,6 +67,7 @@ void NuTo::IpDataStaticDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid
 }
 #endif
 
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::IpDataStaticDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

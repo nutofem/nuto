@@ -89,6 +89,11 @@ public:
     //! @return static data
     virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
 
+    //! @brief sets the static data for an integration point of an element
+    //! @param rIp integration point
+    //! @param rStaticData static data
+    virtual void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point
     //! @return constitutive law
@@ -111,6 +116,12 @@ public:
     //! which actually need an integration type
     //! @return pointer to integration type
     virtual const IntegrationTypeBase* GetIntegrationType()const;
+
+    //! @brief returns ip data type of the element
+    //! implemented with an exception for all element data, reimplementation required for those element data
+    //! which actually need an integration type
+    //! @return enum to ip data
+    virtual NuTo::IpData::eIpDataType GetIpDataType(int  rIp)const;
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip

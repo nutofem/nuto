@@ -19,6 +19,12 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
+NuTo::ConstitutiveStaticDataBase& NuTo::ConstitutiveStaticDataBase::operator= (NuTo::ConstitutiveStaticDataBase const& rOther)
+{
+    return (*this);
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstitutiveStaticDataBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

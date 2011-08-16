@@ -88,6 +88,14 @@ const NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataBase::GetStaticData(int
 	throw MechanicsException("[NuTo::ElementDataBase::GetStaticData] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
+//! @brief sets the static data for an integration point of an element
+//! @param rIp integration point
+//! @param rStaticData static data
+void NuTo::ElementDataBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+{
+	throw MechanicsException("[NuTo::ElementDataBase::SetStaticData] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
 //! @brief returns the constitutive law of an integration point
 //! @param rIp integration point
 //! @return constitutive law
@@ -117,6 +125,16 @@ const NuTo::IntegrationTypeBase* NuTo::ElementDataBase::GetIntegrationType()cons
 {
 	throw MechanicsException("[NuTo::ElementDataBase::GetIntegrationType] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
+
+//! @brief returns ip data type of the element
+//! implemented with an exception for all element data, reimplementation required for those element data
+//! which actually need an integration type
+//! @return enum to ip data
+NuTo::IpData::eIpDataType NuTo::ElementDataBase::GetIpDataType(int  rIp)const
+{
+	throw MechanicsException("[NuTo::ElementDataBase::GetIpDataTyp] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
 
 //! @brief adds the nonlocal weight to an integration point
 //! @param rLocalIpNumber local Ip

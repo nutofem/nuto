@@ -17,6 +17,13 @@ NuTo::NodeCoordinatesDisplacementsNonlocalData2D::NodeCoordinatesDisplacementsNo
     std::cout<<"call NodeCoordinatesDisplacementsNonlocalData2D constructor" << std::endl;
 }
 
+NuTo::NodeCoordinatesDisplacementsNonlocalData2D& NuTo::NodeCoordinatesDisplacementsNonlocalData2D::operator= (NuTo::NodeCoordinatesDisplacementsNonlocalData2D const& rOther)
+{
+    NuTo::NodeCoordinates2D::operator= (rOther);
+    NuTo::NodeDisplacements2D::operator= (rOther);
+    NuTo::NodeNonlocalDataBase::operator= (rOther);
+    return *this;
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

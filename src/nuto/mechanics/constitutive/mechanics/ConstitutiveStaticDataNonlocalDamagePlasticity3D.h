@@ -10,6 +10,7 @@
 //! @date December 2009
 namespace NuTo
 {
+class IpDataStaticDataBase;
 
 class ConstitutiveStaticDataNonlocalDamagePlasticity3D : public ConstitutiveStaticDataPrevEngineeringStressStrain3D
 {
@@ -20,6 +21,24 @@ class ConstitutiveStaticDataNonlocalDamagePlasticity3D : public ConstitutiveStat
 public:
 	//! @brief constructor
     ConstitutiveStaticDataNonlocalDamagePlasticity3D();
+
+    //! @brief copy constructor
+    ConstitutiveStaticDataNonlocalDamagePlasticity3D(ConstitutiveStaticDataNonlocalDamagePlasticity3D const& rOther)
+    {
+        (*this) = rOther;
+    }
+
+    //! @brief clones (copies) the data
+    ConstitutiveStaticDataNonlocalDamagePlasticity3D* Clone()const
+    {
+    	return new ConstitutiveStaticDataNonlocalDamagePlasticity3D(*this);
+    }
+
+    //! @brief assignment operator
+    ConstitutiveStaticDataNonlocalDamagePlasticity3D& operator= (ConstitutiveStaticDataNonlocalDamagePlasticity3D const& rOther);
+
+    //! @brief check, if the static data is compatible with a given element and a given constitutive model
+    virtual bool CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

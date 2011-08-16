@@ -11,6 +11,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
@@ -248,6 +249,15 @@ const NuTo::IntegrationTypeBase* NuTo::ElementBase::GetIntegrationType()const
     return mElementData->GetIntegrationType();
 }
 
+//! @brief returns ip data type of the element
+//! implemented with an exception for all elements, reimplementation required for those elements
+//! which actually need an integration type
+//! @return pointer to integration type
+NuTo::IpData::eIpDataType NuTo::ElementBase::GetIpDataType(int  rIp)const
+{
+	return mElementData->GetIpDataType(rIp);
+}
+
 //! @brief returns the enum of element data type
 //! @return enum of ElementDataType
 const NuTo::ElementData::eElementDataType NuTo::ElementBase::GetElementDataType()const
@@ -285,6 +295,17 @@ const NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp
 NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp)
 {
 	return this->mElementData->GetStaticData(rIp);
+}
+
+//! @brief sets the static data for an integration point of an element
+//! @param rIp integration point
+//! @param rStaticData static data
+void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+{
+	if (rStaticData->CheckConstitutiveCompatibility(mElementData->GetConstitutiveLaw(rIp)->GetType(), this->GetEnumType()))
+	    return this->mElementData->SetStaticData(rIp,rStaticData);
+	else
+		throw MechanicsException("[NuTo::ElementBase::SetStaticData] Static data is not compatible with the element and or constitutive model");
 }
 
 //! @brief returns the natural coordinates of an given point

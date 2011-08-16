@@ -9,12 +9,36 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
 NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::ConstitutiveStaticDataMisesPlasticityWithEnergy3D() :
 ConstitutiveStaticDataMisesPlasticity3D() ,ConstitutiveStaticDataPrevEngineeringStressStrain3D()
 {
 }
+
+//! @brief assignment operator
+NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D& NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::operator= (ConstitutiveStaticDataMisesPlasticityWithEnergy3D const& rOther)
+{
+    NuTo::ConstitutiveStaticDataMisesPlasticity3D::operator= (rOther);
+    NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::operator= (rOther);
+    return (*this);
+}
+
+//! @brief check, if the static data is compatible with a given element and a given constitutive model
+bool NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const
+{
+	if (rConstitutiveType==NuTo::Constitutive::MISES_PLASTICITY)
+	{
+		if (rElementType==NuTo::Element::BRICK8N || rElementType==NuTo::Element::TETRAHEDRON4N || rElementType==NuTo::Element::TETRAHEDRON10N)
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class

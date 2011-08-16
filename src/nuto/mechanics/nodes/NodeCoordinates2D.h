@@ -23,6 +23,25 @@ public:
     //! @brief constructor
     NodeCoordinates2D(const double rCoordinates[2]);
 
+    //! @brief copy constructor
+    NodeCoordinates2D(NodeCoordinates2D const& rOther)
+    {
+        (*this) = rOther;
+    }
+
+    //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
+    NodeCoordinates2D* Clone()const
+    {
+    	return new NodeCoordinates2D(*this);
+    }
+
+    //! @brief assignment operator
+    void operator=(NodeCoordinates2D const& rOther)
+    {
+    	mCoordinates[0] = rOther.mCoordinates[0];
+    	mCoordinates[1] = rOther.mCoordinates[1];
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

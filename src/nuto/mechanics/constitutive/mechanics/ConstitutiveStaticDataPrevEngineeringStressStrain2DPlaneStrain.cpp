@@ -27,6 +27,15 @@ NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::Constituti
     mPrevElasticEnergy = 0.;
 }
 
+NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain& NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::operator= (NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain const& rOther)
+{
+    NuTo::ConstitutiveStaticDataBase::operator= (rOther);
+    mPrevSigma = rOther.mPrevSigma;
+    mPrevStrain = rOther.mPrevStrain;
+    mPrevTotalEnergy = rOther.mPrevTotalEnergy;
+    mPrevElasticEnergy = rOther.mPrevElasticEnergy;
+    return *this;
+}
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive
