@@ -216,10 +216,12 @@ try
         std::cout << "residual: " << residualVector.Norm() << std::endl;
 
         // visualize results
+#ifdef ENABLE_VISUALIZE
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
         myStructure.ExportVtkDataFile("Plane2D4N.vtk");
+#endif // ENABLE_VISUALIZE
     }
 }
 catch (NuTo::Exception& e)

@@ -4,6 +4,7 @@
 #define CrackBase_H
 
 #include <string>
+#include <vector>
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"

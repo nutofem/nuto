@@ -30,6 +30,7 @@ public:
 #ifdef SHOW_TIME
 		SetShowTime(true);
 #endif //SHOW_TIME
+#ifdef ENABLE_VISUALIZE
         //add visualization
         //myStructureCoarseScale.AddVisualizationComponentSection();
         //myStructureCoarseScale.AddVisualizationComponentConstitutive();
@@ -39,6 +40,8 @@ public:
         //myStructureCoarseScale.AddVisualizationComponentDamage();
         //myStructureCoarseScale.AddVisualizationComponentEngineeringPlasticStrain();
         //myStructureCoarseScale.AddVisualizationComponentPrincipalEngineeringStress();
+#endif // ENABLE_VISUALIZE
+
 
         //2x2 nodes 1x1 element grid
         //create nodes
@@ -294,7 +297,7 @@ public:
 					GroupNodesMultiscaleDamage,GroupNodesMultiscaleHomogeneous,GroupElementsDamage,GroupElementsHomogeneous);
     		//update conre mat
     		myStructureFineScale.NodeBuildGlobalDofs();
-
+#ifdef ENABLE_VISUALIZE
     		myStructureFineScale.AddVisualizationComponentSection();
     		myStructureFineScale.AddVisualizationComponentConstitutive();
     		myStructureFineScale.AddVisualizationComponentDisplacements();
@@ -303,6 +306,7 @@ public:
     		myStructureFineScale.AddVisualizationComponentDamage();
     		myStructureFineScale.AddVisualizationComponentEngineeringPlasticStrain();
     		myStructureFineScale.AddVisualizationComponentPrincipalEngineeringStress();
+#endif //ENABLE_VISUALIZE
     		myStructureFineScale.Info();
 
     	    //myStructureFineScale.Save("myStructureFineScale.xml","xml");
@@ -313,7 +317,9 @@ public:
 #endif
     		//myStructureFineScale.Restore(rNameOfBinaryFinescale,"binary");
     	    myStructureFineScale.ElementTotalUpdateTmpStaticData();
+#ifdef ENABLE_VISUALIZE
     	    myStructureFineScale.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/ConcurrentMultiscaleInitialFineScaleModel.vtk"));
+#endif //ENABLE_VISUALIZE
     	}
     	catch (NuTo::Exception& e)
     	{
@@ -422,7 +428,9 @@ public:
         {
             throw NuTo::MechanicsException("[main::NewtonRaphsonAuxRoutines::InitStructure] norm of the residual should be zero in the first elastic iteration.");
         }
+#ifdef ENABLE_VISUALIZE
         this->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/CoarseScaleInitialSolution.vtk"));
+#endif // ENABLE_VISUALIZE
 
         //update structure - set total strain of the linear solution being the total strain of the fine scale solution
         this->ElementTotalUpdateStaticData();
@@ -439,7 +447,9 @@ public:
         ssLoadStep << rLoadStep;
         std::stringstream ssIteration;
         ssIteration << rNumNewtonIterations;
+#ifdef ENABLE_VISUALIZE
         ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentConverged") + ssLoadStep.str()+"_" + ssIteration.str() + std::string(".vtk"));
+#endif // ENABLE_VISUALIZE
     }
 
     //! @brief do a postprocessing step after each line search within the load step
@@ -452,7 +462,9 @@ public:
         ssLoadStep << rLoadStep;
         std::stringstream ssIteration;
         ssIteration << rNewtonIteration;
+#ifdef ENABLE_VISUALIZE
         this->ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentMultiscale") + ssLoadStep.str()+"_" + ssIteration.str() + std::string(".vtk"));
+#endif // ENABLE_VISUALIZE
     }
 
 protected:
@@ -535,8 +547,9 @@ try
         std::cout << "total energy on the macroscale " << energy << std::endl;
         //system("paraview --state=/home/unger3/develop/nuto_build/examples/c++/test.pvsm");
     }
-
+#ifdef ENABLE_VISUALIZE
     myStructureCoarseScale.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/MacroscaleConcurrentMultiscaleFinal.vtk"));
+#endif // ENABLE_VISUALIZE
 
 }
 catch (NuTo::Exception& e)

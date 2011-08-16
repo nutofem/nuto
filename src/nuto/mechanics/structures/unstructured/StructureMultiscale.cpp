@@ -4459,8 +4459,9 @@ void NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions(double r
         ss << countShapeFunction;
         std::cout << "total number of elements " << mElementMap.size()<< " damage " << this->GroupGetNumMembers(mGroupElementsDamage)<< " homogeneous " << this->GroupGetNumMembers(mGroupElementsHomogeneous);
         std::cout << ", active Dofs " << this->mNumActiveDofs << " dependent dofs " << this->mNumDofs-this->mNumActiveDofs << "\n";
+#ifdef ENABLE_VISUALIZE
         ExportVtkDataFile(mResultDirectory + "/periodicBC" + ss.str() +".vtk");
-
+#endif //ENABLE_VISUALIZE
 	    double max(0);
 	    // loop over all nodes in the damaged region
 		boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(mGroupBoundaryNodesDamage);
