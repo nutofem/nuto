@@ -546,6 +546,19 @@ public:
     //! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
     void CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const;
 
+    //! @brief ... get threshold for crack initiation based on the maximum damage value within the structure
+    //! @return ... mDamageTresholdCrackInitiation
+    double GetDamageTresholdCrackInitiation() const;
+
+    //! @brief ... set DamageTresholdCrackInitiation
+    //! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
+    void SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation);
+
+    //! @brief ... check DamageTresholdCrackInitiation
+    //! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
+    void CheckDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation) const;
+
+
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
 
@@ -606,9 +619,6 @@ protected:
     double mScalingFactorCrackOpening;
     double mScalingFactorEpsilon;
 
-    //! @brief scaling factor m for the penalty constraint of the crack angle pot = m/2*(alpha-alpha_e)^2
-    double mPenaltyStiffnessCrackAngle;
-
     //! @brief crack transition radius
     double mCrackTransitionRadius;
 
@@ -623,7 +633,7 @@ protected:
     double mMinLineSearchFactor;
 
     //! @brief criterion to add the crack enrichment function
-    double mDamageCrackInitiation;
+    double mDamageTresholdCrackInitiation;
 
     //directory, where all the results for the fine scale solutions are stored
     std::string mResultDirectory;

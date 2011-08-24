@@ -425,12 +425,19 @@ public:
     //! @param pointer to a crack
     //! @return identifier
     int CrackGetId(const CrackBase* rCrack)const;
+
+    //! @brief copy and move the structure
+    //! most of the data is kept, but e.g. nonlocal data and
+    //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
+    //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
+    //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
+    void CopyAndTranslate(NuTo::FullMatrix<double>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer);
 #endif //SWIG
 
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
-    //! @param rOffset offset (dimension has to be identical with structure dimension)
-    void CopyAndTranslate(NuTo::FullMatrix<double> rOffset);
+    //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
+    void CopyAndTranslate(NuTo::FullMatrix<double>& rOffset);
 
     //*************************************************
     //************ Info routine         ***************

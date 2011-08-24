@@ -257,19 +257,6 @@ double NuTo::ConstitutiveBase::GetCrackTransitionRadius()const
 
 //! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
 //! @param rCrackTransitionRadius... crack transition radius
-void NuTo::ConstitutiveBase::SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetPenaltyStiffnessCrackAngle] The constitutive relationship does not have a penalty stiffness for the crack angle.");
-}
-//! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
-//! @return crack transition radius
-double NuTo::ConstitutiveBase::GetPenaltyStiffnessCrackAngle()const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetPenaltyStiffnessCrackAngle] The constitutive relationship does not have a penalty stiffness for the crack angle.");
-}
-
-//! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
-//! @param rCrackTransitionRadius... crack transition radius
 void NuTo::ConstitutiveBase::SetCrackTransitionRadius(double rCrackTransitionRadius)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetCrackTransitionRadius] The constitutive relationship does not have a crack transition radius.");
@@ -486,11 +473,18 @@ void NuTo::ConstitutiveBase::SetUseAdditionalPeriodicShapeFunctions(bool rUseAdd
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
 }
 
-//! @brief ... check
-//! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
-void NuTo::ConstitutiveBase::CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const
+//! @brief ... get threshold for crack initiation based on the maximum damage value within the structure
+//! @return ... mDamageTresholdCrackInitiation
+double NuTo::ConstitutiveBase::GetDamageTresholdCrackInitiation() const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDamageTresholdCrackInitiation] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set DamageTresholdCrackInitiation
+//! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
+void NuTo::ConstitutiveBase::SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDamageTresholdCrackInitiation] The constitutive relationship does not have this parameter.");
 }
 
 

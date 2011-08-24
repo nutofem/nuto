@@ -25,7 +25,6 @@ NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::ConstitutiveStaticDataMulti
 {
     mStructure = 0;
     mSolutionPhase = Constitutive::HOMOGENIZED_LINEAR_ELASTIC;
-    mPrevCrackAngleElastic = 0.5*M_PI;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -46,9 +45,7 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::serialize(Archive & ar
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain)
        & BOOST_SERIALIZATION_NVP(mStructure)
-       & BOOST_SERIALIZATION_NVP(mSolutionPhase)
-       & BOOST_SERIALIZATION_NVP(mPrevCrackAngle)
-       & BOOST_SERIALIZATION_NVP(mPrevCrackAngleElastic);
+       & BOOST_SERIALIZATION_NVP(mSolutionPhase);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataMultiscale2DPlaneStrain" << std::endl;
 #endif
@@ -135,12 +132,6 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::SetFineScaleParameter(
 		std::transform(upperCaseName.begin(), upperCaseName.end(), upperCaseName.begin(), (int(*)(int)) std::toupper);
 		if (upperCaseName=="CRACKTRANSITIONRADIUS")
 			mStructure->SetCrackTransitionRadius(rParameter);
-		else if (upperCaseName=="PENALTYSTIFFNESSCRACKANGLE")
-			mStructure->SetPenaltyStiffnessCrackAngle(rParameter);
-		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLELOW")
-			mStructure->SetToleranceElasticCrackAngleLow(rParameter);
-		else if (upperCaseName=="TOLERANCEELASTICCRACKANGLEHIGH")
-			mStructure->SetToleranceElasticCrackAngleHigh(rParameter);
 		else if (upperCaseName=="AUGMENTEDLAGRANGECRACKOPENING")
 			mStructure->CreateConstraintLagrangeGlobalCrackOpeningNormal(rParameter);
 		else if (upperCaseName=="LOGGERQUIET")
@@ -175,16 +166,19 @@ void NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain::VisualizeIpMultiscale(
 {
 	if (!LinearSolution())
 	{
-		mStructure->ElementTotalUpdateTmpStaticData();
 		if (rVisualizeDamage)
 		{
-			mStructure->SetCenterScalingToDamage(true);
-			mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsDamage(),rVisualize, rWhat);
-			if (NonLinearSolutionCracked())
-			    mStructure->VisualizeCrack(rVisualize);
+			if (mStructure->GetGroupElementsDamage()!=-1)
+			{
+				mStructure->ElementTotalUpdateTmpStaticData();
+				mStructure->SetCenterScalingToDamage(true);
+				mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsDamage(),rVisualize, rWhat);
+				mStructure->VisualizeCrack(rVisualize);
+			}
 		}
 		else
 		{
+			mStructure->ElementTotalUpdateTmpStaticData();
 			mStructure->SetCenterScalingToDamage(false);
 			mStructure->ElementGroupAddToVisualize(mStructure->GetGroupElementsHomogeneous(),rVisualize, rWhat);
 		}

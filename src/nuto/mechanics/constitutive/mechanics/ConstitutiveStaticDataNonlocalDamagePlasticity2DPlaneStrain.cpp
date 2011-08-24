@@ -95,6 +95,12 @@ NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain& NuTo::Constit
     return *this;
 }
 
+NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::Clone()const
+{
+	return new ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain(*this);
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive

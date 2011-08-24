@@ -135,6 +135,12 @@ public:
     	return mCrackedDomain;
     }
 
+    //! @brief sets the domain of the node, node is on the boundary of the cracked (true) or homogeneous domain (false)
+    void SetCrackedDomain(bool rCrackedDomain)
+    {
+    	mCrackedDomain = rCrackedDomain;
+    }
+
     //! @brief set the shape functions based on the actual oscillations
     //! @parameter shape function number (0..2)
     void SetShapeFunctionMultiscalePeriodic(int rShapeFunction);

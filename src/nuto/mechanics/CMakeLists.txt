@@ -53,7 +53,6 @@ constraints/ConstraintLagrangeGlobalCrackOpening2D.cpp
 constraints/ConstraintLinear.cpp
 constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
 constraints/ConstraintLinearFineScaleDisplacementsPeriodic2D.cpp
-constraints/ConstraintLinearGlobalCrackAngle.cpp
 constraints/ConstraintLinearGlobalCrackOpening.cpp
 constraints/ConstraintLinearGlobalTotalStrain.cpp
 constraints/ConstraintLinearEquation.cpp
@@ -69,7 +68,6 @@ constraints/ConstraintLinearPeriodicBoundaryShapeFunctions.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNonlinear.cpp
-constraints/ConstraintNonlinearGlobalCrackAngle2D.cpp
 )
 
 SET(NuToMechanicsCrack_SOURCES

@@ -36,6 +36,7 @@ class StructureMultiscale : public Structure
     //just for test purpose
     friend class ConstraintNonlinearGlobalCrackAngle2D;
 public:
+    using StructureBase::NewtonRaphson;
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
     StructureMultiscale(int mDimension);
@@ -95,20 +96,6 @@ public:
     //! @param rdY_dCrackOpening[2] return value, derivative of x-displacement with respect to crack opening (ux, uy)
     void GetdDisplacementdCrackOpening(double rCoordinates[2], double rdX_dCrackOpening[2], double rdY_dCrackOpening[2])const;
 
-    //! @brief second derivative of displacement with respect to alpha and discontinuity (crack opening)
-    //! @param rdX_dCrackOpening[2] return value, derivative of x-displacement with respect to alpha and crack opening (ux, uy)
-    //! @param rdY_dCrackOpening[2] return value, derivative of y-displacement with respect to alpha and crack opening (ux, uy)
-    void Getd2Displacementd2CrackOpening(double rCoordinates[2], double rdX_dAlphaCrackOpening[2], double rdY_dAlphaCrackOpening[2])const;
-
-    //! @brief derivative of displacement with respect to discontinuity (crack opening)
-    //! @param rdX_dAlpha[2] return value, derivative of x-displacement with respect to crack orientation (alpha)
-    //! @param rdy_dAlpha[2] return value, derivative of x-displacement with respect to crack orientation (alpha)
-    void GetdDisplacementdCrackOrientation(double rCoordinates[2], double rdX_dAlpha[1], double rdy_dAlpha[1])const;
-
-    //! @brief second derivative of displacement with respect to discontinuity (crack opening)
-    //! @param rdX_dAlpha[2] return value, second derivative of x-displacement with respect to crack orientation (alpha)
-    //! @param rdy_dAlpha[2] return value, second derivative of y-displacement with respect to crack orientation (alpha)
-    void Getd2Displacementd2CrackOrientation(double rCoordinates[2], double rd2X_d2Alpha[1], double rd2Y_d2Alpha[1])const;
 #endif //SWIG
 
     //! @brief ... the boundary nodes were transformed from pure displacement type nodes to multiscale nodes
@@ -174,8 +161,7 @@ public:
             std::vector<int>& elementMatrixGlobalDofsColumn,
             NuTo::FullMatrix<double>& elementVector,
             std::vector<int>& mappingDofMultiscaleNode,
-            std::vector<boost::array<double,6> >& rDOF,
-            std::vector<boost::array<double,3> >& rDOF2,
+            std::vector<boost::array<double,5> >& rDOF,
             NuTo::SparseMatrix<double>* rMatrixJJ,
             NuTo::SparseMatrix<double>* rMatrixJK,
             NuTo::SparseMatrix<double>* rMatrixKJ,
@@ -200,21 +186,10 @@ public:
     //! @return distance to crack
     double CalculateDistanceToCrack2D(double rCoordinates[2])const;
 
-    //! @brief calculate the derivative of the distance of a point to the crack with respect to the crack orientation alpha
-    //! @param rCoordinates[2] coordinates of the point
-    //! @return distance to crack
-    double CalculatedDistanceToCrack2DdAlpha(double rCoordinates[2])const;
-
-    //! @brief calculate the second derivative of the distance of a point to the crack
-    //! @param rCoordinates[2] coordinates of the point
-    //! @return second derivative of distance to crack
-    double Calculated2DistanceToCrack2Dd2Alpha(double rCoordinates[2])const;
-
     //! @brief calculate the derivative of the displacements at the nodes with respect to homogeneous strain, crack opening and crack orientation
     //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
-    //! @param rDOF return value, for each dof, the corresponding derivatives ehomxx, ehomyy, gammahomxy, ux, uy, alpha  [0..5]
-    //! @param rDOF2 return value, for each dof, the corresponding second derivatives (alpha^2, alpha ux, alpha uy)
-    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<boost::array<double,6> >& rDOF, std::vector<boost::array<double,3> >& rDOF2)const;
+    //! @param rDOF return value, for each dof, the corresponding derivatives ehomxx, ehomyy, gammahomxy, ux, uy,
+    void CalculatedDispdGlobalDofs(std::vector<int>& rMappingDofMultiscaleNode, std::vector<boost::array<double,5> >& rDOF)const;
 
     //! @brief calculate the derivative of the displacements at the nodes with respect to crack opening without considering this to be balanced by epsilon_hom
     //! @param rMappingDofMultiscaleNode return value, for each dof, the corresponding entry in the rDOF vector, for nonmultiscale dofs, there is a -1
@@ -246,26 +221,11 @@ public:
         const_cast<StructureMultiscale*>(this)->mCrackOpening[1] = ptr[1];
     }
 
-    //! @brief just for testing
-    void SetCrackAngle(double alpha)const
-    {
-        const_cast<StructureMultiscale*>(this)->mCrackAngle = alpha;
-    }
-
     //! @brief set crack angle
     void SetCrackAngle(double alpha)
     {
         mCrackAngle = alpha;
     }
-
-    //! @brief return the initial crack angle
-    double GetCrackAngleElastic()const;
-
-    //! @brief return the previous crack angle
-    double GetPrevCrackAngle()const;
-
-    //! @brief sets the previous crack angle
-    void SetPrevCrackAngle(double rPrevCrackAngle);
 
     //! @brief return the total strain
     const NuTo::EngineeringStrain2D& GetHomogeneousEngineeringStrain()const;
@@ -275,15 +235,7 @@ public:
 
     //! @brief renumbers the global dofs in the structure after
     void ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
-
-
 #endif
-    //! @brief returns the constraint equation for the crack angle
-    int GetConstraintCrackAngle()const
-    {
-        return mConstraintCrackAngle;
-    }
-
     //! @brief returns the constraint equation for the total strain
     int GetConstraintTotalStrain()const
     {
@@ -312,14 +264,9 @@ public:
         return mlCoarseScaleCrack;
     }
 
-    double GetAreaDamage()const
+    double GetAreaFineScale()const
     {
-        return mFineScaleAreaDamage;
-    }
-
-    double GetAreaHomogeneous()const
-    {
-        return mFineScaleAreaHomogeneous;
+        return mFineScaleArea;
     }
 
     double GetCoarseScaleArea()const
@@ -330,11 +277,6 @@ public:
     void SetCoarseScaleArea(double rCoarseScaleArea)
     {
         mCoarseScaleArea=rCoarseScaleArea;
-    }
-
-    int GetDofCrackAngle()const
-    {
-        return mDOFCrackAngle;
     }
 
     double GetCrackAngle()const
@@ -366,14 +308,11 @@ public:
     	return mDOFPeriodicBoundaryDisplacements;
     }
 
-    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodesDamage, int rGroupIdBoundaryNodesHomogeneous, int rGroupIdNodesDamage, int rGroupIdNodesHomogeneous, int rGroupIdElementsDamage, int rGroupIdElementsHomogeneous)
+    void SetGroupBoundaryNodesElements(int rGroupIdBoundaryNodes, int rGroupIdNodes, int rGroupIdElements)
     {
-        mGroupBoundaryNodesDamage = rGroupIdBoundaryNodesDamage;
-        mGroupBoundaryNodesHomogeneous = rGroupIdBoundaryNodesHomogeneous;
-        mGroupNodesDamage = rGroupIdNodesDamage;
-        mGroupNodesHomogeneous = rGroupIdNodesHomogeneous;
-        mGroupElementsDamage = rGroupIdElementsDamage;
-        mGroupElementsHomogeneous = rGroupIdElementsHomogeneous;
+        mGroupBoundaryNodesHomogeneous = rGroupIdBoundaryNodes;
+        mGroupNodesHomogeneous = rGroupIdNodes;
+        mGroupElementsHomogeneous = rGroupIdElements;
         mBoundaryNodesElementsAssigned = true;
     }
 
@@ -410,6 +349,7 @@ public:
     double GetScalingFactorDamage()const
     {
     	assert(mlCoarseScaleCrack/mlFineScaleCrack>0);
+    	assert(mGroupElementsDamage!=-1);
     	//std::cout << "scaling Factor Dam " << mlCoarseScaleCrack/mlFineScaleCrack << "\n";
     	//std::cout << "mlFineScaleCrack " <<mlFineScaleCrack << "\n";
     	//std::cout << "mlCoarseScaleCrack " << mlCoarseScaleCrack << "\n";
@@ -418,15 +358,24 @@ public:
 
     double GetScalingFactorHomogeneous()const
     {
-    	assert((mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleAreaDamage/mlFineScaleCrack)/(mFineScaleAreaHomogeneous)>0);
-    	//std::cout << "scaling Factor Hom " << (mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleAreaDamage/mlFineScaleCrack)/(mFineScaleAreaHomogeneous) << "\n";
 /*    	std::cout << "mCoarseScaleArea " << mCoarseScaleArea << "\n";
     	std::cout << "mlCoarseScale " << mlCoarseScale << "\n";
     	std::cout << "mFineScaleAreaDamage " << mFineScaleAreaDamage << "\n";
     	std::cout << "mlFineScaleDamage " << mlFineScaleDamage << "\n";
     	std::cout << "mFineScaleAreaHomogeneous " << mFineScaleAreaHomogeneous << "\n";
 */
-    	return (mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleAreaDamage/mlFineScaleCrack)/(mFineScaleAreaHomogeneous);
+        if (mGroupElementsDamage==-1)
+        {
+        	//std::cout << "scaling Factor Hom " << mCoarseScaleArea/mFineScaleArea << "\n";
+        	assert(mCoarseScaleArea/mFineScaleArea>0);
+        	return mCoarseScaleArea/mFineScaleArea;
+        }
+        else
+        {
+        	//std::cout << "scaling Factor Hom " << (mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleArea/mlFineScaleCrack)/(mFineScaleArea) << "\n";
+        	assert((mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleArea/mlFineScaleCrack)/(mFineScaleArea)>0);
+    	    return (mCoarseScaleArea-mlCoarseScaleCrack*mFineScaleArea/mlFineScaleCrack)/(mFineScaleArea);
+        }
     }
 
     const std::string& GetIPName()const
@@ -468,40 +417,6 @@ public:
         mCrackTransitionRadius = rCrackTransitionRadius;
     }
 
-    //! @brief calculates the difference between the crack angle of the elastic solution and the current angle
-    //! attention, the periodicity of the crack angle has to be taken into account
-    double CalculateDeltaCrackAngleElastic()const;
-
-    //! @brief calculates the difference between the crack angle of previous update state and the current angle
-    //! attention, the periodicity of the crack angle has to be taken into account
-    double CalculateDeltaCrackAnglePrev()const;
-
-    //! @brief calculates the derivative of the crack angle for elastic solutions (initial value, no scaling with previous crack angle) wrt the total strain
-    //! @return derivative
-    NuTo::FullMatrix<double> CalculateDDeltaCrackAngleElastic()const;
-
-    //! @brief calculates the second derivative of the crack angle for elastic solutions (initial value, no scaling with previous crack angle) wrt the total strain
-    //! @return derivative
-    NuTo::FullMatrix<double> CalculateD2DeltaCrackAngleElastic()const;
-
-    //! @brief calculates the crack angle for elastic solutions (initial value, no scaling with previous crack angle)
-    //! @return alpha crack angle in the range 0..Pi (return value)
-    double  CalculateCrackAngleElastic()const;
-
-    //! @brief add a constraint equation for alpha, which corresponds to an artificial spring
-    //! @parameter rPenaltyStiffness penalty stiffness
-    //! @return id of the constraint
-    int CreateConstraintNonlinearCrackAngle(double rPenaltyStiffness, bool rCoupleToTotalStrain);
-
-    //! @brief set the penalty stiffness for the nonlinear crack angle constraint
-    void SetPenaltyStiffnessCrackAngle(double rParameter);
-
-    //! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
-    void SetToleranceElasticCrackAngleHigh(double rParameter);
-
-    //! @brief set the tolerance for the transition between crack angle from principal strain and previous strain
-    void SetToleranceElasticCrackAngleLow(double rParameter);
-
     //! @brief add a constraint equation for the crack opening (normal crack opening non negativ)
     //! @parameter rPenaltyStiffness penalty stiffness for augmented Lagrangian
     //! @return id of the constraint
@@ -511,10 +426,6 @@ public:
     //! @parameter rStrain applied strain (rhs)
     //! @return id of the constraint
     int CreateConstraintLinearGlobalTotalStrain();
-
-    //! @brief add a linear constraint equation for the crack angle
-    //! @return id of the constraint
-    int CreateConstraintLinearGlobalCrackAngle(double rAngle);
 
     //! @brief add a linear constraint equation for the crack opening
     //! @return id of the constraint
@@ -533,10 +444,14 @@ public:
     int CreateConstraintLinearPeriodicBoundaryShapeFunctions(int rShapeFunction, double rRHS);
 
     //! @brief set constraint for fine scale fluctuations on the boundary as a linear combination of the periodic bc with exx, eyy, gxy
-    void CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions();
+    //! @parameter rHomogeneousDomain true for the homogeneous domain, false for the damage domain
+    void CreateConstraintLinearFineScaleDisplacementsUsingAddShapeFunctions(bool rHomogeneousDomain);
 
     //! @brief add constraints for the finescale displacement of the boundary nodes
-    void CreateConstraintLinearFineScaleDisplacements(double rDamageX, double rDamageY, double rHomogeneousX, double rHomogeneousY);
+    //! @parameter rDispX .. displacement in x-direction
+    //! @parameter rDispY .. displacement in y-direction
+    //! @parameter rHomogeneousDomain .. true for the homogeneous domain, false for the damage domain
+    void CreateConstraintLinearFineScaleDisplacements(double rDispX, double rDispY, bool rHomogeneousDomain);
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
@@ -573,6 +488,11 @@ public:
     void SetlFineScaleCrack(double rlFineScaleCrack)
     {
         mlFineScaleCrack = rlFineScaleCrack;
+    }
+
+    double GetlFineScale()const
+    {
+        return mlFineScale;
     }
 
     const boost::array<double,2>& GetCenterDamage()const
@@ -663,26 +583,6 @@ public:
 
     void CalculatePeriodicBoundaryShapeFunctions(double rDeltaStrain);
 
-    inline double GetPrevCrackAngleElastic()const
-    {
-    	return mPrevCrackAngleElastic;
-    }
-
-    inline void SetPrevCrackAngleElastic(double rPrevCrackAngleElastic)
-    {
-    	mPrevCrackAngleElastic = rPrevCrackAngleElastic;
-    }
-
-    inline void SetScalingFactorCrackAngle(double rScalingFactorCrackAngle)
-    {
-    	mScalingFactorCrackAngle = rScalingFactorCrackAngle;
-    }
-
-    inline double GetScalingFactorCrackAngle()const
-    {
-    	return mScalingFactorCrackAngle;
-    }
-
     inline void SetScalingFactorCrackOpening(double rScalingFactorCrackOpening)
     {
     	mScalingFactorCrackOpening = rScalingFactorCrackOpening;
@@ -710,9 +610,6 @@ public:
 	void ConstraintDeleteNormalCrackOpening();
 
 #ifndef SWIG
-	//! @brief set periodic boundary conditions for the fine scale solution
-	void CreateConstraintLinearFineScaleDisplacementsPeriodic(const EngineeringStrain2D& rStrain);
-
 	//! @brief set periodic boundary conditions for a 2D structure
 	//! @parameter rGroupBoundaryNodes ... boundary nodes
 	//! @parameter rStrain ... strain
@@ -724,28 +621,33 @@ public:
     //!             be careful, store it only once
     void NewtonRaphson(bool rSaveStructureBeforeUpdate,
             std::stringstream& rSaveStringStream,
-            bool& rIsSaved);
+            bool& rIsSaved, bool rInitialStateInEquilibrium);
 
     //! @brief the global matrix is checked, not the element matrices
     //! @return false, if stiffness is not correct
     bool CheckStiffness();
+
+    //! @brief calculates the crack angle for elastic solutions (initial value, no scaling with previous crack angle)
+    //! @return alpha crack angle in the range 0..Pi (return value)
+    double CalculateCrackAnglePrincipalStrain(const EngineeringStrain2D& rStrain)const;
+
+	//! @brief calculates the length of a crack in the fine scale
+    //! be careful, that the length, square/round, the angle and the offset of the finescale have to be set before
+    void CalculateAndSetCrackLengthFineScale();
+
+    //! @brief translates the homogeneous domain to the right and recreates the groups for boundary nodes, nodes and elements for the damaged domain
+    void CreateDamageDomainFromHomogeneousDomain();
+
 protected:
-
-
     //! @brief ... standard constructor just for the serialization routine
     StructureMultiscale();
 
-    //! @brief Calculate the derivate of the homogeneous strain with respect to changes of the crack orientation and crack opening
+    //! @brief Calculate the derivate of the homogeneous strain with respect to changes of the crack opening
     //! this is due to the constraint equation relating total strain, homogeneous strain and cracking strain
-    //! @parameter rbHomAlpha dHom wrt alpha
     //! @paramter rbHomU[0-2] for wrt ux [3-5] for wrt uy
-    //! @parameter bHessian depsilondalpha2[0-2], depsilondalphadux[3-5], depsilondalphadux[6-8]
-    void GetdEpsilonHomdCrack(double rbHomAlpha[3], double rbHomU[6], double rbHessian[9])const;
-
+    void GetdEpsilonHomdCrack(double rbHomU[6])const;
 
     double mCrackAngle;
-    double mCrackAngleElastic;
-    int mDOFCrackAngle;
     boost::array<double,2>  mShiftCenterDamage; //relative to center
     boost::array<double,2> mCrackOpening; //UT UN
     boost::array<int,2> mDOFCrackOpening;
@@ -763,22 +665,17 @@ protected:
     boost::array<double,3> mPeriodicBoundaryDisplacements;
     //! @brief this is the current homogeneous part of the strain
     EngineeringStrain2D mEpsilonHom;
-    //scaling factor for alpha=mScalingFactorAlpha*DOFalpha
-    double mScalingFactorCrackAngle;
     //scaling factor for un/ut=mScalingFactorCrackOpening*DOFun/ut
     double mScalingFactorCrackOpening;
     //scaling factor for epsilonTot=mScalingFactorEpsilon*DOFepsilonTot
     double mScalingFactorEpsilon;
-    //! @brief prevCrackAngle (last update)
-    double mPrevCrackAngle;
-    //! @brief prevCrackAngleElastic (last update)
-    double mPrevCrackAngleElastic;
-    //! @brief for mSquareCoarseScaleModel == edge length of the macroscale element (sqrt of the area of the macroscale element)
-    //! for length of the crack in the coarse scale model
+    //! @brief for length of the crack in the macroscopic element
     double mlCoarseScaleCrack;
     //! @brief parameter length of the fine scale crack in the damage model
     double mlFineScaleCrack;
-    //! @brief length to regularize the Heaviside function
+    //! @brief parameter length of the fine scale (round=diameter, square=edgelength)
+    double mlFineScale;
+   //! @brief length to regularize the Heaviside function
     double mCrackTransitionRadius;
     //! @brief center of the model
     boost::array<double,2> mCenterDamage;
@@ -786,14 +683,14 @@ protected:
     boost::array<double,2> mCenterHomogeneous;
     //! @brief center of the model (ip coordinates)
     boost::array<double,2> mCenterMacro;
-    //! @brief translate and scale the coordinates for ip visualization either with respect to the damage center of the homogeneous center
+    //! @brief translate and scale the coordinates for ip visualization either with respect to the damage center or the homogeneous center
     bool mScaleWRTDamageCenter;
     //! @brief area of the fine scale model
     // this has to be stored, since for a round fine scale model (especially coarse scale) the real area is substantially
     // lower than the area of the circle
-    double mFineScaleAreaDamage;
-    double mFineScaleAreaHomogeneous;
+    double mFineScaleArea;
     double mCoarseScaleArea;
+    bool mSquareFineScaleModel;
     //! @brief thickness of the structure
     double mThickness;
     int mConstraintFineScaleDamageX,
@@ -804,7 +701,6 @@ protected:
         mConstraintFineScalePeriodicHomogeneous,
         mConstraintNormalCrackOpening,
         mConstraintTangentialCrackOpening,
-        mConstraintCrackAngle,
         mConstraintTotalStrain,
         mConstraintPeriodicBoundaryShapeFunctions[3];
     bool mBoundaryNodesElementsAssigned;
@@ -819,14 +715,6 @@ protected:
     std::string mResultDirectory;
     //results for the whole structure are stored in mResultDirectory/mLoadStepMacro
     std::string mLoadStepMacro;
-
-    //! @brief tolerance for difference between the principal strains, where
-    //if difference is bigger, the angle is calculated from the largest principal strain
-    double mToleranceElasticCrackAngleHigh;
-    //! @brief tolerance for difference between the principal strains, where
-    //the previous angle is used, no update, (in between, there is a linear interpolation)
-    double mToleranceElasticCrackAngleLow;
-
     // the following parameters are used for the Newton-Raphson iteration
     //! @brief this is the previous strain (used in the load application of the Newton procedure)
     EngineeringStrain2D mPrevEpsilonTot;

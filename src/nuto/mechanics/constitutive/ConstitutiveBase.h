@@ -197,14 +197,6 @@ public:
     //! @param rCrackTransitionRadius... crack transition radius
     virtual void SetCrackTransitionRadius(double rCrackTransitionRadius);
 
-    //! @brief ... get penalty stiffness crack angle
-    //! @return ... penalty stiffness crack angle
-    virtual double GetPenaltyStiffnessCrackAngle() const;
-
-    //! @brief ... set PenaltyStiffnessCrackAngle
-    //! @param rPenaltyStiffnessCrackAngle...  penalty stiffness crack angle
-    virtual void SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle);
-
     //! @brief ... get scaling factor for the dofs of the crack angle
     //! @return ... scaling factor
     virtual double GetScalingFactorCrackAngle() const;
@@ -325,9 +317,13 @@ public:
     //! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
     virtual void SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions);
 
-    //! @brief ... check
-    //! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
-    virtual void CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const;
+    //! @brief ... get threshold for crack initiation based on the maximum damage value within the structure
+    //! @return ... mDamageTresholdCrackInitiation
+    virtual double GetDamageTresholdCrackInitiation() const;
+
+    //! @brief ... set DamageTresholdCrackInitiation
+    //! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
+    virtual void SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation);
 
     ///////////////////////////////////////////////////////////////////////////
 

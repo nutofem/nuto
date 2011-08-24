@@ -29,10 +29,7 @@ public:
     }
 
     //! @brief clones (copies) the data
-    ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* Clone()const
-    {
-    	return new ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain(*this);
-    }
+    ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* Clone()const;
 
     //! @brief assignment operator
     ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain& operator= (ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain const& rOther);

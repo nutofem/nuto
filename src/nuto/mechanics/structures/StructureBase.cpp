@@ -1073,7 +1073,8 @@ void NuTo::StructureBase::NewtonRaphson()
 	std::stringstream saveStringStream;
 	bool saveStructureBeforeUpdate(false);
 	bool isSaved(false);
-	NewtonRaphson(saveStructureBeforeUpdate,saveStringStream,isSaved);
+	bool initialStateInEquilibrium(true);
+	NewtonRaphson(saveStructureBeforeUpdate,saveStringStream,isSaved,initialStateInEquilibrium);
 }
 
 //! @brief performs a Newton Raphson iteration (displacement and/or load control)
@@ -1082,6 +1083,17 @@ void NuTo::StructureBase::NewtonRaphson()
 void NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
         std::stringstream& rSaveStringStream,
         bool& rIsSaved)
+{
+	bool initialStateInEquilibrium(true);
+	NewtonRaphson(rSaveStructureBeforeUpdate,rSaveStringStream,rIsSaved,initialStateInEquilibrium);
+}
+
+//! @brief performs a Newton Raphson iteration (displacement and/or load control)
+//! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
+//!             be careful, store it only once
+void NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
+                std::stringstream& rSaveStringStream,
+                bool& rIsSaved, bool rInitialStateInEquilibrium)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1177,6 +1189,30 @@ try
     NuTo::FullMatrix<double> extForceVector;
     NuTo::FullMatrix<double> rhsVector;
 
+
+    NuTo::FullMatrix<double> intForceVectorInit;
+    //calculate the initial out of balance force
+    if (rInitialStateInEquilibrium==false)
+    {
+		try
+		{
+			this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+			this->ElementTotalUpdateTmpStaticData();
+    	    this->BuildGlobalGradientInternalPotentialVector(intForceVectorInit);
+    	    std::cout << "out of balance force (norm) for zero load is " << intForceVectorInit.Norm() << "\n";
+		}
+		catch(MechanicsException& e)
+		{
+ 			mLogger << "[NuTo::StructureBase::NewtonRaphson] no convergence for constitutive model in unloaded state. " << "\n";
+			e.AddMessage("[NuTo::StructureBase::NewtonRaphson] [NuTo::StructureBase::NewtonRaphson] no convergence for constitutive model in unloaded state.");
+			throw e;
+		}
+		catch(...)
+		{
+			throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] no convergence for constitutive model in unloaded state.");
+		}
+    }
+
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
     //NuTo::SparseDirectSolverMKLPardiso mySolver;
@@ -1249,24 +1285,22 @@ try
             }
 		}
     }
-    rhsVector = extForceVector - intForceVector;
-    //attention this is only different for the first iteration step
-    //since the internal force due to the applied constraints is not considered for the first iteration
-    //in order to balance it (no localization in the boundary region)
-    //for the linesearch this internal force has to be considered in order to obtain for a linesearch
-    //factor of zero the normRHS
-    double normRHS = rhsVector.Norm();
+
+	rhsVector = extForceVector - intForceVector;
+	//attention this is only different for the first iteration step
+	//since the internal force due to the applied constraints is not considered for the first iteration
+	//in order to balance it (no localization in the boundary region)
+	//for the linesearch this internal force has to be considered in order to obtain for a linesearch
+	//factor of zero the normRHS
+	double normRHS = rhsVector.Norm();
 //    rhsVector.Trans().Info(12,10);
-    rhsVector = extForceVector + dispForceVector;
+	rhsVector = extForceVector + dispForceVector;
+    if (rInitialStateInEquilibrium==false)
+    {
+        rhsVector -= intForceVectorInit;
+    }
 //    rhsVector.Trans().Info(12,10);
 
-/*    {
-        double energy;
-        energy = this->ElementTotalGetTotalEnergy();
-        energy += this->ConstraintTotalGetTotalEnergy();
-        mLogger << "energy " << energy << "\n";
-    }
-*/
     //calculate absolute tolerance for matrix entries to be not considered as zero
     double maxValue, minValue, ToleranceZeroStiffness;
     if (stiffnessMatrixCSRVector2.GetNumColumns()==0)
@@ -1605,7 +1639,7 @@ try
             deltaLoadFactor*=mDecreaseFactor;
             curLoadFactor+=deltaLoadFactor;
 
-            //check for minimum delta (this mostly indicates an error in the software
+            //check for minimum delta (this mostly indicates an error in the software)
             if (deltaLoadFactor<mMinDeltaLoadFactor)
             {
             	mLogger << "return with a MechanicsNoConvergenceException " << "\n";
@@ -1627,7 +1661,6 @@ try
 					this->NodeBuildGlobalDofs();
 
 					//update stiffness in order to calculate new dispForceVector, but still with previous displacement state
-					//mLogger<<" calculate stiffness 1517" << "\n";
 					this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 		//CheckStiffness();
 					//int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
@@ -1647,12 +1680,14 @@ try
 					convergenceConstitutive = true;
 
 				}
-				catch(MechanicsException& e)
+				catch(NuTo::MechanicsException& e)
 				{
-		            if (e.GetError()==MechanicsException::NOCONVERGENCE)
+		            std::cout << "catch MechanicsException after initial load decrease." << "\n";
+					if (e.GetError()==MechanicsException::NOCONVERGENCE)
 		            {
+			            std::cout << "no convergence exception." << "\n";
 						if (mAutomaticLoadstepControl==false)
-							throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence with the prescibed number of Newton iterations.",MechanicsException::NOCONVERGENCE);
+							throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence with the prescribed number of Newton iterations.",MechanicsException::NOCONVERGENCE);
 						mLogger << "Constitutive model is not converging in initial try after load increment, I'll try with smaller load step" << "\n";
 
 						//calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
@@ -1679,14 +1714,20 @@ try
 						{
 							mLogger << "return with a MechanicsNoConvergenceException 1560" << "\n";
 							mLogger << "curLoadFactor " << curLoadFactor << ", deltaLoadFactor " << deltaLoadFactor << "mMinDeltaLoadFactor" << mMinDeltaLoadFactor<< "\n";
-							throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence, delta strain factor smaller than minimum.",MechanicsException::NOCONVERGENCE);
+							throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.",MechanicsException::NOCONVERGENCE);
 						}
 		            }
 		            else
 		            {
+			            std::cout << "other than no convergence exception." << "\n";
 		            	e.AddMessage("[NuTo::StructureBase::NewtonRaphson]: error calculating new displacement increment.");
 		            	throw e;
 		            }
+				}
+				catch(...)
+				{
+		            std::cout << "catch all other exceptions after initial load decrease." << "\n";
+					throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.",MechanicsException::NOCONVERGENCE);
 				}
             }
 
@@ -1699,6 +1740,10 @@ try
             //for the linesearch this internal force has to be considered in order to obtain for a linesearch
             //factor of zero the normRHS
             rhsVector = dispForceVector + extForceVector;
+            if (rInitialStateInEquilibrium==false && curLoadFactor==deltaLoadFactor)
+            {
+                rhsVector -= intForceVectorInit;
+            }
         }
     }
 }

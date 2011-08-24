@@ -107,30 +107,6 @@ public:
     	mSolutionPhase = rSolutionPhase;
     }
 
-    //return if the solution is either linear elastic or from the fine scale model
-    double GetPrevCrackAngleElastic()const
-    {
-        return mPrevCrackAngleElastic;
-    }
-
-    //return if the solution is either linear elastic or from the fine scale model
-    void SetPrevCrackAngleElastic(double rPrevCrackAngleElastic)
-    {
-    	mPrevCrackAngleElastic = rPrevCrackAngleElastic;
-    }
-
-    //return if the solution is either linear elastic or from the fine scale model
-    double GetPrevCrackAngle()const
-    {
-        return mPrevCrackAngle;
-    }
-
-    //return if the solution is either linear elastic or from the fine scale model
-    void SetPrevCrackAngle(double rPrevCrackAngle)
-    {
-    	mPrevCrackAngle = rPrevCrackAngle;
-    }
-
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -145,8 +121,6 @@ protected:
     StructureMultiscale* mStructure;
 
     Constitutive::eSolutionPhaseType mSolutionPhase;
-    double mPrevCrackAngle;
-    double mPrevCrackAngleElastic;
 };
 
 }

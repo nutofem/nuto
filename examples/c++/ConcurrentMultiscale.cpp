@@ -293,8 +293,9 @@ public:
 	    	        GroupNodesMultiscaleHomogeneous = GroupNodes_Multiscale;
 				}
     	    }
-			myStructureFineScale.SetGroupBoundaryNodesElements(GroupNodesBoundaryDamage,GroupNodesBoundaryHomogeneous,
-					GroupNodesMultiscaleDamage,GroupNodesMultiscaleHomogeneous,GroupElementsDamage,GroupElementsHomogeneous);
+//			myStructureFineScale.SetGroupBoundaryNodesElements(GroupNodesBoundaryDamage,GroupNodesBoundaryHomogeneous,
+//					GroupNodesMultiscaleDamage,GroupNodesMultiscaleHomogeneous,GroupElementsDamage,GroupElementsHomogeneous);
+			throw;
     		//update conre mat
     		myStructureFineScale.NodeBuildGlobalDofs();
 #ifdef ENABLE_VISUALIZE

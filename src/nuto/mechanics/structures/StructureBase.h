@@ -1070,14 +1070,6 @@ public:
     //! @param rCrackTransitionRadius ...  fracture energy
     void ConstitutiveLawSetCrackTransitionRadius(int rIdent, double rCrackTransitionRadius);
 
-    //! @brief ... get PenaltyStiffnessCrackAngle
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetPenaltyStiffnessCrackAngle(int rIdent);
-
-    //! @brief ... set PenaltyStiffnessCrackAngle
-    //! @param rPenaltyStiffnessCrackAngle ...  PenaltyStiffnessCrackAngle
-    void ConstitutiveLawSetPenaltyStiffnessCrackAngle(int rIdent, double rPenaltyStiffnessCrackAngle);
-
     //! @brief ... get scaling factor for the crack angle
     //! @param rIdent ...  identifier
     double ConstitutiveLawGetScalingFactorCrackAngle(int rIdent);
@@ -1125,6 +1117,14 @@ public:
     //! @brief ... set if the fine scale model is to be used with the linear elastic periodic boundary shape functions
     //! @param rUseAdditionalPeriodicShapeFunctions ...  true or false
     void ConstitutiveLawSetUseAdditionalPeriodicShapeFunctions(int rIdent, bool rUseAdditionalPeriodicShapeFunctions);
+
+    //! @brief ... get the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
+    //! @return treshold
+    double ConstitutiveLawGetDamageTresholdCrackInitiation(int rIdent)const;
+
+    //! @brief ... set the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
+    //! @param rDamageTresholdCrackInitiation ...  treshold
+    void ConstitutiveLawSetDamageTresholdCrackInitiation(int rIdent, double rDamageTresholdCrackInitiation);
 
 #ifndef SWIG
     //! @brief ... create a new section
@@ -1491,9 +1491,19 @@ public:
     //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
     //! @parameters rSaveStringStream stringstream the routine is saved to
     //! @parameters rIsSaved return parameter describing, if the routine actually had to to a substepping and consequently had to store the initial state into rSaveStringStream
-    virtual void NewtonRaphson(bool rSaveStructureBeforeUpdate,
+    void NewtonRaphson(bool rSaveStructureBeforeUpdate,
             std::stringstream& rSaveStringStream,
             bool& rIsSaved);
+
+    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
+    //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
+    //! @parameters rSaveStringStream stringstream the routine is saved to
+    //! @parameters rIsSaved return parameter describing, if the routine actually had to to a substepping and consequently had to store the initial state into rSaveStringStream
+    //! @parameters rInitialStateInEquilibrium is true, if the initial state (loadfactor=0) is inequilibrium, otherwise false
+    virtual void NewtonRaphson(bool rSaveStructureBeforeUpdate,
+            std::stringstream& rSaveStringStream,
+            bool& rIsSaved,
+            bool rInitialStateInEquilibrium);
 
     //! @brief performs an adaption of the model
     //! @returns true, if the model has actually be changed, or false if no change has been made

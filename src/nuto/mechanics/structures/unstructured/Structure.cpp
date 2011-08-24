@@ -1395,12 +1395,10 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
     	}
     }
 }
-
-
 //! @brief copy and move the structure
 //! most of the data is kept, but e.g. nonlocal data and
 //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double> rOffset)
+void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double>& rOffset)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1409,88 +1407,8 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double> rOffset)
     try
     {
 		std::map<NodeBase*, NodeBase* > old2NewNodePointer;
-		if (rOffset.GetNumRows()!=mDimension)
-			throw MechanicsException("[NuTo::Structure::CopyAndTranslate] offset has to have the same dimension as the structure.");
-		if (rOffset.GetNumColumns()!=1)
-			throw MechanicsException("[NuTo::Structure::CopyAndTranslate] offset has to have a single column.");
-
-		double coordinates[3];
-		for (auto itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
-		{
-			NodeBase* newNode = (itNode->second)->Clone();
-			old2NewNodePointer[(itNode->second)] = newNode;
-			int numCoordinates=(itNode->second)->GetNumCoordinates();
-
-			switch (numCoordinates)
-			{
-			case 0:
-				break;
-			case 1:
-				(itNode->second)->GetCoordinates1D(coordinates);
-				coordinates[0] += rOffset(0,0);
-				newNode->SetCoordinates1D(coordinates);
-				break;
-			case 2:
-				(itNode->second)->GetCoordinates2D(coordinates);
-				coordinates[0] += rOffset(0,0);
-				coordinates[1] += rOffset(1,0);
-				newNode->SetCoordinates2D(coordinates);
-				break;
-			case 3:
-				(itNode->second)->GetCoordinates3D(coordinates);
-				coordinates[0] += rOffset(0,0);
-				coordinates[1] += rOffset(1,0);
-				coordinates[2] += rOffset(2,0);
-				newNode->SetCoordinates3D(coordinates);
-				break;
-			default:
-				throw MechanicsException("[uTo::Structure::CopyAndTranslate] number of nodes not supported.");
-			}
-		}
-
-		std::vector<ElementBase*> elements;
-		GetElementsTotal(elements);
-		std::set<ConstitutiveBase* > constitutiveWithNonlocalData;
-		for (unsigned int countElement=0; countElement<elements.size(); countElement++)
-		{
-			ElementBase* oldElementPtr=elements[countElement];
-			Element::eElementType elementType = oldElementPtr->GetEnumType();
-			ElementData::eElementDataType elementDataType =  oldElementPtr->GetElementDataType();
-			IpData::eIpDataType ipDataType =  oldElementPtr->GetIpDataType(0);
-			int numNodes = oldElementPtr->GetNumNodes();
-			std::vector<NodeBase*> nodeVector(numNodes);
-			for (int countNode=0; countNode<numNodes;countNode++)
-			{
-				nodeVector[countNode] = old2NewNodePointer[oldElementPtr->GetNode(countNode)];
-			}
-			int newElementId = ElementCreate(elementType,  nodeVector, elementDataType,  ipDataType);
-			ElementBase* newElementPtr=ElementGetElementPtr(newElementId);
-
-			//set integration type
-			const IntegrationTypeBase* integrationType = oldElementPtr->GetIntegrationType();
-			newElementPtr->SetIntegrationType(integrationType, ipDataType);
-
-			//set section
-			const SectionBase* section = oldElementPtr->GetSection();
-			newElementPtr->SetSection(section);
-
-			//set constitutive model
-			ConstitutiveBase* constitutive = oldElementPtr->GetConstitutiveLaw(0);
-			newElementPtr->SetConstitutiveLaw(constitutive);
-
-			if (oldElementPtr->GetNumNonlocalElements()!=0)
-				constitutiveWithNonlocalData.insert(constitutive);
-
-			//set static data
-			for (int countIp=0; countIp<integrationType->GetNumIntegrationPoints(); countIp++)
-			{
-				newElementPtr->SetStaticData(countIp,(oldElementPtr->GetStaticData(countIp))->Clone());
-			}
-		}
-
-		//rebuild nonlocal data
-		for (auto it = constitutiveWithNonlocalData.begin(); it!=constitutiveWithNonlocalData.end(); it++)
-			BuildNonlocalData(*it);
+		std::map<ElementBase*, ElementBase* > old2NewElementPointer;
+		CopyAndTranslate(rOffset,old2NewNodePointer,old2NewElementPointer);
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1508,6 +1426,124 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double> rOffset)
         std::cout<<"[NuTo::Structure::CopyAndTranslate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+//! @brief copy and move the structure
+//! most of the data is kept, but e.g. nonlocal data and
+//! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
+//! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
+//! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
+void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer)
+{
+	if (rOffset.GetNumRows()!=mDimension)
+		throw MechanicsException("[NuTo::Structure::CopyAndTranslate] offset has to have the same dimension as the structure.");
+	if (rOffset.GetNumColumns()!=1)
+		throw MechanicsException("[NuTo::Structure::CopyAndTranslate] offset has to have a single column.");
+
+	double coordinates[3];
+	std::vector<NodeBase*> nodeVector;
+	GetNodesTotal(nodeVector);
+	for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+	{
+		NodeBase* newNode = nodeVector[countNode]->Clone();
+		rOld2NewNodePointer[nodeVector[countNode]] = newNode;
+
+	    //find unused integer id
+	    int id(mNodeMap.size());
+	    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
+	    while (it!=mNodeMap.end())
+	    {
+	        id++;
+	        it = mNodeMap.find(id);
+	    }
+
+	    // add node to map
+	    this->mNodeMap.insert(id, newNode);
+
+		int numCoordinates=nodeVector[countNode]->GetNumCoordinates();
+
+		switch (numCoordinates)
+		{
+		case 0:
+			break;
+		case 1:
+			nodeVector[countNode]->GetCoordinates1D(coordinates);
+			coordinates[0] += rOffset(0,0);
+			newNode->SetCoordinates1D(coordinates);
+			break;
+		case 2:
+			nodeVector[countNode]->GetCoordinates2D(coordinates);
+			coordinates[0] += rOffset(0,0);
+			coordinates[1] += rOffset(1,0);
+			newNode->SetCoordinates2D(coordinates);
+			break;
+		case 3:
+			nodeVector[countNode]->GetCoordinates3D(coordinates);
+			coordinates[0] += rOffset(0,0);
+			coordinates[1] += rOffset(1,0);
+			coordinates[2] += rOffset(2,0);
+			newNode->SetCoordinates3D(coordinates);
+			break;
+		default:
+			throw MechanicsException("[uTo::Structure::CopyAndTranslate] number of nodes not supported.");
+		}
+	}
+    //renumbering of dofs for global matrices required
+    this->mNodeNumberingRequired  = true;
+
+	std::vector<ElementBase*> elements;
+	GetElementsTotal(elements);
+	std::set<ConstitutiveBase* > constitutiveWithNonlocalData;
+	for (unsigned int countElement=0; countElement<elements.size(); countElement++)
+	{
+		ElementBase* oldElementPtr=elements[countElement];
+		Element::eElementType elementType = oldElementPtr->GetEnumType();
+		ElementData::eElementDataType elementDataType =  oldElementPtr->GetElementDataType();
+		IpData::eIpDataType ipDataType =  oldElementPtr->GetIpDataType(0);
+		int numNodes = oldElementPtr->GetNumNodes();
+		std::vector<NodeBase*> nodeVector(numNodes);
+		for (int countNode=0; countNode<numNodes;countNode++)
+		{
+			nodeVector[countNode] = rOld2NewNodePointer[oldElementPtr->GetNode(countNode)];
+		}
+		int newElementId = ElementCreate(elementType,  nodeVector, elementDataType,  ipDataType);
+		ElementBase* newElementPtr=ElementGetElementPtr(newElementId);
+		rOld2NewElementPointer[oldElementPtr] = newElementPtr;
+
+		//set integration type
+		const IntegrationTypeBase* integrationType = oldElementPtr->GetIntegrationType();
+		newElementPtr->SetIntegrationType(integrationType, ipDataType);
+
+		//set section
+		const SectionBase* section = oldElementPtr->GetSection();
+		newElementPtr->SetSection(section);
+
+		//set constitutive model
+		ConstitutiveBase* constitutive = oldElementPtr->GetConstitutiveLaw(0);
+		newElementPtr->SetConstitutiveLaw(constitutive);
+
+		if (oldElementPtr->GetNumNonlocalElements()!=0)
+			constitutiveWithNonlocalData.insert(constitutive);
+
+		//set static data
+		for (int countIp=0; countIp<integrationType->GetNumIntegrationPoints(); countIp++)
+		{
+			ConstitutiveStaticDataBase* clonedStaticData = oldElementPtr->GetStaticData(countIp)->Clone();
+			newElementPtr->SetStaticData(countIp,clonedStaticData);
+			//newElementPtr->SetStaticData(countIp,(oldElementPtr->GetStaticData(countIp))->Clone());
+		}
+	}
+
+#ifdef _OPENMP
+	//there seems to be a problem with the nearest neighbor search library
+#pragma omp critical
+#endif
+	{
+	//rebuild nonlocal data
+    for (auto it = constitutiveWithNonlocalData.begin(); it!=constitutiveWithNonlocalData.end(); it++)
+		BuildNonlocalData(*it);
+	}
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

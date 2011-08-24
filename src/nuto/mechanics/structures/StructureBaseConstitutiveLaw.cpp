@@ -640,38 +640,6 @@ void NuTo::StructureBase::ConstitutiveLawSetCrackTransitionRadius(int rIdent, do
     }
 }
 
-//! @brief ... get penalty stiffness for crack angle
-//! @param rIdent ...  identifier
-double NuTo::StructureBase::ConstitutiveLawGetPenaltyStiffnessCrackAngle(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetPenaltyStiffnessCrackAngle();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetPenaltyStiffnessCrackAngle] error getting penalty stiffness crack angle.");
-		throw e;
-	}
-}
-
-//! @brief ... set penalty stiffness for crack angle
-//! @param rPenaltyStiffnessCrackAngle ...  penalty stiffness for crack angle
-void NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle(int rIdent, double rPenaltyStiffnessCrackAngle)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetPenaltyStiffnessCrackAngle(rPenaltyStiffnessCrackAngle);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetPenaltyStiffnessCrackAngle] error setting scaling factor for crack angle.");
-        throw e;
-    }
-}
-
 //! @brief ... get scaling factor for the crack angle
 //! @param rIdent ...  identifier
 double NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackAngle(int rIdent)
@@ -865,3 +833,35 @@ void NuTo::StructureBase::ConstitutiveLawSetUseAdditionalPeriodicShapeFunctions(
     }
 }
 
+//! @brief ... get the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
+//! @return treshold
+double NuTo::StructureBase::ConstitutiveLawGetDamageTresholdCrackInitiation(int rIdent)const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetDamageTresholdCrackInitiation();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDamageTresholdCrackInitiation] error getting DamageTresholdCrackInitiation.");
+		throw e;
+	}
+
+}
+
+//! @brief ... set the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
+//! @param rDamageTresholdCrackInitiation ...  treshold
+void NuTo::StructureBase::ConstitutiveLawSetDamageTresholdCrackInitiation(int rIdent, double rDamageTresholdCrackInitiation)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetDamageTresholdCrackInitiation(rDamageTresholdCrackInitiation);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDamageTresholdCrackInitiation] error setting DamageTresholdCrackInitiation.");
+        throw e;
+    }
+}
