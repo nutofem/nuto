@@ -22,7 +22,7 @@ NuTo::EngineeringStrain2D::EngineeringStrain2D()
 NuTo::EngineeringStrain2D::EngineeringStrain2D(const DeformationGradient2D& rDeformationGradient)
 {
     mEngineeringStrain[0] = rDeformationGradient.GetDeformationGradient2D()[0] -1;
-    mEngineeringStrain[1] = rDeformationGradient.GetDeformationGradient2D()[3] -1;;
+    mEngineeringStrain[1] = rDeformationGradient.GetDeformationGradient2D()[3] -1;
     mEngineeringStrain[2] = rDeformationGradient.GetDeformationGradient2D()[1]+rDeformationGradient.GetDeformationGradient2D()[2];
 }
 
@@ -30,7 +30,7 @@ NuTo::EngineeringStrain2D::EngineeringStrain2D(const EngineeringStrain2D& rEngin
 {
     mEngineeringStrain[0] = rEngineeringStrain.mEngineeringStrain[0];
     mEngineeringStrain[1] = rEngineeringStrain.mEngineeringStrain[1];
-    mEngineeringStrain[2] = rEngineeringStrain.mEngineeringStrain[2];;
+    mEngineeringStrain[2] = rEngineeringStrain.mEngineeringStrain[2];
 }
 
 //! @brief ... get number of strain components
