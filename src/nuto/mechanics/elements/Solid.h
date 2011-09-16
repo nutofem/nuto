@@ -42,26 +42,26 @@ public:
     //! @param rGlobalDofsRow ... row numbers in global system
     //! @param rGlobalDofsColumn ... column numbers in global system
     //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    virtual void CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
+    Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
-    virtual void CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+    Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
-    virtual void CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+    Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+    Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
                                             std::vector<int>& rGlobalDofs)const;
 
     //! @brief Update the static data of an element
-    void UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
+    Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
 
     //! @brief stores the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
@@ -154,7 +154,7 @@ public:
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    void GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
+    Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object

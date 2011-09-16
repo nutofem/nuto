@@ -33,7 +33,7 @@ NuTo::Truss::Truss(const StructureBase* rStructure, ElementData::eElementDataTyp
 
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
-void NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
+NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     //calculate local coordinates
@@ -73,11 +73,14 @@ void NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
         CalculateDeformationGradient(derivativeShapeFunctions, localNodeCoord, localNodeDisp, deformationGradient);
 
         //call material law to calculate tangent
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Solid::GetEngineeringStress] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
+        Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
                 deformationGradient, &tangent);
+        if (error!=Error::SUCCESSFUL)
+        	return error;
+
         areAllIpsSymmetric &= tangent.GetSymmetry();
 
         // calculate local stiffness matrix
@@ -101,11 +104,13 @@ void NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofsRow);
     this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-void NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+NuTo::Error::eError NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     //calculate local coordinates
@@ -147,8 +152,10 @@ void NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
         constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Truss::CalculateGradientInternalPotential] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
+        Error::eError error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
                 deformationGradient, engineeringStress);
+        if (error!=Error::SUCCESSFUL)
+        	return error;
 
         // calculate local stiffness matrix
         // theoretically, the factor  is
@@ -165,10 +172,12 @@ void NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
 
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofs);
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief Update the static data of an element
-void NuTo::Truss::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
+NuTo::Error::eError NuTo::Truss::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
 {
     //calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
@@ -201,21 +210,26 @@ void NuTo::Truss::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
         CalculateDeformationGradient(derivativeShapeFunctions, localNodeCoord, localNodeDisp, deformationGradient);
 
         //call material law to update static data
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Truss::UpdateStaticData] Constitutive law can not deal with engineering stresses and strains");
+        Error::eError error;
         switch(rUpdateType)
         {
         case NuTo::Element::STATICDATA:
-            constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        	error = constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
         break;
         case NuTo::Element::TMPSTATICDATA:
-            constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        	error = constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
         break;
         default:
         	throw MechanicsException("[NuTo::Truss::UpdateStaticData] update static data flag not known (neither static not tmpstatic data");
         }
+        if (error!=Error::SUCCESSFUL)
+        	return error;
     }
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief calculates deformation gradient1D
@@ -242,7 +256,7 @@ void NuTo::Truss::CalculateDeformationGradient(const std::vector<double>& rDeriv
 
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
-void NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
     throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_1] to be implemented.");
@@ -250,7 +264,7 @@ void NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-void NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rCoefficientMatrix,
+NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
     //calculate local coordinates
@@ -294,6 +308,8 @@ void NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rCoeffi
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofsRow);
     this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief returns the local coordinates of an integration point
@@ -350,7 +366,7 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
-void NuTo::Truss::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
+NuTo::Error::eError NuTo::Truss::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
 {
     //calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
@@ -406,27 +422,32 @@ void NuTo::Truss::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
         //call material law to calculate engineering strain
         constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
 
+        Error::eError error;
         switch (rIpDataType)
         {
         case NuTo::IpData::ENGINEERING_STRAIN:
-            constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
+            error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::ENGINEERING_STRESS:
-            constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
+        	error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStress.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
+        	error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::DAMAGE:
-            constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+        	error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
         break;
         default:
         	throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
         }
+        if (error!=Error::SUCCESSFUL)
+        	return error;
     }
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief sets the section of an element

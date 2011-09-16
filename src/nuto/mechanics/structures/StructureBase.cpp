@@ -18,11 +18,11 @@
 #endif // ENABLE_VISUALIZE
 
 #ifdef SHOW_TIME
-    #include <ctime>
+#include <ctime>
 #endif
 
 # ifdef _OPENMP
-    #include <omp.h>
+#include <omp.h>
 # endif
 
 #include <algorithm>
@@ -88,7 +88,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss3Ip]=
         NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifierStatic();
-   mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss1Ip]=
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss1Ip]=
         NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss4Ip]=
         NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
@@ -131,35 +131,35 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     mLogger << "start serialization of structure base" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-       & BOOST_SERIALIZATION_NVP(mDimension)
-       & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap)
-       & BOOST_SERIALIZATION_NVP(mConstraintMap)
-       & BOOST_SERIALIZATION_NVP(mLoadMap)
-       & BOOST_SERIALIZATION_NVP(mGroupMap)
-       & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
-       & BOOST_SERIALIZATION_NVP(mSectionMap)
-       & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
+    & BOOST_SERIALIZATION_NVP(mDimension)
+    & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap)
+    & BOOST_SERIALIZATION_NVP(mConstraintMap)
+    & BOOST_SERIALIZATION_NVP(mLoadMap)
+    & BOOST_SERIALIZATION_NVP(mGroupMap)
+    & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
+    & BOOST_SERIALIZATION_NVP(mSectionMap)
+    & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
 #ifdef ENABLE_VISUALIZE
-       & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
+    & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
 #endif //  ENABLE_VISUALIZE
-       & BOOST_SERIALIZATION_NVP(mNumDofs)
-       & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
-       & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)
-       & BOOST_SERIALIZATION_NVP(mConstraintMatrix)
-       & BOOST_SERIALIZATION_NVP(mConstraintRHS)
-       & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData)
-       & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired)
-       & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries)
-       & BOOST_SERIALIZATION_NVP(mToleranceResidualForce)
-       & BOOST_SERIALIZATION_NVP(mAutomaticLoadstepControl)
-       & BOOST_SERIALIZATION_NVP(mMaxDeltaLoadFactor)
-       & BOOST_SERIALIZATION_NVP(mMaxNumNewtonIterations)
-       & BOOST_SERIALIZATION_NVP(mDecreaseFactor)
-       & BOOST_SERIALIZATION_NVP(mMinNumNewtonIterations)
-       & BOOST_SERIALIZATION_NVP(mIncreaseFactor)
-       & BOOST_SERIALIZATION_NVP(mMinDeltaLoadFactor)
-       & BOOST_SERIALIZATION_NVP(mMinLineSearchFactor)
-       & BOOST_SERIALIZATION_NVP(mLogger);
+    & BOOST_SERIALIZATION_NVP(mNumDofs)
+    & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
+    & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)
+    & BOOST_SERIALIZATION_NVP(mConstraintMatrix)
+    & BOOST_SERIALIZATION_NVP(mConstraintRHS)
+    & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData)
+    & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired)
+    & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries)
+    & BOOST_SERIALIZATION_NVP(mToleranceResidualForce)
+    & BOOST_SERIALIZATION_NVP(mAutomaticLoadstepControl)
+    & BOOST_SERIALIZATION_NVP(mMaxDeltaLoadFactor)
+    & BOOST_SERIALIZATION_NVP(mMaxNumNewtonIterations)
+    & BOOST_SERIALIZATION_NVP(mDecreaseFactor)
+    & BOOST_SERIALIZATION_NVP(mMinNumNewtonIterations)
+    & BOOST_SERIALIZATION_NVP(mIncreaseFactor)
+    & BOOST_SERIALIZATION_NVP(mMinDeltaLoadFactor)
+    & BOOST_SERIALIZATION_NVP(mMinLineSearchFactor)
+    & BOOST_SERIALIZATION_NVP(mLogger);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";
 #endif
@@ -200,7 +200,7 @@ void NuTo::StructureBase::AddVisualizationComponentDisplacements()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentDisplacement());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentDisplacement());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -215,7 +215,7 @@ void NuTo::StructureBase::AddVisualizationComponentElement()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentElement());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentElement());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -230,7 +230,7 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStrain());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStrain());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -245,7 +245,7 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringPlasticStrain());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringPlasticStrain());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -260,7 +260,7 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStress());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStress());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -275,7 +275,7 @@ void NuTo::StructureBase::AddVisualizationComponentSection()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentSection());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentSection());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -289,7 +289,7 @@ void NuTo::StructureBase::AddVisualizationComponentConstitutive()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentConstitutive());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentConstitutive());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -306,22 +306,22 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
     std::clock_t start,end;
     start=clock();
 #endif
-	try
-	{
-		const ElementBase *elementBase = ElementGetElementPtr(rElementId);
-	    int numIp = elementBase->GetNumIntegrationPoints();
-	    if (rIp<0 || rIp>=numIp)
-			throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Integration point number is out of range.");
-		mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight(elementBase,rElementId,rIp));
-	}
+    try
+    {
+        const ElementBase *elementBase = ElementGetElementPtr(rElementId);
+        int numIp = elementBase->GetNumIntegrationPoints();
+        if (rIp<0 || rIp>=numIp)
+            throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Integration point number is out of range.");
+        mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight(elementBase,rElementId,rIp));
+    }
     catch (NuTo::MechanicsException &e)
     {
-    	e.AddMessage("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
-    	throw e;
+        e.AddMessage("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
+        throw e;
     }
     catch(...)
     {
-    	throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
+        throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
     }
 #ifdef SHOW_TIME
     end=clock();
@@ -337,7 +337,7 @@ void NuTo::StructureBase::AddVisualizationComponentDamage()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentDamage());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentDamage());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -367,7 +367,7 @@ void NuTo::StructureBase::AddVisualizationComponentCracks()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.push_back(new NuTo::VisualizeComponentCrack());
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentCrack());
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -381,7 +381,7 @@ void NuTo::StructureBase::ClearVisualizationComponents()
     std::clock_t start,end;
     start=clock();
 #endif
-	mVisualizeComponents.clear();
+    mVisualizeComponents.clear();
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -445,13 +445,13 @@ void NuTo::StructureBase::ElementGroupVisualizeIpMultiscale(int rGroupIdent, con
 //Visualize for all integration points the fine scale structure
 void NuTo::StructureBase::ElementGroupVisualizeIpMultiscaleDamage(int rGroupIdent, const std::string& rFileName)const
 {
-	ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, true);
+    ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, true);
 }
 
 //Visualize for all integration points the fine scale structure
 void NuTo::StructureBase::ElementGroupVisualizeIpMultiscaleHomogeneous(int rGroupIdent, const std::string& rFileName)const
 {
-	ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, false);
+    ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, false);
 }
 
 void NuTo::StructureBase::DefineVisualizeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
@@ -505,29 +505,29 @@ void NuTo::StructureBase::DefineVisualizeData(VisualizeUnstructuredGrid& rVisual
 
 void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
 {
-   // build global dof numbering if required
-	if (this->mNodeNumberingRequired)
-	{
-		try
-		{
-			this->NodeBuildGlobalDofs();
-		}
-		catch (MechanicsException& e)
-		{
-			e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] error building global dof numbering.");
-			throw e;
-		}
-	}
+    // build global dof numbering if required
+    if (this->mNodeNumberingRequired)
+    {
+        try
+        {
+            this->NodeBuildGlobalDofs();
+        }
+        catch (MechanicsException& e)
+        {
+            e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] error building global dof numbering.");
+            throw e;
+        }
+    }
 
-	// build global tmp static data
-	if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-	{
-		throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] First update of tmp static data required.");
-	}
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] First update of tmp static data required.");
+    }
 }
 
 // build global coefficient matrix0
-void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -553,7 +553,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
     }
 
 //    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-   // resize output objects
+    // resize output objects
     if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
     {
         rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
@@ -572,7 +572,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build equivalent load vector
         rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
@@ -587,7 +589,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         SparseMatrixCSRGeneral<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build global matrix
         SparseMatrixCSRGeneral<double> transConstraintMatrix = this->mConstraintMatrix.Transpose();
@@ -608,10 +612,11 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<d
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
+    return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -655,7 +660,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
         SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build equivalent load vector
         rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
@@ -669,7 +676,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
         SparseMatrixCSRSymmetric<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build global matrix
         rMatrix.Sub_TransA_Mult_TransB_Plus_B_Mult_A(this->mConstraintMatrix, coefficientMatrixJK);
@@ -691,10 +700,11 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
+    return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -720,7 +730,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
     }
 
 //    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-   // resize output objects
+    // resize output objects
     if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
     {
         rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
@@ -739,23 +749,25 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build equivalent load vector
         rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
-/*        mLogger << "dependent " << "\n";
-        dependentDofValues.Trans().Info(12,10);
-        mLogger << "mConstraintRHS " << "\n";
-        mConstraintRHS.Trans().Info(12,10);
-        mLogger << "delta " << "\n";
-        (dependentDofValues - this->mConstraintRHS).Trans().Info(12,10);
-        mLogger << "coefficientMatrixJK" << "\n";
-        (NuTo::FullMatrix<double>(coefficientMatrixJK)).Info(12,3);
-*/
+        /*        mLogger << "dependent " << "\n";
+                dependentDofValues.Trans().Info(12,10);
+                mLogger << "mConstraintRHS " << "\n";
+                mConstraintRHS.Trans().Info(12,10);
+                mLogger << "delta " << "\n";
+                (dependentDofValues - this->mConstraintRHS).Trans().Info(12,10);
+                mLogger << "coefficientMatrixJK" << "\n";
+                (NuTo::FullMatrix<double>(coefficientMatrixJK)).Info(12,3);
+        */
     }
     else
     {
-    	//mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
+        //mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
 
         // define additional submatrix
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
@@ -763,7 +775,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
         SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build global matrix
         SparseMatrixCSRVector2General<double> constraintMatrixVector2 (this->mConstraintMatrix);
@@ -785,10 +799,11 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Ge
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
+    return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -814,7 +829,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Sy
     }
 
 //    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-   // resize output objects
+    // resize output objects
     if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
     {
         rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
@@ -833,14 +848,16 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Sy
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build equivalent load vector
         rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
     }
     else
     {
-    	//mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
+        //mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
 
         // define additional submatrix
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
@@ -848,7 +865,9 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Sy
         SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+        if (error!=Error::SUCCESSFUL)
+            return error;
 
         // build global matrix
         SparseMatrixCSRVector2General<double> constraintMatrixVector2 (this->mConstraintMatrix);
@@ -872,6 +891,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Sy
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
+    return Error::SUCCESSFUL;
 }
 // build global external load vector
 void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector)
@@ -916,7 +936,7 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
 }
 
 // build global gradient of the internal potential (e.g. the internal forces)
-void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -941,7 +961,7 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
-    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] First update of tmp static data required.");
+        throw MechanicsException("[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] First update of tmp static data required.");
     }
 
 
@@ -951,7 +971,9 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
     try
     {
         // build sub vectors
-        this->BuildGlobalGradientInternalPotentialSubVectors(rVector, dependentDofGradientVector);
+        Error::eError error = this->BuildGlobalGradientInternalPotentialSubVectors(rVector, dependentDofGradientVector);
+        if (error!=Error::SUCCESSFUL)
+            return error;
     }
     catch (MechanicsException& e)
     {
@@ -973,20 +995,21 @@ void NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullM
         mLogger<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
+    return Error::SUCCESSFUL;
 }
 
 //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
 //! values smaller than that one will not be added to the global matrix
 void NuTo::StructureBase::SetToleranceStiffnessEntries(double rToleranceStiffnessEntries)
 {
-	mToleranceStiffnessEntries = rToleranceStiffnessEntries;
+    mToleranceStiffnessEntries = rToleranceStiffnessEntries;
 }
 
 //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
 //! values smaller than that one will not be added to the global matrix
 double NuTo::StructureBase::GetToleranceStiffnessEntries()const
 {
-	return mToleranceStiffnessEntries;
+    return mToleranceStiffnessEntries;
 }
 
 //! @brief returns the number of degrees of freedom
@@ -999,9 +1022,9 @@ int NuTo::StructureBase::GetNumDofs()const
 #endif
     if (this->mNodeNumberingRequired)
     {
-            throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
+        throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
     }
-	return mNumDofs;
+    return mNumDofs;
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -1017,11 +1040,11 @@ int NuTo::StructureBase::GetNumActiveDofs()const
     std::clock_t start,end;
     start=clock();
 #endif
-	if (this->mNodeNumberingRequired)
-	{
-		  throw MechanicsException("[NuTo::StructureBase::GetNumActiveDofs] Build global Dofs first.");
-	}
-	return mNumActiveDofs;
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::GetNumActiveDofs] Build global Dofs first.");
+    }
+    return mNumActiveDofs;
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -1068,32 +1091,32 @@ void NuTo::StructureBase::InitBeforeNewLoadStep(int rLoadStep)
 }
 
 //! @brief performs a Newton Raphson iteration (displacement and/or load control) - structure is not saved before update
-void NuTo::StructureBase::NewtonRaphson()
+NuTo::Error::eError NuTo::StructureBase::NewtonRaphson()
 {
-	std::stringstream saveStringStream;
-	bool saveStructureBeforeUpdate(false);
-	bool isSaved(false);
-	bool initialStateInEquilibrium(true);
-	NewtonRaphson(saveStructureBeforeUpdate,saveStringStream,isSaved,initialStateInEquilibrium);
+    std::stringstream saveStringStream;
+    bool saveStructureBeforeUpdate(false);
+    bool isSaved(false);
+    bool initialStateInEquilibrium(true);
+    return NewtonRaphson(saveStructureBeforeUpdate,saveStringStream,isSaved,initialStateInEquilibrium);
 }
 
 //! @brief performs a Newton Raphson iteration (displacement and/or load control)
 //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
 //!             be careful, store it only once
-void NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
+NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
         std::stringstream& rSaveStringStream,
         bool& rIsSaved)
 {
-	bool initialStateInEquilibrium(true);
-	NewtonRaphson(rSaveStructureBeforeUpdate,rSaveStringStream,rIsSaved,initialStateInEquilibrium);
+    bool initialStateInEquilibrium(true);
+    return NewtonRaphson(rSaveStructureBeforeUpdate,rSaveStringStream,rIsSaved,initialStateInEquilibrium);
 }
 
 //! @brief performs a Newton Raphson iteration (displacement and/or load control)
 //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
 //!             be careful, store it only once
-void NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
-                std::stringstream& rSaveStringStream,
-                bool& rIsSaved, bool rInitialStateInEquilibrium)
+NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
+        std::stringstream& rSaveStringStream,
+        bool& rIsSaved, bool rInitialStateInEquilibrium)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1102,365 +1125,368 @@ void NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBeforeUpdate,
 #endif
     start=clock();
 #endif
-try
-{
-
-    // start analysis
-    double deltaLoadFactor(mMaxDeltaLoadFactor);
-    double curLoadFactor(0);
-    int loadStep(1);
-
-	this->SetLoadFactor(0);
-	this->NodeBuildGlobalDofs();
-	this->ElementTotalUpdateTmpStaticData();
-
-	NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
-    this->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
-
-    InitBeforeNewLoadStep(loadStep);
-    if (mNumActiveDofs==0)
-	{
-		bool convergenceTotal = false;
-		while (convergenceTotal==false)
-		{
-			try
-			{
-				curLoadFactor+=deltaLoadFactor;
-				InitBeforeNewLoadStep(loadStep);
-				this->SetLoadFactor(curLoadFactor);
-				if (curLoadFactor>1)
-				{
-					deltaLoadFactor = 1.-(curLoadFactor-deltaLoadFactor);
-					curLoadFactor = 1.;
-				}
-				this->NodeBuildGlobalDofs();
-				NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-				NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-				this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-				this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-				this->ElementTotalUpdateTmpStaticData();
-				AdaptModel();
-				this->PostProcessDataAfterConvergence(loadStep, 0, curLoadFactor, deltaLoadFactor, 0);
-				this->ElementTotalUpdateStaticData();
-				this->PostProcessDataAfterUpdate(loadStep, 0, curLoadFactor, deltaLoadFactor, 0);
-				loadStep++;
-			}
-			catch(MechanicsException& e)
-			{
-	            if (e.GetError()==MechanicsException::NOCONVERGENCE)
-	            {
-	            	mLogger << "No convergence for current load factor  " << curLoadFactor << "\n";
-	            	curLoadFactor-=deltaLoadFactor;
-	            	//decrease load step
-					deltaLoadFactor*=mDecreaseFactor;
-
-					//restore initial state
-	            	mLogger << "Try with load factor  " << curLoadFactor << "\n";
-					this->SetLoadFactor(curLoadFactor);
-					this->NodeBuildGlobalDofs();
-					//this is a zero length vector anyway
-					this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-
-					//check for minimum delta (this mostly indicates an error in the software
-					if (deltaLoadFactor<mMinDeltaLoadFactor)
-					{
-						mLogger << "No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum " << "\n";
-						e.AddMessage("[NuTo::StructureBase::NewtonRaphson] No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum.");
-						throw e;
-					}
-	            }
-	            else
-	            {
-	            	e.AddMessage("[NuTo::StructureBase::NewtonRaphson] Error in Newton-Raphson iteration.");
-	            	throw e;
-	            }
-			}
-			if (curLoadFactor>1-1e-8)
-				convergenceTotal = true;
-		}
-		return;
-	}
-
-
-    //init some auxiliary variables
-    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-    NuTo::FullMatrix<double> dispForceVector;
-    NuTo::FullMatrix<double> intForceVector;
-    NuTo::FullMatrix<double> extForceVector;
-    NuTo::FullMatrix<double> rhsVector;
-
-
-    NuTo::FullMatrix<double> intForceVectorInit;
-    //calculate the initial out of balance force
-    if (rInitialStateInEquilibrium==false)
+    try
     {
-		try
-		{
-			this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-			this->ElementTotalUpdateTmpStaticData();
-    	    this->BuildGlobalGradientInternalPotentialVector(intForceVectorInit);
-    	    std::cout << "out of balance force (norm) for zero load is " << intForceVectorInit.Norm() << "\n";
-		}
-		catch(MechanicsException& e)
-		{
- 			mLogger << "[NuTo::StructureBase::NewtonRaphson] no convergence for constitutive model in unloaded state. " << "\n";
-			e.AddMessage("[NuTo::StructureBase::NewtonRaphson] [NuTo::StructureBase::NewtonRaphson] no convergence for constitutive model in unloaded state.");
-			throw e;
-		}
-		catch(...)
-		{
-			throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] no convergence for constitutive model in unloaded state.");
-		}
-    }
+        // start analysis
+        double deltaLoadFactor(mMaxDeltaLoadFactor);
+        double curLoadFactor(0);
+        int loadStep(1);
 
-    //allocate solver
-    NuTo::SparseDirectSolverMUMPS mySolver;
-    //NuTo::SparseDirectSolverMKLPardiso mySolver;
-    #ifdef SHOW_TIME
-    if (mShowTime==true)
-        mySolver.SetShowTime(true);
-    else
-        mySolver.SetShowTime(false);
-    #endif
-    bool convergenceInitialLoadStep(false);
-    while (convergenceInitialLoadStep==false)
-    {
-		try
-		{
-			//calculate stiffness
-			curLoadFactor=deltaLoadFactor;
-			this->SetLoadFactor(curLoadFactor);
-			this->NodeBuildGlobalDofs();
-			this->ElementTotalUpdateTmpStaticData();
+        this->SetLoadFactor(0);
+        this->NodeBuildGlobalDofs();
+        this->ElementTotalUpdateTmpStaticData();
 
-			//mLogger<<" calculate stiffness 1143" << "\n";
-			this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-		//   NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
-		//    mLogger << "disp force vector "<< "\n";
-		//    dispForceVector.Trans().Info(12,10);
-		//Check the stiffness matrix
-		//CheckStiffness();
-		//mLogger << "stiffness is calculated in Newton Raphson " << "\n";
-			//mLogger << "total energy of system " << ElementTotalGetTotalEnergy() << "\n";
+        NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
+        this->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
 
-			//update displacements of all nodes according to the new conre mat
-			{
-				NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-				NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-				this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-				this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-				this->ElementTotalUpdateTmpStaticData();
-			}
-
-			// build global external load vector and RHS vector
-			this->BuildGlobalExternalLoadVector(extForceVector);
-			//mLogger<<" calculate gradient 1163" << "\n";
-			this->BuildGlobalGradientInternalPotentialVector(intForceVector);
-			convergenceInitialLoadStep = true;
-		}
-		catch(MechanicsException& e)
-		{
-            if (e.GetError()==MechanicsException::NOCONVERGENCE)
-            {
-				//decrease load step
-				deltaLoadFactor*=mDecreaseFactor;
-
-				//restore initial state
-				this->SetLoadFactor(0);
-				this->NodeBuildGlobalDofs();
-				this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-
-				//check for minimum delta (this mostly indicates an error in the software
-				if (deltaLoadFactor<mMinDeltaLoadFactor)
-				{
-					mLogger << "No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum " << "\n";
-					e.AddMessage("[NuTo::StructureBase::NewtonRaphson] No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum.");
-					throw e;
-				}
-            }
-            else
-            {
-            	e.AddMessage("[NuTo::StructureBase::NewtonRaphson] Error in Newton-Raphson iteration.");
-            	throw e;
-            }
-		}
-    }
-
-	rhsVector = extForceVector - intForceVector;
-	//attention this is only different for the first iteration step
-	//since the internal force due to the applied constraints is not considered for the first iteration
-	//in order to balance it (no localization in the boundary region)
-	//for the linesearch this internal force has to be considered in order to obtain for a linesearch
-	//factor of zero the normRHS
-	double normRHS = rhsVector.Norm();
-//    rhsVector.Trans().Info(12,10);
-	rhsVector = extForceVector + dispForceVector;
-    if (rInitialStateInEquilibrium==false)
-    {
-        rhsVector -= intForceVectorInit;
-    }
-//    rhsVector.Trans().Info(12,10);
-
-    //calculate absolute tolerance for matrix entries to be not considered as zero
-    double maxValue, minValue, ToleranceZeroStiffness;
-    if (stiffnessMatrixCSRVector2.GetNumColumns()==0)
-    {
-        maxValue = 1.;
-        minValue = 1.;
-    }
-    else
-    {
-        stiffnessMatrixCSRVector2.Max(maxValue);
-        stiffnessMatrixCSRVector2.Min(minValue);
-    }
-    //mLogger << "min and max " << minValue << " , " << maxValue << "\n";
-
-    ToleranceZeroStiffness = (1e-14) * (fabs(maxValue)>fabs(minValue) ?  fabs(maxValue) : fabs(minValue));
-    this->SetToleranceStiffnessEntries(ToleranceZeroStiffness);
-    //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-    //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-    //mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
-
-    //mySolver.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale") + std::string("0") + std::string(".vtk"));
-
-    //store the structure only once in order to be able to restore the situation before entering the routine
-    rIsSaved = false;
-
-    //repeat until max displacement is reached
-    bool convergenceStatusLoadSteps(false);
-    while (!convergenceStatusLoadSteps)
-    {
-        double normResidual(1);
-        double maxResidual(1);
-        int numNewtonIterations(0);
-        double alpha(1.);
-        NuTo::FullMatrix<double> displacementsActiveDOFs;
-        NuTo::FullMatrix<double> displacementsDependentDOFs;
-        int convergenceStatus(0);
-        //0 - not converged, continue Newton iteration
-        //1 - converged
-        //2 - stop iteration, decrease load step
-        while(convergenceStatus==0)
+        InitBeforeNewLoadStep(loadStep);
+        if (mNumActiveDofs==0)
         {
-            numNewtonIterations++;
-
-            if (numNewtonIterations>mMaxNumNewtonIterations && alpha<0.25)
+            bool convergenceTotal = false;
+            while (convergenceTotal==false)
             {
-                if (mVerboseLevel>5)
-                {
-                    mLogger << "numNewtonIterations (" << numNewtonIterations << ") > MAXNUMNEWTONITERATIONS (" << mMaxNumNewtonIterations << ")" << "\n";
-                }
-                convergenceStatus = 2; //decrease load step
-                break;
-            }
-
-            // solve
-            NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
-            NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
-            this->NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
-            NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
-            stiffnessMatrixCSR.SetOneBasedIndexing();
-            try
-            {
-                mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
-            }
-            catch(...)
-            {
-            	mLogger << "Error solving system of equations using mumps." << "\n";
-            	if (mNumActiveDofs<1000)
-                {
-            	    NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
-                    if (mNumActiveDofs<30)
-                    {
-                        mLogger << "stiffness full" << "\n";
-                        mLogger.Out(stiffnessMatrixFull,12,3);
-                    }
-                    NuTo::FullMatrix<double> eigenValues;
-                    stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
-                    mLogger << "eigenvalues" << "\n";
-                    mLogger.Out(eigenValues.Trans(),12,3);
-                    NuTo::FullMatrix<double> eigenVectors;
-                    stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
-                    mLogger << "eigenvector 1" << "\n";
-                    mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
-                }
-                throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] Error solving system of equations using mumps.");
-            }
-
-            //mLogger << " rhsVector" << "\n";
-            //rhsVector.Trans().Info(10,3);
-            //std::cout << " delta_disp" << "\n";
-            //deltaDisplacementsActiveDOFs.Trans().Info(10,3);
-
-            //perform a linesearch
-            alpha = 1.;
-            do
-            {
-                //add new displacement state
-                displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
-
-                //mLogger << " displacementsActiveDOFs" << "\n";
-                //displacementsActiveDOFs.Trans().Info(10,3);
-                this->NodeMergeActiveDofValues(displacementsActiveDOFs);
-                this->ElementTotalUpdateTmpStaticData();
-
-/*                {
-                    double energy;
-                    energy = this->ElementTotalGetTotalEnergy();
-                    energy += this->ConstraintTotalGetTotalEnergy();
-                    mLogger << "energy " << energy << "\n";
-                }
-*/
-                // calculate residual
                 try
                 {
-        			//mLogger<<" calculate gradient 1326" << "\n";
-                    this->BuildGlobalGradientInternalPotentialVector(intForceVector);
-                    //mLogger << "intForceVector "  << "\n";
-                    //intForceVector.Trans().Info(10,3);
-                    rhsVector = extForceVector - intForceVector;
-                    normResidual = rhsVector.Norm();
-                    maxResidual = rhsVector.Abs().Max();
+                    curLoadFactor+=deltaLoadFactor;
+                    InitBeforeNewLoadStep(loadStep);
+                    this->SetLoadFactor(curLoadFactor);
+                    if (curLoadFactor>1)
+                    {
+                        deltaLoadFactor = 1.-(curLoadFactor-deltaLoadFactor);
+                        curLoadFactor = 1.;
+                    }
+                    this->NodeBuildGlobalDofs();
+                    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+                    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+                    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+                    Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                    if (error!=Error::SUCCESSFUL)
+                    {
+                        if (error==Error::NO_CONVERGENCE)
+                        {
+                            mLogger << "No convergence for current load factor  " << curLoadFactor << "\n";
+                            curLoadFactor-=deltaLoadFactor;
+                            //decrease load step
+                            deltaLoadFactor*=mDecreaseFactor;
 
-                    //mLogger << "total energy of system " << ElementTotalGetTotalEnergy() << "\n";
-                    PostProcessDataInLineSearch(loadStep, numNewtonIterations, alpha, curLoadFactor, normResidual, normRHS);
+                            //check for minimum delta (this mostly indicates an error in the software
+                            if (deltaLoadFactor<mMinDeltaLoadFactor)
+                            {
+                                mLogger << "No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum " << "\n";
+                                return Error::NO_CONVERGENCE;
+                            }
+                            continue;
+                        }
+                        else
+                            return error;
+                    }
+                    AdaptModel();
+                    this->PostProcessDataAfterConvergence(loadStep, 0, curLoadFactor, deltaLoadFactor, 0);
+                    error = this->ElementTotalUpdateStaticData();
+                    if (error!=Error::SUCCESSFUL)
+                    {
+                        if (error==Error::NO_CONVERGENCE)
+                        {
+                            mLogger << "No convergence for current load factor  " << curLoadFactor << "\n";
+                            curLoadFactor-=deltaLoadFactor;
+                            //decrease load step
+                            deltaLoadFactor*=mDecreaseFactor;
+
+                            //check for minimum delta (this mostly indicates an error in the software
+                            if (deltaLoadFactor<mMinDeltaLoadFactor)
+                            {
+                                mLogger << "No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum " << "\n";
+                                return Error::NO_CONVERGENCE;
+                            }
+                        }
+                        else
+                            return error;
+                        continue;
+                    }
+                    this->PostProcessDataAfterUpdate(loadStep, 0, curLoadFactor, deltaLoadFactor, 0);
+                    loadStep++;
                 }
                 catch(MechanicsException& e)
                 {
-                	if (e.GetError()==MechanicsException::NOCONVERGENCE)
-                	{
-						convergenceStatus=2;
-						mLogger << "Constitutive model is not converging, try with smaller load step" << "\n";
-                	}
-                	else
-                	{
-                		e.AddMessage("[NuTo::StructureBase::NewtonRaphson] NuTo::MechanicsException while calling the gradient (resforce) routine.");
-                		throw e;
-                	}
+                    e.AddMessage("[NuTo::StructureBase::NewtonRaphson] Error in Newton-Raphson iteration.");
+                    throw e;
+                }
+                if (curLoadFactor>1-1e-8)
+                    convergenceTotal = true;
+            }
+            return Error::SUCCESSFUL;
+        }
+
+        //init some auxiliary variables
+        NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
+        NuTo::FullMatrix<double> dispForceVector;
+        NuTo::FullMatrix<double> intForceVector;
+        NuTo::FullMatrix<double> extForceVector;
+        NuTo::FullMatrix<double> rhsVector;
+
+
+        NuTo::FullMatrix<double> intForceVectorInit;
+        //calculate the initial out of balance force
+        if (rInitialStateInEquilibrium==false)
+        {
+            try
+            {
+                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                if (error!=Error::SUCCESSFUL)
+                {
+                    if (error==Error::NO_CONVERGENCE)
+                        mLogger << "[NuTo::StructureBase::NewtonRaphson] exception due to no convergence in initial unequilibrated state " << "\n";
+                    throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] exception due to error in initial unequilibrated state");
+                }
+                error = this->BuildGlobalGradientInternalPotentialVector(intForceVectorInit);
+                if (error!=Error::SUCCESSFUL)
+                {
+                    if (error==Error::NO_CONVERGENCE)
+                        mLogger << "[NuTo::StructureBase::NewtonRaphson] exception due to no convergence in initial unequilibrated state " << "\n";
+                    throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] exception due to error in initial unequilibrated state");
+                }
+
+                mLogger << "out of balance force (norm) for zero load is " << intForceVectorInit.Norm() << "\n";
+            }
+            catch(MechanicsException& e)
+            {
+                e.AddMessage("[NuTo::StructureBase::NewtonRaphson] [NuTo::StructureBase::NewtonRaphson] exception for constitutive model in unloaded state.");
+                throw e;
+            }
+            catch(...)
+            {
+                throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] exception for constitutive model in unloaded state.");
+            }
+        }
+
+        //allocate solver
+        NuTo::SparseDirectSolverMUMPS mySolver;
+        //NuTo::SparseDirectSolverMKLPardiso mySolver;
+#ifdef SHOW_TIME
+        if (mShowTime==true)
+            mySolver.SetShowTime(true);
+        else
+            mySolver.SetShowTime(false);
+#endif
+        bool convergenceInitialLoadStep(false);
+        while (convergenceInitialLoadStep==false)
+        {
+            try
+            {
+                //calculate stiffness
+                curLoadFactor=deltaLoadFactor;
+                this->SetLoadFactor(curLoadFactor);
+                this->NodeBuildGlobalDofs();
+                Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                if (error!=Error::SUCCESSFUL)
+                {
+                    if (error==Error::NO_CONVERGENCE)
+                    {
+                        //decrease load step
+                        deltaLoadFactor*=mDecreaseFactor;
+
+                        //restore initial state
+                        this->SetLoadFactor(0);
+                        this->NodeBuildGlobalDofs();
+                        this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+
+                        //check for minimum delta (this mostly indicates an error in the software
+                        if (deltaLoadFactor<mMinDeltaLoadFactor)
+                        {
+                            mLogger << "[NuTo::StructureBase::NewtonRaphson] No convergence for ElementTotalUpdateTmpStaticData calculation, delta strain factor for initial increment smaller than minimum " << "\n";
+                            return Error::NO_CONVERGENCE;
+                        }
+                        continue;
+                    }
+                    else
+                        return error;
+                }
+
+                error = this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+                if (error!=Error::SUCCESSFUL)
+                {
+                    if (error==Error::NO_CONVERGENCE)
+                    {
+                        //decrease load step
+                        deltaLoadFactor*=mDecreaseFactor;
+
+                        //restore initial state
+                        this->SetLoadFactor(0);
+                        this->NodeBuildGlobalDofs();
+                        this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+
+                        //check for minimum delta (this mostly indicates an error in the software
+                        if (deltaLoadFactor<mMinDeltaLoadFactor)
+                        {
+                            mLogger << "[NuTo::StructureBase::NewtonRaphson] No convergence for BuildGlobalCoefficientMatrix0 calculation, delta strain factor for initial increment smaller than minimum " << "\n";
+                            return Error::NO_CONVERGENCE;
+                        }
+                        continue;
+                    }
+                    else
+                        return error;
+                }
+                //   NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
+                //    mLogger << "disp force vector "<< "\n";
+                //    dispForceVector.Trans().Info(12,10);
+                //Check the stiffness matrix
+                //CheckStiffness();
+                //mLogger << "stiffness is calculated in Newton Raphson " << "\n";
+                //mLogger << "total energy of system " << ElementTotalGetTotalEnergy() << "\n";
+
+                //update displacements of all nodes according to the new conre mat
+                {
+                    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+                    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+                    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+                    error = this->ElementTotalUpdateTmpStaticData();
+                    if (error!=Error::SUCCESSFUL)
+                    {
+                        if (error==Error::NO_CONVERGENCE)
+                        {
+                            //decrease load step
+                            deltaLoadFactor*=mDecreaseFactor;
+
+                            //restore initial state
+                            this->SetLoadFactor(0);
+                            this->NodeBuildGlobalDofs();
+                            this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+
+                            //check for minimum delta (this mostly indicates an error in the software
+                            if (deltaLoadFactor<mMinDeltaLoadFactor)
+                            {
+                                mLogger << "[NuTo::StructureBase::NewtonRaphson] return with no convergence" << "\n";
+                                return Error::NO_CONVERGENCE;
+                            }
+                            continue;
+                        }
+                        else
+                            return error;
+                    }
+                }
+
+                // build global external load vector and RHS vector
+                this->BuildGlobalExternalLoadVector(extForceVector);
+                //mLogger<<" calculate gradient 1163" << "\n";
+                error = this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+                if (error!=Error::SUCCESSFUL)
+                {
+                    if (error==Error::NO_CONVERGENCE)
+                    {
+                        //decrease load step
+                        deltaLoadFactor*=mDecreaseFactor;
+
+                        //restore initial state
+                        this->SetLoadFactor(0);
+                        this->NodeBuildGlobalDofs();
+                        this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+
+                        //check for minimum delta (this mostly indicates an error in the software
+                        if (deltaLoadFactor<mMinDeltaLoadFactor)
+                        {
+                            mLogger << "No convergence for initial resforce/stiffness calculation, delta strain factor for initial increment smaller than minimum " << "\n";
+                            return Error::NO_CONVERGENCE;
+                        }
+                        continue;
+                    }
+                    else
+                        return error;
+                }
+                convergenceInitialLoadStep = true;
+            }
+            catch(MechanicsException& e)
+            {
+                e.AddMessage("[NuTo::StructureBase::NewtonRaphson] Error in Newton-Raphson iteration.");
+                throw e;
+            }
+        }
+
+        rhsVector = extForceVector - intForceVector;
+        //attention this is only different for the first iteration step
+        //since the internal force due to the applied constraints is not considered for the first iteration
+        //in order to balance it (no localization in the boundary region)
+        //for the linesearch this internal force has to be considered in order to obtain for a linesearch
+        //factor of zero the normRHS
+        double normRHS = rhsVector.Norm();
+//    rhsVector.Trans().Info(12,10);
+        rhsVector = extForceVector + dispForceVector;
+        if (rInitialStateInEquilibrium==false)
+        {
+            rhsVector -= intForceVectorInit;
+        }
+//    rhsVector.Trans().Info(12,10);
+
+        //calculate absolute tolerance for matrix entries to be not considered as zero
+        double maxValue, minValue, ToleranceZeroStiffness;
+        if (stiffnessMatrixCSRVector2.GetNumColumns()==0)
+        {
+            maxValue = 1.;
+            minValue = 1.;
+        }
+        else
+        {
+            stiffnessMatrixCSRVector2.Max(maxValue);
+            stiffnessMatrixCSRVector2.Min(minValue);
+        }
+        //mLogger << "min and max " << minValue << " , " << maxValue << "\n";
+
+        ToleranceZeroStiffness = (1e-14) * (fabs(maxValue)>fabs(minValue) ?  fabs(maxValue) : fabs(minValue));
+        this->SetToleranceStiffnessEntries(ToleranceZeroStiffness);
+        //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
+        //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
+        //mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
+
+        //mySolver.ExportVtkDataFile(std::string("/home/unger3/develop/nuto_build/examples/c++/FineScaleConcurrentMultiscale") + std::string("0") + std::string(".vtk"));
+
+        //store the structure only once in order to be able to restore the situation before entering the routine
+        rIsSaved = false;
+
+        //repeat until max displacement is reached
+        bool convergenceStatusLoadSteps(false);
+        while (!convergenceStatusLoadSteps)
+        {
+            double normResidual(1);
+            double maxResidual(1);
+            int numNewtonIterations(0);
+            double alpha(1.);
+            NuTo::FullMatrix<double> displacementsActiveDOFs;
+            NuTo::FullMatrix<double> displacementsDependentDOFs;
+            int convergenceStatus(0);
+            //0 - not converged, continue Newton iteration
+            //1 - converged
+            //2 - stop iteration, decrease load step
+            while(convergenceStatus==0)
+            {
+                numNewtonIterations++;
+
+                if (numNewtonIterations>mMaxNumNewtonIterations && alpha<0.25)
+                {
+                    if (mVerboseLevel>5)
+                    {
+                        mLogger << "numNewtonIterations (" << numNewtonIterations << ") > MAXNUMNEWTONITERATIONS (" << mMaxNumNewtonIterations << ")" << "\n";
+                    }
+                    convergenceStatus = 2; //decrease load step
+                    break;
+                }
+
+                // solve
+                NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
+                NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
+                this->NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
+                NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
+                stiffnessMatrixCSR.SetOneBasedIndexing();
+                try
+                {
+                    mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
                 }
                 catch(...)
                 {
-                	throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] Error calling the gradient (resforce) routine.");
-                }
-
-                alpha*=0.5;
-            }
-            while(convergenceStatus!=2 && alpha>mMinLineSearchFactor && normResidual>normRHS*(1-0.5*alpha) && normResidual>mToleranceResidualForce && maxResidual>mToleranceResidualForce);
-
-            if (convergenceStatus==2)
-            	break;
-
-            this->PostProcessDataAfterLineSearch(loadStep, numNewtonIterations, 2.*alpha, curLoadFactor, normResidual, rhsVector);
-    		//std::string str;
-    		//getline (std::cin,str);
-
-            if (normResidual>normRHS*(1-0.5*alpha) && normResidual>mToleranceResidualForce && maxResidual>mToleranceResidualForce)
-            {
-                convergenceStatus=2;
-                {
+                    mLogger << "Error solving system of equations using mumps." << "\n";
                     if (mNumActiveDofs<1000)
                     {
-                    	mLogger << "System is not converging." << "\n";
                         NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
                         if (mNumActiveDofs<30)
                         {
@@ -1476,282 +1502,476 @@ try
                         mLogger << "eigenvector 1" << "\n";
                         mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
                     }
+                    throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] Error solving system of equations using mumps.");
                 }
-                break;
-            }
 
-            //mLogger << "\n" << "Newton iteration " << numNewtonIterations << ", final alpha " << 2*alpha << ", normResidual " << normResidual<< ", maxResidual " << maxResidual<<"\n";
+                //mLogger << " rhsVector" << "\n";
+                //rhsVector.Trans().Info(10,3);
+                //std::cout << " delta_disp" << "\n";
+                //deltaDisplacementsActiveDOFs.Trans().Info(10,3);
 
-            //check convergence
-            if (normResidual<mToleranceResidualForce || maxResidual<mToleranceResidualForce)
-            {
-            	//this test is only relevant for problems with a model adaptation, otherwise, just assume a converged solution and continue
-            	if(AdaptModel())
-            	{
-            		mLogger << "adaptation is performed " << "\n";
-            		numNewtonIterations=0;
+                //perform a linesearch
+                alpha = 1.;
+                do
+                {
+                    //add new displacement state
+                    displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
+
+                    //mLogger << " displacementsActiveDOFs" << "\n";
+                    //displacementsActiveDOFs.Trans().Info(10,3);
+                    this->NodeMergeActiveDofValues(displacementsActiveDOFs);
                     try
                     {
-                    	this->BuildGlobalGradientInternalPotentialVector(intForceVector);
-					}
-					catch(MechanicsException& e)
-					{
-						if (e.GetError()==MechanicsException::NOCONVERGENCE)
-						{
-							//decrease load step
-							deltaLoadFactor*=mDecreaseFactor;
+                        Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                        if (error!=Error::SUCCESSFUL)
+                        {
+                            if (error==Error::NO_CONVERGENCE)
+                            {
+                                convergenceStatus=2;
+                                mLogger << "Constitutive model is not converging, try with smaller load step" << "\n";
+                            }
+                            else
+                            {
+                                mLogger << "[NuTo::StructureBase::NewtonRaphson] error while calling the gradient (resforce) routine." << "\n";
+                                return error;
+                            }
+                        }
+                        else
+                        {
+                            // calculate residual
+                            Error::eError error = this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+                            if (error!=Error::SUCCESSFUL)
+                            {
+                                if (error==Error::NO_CONVERGENCE)
+                                {
+                                    convergenceStatus=2;
+                                    mLogger << "Constitutive model is not converging, try with smaller load step" << "\n";
+                                }
+                                else
+                                {
+                                    mLogger << "[NuTo::StructureBase::NewtonRaphson] error while calling the gradient (resforce) routine." << "\n";
+                                    return error;
+                                }
+                            }
+                            else
+                            {
+                                //mLogger << "intForceVector "  << "\n";
+                                //intForceVector.Trans().Info(10,3);
+                                rhsVector = extForceVector - intForceVector;
+                                normResidual = rhsVector.Norm();
+                                maxResidual = rhsVector.Abs().Max();
 
-							//restore initial state
-							this->SetLoadFactor(0);
-							this->NodeBuildGlobalDofs();
-							this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-							convergenceStatus=2;
+                                //mLogger << "total energy of system " << ElementTotalGetTotalEnergy() << "\n";
+                                PostProcessDataInLineSearch(loadStep, numNewtonIterations, alpha, curLoadFactor, normResidual, normRHS);
+                            }
+                        }
+                    }
+                    catch(MechanicsException& e)
+                    {
+                        e.AddMessage("[NuTo::StructureBase::NewtonRaphson] NuTo::MechanicsException while calling the gradient (resforce) routine.");
+                        throw e;
+                    }
+                    catch(...)
+                    {
+                        throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] Error calling the gradient (resforce) routine.");
+                    }
 
-							mLogger << "********************************************************************************" << "\n";
-							mLogger << "**************** reduce load step after adaptation is performed ****************" << "\n";
-							mLogger << "********************************************************************************" << "\n";
+                    alpha*=0.5;
+                }
+                while(convergenceStatus!=2 && alpha>mMinLineSearchFactor && normResidual>normRHS*(1-0.5*alpha) && normResidual>mToleranceResidualForce && maxResidual>mToleranceResidualForce);
 
-							//check for minimum delta (this mostly indicates an error in the software
-							if (deltaLoadFactor<mMinDeltaLoadFactor)
-							{
-								mLogger << "[NuTo::StructureBase::NewtonRaphson] No convergence for gradient calculation after adaptation." << "\n";
-								e.AddMessage("[NuTo::StructureBase::NewtonRaphson] No convergence for gradient calculation after adaptation.");
-								throw e;
-							}
-						}
-						else
-						{
-							e.AddMessage("[NuTo::StructureBase::NewtonRaphson] error in gradient calculation after adaptation.");
-							throw e;
-						}
-					}
+                if (convergenceStatus==2)
+                    break;
 
-                    //mLogger << "intForceVector "  << "\n";
-                    //intForceVector.Trans().Info(10,3);
-                    rhsVector = extForceVector - intForceVector;
-        			mLogger<<" normRHS after adaptation" << rhsVector.Norm() << "\n";
-        			//exit(0);
-            	}
-            	else
-            	{
-                    this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
-					convergenceStatus=1;
-					//CheckStiffness();
-					//NodeInfo(12);
-					break;
-            	}
-            }
+                this->PostProcessDataAfterLineSearch(loadStep, numNewtonIterations, 2.*alpha, curLoadFactor, normResidual, rhsVector);
+                //std::string str;
+                //getline (std::cin,str);
 
-            //convergence status == 0 (continue Newton iteration)
-            normRHS = rhsVector.Norm();
-            //build new stiffness matrix
-            this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-            //mLogger << dispForceVector.Norm() << "\n";
+                if (normResidual>normRHS*(1-0.5*alpha) && normResidual>mToleranceResidualForce && maxResidual>mToleranceResidualForce)
+                {
+                    convergenceStatus=2;
+                    {
+                        if (mNumActiveDofs<1000)
+                        {
+                            mLogger << "System is not converging." << "\n";
+                            NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+                            if (mNumActiveDofs<30)
+                            {
+                                mLogger << "stiffness full" << "\n";
+                                mLogger.Out(stiffnessMatrixFull,12,3);
+                            }
+                            NuTo::FullMatrix<double> eigenValues;
+                            stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
+                            mLogger << "eigenvalues" << "\n";
+                            mLogger.Out(eigenValues.Trans(),12,3);
+                            NuTo::FullMatrix<double> eigenVectors;
+                            stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
+                            mLogger << "eigenvector 1" << "\n";
+                            mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
+                        }
+                    }
+                    break;
+                }
+
+                //mLogger << "\n" << "Newton iteration " << numNewtonIterations << ", final alpha " << 2*alpha << ", normResidual " << normResidual<< ", maxResidual " << maxResidual<<"\n";
+
+                //check convergence
+                if (normResidual<mToleranceResidualForce || maxResidual<mToleranceResidualForce)
+                {
+                    //this test is only relevant for problems with a model adaptation, otherwise, just assume a converged solution and continue
+                    if(AdaptModel())
+                    {
+                        mLogger << "adaptation is performed " << "\n";
+                        numNewtonIterations=0;
+                        try
+                        {
+                            Error::eError error = this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+                            if (error!=Error::SUCCESSFUL)
+                            {
+                                if (error==Error::NO_CONVERGENCE)
+                                {
+                                    //decrease load step
+                                    deltaLoadFactor*=mDecreaseFactor;
+
+                                    //restore initial state
+                                    this->SetLoadFactor(0);
+                                    this->NodeBuildGlobalDofs();
+                                    this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                                    convergenceStatus=2;
+
+                                    mLogger << "********************************************************************************" << "\n";
+                                    mLogger << "**************** reduce load step after adaptation is performed ****************" << "\n";
+                                    mLogger << "********************************************************************************" << "\n";
+
+                                    //check for minimum delta (this mostly indicates an error in the software
+                                    if (deltaLoadFactor<mMinDeltaLoadFactor)
+                                    {
+                                        mLogger << "[NuTo::StructureBase::NewtonRaphson] No convergence for gradient calculation after adaptation." << "\n";
+                                        return Error::NO_CONVERGENCE;
+                                    }
+                                }
+                                else
+                                    return error;
+                            }
+                        }
+                        catch(MechanicsException& e)
+                        {
+                            e.AddMessage("[NuTo::StructureBase::NewtonRaphson] error in gradient calculation after adaptation.");
+                            throw e;
+                        }
+
+                        //mLogger << "intForceVector "  << "\n";
+                        //intForceVector.Trans().Info(10,3);
+                        rhsVector = extForceVector - intForceVector;
+                        mLogger<<" normRHS after adaptation" << rhsVector.Norm() << "\n";
+                        //exit(0);
+                    }
+                    else
+                    {
+                        this->PostProcessDataAfterConvergence(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
+                        convergenceStatus=1;
+                        //CheckStiffness();
+                        //NodeInfo(12);
+                        break;
+                    }
+                }
+
+                //convergence status == 0 (continue Newton iteration)
+                normRHS = rhsVector.Norm();
+                //build new stiffness matrix
+                //there should not be a problem here, since the gradient has already been successfully caclulated for that loading scenario
+                Error::eError error = this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+                if (error!=Error::SUCCESSFUL)
+                    throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] stiffness for first step of new load increment could not be calculated, but since the gradient at that point has been evaluated successfully, there is a problem in the implementation.");
+
+                //mLogger << dispForceVector.Norm() << "\n";
 //check stiffness
 //CheckStiffness();
-            //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-            //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-            //mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
-        }
+                //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
+                //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
+                //mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
+            }
 
-        if (convergenceStatus==1)
-        {
-            // the update is only required to allow for a stepwise solution procedure in the fine scale model
-            // a final update is only required for an update on the macroscale, otherwise,the original state has
-            // to be reconstructed.
-
-            if (curLoadFactor>1-1e-8)
+            if (convergenceStatus==1)
             {
-            	if (rSaveStructureBeforeUpdate==false)
-            	{
-					this->ElementTotalUpdateStaticData();
-	                this->PostProcessDataAfterUpdate(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
-            	}
-				convergenceStatusLoadSteps=true;
+                // the update is only required to allow for a stepwise solution procedure in the fine scale model
+                // a final update is only required for an update on the macroscale, otherwise,the original state has
+                // to be reconstructed.
+
+                if (curLoadFactor>1-1e-8)
+                {
+                    if (rSaveStructureBeforeUpdate==false)
+                    {
+                        Error::eError error = this->ElementTotalUpdateStaticData();
+                        if (error!=Error::SUCCESSFUL)
+                            throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] update could not be calculated, but since the gradient at that point has been evaluated successfully, there is a problem in the implementation.");
+                        this->PostProcessDataAfterUpdate(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
+                    }
+                    convergenceStatusLoadSteps=true;
+                }
+                else
+                {
+                    Error::eError error = this->ElementTotalUpdateStaticData();
+                    if (error!=Error::SUCCESSFUL)
+                        throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] update could not be calculated, but since the gradient at that point has been evaluated successfully, there is a problem in the implementation.");
+
+                    this->PostProcessDataAfterUpdate(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
+                    //store the last converged step in order to be able to go back to that state
+                    displacementsActiveDOFsLastConverged  = displacementsActiveDOFs;
+
+                    //eventually increase load step
+                    if (mAutomaticLoadstepControl)
+                    {
+                        if (numNewtonIterations<mMinNumNewtonIterations)
+                        {
+                            deltaLoadFactor*=mIncreaseFactor;
+                        }
+                        if (deltaLoadFactor>mMaxDeltaLoadFactor)
+                            deltaLoadFactor = mMaxDeltaLoadFactor;
+                    }
+
+                    //increase displacement
+                    curLoadFactor+=deltaLoadFactor;
+                    if (curLoadFactor>1)
+                    {
+                        deltaLoadFactor -= curLoadFactor -1.;
+                        curLoadFactor=1;
+                    }
+                }
+                loadStep++;
+                //initialize some stuff before a new load step (e.g. output directories for visualization, if required)
+                InitBeforeNewLoadStep(loadStep);
             }
             else
             {
-				this->ElementTotalUpdateStaticData();
-				this->PostProcessDataAfterUpdate(loadStep, numNewtonIterations, curLoadFactor, deltaLoadFactor, normResidual);
-				//store the last converged step in order to be able to go back to that state
-				displacementsActiveDOFsLastConverged  = displacementsActiveDOFs;
+                assert(convergenceStatus==2);
+                if (mAutomaticLoadstepControl==false)
+                    return Error::NO_CONVERGENCE;
 
-				//eventually increase load step
-				if (mAutomaticLoadstepControl)
-				{
-					if (numNewtonIterations<mMinNumNewtonIterations)
-					{
-						deltaLoadFactor*=mIncreaseFactor;
-					}
-					if (deltaLoadFactor>mMaxDeltaLoadFactor)
-						deltaLoadFactor = mMaxDeltaLoadFactor;
-				}
+                //mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
+                //mLogger << "check stiffness " << "\n";
+                //CheckStiffness();
+                //mLogger << "and continue with smaller load step " << "\n";
 
-				//increase displacement
-				curLoadFactor+=deltaLoadFactor;
-				if (curLoadFactor>1)
-				{
-					deltaLoadFactor -= curLoadFactor -1.;
-					curLoadFactor=1;
-            	}
-            }
-            loadStep++;
-            //initialize some stuff before a new load step (e.g. output directories for visualization, if required)
-            InitBeforeNewLoadStep(loadStep);
-        }
-        else
-        {
-            assert(convergenceStatus==2);
-            if (mAutomaticLoadstepControl==false)
-                throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence with the prescribed number of Newton iterations.",MechanicsException::NOCONVERGENCE);
+                //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
+                //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
+                //otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
+                curLoadFactor-=deltaLoadFactor;
 
-            //mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
-            //mLogger << "check stiffness " << "\n";
-            //CheckStiffness();
-            //mLogger << "and continue with smaller load step " << "\n";
+                //set the previous displacement state
+                this->SetLoadFactor(curLoadFactor);
 
-            //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
-            //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
-            //otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
-            curLoadFactor-=deltaLoadFactor;
+                // build global dof numbering
+                this->NodeBuildGlobalDofs();
 
-            //set the previous displacement state
-            this->SetLoadFactor(curLoadFactor);
+                //set previous converged displacements
+                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                if (error!=Error::SUCCESSFUL)
+                    throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] last converged state could not be recalculated, but since the gradient at that point has been evaluated successfully, there is a problem in the implementation.");
+                //this first part of the routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
+                //for an update on the coarse scale
+                //as a consequence, in an iterative solution with updates in between, the initial state has to be restored after leaving the routine
+                if (rSaveStructureBeforeUpdate==true && rIsSaved==false)
+                {
+                    assert(curLoadFactor==0);
+                    //store the structure only once in order to be able to restore the situation before entering the routine
+                    this->SaveStructure(rSaveStringStream);
+                    rIsSaved = true;
+                }
 
-            // build global dof numbering
-            this->NodeBuildGlobalDofs();
+                //decrease load step
+                deltaLoadFactor*=mDecreaseFactor;
+                curLoadFactor+=deltaLoadFactor;
 
-            //set previous converged displacements
-            this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-            this->ElementTotalUpdateTmpStaticData();
-            //this first part of the routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
-            //for an update on the coarse scale
-            //as a consequence, in an iterative solution with updates in between, the initial state has to be restored after leaving the routine
-            if (rSaveStructureBeforeUpdate==true && rIsSaved==false)
-            {
-                assert(curLoadFactor==0);
-                //store the structure only once in order to be able to restore the situation before entering the routine
-            	this->SaveStructure(rSaveStringStream);
-            	rIsSaved = true;
+                //check for minimum delta (this mostly indicates an error in the software)
+                if (deltaLoadFactor<mMinDeltaLoadFactor)
+                {
+                    mLogger << "return with a MechanicsNoConvergenceException " << "\n";
+                    return Error::NO_CONVERGENCE;
+                }
             }
 
-            //decrease load step
-            deltaLoadFactor*=mDecreaseFactor;
-            curLoadFactor+=deltaLoadFactor;
-
-            //check for minimum delta (this mostly indicates an error in the software)
-            if (deltaLoadFactor<mMinDeltaLoadFactor)
+            if (!convergenceStatusLoadSteps)
             {
-            	mLogger << "return with a MechanicsNoConvergenceException " << "\n";
-                throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence, delta strain factor smaller than minimum.",MechanicsException::NOCONVERGENCE);
-            }
-        }
+                try
+                {
+                    bool convergenceConstitutive(false);
+                    while (convergenceConstitutive==false)
+                    {
+                        this->SetLoadFactor(curLoadFactor);
+                        this->NodeBuildGlobalDofs();
 
-        if (!convergenceStatusLoadSteps)
-        {
-            //update new displacement of RHS
+                        //update stiffness in order to calculate new dispForceVector, but still with previous displacement state
+                        Error::eError error = this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+                        if (error!=Error::SUCCESSFUL)
+                        {
+                            if (mAutomaticLoadstepControl==false)
+                                return Error::NO_CONVERGENCE;
+                            mLogger << "Constitutive model is not converging in initial try after load increment, I'll try with smaller load step" << "\n";
 
-            // build global dof numbering
-            bool convergenceConstitutive(false);
-            while (convergenceConstitutive==false)
-            {
-				try
-				{
-		            this->SetLoadFactor(curLoadFactor);
-					this->NodeBuildGlobalDofs();
+                            //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
+                            //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
+                            //otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
+                            curLoadFactor-=deltaLoadFactor;
 
-					//update stiffness in order to calculate new dispForceVector, but still with previous displacement state
-					this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-		//CheckStiffness();
-					//int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
-					//int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-					//mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
+                            //set the previous displacement state
+                            this->SetLoadFactor(curLoadFactor);
 
-					//update displacements of all nodes according to the new conre mat
-					NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-					NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-					this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-					this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
-					this->ElementTotalUpdateTmpStaticData();
+                            // build global dof numbering
+                            this->NodeBuildGlobalDofs();
 
-					// calculate initial residual for next load step
-					//mLogger<<" calculate gradient 1532" << "\n";
-                    this->BuildGlobalGradientInternalPotentialVector(intForceVector);
-					convergenceConstitutive = true;
+                            //set previous converged displacements
+                            this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                            Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                            if (error!=Error::SUCCESSFUL)
+                                throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] previous converged load step could not be recalculated, check your implementation.");
 
-				}
-				catch(NuTo::MechanicsException& e)
-				{
-		            std::cout << "catch MechanicsException after initial load decrease." << "\n";
-					if (e.GetError()==MechanicsException::NOCONVERGENCE)
-		            {
-			            std::cout << "no convergence exception." << "\n";
-						if (mAutomaticLoadstepControl==false)
-							throw NuTo::MechanicsException("[NuTo::Multiscale::Solve] No convergence with the prescribed number of Newton iterations.",MechanicsException::NOCONVERGENCE);
-						mLogger << "Constitutive model is not converging in initial try after load increment, I'll try with smaller load step" << "\n";
+                            //decrease load step
+                            deltaLoadFactor*=mDecreaseFactor;
+                            curLoadFactor+=deltaLoadFactor;
 
-						//calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
-						//this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
-						//otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
-						curLoadFactor-=deltaLoadFactor;
+                            //check for minimum delta (this mostly indicates an error in the software
+                            if (deltaLoadFactor<mMinDeltaLoadFactor)
+                            {
+                                mLogger << "[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.";
+                                mLogger << "curLoadFactor " << curLoadFactor << ", deltaLoadFactor " << deltaLoadFactor << "mMinDeltaLoadFactor" << mMinDeltaLoadFactor<< "\n";
+                                return Error::NO_CONVERGENCE;
+                            }
+                            continue;
+                        }
+                        //int numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
+                        //int numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
+                        //mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
 
-						//set the previous displacement state
-						this->SetLoadFactor(curLoadFactor);
+                        //update displacements of all nodes according to the new conre mat
+                        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
+                        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                        this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+                        this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+                        error = this->ElementTotalUpdateTmpStaticData();
+                        if (error!=Error::SUCCESSFUL)
+                        {
+                            if (error==Error::NO_CONVERGENCE)
+                            {
+                                if (mAutomaticLoadstepControl==false)
+                                    return Error::NO_CONVERGENCE;
+                                mLogger << "Constitutive model is not converging in initial try after load increment, I'll try with smaller load step" << "\n";
 
-						// build global dof numbering
-						this->NodeBuildGlobalDofs();
+                                //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
+                                //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
+                                //otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
+                                curLoadFactor-=deltaLoadFactor;
 
-						//set previous converged displacements
-						this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
-						this->ElementTotalUpdateTmpStaticData();
+                                //set the previous displacement state
+                                this->SetLoadFactor(curLoadFactor);
 
-						//decrease load step
-						deltaLoadFactor*=mDecreaseFactor;
-						curLoadFactor+=deltaLoadFactor;
+                                // build global dof numbering
+                                this->NodeBuildGlobalDofs();
 
-						//check for minimum delta (this mostly indicates an error in the software
-						if (deltaLoadFactor<mMinDeltaLoadFactor)
-						{
-							mLogger << "return with a MechanicsNoConvergenceException 1560" << "\n";
-							mLogger << "curLoadFactor " << curLoadFactor << ", deltaLoadFactor " << deltaLoadFactor << "mMinDeltaLoadFactor" << mMinDeltaLoadFactor<< "\n";
-							throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.",MechanicsException::NOCONVERGENCE);
-						}
-		            }
-		            else
-		            {
-			            std::cout << "other than no convergence exception." << "\n";
-		            	e.AddMessage("[NuTo::StructureBase::NewtonRaphson]: error calculating new displacement increment.");
-		            	throw e;
-		            }
-				}
-				catch(...)
-				{
-		            std::cout << "catch all other exceptions after initial load decrease." << "\n";
-					throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.",MechanicsException::NOCONVERGENCE);
-				}
-            }
+                                //set previous converged displacements
+                                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                                Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                                if (error!=Error::SUCCESSFUL)
+                                    return error;
 
-            //update rhs vector for next Newton iteration
-            rhsVector = extForceVector - intForceVector;
-            normRHS = rhsVector.Norm();
-            //attention this is only different for the first iteration step (load application)
-            //since the internal force due to the applied constraints is not considered for the first iteration
-            //in order to balance it (no localization in the boundary region)
-            //for the linesearch this internal force has to be considered in order to obtain for a linesearch
-            //factor of zero the normRHS
-            rhsVector = dispForceVector + extForceVector;
-            if (rInitialStateInEquilibrium==false && curLoadFactor==deltaLoadFactor)
-            {
-                rhsVector -= intForceVectorInit;
+                                //decrease load step
+                                deltaLoadFactor*=mDecreaseFactor;
+                                curLoadFactor+=deltaLoadFactor;
+
+                                //check for minimum delta (this mostly indicates an error in the software
+                                if (deltaLoadFactor<mMinDeltaLoadFactor)
+                                {
+                                    mLogger << "[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.";
+                                    mLogger << "curLoadFactor " << curLoadFactor << ", deltaLoadFactor " << deltaLoadFactor << "mMinDeltaLoadFactor" << mMinDeltaLoadFactor<< "\n";
+                                    return Error::NO_CONVERGENCE;
+                                }
+                                continue;
+                            }
+                            else
+                                return error;
+                        }
+
+                        // calculate initial residual for next load step
+                        //mLogger<<" calculate gradient 1532" << "\n";
+                        error = this->BuildGlobalGradientInternalPotentialVector(intForceVector);
+                        if (error!=Error::SUCCESSFUL)
+                        {
+                            if (error==Error::NO_CONVERGENCE)
+                            {
+                                if (mAutomaticLoadstepControl==false)
+                                    return Error::NO_CONVERGENCE;
+                                mLogger << "Constitutive model is not converging in initial try after load increment, I'll try with smaller load step" << "\n";
+
+                                //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
+                                //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
+                                //otherwise, the additional boundary displacements will result in an artifical localization in elements at the boundary
+                                curLoadFactor-=deltaLoadFactor;
+
+                                //set the previous displacement state
+                                this->SetLoadFactor(curLoadFactor);
+
+                                // build global dof numbering
+                                this->NodeBuildGlobalDofs();
+
+                                //set previous converged displacements
+                                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                                Error::eError error = this->ElementTotalUpdateTmpStaticData();
+                                if (error!=Error::SUCCESSFUL)
+                                    return error;
+
+                                //decrease load step
+                                deltaLoadFactor*=mDecreaseFactor;
+                                curLoadFactor+=deltaLoadFactor;
+
+                                //check for minimum delta (this mostly indicates an error in the software
+                                if (deltaLoadFactor<mMinDeltaLoadFactor)
+                                {
+                                    mLogger << "[NuTo::StructureBase::NewtonRaphson]: No convergence after the initial stiffness calculation after a load decrease.";
+                                    mLogger << "curLoadFactor " << curLoadFactor << ", deltaLoadFactor " << deltaLoadFactor << "mMinDeltaLoadFactor" << mMinDeltaLoadFactor<< "\n";
+                                    return Error::NO_CONVERGENCE;
+                                }
+                                continue;
+                            }
+                            else
+                                return error;
+                        }
+
+                        convergenceConstitutive = true;
+                    }
+
+                }
+                catch(NuTo::MechanicsException& e)
+                {
+                    e.AddMessage("[NuTo::StructureBase::NewtonRaphson]: error calculating new displacement increment.");
+                    throw e;
+                }
+                catch(...)
+                {
+                    throw NuTo::MechanicsException("[NuTo::StructureBase::NewtonRaphson]: Exception after the initial stiffness calculation after a load decrease.");
+                }
+
+                //update rhs vector for next Newton iteration
+                rhsVector = extForceVector - intForceVector;
+                normRHS = rhsVector.Norm();
+                //attention this is only different for the first iteration step (load application)
+                //since the internal force due to the applied constraints is not considered for the first iteration
+                //in order to balance it (no localization in the boundary region)
+                //for the linesearch this internal force has to be considered in order to obtain for a linesearch
+                //factor of zero the normRHS
+                rhsVector = dispForceVector + extForceVector;
+                if (rInitialStateInEquilibrium==false && curLoadFactor==deltaLoadFactor)
+                {
+                    rhsVector -= intForceVectorInit;
+                }
             }
         }
     }
-}
-catch (MechanicsException& e)
-{
-    e.AddMessage("[NuTo::StructureBase::NewtonRaphson] performing Newton-Raphson iteration.");
-    throw e;
-}
+    catch (MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::NewtonRaphson] performing Newton-Raphson iteration.");
+        throw e;
+    }
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1763,6 +1983,7 @@ catch (MechanicsException& e)
         mLogger<<"[NuTo::StructureBase::NewtonRaphson] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
+    return NuTo::Error::SUCCESSFUL;
 }
 
 #ifdef _OPENMP
@@ -1776,101 +1997,101 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
     std::clock_t start,end;
     start=clock();
 #endif
-try
-{
-	std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-
-/*    //for test purpose
-	mMIS.resize(elementVector.size());
-	for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
-	{
-		mMIS[elementCount].resize(1);
-		mMIS[elementCount][0] = elementVector[elementCount];
-	}
-	return;
-	*/
-
-    //Build the connectivity graph
-    //First get for all nodes all the elements
-    std::map<NodeBase*, std::vector<unsigned int> > elementsPerNode;
-    for (unsigned int elementCount = 0; elementCount< elementVector.size(); elementCount++)
+    try
     {
-    	for (int nodeCount = 0; nodeCount< elementVector[elementCount]->GetNumNodes(); nodeCount++)
-    	{
-    		elementsPerNode[elementVector[elementCount]->GetNode(nodeCount)].push_back(elementCount);
-    	}
-    }
+        std::vector<ElementBase*> elementVector;
+        GetElementsTotal(elementVector);
 
-    //Get the neighboring elements (always referring to the location in the vector elementVector)
-    std::vector< std::vector<int> > NeighborElements(elementVector.size());
-    for (auto itNode = elementsPerNode.begin(); itNode!=elementsPerNode.end(); itNode++)
-    {
-    	for (unsigned int elementCount1 = 0; elementCount1 < itNode->second.size(); elementCount1++)
-    	{
-        	for (unsigned int elementCount2 = elementCount1+1; elementCount2 < itNode->second.size(); elementCount2++)
+        /*    //for test purpose
+        	mMIS.resize(elementVector.size());
+        	for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
         	{
-        		NeighborElements[itNode->second[elementCount1]].push_back(itNode->second[elementCount2]);
-        		NeighborElements[itNode->second[elementCount2]].push_back(itNode->second[elementCount1]);
+        		mMIS[elementCount].resize(1);
+        		mMIS[elementCount][0] = elementVector[elementCount];
         	}
-    	}
-    }
+        	return;
+        	*/
 
-    //build the maximum independent sets
-    std::vector<int> elementState(elementVector.size());
-    for (unsigned int count=0; count<elementState.size(); count++)
-    	elementState[count] = UNDONE;
-
-    unsigned int numDeleted=0;
-    unsigned int curMIS = 0;
-    mMIS.resize(10);
-    while (numDeleted<elementVector.size())
-    {
-    	if (mMIS.size()<=curMIS)
-            	mMIS.resize(curMIS+1);
-     	for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+        //Build the connectivity graph
+        //First get for all nodes all the elements
+        std::map<NodeBase*, std::vector<unsigned int> > elementsPerNode;
+        for (unsigned int elementCount = 0; elementCount< elementVector.size(); elementCount++)
         {
-        	if (elementState[countElement]!=UNDONE)
-        		continue;
-
-        	//add element to the set
-        	//std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS << std::endl;
-        	(mMIS[curMIS]).push_back(elementVector[countElement]);
-        	elementState[countElement] = DELETED;
-        	numDeleted++;
-
-        	//mark all the neighboring elements as selected, which prevents them to being added to this set
-        	for (unsigned int theNeighborCount=0; theNeighborCount<NeighborElements[countElement].size(); theNeighborCount++)
-        	{
-        		if (elementState[NeighborElements[countElement][theNeighborCount]]==UNDONE)
-        			elementState[NeighborElements[countElement][theNeighborCount]] = SELECTED;
-        	}
+            for (int nodeCount = 0; nodeCount< elementVector[elementCount]->GetNumNodes(); nodeCount++)
+            {
+                elementsPerNode[elementVector[elementCount]->GetNode(nodeCount)].push_back(elementCount);
+            }
         }
-        //reset the selected elements to be undone
-        for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+
+        //Get the neighboring elements (always referring to the location in the vector elementVector)
+        std::vector< std::vector<int> > NeighborElements(elementVector.size());
+        for (auto itNode = elementsPerNode.begin(); itNode!=elementsPerNode.end(); itNode++)
         {
-        	if (elementState[countElement]==SELECTED)
-        		elementState[countElement]=UNDONE;
-
+            for (unsigned int elementCount1 = 0; elementCount1 < itNode->second.size(); elementCount1++)
+            {
+                for (unsigned int elementCount2 = elementCount1+1; elementCount2 < itNode->second.size(); elementCount2++)
+                {
+                    NeighborElements[itNode->second[elementCount1]].push_back(itNode->second[elementCount2]);
+                    NeighborElements[itNode->second[elementCount2]].push_back(itNode->second[elementCount1]);
+                }
+            }
         }
-        curMIS++;
+
+        //build the maximum independent sets
+        std::vector<int> elementState(elementVector.size());
+        for (unsigned int count=0; count<elementState.size(); count++)
+            elementState[count] = UNDONE;
+
+        unsigned int numDeleted=0;
+        unsigned int curMIS = 0;
+        mMIS.resize(10);
+        while (numDeleted<elementVector.size())
+        {
+            if (mMIS.size()<=curMIS)
+                mMIS.resize(curMIS+1);
+            for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+            {
+                if (elementState[countElement]!=UNDONE)
+                    continue;
+
+                //add element to the set
+                //std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS << std::endl;
+                (mMIS[curMIS]).push_back(elementVector[countElement]);
+                elementState[countElement] = DELETED;
+                numDeleted++;
+
+                //mark all the neighboring elements as selected, which prevents them to being added to this set
+                for (unsigned int theNeighborCount=0; theNeighborCount<NeighborElements[countElement].size(); theNeighborCount++)
+                {
+                    if (elementState[NeighborElements[countElement][theNeighborCount]]==UNDONE)
+                        elementState[NeighborElements[countElement][theNeighborCount]] = SELECTED;
+                }
+            }
+            //reset the selected elements to be undone
+            for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+            {
+                if (elementState[countElement]==SELECTED)
+                    elementState[countElement]=UNDONE;
+
+            }
+            curMIS++;
+        }
+        mMIS.resize(curMIS);
+        /*    std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
+            for (unsigned int count=0; count<mMIS.size(); count++)
+            {
+            	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
+            	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
+            		std::cout << ElementGetId(mMIS[count][count2]) << " ";
+            	std::cout << std::endl;
+            }
+        */
     }
-    mMIS.resize(curMIS);
-/*    std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
-    for (unsigned int count=0; count<mMIS.size(); count++)
+    catch (MechanicsException& e)
     {
-    	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
-    	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
-    		std::cout << ElementGetId(mMIS[count][count2]) << " ";
-    	std::cout << std::endl;
+        e.AddMessage("[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
+        throw e;
     }
-*/
-}
-catch (MechanicsException& e)
-{
-    e.AddMessage("[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
-    throw e;
-}
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)

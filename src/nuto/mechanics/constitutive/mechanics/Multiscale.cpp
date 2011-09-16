@@ -117,7 +117,7 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetEngineeringPlasticStrain] not implemented.");
@@ -128,7 +128,7 @@ void NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, 
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetEngineeringPlasticStrain] not implemented.");
@@ -140,7 +140,7 @@ void NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, 
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                   const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetEngineeringPlasticStrain] not implemented.");
@@ -153,7 +153,7 @@ void NuTo::Multiscale::GetEngineeringPlasticStrain(const ElementBase* rElement, 
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStress ... Engineering stress
-void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] not implemented for 1D.");
@@ -166,7 +166,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStress ... Engineering stress
-void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] not implemented for 1D.");
@@ -179,7 +179,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStress ... Engineering stress
-void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const
 {
     // check if parameters are valid
@@ -265,32 +265,43 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         {
             //this might happen due to the adaptation
             bool initialStateInEquilibrium=false;
-            fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
-        }
-        catch(NuTo::MechanicsException& e)
-        {
-        	//restore structure
-            if (hasBeenSaved)
+            Error::eError error = fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+
+            if (error==Error::NO_CONVERGENCE)
             {
-                fineScaleStructure->RestoreStructure(saveStream);
+            	//restore structure
+                if (hasBeenSaved)
+                {
+                    fineScaleStructure->RestoreStructure(saveStream);
+                }
+                else
+                {
+                    //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                    fineScaleStructure->SetLoadFactor(0);
+                    fineScaleStructure->NodeBuildGlobalDofs();
+                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                }
+                std::cout << "[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] return with no convergence " << "\n";
+                return error;
             }
             else
             {
-                //set load factor to zero in order to get the same ordering of the displacements as before the routine
-                fineScaleStructure->SetLoadFactor(0);
-                fineScaleStructure->NodeBuildGlobalDofs();
-                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+				if (error!=Error::SUCCESSFUL)
+				{
+					throw MechanicsException(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Newton iteration returned with flag other than successful"));
+				}
             }
-            //std::cout << std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
-            //std::cout << "no convergence exception?? " <<  (e.GetError()==NuTo::MechanicsException::NOCONVERGENCE) << "\n";
-            e.AddMessage(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
+        }
+        catch(NuTo::MechanicsException& e)
+        {
+        	e.AddMessage(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] MechanicsException while performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
         	throw e;
         }
-/*        catch(...)
+        catch(...)
         {
         	throw MechanicsException(std::string("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
         }
-*/
+
         //calculate average stress
         NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
         if (fineScaleStructure->GetGroupElementsDamage()==-1)
@@ -330,6 +341,8 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
         }
         fineScaleStructure->GetLogger().CloseFile();
     }
+
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -339,7 +352,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStress ... Engineering stress
-void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
     // check if parameters are valid
@@ -352,7 +365,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
     	throw MechanicsException("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
     }
     EngineeringStress2D engineeringStress2D;
-    GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, engineeringStress2D);
+    NuTo::Error::eError error = GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, engineeringStress2D);
     //this is certainly not correct, since it is plane strain, but I do not care about the stress in thickness direction here
     rEngineeringStress.mEngineeringStress[0] = engineeringStress2D.mEngineeringStress[0];
     rEngineeringStress.mEngineeringStress[1] = engineeringStress2D.mEngineeringStress[1];
@@ -360,6 +373,8 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
     rEngineeringStress.mEngineeringStress[3] = engineeringStress2D.mEngineeringStress[2];
     rEngineeringStress.mEngineeringStress[4] = 0.;
     rEngineeringStress.mEngineeringStress[5] = 0.;
+
+    return error;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -369,7 +384,7 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] not implemented.");
@@ -381,10 +396,11 @@ void NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(const ElementBa
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rDamage ... damage variable
-void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
                                   const DeformationGradient1D& rDeformationGradient, double& rDamage) const
 {
 	rDamage=0.;
+    return Error::SUCCESSFUL;
 }
 
 //  Damage /////////////////////////////////////
@@ -393,10 +409,11 @@ void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rDamage ... damage variable
-void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
                                   const DeformationGradient2D& rDeformationGradient, double& rDamage) const
 {
 	rDamage=0.;
+    return Error::SUCCESSFUL;
 }
 
 //  Damage /////////////////////////////////////
@@ -405,10 +422,11 @@ void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rDamage ... damage variable
-void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
                                   const DeformationGradient3D& rDeformationGradient, double& rDamage) const
 {
 	rDamage=0.;
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
@@ -417,7 +435,7 @@ void NuTo::Multiscale::GetDamage(const ElementBase* rElement, int rIp,
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient,
         ConstitutiveTangentBase* rTangent) const
 {
@@ -430,7 +448,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient,
         ConstitutiveTangentBase* rTangent) const
 {
@@ -518,25 +536,32 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
             		                            <<  staticData->GetPrevStrain().mEngineeringStrain[2] << "\n"  << "\n";
             //this might happen due to the adaptation
             bool initialStateInEquilibrium=false;
-            fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+            Error::eError error = fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+
+            if (error==Error::NO_CONVERGENCE)
+            {
+            	//restore structure
+                if (hasBeenSaved)
+                {
+                    fineScaleStructure->RestoreStructure(saveStream);
+                }
+                else
+                {
+                    //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                    fineScaleStructure->SetLoadFactor(0);
+                    fineScaleStructure->NodeBuildGlobalDofs();
+                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                }
+                std::cout << "[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] return with no convergence " << "\n";
+                return error;
+            }
+            if (error!=Error::SUCCESSFUL)
+            {
+            	throw MechanicsException(std::string("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] Newton iteration returned with flag other than successful"));
+            }
         }
         catch(NuTo::MechanicsException& e)
         {
-            //restore structure
-            if (hasBeenSaved)
-            {
-                fineScaleStructure->RestoreStructure(saveStream);
-            }
-            else
-            {
-                //set load factor to zero in order to get the same ordering of the displacements as before the routine
-                fineScaleStructure->SetLoadFactor(0);
-                fineScaleStructure->NodeBuildGlobalDofs();
-                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-            }
-            if (e.GetError()==MechanicsException::NOCONVERGENCE)
-            	std::cout << "Newton Raphson on finescale returned with a no convergence exception." << "\n";
-            std::cout << std::string("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain]  No convergence in multiscale for ip ") + fineScaleStructure->GetIPName() << std::endl;
             e.AddMessage(std::string("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] No convergence in multiscale for ip ") + fineScaleStructure->GetIPName());
         	throw e;
         }
@@ -734,6 +759,8 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
 #else
     throw MechanicsException("[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] MUMPS solver required to calculate Schur complement.");
 #endif //HAVE_MUMPS
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
@@ -742,7 +769,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient,
         ConstitutiveTangentBase* rTangent) const
 {
@@ -754,7 +781,7 @@ void NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain(const Elem
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient)const
 {
     throw MechanicsException("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] not implemented.");
@@ -765,7 +792,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient)const
 {
     // check if parameters are valid
@@ -844,7 +871,29 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
         {
             //this might happen due to the adaptation
             bool initialStateInEquilibrium=false;
-            fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+            NuTo::Error::eError error = fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+
+            if (error==Error::NO_CONVERGENCE)
+            {
+            	//restore structure
+                if (hasBeenSaved)
+                {
+                    fineScaleStructure->RestoreStructure(saveStream);
+                }
+                else
+                {
+                    //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                    fineScaleStructure->SetLoadFactor(0);
+                    fineScaleStructure->NodeBuildGlobalDofs();
+                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                }
+                std::cout << "[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] return with no convergence " << "\n";
+                return error;
+            }
+            if (error!=Error::SUCCESSFUL)
+            {
+            	throw MechanicsException(std::string("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] Newton iteration returned with flag other than successful"));
+            }
         }
         catch(NuTo::MechanicsException& e)
         {
@@ -920,13 +969,15 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
     const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStrain(engineeringStrain);
     const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevStress(engineeringStress);
     const_cast<ConstitutiveStaticDataMultiscale2DPlaneStrain*>(staticData)->SetPrevTotalEnergy(energy);
+
+    return Error::SUCCESSFUL;
 }
 //! @brief ... update static data (history variables) of the constitutive relationship
 //! @param rStructure ... structure
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient)const
 {
     throw MechanicsException("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] not implemented.");
@@ -937,7 +988,7 @@ void NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain(Elem
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient1D& rDeformationGradient)const
 {
     throw MechanicsException("[NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] not implemented.");
@@ -948,10 +999,10 @@ void NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(E
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient)const
 {
-    return;
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -959,7 +1010,7 @@ void NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(E
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
         const DeformationGradient3D& rDeformationGradient)const
 {
     throw MechanicsException("[NuTo::Multiscale::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] not implemented.");
@@ -996,8 +1047,8 @@ NuTo::ConstitutiveStaticDataBase* NuTo::Multiscale::AllocateStaticDataEngineerin
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient) const
+NuTo::Error::eError NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+        const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
 }
@@ -1008,8 +1059,8 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient) const
+NuTo::Error::eError NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+        const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
     const ConstitutiveStaticDataMultiscale2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsMultiscale2DPlaneStrain();
     StructureMultiscale *fineScaleStructure = const_cast<StructureMultiscale*>(staticData->GetFineScaleStructure());
@@ -1062,22 +1113,32 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
     {
         //this might happen due to the adaptation
         bool initialStateInEquilibrium=false;
-        fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+        NuTo::Error::eError error = fineScaleStructure->NewtonRaphson(true, saveStream, hasBeenSaved, initialStateInEquilibrium);
+
+        if (error==Error::NO_CONVERGENCE)
+        {
+        	//restore structure
+            if (hasBeenSaved)
+            {
+                fineScaleStructure->RestoreStructure(saveStream);
+            }
+            else
+            {
+                //set load factor to zero in order to get the same ordering of the displacements as before the routine
+                fineScaleStructure->SetLoadFactor(0);
+                fineScaleStructure->NodeBuildGlobalDofs();
+                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            }
+            std::cout << "[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] return with no convergence " << "\n";
+            return error;
+        }
+        if (error!=Error::SUCCESSFUL)
+        {
+        	throw MechanicsException(std::string("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Newton iteration returned with flag other than successful"));
+        }
     }
     catch(MechanicsException& e)
     {
-        //restore structure
-        if (hasBeenSaved)
-        {
-            fineScaleStructure->RestoreStructure(saveStream);
-        }
-        else
-        {
-            //set load factor to zero in order to get the same ordering of the displacements as before the routine
-            fineScaleStructure->SetLoadFactor(0);
-            fineScaleStructure->NodeBuildGlobalDofs();
-            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
-        }
         e.AddMessage(std::string("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
     	throw e;
     }
@@ -1086,7 +1147,7 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
     	throw MechanicsException(std::string("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName());
     }
 
-    double energy = staticData->GetPrevTotalEnergy();
+    rEnergy = staticData->GetPrevTotalEnergy();
     //calculate delta total energy (sigma1+sigma2)/2*delta_strain
     //calculate average stress
     NuTo::FullMatrix<double> averageStressDamage, averageStressHomogeneous;
@@ -1115,7 +1176,7 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 		meanEngineeringStress.mEngineeringStress[2] = (averageStressDamage(3,0)+averageStressHomogeneous(3,0)+prevStress.mEngineeringStress[2]);
     }
 
-    energy+=0.5*(meanEngineeringStress.mEngineeringStress[0]*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
+    rEnergy+=0.5*(meanEngineeringStress.mEngineeringStress[0]*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
                  meanEngineeringStress.mEngineeringStress[1]*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
                  meanEngineeringStress.mEngineeringStress[2]*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2]));
     //restore structure
@@ -1131,10 +1192,10 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
         fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
     }
     fineScaleStructure->GetLogger() << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy()  << "\n";
-    fineScaleStructure->GetLogger() << "Energy of fine scale approx "  << energy * fineScaleStructure->GetCoarseScaleArea() << "\n";
+    fineScaleStructure->GetLogger() << "Energy of fine scale approx "  << rEnergy * fineScaleStructure->GetCoarseScaleArea() << "\n";
     fineScaleStructure->GetLogger().CloseFile();
 
-    return energy;
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1143,45 +1204,10 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient) const
+NuTo::Error::eError NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+        const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
-/*
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain3D engineeringStrain;
-    EngineeringStress3D engineeringStress;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    // calculate coefficients of the material matrix
-    double C11, C12, C44;
-    this->CalculateCoefficients3D(C11, C12, C44);
-
-    // calculate Engineering stress
-    engineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * (engineeringStrain.mEngineeringStrain[1]+engineeringStrain.mEngineeringStrain[2]);
-    engineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * (engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[2]);
-    engineeringStress.mEngineeringStress[2] = C11 * engineeringStrain.mEngineeringStrain[2] + C12 * (engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[1]);
-    engineeringStress.mEngineeringStress[3] = C44 * engineeringStrain.mEngineeringStrain[3] ;
-    engineeringStress.mEngineeringStress[4] = C44 * engineeringStrain.mEngineeringStrain[4] ;
-    engineeringStress.mEngineeringStress[5] = C44 * engineeringStrain.mEngineeringStrain[5] ;
-
-    return 0.5*(
-            engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
-           +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
-           +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]
-           +engineeringStrain.mEngineeringStrain[3]*engineeringStress.mEngineeringStress[3]
-           +engineeringStrain.mEngineeringStrain[4]*engineeringStress.mEngineeringStress[4]
-           +engineeringStrain.mEngineeringStrain[5]*engineeringStress.mEngineeringStress[5]);
-*/
 }
 
 
@@ -1190,8 +1216,8 @@ double NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain(cons
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient) const
+NuTo::Error::eError NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+        const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
 }
@@ -1202,8 +1228,8 @@ double NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(co
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient) const
+NuTo::Error::eError NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+        const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
     throw MechanicsException("[NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
 }
@@ -1214,10 +1240,10 @@ double NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(co
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient) const
+NuTo::Error::eError NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+        const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
-    return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient);
+	throw MechanicsException("[NuTo::Multiscale::GetElasticEnergy_EngineeringStress_EngineeringStrain] not yet implemented.");
 }
 
 
@@ -1945,7 +1971,7 @@ bool NuTo::Multiscale::CheckGradient(NuTo::StructureMultiscale* rFineScaleStruct
 
 }
 
-void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rIp,
         const DeformationGradient2D& rDeformationGradient)const
 {
     // check if parameters are valid
@@ -1977,7 +2003,7 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 
 		// check if transformation has to be done
 		if (princ_sigma<mTensileStrength)
-			return;
+			return Error::SUCCESSFUL;
 
 		//calculate center
 		double center[3];
@@ -2409,10 +2435,15 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
 				fineScaleStructure->CalculateAndSetCrackLengthFineScale();
 
 				if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
+				{
+					std::cout << "scaling factor hom " << fineScaleStructure->GetScalingFactorHomogeneous() << " damage " << fineScaleStructure->GetScalingFactorDamage() << "\n";
+					std::cout << "mCoarseScaleArea " << fineScaleStructure->GetCoarseScaleArea() << "\n";
+					std::cout << "mlCoarseScale " << fineScaleStructure->GetlCoarseScaleCrack() << "\n";
+					std::cout << "mFineScaleArea " << fineScaleStructure->GetAreaFineScale() << "\n";
+					std::cout << "mlFineScaleDamage " << fineScaleStructure->GetlFineScaleCrack() << "\n";
 					throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
+				}
 
-				if (fineScaleStructure->GetScalingFactorDamage()<=1e-10 || fineScaleStructure->GetScalingFactorHomogeneous()<=1e-10)
-					throw MechanicsException("[NuTo::Multiscale::MultiscaleSwitchToNonlinear] scaling factor is less than 0, probably your macro element is smaller than the fine scale model." );
 				//delete constraints for crack opening
 				fineScaleStructure->ConstraintDeleteTangentialCrackOpening();
 				fineScaleStructure->ConstraintDeleteNormalCrackOpening();
@@ -2526,4 +2557,5 @@ void NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* rElement, int rI
     	    }
         }
     }
+    return Error::NOT_IMPLEMENTED;
 }

@@ -36,7 +36,7 @@ NuTo::Plane::Plane(const StructureBase* rStructure, ElementData::eElementDataTyp
 
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
-void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
+NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     //calculate local coordinates
@@ -125,9 +125,10 @@ void NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoeffi
         if (NumNonlocalElements!=0)
         {
             //Nonlocal Model
-            constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
+            Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
                 deformationGradient, &NonlocalTangent);
-
+            if (error!=Error::SUCCESSFUL)
+            	return error;
 
             /*
             NuTo::FullMatrix<double> stiffnessAnalytic(Eigen::Matrix<double,3,3>::Map(NonlocalTangent.GetSubMatrix(0)->GetData(),3,3));
@@ -275,8 +276,11 @@ exit(0);
         }
         else
         {
-        constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
-                            deformationGradient, NonlocalTangent.GetSubMatrix(0));
+            Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
+                deformationGradient, NonlocalTangent.GetSubMatrix(0));
+            if (error!=Error::SUCCESSFUL)
+        	    return error;
+
             areAllIpsSymmetric &= NonlocalTangent.GetSubMatrix(0)->GetSymmetry();
 
             // calculate element stiffness matrix
@@ -303,6 +307,8 @@ exit(0);
 
     assert((int)rGlobalDofsRow.size()==rCoefficientMatrix.GetNumRows());
     assert((int)rGlobalDofsColumn.size()==rCoefficientMatrix.GetNumColumns());
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief adds to a matrix the product B^tCBnonlocal, where B contains the derivatives of the shape functions and C is the constitutive tangent and Bnonlocal is the nonlocal B matrix
@@ -490,7 +496,7 @@ void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<doubl
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-void NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     //calculate local coordinates
@@ -539,11 +545,13 @@ void NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
         CalculateDeformationGradient(derivativeShapeFunctionsLocal, localNodeDisp, deformationGradient);
 
         //call constitutive law and calculate stress
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Plane::CalculateGradientInternalPotential] Constitutive law can not deal with engineering stresses and strains");
-        constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
+        Error::eError error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
                 deformationGradient, engineeringStress);
+        if (error!=Error::SUCCESSFUL)
+        	return error;
 
         //add to local resforce vector
         assert(mSection->GetThickness()>0);
@@ -554,10 +562,12 @@ void NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& r
     }
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofs);
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief Update the static data of an element
-void NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
+NuTo::Error::eError NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
 {
 	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
@@ -606,21 +616,25 @@ void NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
         constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Plane::UpdateStaticData] Constitutive law can not deal with engineering stresses and strains");
+        Error::eError error;
         switch(rUpdateType)
         {
         case NuTo::Element::STATICDATA:
-            constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        	error = constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
         break;
         case NuTo::Element::TMPSTATICDATA:
-            constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        	error = constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
         break;
         case NuTo::Element::SWITCHMULTISCALE2NONLINEAR:
-            constitutivePtr->MultiscaleSwitchToNonlinear(this, theIP, deformationGradient);
+        	error = constitutivePtr->MultiscaleSwitchToNonlinear(this, theIP, deformationGradient);
         break;
         default:
             throw MechanicsException("[NuTo::Plane::UpdateStaticData] update static data flag not known (neither static not tmpstatic data");
         }
+        if (error!=Error::SUCCESSFUL)
+        	return error;
     }
+    return Error::SUCCESSFUL;
 }
 
 //! @brief calculates the deformation gradient in 2D
@@ -656,7 +670,7 @@ void NuTo::Plane::CalculateDeformationGradient(const std::vector<double>& rDeriv
 
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
-void NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
     throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_1] to be implemented.");
@@ -664,7 +678,7 @@ void NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-void NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
     throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_2] to be implemented.");
@@ -718,7 +732,7 @@ void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
-void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
+NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
 {
     //calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
@@ -793,27 +807,27 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
 
         //call constitutive law and calculate stress
         constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
-
+        Error::eError error;
         switch (rIpDataType)
         {
         case NuTo::IpData::ENGINEERING_STRAIN:
-            constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
+        	error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::ENGINEERING_STRESS:
-            constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
+        	error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStress.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
+        	error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::DAMAGE:
-            constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+        	error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
         break;
         case NuTo::IpData::ELASTIC_ENERGY:
         {
-            rIpData.mEigenMatrix(0,theIP) = constitutivePtr->GetElasticEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        	error = constitutivePtr->GetElasticEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient, rIpData.mEigenMatrix(0,theIP));
             assert(mSection->GetThickness()>0);
             double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
             rIpData.mEigenMatrix(1,theIP) = factor;
@@ -821,7 +835,7 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
         break;
         case NuTo::IpData::TOTAL_ENERGY:
         {
-            rIpData.mEigenMatrix(0,theIP) = constitutivePtr->GetTotalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+        	error = constitutivePtr->GetTotalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient,rIpData.mEigenMatrix(0,theIP));
             assert(mSection->GetThickness()>0);
             double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
             rIpData.mEigenMatrix(1,theIP) = factor;
@@ -830,7 +844,10 @@ void NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMat
         default:
             throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
         }
+        if (error!=Error::SUCCESSFUL)
+        	return error;
     }
+    return Error::SUCCESSFUL;
 }
 
 

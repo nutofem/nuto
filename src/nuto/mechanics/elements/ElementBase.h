@@ -10,7 +10,7 @@
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
-
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -177,28 +177,28 @@ public:
     //! @param rGlobalDofsRow ... row numbers in global system
     //! @param rGlobalDofsColumn ... column numbers in global system
     //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    virtual void CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
+    virtual Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const=0;
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
-    virtual void CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+    virtual Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const=0;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
-    virtual void CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+    virtual Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const=0;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    virtual void CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+    virtual Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
             std::vector<int>& rGlobalDofs)const=0;
 
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    virtual void GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const=0;
+    virtual Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const=0;
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
@@ -228,7 +228,7 @@ public:
     void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
 
     //! @brief Update the static data of an element
-    virtual  void UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
+    virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
     //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates

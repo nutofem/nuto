@@ -30,7 +30,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                       const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
 
     //  Engineering strain /////////////////////////////////////
@@ -39,7 +39,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                       const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
 
     //  Engineering strain /////////////////////////////////////
@@ -48,7 +48,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                       const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -58,7 +58,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -68,7 +68,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -78,7 +78,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -88,7 +88,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -98,7 +98,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rCauchyStress ... Cauchy stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
 
     //  Damage /////////////////////////////////////
@@ -107,7 +107,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
+    Error::eError GetDamage(const ElementBase* rElement, int rIp,
                                       const DeformationGradient1D& rDeformationGradient, double& rDamage) const;
 
     //  Damage /////////////////////////////////////
@@ -116,7 +116,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
+    Error::eError GetDamage(const ElementBase* rElement, int rIp,
                                       const DeformationGradient2D& rDeformationGradient, double& rDamage) const;
 
     //  Damage /////////////////////////////////////
@@ -125,7 +125,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
+    Error::eError GetDamage(const ElementBase* rElement, int rIp,
                                       const DeformationGradient3D& rDeformationGradient, double& rDamage) const;
 
 
@@ -135,7 +135,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient,
             ConstitutiveTangentBase* rTangent) const;
 
@@ -145,7 +145,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient,
     		ConstitutiveTangentBase* rTangent) const;
 
@@ -155,7 +155,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient,
     		ConstitutiveTangentBase* rTangent) const;
 
@@ -164,7 +164,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
@@ -172,7 +172,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
@@ -180,7 +180,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -188,7 +188,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -196,7 +196,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -204,7 +204,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... create new static data object for an integration point
@@ -253,7 +253,7 @@ public:
     //! @param rNewStress ... new stress (if a 0-pointer is given, no values are written)
     //! @param rNewTangent ... new tangent matrix (if a 0-pointer is given, no values are written)
     //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
-    void ReturnMapping3D(const ElementBase* rElement,int rIp,
+    NuTo::Error::eError ReturnMapping3D(const ElementBase* rElement,int rIp,
     		const DeformationGradient3D& rDeformationGradient,
     		EngineeringStress3D* rNewStress,
     		ConstitutiveTangentLocal6x6* rNewTangent,

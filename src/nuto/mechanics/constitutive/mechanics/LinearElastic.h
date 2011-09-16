@@ -68,7 +68,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                       const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
 
     //  Engineering strain /////////////////////////////////////
@@ -77,7 +77,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                       const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
 
     //  Engineering strain /////////////////////////////////////
@@ -86,7 +86,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStrain ... engineering strain
-    void GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
                                       const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const;
 
 
@@ -97,7 +97,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -107,7 +107,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -117,7 +117,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -127,7 +127,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rEngineeringStress ... engineering stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
 
     // Engineering stress - Engineering strain /////////////////////////////////////
@@ -137,7 +137,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rCauchyStress ... Cauchy stress
-    void GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const;
 
     //  Damage /////////////////////////////////////
@@ -146,7 +146,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
+    Error::eError GetDamage(const ElementBase* rElement, int rIp,
                                       const DeformationGradient1D& rDeformationGradient, double& rDamage) const;
 
     //  Damage /////////////////////////////////////
@@ -155,7 +155,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
+    Error::eError GetDamage(const ElementBase* rElement, int rIp,
                                       const DeformationGradient2D& rDeformationGradient, double& rDamage) const;
 
     //  Damage /////////////////////////////////////
@@ -164,7 +164,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rDamage ... damage variable
-    void GetDamage(const ElementBase* rElement, int rIp,
+    Error::eError GetDamage(const ElementBase* rElement, int rIp,
                                       const DeformationGradient3D& rDeformationGradient, double& rDamage) const;
 
 
@@ -174,7 +174,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient,
             ConstitutiveTangentBase* rTangent) const;
 
@@ -184,7 +184,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient,
             ConstitutiveTangentBase* rTangent) const;
 
@@ -194,7 +194,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient,
             ConstitutiveTangentBase* rTangent) const;
 
@@ -203,7 +203,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
@@ -211,7 +211,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
@@ -219,7 +219,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_EngineeringStress_EngineeringStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -227,7 +227,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+    Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
             const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -235,7 +235,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+    Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
             const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -243,7 +243,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+    Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... create new static data object for an integration point
@@ -263,48 +263,48 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient) const;
+    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+            const DeformationGradient1D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient) const;
+    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+            const DeformationGradient2D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient) const;
+    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+            const DeformationGradient3D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient1D& rDeformationGradient) const;
+    Error::eError GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+            const DeformationGradient1D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient) const;
+    Error::eError GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+            const DeformationGradient2D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-            const DeformationGradient3D& rDeformationGradient) const;
+    Error::eError GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+            const DeformationGradient3D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculates the difference of the elastic strain between the current state and the previous update
     //! @param rStructure ... structure
@@ -341,7 +341,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rSecondPiolaKirchhoffStress ... Second Piola Kirchhoff Stress
-    void GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient1D& rDeformationGradient, SecondPiolaKirchhoffStress1D& rSecondPiolaKirchhoffStress) const;
 
     // Second PiolaKirchhoff Stress - Green Lagrange Strains /////////////////////////////////////
@@ -351,7 +351,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rSecondPiolaKirchhoffStress ... Second Piola Kirchhoff Stress
-    void GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient2D& rDeformationGradient, SecondPiolaKirchhoffStress2D& rSecondPiolaKirchhoffStress) const;
 
     // Second PiolaKirchhoff Stress - Green Lagrange Strains /////////////////////////////////////
@@ -361,7 +361,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rSecondPiolaKirchhoffStress ... Second Piola Kirchhoff Stress
-    void GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
     		      const DeformationGradient3D& rDeformationGradient, SecondPiolaKirchhoffStress3D& rSecondPiolaKirchhoffStress) const;
 
     //! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
@@ -370,7 +370,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient,
             ConstitutiveTangentLocal1x1& rTangent) const;
 
@@ -380,7 +380,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient,
             ConstitutiveTangentLocal3x3& rTangent) const;
 
@@ -390,7 +390,7 @@ public:
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     //! @param rTangent ... tangent
-    void GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient,
             ConstitutiveTangentLocal6x6& rTangent) const;
 
@@ -399,7 +399,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
@@ -407,7 +407,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update static data (history variables) of the constitutive relationship
@@ -415,7 +415,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    void UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain( ElementBase* rElement, int rIp,
+    Error::eError UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain( ElementBase* rElement, int rIp,
     		const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... create new static data object for an integration point
@@ -436,48 +436,48 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient1D& rDeformationGradient) const;
+    Error::eError GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient2D& rDeformationGradient) const;
+    Error::eError GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient3D& rDeformationGradient) const;
+    Error::eError GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient1D& rDeformationGradient) const;
+    Error::eError GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient2D& rDeformationGradient) const;
+    Error::eError GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    double GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-    		const DeformationGradient3D& rDeformationGradient) const;
+    Error::eError GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const;
     ///////////////////////////////////////////////////////////////////////////
 
     // calculate coefficients of the material matrix

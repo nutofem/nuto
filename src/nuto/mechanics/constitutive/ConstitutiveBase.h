@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 

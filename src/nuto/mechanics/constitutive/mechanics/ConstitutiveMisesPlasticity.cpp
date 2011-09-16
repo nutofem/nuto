@@ -80,7 +80,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveMisesPlasticity)
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain] To be implemented.");
@@ -92,7 +92,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain] To be implemented.");
@@ -104,7 +104,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
     // perform return mapping
@@ -116,6 +116,8 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const Elemen
     rEngineeringPlasticStrain.mEngineeringStrain[3] = staticData.mEpsilonP[3];
     rEngineeringPlasticStrain.mEngineeringStrain[4] = staticData.mEpsilonP[4];
     rEngineeringPlasticStrain.mEngineeringStrain[5] = staticData.mEpsilonP[5];
+
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -125,7 +127,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringPlasticStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain] To be implemented.");
@@ -138,7 +140,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStrain] To be implemented.");
@@ -151,7 +153,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain] To be implemented.");
@@ -164,7 +166,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain] To be implemented.");
@@ -177,7 +179,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
     // check if parameters are valid
@@ -194,7 +196,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
     // perform return mapping
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, &rEngineeringStress, 0, 0,rElement->GetStructure()->GetLogger());
+    return ReturnMapping3D(rElement, rIp, rDeformationGradient, &rEngineeringStress, 0, 0,rElement->GetStructure()->GetLogger());
 }
 
 //  Damage /////////////////////////////////////
@@ -203,10 +205,12 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
  //! @param rIp ... integration point
  //! @param rDeformationGradient ... deformation gradient
  //! @param rDamage ... damage variable
- void NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient1D& rDeformationGradient, double& rDamage) const
 {
 	rDamage=0.;
+
+	return Error::SUCCESSFUL;
 }
 
  //  Damage /////////////////////////////////////
@@ -215,10 +219,12 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
  //! @param rIp ... integration point
  //! @param rDeformationGradient ... deformation gradient
  //! @param rDamage ... damage variable
- void NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient2D& rDeformationGradient, double& rDamage) const
 {
     rDamage=0.;
+
+    return Error::SUCCESSFUL;
 }
 
  //  Damage /////////////////////////////////////
@@ -227,10 +233,12 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
  //! @param rIp ... integration point
  //! @param rDeformationGradient ... deformation gradient
  //! @param rDamage ... damage variable
- void NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient3D& rDeformationGradient, double& rDamage) const
 {
     rDamage=0.;
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -240,7 +248,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetEngineeringStressFromEngineeringStrai
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient,
 		ConstitutiveTangentBase* rTangent) const
 {
@@ -254,7 +262,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient,
 		ConstitutiveTangentBase* rTangent) const
 {
@@ -268,7 +276,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient,
 		ConstitutiveTangentBase* rTangent) const
 {
@@ -283,8 +291,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
     }
 
     // perform return mapping
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , rTangent->AsConstitutiveTangentLocal6x6(), 0,rElement->GetStructure()->GetLogger());
-    rTangent->SetSymmetry(true);
+    return ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , rTangent->AsConstitutiveTangentLocal6x6(), 0,rElement->GetStructure()->GetLogger());
 }
 
 
@@ -293,7 +300,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetTangent_EngineeringStress_Engineering
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient)const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] To be implemented.");
@@ -305,7 +312,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient)const
 {
 	throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] To be implemented.");
@@ -317,7 +324,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient)const
 {
     // perform return mapping
@@ -325,8 +332,7 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 	    staticDataPtr(dynamic_cast<NuTo::ConstitutiveStaticDataMisesPlasticity3D* >(rElement->GetStaticData(rIp)));
 	if (staticDataPtr==0)
 		throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_EngineeringStrain] Static data is not derived from Mises3D.");
-    ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, staticDataPtr,rElement->GetStructure()->GetLogger());
-    rElement->GetStructure()->GetLogger()<<"updated plastic strain " << staticDataPtr->mEpsilonP[0] << "\n";
+    return ReturnMapping3D(rElement, rIp, rDeformationGradient, 0 , 0, staticDataPtr,rElement->GetStructure()->GetLogger());
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -334,10 +340,10 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateStaticData_EngineeringStress_Engin
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient)const
 {
-	//no need to update tmp static data
+    return Error::SUCCESSFUL;
 }
 
 
@@ -346,10 +352,10 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_En
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient)const
 {
-	//no need to update tmp static data
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... update mp static data (history variables) of the constitutive relationship
@@ -357,10 +363,10 @@ void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_En
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient)const
 {
-	//no need to update tmp static data
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... create new static data object for an integration point
@@ -471,7 +477,7 @@ void NuTo::ConstitutiveMisesPlasticity::GetDeltaElasticEngineeringStrain(const E
 //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
 #define sqrt_2div3 0.81649658
 #define tolerance 1e-8
-void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElement,int rIp,
+NuTo::Error::eError NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElement,int rIp,
 		const DeformationGradient3D& rDeformationGradient,
 		EngineeringStress3D* rNewStress,
 		ConstitutiveTangentLocal6x6* rNewTangent,
@@ -616,8 +622,9 @@ void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElem
             rNewTangent->mTangent[34] = 0.;
             rNewTangent->mTangent[35] = rNewTangent->mTangent[21];
         }
+
         // static data is unchanged
-        return;
+        return Error::SUCCESSFUL;
     }
 
     //plastic loading
@@ -654,7 +661,10 @@ void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElem
         rLogger << "total strain " << total_strain[0] << " " << total_strain[1] << " " << total_strain[2] << " " << total_strain[3] << " " << total_strain[4] << " " << total_strain[5] << " " <<"\n";
         rLogger << "plastic strain " << plastic_strain[0] << " " << plastic_strain[1] << " " << plastic_strain[2] << " " << plastic_strain[3] << " " << plastic_strain[4] << " " << plastic_strain[5] << " " <<"\n";
         rLogger << "back stress" << back_stress[0] << " " << back_stress[1] << " " << back_stress[2] << " " << back_stress[3] << " " << back_stress[4] << " " << back_stress[5] << " " <<"\n";
-        throw MechanicsException("[NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D] No convergence after 100 steps, check the source code.");
+        rLogger << "[NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D] No convergence after 100 steps, check the source code." << "\n";
+
+        return Error::NO_CONVERGENCE;
+
     }
 
     /* derivative of yield surface */
@@ -748,7 +758,10 @@ void NuTo::ConstitutiveMisesPlasticity::ReturnMapping3D(const ElementBase* rElem
         rNewTangent->mTangent[33] =     (rNewTangent->mTangent[23]);
         rNewTangent->mTangent[34] =     (rNewTangent->mTangent[29]);
         rNewTangent->mTangent[35] =     (	 0.5*factor 		 +factor2*df_dsigma[5]*df_dsigma[5]);
+        rNewTangent->SetSymmetry(true);
     }
+
+    return Error::SUCCESSFUL;
 }
 
 

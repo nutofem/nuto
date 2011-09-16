@@ -70,7 +70,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearElastic)
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
 	rEngineeringPlasticStrain.mEngineeringStrain[0] = 0.;
@@ -79,6 +79,8 @@ void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElemen
 	rEngineeringPlasticStrain.mEngineeringStrain[3] = 0.;
 	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
 	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+
+    return Error::SUCCESSFUL;
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -87,7 +89,7 @@ void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
 	rEngineeringPlasticStrain.mEngineeringStrain[0] = 0.;
@@ -96,6 +98,8 @@ void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElemen
 	rEngineeringPlasticStrain.mEngineeringStrain[3] = 0.;
 	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
 	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+
+    return Error::SUCCESSFUL;
 }
 
 //  Engineering strain /////////////////////////////////////
@@ -104,7 +108,7 @@ void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
 								  const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
 {
 	rEngineeringPlasticStrain.mEngineeringStrain[0] = 0.;
@@ -113,6 +117,8 @@ void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElemen
 	rEngineeringPlasticStrain.mEngineeringStrain[3] = 0.;
 	rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
 	rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -122,7 +128,7 @@ void NuTo::LinearElastic::GetEngineeringPlasticStrain(const ElementBase* rElemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const
 {
     // check if parameters are valid
@@ -140,6 +146,8 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 
     // calculate Engineering stress
     rEngineeringStress.mEngineeringStress = mE * engineeringStrain.mEngineeringStrain;
+
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -149,7 +157,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStress ... engineering stress
-void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 	      const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
 	// check if parameters are valid
@@ -172,6 +180,8 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 	rEngineeringStress.mEngineeringStress[3] = 0.;
 	rEngineeringStress.mEngineeringStress[4] = 0.;
 	rEngineeringStress.mEngineeringStress[5] = 0.;
+
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -181,7 +191,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const
 {
     // check if parameters are valid
@@ -208,11 +218,12 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 		rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
 		rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
 		rEngineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
-    }
+   }
     else
     {
     	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
     }
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -222,7 +233,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
 	// check if parameters are valid
@@ -257,6 +268,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 	{
 	    throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
 	}
+    return Error::SUCCESSFUL;
 }
 
 // Engineering stress - Engineering strain /////////////////////////////////////
@@ -266,7 +278,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
-void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
 {
     // check if parameters are valid
@@ -293,6 +305,8 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
     rEngineeringStress.mEngineeringStress[3] = C44 * engineeringStrain.mEngineeringStrain[3] ;
     rEngineeringStress.mEngineeringStress[4] = C44 * engineeringStrain.mEngineeringStrain[4] ;
     rEngineeringStress.mEngineeringStress[5] = C44 * engineeringStrain.mEngineeringStrain[5] ;
+
+    return Error::SUCCESSFUL;
 }
 //  Damage /////////////////////////////////////
  //! @brief ... calculate isotropic damage from deformation gradient in 1D
@@ -300,10 +314,11 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
  //! @param rIp ... integration point
  //! @param rDeformationGradient ... deformation gradient
  //! @param rDamage ... damage variable
- void NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient1D& rDeformationGradient, double& rDamage) const
 {
 	rDamage=0.;
+    return Error::SUCCESSFUL;
 }
 
  //  Damage /////////////////////////////////////
@@ -312,10 +327,11 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
  //! @param rIp ... integration point
  //! @param rDeformationGradient ... deformation gradient
  //! @param rDamage ... damage variable
- void NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient2D& rDeformationGradient, double& rDamage) const
 {
     rDamage=0.;
+    return Error::SUCCESSFUL;
 }
 
  //  Damage /////////////////////////////////////
@@ -324,10 +340,11 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
  //! @param rIp ... integration point
  //! @param rDeformationGradient ... deformation gradient
  //! @param rDamage ... damage variable
- void NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetDamage(const ElementBase* rElement, int rIp,
                                    const DeformationGradient3D& rDeformationGradient, double& rDamage) const
 {
     rDamage=0.;
+    return Error::SUCCESSFUL;
 }
 
 
@@ -337,7 +354,7 @@ void NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain(const Elemen
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient,
 		ConstitutiveTangentBase* rTangent) const
 {
@@ -355,6 +372,7 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
     // store tangent at the output object
     tangent->mTangent = mE;
     tangent->SetSymmetry(true);
+    return Error::SUCCESSFUL;
 }
 
 
@@ -364,7 +382,7 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient,
 		ConstitutiveTangentBase* rTangent) const
 {
@@ -407,6 +425,7 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 	}
 
     rTangent->SetSymmetry(true);
+    return Error::SUCCESSFUL;
 }
 
 
@@ -416,7 +435,7 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient,
 		ConstitutiveTangentBase* rTangent) const
 {
@@ -482,6 +501,7 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
     data[35] = C44;
 
     tangent->SetSymmetry(true);
+    return Error::SUCCESSFUL;
 }
 
 
@@ -490,10 +510,11 @@ void NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain(const E
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient) const
 {
     //no static data required -> empty routine
+    return Error::SUCCESSFUL;
 }
 
 
@@ -502,10 +523,11 @@ void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(E
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient) const
 {
     //no static data required -> empty routine
+    return Error::SUCCESSFUL;
 }
 
 
@@ -514,10 +536,11 @@ void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(E
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient) const
 {
-	   //no static data required -> empty routine
+	//no static data required -> empty routine
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... update tmp static data (history variables) of the constitutive relationship
@@ -525,10 +548,11 @@ void NuTo::LinearElastic::UpdateStaticData_EngineeringStress_EngineeringStrain(E
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient) const
 {
 	//no need to update tmp static data
+    return Error::SUCCESSFUL;
 }
 
 
@@ -537,10 +561,11 @@ void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrai
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient) const
 {
 	//no need to update tmp static data
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... update mp static data (history variables) of the constitutive relationship
@@ -548,10 +573,11 @@ void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrai
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient) const
 {
 	//no need to update tmp static data
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... create new static data object for an integration point
@@ -589,8 +615,8 @@ NuTo::ConstitutiveStaticDataBase* NuTo::LinearElastic::AllocateStaticDataEnginee
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -605,7 +631,9 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
     // calculate engineering strain
     EngineeringStrain1D engineeringStrain;
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-    return 0.5 * engineeringStrain.mEngineeringStrain * this->mE * engineeringStrain.mEngineeringStrain;
+    rEnergy = 0.5 * engineeringStrain.mEngineeringStrain * this->mE * engineeringStrain.mEngineeringStrain;
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -614,8 +642,8 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -664,10 +692,12 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
            +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]) << std::endl<<std::endl;
 #endif //DEBUG
 */
-    return 0.5*(
+    rEnergy = 0.5*(
     		engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
            +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
            +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]);
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -676,8 +706,8 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -705,13 +735,15 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
     engineeringStress.mEngineeringStress[4] = C44 * engineeringStrain.mEngineeringStrain[4] ;
     engineeringStress.mEngineeringStress[5] = C44 * engineeringStrain.mEngineeringStrain[5] ;
 
-    return 0.5*(
+    rEnergy = 0.5*(
     		engineeringStrain.mEngineeringStrain[0]*engineeringStress.mEngineeringStress[0]
            +engineeringStrain.mEngineeringStrain[1]*engineeringStress.mEngineeringStress[1]
            +engineeringStrain.mEngineeringStrain[2]*engineeringStress.mEngineeringStress[2]
 		   +engineeringStrain.mEngineeringStrain[3]*engineeringStress.mEngineeringStress[3]
 		   +engineeringStrain.mEngineeringStrain[4]*engineeringStress.mEngineeringStress[4]
 		   +engineeringStrain.mEngineeringStrain[5]*engineeringStress.mEngineeringStress[5]);
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -720,10 +752,10 @@ double NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(c
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
-	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient);
+	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
 }
 
 
@@ -732,10 +764,10 @@ double NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
-	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient);
+	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
 }
 
 
@@ -744,10 +776,10 @@ double NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
-	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient);
+	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
 }
 
 
@@ -799,7 +831,7 @@ NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_Engi
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rSecondPiolaKirchhoffStress ... Second Piola Kirchhoff Stress
-void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient1D& rDeformationGradient, SecondPiolaKirchhoffStress1D& rSecondPiolaKirchhoffStress) const
 {
     // check if parameters are valid
@@ -819,6 +851,7 @@ void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(c
     // calculate second piola kirchhoff stress
     rSecondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress = mE * greenLagrangeStrain.mGreenLagrangeStrain;
 
+    return Error::SUCCESSFUL;
 }
 
 
@@ -829,7 +862,7 @@ void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(c
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rSecondPiolaKirchhoffStress ... Second Piola Kirchhoff Stress
-void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient2D& rDeformationGradient, SecondPiolaKirchhoffStress2D& rSecondPiolaKirchhoffStress) const
 {
 	throw MechanicsException("[NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain] To be implemented.");
@@ -843,7 +876,7 @@ void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(c
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rSecondPiolaKirchhoffStress ... Second Piola Kirchhoff Stress
-void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(const ElementBase* rElement, int rIp,
 			  const DeformationGradient3D& rDeformationGradient, SecondPiolaKirchhoffStress3D& rSecondPiolaKirchhoffStress) const
 {
     // check if parameters are valid
@@ -871,6 +904,7 @@ void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(c
     rSecondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[4] = C44 * greenLagrangeStrain.mGreenLagrangeStrain[4] ;
     rSecondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[5] = C44 * greenLagrangeStrain.mGreenLagrangeStrain[5] ;
 
+    return Error::SUCCESSFUL;
 }
 
 
@@ -880,7 +914,7 @@ void NuTo::LinearElastic::GetSecondPiolaKirchhoffStressFromGreenLagrangeStrain(c
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient,
 		ConstitutiveTangentLocal1x1& rTangent) const
 {
@@ -897,6 +931,8 @@ void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStr
     // store tangent at the output object
     rTangent.mTangent = mE;
     rTangent.SetSymmetry(true);
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -906,7 +942,7 @@ void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStr
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient,
 		ConstitutiveTangentLocal3x3& rTangent) const
 {
@@ -920,7 +956,7 @@ void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStr
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rTangent ... tangent
-void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient,
 		ConstitutiveTangentLocal6x6& rTangent) const
 {
@@ -982,6 +1018,8 @@ void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStr
     rTangent.mTangent[35] = C44;
 
     rTangent.SetSymmetry(true);
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -990,10 +1028,11 @@ void NuTo::LinearElastic::GetTangent_SecondPiolaKirchhoffStress_GreenLagrangeStr
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient) const
 {
     //no static data required -> empty routine
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1002,10 +1041,11 @@ void NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagra
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient) const
 {
 	//no static data required -> empty routine
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1014,10 +1054,11 @@ void NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagra
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-void NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain(ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::UpdateStaticData_SecondPiolaKirchhoffStress_GreenLagrangeStrain(ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient) const
 {
 	//no static data required -> empty routine
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1058,8 +1099,8 @@ NuTo::ConstitutiveStaticDataBase* NuTo::LinearElastic::AllocateStaticDataSecondP
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -1074,7 +1115,9 @@ double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagra
     // calculate engineering strain
     GreenLagrangeStrain1D greenLagrangeStrain;
     rDeformationGradient.GetGreenLagrangeStrain(greenLagrangeStrain);
-    return 0.5 * greenLagrangeStrain.mGreenLagrangeStrain * this->mE * greenLagrangeStrain.mGreenLagrangeStrain;
+    rEnergy = 0.5 * greenLagrangeStrain.mGreenLagrangeStrain * this->mE * greenLagrangeStrain.mGreenLagrangeStrain;
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1083,8 +1126,8 @@ double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagra
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
 	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] To be implemented.");
 }
@@ -1095,8 +1138,8 @@ double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagra
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -1124,13 +1167,15 @@ double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagra
     secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[4] = C44 * greenLagrangeStrain.mGreenLagrangeStrain[4] ;
     secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[5] = C44 * greenLagrangeStrain.mGreenLagrangeStrain[5] ;
 
-    return 0.5*(
+    rEnergy = 0.5*(
     		greenLagrangeStrain.mGreenLagrangeStrain[0]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[0]
            +greenLagrangeStrain.mGreenLagrangeStrain[1]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[1]
            +greenLagrangeStrain.mGreenLagrangeStrain[2]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[2]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[3]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[3]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[4]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[4]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[5]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[5]);
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1139,8 +1184,8 @@ double NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagra
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient1D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -1155,7 +1200,9 @@ double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLag
     // calculate engineering strain
     GreenLagrangeStrain1D greenLagrangeStrain;
     rDeformationGradient.GetGreenLagrangeStrain(greenLagrangeStrain);
-    return 0.5 * greenLagrangeStrain.mGreenLagrangeStrain * this->mE * greenLagrangeStrain.mGreenLagrangeStrain;
+    rEnergy = 0.5 * greenLagrangeStrain.mGreenLagrangeStrain * this->mE * greenLagrangeStrain.mGreenLagrangeStrain;
+
+    return Error::SUCCESSFUL;
 }
 
 
@@ -1164,8 +1211,8 @@ double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLag
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient2D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
 	throw MechanicsException("[NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] To be implemented.");
 }
@@ -1176,8 +1223,8 @@ double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLag
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
-		const DeformationGradient3D& rDeformationGradient) const
+NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
 	// check if parameters are valid
 	if (this->mParametersValid == false)
@@ -1205,13 +1252,15 @@ double NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffStress_GreenLag
 	secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[4] = C44 * greenLagrangeStrain.mGreenLagrangeStrain[4] ;
 	secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[5] = C44 * greenLagrangeStrain.mGreenLagrangeStrain[5] ;
 
-	return 0.5*(
+	rEnergy = 0.5*(
 			greenLagrangeStrain.mGreenLagrangeStrain[0]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[0]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[1]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[1]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[2]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[2]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[3]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[3]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[4]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[4]
 		   +greenLagrangeStrain.mGreenLagrangeStrain[5]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[5]);
+
+    return Error::SUCCESSFUL;
 }
 
 // calculate coefficients of the material matrix

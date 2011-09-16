@@ -30,7 +30,6 @@ enum eSolutionPhaseType
 	NONLINEAR_CRACKED           //!< nonlinear with crack enrichment
 };
 
-
 }
 }
 #endif /* CONSTITUTIVEENUM_H_ */
