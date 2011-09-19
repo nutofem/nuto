@@ -281,7 +281,7 @@ NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(
                     fineScaleStructure->NodeBuildGlobalDofs();
                     fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
                 }
-                std::cout << "[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] return with no convergence " << "\n";
+                std::cout << "[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] return with no convergence for ip "<< fineScaleStructure->GetIPName() << "\n";
                 return error;
             }
             else
@@ -552,7 +552,7 @@ NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringSt
                     fineScaleStructure->NodeBuildGlobalDofs();
                     fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
                 }
-                std::cout << "[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] return with no convergence " << "\n";
+                std::cout << "[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] return with no convergence for ip "<< fineScaleStructure->GetIPName() << "\n";
                 return error;
             }
             if (error!=Error::SUCCESSFUL)
@@ -887,7 +887,7 @@ NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_Enginee
                     fineScaleStructure->NodeBuildGlobalDofs();
                     fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
                 }
-                std::cout << "[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] return with no convergence " << "\n";
+                std::cout << "[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] return with no convergence for ip "<< fineScaleStructure->GetIPName() << "\n";
                 return error;
             }
             if (error!=Error::SUCCESSFUL)
