@@ -110,6 +110,11 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mIncreaseFactor=1.5;
     mMinDeltaLoadFactor=1e-6;
     mMinLineSearchFactor=1e-3;
+
+#ifdef _OPENMP
+    mUseMIS = true;
+#endif // _OPENMP
+
 }
 
 int NuTo::StructureBase::GetDimension()
@@ -159,6 +164,10 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     & BOOST_SERIALIZATION_NVP(mIncreaseFactor)
     & BOOST_SERIALIZATION_NVP(mMinDeltaLoadFactor)
     & BOOST_SERIALIZATION_NVP(mMinLineSearchFactor)
+#ifdef _OPENMP
+    & BOOST_SERIALIZATION_NVP(mUseMIS)
+    & BOOST_SERIALIZATION_NVP(mMIS)
+#endif // _OPENMP
     & BOOST_SERIALIZATION_NVP(mLogger);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";
@@ -2100,10 +2109,21 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 }
 #else
 //@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without openmp
-void NuTo::StructureBase::CalculateMaximumIndependentSets()
+void NuTo::StructureBase::CalculateMaximumIndependentSets(bool rUseMIS)
 {
 }
 #endif
+
+
+//@brief determines if in the omp parallelization the maximum independent sets are used (parallel assembly of the stiffness, generally faster)
+// or sequential insertion of the element stiffness using a barrier (faster for different load balancing of the elements)
+// is only relevant for openmp, otherwise the routine is just empty
+void NuTo::StructureBase::UseMaximumIndependentSets(bool rUseMIS)
+{
+#ifdef _OPENMP
+	mUseMIS=rUseMIS;
+#endif //_OPENMP
+}
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

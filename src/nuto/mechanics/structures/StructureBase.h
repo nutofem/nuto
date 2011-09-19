@@ -170,6 +170,11 @@ public:
     // is only relevant for openmp, otherwise the routine is just empty
     void CalculateMaximumIndependentSets();
 
+    //@brief determines if in the omp parallelization the maximum independent sets are used (parallel assembly of the stiffness, generally faster)
+    // or sequential insertion of the element stiffness using a barrier (faster for different load balancing of the elements)
+    // is only relevant for openmp, otherwise the routine is just empty
+    void UseMaximumIndependentSets(bool rUseMIS);
+
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
@@ -1651,6 +1656,9 @@ protected:
 #ifdef _OPENMP
     //@brief maximum independent sets used for parallel assembly of the stiffness resforce etc.
     mutable std::vector<std::vector<ElementBase*> > mMIS;
+    //set to true to use MIS (enables parallel adding of element matrices to the global matrix - faster for elements with almost identical effort)
+    //set to false to assemble the global stiffness matrix using a barrier in OMP - faster for elements with very uneven effort)
+    bool mUseMIS;
 #endif
 
     //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines
