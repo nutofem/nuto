@@ -113,6 +113,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
 
 #ifdef _OPENMP
     mUseMIS = true;
+    // then the environment variable is used
+    mNumProcessors = 1;
 #endif // _OPENMP
 
 }
@@ -167,6 +169,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 #ifdef _OPENMP
     & BOOST_SERIALIZATION_NVP(mUseMIS)
     & BOOST_SERIALIZATION_NVP(mMIS)
+    & BOOST_SERIALIZATION_NVP(mNumProcessors)
 #endif // _OPENMP
     & BOOST_SERIALIZATION_NVP(mLogger);
 #ifdef DEBUG_SERIALIZATION
@@ -2109,7 +2112,7 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 }
 #else
 //@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without openmp
-void NuTo::StructureBase::CalculateMaximumIndependentSets(bool rUseMIS)
+void NuTo::StructureBase::CalculateMaximumIndependentSets()
 {
 }
 #endif
@@ -2124,6 +2127,22 @@ void NuTo::StructureBase::UseMaximumIndependentSets(bool rUseMIS)
 	mUseMIS=rUseMIS;
 #endif //_OPENMP
 }
+
+//@brief set the number of processors for openmp parallelization
+void NuTo::StructureBase::SetNumProcessors(int rNumProcessors)
+{
+#ifdef _OPENMP
+	mNumProcessors = rNumProcessors;
+#endif //_OPENMP
+}
+
+void NuTo::StructureBase::SetOMPNested(bool rNested)
+{
+#ifdef _OPENMP
+	omp_set_nested(rNested);
+#endif //_OPENMP
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

@@ -265,6 +265,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 	Error::eError errorGlobal (Error::SUCCESSFUL);
 
 #ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
 	if (mUseMIS)
 	{
 		if (mMIS.size()==0)
@@ -335,6 +337,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 		{
 			#pragma omp single nowait
 			{
+				//std::cout << "thread in structure " << omp_get_thread_num() << "\n";
 				const ElementBase* elementPtr = elementIter->second;
 				// calculate element contribution
 				bool symmetryFlag = false;
@@ -365,12 +368,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 									int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
 									if (globalColumnDof < this->mNumActiveDofs)
 									{
-										#pragma omp critical
+										#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
 										rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 									}
 									else
 									{
-										#pragma omp critical
+										#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
 										rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 									}
 								}
@@ -463,6 +466,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 	Error::eError errorGlobal (Error::SUCCESSFUL);
 
 #ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
 	if (mUseMIS)
 	{
 		if (mMIS.size()==0)
@@ -579,12 +584,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 								int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
 								if (globalColumnDof < this->mNumActiveDofs)
 								{
-									#pragma omp critical
+									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
 									rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 								}
 								else
 								{
-									#pragma omp critical
+									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
 									rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 								}
 
@@ -597,12 +602,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 								int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
 								if (globalColumnDof < this->mNumActiveDofs)
 								{
-									#pragma omp critical
+									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
 									rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
 								}
 								else
 								{
-									#pragma omp critical
+									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
 									rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 								}
 							}
@@ -699,6 +704,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 
     // loop over all elements
 #ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
     if (mMIS.size()==0)
     	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] maximum independent set not calculated.");
     if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
@@ -805,6 +812,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 
     // loop over all elements
 #ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
     if (mMIS.size()==0)
     	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] maximum independent set not calculated.");
     if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
@@ -924,6 +933,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 
     // loop over all elements
 #ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
     if (mUseMIS)
     {
 		if (mMIS.size()==0)
@@ -1003,14 +1014,14 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 						int globalRowDof = elementVectorGlobalDofs[rowCount];
 						if (globalRowDof < this->mNumActiveDofs)
 						{
-							#pragma omp critical
+							#pragma omp critical (StructureBuildGlobalGradientInternalPotentialSubVectors)
 							rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
 						}
 						else
 						{
 							globalRowDof -= this->mNumActiveDofs;
 							assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-							#pragma omp critical
+							#pragma omp critical (StructureBuildGlobalGradientInternalPotentialSubVectors)
 							rDependentDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
 						}
 					}

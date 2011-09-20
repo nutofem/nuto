@@ -1524,6 +1524,8 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
     std::string exceptionStringTotal;
 
 #ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
     #pragma omp parallel default(shared)
     #pragma omp for schedule(dynamic,1) nowait
 #endif //_OPENMP
@@ -1596,6 +1598,8 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 	    int exception(0);
 	    std::string exceptionStringTotal;
 #ifdef _OPENMP
+		if (mNumProcessors!=0)
+			omp_set_num_threads(mNumProcessors);
     #pragma omp parallel default(shared)
     #pragma omp for schedule(dynamic,1) nowait
 #endif //_OPENMP
@@ -2256,6 +2260,8 @@ void NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear()
 #ifdef _OPENMP
     int error(0);
     std::string errorTotal;
+    if (mNumProcessors!=0)
+    	omp_set_num_threads(mNumProcessors);
     #pragma omp parallel default(shared)
     #pragma omp for schedule(dynamic,1) nowait
 #endif //_OPENMP

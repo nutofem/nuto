@@ -175,6 +175,12 @@ public:
     // is only relevant for openmp, otherwise the routine is just empty
     void UseMaximumIndependentSets(bool rUseMIS);
 
+    //@brief set the number of processors for openmp parallelization
+    void SetNumProcessors(int rNumProcessors);
+
+    //@brief set the number of processors for openmp parallelization
+    void SetOMPNested(bool rNested);
+
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
@@ -1659,6 +1665,8 @@ protected:
     //set to true to use MIS (enables parallel adding of element matrices to the global matrix - faster for elements with almost identical effort)
     //set to false to assemble the global stiffness matrix using a barrier in OMP - faster for elements with very uneven effort)
     bool mUseMIS;
+    //@brief number of processors used in an openmp simulation
+    int mNumProcessors;
 #endif
 
     //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines

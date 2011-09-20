@@ -833,93 +833,106 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalGradientInternalPotent
         const Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
         assert(elementGroup!=0);
         double scalingFactorDamage = this->GetScalingFactorDamage();
+#ifdef _OPENMP
+    	if (mNumProcessors!=0)
+    		omp_set_num_threads(mNumProcessors);
+		#pragma omp parallel default(shared) private(elementVector,elementVectorGlobalDofs)
+#endif
         for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end(); itElement++)
         {
-            // calculate element contribution
-            Error::eError error = itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
-            if (error!=Error::SUCCESSFUL)
-            {
-                if (errorGlobal==Error::SUCCESSFUL)
-                    errorGlobal = error;
-                else if (errorGlobal!=error)
-                    throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-            }
-            else
-            {
-                elementVector*=scalingFactorDamage;
-                assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
-                assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
+#ifdef _OPENMP
+			#pragma omp single nowait
+#endif
+			{
+				// calculate element contribution
+				Error::eError error = itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+				if (error!=Error::SUCCESSFUL)
+				{
+					if (errorGlobal==Error::SUCCESSFUL)
+						errorGlobal = error;
+					else if (errorGlobal!=error)
+						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+				}
+				else
+				{
+					elementVector*=scalingFactorDamage;
+					assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+					assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
 
-                // write element contribution to global vectors
-                for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
-                {
-                    int globalRowDof = elementVectorGlobalDofs[rowCount];
-                    if (globalRowDof < this->mNumActiveDofs)
-                    {
-                        rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
-                    }
-                    else
-                    {
-                        assert(globalRowDof-this->mNumActiveDofs < this->mNumDofs - this->mNumActiveDofs);
-                        rDependentDofGradientVector(globalRowDof - this->mNumActiveDofs,0) += elementVector(rowCount,0);
-                    }
-                    //add contribution of the global degrees of freedom (crack opening and crack orientation)
-                    if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-                    {
-                        //influence of alpha
-                        int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
-                        //bAlphaRow =dDOF[theDofMapRow][0];
+					// write element contribution to global vectors
+					#pragma omp critical (StructureMultiscaleBuildGlobalGradientInternalPotentialSubVectorsDamage)
+					{
+						for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+						{
+							int globalRowDof = elementVectorGlobalDofs[rowCount];
+							if (globalRowDof < this->mNumActiveDofs)
+							{
+								rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+							}
+							else
+							{
+								assert(globalRowDof-this->mNumActiveDofs < this->mNumDofs - this->mNumActiveDofs);
+								rDependentDofGradientVector(globalRowDof - this->mNumActiveDofs,0) += elementVector(rowCount,0);
+							}
+							//add contribution of the global degrees of freedom (crack opening and crack orientation)
+							if (mappingDofMultiscaleNode[globalRowDof]!=-1)
+							{
+								//influence of alpha
+								int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
+								//bAlphaRow =dDOF[theDofMapRow][0];
 
-                        //influence of u
-                        bURow[0] = dDOF[theDofMapRow][0];
-                        bURow[1] = dDOF[theDofMapRow][1];
+								//influence of u
+								bURow[0] = dDOF[theDofMapRow][0];
+								bURow[1] = dDOF[theDofMapRow][1];
 
-                        //influence of epsilon_tot = epsilon_hom
-                        bMRow[0] = dDOF[theDofMapRow][2];
-                        bMRow[1] = dDOF[theDofMapRow][3];
-                        bMRow[2] = dDOF[theDofMapRow][4];
+								//influence of epsilon_tot = epsilon_hom
+								bMRow[0] = dDOF[theDofMapRow][2];
+								bMRow[1] = dDOF[theDofMapRow][3];
+								bMRow[2] = dDOF[theDofMapRow][4];
 
-                        /*                if (mDOFCrackAngle< this->mNumActiveDofs)
-                        				{
-                        					rActiveDofGradientVector(mDOFCrackAngle,0) += bAlphaRow * elementVector(rowCount,0);
-                        					//std::cout << "add " << bAlphaRow << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackAngle,0) << "(DOF "<< mDOFCrackAngle<<")" <<std::endl;
-                        				}
-                        				else
-                        					rDependentDofGradientVector(mDOFCrackAngle - this->mNumActiveDofs,0) += bAlphaRow * elementVector(rowCount,0);
-                        */
-                        if (mDOFCrackOpening[0]< this->mNumActiveDofs)
-                        {
-                            rActiveDofGradientVector(mDOFCrackOpening[0],0) += bURow[0] * elementVector(rowCount,0);
-                            //std::cout << "add " << bURow[0] << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackOpening[0],0) << "(DOF "<< globalRowDof<<","<<mDOFCrackOpening[0]<<")" <<std::endl;
-                        }
-                        else
-                            rDependentDofGradientVector(mDOFCrackOpening[0] - this->mNumActiveDofs,0) += bURow[0] * elementVector(rowCount,0);
+								/*                if (mDOFCrackAngle< this->mNumActiveDofs)
+												{
+													rActiveDofGradientVector(mDOFCrackAngle,0) += bAlphaRow * elementVector(rowCount,0);
+													//std::cout << "add " << bAlphaRow << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackAngle,0) << "(DOF "<< mDOFCrackAngle<<")" <<std::endl;
+												}
+												else
+													rDependentDofGradientVector(mDOFCrackAngle - this->mNumActiveDofs,0) += bAlphaRow * elementVector(rowCount,0);
+								*/
+								if (mDOFCrackOpening[0]< this->mNumActiveDofs)
+								{
+									rActiveDofGradientVector(mDOFCrackOpening[0],0) += bURow[0] * elementVector(rowCount,0);
+									//std::cout << "add " << bURow[0] << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackOpening[0],0) << "(DOF "<< globalRowDof<<","<<mDOFCrackOpening[0]<<")" <<std::endl;
+								}
+								else
+									rDependentDofGradientVector(mDOFCrackOpening[0] - this->mNumActiveDofs,0) += bURow[0] * elementVector(rowCount,0);
 
-                        if (mDOFCrackOpening[1]< this->mNumActiveDofs)
-                        {
-                            rActiveDofGradientVector(mDOFCrackOpening[1],0) += bURow[1] * elementVector(rowCount,0);
-                        }
-                        else
-                            rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
+								if (mDOFCrackOpening[1]< this->mNumActiveDofs)
+								{
+									rActiveDofGradientVector(mDOFCrackOpening[1],0) += bURow[1] * elementVector(rowCount,0);
+								}
+								else
+									rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
 
-                        if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
-                        {
-                            assert(mDOFGlobalTotalStrain[1]< this->mNumActiveDofs);
-                            assert(mDOFGlobalTotalStrain[2]< this->mNumActiveDofs);
-                            rActiveDofGradientVector(mDOFGlobalTotalStrain[0],0) += bMRow[0] * elementVector(rowCount,0);
-                            rActiveDofGradientVector(mDOFGlobalTotalStrain[1],0) += bMRow[1] * elementVector(rowCount,0);
-                            rActiveDofGradientVector(mDOFGlobalTotalStrain[2],0) += bMRow[2] * elementVector(rowCount,0);
-                        }
-                        else
-                        {
-                            assert(mDOFGlobalTotalStrain[1]>= this->mNumActiveDofs);
-                            assert(mDOFGlobalTotalStrain[2]>= this->mNumActiveDofs);
-                            rDependentDofGradientVector(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs,0) += bMRow[0] * elementVector(rowCount,0);
-                            rDependentDofGradientVector(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs,0) += bMRow[1] * elementVector(rowCount,0);
-                            rDependentDofGradientVector(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs,0) += bMRow[2] * elementVector(rowCount,0);
+								if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
+								{
+									assert(mDOFGlobalTotalStrain[1]< this->mNumActiveDofs);
+									assert(mDOFGlobalTotalStrain[2]< this->mNumActiveDofs);
+									rActiveDofGradientVector(mDOFGlobalTotalStrain[0],0) += bMRow[0] * elementVector(rowCount,0);
+									rActiveDofGradientVector(mDOFGlobalTotalStrain[1],0) += bMRow[1] * elementVector(rowCount,0);
+									rActiveDofGradientVector(mDOFGlobalTotalStrain[2],0) += bMRow[2] * elementVector(rowCount,0);
+								}
+								else
+								{
+									assert(mDOFGlobalTotalStrain[1]>= this->mNumActiveDofs);
+									assert(mDOFGlobalTotalStrain[2]>= this->mNumActiveDofs);
+									rDependentDofGradientVector(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs,0) += bMRow[0] * elementVector(rowCount,0);
+									rDependentDofGradientVector(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs,0) += bMRow[1] * elementVector(rowCount,0);
+									rDependentDofGradientVector(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs,0) += bMRow[2] * elementVector(rowCount,0);
 
-                        }
-                    }
+								}
+							}
+						}
+					}
                 }
             }
         }
@@ -933,94 +946,106 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalGradientInternalPotent
     const Group<ElementBase>* elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorHomogeneous = this->GetScalingFactorHomogeneous();
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+#endif
+	#pragma omp parallel default(shared) private(elementVector,elementVectorGlobalDofs)
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end(); itElement++)
     {
-        // calculate element contribution
-        Error::eError error = itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
-        if (error!=Error::SUCCESSFUL)
-        {
-            if (errorGlobal==Error::SUCCESSFUL)
-                errorGlobal = error;
-            else if (errorGlobal!=error)
-                throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-        }
-        else
-        {
-            elementVector*=scalingFactorHomogeneous;
-            assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
-            assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
+		#pragma omp single nowait
+		{
+//			std::cout << "thread " << omp_get_thread_num( ) << "\n";
+			// calculate element contribution
+			Error::eError error = itElement->second->CalculateGradientInternalPotential(elementVector, elementVectorGlobalDofs);
+			if (error!=Error::SUCCESSFUL)
+			{
+				if (errorGlobal==Error::SUCCESSFUL)
+					errorGlobal = error;
+				else if (errorGlobal!=error)
+					throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+			}
+			else
+			{
+				elementVector*=scalingFactorHomogeneous;
+				assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+				assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
 
-            // write element contribution to global vectors
-            for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
-            {
-                int globalRowDof = elementVectorGlobalDofs[rowCount];
-                if (globalRowDof < this->mNumActiveDofs)
-                {
-                    rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
-                }
-                else
-                {
-                    assert(globalRowDof-this->mNumActiveDofs < this->mNumDofs - this->mNumActiveDofs);
-                    rDependentDofGradientVector(globalRowDof - this->mNumActiveDofs,0) += elementVector(rowCount,0);
-                }
-                //add contribution of the global degrees of freedom (crack opening and crack orientation)
-                if (mappingDofMultiscaleNode[globalRowDof]!=-1)
-                {
-                    //influence of alpha
-                    int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
-                    //bAlphaRow =dDOF[theDofMapRow][0];
+				// write element contribution to global vectors
+				#pragma omp critical (StructureMultiscaleBuildGlobalGradientInternalPotentialSubVectorsHomogeneous)
+				{
+					for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+					{
+						int globalRowDof = elementVectorGlobalDofs[rowCount];
+						if (globalRowDof < this->mNumActiveDofs)
+						{
+							rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+						}
+						else
+						{
+							assert(globalRowDof-this->mNumActiveDofs < this->mNumDofs - this->mNumActiveDofs);
+							rDependentDofGradientVector(globalRowDof - this->mNumActiveDofs,0) += elementVector(rowCount,0);
+						}
+						//add contribution of the global degrees of freedom (crack opening and crack orientation)
+						if (mappingDofMultiscaleNode[globalRowDof]!=-1)
+						{
+							//influence of alpha
+							int theDofMapRow = mappingDofMultiscaleNode[globalRowDof];
+							//bAlphaRow =dDOF[theDofMapRow][0];
 
-                    //influence of u
-                    bURow[0] = dDOF[theDofMapRow][0];;
-                    bURow[1] = dDOF[theDofMapRow][1];;
+							//influence of u
+							bURow[0] = dDOF[theDofMapRow][0];;
+							bURow[1] = dDOF[theDofMapRow][1];;
 
-                    //influence of epsilon_tot = epsilon_hom
-                    bMRow[0] = dDOF[theDofMapRow][2];;
-                    bMRow[1] = dDOF[theDofMapRow][3];;
-                    bMRow[2] = dDOF[theDofMapRow][4];;
+							//influence of epsilon_tot = epsilon_hom
+							bMRow[0] = dDOF[theDofMapRow][2];;
+							bMRow[1] = dDOF[theDofMapRow][3];;
+							bMRow[2] = dDOF[theDofMapRow][4];;
 
-                    /*                if (mDOFCrackAngle< this->mNumActiveDofs)
-                    				{
-                    					rActiveDofGradientVector(mDOFCrackAngle,0) += bAlphaRow * elementVector(rowCount,0);
-                    					//std::cout << "add " << bAlphaRow << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackAngle,0) << "(DOF "<< mDOFCrackAngle<<")" <<std::endl;
-                    				}
-                    				else
-                    					rDependentDofGradientVector(mDOFCrackAngle - this->mNumActiveDofs,0) += bAlphaRow * elementVector(rowCount,0);
-                    */
-                    if (mDOFCrackOpening[0]< this->mNumActiveDofs)
-                    {
-                        rActiveDofGradientVector(mDOFCrackOpening[0],0) += bURow[0] * elementVector(rowCount,0);
-                        //std::cout << "add " << bURow[0] << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackOpening[0],0) << "(DOF "<< globalRowDof<<","<<mDOFCrackOpening[0]<<")" <<std::endl;
-                    }
-                    else
-                        rDependentDofGradientVector(mDOFCrackOpening[0] - this->mNumActiveDofs,0) += bURow[0] * elementVector(rowCount,0);
+							/*                if (mDOFCrackAngle< this->mNumActiveDofs)
+											{
+												rActiveDofGradientVector(mDOFCrackAngle,0) += bAlphaRow * elementVector(rowCount,0);
+												//std::cout << "add " << bAlphaRow << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackAngle,0) << "(DOF "<< mDOFCrackAngle<<")" <<std::endl;
+											}
+											else
+												rDependentDofGradientVector(mDOFCrackAngle - this->mNumActiveDofs,0) += bAlphaRow * elementVector(rowCount,0);
+							*/
+							if (mDOFCrackOpening[0]< this->mNumActiveDofs)
+							{
+								rActiveDofGradientVector(mDOFCrackOpening[0],0) += bURow[0] * elementVector(rowCount,0);
+								//std::cout << "add " << bURow[0] << "*" << elementVector(rowCount,0) << "=" << rActiveDofGradientVector(mDOFCrackOpening[0],0) << "(DOF "<< globalRowDof<<","<<mDOFCrackOpening[0]<<")" <<std::endl;
+							}
+							else
+								rDependentDofGradientVector(mDOFCrackOpening[0] - this->mNumActiveDofs,0) += bURow[0] * elementVector(rowCount,0);
 
-                    if (mDOFCrackOpening[1]< this->mNumActiveDofs)
-                    {
-                        rActiveDofGradientVector(mDOFCrackOpening[1],0) += bURow[1] * elementVector(rowCount,0);
-                    }
-                    else
-                        rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
+							if (mDOFCrackOpening[1]< this->mNumActiveDofs)
+							{
+								rActiveDofGradientVector(mDOFCrackOpening[1],0) += bURow[1] * elementVector(rowCount,0);
+							}
+							else
+								rDependentDofGradientVector(mDOFCrackOpening[1] - this->mNumActiveDofs,0) += bURow[1] * elementVector(rowCount,0);
 
-                    if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
-                    {
-                        assert(mDOFGlobalTotalStrain[1]< this->mNumActiveDofs);
-                        assert(mDOFGlobalTotalStrain[2]< this->mNumActiveDofs);
-                        rActiveDofGradientVector(mDOFGlobalTotalStrain[0],0) += bMRow[0] * elementVector(rowCount,0);
-                        rActiveDofGradientVector(mDOFGlobalTotalStrain[1],0) += bMRow[1] * elementVector(rowCount,0);
-                        rActiveDofGradientVector(mDOFGlobalTotalStrain[2],0) += bMRow[2] * elementVector(rowCount,0);
-                    }
-                    else
-                    {
-                        assert(mDOFGlobalTotalStrain[1]>= this->mNumActiveDofs);
-                        assert(mDOFGlobalTotalStrain[2]>= this->mNumActiveDofs);
-                        rDependentDofGradientVector(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs,0) += bMRow[0] * elementVector(rowCount,0);
-                        rDependentDofGradientVector(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs,0) += bMRow[1] * elementVector(rowCount,0);
-                        rDependentDofGradientVector(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs,0) += bMRow[2] * elementVector(rowCount,0);
+							if (mDOFGlobalTotalStrain[0] < this->mNumActiveDofs)
+							{
+								assert(mDOFGlobalTotalStrain[1]< this->mNumActiveDofs);
+								assert(mDOFGlobalTotalStrain[2]< this->mNumActiveDofs);
+								rActiveDofGradientVector(mDOFGlobalTotalStrain[0],0) += bMRow[0] * elementVector(rowCount,0);
+								rActiveDofGradientVector(mDOFGlobalTotalStrain[1],0) += bMRow[1] * elementVector(rowCount,0);
+								rActiveDofGradientVector(mDOFGlobalTotalStrain[2],0) += bMRow[2] * elementVector(rowCount,0);
+							}
+							else
+							{
+								assert(mDOFGlobalTotalStrain[1]>= this->mNumActiveDofs);
+								assert(mDOFGlobalTotalStrain[2]>= this->mNumActiveDofs);
+								rDependentDofGradientVector(mDOFGlobalTotalStrain[0]- this->mNumActiveDofs,0) += bMRow[0] * elementVector(rowCount,0);
+								rDependentDofGradientVector(mDOFGlobalTotalStrain[1]- this->mNumActiveDofs,0) += bMRow[1] * elementVector(rowCount,0);
+								rDependentDofGradientVector(mDOFGlobalTotalStrain[2]- this->mNumActiveDofs,0) += bMRow[2] * elementVector(rowCount,0);
 
-                    }
-                }
-            }
+							}
+						}
+					}
+				}
+			}
         }
     }
     /*std::cout << "without constraint rActiveDofGradientVector "<< "\n";
@@ -1029,6 +1054,7 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalGradientInternalPotent
     rDependentDofGradientVector.Trans().Info(12,10);
     */
     //write contribution of Lagrange Multipliers
+
     ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
     /*    std::cout << "with constraint rActiveDofGradientVector "<< "\n";
         rActiveDofGradientVector.Trans().Info(12,10);
@@ -1130,37 +1156,50 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices
         const Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
         assert(elementGroup!=0);
         double scalingFactorDamage = this->GetScalingFactorDamage();
+#ifdef _OPENMP
+    	if (mNumProcessors!=0)
+    		omp_set_num_threads(mNumProcessors);
+        #pragma omp parallel default(shared) private(elementMatrix,elementMatrixGlobalDofsRow,elementMatrixGlobalDofsColumn)
+#endif
         for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end(); itElement++)
         {
-            // calculate element contribution
-            bool symmetryFlag = false;
-            Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-            if (error!=Error::SUCCESSFUL)
-            {
-                if (errorGlobal==Error::SUCCESSFUL)
-                    errorGlobal = error;
-                else if (errorGlobal!=error)
-                    throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-            }
-            else
-            {
-                elementMatrix*=scalingFactorDamage;
+			#ifdef _OPENMP
+			#pragma omp single nowait
+			#endif
+			{
+				// calculate element contribution
+				bool symmetryFlag = false;
+				Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				if (error!=Error::SUCCESSFUL)
+				{
+					if (errorGlobal==Error::SUCCESSFUL)
+						errorGlobal = error;
+					else if (errorGlobal!=error)
+						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+				}
+				else
+				{
+					elementMatrix*=scalingFactorDamage;
 
-                assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-                assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
+					assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
+					assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-                this->AddElementMatrixToGlobalSubMatricesGeneral(
-                    elementMatrix,
-                    elementMatrixGlobalDofsRow,
-                    elementMatrixGlobalDofsColumn,
-                    mappingDofMultiscaleNode,
-                    dDOF,
-                    &rMatrixJJ,
-                    &rMatrixJK,
-                    0,
-                    0,
-                    false);
-            }
+					#ifdef _OPENMP
+					#pragma omp critical (StructureMultiscaleBuildGlobalCoefficientSubMatrices0GeneralDamage)
+					#endif
+					this->AddElementMatrixToGlobalSubMatricesGeneral(
+						elementMatrix,
+						elementMatrixGlobalDofsRow,
+						elementMatrixGlobalDofsColumn,
+						mappingDofMultiscaleNode,
+						dDOF,
+						&rMatrixJJ,
+						&rMatrixJK,
+						0,
+						0,
+						false);
+				}
+			}
         }
     }
 
@@ -1173,37 +1212,50 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices
     const Group<ElementBase>* elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorHomogeneous = this->GetScalingFactorHomogeneous();
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+	#pragma omp parallel default(shared) private(elementMatrix,elementMatrixGlobalDofsRow,elementMatrixGlobalDofsColumn)
+#endif
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end(); itElement++)
     {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        if (error!=Error::SUCCESSFUL)
-        {
-            if (errorGlobal==Error::SUCCESSFUL)
-                errorGlobal = error;
-            else if (errorGlobal!=error)
-                throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-        }
-        else
-        {
-            elementMatrix*=scalingFactorHomogeneous;
+#ifdef _OPENMP
+		#pragma omp single nowait
+#endif
+	    {
+			// calculate element contribution
+			bool symmetryFlag = false;
+			Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+			if (error!=Error::SUCCESSFUL)
+			{
+				if (errorGlobal==Error::SUCCESSFUL)
+					errorGlobal = error;
+				else if (errorGlobal!=error)
+					throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+			}
+			else
+			{
+				elementMatrix*=scalingFactorHomogeneous;
 
-            assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-            assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
+				assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
+				assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-            this->AddElementMatrixToGlobalSubMatricesGeneral(
-                elementMatrix,
-                elementMatrixGlobalDofsRow,
-                elementMatrixGlobalDofsColumn,
-                mappingDofMultiscaleNode,
-                dDOF,
-                &rMatrixJJ,
-                &rMatrixJK,
-                0,
-                0,
-                false);
-        }
+#ifdef _OPENMP
+				#pragma omp critical (StructureMultiscaleBuildGlobalCoefficientSubMatrices0GeneralHomogeneous)
+#endif
+				this->AddElementMatrixToGlobalSubMatricesGeneral(
+					elementMatrix,
+					elementMatrixGlobalDofsRow,
+					elementMatrixGlobalDofsColumn,
+					mappingDofMultiscaleNode,
+					dDOF,
+					&rMatrixJJ,
+					&rMatrixJK,
+					0,
+					0,
+					false);
+			}
+	    }
     }
 
 
@@ -1279,37 +1331,50 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices
         const Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
         assert(elementGroup!=0);
         double scalingFactorDamage = this->GetScalingFactorDamage();
+#ifdef _OPENMP
+    	if (mNumProcessors!=0)
+    		omp_set_num_threads(mNumProcessors);
+        #pragma omp parallel default(shared) private(elementMatrix,elementMatrixGlobalDofsRow,elementMatrixGlobalDofsColumn)
+#endif
         for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end(); itElement++)
         {
-            // calculate element contribution
-            bool symmetryFlag = false;
-            Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-            if (error!=Error::SUCCESSFUL)
-            {
-                if (errorGlobal==Error::SUCCESSFUL)
-                    errorGlobal = error;
-                else if (errorGlobal!=error)
-                    throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-            }
-            else
-            {
-                elementMatrix*=scalingFactorDamage;
+#ifdef _OPENMP
+			#pragma omp single nowait
+#endif
+			{
+				// calculate element contribution
+				bool symmetryFlag = false;
+				Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				if (error!=Error::SUCCESSFUL)
+				{
+					if (errorGlobal==Error::SUCCESSFUL)
+						errorGlobal = error;
+					else if (errorGlobal!=error)
+						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+				}
+				else
+				{
+					elementMatrix*=scalingFactorDamage;
 
-                assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-                assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
+					assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
+					assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-                this->AddElementMatrixToGlobalSubMatricesGeneral(
-                    elementMatrix,
-                    elementMatrixGlobalDofsRow,
-                    elementMatrixGlobalDofsColumn,
-                    mappingDofMultiscaleNode,
-                    dDOF,
-                    &rMatrixJJ,
-                    &rMatrixJK,
-                    &rMatrixKJ,
-                    &rMatrixKK,
-                    true);
-            }
+#ifdef _OPENMP
+					#pragma omp critical (StructureMultiscaleBuildGlobalCoefficientSubMatrices0GeneralDamage)
+#endif
+					this->AddElementMatrixToGlobalSubMatricesGeneral(
+						elementMatrix,
+						elementMatrixGlobalDofsRow,
+						elementMatrixGlobalDofsColumn,
+						mappingDofMultiscaleNode,
+						dDOF,
+						&rMatrixJJ,
+						&rMatrixJK,
+						&rMatrixKJ,
+						&rMatrixKK,
+						true);
+				}
+			}
         }
     }
 
@@ -1322,37 +1387,50 @@ NuTo::Error::eError NuTo::StructureMultiscale::BuildGlobalCoefficientSubMatrices
     const Group<ElementBase>* elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
     double scalingFactorHomogeneous = this->GetScalingFactorHomogeneous();
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+    #pragma omp parallel default(shared) private(elementMatrix,elementMatrixGlobalDofsRow,elementMatrixGlobalDofsColumn)
+#endif
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end(); itElement++)
     {
-        // calculate element contribution
-        bool symmetryFlag = false;
-        Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-        if (error!=Error::SUCCESSFUL)
-        {
-            if (errorGlobal==Error::SUCCESSFUL)
-                errorGlobal = error;
-            else if (errorGlobal!=error)
-                throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-        }
-        else
-        {
-            elementMatrix*=scalingFactorHomogeneous;
+#ifdef _OPENMP
+		#pragma omp single nowait
+#endif
+		{
+			// calculate element contribution
+			bool symmetryFlag = false;
+			Error::eError error = itElement->second->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+			if (error!=Error::SUCCESSFUL)
+			{
+				if (errorGlobal==Error::SUCCESSFUL)
+					errorGlobal = error;
+				else if (errorGlobal!=error)
+					throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+			}
+			else
+			{
+				elementMatrix*=scalingFactorHomogeneous;
 
-            assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-            assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
+				assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
+				assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 
-            this->AddElementMatrixToGlobalSubMatricesGeneral(
-                elementMatrix,
-                elementMatrixGlobalDofsRow,
-                elementMatrixGlobalDofsColumn,
-                mappingDofMultiscaleNode,
-                dDOF,
-                &rMatrixJJ,
-                &rMatrixJK,
-                &rMatrixKJ,
-                &rMatrixKK,
-                true);
-        }
+#ifdef _OPENMP
+				#pragma omp critical (StructureMultiscaleBuildGlobalCoefficientSubMatrices0GeneralHomogeneous)
+#endif
+				this->AddElementMatrixToGlobalSubMatricesGeneral(
+					elementMatrix,
+					elementMatrixGlobalDofsRow,
+					elementMatrixGlobalDofsColumn,
+					mappingDofMultiscaleNode,
+					dDOF,
+					&rMatrixJJ,
+					&rMatrixJK,
+					&rMatrixKJ,
+					&rMatrixKK,
+					true);
+			}
+		}
     }
 
     /*

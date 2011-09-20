@@ -2024,6 +2024,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 		fineScaleStructure->GetLogger().OpenFile();
 
 		fineScaleStructure->SetResultDirectory(mResultDirectory);
+		fineScaleStructure->SetNumProcessors(3);
 		std::stringstream ssLoadStep;
 		ssLoadStep << mLoadStepMacro;
 		fineScaleStructure->SetResultLoadStepMacro(ssLoadStep.str());
