@@ -71,6 +71,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
     mScalingFactorEpsilon = 0;
 
     mUseAdditionalPeriodicShapeFunctions = false;
+
+    mNumProcessors = 3;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -103,7 +105,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mResultDirectory)
           & BOOST_SERIALIZATION_NVP(mLoadStepMacro)
           & BOOST_SERIALIZATION_NVP(mDamageTresholdCrackInitiation)
-          & BOOST_SERIALIZATION_NVP(mUseAdditionalPeriodicShapeFunctions);
+          & BOOST_SERIALIZATION_NVP(mUseAdditionalPeriodicShapeFunctions)
+          & BOOST_SERIALIZATION_NVP(mNumProcessors);
 #ifdef DEBUG_SERIALIZATION
        std::cout << "finish serialize Multiscale" << std::endl;
 #endif
@@ -2024,7 +2027,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 		fineScaleStructure->GetLogger().OpenFile();
 
 		fineScaleStructure->SetResultDirectory(mResultDirectory);
-		fineScaleStructure->SetNumProcessors(3);
+		fineScaleStructure->SetNumProcessors(mNumProcessors);
 		std::stringstream ssLoadStep;
 		ssLoadStep << mLoadStepMacro;
 		fineScaleStructure->SetResultLoadStepMacro(ssLoadStep.str());
@@ -2127,6 +2130,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 		{
 			throw MechanicsException(std::string("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale after conversion from linear model for ip") + fineScaleStructure->GetIPName());
 		}
+
 		fineScaleStructure->GetLogger().CloseFile();
 		//calculate new inelastic stress starting from the previous iteration
 		NuTo::FullMatrix<double> stressInElastic;
@@ -2135,6 +2139,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 
 		//check the difference between elastic and inelastic solution (fine scale and homogenized stress)
 		rElement->GetStructure()->GetLogger().OpenFile();
+		rElement->GetStructure()->GetLogger() << "max damage " << fineScaleStructure->ElementTotalGetMaxDamage() << "\n";
 		rElement->GetStructure()->GetLogger() << "elastic solution: " << stressElastic.mEngineeringStress[0] << " " << stressElastic.mEngineeringStress[1] << " " <<  stressElastic.mEngineeringStress[2] << "\n";
 		rElement->GetStructure()->GetLogger() << "inelastic solution: " << stressInElastic(0,0) << " " << stressInElastic(1,0) << " " <<  stressInElastic(3,0) << "\n";
 		rElement->GetStructure()->GetLogger().CloseFile();
@@ -2416,9 +2421,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
             if (maxDamage>=mDamageTresholdCrackInitiation)
             {
 				//test the difference in average stress between the initial solution (no crack enrichment) and the enriched solution (crack enrichment at pos maxShift)
-                rElement->GetStructure()->GetLogger() << "Add a crack with angle " << maxAlpha*180/M_PI << " with shift " << maxShift[0] << " " << maxShift[1] << "\n";
-                //rElement->GetStructure()->GetLogger() << "Add a crack with angle " << maxAlpha*180/M_PI << " with shift " << maxShift[0] << " " << maxShift[1] << "\n";
-				//std::cin.getline (title,256);
+        		rElement->GetStructure()->GetLogger() << "Add a crack for ip " << fineScaleStructure->GetIPName() << " with angle " << maxAlpha*180/M_PI << " and shift " << maxShift[0] << " " << maxShift[1] << "\n";
 
 				//set the crack shift
 				fineScaleStructure->SetShiftCenterDamage(maxShift);

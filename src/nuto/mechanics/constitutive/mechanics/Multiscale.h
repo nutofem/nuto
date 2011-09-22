@@ -641,6 +641,9 @@ protected:
 
     //enrich the solution with
     bool mUseAdditionalPeriodicShapeFunctions;
+
+    //number of threads for openmp parallelization
+    int mNumProcessors;
 };
 }
 
