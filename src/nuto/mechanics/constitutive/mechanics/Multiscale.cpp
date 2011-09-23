@@ -1,4 +1,4 @@
-// $Id: Multiscale.cpp 342 2010-10-18 12:39:08Z arnold2 $
+// $Id$
 // Multiscale.cpp
 // created Apr 26, 2010 by Joerg F. Unger
 #ifdef ENABLE_SERIALIZATION

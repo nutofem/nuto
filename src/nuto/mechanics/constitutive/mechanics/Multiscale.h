@@ -1,4 +1,4 @@
-// $Id: Multiscale.h 342 2010-10-18 12:39:08Z arnold2 $
+// $Id$
 #ifndef CONSTITUTIVEMULTISCALE_H_
 #define CONSTITUTIVEMULTISCALE_H_
 
