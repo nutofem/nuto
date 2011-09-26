@@ -10,6 +10,7 @@ IF(ENABLE_PYTHON_TESTS)
   ADD_TEST(mechanics::NonlocalDamagePlasticity          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NonlocalDamagePlasticity.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Plane2D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Plane2D4N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(mechanics::Plane2D4N_planeStress             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N_planeStress.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Section                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Sections.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Tetrahedron10N                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron10N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(mechanics::Truss1D2N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D2N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -28,6 +29,7 @@ IF(ENABLE_PYTHON_TESTS)
   mechanics::NonlocalDamagePlasticity
   mechanics::Plane2D3N
   mechanics::Plane2D4N
+  mechanics::Plane2D4N_planeStress
   mechanics::Section
   mechanics::Tetrahedron10N
   mechanics::Truss1D2N

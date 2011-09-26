@@ -91,7 +91,8 @@ int main()
 	    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
 	    // create section
-	    int mySection1 = myStructure.SectionCreate("PLANE_STRAIN");
+	    //~ int mySection1 = myStructure.SectionCreate("PLANE_STRAIN");
+	    int mySection1 = myStructure.SectionCreate("PLANE_STRESS");
 	    myStructure.SectionSetThickness(mySection1,0.01);
 
 	    // assign material, section and integration type

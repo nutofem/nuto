@@ -69,6 +69,15 @@ public:
                                       const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const;
 
     //  Engineering strain /////////////////////////////////////
+    //! @brief ... convert an engineering strain from 2D into 3D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rEngineeringStrain2D ... engineering strain 2D (input)
+    //! @param rEngineeringStrain3D ... engineering strain 3D (output)
+    virtual Error::eError GetEngineeringStrainFromEngineeringStrain(const ElementBase* rElement, int rIp,
+                                      const EngineeringStrain2D& rEngineeringStrain2D, EngineeringStrain3D& rEngineeringStrain3D) const;
+
+    //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
     //! @param rElement ... element
     //! @param rIp ... integration point

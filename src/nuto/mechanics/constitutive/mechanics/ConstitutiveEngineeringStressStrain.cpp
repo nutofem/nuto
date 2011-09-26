@@ -85,28 +85,34 @@ NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStr
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
 //! @param rEngineeringStrain ... engineering strain
-NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain(const ElementBase* rElement,const int rIp,
 		      const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringStrain) const
 {
     EngineeringStrain2D engineeringStrain;
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
     assert(rElement->GetSection()!=0);
-    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
+
+    switch(rElement->GetSection()->GetType())
     {
-        rEngineeringStrain.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
-    	rEngineeringStrain.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
-    	rEngineeringStrain.mEngineeringStrain[2] = 0;
-    	rEngineeringStrain.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
-    	rEngineeringStrain.mEngineeringStrain[4] = 0.;
-    	rEngineeringStrain.mEngineeringStrain[5] = 0.;
+    case Section::PLANE_STRAIN:
+		rEngineeringStrain.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
+		rEngineeringStrain.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
+		rEngineeringStrain.mEngineeringStrain[2] = 0;
+		rEngineeringStrain.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
+		rEngineeringStrain.mEngineeringStrain[4] = 0.;
+		rEngineeringStrain.mEngineeringStrain[5] = 0.;
+    	break;
+    case Section::PLANE_STRESS:
+		GetEngineeringStrainFromEngineeringStrain(rElement, rIp,engineeringStrain,rEngineeringStrain);
+    	break;
+    default:
+    	throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain] Wrong type of 2D section type");
     }
-    else //plane stress
-    {
-    	throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrain] Plane stress not yet implemented.");
-    }
+
 	return Error::SUCCESSFUL;
 }
+
 
 //  Engineering strain /////////////////////////////////////
 //! @brief ... calculate engineering strain from deformation gradient in 3D
@@ -122,6 +128,20 @@ NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStr
 	return Error::SUCCESSFUL;
 }
 
+//  Engineering strain2D -> 3D /////////////////////////////////////
+//! @brief ... calculate engineering strain from deformation gradient in 3D
+//! @param rStructure ... structure
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rDeformationGradient ... deformation gradient
+//! @param rEngineeringStrain ... engineering strain
+NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStrainFromEngineeringStrain(const ElementBase* rElement, int rIp,
+								  const EngineeringStrain2D& rEngineeringStrain2D, EngineeringStrain3D& rEngineeringStrain3D) const
+{
+    throw MechanicsException("[ConstitutiveEngineeringStressStrain::GetEngineeringStrainFromEngineeringStrain] Not implemented for this material law");
+}
+
+//  Energy /////////////////////////////////////
 //! @brief ... calculate the total energy density
 //! @param rStructure ... structure
 //! @param rElement ... element

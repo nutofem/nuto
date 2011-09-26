@@ -47,6 +47,23 @@ namespace NuTo
  *    \gamma_{zx}
  *  \end{bmatrix},
  * \f}
+ * two-dimensional plain stress constitutive relationship reads
+ * \f{align*}{
+ *  \begin{bmatrix}
+ *    \sigma_{xx}\\
+ *    \sigma_{yy}\\
+ *    \sigma_{xy}
+ *  \end{bmatrix} = \dfrac{E}{(1+\nu^2)} \begin{bmatrix}
+ *    1 & \nu & 0\\
+ *    \nu & 1 & 0\\
+ *    0 & 0 \dfrac{1-\nu}{2}
+ *  \end{bmatrix}
+ *  \begin{bmatrix}
+ *    \varepsilon_{xx}\\
+ *    \varepsilon_{yy}\\
+ *    \gamma_{xy}
+ *  \end{bmatrix},
+ * \f} 
  * where \f$ E \f$ is the Young's modulus, \f$ \nu \f$ is the Poisson's ratio,
  * \f$ \boldsymbol{\sigma} \f$ are the components of the Cauchy stress vector,
  * and \f$ \boldsymbol{\varepsilon} \f$ are the components of the Engineering strain vector.
@@ -61,6 +78,15 @@ class LinearElastic: public ConstitutiveEngineeringStressStrain, public Constitu
 #endif // ENABLE_SERIALIZATION
 public:
     LinearElastic();
+
+	// Engineering strain /////////////////////////////////////
+	//! @brief ... calculate 3D engineering strain vector from 2D engineering strain vector
+	//! @param rElement ... element
+	//! @param rIp ... integration point
+	//! @param rEngineeringStrain2D ... engineering strain
+	//! @param rEngineeringStrain3D ... engineering strain
+	Error::eError GetEngineeringStrainFromEngineeringStrain(const ElementBase* rElement, int rIp,
+				  const EngineeringStrain2D& rEngineeringStrain2D, EngineeringStrain3D& rEngineeringStrain3D) const;
 
     //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
@@ -481,6 +507,7 @@ public:
     ///////////////////////////////////////////////////////////////////////////
 
     // calculate coefficients of the material matrix
+    void CalculateCoefficients2DPlainStress(double& C11, double& C12, double& C33) const;
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
     // parameters /////////////////////////////////////////////////////////////

@@ -64,6 +64,40 @@ void NuTo::LinearElastic::serialize(Archive & ar, const unsigned int version)
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearElastic)
 #endif // ENABLE_SERIALIZATION
 
+// Engineering strain /////////////////////////////////////
+//! @brief ... calculate 3D engineering strain vector from 2D engineering strain vector
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rEngineeringStrain2D ... engineering strain
+//! @param rEngineeringStrain3D ... engineering strain
+NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStrainFromEngineeringStrain(const ElementBase* rElement, int rIp,
+								  const EngineeringStrain2D& rEngineeringStrain2D, EngineeringStrain3D& rEngineeringStrain3D) const
+{
+    assert(rElement->GetSection()!=0);
+    switch(rElement->GetSection()->GetType())
+    {
+    case Section::PLANE_STRAIN:
+        rEngineeringStrain3D.mEngineeringStrain[0] = rEngineeringStrain2D.mEngineeringStrain[0];
+    	rEngineeringStrain3D.mEngineeringStrain[1] = rEngineeringStrain2D.mEngineeringStrain[1];
+    	rEngineeringStrain3D.mEngineeringStrain[2] = 0;
+    	rEngineeringStrain3D.mEngineeringStrain[3] = rEngineeringStrain2D.mEngineeringStrain[2];
+    	rEngineeringStrain3D.mEngineeringStrain[4] = 0.;
+    	rEngineeringStrain3D.mEngineeringStrain[5] = 0.;
+    	break;
+    case Section::PLANE_STRESS:
+        rEngineeringStrain3D.mEngineeringStrain[0] = rEngineeringStrain2D.mEngineeringStrain[0];
+    	rEngineeringStrain3D.mEngineeringStrain[1] = rEngineeringStrain2D.mEngineeringStrain[1];
+    	rEngineeringStrain3D.mEngineeringStrain[2] = mNu*(mNu+1)/(mNu-1)*(rEngineeringStrain2D.mEngineeringStrain[0]+rEngineeringStrain2D.mEngineeringStrain[1]);
+    	rEngineeringStrain3D.mEngineeringStrain[3] = rEngineeringStrain2D.mEngineeringStrain[2];
+    	rEngineeringStrain3D.mEngineeringStrain[4] = 0.;
+    	rEngineeringStrain3D.mEngineeringStrain[5] = 0.;
+    	break;
+    default:
+    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStrainFromEngineeringStrain] Invalid type of 2D section behavoir found!!!");
+    }
+    return Error::SUCCESSFUL;
+}
+
 //  Engineering strain /////////////////////////////////////
 //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
 //! @param rElement ... element
@@ -208,8 +242,9 @@ NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStra
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
     assert(rElement->GetSection()!=0);
-    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
+    switch(rElement->GetSection()->GetType())
     {
+    case Section::PLANE_STRAIN:{
 		// calculate coefficients of the material matrix
 		double C11, C12, C33;
 		this->CalculateCoefficients3D(C11, C12, C33);
@@ -218,10 +253,19 @@ NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStra
 		rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
 		rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
 		rEngineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
-   }
-    else
-    {
-    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
+    	break;}
+    case Section::PLANE_STRESS:{
+		// calculate coefficients of the material matrix
+		double C11, C12, C33;
+		this->CalculateCoefficients2DPlainStress(C11, C12, C33);
+
+		// calculate Engineering stress
+		rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
+		rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
+		rEngineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
+    	break;}
+    default:
+    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Invalid type of 2D section behavoir found!!!");
     }
     return Error::SUCCESSFUL;
 }
@@ -250,8 +294,9 @@ NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStra
 	rDeformationGradient.GetEngineeringStrain(engineeringStrain);
 
 	assert(rElement->GetSection()!=0);
-	if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
-	{
+    switch(rElement->GetSection()->GetType())
+    {
+    case Section::PLANE_STRAIN:{
 	    // calculate coefficients of the material matrix
 	    double C11, C12, C33;
 	    this->CalculateCoefficients3D(C11, C12, C33);
@@ -263,11 +308,23 @@ NuTo::Error::eError NuTo::LinearElastic::GetEngineeringStressFromEngineeringStra
 	    rEngineeringStress.mEngineeringStress[3] = C33 * engineeringStrain.mEngineeringStrain[2] ;
 	    rEngineeringStress.mEngineeringStress[4] = 0.;
 	    rEngineeringStress.mEngineeringStress[5] = 0.;
-	}
-	else
-	{
-	    throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
-	}
+    	break;}
+    case Section::PLANE_STRESS:{
+	    // calculate coefficients of the material matrix
+	    double C11, C12, C33;
+	    this->CalculateCoefficients2DPlainStress(C11, C12, C33);
+
+	    // calculate Engineering stress
+	    rEngineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
+	    rEngineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
+	    rEngineeringStress.mEngineeringStress[2] = 0.;
+	    rEngineeringStress.mEngineeringStress[3] = C33 * engineeringStrain.mEngineeringStrain[2];
+	    rEngineeringStress.mEngineeringStress[4] = 0.;
+	    rEngineeringStress.mEngineeringStress[5] = 0.;
+    	break;}
+    default:
+    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Invalid type of 2D section behavoir found!!!");
+    }
     return Error::SUCCESSFUL;
 }
 
@@ -400,8 +457,9 @@ NuTo::Error::eError NuTo::LinearElastic::GetTangent_EngineeringStress_Engineerin
 	const SectionBase* theSection(rElement->GetSection());
     if (theSection==0)
     	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-	if (theSection->GetType()==Section::PLANE_STRAIN)
-	{
+    switch(theSection->GetType())
+    {
+    case Section::PLANE_STRAIN:{
 	    // calculate coefficients of the material matrix
 	    double C11, C12, C33;
 	    this->CalculateCoefficients3D(C11, C12, C33);
@@ -418,11 +476,28 @@ NuTo::Error::eError NuTo::LinearElastic::GetTangent_EngineeringStress_Engineerin
 	    tangent->mTangent[ 6] = 0.;
 	    tangent->mTangent[ 7] = 0.;
 	    tangent->mTangent[ 8] = C33;
-	}
-	else
-	{
-	    throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
-	}
+    	break;}
+    case Section::PLANE_STRESS:{
+	    // calculate coefficients of the material matrix
+	    double C11, C12, C33;
+		this->CalculateCoefficients2DPlainStress(C11, C12, C33);
+
+	    // store tangent at the output object
+	    tangent->mTangent[ 0] = C11;
+	    tangent->mTangent[ 1] = C12;
+	    tangent->mTangent[ 2] = 0;
+
+	    tangent->mTangent[ 3] = C12;
+	    tangent->mTangent[ 4] = C11;
+	    tangent->mTangent[ 5] = 0;
+
+	    tangent->mTangent[ 6] = 0.;
+	    tangent->mTangent[ 7] = 0.;
+	    tangent->mTangent[ 8] = C33;
+   	break;}
+    default:
+    	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] Invalid type of 2D section behavoir found!!!");
+    }
 
     rTangent->SetSymmetry(true);
     return Error::SUCCESSFUL;
@@ -662,8 +737,10 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 	const SectionBase* theSection(rElement->GetSection());
     if (theSection==0)
     	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-	if (theSection->GetType()==Section::PLANE_STRAIN)
-	{
+    assert(rElement->GetSection()!=0);
+    switch(rElement->GetSection()->GetType())
+    {
+    case Section::PLANE_STRAIN:{
 		// calculate coefficients of the material matrix
 		double C11, C12, C33;
 		this->CalculateCoefficients3D(C11, C12, C33);
@@ -672,11 +749,21 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 		engineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
 		engineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
 		engineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
-	}
-	else
-	{
-		throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Plane stress is to be implemented.");
-	}
+    	break;}
+    case Section::PLANE_STRESS:{
+		// calculate coefficients of the material matrix
+		double C11, C12, C33;
+		this->CalculateCoefficients2DPlainStress(C11, C12, C33);
+
+		// calculate Engineering stress
+		engineeringStress.mEngineeringStress[0] = C11 * engineeringStrain.mEngineeringStrain[0] + C12 * engineeringStrain.mEngineeringStrain[1];
+		engineeringStress.mEngineeringStress[1] = C11 * engineeringStrain.mEngineeringStrain[1] + C12 * engineeringStrain.mEngineeringStrain[0];
+		engineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
+    	break;}
+    default:
+    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Invalid type of 2D section behavoir found!!!");
+    }
+
 /*#ifdef DEBUG
     std::cout << "strain ";
     std::cout << engineeringStrain.mEngineeringStrain[0] << " ";
@@ -1261,6 +1348,15 @@ NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_SecondPiolaKirchhoffSt
 		   +greenLagrangeStrain.mGreenLagrangeStrain[5]*secondPiolaKirchhoffStress.mSecondPiolaKirchhoffStress[5]);
 
     return Error::SUCCESSFUL;
+}
+
+// calculate coefficients of the material matrix
+void NuTo::LinearElastic::CalculateCoefficients2DPlainStress(double& C11, double& C12, double& C33) const
+{
+    double factor = this->mE/(1.0 - (this->mNu * this->mNu));
+    C11 = factor;
+    C12 = factor * this->mNu;
+    C33 = factor * 0.5 * (1.0 - this->mNu);
 }
 
 // calculate coefficients of the material matrix
