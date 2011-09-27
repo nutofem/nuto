@@ -71,6 +71,11 @@ endif()
 
 if(wxWidgets_FOUND AND VTK_FOUND AND Boost_PYTHON_FOUND AND ENABLE_VISUALIZE)
   message(STATUS "All requirements for GUI met.")
+  message(STATUS "\tFound wxWidgets: ${wxWidgets_FOUND}")
+  message(STATUS "\t\t wxWidgets root dir    : ${wxWidgets_ROOT_DIR}")
+  message(STATUS "\t\t wxWidgets include dirs: ${wxWidgets_INCLUDE_DIRS}")
+  message(STATUS "\t\t wxWidgets library dirs: ${wxWidgets_LIBRARY_DIRS}")
+  message(STATUS "\t\t wxWidgets libraries   : ${wxWidgets_LIBRARIES}")
   # Utilities
   include(ArtProvider)
   include(SplitDebugInfo)
