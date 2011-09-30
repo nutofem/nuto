@@ -22,7 +22,7 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
-#include "nuto/optimize/ConjugateGradientGrid.h"
+#include "nuto/optimize/ConjugateGradientStructureGrid.h"
 
 int main()
 {
@@ -143,7 +143,7 @@ int main()
 
         std::cout<<"Element Stiffness created"<<std::endl;
         //stiffnessMatrix.Info(12,6);
-  		//stiffnessMatrix.WriteToFile("stiffnessMatrix.txt"," ");
+  		stiffnessMatrix.WriteToFile("stiffnessMatrixOld.txt"," ");
 
 		//grid structure create
 		//material values are smaller than threshold value
@@ -332,7 +332,7 @@ int main()
 		NuTo::CallbackHandlerGrid myCallback;
 
 		std::cout<<__FILE__<<" "<<__LINE__<<"  callback created"<<std::endl;
-		NuTo::ConjugateGradientGrid myOptimizer((unsigned int) myGrid.GetNumNodes()*3);
+		NuTo::ConjugateGradientStructureGrid myOptimizer((unsigned int) myGrid.GetNumNodes()*3);
 		std::cout<<__FILE__<<" "<<__LINE__<<"  optimizer created"<<std::endl;
 
 		NuTo::FullMatrix<double> startVector(myGrid.GetNumNodes()*3,1);
@@ -344,7 +344,7 @@ int main()
 			startVector.SetBlock(3*myNode,0,rDisplacements);
 		}
 		std::cout<<__FILE__<<" "<<__LINE__<<"  "<<std::endl;
-		myOptimizer.SetVerboseLevel(2);
+		myOptimizer.SetVerboseLevel(5);
 
 		myOptimizer.SetParameters(startVector);
 		std::cout<<__FILE__<<" "<<__LINE__<<"  Parameters set, Anzahl "<<myOptimizer.GetNumParameters()<<std::endl;

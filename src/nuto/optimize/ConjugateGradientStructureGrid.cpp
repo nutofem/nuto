@@ -1,4 +1,4 @@
-// $Id$
+// $Id $
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -10,7 +10,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
-#include "nuto/optimize/ConjugateGradientGrid.h"
+#include "nuto/optimize/ConjugateGradientStructureGrid.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
@@ -21,7 +21,7 @@
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 #define tol 1e-8
 
-int NuTo::ConjugateGradientGrid::Optimize()
+int NuTo::ConjugateGradientStructureGrid::Optimize()
 {
 #ifdef SHOW_TIME
     std::clock_t startOpt,endOpt;
@@ -79,7 +79,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 	//check, if callback handler is set
 	if (mpCallbackHandler==0)
-		throw OptimizeException("[ConjugateGradientGrid::Optimize] Callback handler not set to determine objective function and derivatives.");
+		throw OptimizeException("[ConjugateGradientStructureGrid::Optimize] Callback handler not set to determine objective function and derivatives.");
 
 	// calculate objective
 	numFunctionCalls++;
@@ -167,7 +167,9 @@ int NuTo::ConjugateGradientGrid::Optimize()
 				std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction"<<std::endl;
 
 			if (!matrixFreeMethod)
+			{
 				CalculateStartGradient(gradientOrig);
+			}
 			/*
 			FullMatrix<double> gradientOrigEBE(GetNumParameters(),1);
 			gradientOrigEBE	=gradientOrig;
@@ -175,7 +177,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc start direction NBN"<<std::endl;
 
 */
-			if (matrixFreeMethod)
+			else
 			{
 				gradientOrig=mvParameters.mEigenMatrix;
 				CalculateStartGradientNodeByNodeII(gradientOrig);
@@ -462,12 +464,12 @@ int NuTo::ConjugateGradientGrid::Optimize()
 #ifdef SHOW_TIME
     endOpt=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::Optimize] " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 	return returnValue;
 }
 
-void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,Eigen::VectorXd& scaleFactorsInv)
+void NuTo::ConjugateGradientStructureGrid::CalcScalingFactors(int& numHessianCalls,Eigen::VectorXd& scaleFactorsInv)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -498,25 +500,25 @@ void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,Eigen:
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalcScalingFactors] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalcScalingFactors] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
-void NuTo::ConjugateGradientGrid::Hessian(NuTo::FullMatrix<double>& rHessian)const
+void NuTo::ConjugateGradientStructureGrid::Hessian(NuTo::FullMatrix<double>& rHessian)const
 {
 	if (mUseDiagHessian)
 		HessianDiag(rHessian);
 	else
-		throw OptimizeException("[ConjugateGradientGrid::Hessian] Only diagonal hessian does exist.");
+		throw OptimizeException("[ConjugateGradientStructureGrid::Hessian] Only diagonal hessian does exist.");
 }
 
-void NuTo::ConjugateGradientGrid::HessianDiag(NuTo::FullMatrix<double>& rHessian)const
+void NuTo::ConjugateGradientStructureGrid::HessianDiag(NuTo::FullMatrix<double>& rHessian)const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
 #ifdef ENABLE_MECHANICS
-	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine ConjugateGradientGrid::HessianDiag"<<std::endl;
+	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine ConjugateGradientStructureGrid::HessianDiag"<<std::endl;
  /*
 	int numElems=mpGrid->GetNumElements();
     NuTo::FullMatrix<int> *voxelLoc;
@@ -541,7 +543,7 @@ void NuTo::ConjugateGradientGrid::HessianDiag(NuTo::FullMatrix<double>& rHessian
 		thisElement= ElementGetPtr(elementNumber);
 		int dofsElem=thisElement->GetNumDofs();
 		if (dofsElem!=24)
-			throw OptimizeException("[ConjugateGradientGrid::HessianDiag] Number of Dofs is not 24.");
+			throw OptimizeException("[ConjugateGradientStructureGrid::HessianDiag] Number of Dofs is not 24.");
 		int dofs[24]={0};
         //get grid location and number of corresponding voxel
         for (int count = 0;count<4;++count)
@@ -574,17 +576,17 @@ void NuTo::ConjugateGradientGrid::HessianDiag(NuTo::FullMatrix<double>& rHessian
     }
     */
 //#else
-	//throw OptimizeException ( "[ConjugateGradientGrid::HessianDiag] Modul Mechanics is not loaded." );
+	//throw OptimizeException ( "[ConjugateGradientStructureGrid::HessianDiag] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::HessianDiag] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::HessianDiag] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
 
 //! @brief ... calculate start gradient in element-by-element way
-void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
+void NuTo::ConjugateGradientStructureGrid::CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -611,7 +613,7 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
 	// array of all three nodal displacements for all element nodes
 	FullMatrix<double> displacements(dofsElem,1);
 	// global external force vector (active dofs)
-	FullMatrix<double>  force(GetNumParameters(),1);
+	//FullMatrix<double>  force(GetNumParameters(),1);
 
 	//loop over all elements
 	for (int elementNumber=0;elementNumber<numElems;elementNumber++)
@@ -670,17 +672,17 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradient(NuTo::FullMatrix<double
         //gradientOrig+=force;
     }
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradient] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateStartGradient] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradient] " << difftime(end,start)/CLOCKS_PER_SEC << "sec  " << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateStartGradient] " << difftime(end,start)/CLOCKS_PER_SEC << "sec  " << std::endl;
 #endif
 }
 
 //! @brief ... calculate start gradient in node-by-node way
-void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode(NuTo::FullMatrix<double> &gradientOrig)
+void NuTo::ConjugateGradientStructureGrid::CalculateStartGradientNodeByNode(NuTo::FullMatrix<double> &gradientOrig)
 {
 #ifdef ENABLE_MECHANICS
 #ifdef SHOW_TIME
@@ -772,16 +774,16 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode(NuTo::FullMat
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateStartGradientNodeByNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradientNodeByNode] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateStartGradientNodeByNode] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate start gradient in node-by-node way
 //! @brief ... variante II: with 3x3 matrix at node
-void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNodeII(NuTo::FullMatrix<double> &gradientOrig)
+void NuTo::ConjugateGradientStructureGrid::CalculateStartGradientNodeByNodeII(NuTo::FullMatrix<double> &gradientOrig)
 {
 #ifdef ENABLE_MECHANICS
 #ifdef SHOW_TIME
@@ -868,15 +870,15 @@ void NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNodeII(NuTo::FullM
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateStartGradientNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradientNodeByNodeII] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateStartGradientNodeByNodeII] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 
 //! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
-void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
+void NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled)
 {
 /*
 #ifdef SHOW_TIME
@@ -948,7 +950,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
  	}
 	searchDirectionScaled = allReturn.mEigenMatrix;
 #else
- 	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
+ 	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateScaledSearchDirection] Modul Mechanics is not loaded." );
 
 #endif // ENABLE_MECHANICS
 /*
@@ -956,13 +958,13 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection(Eigen::VectorXd
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
      diffn=diff(startn,endn);
      if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirection            ] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirection            ] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
 #endif
 */
 }
 
 //! @brief ... calculate search direction in node-by-node way
-void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNode(Eigen::VectorXd& searchDirectionScaled)
+void NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNode(Eigen::VectorXd& searchDirectionScaled)
 {
 #ifdef ENABLE_MECHANICS
 #ifdef SHOW_TIME
@@ -1050,15 +1052,15 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNode(Eigen
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::CalculateStartGradientNodeByNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+        std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateStartGradientNodeByNode] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateStartGradientNodeByNode] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateStartGradientNodeByNode] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 /*
 //! @brief ... calculate search direction in node-by-node way
-void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled)
+void NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled)
 {
 #ifdef ENABLE_MECHANICS
 #ifdef SHOW_TIME
@@ -1123,17 +1125,17 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
     diffn=diff(startn,endn);
     if (mShowTime)
-       std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
- //      std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+       std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
+ //      std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 */
 
 //! @brief ... calculate search direction in node-by-node way
-void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled)
+void NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled)
 {
 #ifdef ENABLE_MECHANICS
 /*
@@ -1188,14 +1190,14 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
     diffn=diff(startn,endn);
     if (mShowTime)
-       std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
+       std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
  #endif
 */
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
-void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled,int numNodes, int* globNodeIds, double* globArray, bool* constraint)
+void NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled,int numNodes, int* globNodeIds, double* globArray, bool* constraint)
 {
 #ifdef ENABLE_MECHANICS
 /*
@@ -1252,12 +1254,12 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
     diffn=diff(startn,endn);
     if (mShowTime)
-       std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
- //      std::cout<<"[NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+       std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] "<< diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec"<<std::endl;
+ //      std::cout<<"[NuTo::ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 */
 #else
-	throw OptimizeException ( "[ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
+	throw OptimizeException ( "[ConjugateGradientStructureGrid::CalculateScaledSearchDirectionNodeByNodeII] Modul Mechanics is not loaded." );
 #endif // ENABLE_MECHANICS
 }
 
@@ -1267,7 +1269,7 @@ void NuTo::ConjugateGradientGrid::CalculateScaledSearchDirectionNodeByNodeII(Eig
 //! @brief ... save the object to a file
 //! @param filename ... filename
 //! @param rType ... type of file, either BINARY, XML or TEXT
-void NuTo::ConjugateGradientGrid::Save ( const std::string &filename, std::string rType)const
+void NuTo::ConjugateGradientStructureGrid::Save ( const std::string &filename, std::string rType)const
 {
 	try
 	{
@@ -1341,7 +1343,7 @@ void NuTo::ConjugateGradientGrid::Save ( const std::string &filename, std::strin
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::string rType)
+void NuTo::ConjugateGradientStructureGrid::Restore ( const std::string &filename,  std::string rType)
 {
     try
     {
@@ -1354,7 +1356,7 @@ void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::s
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientStructureGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -1372,7 +1374,7 @@ void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::s
                 throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientStructureGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -1390,7 +1392,7 @@ void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::s
                 throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw OptimizeException ( "[NuTo::ConjugateGradientStructureGrid::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -1422,14 +1424,14 @@ void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::s
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
 //!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name ConjugateGradientGrid
-std::string NuTo::ConjugateGradientGrid::GetTypeId()const
+//! @return    class name ConjugateGradientStructureGrid
+std::string NuTo::ConjugateGradientStructureGrid::GetTypeId()const
 {
-    return std::string("ConjugateGradientGrid");
+    return std::string("ConjugateGradientStructureGrid");
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::ConjugateGradientGrid::Info () const
+void NuTo::ConjugateGradientStructureGrid::Info () const
 {
     NuTo::Optimizer::InfoBase();
 	std::cout<< "AccuracyGradient" << mAccuracyGradient << std::endl;

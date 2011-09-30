@@ -1,6 +1,6 @@
-// $Id$
-#ifndef CONJUGATE_GRADIENT_GRID_H
-#define CONJUGATE_GRADIENT_GRID_H
+// $Id $
+#ifndef CONJUGATE_GRADIENT_STRUCTUREGRID_H
+#define CONJUGATE_GRADIENT_STRUCTUREGRID_H
 
 #include <vector>
 #include "nuto/math/FullMatrix.h"
@@ -18,14 +18,14 @@ namespace NuTo
 	class StructureGrid;
 #endif // ENABLE_MECHANICS
 
-class ConjugateGradientGrid : public Optimizer
+class ConjugateGradientStructureGrid : public Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    ConjugateGradientGrid(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
+    ConjugateGradientStructureGrid(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
     {
         mAccuracyGradient = 1e-6;
         mMinDeltaObjBetweenRestarts = 1e-6;
