@@ -4,6 +4,8 @@
 #include "nuto/base/NuToObject.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
+#include <boost/dynamic_bitset.hpp>
+
 namespace NuTo
 {
 
@@ -46,15 +48,23 @@ public:
     void Restore (const std::string &filename, std::string rType );
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
+    //! @brief import routine for basic grid data without StructureGrid data space
+    void ImportFromVtkASCIIFileHeader(const char* rFileName,int *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, int &rNumVoxel);
+
+    //! @brief import routine for basic grid data with StructureGrid data space
+    void ImportFromVtkASCIIFileHeader(const char* rFileName);
+
+	//! @brief ... imports Data from a Vtk ASCII File
+	//! @param fileName ... file name
+	void ImportFromVtkASCIIFile(const char* fileName,std::vector<int> &rData);
+
+   //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
     std::string GetTypeId()const
     {
         return std::string("StructureGrid");
     }
-
-    virtual void ImportFromVtkASCIIFileHeader(const char* rFileName);
 
     //! @brief returns number of Voxels
     //! @return number of Voxels
@@ -103,6 +113,9 @@ public:
     //! @brief GetConstraintSwitch
     //! @return switch field for constraint
     bool* GetConstraintSwitch();
+
+    //! @brief create node data without StructureGrid
+    void CreateGrid(int rThresholdMaterialValue, std::vector<int> &imageValues ,const std::vector<double>& rColorToMaterialData,int* rGridDimension,boost::dynamic_bitset<> &rNodeExist,boost::dynamic_bitset<> &rElemExist,std::vector<double>& youngsModulus,std::vector<int>& materialOfElem);
 
 
  //*************************************************

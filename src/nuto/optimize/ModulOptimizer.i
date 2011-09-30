@@ -4,8 +4,9 @@
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/FullMatrix.h"
 #include "nuto/optimize/Optimizer.h"
-#include "nuto/optimize/ConjugateGradientStructureGrid.h"
+#include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/ConjugateGradientNonLinear.h"
+#include "nuto/optimize/ConjugateGradientStructureGrid.h"
 #include "nuto/optimize/CallbackHandler.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/CallbackHandlerPython.h"
@@ -24,5 +25,6 @@
 %include "nuto/optimize/CallbackHandlerGrid.h"
 %include "nuto/optimize/CallbackHandlerPython.h"
 %include "nuto/optimize/Optimizer.h"
-%include "nuto/optimize/ConjugateGradientStructureGrid.h"
+%include "nuto/optimize/ConjugateGradientGrid.h"
 %include "nuto/optimize/ConjugateGradientNonLinear.h"
+%include "nuto/optimize/ConjugateGradientStructureGrid.h"

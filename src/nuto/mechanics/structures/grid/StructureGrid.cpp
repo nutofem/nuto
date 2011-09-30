@@ -209,40 +209,82 @@ void NuTo::StructureGrid::Restore (const std::string &filename, std::string rTyp
 }
 #endif // ENABLE_SERIALIZATION
 
-//! @brief returns number of Voxels
-//! @return number of Voxels
-int NuTo::StructureGrid::GetNumVoxels() const
+//! @brief import routine for basic grid data without StructureGrid data space
+void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,int *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, int &rNumVoxel)
 {
-    return mNumVoxel;
+    std::cout<<__FILE__<<" "<<__LINE__<<" in ImportFromVtkASCIIFileHeader without StructureGrid data \n ";
+    try
+    {
+        using namespace boost::spirit::classic;
+        // open file
+        std::ifstream file(rFileName, std::ios::in);
+        if (file.is_open() == false)
+        {
+            throw MechanicsException("[StructureGrid::ImportFromVtkASCIIFile] error opening file.");
+        }
+        // read header
+        assert(file.is_open());
+
+        // read first four lines
+        std::string line;
+        getline (file, line);
+        getline (file, line);
+        getline (file, line);
+        getline (file, line);
+        // read dimension
+        getline (file, line);
+       if (parse(line.c_str(),("DIMENSIONS " >> int_p[assign_a(rGridDimension[0])] >> ' '
+                                           >> int_p[assign_a(rGridDimension[1])] >> ' '
+                                           >> int_p[assign_a(rGridDimension[2])] >> *space_p)).full == false)
+       {
+            throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader]error reading dimension.");
+       }
+       // read spacing
+        getline (file, line);
+        if (parse(line.c_str(),("SPACING ">> real_p[assign_a(rVoxelSpacing[0])] >> ' '
+                                >> real_p[assign_a(rVoxelSpacing[1])] >> ' '
+                                >> real_p[assign_a(rVoxelSpacing[2])] >> *space_p)).full == false)
+        {
+            throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader]error reading spacing.");
+        }
+        // read origin
+        getline (file, line);
+        if (parse(line.c_str(),("ORIGIN ">> real_p[assign_a(rGridOrigin[0])] >> ' '
+                                 >> real_p[assign_a(rGridOrigin[1])] >> ' '
+                                 >> real_p[assign_a(rGridOrigin[2])] >> *space_p)).full == false)
+        {
+             throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader]error reading origin.");
+        }
+        // read number of entries
+        getline (file, line);
+        if (parse(line.c_str(),("POINT_DATA ">> int_p[assign_a(rNumVoxel)] >>  *space_p)).full == false)
+	   {
+		   throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader]error reading number of entries.");
+	   }
+        // close file
+       file.close();
+       // test of saved data
+      if (rNumVoxel<1)
+       {
+           throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader] error number of entries is negative or zero.");
+       }
+       if (rGridDimension[0]<1||rGridDimension[1]<1||rGridDimension[2]<1)
+       {
+           throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader] error dimension is negative or zero.");
+       }
+   }
+    catch (MechanicsException &e)
+    {
+        throw e;
+    }
+    catch ( std::exception &e )
+    {
+        throw MechanicsException ( e.what() );
+    }
 }
 
-//! @brief returns  VoxelSpacing
-//! @return VoxelSpacing
-const double* NuTo::StructureGrid::GetVoxelSpacing() const
-{
-    return mVoxelSpacing;
-}
 
-//! @brief returns GridOrigin
- //! @return GridOrigin
-const double* NuTo::StructureGrid::GetGridOrigin() const
-{
-     return mGridOrigin;
-}
-
- //! @brief returns GridDimension
- //! @return GridDimension
-const int* NuTo::StructureGrid::GetGridDimension() const
-{
-     return mGridDimension;
-}
-//! @brief Get NumMaterials
-//! @return NumMaterial
-const int NuTo::StructureGrid::GetNumMaterials() const
-{
-    return mNumMaterials;
-}
-
+//! @brief import routine for basic grid data with StructureGrid data space
 void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
 {
     try
@@ -322,6 +364,159 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
     }
 }
 
+void NuTo::StructureGrid::ImportFromVtkASCIIFile(const char* rFileName,std::vector<int> &rData)
+{
+    using namespace boost::spirit::classic;
+
+    // open file
+    std::ifstream file(rFileName, std::ios::in);
+    if (file.is_open() == false)
+    {
+        throw MechanicsException("[StructureGrid::ImportFromVtkASCIIFile] error opening file.");
+    }
+     // read first four lines
+    unsigned int numEntries(0);
+
+    std::string line;
+    for (int count=0;count<7;count++)
+    {
+        getline (file, line);
+    }
+
+    // read number of entries
+    getline (file, line);
+    if (parse(line.c_str(),("POINT_DATA ">> int_p[assign_a(numEntries)] >>  *space_p)).full == false)
+           {
+               throw MechanicsException("[StructureGrid::importFromVtkASCIIFile]error reading number of entries.");
+           }
+    // read data type
+    getline (file, line);
+    // read empty line
+    getline (file, line);
+
+  // read entries
+    if(numEntries!=rData.size())
+        throw MechanicsException("[StructureGrid::importFromVtkASCIIFile] number of entries is not equal to vector size.");
+
+    std::vector<int> imageValues(0);
+    int value;
+
+    while(getline(file,line))
+    {
+    	std::istringstream iss(line);
+    	while(iss >> value)
+    	{
+			imageValues.push_back(value);
+    	}
+    }
+    rData=imageValues;
+     // close file
+   file.close();
+}
+
+//! @brief returns number of Voxels
+//! @return number of Voxels
+int NuTo::StructureGrid::GetNumVoxels() const
+{
+    return mNumVoxel;
+}
+
+//! @brief returns  VoxelSpacing
+//! @return VoxelSpacing
+const double* NuTo::StructureGrid::GetVoxelSpacing() const
+{
+    return mVoxelSpacing;
+}
+
+//! @brief returns GridOrigin
+ //! @return GridOrigin
+const double* NuTo::StructureGrid::GetGridOrigin() const
+{
+     return mGridOrigin;
+}
+
+ //! @brief returns GridDimension
+ //! @return GridDimension
+const int* NuTo::StructureGrid::GetGridDimension() const
+{
+     return mGridDimension;
+}
+//! @brief Get NumMaterials
+//! @return NumMaterial
+const int NuTo::StructureGrid::GetNumMaterials() const
+{
+    return mNumMaterials;
+}
+
+
+
+//! @brief create node data without StructureGrid
+//! @brief set bool for node
+void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::vector<int>& imageValues ,const std::vector<double>& rColorToMaterialData,int* rGridDimension,boost::dynamic_bitset<> &rNodeExist,boost::dynamic_bitset<> &rElemExist,std::vector<double>& youngsModulus,std::vector<int>& materialOfElem)
+{
+    int numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
+    //int numMatNodes=0;//all existing nodes (with material)
+    int * coincidentVoxels=new int[8];
+    bool flag=false;
+    for (int countNodes =0; countNodes<numGridNodes;++countNodes)//countNodes correspond to nodeID
+    {
+         //get coincident voxels for each node, check if one voxel has material, then create node
+         coincidentVoxels=GetCoincidenceVoxelIDs(countNodes);
+         flag=false;
+         for (int count =0; count<8; count++)
+         {
+        	 // voxel exist (for boundary nodes)
+             if (coincidentVoxels[count]>-1)
+             {
+                 // voxel has material
+            	 // color value 0 is material, 255 is air
+            	 // material value smaller than thresholdvalue
+				 std::cout<<"  "<<countNodes<<" voxel "<<coincidentVoxels[count]<<" image "<< imageValues[coincidentVoxels[count]];
+                 if(imageValues[coincidentVoxels[count]]<rThresholdMaterialValue)
+                 {
+                     flag=true; //node exists
+                     count=8;
+                    rNodeExist.set(countNodes,true);
+					 //numMatNodes++;
+                 }
+             }
+         }
+    }
+	std::cout<<__FILE__<<" nodeExist " <<rNodeExist<<"\n";
+
+    int numCoeffMat =0;
+    bool matExistsAlready= false; //material exists
+    //std::bitset<numVoxel> rElementExist; //0 = false, all 0 here
+    int numVoxel=rGridDimension[0]*rGridDimension[1]*rGridDimension[2];//all nodes of the grid
+  	for(int countVoxels =0; countVoxels<numVoxel;++countVoxels)//countVoxels correspond to VoxelID
+ 	{
+ 		if (rColorToMaterialData[imageValues[countVoxels]]>0) //if Modul is> zero
+ 		{
+ 			rElemExist.flip(countVoxels); //set to 1 = true, element exists
+
+ 			for(int countMat=0;countMat<numCoeffMat;countMat++)
+			{
+				if (rColorToMaterialData[imageValues[countVoxels]]==youngsModulus.at(countMat)) //same modulus already used
+				{
+					materialOfElem[countVoxels]=countMat;
+					countMat=numCoeffMat+1;
+					matExistsAlready=true;
+				}
+				else
+					matExistsAlready=false;
+			}
+ 			if (!matExistsAlready)
+ 	 		{
+ 	 			//set youngsModulus and add on material on counter
+ 	 			youngsModulus.push_back(rColorToMaterialData[imageValues[countVoxels]]);
+ 	  			numCoeffMat++;
+ 	 			matExistsAlready=true; //matrix already added
+ 	 		}
+  		}
+ 		else
+  			materialOfElem[countVoxels]=-1;
+ 	}
+}
 
 //! @brief Get voxel number and location for all elements
 //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction

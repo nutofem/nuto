@@ -1,6 +1,7 @@
 SET(NuToOptimize_SOURCES
-  ConjugateGradientStructureGrid.cpp  
+  ConjugateGradientGrid.cpp  
   ConjugateGradientNonLinear.cpp
+  ConjugateGradientStructureGrid.cpp  
   CallbackHandler.cpp
   CallbackHandlerPython.cpp
   CallbackHandlerGrid.cpp

@@ -140,12 +140,12 @@ int*  NuTo::StructureGrid::GetCoincidenceVoxelIDs(int rNodeID)
     coincidentVoxels[6]=(numDimx * mGridDimension[0] + numDimxy *( mGridDimension[1] * mGridDimension[0]) + residual2 );
     coincidentVoxels[7]=(numDimx * mGridDimension[0] + numDimxy *( mGridDimension[1] * mGridDimension[0]) + residual2 ) -1;
 
-/*
-    std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: ";
-	for (int count=0;count<8;count++)
-		std::cout<< coincidentVoxels[count]<<" ";
-	std::cout<<" "<<std::endl;
-*/
+
+//    std::cout<<__FILE__ <<" "<<__LINE__<<" Knoten "<<rNodeID<< " Voxels: ";
+//	for (int count=0;count<8;count++)
+//		std::cout<< coincidentVoxels[count]<<" ";
+//	std::cout<<" "<<std::endl;
+
 	// for nodes in first level related to z
     if (numDimxy==0)
     {
