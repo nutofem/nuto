@@ -71,17 +71,22 @@ typedef std::vector<double> myType;
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-    void Initialize(int rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,std::vector<double>&  baseStiffness,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<double>& parameters)
+    void Initialize(int rNumParameters,int* rGridDimension,bool matrixFreeMethod,boost::dynamic_bitset<>& elemExist,boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,std::vector<double>&  baseStiffness,std::vector<double>&  edgeStiffness,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<int>& neighborNodes,std::vector<double>& parameters,std::vector<double>& extForces)
     {
     	mNumParameters=rNumParameters;
+    	mGridDimension=rGridDimension;
+    	mMatrixFreeMethod=matrixFreeMethod;
         mElemExist=elemExist;
        	mNodeExist=nodeExist;
        	mDofIsConstraint=rDofIsConstraint;
        	mYoungsModulus=youngsModulus;
        	mBaseStiffness=baseStiffness;
+       	mEdgeStiffness=edgeStiffness;
        	mMaterialOfElem=materialOfElem;
         mNodeIds=allNodesAtVoxel;
+        mNeighborNodes=neighborNodes;
         mParameters=parameters;
+        mForces=extForces;
     }
 
     void AnsysInput(int rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,int* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<double>& parameters);
@@ -176,9 +181,16 @@ protected:
 	//! @param ... u - prarmeters input, r - gradient output
 	void CalculateMatrixVectorProductEBE(myType &u,myType &r);
 
+	//! @brief ... calculate reaction forces in element-by-element way
+	//! @param ... u - prarmeters input, f - forces output
+	void CalculateReactionForcesEBE(myType &u,myType &f);
+
+	//! @brief ... calculate start gradient in node-by-node way
+	//! @param ... u - prarmeters input, r - gradient output
+	void CalculateMatrixVectorProductNBN(myType &u,myType &r);
+
 	//! @brief ... calculate start gradient in node-by-node way
 	void CalculateStartGradientNodeByNode(myType &r);
-
 
 	double mAccuracyGradient;
 	double mMinDeltaObjBetweenRestarts;
@@ -190,14 +202,19 @@ protected:
     bool   mUseMultiGrid;
 
    	int mNumParameters;
+   	int* mGridDimension;
+   	bool mMatrixFreeMethod;
    	boost::dynamic_bitset<> mElemExist;
    	boost::dynamic_bitset<> mNodeExist;
    	boost::dynamic_bitset<> mDofIsConstraint;
    	std::vector<double> mYoungsModulus;
    	std::vector<double> mBaseStiffness;
+   	std::vector<double> mEdgeStiffness;
    	std::vector<int> mMaterialOfElem;
     std::vector<int> mNodeIds;
+    std::vector<int> mNeighborNodes;
     std::vector<double> mParameters;
+    std::vector<double> mForces;
 };
 } // namespace NuTo
 #endif // CONJUGATE_GRADIENT_GRID_H
