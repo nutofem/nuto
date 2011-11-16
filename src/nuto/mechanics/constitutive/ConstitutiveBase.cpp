@@ -487,6 +487,34 @@ void NuTo::ConstitutiveBase::SetDamageTresholdCrackInitiation(double rDamageTres
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDamageTresholdCrackInitiation] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get number of possible crack shifts that are checked when the crack is inserted
+//! @return ... NumPossibleCrackAngles
+int NuTo::ConstitutiveBase::GetNumPossibleCrackAngles() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetNumPossibleCrackAngles] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set number of possible crack shifts that are checked when the crack is inserted
+//! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
+void NuTo::ConstitutiveBase::SetNumPossibleCrackAngles(int rNumPossibleCrackAngles)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNumPossibleCrackAngles] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get number of possible crack orientations that are checked when the crack is inserted
+//! @return ... mNumPossibleCrackShifts
+int NuTo::ConstitutiveBase::GetNumPossibleCrackShifts() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetNumPossibleCrackShifts] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set number of possible crack orientations that are checked when the crack is inserted
+//! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
+void NuTo::ConstitutiveBase::SetNumPossibleCrackShifts(int rNumPossibleCrackShifts)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNumPossibleCrackShifts] The constitutive relationship does not have this parameter.");
+}
+
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()

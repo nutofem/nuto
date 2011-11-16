@@ -1137,7 +1137,23 @@ public:
     //! @param rDamageTresholdCrackInitiation ...  treshold
     void ConstitutiveLawSetDamageTresholdCrackInitiation(int rIdent, double rDamageTresholdCrackInitiation);
 
-#ifndef SWIG
+    //! @brief ... get the number of possible crack angles that are checked when the crack is inserted
+    //! @return number of crack angles
+    int ConstitutiveLawGetNumPossibleCrackAngles(int rIdent)const;
+
+    //! @brief ... set the number of possible crack angles that are checked when the crack is inserted
+    //! @param rNumPossibleCrackAngles ...  number of crack angles
+    void ConstitutiveLawSetNumPossibleCrackAngles(int rIdent, int rNumPossibleCrackAngles);
+
+    //! @brief ... get the number of possible crack shifts that are checked when the crack is inserted
+    //! @return number of crack angles
+    int ConstitutiveLawGetNumPossibleCrackShifts(int rIdent)const;
+
+    //! @brief ... set the number of possible crack shifts that are checked when the crack is inserted
+    //! @param rNumPossibleCrackShifts ...  number of crack shifts
+    void ConstitutiveLawSetNumPossibleCrackShifts(int rIdent, int rNumPossibleCrackShifts);
+
+    #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type

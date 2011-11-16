@@ -66,6 +66,9 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
 
     mDamageTresholdCrackInitiation = 1e-4;
 
+    mNumPossibleCrackAngles = 45;
+    mNumPossibleCrackShifts = 50;
+
     mScalingFactorCrackAngle = 0;
     mScalingFactorCrackOpening = 0;
     mScalingFactorEpsilon = 0;
@@ -105,6 +108,8 @@ NuTo::Multiscale::Multiscale() : ConstitutiveEngineeringStressStrain()
           & BOOST_SERIALIZATION_NVP(mResultDirectory)
           & BOOST_SERIALIZATION_NVP(mLoadStepMacro)
           & BOOST_SERIALIZATION_NVP(mDamageTresholdCrackInitiation)
+          & BOOST_SERIALIZATION_NVP(mNumPossibleCrackAngles)
+          & BOOST_SERIALIZATION_NVP(mNumPossibleCrackShifts)
           & BOOST_SERIALIZATION_NVP(mUseAdditionalPeriodicShapeFunctions)
           & BOOST_SERIALIZATION_NVP(mNumProcessors);
 #ifdef DEBUG_SERIALIZATION
@@ -1804,13 +1809,59 @@ void NuTo::Multiscale::SetDamageTresholdCrackInitiation(double rDamageTresholdCr
 //! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
 void NuTo::Multiscale::CheckDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation) const
 {
-	if (mDamageTresholdCrackInitiation<0. ||mDamageTresholdCrackInitiation>1.)
+	if (rDamageTresholdCrackInitiation<0. ||rDamageTresholdCrackInitiation>1.)
     {
         throw NuTo::MechanicsException("[NuTo::Multiscale::CheckDamageTresholdCrackInitiation] The treshold must be within the interval [0,1].");
 	}
 }
 
+//! @brief ... get number of possible crack shifts that are checked when the crack is inserted
+//! @return ... NumPossibleCrackAngles
+int NuTo::Multiscale::GetNumPossibleCrackAngles() const
+{
+    return mNumPossibleCrackAngles;
+}
 
+//! @brief ... set number of possible crack shifts that are checked when the crack is inserted
+//! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
+void NuTo::Multiscale::SetNumPossibleCrackAngles(int rNumPossibleCrackAngles)
+{
+	mNumPossibleCrackAngles = rNumPossibleCrackAngles;
+}
+
+//! @brief ... check number of possible crack shifts that are checked when the crack is inserted
+//! @param rNumPossibleCrackAngles ...NumPossibleCrackAngles
+void NuTo::Multiscale::CheckNumPossibleCrackAngles(int rNumPossibleCrackAngles) const
+{
+	if (rNumPossibleCrackAngles<1)
+    {
+        throw NuTo::MechanicsException("[NuTo::Multiscale::CheckNumPossibleCrackAngles] The number of possible crack angles must be positive.");
+	}
+}
+
+//! @brief ... get number of possible crack orientations that are checked when the crack is inserted
+//! @return ... mNumPossibleCrackShifts
+int NuTo::Multiscale::GetNumPossibleCrackShifts() const
+{
+    return mNumPossibleCrackShifts;
+}
+
+//! @brief ... set number of possible crack orientations that are checked when the crack is inserted
+//! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
+void NuTo::Multiscale::SetNumPossibleCrackShifts(int rNumPossibleCrackShifts)
+{
+	mNumPossibleCrackShifts = rNumPossibleCrackShifts;
+}
+
+//! @brief ... check number of possible crack orientations that are checked when the crack is inserted
+//! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
+void NuTo::Multiscale::CheckNumPossibleCrackShifts(int rNumPossibleCrackShifts) const
+{
+	if (rNumPossibleCrackShifts<1)
+    {
+        throw NuTo::MechanicsException("[NuTo::Multiscale::CheckNumPossibleCrackShifts] The number of possible crack Shifts must be positive.");
+	}
+}
 
 // check parameters
 void NuTo::Multiscale::CheckParameters()const
@@ -2250,14 +2301,14 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 
 				std::clock_t start,end;
 				start=clock();
-				int numCountShift=5;
+				int numCountShift=50;
 				double rangeShiftNormal = 0.9*sqrt(fineScaleStructure->GetAreaFineScale());
 				double initShiftNormal(-0.5*rangeShiftNormal);
 				double deltaShiftNormal=rangeShiftNormal/(numCountShift-1);
 				//double initShiftNormal(0);
 				//double deltaShiftNormal = 0.;
 
-				int numAlpha=5;
+				int numAlpha=45;
 				double initAlpha = princAlpha-M_PI*0.25;
 				double deltaAlpha = 0.5*M_PI/(numAlpha-1);
 				//double initAlpha = M_PI*0.5;

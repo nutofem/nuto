@@ -558,6 +558,29 @@ public:
     //! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
     void CheckDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation) const;
 
+    //! @brief ... get number of possible crack shifts that are checked when the crack is inserted
+    //! @return ... NumPossibleCrackAngles
+    int GetNumPossibleCrackAngles() const;
+
+    //! @brief ... set number of possible crack shifts that are checked when the crack is inserted
+    //! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
+    void SetNumPossibleCrackAngles(int rNumPossibleCrackAngles);
+
+    //! @brief ... check number of possible crack shifts that are checked when the crack is inserted
+    //! @param rNumPossibleCrackAngles ...NumPossibleCrackAngles
+    void CheckNumPossibleCrackAngles(int rNumPossibleCrackAngles) const;
+
+    //! @brief ... get number of possible crack orientations that are checked when the crack is inserted
+    //! @return ... mNumPossibleCrackShifts
+    int GetNumPossibleCrackShifts() const;
+
+    //! @brief ... set number of possible crack orientations that are checked when the crack is inserted
+    //! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
+    void SetNumPossibleCrackShifts(int rNumPossibleCrackShifts);
+
+    //! @brief ... check number of possible crack orientations that are checked when the crack is inserted
+    //! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
+    void CheckNumPossibleCrackShifts(int rNumPossibleCrackShifts) const;
 
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
@@ -634,6 +657,10 @@ protected:
 
     //! @brief criterion to add the crack enrichment function
     double mDamageTresholdCrackInitiation;
+
+    //! @brief determine the crack angle and location (shift from the center) by checking all different angles and shifts based on these parameters
+    int mNumPossibleCrackAngles;
+    int mNumPossibleCrackShifts;
 
     //directory, where all the results for the fine scale solutions are stored
     std::string mResultDirectory;

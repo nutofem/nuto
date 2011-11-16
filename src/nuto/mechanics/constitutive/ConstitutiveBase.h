@@ -326,6 +326,22 @@ public:
     //! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
     virtual void SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation);
 
+    //! @brief ... get number of possible crack shifts that are checked when the crack is inserted
+    //! @return ... NumPossibleCrackAngles
+    virtual int GetNumPossibleCrackAngles() const;
+
+    //! @brief ... set number of possible crack shifts that are checked when the crack is inserted
+    //! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
+    virtual void SetNumPossibleCrackAngles(int rNumPossibleCrackAngles);
+
+    //! @brief ... get number of possible crack orientations that are checked when the crack is inserted
+    //! @return ... mNumPossibleCrackShifts
+    virtual int GetNumPossibleCrackShifts() const;
+
+    //! @brief ... set number of possible crack orientations that are checked when the crack is inserted
+    //! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
+    virtual void SetNumPossibleCrackShifts(int rNumPossibleCrackShifts);
+
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship

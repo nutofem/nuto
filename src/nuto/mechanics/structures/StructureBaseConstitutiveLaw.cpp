@@ -865,3 +865,69 @@ void NuTo::StructureBase::ConstitutiveLawSetDamageTresholdCrackInitiation(int rI
         throw e;
     }
 }
+
+//! @brief ... get the number of possible crack angles that are checked when the crack is inserted
+//! @return number of crack angles
+int NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackAngles(int rIdent)const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetNumPossibleCrackAngles();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackAngles] error getting number of possible crack angles.");
+		throw e;
+	}
+
+}
+
+//! @brief ... set the number of possible crack angles that are checked when the crack is inserted
+//! @param rNumPossibleCrackAngles ...  number of crack angles
+void NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackAngles(int rIdent, int rNumPossibleCrackAngles)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetNumPossibleCrackAngles(rNumPossibleCrackAngles);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackAngles] error setting number of possible crack angles.");
+        throw e;
+    }
+}
+
+//! @brief ... get the number of possible crack shifts that are checked when the crack is inserted
+//! @return number of crack angles
+int NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackShifts(int rIdent)const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetNumPossibleCrackShifts();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackShifts] error getting number of possible crack shifts.");
+		throw e;
+	}
+
+}
+
+//! @brief ... set the number of possible crack shifts that are checked when the crack is inserted
+//! @param rNumPossibleCrackShifts ...  number of crack shifts
+void NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackShifts(int rIdent, int rNumPossibleCrackShifts)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetNumPossibleCrackShifts(rNumPossibleCrackShifts);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackShifts] error setting number of possible crack shifts.");
+        throw e;
+    }
+}
