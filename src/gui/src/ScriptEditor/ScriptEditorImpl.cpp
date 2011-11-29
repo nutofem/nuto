@@ -283,7 +283,8 @@ namespace nutogui
     editor->StyleSetSpec (wxSTC_P_DECORATOR, wxT ("fore:#805000"));
     editor->StyleSetSpec (wxSTC_STYLE_BRACELIGHT, wxT ("fore:#0000FF,bold"));
     editor->StyleSetSpec (wxSTC_STYLE_BRACEBAD, wxT ("fore:#FF0000,bold"));
-    
+	// Set eol
+    editor->SetEOLMode(wxSTC_EOL_LF);
     editor->SetKeyWords (0, wxT (
 			 "and "
 			 "as "
