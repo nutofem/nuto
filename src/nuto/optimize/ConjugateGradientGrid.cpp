@@ -1,5 +1,10 @@
 // $Id $
 
+
+//! @author Andrea Keßler, ISM
+//! @brief ... conjugate gradient method without global matrix matrix-vector product
+
+
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #define machine_precision 1e-15
 //sqrt machine_precision
@@ -49,11 +54,9 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] Eigen vectors are used.\n";
 	myType u;
 	u.MapAligned(mParameters.data(),mNumParameters);
-
-	if(extForces.size()==0)
-		myType f(mNumParameters);
-	else
-		myType f(mForces.data(),mNumParameters);
+	myType f(mNumParameters);
+	if(mForces.size()!=0)
+		f.MapAligned(mForces.data(),mNumParameters);
 
 	myType r(mNumParameters);
 	myType pr;
@@ -61,16 +64,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	myType h(mNumParameters);
 	myType d(mNumParameters);
 #else
-	//std::unique_ptr
-//	myType u(&parameters[0]);
-//
-//	myType r(new double [mNumParameters]);
-//	myType pr;
-//	myType p(new double [mNumParameters]);
-//	myType h(new double [mNumParameters]);
-//	myType d(new double [mNumParameters]);
-//	myType u(&parameters[0]);
-
 	//std::vector
 	std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] std::vector is used.\n";
 	myType &u=mParameters;
@@ -103,11 +96,22 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		returnValue = MAXHESSIANCALLS;
 	}
 
+	//0 set if no precondition
+//	std::fstream outputTime;
+//	std::string filename = "timeOutput";
+//  outputTime.open(filename,std::fstream::out|std::fstream::app);
+//  outputTime<<" 0 ";
+//	outputTime.close();
 	// calculate Diag preonditioner;
-//	HessianDiag(p);
+	HessianDiag(p);
 
-//	reduce iterations with accepting an error - for later
-//	CalcScalingFactors(numHessianCalls,p);
+	//1 set if no scaling
+//	std::fstream outputTime;
+//	std::string filename = "timeOutput";
+//  outputTime.open(filename,std::fstream::out|std::fstream::app);
+//  outputTime<<" 1 ";
+//	outputTime.close();
+	CalcScalingFactors(numHessianCalls,p);
 
 //	 print p
 //	std::cout<<" p ";
@@ -361,14 +365,20 @@ int NuTo::ConjugateGradientGrid::Optimize()
     endOpt=clock();
     if (mShowTime)
         std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << "sec" << std::endl;
+	std::fstream outputTime;
+	std::string filename = "timeOutput";
+    outputTime.open(filename,std::fstream::out|std::fstream::app);
+ 	outputTime<<(difftime(endOpt,startOpt)/CLOCKS_PER_SEC)<<"   "<<curIteration<<"\n";
+	outputTime.close();
+
 #endif
+	std::cout<< "Number of Iterations............. " << curIteration << std::endl;
 	if (mVerboseLevel>0)
 	{
 		std::cout<< " "  << std::endl;
 		std::cout<< "Number of Function Calls......... " << numFunctionCalls << std::endl;
 		std::cout<< "Number of Gradient Calls......... " << numGradientCalls << std::endl;
 		std::cout<< "Number of Hessian Calls.......... " << numHessianCalls << std::endl;
-		std::cout<< "Number of Iterations............. " << curIteration << std::endl;
 		std::cout<< "Active convergence criterion..... " ;
 		switch (returnValue)
 		{
@@ -414,9 +424,14 @@ void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,myType
 //#endif
     //diagonal scaling with scaling factor
 	++numHessianCalls;
-    double scalefactor=0.00001;
-    if(mVerboseLevel>0)
-    	std::cout<<"[ConjugateGradientGrid] scale factor "<<scalefactor<<"\n";
+    double scalefactor=0.0000000001;
+	std::fstream outputTime;
+	std::string filename = "timeOutput";
+    outputTime.open(filename,std::fstream::out|std::fstream::app);
+    outputTime<<scalefactor<<"  ";
+    outputTime.close();
+//    if(mVerboseLevel>0)
+    	std::cout<<"[ConjugateGradientGrid::CalcScalingFactors] scale factor "<<scalefactor<<"\n";
     for (int count=0; count<mNumParameters; ++count)
         p[count] *=scalefactor;
 
@@ -429,12 +444,11 @@ void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,myType
 
 void NuTo::ConjugateGradientGrid::HessianDiag(myType& rHessianDiag)const
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    if (mVerboseLevel>2)
-    	std::cout<<__FILE__<<" "<<__LINE__<<" in Routine ConjugateGradientGrid::HessianDiag"<<std::endl;
+//#ifdef SHOW_TIME
+//    std::clock_t start,end;
+//    start=clock();
+//#endif
+    	std::cout<<"[ConjugateGradientGrid::HessianDiag] "<<std::endl;
 	int numElems=mElemExist.size();
 
 	// global external force vector (active dofs)
@@ -468,11 +482,11 @@ void NuTo::ConjugateGradientGrid::HessianDiag(myType& rHessianDiag)const
 //		std::cout<<rHessianDiag[i]<<" ";
 //	std::cout<<std::endl;
 //#endif
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::ConjugateGradientGrid::HessianDiag] " << difftime(end,start)/CLOCKS_PER_SEC << "sec \n ";
-#endif
+//#ifdef SHOW_TIME
+//    end=clock();
+//    if (mShowTime)
+//        std::cout<<"[NuTo::ConjugateGradientGrid::HessianDiag] " << difftime(end,start)/CLOCKS_PER_SEC << "sec \n ";
+//#endif
 }
 
 //! @brief ... calculate matrix-vector-product in element-by-element way
@@ -492,8 +506,8 @@ void NuTo::ConjugateGradientGrid::CalculateMatrixVectorProductEBE(myType &u,myTy
 	int nodeId=0;
 	int numStiff=0;
 
-	std::unique_ptr<double []> residual (new double [24]);
-	std::unique_ptr<double []> displacement(new double [24]);
+	std::vector<double> residual (24);
+	std::vector<double> displacement(24);
 
 	//loop over all elements
 	for (int elementNumber=0;elementNumber<numElems;++elementNumber)
@@ -555,8 +569,9 @@ void NuTo::ConjugateGradientGrid::CalculateReactionForcesEBE(myType &u,myType &f
 	int nodeId=0;
 	int numStiff=0;
 
-	std::unique_ptr<double []> residual (new double [24]);
-	std::unique_ptr<double []> displacement(new double [24]);
+	std::vector<double> residual (24);
+	std::vector<double> displacement(24);
+
 
 	//loop over all elements
 	for (int elementNumber=0;elementNumber<numElems;++elementNumber)

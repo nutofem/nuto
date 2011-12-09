@@ -27,13 +27,23 @@
 int main()
 {
 	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
+
 //	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
+	std::fstream outputTime;
+	std::string filename = "timeOutput";
+    outputTime.open(filename,std::fstream::out|std::fstream::app);
 	std::cout<<"[NuTo::Grid3D] matrixFreeMethod is";
 	if (matrixFreeMethod)
+	{
 		std::cout<<" NBN \n";
-	else
-		std::cout<<" EBE \n";
+		outputTime<<" NBN  ";
 
+	}
+	else
+	{
+		std::cout<<" EBE \n";
+		outputTime<<" EBE  ";
+	}
 
 	//double microTomm =0.001;
 	double microTomm =1.;
@@ -61,6 +71,7 @@ int main()
 //	std::cout<<__FILE__<<"  variab: spac: "<<rVoxelSpacing[0]<< " gridDim: "<<rGridDimension[0]<<std::endl;
 	assert (rNumVoxel==rGridDimension[0]*rGridDimension[1]*rGridDimension[2]);
 	std::cout<<"[NuTo::Grid3D] numVoxel "<<rNumVoxel<<std::endl;
+	outputTime<<rNumVoxel<<"   ";
 
 	std::vector<int> imageValues (rNumVoxel);
 	myGrid.ImportFromVtkASCIIFile( "InputTest",imageValues);
@@ -543,12 +554,19 @@ int main()
 	std::cout<<"[NuTo::Grid3D] Boundary conditions: all dofs constraint for z=0 \n";
 	for (int count = 0;count<(NumElementsX + 1)*(NumElementsY + 1);++count)
 	{
-		rDofIsConstraint.set(count*3,true);
-		rDofIsConstraint.set(count*3+1,true);
-		rDofIsConstraint.set(count*3+2,true);
-//		++numConstraintDofs;
-		numConstraintDofs+=3;
+		if (nodeExist[count]) //node exists
+		{
+
+			rDofIsConstraint.set(count*3,true);
+			rDofIsConstraint.set(count*3+1,true);
+			rDofIsConstraint.set(count*3+2,true);
+	//		++numConstraintDofs;
+			numConstraintDofs+=3;
+		}
 	}
+	if(numConstraintDofs==0)
+		std::cout<<"[NuTo::Grid3D] No boundary conditions set (z=0).  \n";
+
 	//----------------------------------------------------------------------------------------//
 
 	// apply nodes
@@ -561,6 +579,7 @@ int main()
 		//----------------------------------------------------------------------------------------//
 		// Boundary condition: all nodes with z=max, uz=BoundaryDisplacement
 		std::cout<<"[NuTo::Grid3D] Boundary conditions: Displacement at z=max in z-direction \n";
+		int help=numConstraintDofs;
 		for (int count = (NumElementsX + 1)*(NumElementsY + 1)*NumElementsZ;count<numGridNodes;++count)
 		{
 			if(nodeExist[count])
@@ -570,6 +589,8 @@ int main()
 				++numConstraintDofs;
 			}
 		}
+		if(numConstraintDofs-help==0)
+			std::cout<<"[NuTo::Grid3D] No boundary conditions set (z=max).  \n";
 		//----------------------------------------------------------------------------------------//
 
 		//----------------------------------------------------------------------------------------//
@@ -659,13 +680,15 @@ int main()
 //	for (int i=0;i<3*numGridNodes;++i)
 //			std::cout<< rDofIsConstraint[i] <<" ";
 //		std::cout<<"\n";
-//	std::cout<<" number of dofs "<<numDofs<<" free: "<<numDofs-numConstraintDofs<<" constraint: "<<numConstraintDofs<<"\n";
 
+	outputTime<<numDofs<<"   ";
 #ifdef SHOW_TIME
 end=clock();
 std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+	outputTime<<difftime(end,start)/CLOCKS_PER_SEC<<"   ";
 #endif
 
+	std::cout<<"[NuTo::Grid3D] number of dofs "<<numDofs<<" free: "<<numDofs-numConstraintDofs<<" constraint: "<<numConstraintDofs<<"\n";
 	// start analysis
 //	std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
 	myGrid.SetVerboseLevel(0);
@@ -683,10 +706,15 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	numBytesEBE+=sizeof(double)*( elemExist.num_blocks()+nodeExist.num_blocks()+rDofIsConstraint.num_blocks()+youngsModulus.size()+baseStiffness.size()+edgeStiffness.size()+displVector.size()+extForces.size());
 	// int
 	numBytesEBE+=sizeof(numGridNodes)+sizeof(rGridDimension)+sizeof(matrixFreeMethod)+sizeof(int)*(materialOfElem.size()+allNodesAtVoxel.size()+allNodesAtNode.size());
-	std::cout<<"[NuTo::Grid3D] initialized with "<<numBytesEBE/(1024.*1024)<<" MiB ,"<<numBytesEBE/(1000000.)<<" MB ("<<numBytesEBE<<" byte) "<<std::endl;
+	// 6 vectors CGG
+	numBytesEBE+=5*sizeof(double)*displVector.size();
+	std::cout<<"[NuTo::Grid3D] Required memory: "<<numBytesEBE/(1024.*1024)<<" MiB ,"<<numBytesEBE/(1000000.)<<" MB ("<<numBytesEBE<<" byte) "<<std::endl;
+	outputTime<<numBytesEBE/(1000000.)<<"   ";
+	outputTime.close();
 
 	myOptimizer.Initialize(numGridNodes*3,rGridDimension,matrixFreeMethod,elemExist,nodeExist,rDofIsConstraint,youngsModulus,baseStiffness,edgeStiffness,materialOfElem,allNodesAtVoxel,allNodesAtNode,displVector,extForces);
-	myOptimizer.AnsysInput(numGridNodes*3,elemExist,nodeExist,rDofIsConstraint,youngsModulus,rGridDimension,rVoxelSpacing,materialOfElem,allNodesAtVoxel,displVector);
+//	myOptimizer.AnsysInput(numGridNodes*3,elemExist,nodeExist,rDofIsConstraint,youngsModulus,rGridDimension,rVoxelSpacing,materialOfElem,allNodesAtVoxel,displVector);
+
 //	std::cout<<"[NuTo::Grid3D] sizeof "<<8*sizeof(youngsModulus)<<" "<<sizeof(numGridNodes)<<" "<<sizeof(rGridDimension)<<" "<<sizeof(matrixFreeMethod)<<" "<<elemExist.num_blocks()*8<<" "<<nodeExist.num_blocks()*8<<" "<<8*rDofIsConstraint.num_blocks()<<" "<<youngsModulus.size()<<" "<<materialOfElem.size()<<" "<<baseStiffness.size()<<" "<<edgeStiffness.size()<<" "<<allNodesAtVoxel.size()<<" "<<allNodesAtNode.size()<<" "<<displVector.size()<<" "<<extForces.size()<<"\n";
 //	std::cout<<"[NuTo::Grid3D] sizeof(edgeStiffness) "<<sizeof(edgeStiffness)<<std::endl;
 //	std::cout<<"[NuTo::Grid3D] sizof edge "<<edgeStiffness.size()<<std::endl;
@@ -729,66 +757,74 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 		{
 			file<<displVector[3*i]<<"\n";
 			file<<displVector[3*i+1]<<"\n";
+
 			file<<displVector[3*i+2]<<"\n";
 		}
 	}
 	file.close();
 	//
-	std::vector<double> dispRef(numDofs);
+	std::vector<double> dispRef;
 	std::ifstream input;
+	double help=0;
+	// result file only with existing nodes
 	input.open("result.txt");
 	if(input)	// file is open
 	{
 		int i=0;
 		while(!input.eof()) // keep reading untill end-of-file
 		{
-			input>>dispRef[i];
+			input>>help;
+			dispRef.push_back(help);
 			++i;
 		}
 		input.close();
 		--i; // for last empty line
+
 		if (i==numDofs)
 		{
 			double squareDiffNorm=0;
 			double squareRefNorm=0;
-			std::ofstream diffFile;
-			diffFile.open("displDiffVTK.txt");
-			file.open("displRefVTK.txt");
+// output of diff and ref only for VTK
+//			std::ofstream diffFile;
+//			diffFile.open("displDiffVTK.txt");
+//			file.open("displRefVTK.txt");
+			int k=0;
 			for(int i=0;i<numGridNodes;++i)
 			{
 				if (nodeExist[i])
 				{
-					diffFile<<displVector[3*i]-dispRef[3*i]<<"\n";
-					diffFile<<displVector[3*i+1]-dispRef[3*i+1]<<"\n";
-					diffFile<<displVector[3*i+2]-dispRef[3*i+2]<<"\n";
-					file<<dispRef[3*i]<<"\n";
-					file<<dispRef[3*i+1]<<"\n";
-					file<<dispRef[3*i+2]<<"\n";
-					squareDiffNorm+=(displVector[3*i]-dispRef[3*i])*(displVector[3*i]-dispRef[3*i]);
-					squareDiffNorm+=(displVector[3*i+1]-dispRef[3*i+1])*(displVector[3*i+1]-dispRef[3*i+1]);
-					squareDiffNorm+=(displVector[3*i+2]-dispRef[3*i+2])*(displVector[3*i+2]-dispRef[3*i+2]);
-					squareRefNorm+=(dispRef[3*i])*(dispRef[3*i]);
-					squareRefNorm+=(dispRef[3*i+1])*(dispRef[3*i+1]);
-					squareRefNorm+=(dispRef[3*i+2])*(dispRef[3*i+2]);
+//					diffFile<<displVector[3*i]-dispRef[3*i]<<"\n";
+//					diffFile<<displVector[3*i+1]-dispRef[3*i+1]<<"\n";
+//					diffFile<<displVector[3*i+2]-dispRef[3*i+2]<<"\n";
+//					file<<dispRef[3*i]<<"\n";
+//					file<<dispRef[3*i+1]<<"\n";
+//					file<<dispRef[3*i+2]<<"\n";
+					squareDiffNorm+=(displVector[3*i]-dispRef[3*k])*(displVector[3*i]-dispRef[3*k]);
+					squareDiffNorm+=(displVector[3*i+1]-dispRef[3*k+1])*(displVector[3*i+1]-dispRef[3*k+1]);
+					squareDiffNorm+=(displVector[3*i+2]-dispRef[3*k+2])*(displVector[3*i+2]-dispRef[3*k+2]);
+					squareRefNorm+=(dispRef[3*k])*(dispRef[3*k]);
+					squareRefNorm+=(dispRef[3*k+1])*(dispRef[3*k+1]);
+					squareRefNorm+=(dispRef[3*k+2])*(dispRef[3*k+2]);
+					++k;
 				}
-				else
-				{
-					diffFile<<"0.0 \n";
-					diffFile<<"0.0 \n";
-					diffFile<<"0.0 \n";
-					file<<"0.0 \n";
-					file<<"0.0 \n";
-					file<<"0.0 \n";
-				}
+//				else
+//				{
+//					diffFile<<"0.0 \n";
+//					diffFile<<"0.0 \n";
+//					diffFile<<"0.0 \n";
+//					file<<"0.0 \n";
+//					file<<"0.0 \n";
+//					file<<"0.0 \n";
+//				}
 			}
 			std::cout<<"[NuTo::Grid3D] squared diff norm " <<squareDiffNorm<<std::endl;
 			std::cout<<"[NuTo::Grid3D] error " <<sqrt(squareDiffNorm)/sqrt(squareRefNorm)*100<<" %"<<std::endl;
 		}
 		else
-			std::cout<<"[NuTo::Grid3D] Comparison with reference results is not possible.\n";
+			std::cout<<"[NuTo::Grid3D] Comparison with reference results is not possible (wrong size).\n";
 
 	}
 	else
-		std::cout<<"[NuTo::Grid3D] Comparison with reference results is not possible.\n";
+		std::cout<<"[NuTo::Grid3D] Comparison with reference results is not possible (no result file).\n";
 	return 0;
 }
