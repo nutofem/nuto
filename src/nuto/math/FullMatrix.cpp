@@ -207,7 +207,6 @@ template<>
 {
 	return FullMatrix<double> ( mEigenMatrix.cwise().abs() );
 }
-
 template<>
 void FullMatrix<int>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
 {
@@ -217,6 +216,7 @@ void FullMatrix<int>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMa
 template<>
 void FullMatrix<double>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
 {
+#ifdef ENABLE_MKL
 	// check matrix
 	if(this->GetNumColumns() != this->GetNumRows())
 	{
@@ -273,6 +273,9 @@ void FullMatrix<double>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, Ful
 		errorMessage += " The "+infoStream.str()+"-th argument had an illegal value.";
 		throw MathException(errorMessage);
 	}
+#else //ENABLE_MKL
+	throw MathException("[NuTo::FullMatrix::SolveCholeskyLapack] lapack package not enabled.");
+#endif //ENABLE_MKL
 }
 
 template<>
@@ -284,6 +287,7 @@ void FullMatrix<int>::InverseCholeskyLapack(FullMatrix<double>& rInverse) const
 template<>
 void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) const
 {
+#ifdef ENABLE_MKL
 	// check matrix
 	if(this->GetNumColumns() != this->GetNumRows())
 	{
@@ -349,6 +353,9 @@ void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) con
 			data[col * dimMatrix + row] = data[row * dimMatrix + col];
 		}
 	}
+#else //ENABLE_MKL
+	throw MathException("[NuTo::FullMatrix::InverseCholeskyLapack] lapack package not enabled.");
+#endif //ENABLE_MKL
 }
 
 //! @brief calculates the inverse of a matrix

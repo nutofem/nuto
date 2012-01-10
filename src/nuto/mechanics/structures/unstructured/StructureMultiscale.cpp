@@ -3328,6 +3328,7 @@ void NuTo::StructureMultiscale::SetResultDirectory(std::string rResultDirectory)
 
 void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rStiffness, bool rPeriodic)
 {
+#ifdef ENABLE_MUMPS
     mLogger.OpenFile();
 
     //release the constraint for the total strain
@@ -3462,6 +3463,9 @@ void NuTo::StructureMultiscale::CalculateStiffness(NuTo::FullMatrix<double>& rSt
     //reinsert the constraint for the total strain
     this->ConstraintAdd(mConstraintTotalStrain,linearTotalStrainConstraintPtr);
     mLogger.CloseFile();
+#else // ENABLE_MUMPS
+	throw MechanicsException("[NuTo::StructureMultiscale::CalculateStiffness] mumps is not enabled.");
+#endif //ENABLE_MUMPS
 }
 
 void NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions(double rDeltaStrain)
