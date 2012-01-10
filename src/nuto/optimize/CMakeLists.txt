@@ -1,5 +1,6 @@
 SET(NuToOptimize_SOURCES
   ConjugateGradientGrid.cpp  
+  ConjugateGradientGridRed.cpp  
   ConjugateGradientNonLinear.cpp
   ConjugateGradientStructureGrid.cpp  
   CallbackHandler.cpp

@@ -1,1 +1,1 @@
-__all__ = ["CallbackHandler","Optimizer","ConjugateGradientGrid","ConjugateGradientNonLinear","ConjugateGradientStructureGrid"]
+__all__ = ["CallbackHandler","Optimizer","ConjugateGradientGrid","ConjugateGradientGridRed","ConjugateGradientNonLinear","ConjugateGradientStructureGrid"]
