@@ -23,6 +23,9 @@ public:
 	//! @brief constructor
 	ElementDataConstitutiveIpNonlocal(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
+	//! @brief constructor
+	ElementDataConstitutiveIpNonlocal(const ElementBase *rElement, int rNumIp, NuTo::IpData::eIpDataType rIpDataType);
+
 	virtual ~ElementDataConstitutiveIpNonlocal();
 
 	//! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)

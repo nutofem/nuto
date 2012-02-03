@@ -19,6 +19,9 @@ public:
 	//! @brief constructor
 	ElementDataConstitutiveIpCrack(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
+	//! @brief constructor
+	ElementDataConstitutiveIpCrack(const ElementBase *rElement, int rNumIp, NuTo::IpData::eIpDataType rIpDataType);
+
 	//! @brief destructor
 	virtual ~ElementDataConstitutiveIpCrack();
 

@@ -22,6 +22,13 @@ NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveIpNonlocal(const
 	//std::cout << "NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveStaticDataNonlocal()" << std::endl;
 }
 
+NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveIpNonlocal(const ElementBase *rElement,
+		int rNumIp, NuTo::IpData::eIpDataType rIpDataType) :
+   NuTo::ElementDataBase::ElementDataBase(), ElementDataConstitutiveBase(), ElementDataNonlocalBase() , ElementDataIpBase(rElement,rNumIp,rIpDataType)
+{
+	//std::cout << "NuTo::ElementDataConstitutiveIpNonlocal::ElementDataConstitutiveStaticDataNonlocal()" << std::endl;
+}
+
 NuTo::ElementDataConstitutiveIpNonlocal::~ElementDataConstitutiveIpNonlocal()
 {
 	//std::cout << "NuTo::ElementDataConstitutiveIpNonlocal::~ElementDataConstitutiveStaticDataNonlocal()" << std::endl;

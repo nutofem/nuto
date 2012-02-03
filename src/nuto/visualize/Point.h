@@ -25,6 +25,11 @@ public:
     //! @param rDataIndex ... index in data vector (zero based indexing)
     void AddDataVector(unsigned int rDataIndex);
 
+    //! @brief ... set scalar data
+    //! @param rDataIndex ... data index
+    //! @param rData ... scalar data
+    void SetDataScalar(unsigned int rDataIndex, double rData);
+
     //! @brief ... set vector data
     //! @param rDataIndex ... data index
     //! @param rData ... vector data

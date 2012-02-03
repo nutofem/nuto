@@ -8,12 +8,12 @@
 #   EIGEN_ROOT - preferred installation prefix for searching for eigen package
 #
 # variables defined by this module
-#   EIGEN_FOUND - defines whether metis was found or not
+#   EIGEN_FOUND - defines whether eigen was found or not
 #   EIGEN_INCLUDE_DIR - mersenne include directory
 
 
 # initialize variables
-MESSAGE(STATUS "Checking for Eigen2 headers ...")
+MESSAGE(STATUS "Checking for Eigen3 headers ...")
 # check if EIGEN_ROOT is set
 IF(NOT EIGEN_ROOT AND NOT $ENV{EIGEN_ROOT} STREQUAL "")
   SET(EIGEN_ROOT $ENV{EIGEN_ROOT})
@@ -26,7 +26,7 @@ IF(EIGEN_ROOT)
 ENDIF(EIGEN_ROOT)
 
 # search for header dSFMT.h
-FIND_PATH(EIGEN_INCLUDE_DIR NAMES eigen2/Eigen/Core HINTS ${_eigen_INCLUDE_SEARCH_DIRS})
+FIND_PATH(EIGEN_INCLUDE_DIR NAMES eigen3/Eigen/Core HINTS ${_eigen_INCLUDE_SEARCH_DIRS})
 
 # handle the QUIETLY and REQUIRED arguments
 INCLUDE(FindPackageHandleStandardArgs)

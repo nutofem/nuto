@@ -26,7 +26,11 @@ public:
         SECTION,						//!< visualize section id
         ELEMENT,						//!< visualize element id
         CRACK,							//!< visualize crack id
-        PRINCIPAL_ENGINEERING_STRESS	//!< visualize principal stresses
+        PRINCIPAL_ENGINEERING_STRESS,	//!< visualize principal stresses
+        PARTICLE_RADIUS,                //!< visualize radius of particles/nodes
+        LATTICE_STRAIN,                 //!< visualize strain of lattice models
+        LATTICE_STRESS,                 //!< visualize stress of lattice models
+        LATTICE_PLASTIC_STRAIN          //!< visualize plastic strain of lattice models
     };
 
     //! @brief ... export to Vtk datafile

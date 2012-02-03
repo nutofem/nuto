@@ -24,6 +24,8 @@ public:
 
     virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
+    bool HasConstitutiveLawAssigned(int rIp);
+
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point
     //! @return constitutive law

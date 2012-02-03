@@ -66,6 +66,12 @@ public:
     //! @param rIdent ... identifier
     void DefinePointDataVector(const std::string& rIdent);
 
+    //! @brief ... set scalar point data
+    //! @param rPointIndex ... point index
+    //! @param rDataIdent ... data identifier
+    //! @param rData ... scalar data
+    void SetPointDataScalar(unsigned int rPointIndex, const std::string& rDataIdent, double rData);
+
     //! @brief ... set vector point data
     //! @param rPointIndex ... point index
     //! @param rDataIdent ... data identifier

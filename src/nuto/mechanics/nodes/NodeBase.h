@@ -12,6 +12,13 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeBase.h"
+#include "nuto/visualize/VisualizeComponentBase.h"
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include <boost/ptr_container/ptr_list.hpp>
+#endif // ENABLE_VISUALIZE
+
 namespace NuTo
 {
 template <class T> class FullMatrix;
@@ -264,6 +271,18 @@ public:
     //! @return Rotation
     virtual double GetRotation(short rIndex)const;
 
+    //! @brief returns the number of radii
+    //! @return number of radii
+    virtual int GetNumRadius()const;
+
+    //! @brief returns the radius of the node
+    //! @param rRadius ... radius
+    virtual void GetRadius(double rRadius[1])const;
+
+    //! @brief set the radius
+    //! @param rRadius  given radius
+    virtual void SetRadius(const double rRadius[1]);
+
     //! @brief returns the number of temperatures of the node
     //! @return number of temperatures
     virtual int GetNumTemperatures()const;
@@ -280,6 +299,11 @@ public:
     //! @brief returns the type of node as an enum (all the data stored at the node)
     //! @return enum
     virtual Node::eNodeType GetNodeType()const=0;
+
+#ifdef ENABLE_VISUALIZE
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+
+#endif // ENABLE_VISUALIZE
 
     //! @brief set the shape functions based on the actual oscillations
     //! @parameter shape function number (0..2)

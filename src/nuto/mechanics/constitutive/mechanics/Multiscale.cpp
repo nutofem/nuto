@@ -10,8 +10,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <eigen2/Eigen/LU>
-#include <eigen2/Eigen/Array>
+#include <eigen3/Eigen/LU>
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"

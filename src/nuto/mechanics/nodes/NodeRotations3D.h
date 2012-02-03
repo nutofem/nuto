@@ -52,6 +52,15 @@ public:
     //! @param rRotations Rotations
     virtual void GetRotations3D(double rRotations[3])const;
 
+    //! @brief returns the Rotations of the node
+    //! @return Rotation
+    virtual double GetRotation(short rIndex)const;
+
+    //! @brief gives the global DOF of a Rotation component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofRotation(int rComponent)const;
+
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF);
@@ -104,4 +113,7 @@ protected:
 
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::NodeRotations3D)
+#endif // ENABLE_SERIALIZATION
 #endif //NODE_Rotations_3D_H

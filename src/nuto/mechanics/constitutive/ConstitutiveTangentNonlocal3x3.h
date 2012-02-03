@@ -77,6 +77,12 @@ public:
          throw MechanicsException("[NuTo::ConstitutiveTangentDynamic::AsConstitutiveTangentLocal1x1] data types can not be cast.");
 	}
 
+    //! @brief reinterpret as ConstitutiveTangentLocal2x2, otherwise throw an exception
+    ConstitutiveTangentLocal2x2* AsConstitutiveTangentLocal2x2()
+	{
+         throw MechanicsException("[NuTo::ConstitutiveTangentDynamic::AsConstitutiveTangentLocal2x2] data types can not be cast.");
+	}
+
     //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
     ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3()
 	{

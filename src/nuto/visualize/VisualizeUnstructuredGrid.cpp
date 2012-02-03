@@ -419,6 +419,17 @@ void NuTo::VisualizeUnstructuredGrid::CheckDataIdent(const std::string& rIdent) 
     }
 }
 
+// set scalar point data
+void NuTo::VisualizeUnstructuredGrid::SetPointDataScalar(unsigned int rPointIndex, const std::string& rDataIdent, double rData)
+{
+    if (rPointIndex >= this->mPoints.size())
+    {
+        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetPointDataScalar] invalid point index.");
+    }
+    unsigned int PointDataIndex = this->GetPointDataIndex(rDataIdent);
+    this->mPoints[rPointIndex].SetDataScalar(PointDataIndex, rData);
+}
+
 // set vector point data
 void NuTo::VisualizeUnstructuredGrid::SetPointDataVector(unsigned int rPointIndex, const std::string& rDataIdent, double rData[3])
 {

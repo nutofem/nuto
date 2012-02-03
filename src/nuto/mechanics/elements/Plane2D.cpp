@@ -18,7 +18,7 @@
 #include <assert.h>
 
 
-NuTo::Plane2D::Plane2D(NuTo::StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+NuTo::Plane2D::Plane2D(const NuTo::StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
 		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
         Plane(rStructure, rElementDataType, rIntegrationType, rIpDataType)
 {}

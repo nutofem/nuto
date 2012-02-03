@@ -21,6 +21,13 @@ NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp(const ElementBase *rE
 	//std::cout << "NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp" << std::endl;
 }
 
+NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp(const ElementBase *rElement,
+		int rNumIp,	NuTo::IpData::eIpDataType rIpDataType) :
+		NuTo::ElementDataBase::ElementDataBase(), ElementDataConstitutiveBase() , ElementDataIpBase(rElement,rNumIp,rIpDataType)
+{
+	//std::cout << "NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp" << std::endl;
+}
+
 NuTo::ElementDataConstitutiveIp::~ElementDataConstitutiveIp()
 {
 	//std::cout << "NuTo::ElementDataConstitutiveStaticData::~ElementDataConstitutiveStaticData()" << std::endl;

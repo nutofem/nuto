@@ -1130,9 +1130,10 @@ NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(con
 }
 
 
-//! @brief modifies the section of a single element
+//! @brief modifies the integration type of a single element
 //! @param rElementIdent identifier for the element
-//! @param rSectionIdent identifier for the section
+//! @param rIntegrationTypeIdent id for the integration type
+//! @param rIpDataTypeStr integration point data
 void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
 		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
 {

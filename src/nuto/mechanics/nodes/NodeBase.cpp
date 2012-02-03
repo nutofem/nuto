@@ -340,6 +340,28 @@ double NuTo::NodeBase::GetRotation(short rIndex)const
 	throw MechanicsException("[NuTo::NodeBase::GetRotation] Node of type " + GetNodeTypeStr() + " has no rotations.");
 }
 
+
+//! @brief returns the number of radii
+//! @return number of radii
+int NuTo::NodeBase::GetNumRadius()const
+{
+	return 0;
+}
+
+//! @brief returns the radius of the node
+//! @param rRadius ... radius
+void NuTo::NodeBase::GetRadius(double rRadius[1])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetRadius] Node of type " + GetNodeTypeStr() + " has no radius.");
+}
+
+//! @brief set the radius
+//! @param rRadius  given radius
+void NuTo::NodeBase::SetRadius(const double rRadius[1])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetRadius] Node of type " + GetNodeTypeStr() + " has no radius.");
+}
+
 //! @brief returns the number of temperatures of the node
 //! @return number of temperatures
 int NuTo::NodeBase::GetNumTemperatures()const
@@ -381,4 +403,65 @@ void NuTo::NodeBase::ScaleShapeFunctionMultiscalePeriodic(int rShapeFunction, do
 {
 	throw MechanicsException("[NuTo::NodeBase::ScaleShapeFunctionMultiscalePeriodic] Node of type " + GetNodeTypeStr() + " is not a multiscale node.");
 }
+
+#ifdef ENABLE_VISUALIZE
+void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+{
+	double coordinates[3]={0,0,0};
+	switch (this->GetNumCoordinates())
+	{
+	case 1:
+		this->GetCoordinates1D(coordinates);
+		break;
+	case 2:
+		this->GetCoordinates2D(coordinates);
+		break;
+	case 3:
+		this->GetCoordinates3D(coordinates);
+		break;
+	default:
+		throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither coordinates in 1D, 2D or 3D.");
+	}
+	unsigned int PointId = rVisualize.AddPoint(coordinates);
+
+    // store data
+    boost::ptr_list<VisualizeComponentBase>::const_iterator WhatIter = rWhat.begin();
+    while (WhatIter != rWhat.end())
+    {
+        switch (WhatIter->GetComponentEnum())
+        {
+			case NuTo::VisualizeBase::DISPLACEMENTS:
+			{
+				double displacements[3]={0,0,0};
+				switch (this->GetNumDisplacements())
+				{
+				case 1:
+					this->GetDisplacements1D(displacements);
+					break;
+				case 2:
+					this->GetDisplacements2D(displacements);
+					break;
+				case 3:
+					this->GetDisplacements3D(displacements);
+					break;
+				default:
+					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither displacements in 1D, 2D or 3D.");
+				}
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements);
+			}
+				break;
+			case NuTo::VisualizeBase::PARTICLE_RADIUS:
+			{
+				double radius;
+				GetRadius(&radius);
+				rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), radius);
+			}
+				break;
+			default:
+				;
+        }
+        WhatIter++;
+    }
+}
+#endif // ENABLE_VISUALIZE
 

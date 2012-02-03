@@ -41,13 +41,26 @@ void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rE
 	InitializeUpdatedConstitutiveLaw(rElement);
 }
 
+bool NuTo::ElementDataConstitutiveBase::HasConstitutiveLawAssigned(int rIp)
+{
+	if (mConstitutiveLaw==0)
+	    return false;
+	else
+		return true;
+}
+
+
 NuTo::ConstitutiveBase* NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw(int rIp)
 {
+	if (mConstitutiveLaw==0)
+		throw MechanicsException("[NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw] no constitutive law assigned yet.");
 	return mConstitutiveLaw;
 }
 
 const NuTo::ConstitutiveBase* NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw(int rIp)const
 {
+	if (mConstitutiveLaw==0)
+		throw MechanicsException("[NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw] no constitutive law assigned yet.");
 	return mConstitutiveLaw;
 }
 

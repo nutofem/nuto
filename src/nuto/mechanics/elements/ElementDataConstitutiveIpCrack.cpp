@@ -11,6 +11,13 @@ NuTo::ElementDataConstitutiveIpCrack::ElementDataConstitutiveIpCrack(const Eleme
 //	DBG_POSITION
 }
 
+NuTo::ElementDataConstitutiveIpCrack::ElementDataConstitutiveIpCrack(const ElementBase *rElement,
+		int rNumIp, NuTo::IpData::eIpDataType rIpDataType) :
+   NuTo::ElementDataBase::ElementDataBase(), ElementDataConstitutiveBase(), ElementDataCrackBase() , ElementDataIpBase(rElement,rNumIp,rIpDataType)
+{
+//	DBG_POSITION
+}
+
 NuTo::ElementDataConstitutiveIpCrack::~ElementDataConstitutiveIpCrack()
 {
 //	DBG_POSITION

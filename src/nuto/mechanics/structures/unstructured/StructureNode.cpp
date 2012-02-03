@@ -13,8 +13,12 @@
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements1D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacements3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRadius2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRadius3D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotationsRadius2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotationsRadius3D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesTemperature1D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesTemperature2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesTemperature3D.h"
@@ -196,6 +200,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     // bit 4 : nonlocal data
     // bit 5 : velocities
     // bit 6 : accelerations
+    // bit 7 : radius
     boost::tokenizer<> tok(rDOFs);
     for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
@@ -226,6 +231,10 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         else if (*beg=="NONLOCALDATA")
         {
             attributes = attributes | 1 << Node::NONLOCALDATA;
+        }
+        else if (*beg=="RADIUS")
+        {
+            attributes = attributes | 1 << Node::RADIUS;
         }
         else
         {
@@ -292,24 +301,58 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
 			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
 		}
 		break;
-    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS):
-        // coordinates and displacements
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::RADIUS):
+        // coordinates, displacements and a radius
         switch (mDimension)
         {
         case 1:
-            throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a rotational DOF is not allowed.");
+            throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a radius is not implemented.");
             break;
         case 2:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations2D();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRadius2D();
             break;
         case 3:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations3D();
+        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRadius3D();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
         break;
-    case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) |  (1 << Node::ROTATIONS):
+		// coordinates, displacements, rotations
+		switch (mDimension)
+		{
+		case 1:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a rotation is not implemented.");
+			break;
+		case 2:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations2D();
+			break;
+		case 3:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations3D();
+			break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+		}
+	break;
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) |  (1 << Node::ROTATIONS) |(1 << Node::RADIUS):
+		// coordinates, displacements, rotations and a radius
+		switch (mDimension)
+		{
+		case 1:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a rotation is not implemented.");
+			break;
+		case 2:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotationsRadius2D();
+			break;
+		case 3:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotationsRadius3D();
+			break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+		}
+	 break;
+     case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
         // coordinates and temperatures
         switch (mDimension)
         {

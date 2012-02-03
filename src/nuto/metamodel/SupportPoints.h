@@ -20,7 +20,6 @@ Author: Joerg F. Unger,  Septermber 2009
 
 namespace NuTo
 {
-template<class T> class FullMatrix;
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief stores the support points

@@ -4,10 +4,13 @@ constitutive/ConstitutiveBase.cpp
 constitutive/ConstitutiveStaticDataBase.cpp
 constitutive/ConstitutiveTangentBase.cpp
 constitutive/ConstitutiveTangentLocal1x1.cpp
+constitutive/ConstitutiveTangentLocal2x2.cpp
 constitutive/ConstitutiveTangentLocal3x3.cpp
 constitutive/ConstitutiveTangentLocal6x6.cpp
 constitutive/ConstitutiveTangentNonlocal3x3.cpp
 constitutive/mechanics/ConstitutiveEngineeringStressStrain.cpp
+constitutive/mechanics/ConstitutiveLatticeStressStrain.cpp
+constitutive/mechanics/ConstitutiveLatticeConcrete.cpp
 constitutive/mechanics/ConstitutivePiolaKirchhoffIIGreenLagrange.cpp
 constitutive/mechanics/ConstitutiveMisesPlasticity.cpp
 constitutive/mechanics/ConstitutiveStaticDataMisesPlasticity3D.cpp
@@ -32,6 +35,10 @@ constitutive/mechanics/GreenLagrangeStrain3D.cpp
 constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
+constitutive/mechanics/LatticeStrain2D.cpp
+constitutive/mechanics/LatticeStrain3D.cpp
+constitutive/mechanics/LatticeStress2D.cpp
+constitutive/mechanics/LatticeStress3D.cpp
 constitutive/mechanics/LinearElastic.cpp
 constitutive/mechanics/Multiscale.cpp
 constitutive/mechanics/NonlocalDamagePlasticity.cpp
@@ -89,10 +96,14 @@ elements/ElementDataIpBase.cpp
 elements/ElementDataNonlocalBase.cpp
 elements/IpDataBase.cpp
 elements/IpDataEmpty.cpp
+elements/IpDataCoordinates2DBase.cpp
 elements/IpDataNonlocalBase.cpp
 elements/IpDataStaticData.cpp
 elements/IpDataStaticDataBase.cpp
+elements/IpDataStaticDataWeightCoordinates2D.cpp
 elements/IpDataStaticDataNonlocal.cpp
+elements/IpDataWeightBase.cpp
+elements/Lattice2D.cpp
 elements/Plane.cpp
 elements/Plane2D.cpp
 elements/Plane2D3N.cpp
@@ -154,9 +165,13 @@ nodes/NodeCoordinates2D.cpp
 nodes/NodeCoordinates3D.cpp
 nodes/NodeCoordinatesDisplacements1D.cpp
 nodes/NodeCoordinatesDisplacements2D.cpp
-nodes/NodeCoordinatesDisplacementsMultiscale2D.cpp
 nodes/NodeCoordinatesDisplacements3D.cpp
+nodes/NodeCoordinatesDisplacementsMultiscale2D.cpp
 nodes/NodeCoordinatesDisplacementsNonlocalData2D.cpp
+nodes/NodeCoordinatesDisplacementsRadius2D.cpp
+nodes/NodeCoordinatesDisplacementsRadius3D.cpp
+nodes/NodeCoordinatesDisplacementsRotationsRadius2D.cpp
+nodes/NodeCoordinatesDisplacementsRotationsRadius3D.cpp
 nodes/NodeDisplacements1D.cpp
 nodes/NodeDisplacements2D.cpp
 nodes/NodeDisplacementsMultiscale2D.cpp
@@ -164,6 +179,7 @@ nodes/NodeDisplacements3D.cpp
 nodes/NodeGrid1D.cpp
 nodes/NodeGrid2D.cpp
 nodes/NodeGrid3D.cpp
+nodes/NodeRadius.cpp
 nodes/NodeRotations2D.cpp
 nodes/NodeRotations3D.cpp
 nodes/NodeTemperature.cpp
@@ -198,6 +214,7 @@ structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
+structures/unstructured/StructureMesh.cpp
 structures/unstructured/StructureMultiscale.cpp
 structures/unstructured/StructureNode.cpp
 structures/grid/StructureGrid.cpp
@@ -219,7 +236,7 @@ SET(NuToMechanics_SWIG_MODULES
 
 # build static library
 ADD_LIBRARY(NuToMechanics ${NuToMechanics_SOURCES})
-TARGET_LINK_LIBRARIES(NuToMechanics NuToBase NuToMath ${ANN_LIBRARIES})
+TARGET_LINK_LIBRARIES(NuToMechanics NuToBase NuToMath ${ANN_LIBRARIES} ${MERSENNE_LIBRARIES})
 IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(NuToMechanics NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)

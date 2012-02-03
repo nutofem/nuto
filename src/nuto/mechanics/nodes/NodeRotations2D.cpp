@@ -28,12 +28,20 @@ NuTo::NodeRotations2D::NodeRotations2D(const double rRotations[1])  : NodeBase (
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
+    template void NuTo::NodeRotations2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
     template<class Archive>
     void NuTo::NodeRotations2D::serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
            & BOOST_SERIALIZATION_NVP(mRotations);
-     }
+    }
+    BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeRotations2D)
+    BOOST_CLASS_TRACKING(NuTo::NodeRotations2D, track_always)
 #endif // ENABLE_SERIALIZATION
 
 
@@ -56,6 +64,24 @@ void NuTo::NodeRotations2D::SetRotations2D(const double rRotations[1])
 void NuTo::NodeRotations2D::GetRotations2D(double rRotations[1])const
 {
 	rRotations[0] = mRotations[0];
+}
+
+//! @brief returns the Rotations of the node
+//! @return Rotation
+double NuTo::NodeRotations2D::GetRotation(short rComponent)const
+{
+	if (rComponent!=0)
+		throw MechanicsException("[NuTo::NodeRotations2D::GetRotation] Node has only one rotation component.");
+	return mRotations[0];
+}
+
+//! @brief returns the dof of the rotation of the node
+//! @return Rotation
+int NuTo::NodeRotations2D::GetDofRotation(int rComponent)const
+{
+	if (rComponent!=0)
+		throw MechanicsException("[NuTo::NodeRotations2D::GetDofRotation] Node has only one rotation component.");
+	return mDOF[0];
 }
 
 //! @brief sets the global dofs

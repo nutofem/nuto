@@ -61,6 +61,18 @@ public :
 
     virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
 
+    virtual void GetLocalIntegrationPointCoordinates2D(boost::array<double,2 >& rLocalCoordinatesFacet)const;
+
+	virtual void SetLocalIntegrationPointCoordinates2D(const boost::array<double,2 >& rLocalCoordinatesFacet);
+
+	virtual void GetLocalIntegrationPointCoordinates3D(boost::array<double,3 >& rLocalCoordinatesFacet)const;
+
+	virtual void SetLocalIntegrationPointCoordinates3D(const boost::array<double,3 >& rLocalCoordinatesFacet);
+
+	virtual double GetIntegrationPointWeight()const;
+
+	virtual void SetIntegrationPointWeight(double);
+
     //! @brief returns the enum of IP data type
     //! @return enum of IPDataType
     virtual NuTo::IpData::eIpDataType GetIpDataType()const=0;

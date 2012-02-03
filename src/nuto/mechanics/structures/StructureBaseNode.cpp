@@ -52,6 +52,50 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 #endif
 }
 
+//! @brief sets the rotations of a node
+//! @param rIdent node identifier
+//! @param rRotations matrix (one column) with the rotations
+void NuTo::StructureBase::NodeSetRotations(int rNode, const FullMatrix<double>& rRotations)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	NodeBase* nodePtr=NodeGetNodePtr(rNode);
+	this->mUpdateTmpStaticDataRequired=true;
+
+	if (rRotations.GetNumColumns()!=1)
+	throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] rotation matrix has to have a single column.");
+	try
+	{
+		switch (rRotations.GetNumRows())
+		{
+		case 1:
+			nodePtr->SetRotations2D(rRotations.mEigenMatrix.data());
+		break;
+		case 3:
+			nodePtr->SetRotations3D(rRotations.mEigenMatrix.data());
+		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] The number of rotation components is either 1, 3.");
+		}
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+    	b.AddMessage("[NuTo::StructureBase::NodeSetRotations] Error setting rotations.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] Error setting rotations of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeSetRotations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 //! @brief sets the displacements of a group of nodes
 //! @param rIdent node group identifier
 //! @param rDisplacements matrix (one column) with the displacements
@@ -157,6 +201,49 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 #endif
 }
 
+//! @brief gets the rotations of a node
+//! @param rIdent node identifier
+//! @param rRotation matrix (one column) with the rotations
+void NuTo::StructureBase::NodeGetRotations(int rNode, FullMatrix<double>& rRotations)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	const NodeBase* nodePtr = NodeGetNodePtr(rNode);
+
+	try
+	{
+		switch (nodePtr->GetNumDisplacements())
+		{
+		case 2:
+			rRotations.Resize(1,1);
+			nodePtr->GetRotations2D(rRotations.mEigenMatrix.data());
+		break;
+		case 3:
+			rRotations.Resize(3,1);
+			nodePtr->GetRotations3D(rRotations.mEigenMatrix.data());
+		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::NodeGetRotations] Node has neither 1(2D) or 3(3D) rotations.");
+		break;
+		}
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+        b.AddMessage("[NuTo::StructureBase::NodeGetRotations] Error getting rotations.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeGetRotations] Error getting rotations of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeGetRotations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
 //! @brief gets the displacements of a group of nodes
 //! @param rNodeGroup node group identifier
 //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
@@ -485,3 +572,22 @@ void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::v
 {
     throw MechanicsException("[NuTo::StructureBase::NodeGetElements] Not available for this structure type.");
 }
+
+#ifdef ENABLE_VISUALIZE
+//! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
+void NuTo::StructureBase::NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+{
+    std::vector<const NodeBase*> nodeVec;
+    this->GetNodesTotal(nodeVec);
+    NodeVectorAddToVisualize(rVisualize,rWhat,nodeVec);
+}
+
+//! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
+void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const NodeBase*>& rNodes) const
+{
+    for (unsigned int nodeCount = 0; nodeCount < rNodes.size(); nodeCount++)
+    {
+        rNodes[nodeCount]->Visualize(rVisualize, rWhat);
+    }
+}
+#endif //ENABLE_VISUALIZE

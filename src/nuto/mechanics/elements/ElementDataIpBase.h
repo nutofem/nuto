@@ -27,6 +27,12 @@ public:
     //! @param rIpDataType		... the IP Data
 	ElementDataIpBase(const ElementBase *rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
 
+	//! @brief constructor
+    //! @param rElement			... element for the IP Data
+    //! @param rIntegrationType	... number of integration points (store the coordinates at the ip, no integration type)
+    //! @param rIpDataType		... the IP Data
+	ElementDataIpBase(const ElementBase *rElement, int rNumIp, NuTo::IpData::eIpDataType rIpDataType);
+
 	virtual ~ElementDataIpBase();
 
     //! @brief sets the fine scale model (deserialization from a binary file)
@@ -61,6 +67,10 @@ public:
     //! @return pointer to integration type
     const IntegrationTypeBase* GetIntegrationType()const;
 
+    //! @brief returns the number of integration points
+    //! @return number of integration points
+    int GetNumIntegrationPoints()const;
+
     //! @brief returns ip data type of the element
     //! implemented with an exception for all element data, reimplementation required for those element data
     //! which actually need an integration type
@@ -80,7 +90,49 @@ public:
     //! @brief sets the static data for an integration point of an element
     //! @param rIp integration point
     //! @param rStaticData static data
-    virtual void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+    void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+
+    //! @brief returns the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @return rLocalCoordinates
+    void GetLocalIntegrationPointCoordinates2D(int rIp, boost::array<double,2 >& rLocalCoordinates)const;
+
+    //! @brief sets the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @param rLocalCoordinates
+    void SetLocalIntegrationPointCoordinates2D(int rIp, const boost::array<double,2 >& rLocalCoordinates);
+
+    //! @brief returns the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @return localCoordinatesFacet
+    void GetLocalIntegrationPointCoordinates3D(int rIp, boost::array<double,3 >& rLocalCoordinates)const;
+
+    //! @brief sets the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @param localCoordinatesFacet
+    void SetLocalIntegrationPointCoordinates3D(int rIp, const boost::array<double,3 >& rLocalCoordinates);
+
+    //! @brief returns the weight of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIp number of ip
+    //! @return weight
+    double GetIntegrationPointWeight(int rIp)const;
+
+    //! @brief sets the weight of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @param weight
+    void SetIntegrationPointWeight(int rIp, double rWeight);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

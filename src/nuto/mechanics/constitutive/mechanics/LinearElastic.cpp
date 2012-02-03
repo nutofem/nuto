@@ -56,7 +56,8 @@ void NuTo::LinearElastic::serialize(Archive & ar, const unsigned int version)
    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutivePiolaKirchhoffIIGreenLagrange)
       & BOOST_SERIALIZATION_NVP(mE)
-      & BOOST_SERIALIZATION_NVP(mNu);
+      & BOOST_SERIALIZATION_NVP(mNu)
+      & BOOST_SERIALIZATION_NVP(mRho);
 #ifdef DEBUG_SERIALIZATION
    std::cout << "finish serialize LinearElastic" << std::endl;
 #endif

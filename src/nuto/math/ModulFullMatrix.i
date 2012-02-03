@@ -7,7 +7,6 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
-#include <eigen2/Eigen/Array>
 %}
 
 // convert python string to std::string

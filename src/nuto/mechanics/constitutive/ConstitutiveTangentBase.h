@@ -11,6 +11,7 @@
 namespace NuTo
 {
 class ConstitutiveTangentLocal1x1;
+class ConstitutiveTangentLocal2x2;
 class ConstitutiveTangentLocal3x3;
 class ConstitutiveTangentLocal6x6;
 class ConstitutiveTangentNonlocal3x3;
@@ -60,6 +61,9 @@ public:
 
     //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
     virtual ConstitutiveTangentLocal1x1* AsConstitutiveTangentLocal1x1() = 0;
+
+    //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
+    virtual ConstitutiveTangentLocal2x2* AsConstitutiveTangentLocal2x2() = 0;
 
     //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
     virtual ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3() = 0;

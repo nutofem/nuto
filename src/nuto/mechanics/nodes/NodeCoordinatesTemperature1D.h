@@ -33,6 +33,7 @@ public:
            & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeTemperature);
     }
 #endif  // ENABLE_SERIALIZATION
+
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)

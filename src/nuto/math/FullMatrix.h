@@ -32,8 +32,7 @@
 #include "nuto/math/MathException.h"
 #include "nuto/math/fortran_routines.h"
 #include "nuto/math/SparseMatrix.h"
-#include <eigen2/Eigen/Core>
-#include <eigen2/Eigen/Array>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -108,8 +107,8 @@ public:
     }
 
     //! @brief ... resize matrix (everything is deleted)
-    //! @param rows ... number of columns
-    //! @param cols ... number of rows
+    //! @param rows ... number of rows
+    //! @param cols ... number of columns
     void Resize ( int rows, int cols )
     {
     	if ( rows*cols>0 )
@@ -117,6 +116,29 @@ public:
         else
             mEigenMatrix.resize ( rows,cols );
     }
+
+    //! @brief ... resize matrix (nothing is deleted)
+    //! @param rows ... number of rows
+    //! @param cols ... number of columns
+    void ConservativeResize ( int rows, int cols )
+    {
+        mEigenMatrix.conservativeResize ( rows,cols );
+    }
+
+    //! @brief ... resize matrix (nothing is deleted)
+    //! @param rows ... number of rows
+    void ConservativeResizeRows (int rows )
+    {
+        mEigenMatrix.conservativeResize(rows, Eigen::NoChange_t());
+    }
+
+    //! @brief ... resize matrix (nothing is deleted)
+    //! @param rows ... number of columns
+    void ConservativeResizeCols (int cols )
+    {
+        mEigenMatrix.conservativeResize(Eigen::NoChange_t(), cols);
+    }
+
 
     //! @brief ... add another matrix to this matrix and return the result matrix
     //! @param other ... other matrix
@@ -192,7 +214,7 @@ public:
     //! @return reference to this matrix
     FullMatrix<T>& operator+= ( const T &other)
     {
-        mEigenMatrix.cwise()+=1;
+        mEigenMatrix.array()+=1;
         return *this;
     }
 
@@ -859,10 +881,7 @@ public:
 
     //! @brief ... calculates the norm of this matrix, i.e. for vectors the Euclidean norm
     //! @return norm of this matrix
-    double  Norm() const
-    {
-        return mEigenMatrix.norm();
-    }
+    double  Norm() const;
 
     //! @brief ... calculates the sum of the entries for each column
     //! @return sum of the entries for each column
@@ -911,7 +930,7 @@ public:
     //! @return a matrix which is obtained by a coefficient wise multiplication of this matrix with another matrix
     FullMatrix<T> ElementwiseMul ( const FullMatrix<T> &other ) const
     {
-        return FullMatrix<T> ( mEigenMatrix.cwise() *other.mEigenMatrix );
+        return FullMatrix<T> ( mEigenMatrix.array() *other.mEigenMatrix.array() );
     }
 
     //! @brief ... coefficient wise division of this matrix by another matrix
@@ -919,14 +938,14 @@ public:
     //! @return a matrix which is obtained by a coefficient wise division of this matrix by another matrix
     FullMatrix<T> ElementwiseDiv ( const FullMatrix<T> &other ) const
     {
-        return FullMatrix<T> ( mEigenMatrix.cwise() /other.mEigenMatrix );
+        return FullMatrix<T> ( mEigenMatrix.array() /other.mEigenMatrix.array() );
     }
 
     //! @brief ... coefficient wise reciprocal
     //! @return a matrix which is obtained by coefficient wise reciprocal of this matrix
     FullMatrix<T> ElementwiseInverse() const
     {
-        return FullMatrix<T> ( mEigenMatrix.cwise().inverse() );
+        return FullMatrix<T> ( mEigenMatrix.array().inverse() );
     }
 
 #ifndef SWIG

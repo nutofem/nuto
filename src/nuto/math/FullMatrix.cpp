@@ -7,8 +7,9 @@
 #include "nuto/math/dlapack.h"
 #include "nuto/math/Matrix.h"
 #include "nuto/math/FullMatrix.h"
-#include <eigen2/Eigen/QR>
-#include <eigen2/Eigen/LU>
+#include <eigen3/Eigen/QR>
+#include <eigen3/Eigen/LU>
+#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
@@ -199,13 +200,13 @@ void FullMatrix<double>::ImportFromVtkASCIIFile(const char* rfileName)
 template<>
 FullMatrix<int> FullMatrix<int>::Abs() const
 {
-	return FullMatrix<int> ( mEigenMatrix.cwise().abs() );
+	return FullMatrix<int> ( mEigenMatrix.array().abs() );
 }
 
 template<>
  FullMatrix<double> FullMatrix<double>::Abs() const
 {
-	return FullMatrix<double> ( mEigenMatrix.cwise().abs() );
+	return FullMatrix<double> ( mEigenMatrix.array().abs() );
 }
 template<>
 void FullMatrix<int>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
@@ -371,8 +372,26 @@ FullMatrix<int> FullMatrix<int>::Inverse() const
 template<>
 FullMatrix<double> FullMatrix<double>::Inverse() const
 {
-    return mEigenMatrix.inverse();
+    return FullMatrix<double>(mEigenMatrix.inverse());
 }
+
+
+//! @brief calculates the inverse of a matrix
+//! @param rInverse ... norm of matrix
+template<>
+double FullMatrix<int>::Norm() const
+{
+    throw MathException("[FullMatrix::Norm] not implemented for integer data-type.");
+}
+
+//! @brief ... calculates the norm of this matrix, i.e. for vectors the Euclidean norm
+//! @return norm of this matrix
+template<>
+double FullMatrix<double>::Norm() const
+{
+    return mEigenMatrix.norm();
+}
+
 
 //! @brief calculates the eigenvalues
 //! @param rEigenValues ... eigenvalues

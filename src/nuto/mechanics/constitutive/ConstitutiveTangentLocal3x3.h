@@ -15,6 +15,7 @@ namespace NuTo
 {
 class LinearElastic;
 class ConstitutiveMisesPlasticity;
+class ConstitutiveLatticeConcrete;
 template <class T> class FullMatrix;
 //! @brief ... tangent matrix for local constitutive formulations
 //! @author Jörg F. Unger, ISM
@@ -28,6 +29,7 @@ class ConstitutiveTangentLocal3x3: public NuTo::ConstitutiveTangentBase
     friend class ConstitutiveMisesPlasticity;
     friend class Multiscale;
     friend class NonlocalDamagePlasticity;
+    friend class ConstitutiveLatticeConcrete;
 
 public:
     //! @brief ... constructor
@@ -62,6 +64,13 @@ public:
 	{
         throw MechanicsException("[NuTo::ConstitutiveTangentLocal3x3::AsConstitutiveTangentLocal1x1] data types can not be cast.");
  	}
+
+    //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
+    ConstitutiveTangentLocal2x2* AsConstitutiveTangentLocal2x2()
+	{
+        throw MechanicsException("[NuTo::ConstitutiveTangentLocal3x3::AsConstitutiveTangentLocal1x1] data types can not be cast.");
+	}
+
 
     //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
     ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3()

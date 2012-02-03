@@ -10,8 +10,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <eigen2/Eigen/LU>
-#include <eigen2/Eigen/Array>
+#include <eigen3/Eigen/LU>
 
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
@@ -556,7 +555,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticity::GetTangent_EngineeringStress
                         }
 
                         //calculate dOmegadepsilon, instead of using transpose, just declare a RowMajor storage
-                        Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).corner<3,4>(Eigen::TopLeft) * dKappadEpsilonP);
+                        Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).topLeftCorner<3,4>() * dKappadEpsilonP);
 
                         //the second part includes the dependence of leq as a function of the local stress at the nonlocal integration point
                         minusdOmegadEpsilon += Eigen::Matrix<double,3,1>::Map(NonlocalOldStaticData->mTmpdLeqdEpsilon,3)*deltaEpsilonPEq;
@@ -839,7 +838,7 @@ rLogger << "dOmegadEpsilon cdf" << "\n" << dOmegadEpsilon << "\n";
                             C12, C12, 0.,  C11;
 
         // calculate derivative of eq length with respect to local strain
-        Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,1>::Ones().asDiagonal() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
+        Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,4>::Identity() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
     }
     else
     {
@@ -1831,7 +1830,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
                     }
 #endif
                     assert(fabs(hessian.determinant())>toleranceDeterminant);
-                    hessian = hessian.inverse();
+                    hessian = hessian.inverse().eval();
 #ifdef ENABLE_DEBUG
                     rLogger << "determinant of hessian" << hessian.determinant() << "\n";
 #endif
@@ -1906,7 +1905,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
                                     if (yieldConditionFlag(count2)==INACTIVE)
                                         continue;
 
-                                    matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2]).lazy()(0);
+                                    matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2])(0);
                                     // copy symmetric part
                                     if (count!=count2)
                                         matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
@@ -1924,7 +1923,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 
                             // solve linearized system of equations for G_inv
                             assert(fabs(matG.determinant())>toleranceDeterminant);
-                            matG.computeInverse(&matGInv);
+                            matGInv = matG.inverse();
 
 #ifdef ENABLE_DEBUG
                         rLogger << "matG " << "\n" << matG <<"\n"<< "\n";
@@ -2009,7 +2008,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
                             rLogger << matG << "\n";
 #endif
 
-                            matG.computeInverse(&matGInv);
+                            matGInv = matG.inverse();
 
                             // compute deltaGamma
                             Eigen::Matrix<double,4,1> helpVector = hessian * residual;

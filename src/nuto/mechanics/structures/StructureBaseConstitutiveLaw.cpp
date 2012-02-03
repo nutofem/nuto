@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveLatticeConcrete.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElastic.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveMisesPlasticity.h"
 #include "nuto/mechanics/constitutive/mechanics/Multiscale.h"
@@ -31,6 +32,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "MULTISCALE")
     {
         ConstitutiveLawType = Constitutive::MULTISCALE;
+    }
+    else if (ConstitutiveLawTypeString == "LATTICECONCRETE")
+    {
+        ConstitutiveLawType = Constitutive::LATTICE_CONCRETE;
     }
     else
     {
@@ -72,6 +77,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::MULTISCALE:
             ConstitutiveLawPtr = new NuTo::Multiscale();
+            break;
+        case NuTo::Constitutive::LATTICE_CONCRETE:
+            ConstitutiveLawPtr = new NuTo::ConstitutiveLatticeConcrete();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");

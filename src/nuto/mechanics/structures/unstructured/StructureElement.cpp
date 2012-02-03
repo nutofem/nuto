@@ -5,6 +5,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/elements/Brick8N.h"
+#include "nuto/mechanics/elements/Lattice2D.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
@@ -204,6 +205,14 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
     {
     	elementType = NuTo::Element::TETRAHEDRON10N;
     }
+    else if (upperCaseElementType=="LATTICE2D")
+    {
+    	elementType = NuTo::Element::LATTICE2D;
+    }
+    else if (upperCaseElementType=="LATTICE3D")
+    {
+    	elementType = NuTo::Element::LATTICE3D;
+    }
     else
     {
     	throw MechanicsException("[NuTo::Structure::ElementCreate] Element type "+upperCaseElementType +" does not exist.");
@@ -289,28 +298,20 @@ int NuTo::Structure::ElementCreate(Element::eElementType rType,
 void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rType,
         std::vector<NodeBase*> rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
-
-	//const IntegrationTypeBase *ptrIntegrationType;
 	ElementBase* ptrElement(0);
     switch (rType)
 	{
     case NuTo::Element::TRUSS1D2N:
-		// get the integration type pointer, if not existent, create the integration type
-		//ptrIntegrationType = GetPtrIntegrationType(NuTo::Truss1D2N::GetStandardIntegrationType());
 		if (1!=mDimension)
 			throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D2N.");
 		ptrElement = new NuTo::Truss1D2N(this, rNodeVector, rElementDataType, rIpDataType);
 		break;
     case NuTo::Element::TRUSS1D3N:
-		// get the integration type pointer, if not existent, create the integration type
-		//ptrIntegrationType = GetPtrIntegrationType(NuTo::Truss1D3N::GetStandardIntegrationType());
 		if (1!=mDimension)
 			throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D3N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D3N.");
 		ptrElement = new NuTo::Truss1D3N(this, rNodeVector, rElementDataType, rIpDataType);
 		break;
     case NuTo::Element::BRICK8N:
-        // get the integration type pointer, if not existent, create the integration type
-        //ptrIntegrationType = GetPtrIntegrationType(NuTo::Brick8N::GetStandardIntegrationType());
         if (this->mDimension != 3)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] Brick8N is a 3D element.");
@@ -339,13 +340,18 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
         ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
     case NuTo::Element::TETRAHEDRON10N:
-        // get the integration type pointer, if not existent, create the integration type
-        //ptrIntegrationType = GetPtrIntegrationType(NuTo::Tetrahedron10N::GetStandardIntegrationType());
         if (this->mDimension != 3)
         {
             throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron10N is a 3D element.");
         }
         ptrElement = new NuTo::Tetrahedron10N(this, rNodeVector, rElementDataType, rIpDataType);
+        break;
+    case NuTo::Element::LATTICE2D:
+        if (this->mDimension != 2)
+        {
+            throw MechanicsException("[NuTo::Structure::ElementCreate] Lattice2D is a 2D element.");
+        }
+        ptrElement = new NuTo::Lattice2D(this, rNodeVector, rElementDataType, rIpDataType);
         break;
 	default:
 		throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Invalid element type.");

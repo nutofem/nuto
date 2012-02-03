@@ -14,7 +14,7 @@ class Plane2D : public Plane
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Plane2D(NuTo::StructureBase* rStructure,
+    Plane2D(const NuTo::StructureBase* rStructure,
     		ElementData::eElementDataType rElementDataType, IntegrationType::eIntegrationType rIntegrationType,
     		IpData::eIpDataType rIpDataType);
 

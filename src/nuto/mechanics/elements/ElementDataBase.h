@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/array.hpp>
 
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -56,6 +57,9 @@ public:
     //! @param rIp integration point
     virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
+    //! @brief returns true, if the constitutive law has been assigned
+    virtual bool HasConstitutiveLawAssigned(int rIp)const;
+
     //! @brief sets the fine scale model (deserialization from a binary file)
     virtual void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName);
 
@@ -74,6 +78,9 @@ public:
     virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
     		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
 #endif
+    //! @brief returns the number of integration points
+    //! @return number of integration points
+    virtual int GetNumIntegrationPoints()const;
 
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
@@ -93,6 +100,48 @@ public:
     //! @param rIp integration point
     //! @param rStaticData static data
     virtual void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+
+    //! @brief returns the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @return rLocalCoordinates
+    virtual void GetLocalIntegrationPointCoordinates2D(int rIpNum, boost::array<double,2 >& rLocalCoordinates)const;
+
+    //! @brief sets the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @param rLocalCoordinates
+    virtual void SetLocalIntegrationPointCoordinates2D(int rIpNum, const boost::array<double,2 >& rLocalCoordinates);
+
+    //! @brief returns the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @return rLocalCoordinates
+    virtual void GetLocalIntegrationPointCoordinates3D(int rIpNum, boost::array<double,3 >& rLocalCoordinates)const;
+
+    //! @brief sets the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @return rLocalCoordinates
+    virtual void SetLocalIntegrationPointCoordinates3D(int rIpNum, const boost::array<double,3 >& rLocalCoordinates);
+
+    //! @brief gets the weight of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @return weight
+    virtual double GetIntegrationPointWeight(int rIpNum)const;
+
+    //! @brief sets the local coordinate of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @param weight
+	virtual void SetIntegrationPointWeight(int rIpNum, double rWeight);
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point

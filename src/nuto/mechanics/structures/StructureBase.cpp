@@ -30,6 +30,10 @@
 #include <iostream>
 #include <string>
 
+extern "C" {
+#include <dSFMT.h>
+}
+
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -60,7 +64,10 @@
 #include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
+#include "nuto/visualize/VisualizeComponentLatticeStrain.h"
+#include "nuto/visualize/VisualizeComponentLatticeStress.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
+#include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentSection.h"
 #endif // ENABLE_VISUALIZE
@@ -216,7 +223,7 @@ void NuTo::StructureBase::AddVisualizationComponentDisplacements()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentDisplacements] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -387,6 +394,50 @@ void NuTo::StructureBase::AddVisualizationComponentCracks()
 #endif
 }
 
+//! @brief ... Add visualization particle radius to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentParticleRadius()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentParticleRadius());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentParticleRadius] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add lattice stress to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentLatticeStress()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentLatticeStress());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLatticeStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add lattice stress to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentLatticeStrain()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentLatticeStrain());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLatticeStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef SHOW_TIME
@@ -404,12 +455,34 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 
 void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName) const
 {
+    mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] this routine is deprecated, use ExportVtkDataFileElements instead." << "\n";
+}
+
+void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName) const
+{
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
     VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeData(visualize,mVisualizeComponents);
+    this->DefineVisualizeNodeData(visualize,mVisualizeComponents);
+    this->NodeTotalAddToVisualize(visualize,mVisualizeComponents);
+    visualize.ExportVtkDataFile(rFileName);
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName) const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    VisualizeUnstructuredGrid visualize;
+    this->DefineVisualizeElementData(visualize,mVisualizeComponents);
     this->ElementTotalAddToVisualize(visualize,mVisualizeComponents);
     visualize.ExportVtkDataFile(rFileName);
 #ifdef SHOW_TIME
@@ -426,7 +499,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     start=clock();
 #endif
     VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeData(visualize,mVisualizeComponents);
+    this->DefineVisualizeElementData(visualize,mVisualizeComponents);
     this->ElementGroupAddToVisualize(rGroupIdent,visualize,mVisualizeComponents);
     visualize.ExportVtkDataFile(rFileName);
 #ifdef SHOW_TIME
@@ -444,7 +517,7 @@ void NuTo::StructureBase::ElementGroupVisualizeIpMultiscale(int rGroupIdent, con
     start=clock();
 #endif
     VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeData(visualize,mVisualizeComponents);
+    this->DefineVisualizeElementData(visualize,mVisualizeComponents);
     this->ElementGroupAddToVisualizeIpMultiscale(rGroupIdent,visualize,mVisualizeComponents,rVisualizeDamage);
     visualize.ExportVtkDataFile(rFileName);
 #ifdef SHOW_TIME
@@ -466,7 +539,7 @@ void NuTo::StructureBase::ElementGroupVisualizeIpMultiscaleHomogeneous(int rGrou
     ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, false);
 }
 
-void NuTo::StructureBase::DefineVisualizeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
+void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
 {
     boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
     while (itWhat != mVisualizeComponents.end())
@@ -506,12 +579,45 @@ void NuTo::StructureBase::DefineVisualizeData(VisualizeUnstructuredGrid& rVisual
         case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
             rVisualize.DefineCellDataVector(itWhat->GetComponentName());
             break;
+        case NuTo::VisualizeBase::LATTICE_STRESS:
+            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::LATTICE_STRAIN:
+            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::LATTICE_PLASTIC_STRAIN:
+            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::PARTICLE_RADIUS:
+            //do nothing;
+            break;
         default:
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] invalid data description.");
+        	throw MechanicsException("[NuTo::StructureBase::DefineVisualizeElementData] undefined visualize components.");
         }
         itWhat++;
     }
 }
+
+void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
+{
+    boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
+    while (itWhat != mVisualizeComponents.end())
+    {
+        switch (itWhat->GetComponentEnum())
+        {
+        case NuTo::VisualizeBase::DISPLACEMENTS:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::PARTICLE_RADIUS:
+        	rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
+        default:
+        	;
+         }
+        itWhat++;
+    }
+}
+
 
 #endif // ENABLE_VISUALIZE
 
@@ -2117,6 +2223,539 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 }
 #endif
 
+
+//! @brief is only true for structure used as multiscale (structure in a structure)
+//! @parameters rBoundingBox box for the spheres (3*2 matrix)
+//! @parameters rSeed seed for the random number generator
+//! @parameters rRadiusBoundaryParticles radius particles simulated on the boundary
+//! @parameters rDistanceBoundaryParticles distance of the boundary particles
+//! @return ... matrix with spheres (coordinates x y z and radius)
+NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMatrix<double>& rBoundingBox, int rSeed,
+		double rRadiusBoundaryParticles, double rDistanceBoundaryParticles)
+{
+    if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
+    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnBoxBoundary] bounding box has to have the dimension [3,2]");
+
+	// calculate specimen length
+    std::array<double,3> lBox;
+    for (int count=0; count<3; count++)
+    {
+    	lBox[count] = rBoundingBox(count,1) - rBoundingBox(count,0);
+    	if (lBox[count]<=0)
+    		throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnBoxBoundary] box dimensions should be not negative.");
+    }
+
+	FullMatrix<double> particles;
+	particles.Resize(1000,4);
+
+	int numParticles(0);
+
+	// random number generator
+	dsfmt_t randomNumberGenerator;
+	// init random number generator with milliseconds from ..
+	dsfmt_init_gen_rand(&randomNumberGenerator, rSeed);
+
+	for (int count=0; count<3; count++)
+		if (rBoundingBox(0,1)-rBoundingBox(0,0)<10.*rRadiusBoundaryParticles)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnBoxBoundary] minimum diameter and box dimension do not match.");
+
+	std::vector<boost::array<double,3> > nodes; //node coordinates
+    std::vector<boost::array<int   ,2> > edges; //edges that connect the nodes
+    std::vector<boost::array<int   ,2> > faces; //faces with coordinates being constant (0,1,2 for x,y,z, and 0 or 1 for the lower or upper face
+
+	switch (mDimension)
+	{
+	case 3:
+
+		//add the corners
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,1) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,1) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,1) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,1) }});
+
+		//add the edge
+		edges.push_back(boost::array<int, 2> {{0,1}});
+		edges.push_back(boost::array<int, 2> {{1,3}});
+		edges.push_back(boost::array<int, 2> {{3,2}});
+		edges.push_back(boost::array<int, 2> {{2,0}});
+		edges.push_back(boost::array<int, 2> {{4,5}});
+		edges.push_back(boost::array<int, 2> {{5,7}});
+		edges.push_back(boost::array<int, 2> {{7,6}});
+		edges.push_back(boost::array<int, 2> {{6,4}});
+		edges.push_back(boost::array<int, 2> {{0,4}});
+		edges.push_back(boost::array<int, 2> {{1,5}});
+		edges.push_back(boost::array<int, 2> {{3,7}});
+		edges.push_back(boost::array<int, 2> {{2,6}});
+
+		//add the faces
+		faces.push_back(boost::array<int, 2> {{0,0}});
+		faces.push_back(boost::array<int, 2> {{0,1}});
+		faces.push_back(boost::array<int, 2> {{1,0}});
+		faces.push_back(boost::array<int, 2> {{1,1}});
+		faces.push_back(boost::array<int, 2> {{2,0}});
+		faces.push_back(boost::array<int, 2> {{2,1}});
+		break;
+	case 2:
+	{
+
+		double rCuttingPlane(0.5*(rBoundingBox(2,0)+rBoundingBox(2,1)));
+
+		//add the corners
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,0) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rCuttingPlane }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rCuttingPlane }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rCuttingPlane }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rCuttingPlane }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,1) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,1) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,1) }});
+		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,1) }});
+
+		//add the edge
+		edges.push_back(boost::array<int, 2> {{0,1}});
+		edges.push_back(boost::array<int, 2> {{1,3}});
+		edges.push_back(boost::array<int, 2> {{3,2}});
+		edges.push_back(boost::array<int, 2> {{2,0}});
+		edges.push_back(boost::array<int, 2> {{4,5}});
+		edges.push_back(boost::array<int, 2> {{5,7}});
+		edges.push_back(boost::array<int, 2> {{7,6}});
+		edges.push_back(boost::array<int, 2> {{6,4}});
+		edges.push_back(boost::array<int, 2> {{8,9}});
+		edges.push_back(boost::array<int, 2> {{9,11}});
+		edges.push_back(boost::array<int, 2> {{11,10}});
+		edges.push_back(boost::array<int, 2> {{10,8}});
+
+
+		edges.push_back(boost::array<int, 2> {{0,4}});
+		edges.push_back(boost::array<int, 2> {{4,8}});
+		edges.push_back(boost::array<int, 2> {{1,5}});
+		edges.push_back(boost::array<int, 2> {{5,9}});
+		edges.push_back(boost::array<int, 2> {{3,7}});
+		edges.push_back(boost::array<int, 2> {{7,11}});
+		edges.push_back(boost::array<int, 2> {{2,6}});
+		edges.push_back(boost::array<int, 2> {{6,10}});
+
+		//add the faces
+		faces.push_back(boost::array<int, 2> {{0,0}});
+		faces.push_back(boost::array<int, 2> {{0,1}});
+		faces.push_back(boost::array<int, 2> {{1,0}});
+		faces.push_back(boost::array<int, 2> {{1,1}});
+		faces.push_back(boost::array<int, 2> {{2,0}});
+		faces.push_back(boost::array<int, 2> {{2,1}});
+		break;
+	}
+	break;
+	default:
+		throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] only implemented for 2D and 3D.");
+
+	}
+	// first add the nodes
+	for (unsigned int count=0; count<nodes.size(); count++)
+	{
+		// check size of table
+		if(numParticles == particles.GetNumRows())
+		{
+			particles.ConservativeResizeRows(particles.GetNumRows()+1000);
+		}
+		particles(numParticles,0) = nodes[count][0];
+	    particles(numParticles,1) = nodes[count][1];
+    	particles(numParticles,2) = nodes[count][2];
+		particles(numParticles,3) = rRadiusBoundaryParticles;
+		numParticles++;
+	}
+
+	// add particles along the edges
+	for (unsigned int theEdge=0; theEdge<edges.size(); theEdge++)
+	{
+		boost::array<double,3>& node1(nodes[edges[theEdge][0]]);
+		boost::array<double,3>& node2(nodes[edges[theEdge][1]]);
+
+		boost::array<double,3> delta;
+		for (int count=0; count<3; count++)
+		    delta[count] = node2[count]-node1[count];
+
+		double lEdge = sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
+
+		int numParticlesPerEdge = lEdge/rDistanceBoundaryParticles;
+
+		int thisParticlesPerEdge(2); //the ends have already been inserted
+		int numTries(0);
+		while(thisParticlesPerEdge<numParticlesPerEdge)
+		{
+			// check size of table
+			if(numParticles == particles.GetNumRows())
+			{
+				particles.ConservativeResizeRows(particles.GetNumRows()+1000);
+			}
+
+			double s = dsfmt_genrand_close_open(&randomNumberGenerator);
+			for (int count=0; count<3; count++)
+			{
+				particles(numParticles,count) = node1[count]+s*delta[count];
+			}
+
+			particles(numParticles,3) = rRadiusBoundaryParticles;
+			//check for overlap
+			bool noSeparation(true);
+			for (int countParticle=0; countParticle<numParticles; countParticle++)
+			{
+				double deltaX = particles(countParticle,0)-particles(numParticles,0);
+				double deltaY = particles(countParticle,1)-particles(numParticles,1);
+				double deltaZ = particles(countParticle,2)-particles(numParticles,2);
+				double sumR = particles(countParticle,3)+particles(numParticles,3);
+				if (deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ<sumR*sumR)
+				{
+					noSeparation = false;
+					//std::cout << "failure at " << particles(numParticles,0 ) << " " << particles(numParticles,1 ) << "\n";
+					break;
+				}
+			}
+			if (noSeparation==true)
+			{
+				thisParticlesPerEdge++;
+				numParticles++;
+				numTries=0;
+				//std::cout << "Particles " << "\n" << particles.mEigenMatrix.block(0,0,numParticles,4) << "\n";
+			}
+			else
+			{
+				numTries++;
+				if (numTries>10000)
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] could not add particles on a boundary edge.");
+			}
+		}
+	}
+
+	// add particles along the faces
+	for (unsigned int theFace=0; theFace<faces.size(); theFace++)
+	{
+		boost::array<double,2> delta;
+	    delta[0] = rBoundingBox((faces[theFace][0]+1)%3,1)-rBoundingBox((faces[theFace][0]+1)%3,0);
+	    delta[1] = rBoundingBox((faces[theFace][0]+2)%3,1)-rBoundingBox((faces[theFace][0]+2)%3,0);
+
+		double lArea = delta[0]*delta[1];
+
+		int numParticlesPerFace = lArea/(rDistanceBoundaryParticles*rDistanceBoundaryParticles);
+
+		//the edges have already been inserted
+		int thisParticlesPerFace(2*((int)(delta[0]/rDistanceBoundaryParticles)+(int)(delta[1]/rDistanceBoundaryParticles)-2));
+		if (mDimension==2 && faces[theFace][0]==0)
+		{
+			thisParticlesPerFace+=int((rBoundingBox(1,1)-rBoundingBox(1,0)/rDistanceBoundaryParticles))-2;
+		}
+		if (mDimension==2 && faces[theFace][0]==1)
+		{
+			thisParticlesPerFace+=int((rBoundingBox(0,1)-rBoundingBox(0,0)/rDistanceBoundaryParticles))-2;
+		}
+
+
+		int numTries(0);
+		while(thisParticlesPerFace<numParticlesPerFace)
+		{
+			// check size of table
+			if(numParticles == particles.GetNumRows())
+			{
+				particles.ConservativeResizeRows(particles.GetNumRows()+1000);
+			}
+
+			double s = dsfmt_genrand_close_open(&randomNumberGenerator);
+			double t = dsfmt_genrand_close_open(&randomNumberGenerator);
+
+			particles(numParticles,(faces[theFace][0]+1)%3) = rBoundingBox((faces[theFace][0]+1)%3,0) + s*delta[0];
+			particles(numParticles,(faces[theFace][0]+2)%3) = rBoundingBox((faces[theFace][0]+2)%3,0) + t*delta[1];
+			particles(numParticles,faces[theFace][0]) = rBoundingBox(faces[theFace][0],faces[theFace][1]);
+
+			particles(numParticles,3) = rRadiusBoundaryParticles;
+			//check for overlap
+			bool noSeparation(true);
+			for (int countParticle=0; countParticle<numParticles; countParticle++)
+			{
+				double deltaX = particles(countParticle,0)-particles(numParticles,0);
+				double deltaY = particles(countParticle,1)-particles(numParticles,1);
+				double deltaZ = particles(countParticle,2)-particles(numParticles,2);
+				double sumR = particles(countParticle,3)+particles(numParticles,3);
+				if (deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ<sumR*sumR)
+				{
+					noSeparation = false;
+					//std::cout << "failure at " << particles(numParticles,0 ) << " " << particles(numParticles,1 ) << "\n";
+					break;
+				}
+			}
+			if (noSeparation==true)
+			{
+				thisParticlesPerFace++;
+				numParticles++;
+				numTries=0;
+				//std::cout << "Particles " << "\n" << particles.mEigenMatrix.block(0,0,numParticles,4) << "\n";
+			}
+			else
+			{
+				numTries++;
+				if (numTries>10000)
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] could not add particles on a boundary face.");
+			}
+		}
+	}
+
+	particles.ConservativeResizeRows(numParticles);
+	return particles;
+}
+
+
+
+//! @brief is only true for structure used as multiscale (structure in a structure)
+//! @parameters rBoundingBox box for the spheres (3*2 matrix)
+//! @parameters rRelParticleMass percentage of particle mass inside the box
+//! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
+//! @parameters relativeDistance scaling factor to increase the diameter when inserting the sphere to ensure a minimum distance
+//! @parameters rDensity density of the mixture (concrete)
+//! @parameters rSeed seed for the random number generator
+//! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
+//! @return ... matrix with spheres (coordinates x y z and radius)
+NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInBox(FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
+		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double>& rSpheresBoundary)
+{
+    if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
+    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] bounding box has to have the dimension [3,2]");
+
+    if (rGradingCurve.GetNumRows()<1)
+    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] at least one class in the grading curve should be defined.");
+
+	// calculate specimen length
+    std::array<double,3> lBox;
+    for (int count=0; count<3; count++)
+    {
+    	lBox[count] = rBoundingBox(count,1) - rBoundingBox(count,0);
+    	if (lBox[count]<=0)
+    		throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] box dimensions should be not negative.");
+    }
+
+    // volume of particles per class
+    std::vector<double> Vsoll, Vist;
+    Vsoll.resize(rGradingCurve.GetNumRows());
+    Vist.resize(rGradingCurve.GetNumRows());
+    std::vector<int> numParticlesPerClass;
+    numParticlesPerClass.resize(rGradingCurve.GetNumRows());
+
+    // calculating volume of the specimen
+    double Vspecimen = lBox[0] * lBox[1] * lBox[2];
+
+    if(Vspecimen < 1.0e-14)
+    {
+        throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] negative volume of the box.");
+    }
+
+	// calculating mass of the aggregates */
+	double massSumParticles = Vspecimen * rDensity * rRelParticleMass;
+
+	FullMatrix<double> particles(rSpheresBoundary);
+
+	int numParticles(rSpheresBoundary.GetNumRows());
+
+	// random number generator
+	dsfmt_t randomNumberGenerator;
+	// init random number generator with milliseconds from ..
+	dsfmt_init_gen_rand(&randomNumberGenerator, rSeed);
+
+	for(int gc=0;gc<rGradingCurve.GetNumRows();gc++)
+	{
+		double dMin(rGradingCurve(gc,0));
+		double dMax(rGradingCurve(gc,1));
+		double massFrac(rGradingCurve(gc,2));
+		double particleDensity(rGradingCurve(gc,3));
+		numParticlesPerClass[gc]=0;
+
+		// calculate reference volume fraction of the mineral-size-class
+		Vsoll[gc] = massSumParticles * massFrac / particleDensity;
+		if (gc>0)
+		{
+			Vsoll[gc] = Vsoll[gc] + (Vsoll[gc-1] - Vist[gc-1]);
+		}
+		Vist[gc] = 0.0;
+
+		// generate particles until the reference volume fraction is reached
+		bool finished(false);
+		while (!finished)
+		{
+			// check size of table
+			if(numParticles == particles.GetNumRows())
+			{
+				particles.ConservativeResizeRows(particles.GetNumRows()+1000);
+			}
+
+			// calculate radius and volume of the particle
+			double randomNumber(dsfmt_genrand_close_open(&randomNumberGenerator));// = geometry_rng.rand();
+
+			double radius = 0.5 * dMin*dMax/pow((1.0-randomNumber)*(dMax*dMax*dMax) +
+					randomNumber*(dMin*dMin*dMin),1.0/3.0);
+
+			// volume
+			double volumeParticle (4.0/3.0*M_PI*radius*radius*radius);
+
+			Vist[gc] += volumeParticle;
+
+			//create new particle
+			if (Vist[gc] < Vsoll[gc])
+			{
+			    //std::cout << "sphere " << numParticles+1 << " " << radius << " volume " << volumeParticle << std::endl;
+				particles(numParticles,3) = radius;
+			    numParticles++;
+			    numParticlesPerClass[gc]++;
+			}
+			else
+			{
+				finished=true;
+				Vist[gc] -= volumeParticle;
+			}
+		}
+		std::cout << "Volume for class " << gc+1 << " : " <<  Vist[gc]/Vspecimen << "(" << Vsoll[gc]/Vspecimen << ")" << std::endl;
+		//sort only the newly introduced radii
+		std::sort(((double*)&particles.mEigenMatrix.data()[3*particles.GetNumRows()+numParticles-numParticlesPerClass[gc]]),((double*)&particles.mEigenMatrix.data()[3*particles.GetNumRows()+numParticles]), std::greater<double>( ));
+
+		//create boxes for the previously inserted particles
+		//width of each box = largest diameter
+		std::array<int,3> nSubBox;
+		std::array<double,3> lSubBox;
+		for (int count=0; count<3; count++)
+		{
+			nSubBox[count] = lBox[count]/(dMax);
+			lSubBox[count] = lBox[count]/nSubBox[count];
+		}
+
+		int numberOfSubBoxes = nSubBox[0]*nSubBox[1]*nSubBox[2];
+		std::vector<std::vector<int> > subBox(numberOfSubBoxes);
+
+		// now start inserting existing particles into the box
+		for (int countParticle=0; countParticle<numParticles-numParticlesPerClass[gc]; countParticle++)
+		{
+			InsertParticleIntoBox(particles,countParticle,subBox,nSubBox,lSubBox,rBoundingBox);
+		}
+
+		// now start inserting new particles into the box
+		for (int countParticle=numParticles-numParticlesPerClass[gc]; countParticle<numParticles; countParticle++)
+		{
+			bool inserted(false);
+			int numTries(0);
+			while(!inserted)
+			{
+				//create random coordinate
+				std::array<int,3> cSubBox;
+				for (int count=0; count<3; count++)
+				{
+					particles(countParticle,count) = particles(countParticle,3)+(lBox[count]-2*particles(countParticle,3))*dsfmt_genrand_close_open(&randomNumberGenerator);
+					cSubBox[count] = (particles(countParticle,count)-rBoundingBox(count,0))/lSubBox[count];
+				}
+				//calculate the corresponding box
+				int theBox = cSubBox[0]*nSubBox[1]*nSubBox[2]+cSubBox[1]*nSubBox[2]+cSubBox[2];
+
+				//check for overlap with all the ellipses in that box
+				bool noSeparation(true);
+				for (unsigned int countOtherEllipse=0; countOtherEllipse<subBox[theBox].size(); countOtherEllipse++)
+				{
+					int otherEllipse=subBox[theBox][countOtherEllipse];
+					double deltaX = particles(countParticle,0)-particles(otherEllipse,0);
+					double deltaY = particles(countParticle,1)-particles(otherEllipse,1);
+					double deltaZ = particles(countParticle,2)-particles(otherEllipse,2);
+					double sumR = particles(countParticle,3)*(1.+relativeDistance)+particles(otherEllipse,3);
+					if (deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ<sumR*sumR)
+					{
+						noSeparation = false;
+						break;
+					}
+				}
+
+				if (noSeparation)
+				{
+					//insert
+					inserted = true;
+					InsertParticleIntoBox(particles,countParticle,subBox,nSubBox,lSubBox,rBoundingBox);
+				}
+				else
+				{
+					numTries++;
+					if (numTries>100000)
+						throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] unable to insert sphere after a 100000 tries.");
+				}
+			}
+		}
+	}
+
+	return particles.GetBlock(rSpheresBoundary.GetNumRows(),0,numParticles-rSpheresBoundary.GetNumRows(),4);
+}
+
+//! @brief cut spheres at a given z-coordinate to create circles (in 2D)
+//! @parameters rSpheres matrix with the spheres (x,y,z,r)
+//! @parameters rZCoord z coordinate (where to cut)
+//! @parameters rMinRadius minimal radius of the circle
+//! @return ... matrix with the circles (x,y,r)
+NuTo::FullMatrix<double> NuTo::StructureBase::CutSpheresZ(NuTo::FullMatrix<double>& rSpheres, double rZCoord, double rMinRadius)
+{
+	NuTo::FullMatrix<double> circles(1000,3);
+	int numCircles(0);
+	for (int countSphere=0; countSphere<rSpheres.GetNumRows(); countSphere++)
+	{
+        double delta=rSpheres(countSphere,2)-rZCoord;
+		if (fabs(delta)<rSpheres(countSphere,3))
+        {
+			double radius=sqrt(rSpheres(countSphere,3)*rSpheres(countSphere,3)-delta*delta);
+        	if (radius>rMinRadius)
+        	{
+        		//add circle
+        		if (numCircles==circles.GetNumRows())
+        		{
+        			circles.ConservativeResizeRows(numCircles+1000);
+        		}
+        		circles(numCircles,0) = rSpheres(countSphere,0);
+        		circles(numCircles,1) = rSpheres(countSphere,1);
+        		circles(numCircles,2) = radius;
+        		numCircles++;
+        	}
+        }
+	}
+	circles.ConservativeResizeRows(numCircles);
+
+    return circles;
+}
+
+
+//! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
+void NuTo::StructureBase::InsertParticleIntoBox(NuTo::FullMatrix<double>& rParticles, int rTheParticle, std::vector<std::vector<int > >& rSubBox, std::array<int,3>& rNSubBox,std::array<double,3>& rLSubBox, FullMatrix<double>& rBoundingBox)
+{
+
+	//calculate current coordinate box of the center
+	std::array<int,3> cSubBoxMin;
+	std::array<int,3> cSubBoxMax;
+	for (int count=0; count<3; count++)
+	{
+		cSubBoxMax[count] = (rParticles(rTheParticle,count)+rParticles(rTheParticle,3)-rBoundingBox(count,0))/rLSubBox[count]+1;
+		if (cSubBoxMax[count]>=rNSubBox[count])
+			cSubBoxMax[count]=rNSubBox[count]-1;
+
+		cSubBoxMin[count] = (rParticles(rTheParticle,count)-rParticles(rTheParticle,3)-rBoundingBox(count,0))/rLSubBox[count]-1;
+		if (cSubBoxMin[count]<0)
+			cSubBoxMin[count]=0;
+	}
+
+	//insert the center box + all the surroundings
+	for (int countx=cSubBoxMin[0]; countx<=cSubBoxMax[0]; countx++)
+	{
+		for (int county=cSubBoxMin[1]; county<=cSubBoxMax[1]; county++)
+		{
+			for (int countz=cSubBoxMin[2]; countz<=cSubBoxMax[2]; countz++)
+			{
+				int theBox = countx*rNSubBox[1]*rNSubBox[2]+county*rNSubBox[2]+countz;
+				rSubBox[theBox].push_back(rTheParticle);
+			}
+		}
+	}
+}
 
 //@brief determines if in the omp parallelization the maximum independent sets are used (parallel assembly of the stiffness, generally faster)
 // or sequential insertion of the element stiffness using a barrier (faster for different load balancing of the elements)

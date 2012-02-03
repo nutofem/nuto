@@ -18,7 +18,9 @@ namespace NuTo
 {
 // forward declarations
 class ConstitutiveEngineeringStressStrain;
+class ConstitutiveLatticeStressStrain;
 class ConstitutiveTangentLocal1x1;
+class ConstitutiveTangentLocal2x2;
 class ConstitutiveTangentLocal3x3;
 class ConstitutiveTangentLocal6x6;
 class DeformationGradient1D;
@@ -380,6 +382,14 @@ public:
     //! @brief ... avoid dynamic cast
     //! @return ... see brief explanation
     virtual ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain();
+
+    //! @brief ... avoid dynamic cast
+    //! @return ... see brief explanation
+    virtual const ConstitutiveLatticeStressStrain* AsConstitutiveLatticeStressStrain()const;
+
+    //! @brief ... avoid dynamic cast
+    //! @return ... see brief explanation
+    virtual ConstitutiveLatticeStressStrain* AsConstitutiveLatticeStressStrain();
 
 
 #ifdef ENABLE_SERIALIZATION

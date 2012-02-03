@@ -18,7 +18,10 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentEngineeringPlasticStrain.cpp
   VisualizeComponentEngineeringStrain.cpp
   VisualizeComponentEngineeringStress.cpp
+  VisualizeComponentLatticeStrain.cpp
+  VisualizeComponentLatticeStress.cpp
   VisualizeComponentNonlocalWeight.cpp
+  VisualizeComponentParticleRadius.cpp
   VisualizeComponentPrincipalEngineeringStress.cpp
   VisualizeComponentSection.cpp
   VisualizeDataBase.cpp

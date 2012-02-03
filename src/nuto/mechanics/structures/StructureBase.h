@@ -4,6 +4,7 @@
 #define STRUCTUREBASE_H
 
 #include <ctime>
+#include <array>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -108,6 +109,9 @@ public:
     //! @brief ... Add crack id vector to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentCracks();
 
+    //! @brief ... Add visualization particle radius to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentParticleRadius();
+
     //! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentPrincipalEngineeringStress();
 
@@ -116,6 +120,12 @@ public:
     //! @param rIp ... local ip number
     void AddVisualizationComponentNonlocalWeights(int rElementId, int rIp);
 
+    //! @brief ... Add visualization of lattice stresses to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentLatticeStress();
+
+    //! @brief ... Add visualization of lattice strain to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentLatticeStrain();
+
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
@@ -123,6 +133,16 @@ public:
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
     void ExportVtkDataFile(const std::string& rFileName) const;
+
+    //! @brief ... export the entire structure to Vtk data file
+    //! @param rFileName ... file name
+    //! @param rWhat ... string which describes what to plot
+    void ExportVtkDataFileElements(const std::string& rFileName) const;
+
+    //! @brief ... export the entire structure to Vtk data file
+    //! @param rFileName ... file name
+    //! @param rWhat ... string which describes what to plot
+    void ExportVtkDataFileNodes(const std::string& rFileName) const;
 
     //Visualize for all integration points the fine scale structure
     void ElementGroupVisualizeIpMultiscale(int rGroupIdent, const std::string& rFileName, bool rVisualizeDamage)const;
@@ -140,8 +160,11 @@ public:
     void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const;
 
 #ifndef SWIG
-    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents
-    void DefineVisualizeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
+    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
+    void DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
+
+    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for a node plot
+    void DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
     void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements) const;
@@ -259,6 +282,11 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double>& rDisplacements);
 
+    //! @brief sets the displacements of a node
+    //! @param rIdent node identifier
+    //! @param rRotations matrix (one column) with the rotations
+    void NodeSetRotations(int rId,const NuTo::FullMatrix<double>& rRotations);
+
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rDisplacements matrix (one column) with the displacements
@@ -278,6 +306,11 @@ public:
     //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double>& rDisplacements)const;
+
+    //! @brief gets the rotations of a node
+    //! @param rNode node identifier
+    //! @param rRotation matrix (one column) with the rotations
+    void NodeGetRotations(int rNode, NuTo::FullMatrix<double>& rRotations)const;
 
     //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
@@ -308,6 +341,13 @@ public:
     //! @param rNodePtr  node for which this has to be calculated
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
     void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+
+    //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
+    void NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const NodeBase*>& rNodes) const;
+
 #endif //SWIG
 
 //*************************************************
@@ -1594,6 +1634,34 @@ public:
     	mUpdateTmpStaticDataRequired = true;
     }
 
+    //! @brief is only true for structure used as multiscale (structure in a structure)
+    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
+    //! @parameters rSeed seed for the random number generator
+    //! @parameters rRadiusBoundaryParticles radius particles simulated on the boundary
+    //! @parameters rDistanceBoundaryParticles distance of the boundary particles
+    //! @return ... matrix with spheres (coordinates x y z and radius)
+    NuTo::FullMatrix<double> CreateSpheresOnBoxBoundary(FullMatrix<double>& rBoundingBox, int rSeed, double rRadiusBoundaryParticles, double rDistanceBoundaryParticles);
+
+
+    //! @brief is only true for structure used as multiscale (structure in a structure)
+    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
+    //! @parameters rRelParticleMass percentage of particle mass inside the box
+    //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
+    //! @parameters relativeDistance scaling factor to increase the diameter when inserting the sphere to ensure a minimum distance
+    //! @parameters rDensity density of the mixture (concrete)
+    //! @parameters rSeed seed for the random number generator
+    //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
+    //! @return ... matrix with spheres (coordinates x y z and radius)
+    NuTo::FullMatrix<double> CreateSpheresInBox(FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
+    		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double>& rSpheresBoundary);
+
+    //! @brief cut spheres at a given z-coordinate to create circles (in 2D)
+    //! @parameters rSpheres matrix with the spheres (x,y,z,r)
+    //! @parameters rZCoord z coordinate (where to cut)
+    //! @parameters rMinRadius minimal radius of the circle
+    //! @return ... matrix with the circles (x,y,r)
+    NuTo::FullMatrix<double> CutSpheresZ(NuTo::FullMatrix<double>& rSpheres, double rZCoord, double rMinRadius);
+
 
 protected:
     int mDimension;
@@ -1762,6 +1830,8 @@ protected:
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
     virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const = 0;
 
+    //! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
+    void InsertParticleIntoBox(NuTo::FullMatrix<double>& rParticles, int rTheParticle, std::vector<std::vector<int > >& rSubBox, std::array<int,3>& rNSubBox,std::array<double,3>& rLSubBox, FullMatrix<double>& rBoundingBox);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -15,7 +15,7 @@
 #include "nuto/metamodel/TransferFunction.h"
 #include "nuto/optimize/CallbackHandler.h"
 #include "nuto/metamodel/MetamodelException.h"
-#include <eigen2/Eigen/Core>
+#include <eigen3/Eigen/Core>
 
 
 namespace NuTo

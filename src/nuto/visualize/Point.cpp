@@ -35,6 +35,20 @@ void NuTo::Point::AddDataVector(unsigned int rDataIndex)
     this->mData.push_back(new NuTo::VisualizeDataVector());
 }
 
+// set scalar data
+void NuTo::Point::SetDataScalar(unsigned int rDataIndex, double rData)
+{
+    if (rDataIndex >= this->mData.size())
+    {
+        throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data index.");
+    }
+    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::SCALAR)
+    {
+        throw NuTo::VisualizeException("[NuTo::Point::SetDataScalar] invalid data type.");
+    }
+    this->mData[rDataIndex].SetData(&rData);
+}
+
 // set vector data
 void NuTo::Point::SetDataVector(unsigned int rDataIndex, double rData[3])
 {

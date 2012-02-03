@@ -22,8 +22,12 @@ enum eNodeType
     NodeCoordinatesDisplacementsMultiscale3D,
     NodeCoordinatesDisplacementsNonlocalData2D,
     NodeCoordinatesDisplacementsNonlocalData3D,
+    NodeCoordinatesDisplacementsRadius2D,
+    NodeCoordinatesDisplacementsRadius3D,
     NodeCoordinatesDisplacementsRotations2D,
     NodeCoordinatesDisplacementsRotations3D,
+    NodeCoordinatesDisplacementsRotationsRadius2D,
+    NodeCoordinatesDisplacementsRotationsRadius3D,
     NodeTemperature,
     NodeCoordinatesDisplacementsVelocitiesAccelerations1D,
     NodeCoordinatesDisplacementsVelocitiesAccelerations2D,
@@ -41,21 +45,24 @@ enum eNodeType
     NodeGridDisplacements1D,
     NodeGridDisplacements2D,
     NodeGridDisplacements3D,
+    NodeRadius,
     NodeRotations2D,
     NodeRotations3D,
     NodeVelocities1D,
     NodeVelocities2D,
     NodeVelocities3D
 };
+
 enum eAttributes
 {
-    COORDINATES=0,
+    ACCELERATIONS=0,
+    COORDINATES,
     DISPLACEMENTS,
+    NONLOCALDATA,
+    RADIUS,
     ROTATIONS,
     TEMPERATURES,
-    NONLOCALDATA,
-    VELOCITIES,
-    ACCELERATIONS
+    VELOCITIES
 };
 }
 }

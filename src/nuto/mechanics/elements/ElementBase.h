@@ -31,6 +31,7 @@ class ElementDataBase;
 class IntegrationTypeBase;
 class NodeBase;
 class Plane;
+class Lattice2D;
 class SectionBase;
 template<class T>
 class SparseMatrix;
@@ -57,8 +58,19 @@ class ElementBase
 public:
     //! @brief constructor
     //! @param rStructure ... structure to which the element belongs
+    //! @param rElementDataType ... element data type
+    //! @param rIntegrationType ... integration type (local coordinates are stored as a type, e.g. Gauss 2x2
+    //! @param rIpDataType ... data type to decide what is stored at the integration point level
     ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
     		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType);
+
+    //! @brief constructor
+    //! @param rStructure ... structure to which the element belongs
+    //! @param rElementDataType ... element data type
+    //! @param rNumIp ... number of integration points (here local coordinates should be stored at the ip (e.g. XFEM)
+    //! @param rIpDataType ... data type to decide what is stored at the integration point level
+    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
+    		int rNumIp, IpData::eIpDataType rIpDataType);
 
     virtual ~ElementBase();
 
@@ -118,6 +130,9 @@ public:
     //! @param integration point number (counting from zero)
     //! @return pointer to constitutive law
     ConstitutiveBase* GetConstitutiveLaw(int rIp);
+
+    //! @brief returns true, if the constitutive law has been assigned
+    bool HasConstitutiveLawAssigned(int rIp)const;
 
     //! @brief sets the fine scale model (deserialization from a binary file)
     void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName);
@@ -329,6 +344,12 @@ public:
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual Plane* AsPlane();
 
+    //! @brief cast the base pointer to an ElementPlaneLattice, otherwise throws an exception
+    virtual const Lattice2D* AsLattice2D()const;
+
+    //! @brief cast the base pointer to an ElementPlaneLattice, otherwise throws an exception
+    virtual Lattice2D* AsLattice2D();
+
     //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
     virtual const Solid* AsSolid()const;
 
@@ -351,6 +372,14 @@ public:
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+
+    virtual void GetVisualizationCells(
+        unsigned int& NumVisualizationPoints,
+        std::vector<double>& VisualizationPointLocalCoordinates,
+        unsigned int& NumVisualizationCells,
+        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<unsigned int>& VisualizationCellsIncidence,
+        std::vector<unsigned int>& VisualizationCellsIP) const;
 
     //Visualize for all integration points the fine scale structure
     void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;

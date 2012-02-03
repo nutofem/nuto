@@ -343,6 +343,20 @@ public:
     		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
     		NuTo::FullMatrix<int>& rElementGroupIds);
 
+    //***********************************************************
+    //************         Mesh routines        *****************
+    //**  defined in structures/unstructured/StructureMesh.cpp **
+    //***********************************************************
+    //! @brief creates a lattice mesh from the positions of the circles and the bounding box
+    //! @parameters rBoundingBox (min and max for x and y)
+    //! @parameters rCircles (coordinates x,y and radius)
+    void MeshCreateLattice2D(FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rCircles, NuTo::FullMatrix<double>& rTriangles);
+
+    //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
+    //! @parameters rBoundingBox (min and max for x and y)
+    //! @parameters rSpheres (coordinates x,y,z and radius)
+    void MeshCreateLattice3D(FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rSpheres, NuTo::FullMatrix<double>& rTetraeders);
+
     //*************************************************************
     //************         Crack routines        ******************
     //**  defined in structures/unstructured/StructureCrack.cpp **

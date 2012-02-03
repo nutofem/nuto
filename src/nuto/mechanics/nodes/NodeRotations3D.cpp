@@ -36,12 +36,20 @@ NuTo::NodeRotations3D::NodeRotations3D(const double rRotations[1])  : NodeBase (
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
+    template void NuTo::NodeRotations3D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations3D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations3D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations3D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations3D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+    template void NuTo::NodeRotations3D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
     template<class Archive>
     void NuTo::NodeRotations3D::serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
            & BOOST_SERIALIZATION_NVP(mRotations);
      }
+    BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeRotations3D)
+    BOOST_CLASS_TRACKING(NuTo::NodeRotations3D, track_always)
 #endif // ENABLE_SERIALIZATION
 
 
@@ -66,6 +74,24 @@ void NuTo::NodeRotations3D::GetRotations3D(double rRotations[3])const
 	rRotations[0] = mRotations[0];
 	rRotations[1] = mRotations[1];
 	rRotations[2] = mRotations[2];
+}
+
+//! @brief returns the Rotations of the node
+//! @return Rotation
+double NuTo::NodeRotations3D::GetRotation(short rComponent)const
+{
+	if (rComponent<0 || rComponent>2)
+		throw MechanicsException("[NuTo::NodeRotations3D::GetRotation] Node has only 3 rotation components.");
+	return mRotations[rComponent];
+}
+
+//! @brief returns the dof of the rotation of the node
+//! @return Rotation
+int NuTo::NodeRotations3D::GetDofRotation(int rComponent)const
+{
+	if (rComponent<0 || rComponent>2)
+		throw MechanicsException("[NuTo::NodeRotations3D::GetDofRotation] Node has only 3 rotation components.");
+	return mDOF[rComponent];
 }
 
 //! @brief sets the global dofs

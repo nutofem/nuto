@@ -96,6 +96,74 @@ void NuTo::ElementDataBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* r
 	throw MechanicsException("[NuTo::ElementDataBase::SetStaticData] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
+//! @brief returns the local coordinate of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @return rLocalCoordinates
+void NuTo::ElementDataBase::GetLocalIntegrationPointCoordinates2D(int rIpNum, boost::array<double,2 >& rLocalCoordinates)const
+{
+	throw MechanicsException("[NuTo::ElementDataBase::GetLocalIntegrationPointCoordinates2D] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
+//! @brief returns the local coordinate of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @param rLocalCoordinates
+void NuTo::ElementDataBase::SetLocalIntegrationPointCoordinates2D(int rIpNum, const boost::array<double,2 >& rLocalCoordinates)
+{
+	throw MechanicsException("[NuTo::ElementDataBase::SetLocalIntegrationPointCoordinates2D] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
+//! @brief returns the local coordinate of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @return rLocalCoordinates
+void NuTo::ElementDataBase::GetLocalIntegrationPointCoordinates3D(int rIpNum, boost::array<double,3 >& rLocalCoordinates)const
+{
+	throw MechanicsException("[NuTo::ElementDataBase::GetLocalIntegrationPointCoordinates3D] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
+//! @brief sets the local coordinate of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @return rLocalCoordinates
+void NuTo::ElementDataBase::SetLocalIntegrationPointCoordinates3D(int rIpNum, const boost::array<double,3 >& rLocalCoordinates)
+{
+	throw MechanicsException("[NuTo::ElementDataBase::SetLocalIntegrationPointCoordinates3D] Not implemented for the ElementDataClass - check the allocated element data type..");
+}
+
+//! @brief gets the weight of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @return weight
+double NuTo::ElementDataBase::GetIntegrationPointWeight(int rIpNum)const
+{
+	throw MechanicsException("[NuTo::ElementDataBase::GetIntegrationPointWeight] Not implemented for the ElementDataClass - check the allocated element data type.");
+
+}
+
+//! @brief returns the number of integration points
+//! @return number of integration points
+int NuTo::ElementDataBase::GetNumIntegrationPoints()const
+{
+    return 0;
+}
+
+//! @brief sets the local coordinate of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @param weight
+void NuTo::ElementDataBase::SetIntegrationPointWeight(int rIpNum, double rWeight)
+{
+	throw MechanicsException("[NuTo::ElementDataBase::GetIntegrationPointWeight] Not implemented for the ElementDataClass - check the allocated element data type.");
+}
+
 //! @brief returns the constitutive law of an integration point
 //! @param rIp integration point
 //! @return constitutive law
@@ -117,6 +185,12 @@ const NuTo::ConstitutiveBase* NuTo::ElementDataBase::GetConstitutiveLaw(int rIp)
 void NuTo::ElementDataBase::SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
 	throw MechanicsException("[NuTo::ElementDataBase::SetIntegrationType] Not implemented for the ElementDataClass - check the allocated element data type.");
+}
+
+//! @brief returns true, if the constitutive law has been assigned
+bool NuTo::ElementDataBase::HasConstitutiveLawAssigned(int rIp)const
+{
+	return false;
 }
 
 //! @brief returns a pointer to the integration type of an element
