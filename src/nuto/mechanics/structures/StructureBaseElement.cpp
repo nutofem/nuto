@@ -394,6 +394,9 @@ bool NuTo::StructureBase::CheckStiffness()
     NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
     NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
 
+    bool oldShowtime = mShowTime;
+    mShowTime = false;
+
     //recalculate stiffness
     this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
     //mLogger << "active dof values " << "\n";
@@ -408,7 +411,7 @@ bool NuTo::StructureBase::CheckStiffness()
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
     //std::cout<<"stiffness matrix" << "\n";
     //stiffnessMatrixCSRVector2Full.Info(10,3);
-    double interval(-1e-9);
+    double interval(-1e-10);
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
@@ -438,6 +441,8 @@ bool NuTo::StructureBase::CheckStiffness()
     }
     this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
+
+    mShowTime=oldShowtime;
 
     if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
     {
@@ -473,7 +478,7 @@ bool NuTo::StructureBase::CheckStiffness()
         mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
 
         //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
-        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
+        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e1)
         {
         	NodeInfo(10);
             mLogger << "stiffness ist wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
@@ -1921,7 +1926,7 @@ double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger <<"[NuTo::StructureBase::ElementTotalGetTotalEnergy] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
     return totalEnergy;
 }

@@ -317,6 +317,14 @@ double NuTo::ElementBase::GetIntegrationPointWeight(int rIpNum)const
     return this->mElementData->GetIntegrationPointWeight(rIpNum);
 }
 
+//! @brief calculate the length of an edge (belonging to an integration point for lattice elements)
+//! @param rIp integration point
+//! @return edge length
+double NuTo::ElementBase::GetIpEdgeLength(int rIp)const
+{
+	throw MechanicsException("[NuTo::ElementBase::GetIpEdgeLength] not implement for this type of element. (implemented for lattice elements).");
+}
+
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data pointer

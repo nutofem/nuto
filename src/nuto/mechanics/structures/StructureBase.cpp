@@ -1011,6 +1011,72 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
 #endif
     return Error::SUCCESSFUL;
 }
+
+
+// build global coefficient matrix2 (mass)
+// general is used here, since it is added to a general matrix or (in case of constraints) might change to a C matrix M11+CM12 which is no longer symmetric)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2General<double>& rMatrix)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    //check for dof numbering and build of tmp static data
+    BuildGlobalCoefficientMatrixCheck();
+
+    // get dof values stored at the nodes
+    FullMatrix<double> activeDofValues;
+    FullMatrix<double> dependentDofValues;
+    try
+    {
+        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+    }
+    catch (MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] error extracting dof values from node.");
+        throw e;
+    }
+
+    // resize output objects
+    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
+    {
+        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
+    }
+    else
+    {
+        rMatrix.SetZeroEntries();
+    }
+
+    if (this->mConstraintMatrix.GetNumEntries() == 0)
+    {
+        // build submatrices
+        Error::eError error = this->BuildGlobalCoefficientSubMatrices2General(rMatrix);
+        if (error!=Error::SUCCESSFUL)
+            return error;
+    }
+    else
+    {
+    	//the static condensation with the constraint matrix only works for the static case where the rhs for the prescribed diplacements is given
+    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] mass matrix only implemented without constraints.");
+    }
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return Error::SUCCESSFUL;
+}
+
+
 // build global external load vector
 void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector)
 {
@@ -1656,7 +1722,26 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         }
                         else
                         {
-                            // calculate residual
+/*if (mNumActiveDofs<1000)
+{
+    this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+	NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+	if (mNumActiveDofs<30)
+	{
+		mLogger << "stiffness full" << "\n";
+		mLogger.Out(stiffnessMatrixFull,12,3);
+	}
+	NuTo::FullMatrix<double> eigenValues;
+	stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
+	mLogger << "eigenvalues" << "\n";
+	mLogger.Out(eigenValues.Trans(),12,3);
+	NuTo::FullMatrix<double> eigenVectors;
+	stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
+	mLogger << "eigenvector 1" << "\n";
+	mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
+}
+*/
+                        	// calculate residual
                             Error::eError error = this->BuildGlobalGradientInternalPotentialVector(intForceVector);
                             if (error!=Error::SUCCESSFUL)
                             {
@@ -1866,10 +1951,10 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                 if (mAutomaticLoadstepControl==false)
                     return Error::NO_CONVERGENCE;
 
-                //mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
-                //mLogger << "check stiffness " << "\n";
-                //CheckStiffness();
-                //mLogger << "and continue with smaller load step " << "\n";
+                mLogger << "no convergence with current step size (" << deltaLoadFactor << "), current not converging load factor " << curLoadFactor << "\n";
+                mLogger << "check stiffness " << "\n";
+                CheckStiffness();
+                mLogger << "and continue with smaller load step " << "\n";
 
                 //calculate stiffness of previous loadstep (used as initial stiffness in the next load step)
                 //this is done within the loop in order to ensure, that for the first step the stiffness matrix of the previous step is used
@@ -2225,16 +2310,19 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 
 
 //! @brief is only true for structure used as multiscale (structure in a structure)
+//! @parameters rTypeOfSpecimen 0 box, 1 dogbone
 //! @parameters rBoundingBox box for the spheres (3*2 matrix)
 //! @parameters rSeed seed for the random number generator
 //! @parameters rRadiusBoundaryParticles radius particles simulated on the boundary
 //! @parameters rDistanceBoundaryParticles distance of the boundary particles
+//! @parameters rTypeOfSpecimen 0 box, 1 dogbone
 //! @return ... matrix with spheres (coordinates x y z and radius)
-NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMatrix<double>& rBoundingBox, int rSeed,
+NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnSpecimenBoundary(int rTypeOfSpecimen,
+		FullMatrix<double>& rBoundingBox, int rSeed,
 		double rRadiusBoundaryParticles, double rDistanceBoundaryParticles)
 {
     if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
-    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnBoxBoundary] bounding box has to have the dimension [3,2]");
+    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] bounding box has to have the dimension [3,2]");
 
 	// calculate specimen length
     std::array<double,3> lBox;
@@ -2242,7 +2330,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
     {
     	lBox[count] = rBoundingBox(count,1) - rBoundingBox(count,0);
     	if (lBox[count]<=0)
-    		throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnBoxBoundary] box dimensions should be not negative.");
+    		throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] box dimensions should be not negative.");
     }
 
 	FullMatrix<double> particles;
@@ -2257,106 +2345,264 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 
 	for (int count=0; count<3; count++)
 		if (rBoundingBox(0,1)-rBoundingBox(0,0)<10.*rRadiusBoundaryParticles)
-			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnBoxBoundary] minimum diameter and box dimension do not match.");
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] minimum diameter and box dimension do not match.");
 
 	std::vector<boost::array<double,3> > nodes; //node coordinates
-    std::vector<boost::array<int   ,2> > edges; //edges that connect the nodes
-    std::vector<boost::array<int   ,2> > faces; //faces with coordinates being constant (0,1,2 for x,y,z, and 0 or 1 for the lower or upper face
+	std::vector<boost::array<double,3> > helpCenters; //coordinates of circumcenter of circular edges
+    std::vector<boost::array<int   ,3> > edges; //edges that connect the nodes (third entry is the center of the circumcenter in the xy plane (helpCenters), otherwise -1
+    std::vector<boost::array<int   ,4> > faces; //faces with 2 edges (only regular quads with opposite sides being parallel
+                                                //implemented, one edge can be a circle
+                                                //third and forth value give the common point of both edges (either 0 or zero)
 
-	switch (mDimension)
+	switch (rTypeOfSpecimen)
 	{
-	case 3:
+	case 0:
+	{
+		//box
+	    switch (mDimension)
+		{
+		case 3:
+			//add the corners
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,1) }});
 
-		//add the corners
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,1) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,1) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,1) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,1) }});
+			//add the edge
+			edges.push_back(boost::array<int, 3> {{0,1,-1}});
+			edges.push_back(boost::array<int, 3> {{1,3,-1}});
+			edges.push_back(boost::array<int, 3> {{3,2,-1}});
+			edges.push_back(boost::array<int, 3> {{2,0,-1}});
+			edges.push_back(boost::array<int, 3> {{4,5,-1}});
+			edges.push_back(boost::array<int, 3> {{5,7,-1}});
+			edges.push_back(boost::array<int, 3> {{7,6,-1}});
+			edges.push_back(boost::array<int, 3> {{6,4,-1}});
+			edges.push_back(boost::array<int, 3> {{0,4,-1}});
+			edges.push_back(boost::array<int, 3> {{1,5,-1}});
+			edges.push_back(boost::array<int, 3> {{3,7,-1}});
+			edges.push_back(boost::array<int, 3> {{2,6,-1}});
 
-		//add the edge
-		edges.push_back(boost::array<int, 2> {{0,1}});
-		edges.push_back(boost::array<int, 2> {{1,3}});
-		edges.push_back(boost::array<int, 2> {{3,2}});
-		edges.push_back(boost::array<int, 2> {{2,0}});
-		edges.push_back(boost::array<int, 2> {{4,5}});
-		edges.push_back(boost::array<int, 2> {{5,7}});
-		edges.push_back(boost::array<int, 2> {{7,6}});
-		edges.push_back(boost::array<int, 2> {{6,4}});
-		edges.push_back(boost::array<int, 2> {{0,4}});
-		edges.push_back(boost::array<int, 2> {{1,5}});
-		edges.push_back(boost::array<int, 2> {{3,7}});
-		edges.push_back(boost::array<int, 2> {{2,6}});
+			//add the faces
+			faces.push_back(boost::array<int, 4> {{0,1,1,0}});
+			faces.push_back(boost::array<int, 4> {{0,9,1,0}});
+			faces.push_back(boost::array<int, 4> {{1,10,1,0}});
+			faces.push_back(boost::array<int, 4> {{2,11,1,0}});
+			faces.push_back(boost::array<int, 4> {{3,8,1,0}});
+			faces.push_back(boost::array<int, 4> {{4,5,1,0}});
+			break;
+		case 2:
+		{
+			double rCuttingPlane(0.5*(rBoundingBox(2,0)+rBoundingBox(2,1)));
 
-		//add the faces
-		faces.push_back(boost::array<int, 2> {{0,0}});
-		faces.push_back(boost::array<int, 2> {{0,1}});
-		faces.push_back(boost::array<int, 2> {{1,0}});
-		faces.push_back(boost::array<int, 2> {{1,1}});
-		faces.push_back(boost::array<int, 2> {{2,0}});
-		faces.push_back(boost::array<int, 2> {{2,1}});
+			//add the corners
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rCuttingPlane }});
+
+			//add the edge
+			edges.push_back(boost::array<int, 3> {{0,1,-1}});
+			edges.push_back(boost::array<int, 3> {{1,3,-1}});
+			edges.push_back(boost::array<int, 3> {{3,2,-1}});
+			edges.push_back(boost::array<int, 3> {{2,0,-1}});
+
+		}
 		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] only implemented for 2D and 3D.");
+		}
+	}
+	break;
+	case 1:
+	{
+		double D = rBoundingBox(0,1) - rBoundingBox(1,0);
+		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-1.5*D)>1e-10)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
+		//dogbone specimen
+		switch (mDimension)
+		{
+		case 3:
+			//add the corners
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1)-0.25*D,rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0)+0.25*D,rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0)+0.25*D,rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1)-0.25*D,rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,0) }});
+
+
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1)-0.25*D,rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0)+0.25*D,rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0)+0.25*D,rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1)-0.25*D,rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,1) }});
+
+			//add the help centers of the triangles
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,0)-0.525*D,0.5*(rBoundingBox(1,0)+rBoundingBox(1,1)),rBoundingBox(2,0) }});
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,1)+0.525*D,0.5*(rBoundingBox(1,0)+rBoundingBox(1,1)),rBoundingBox(2,0) }});
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,0)-0.525*D,0.5*(rBoundingBox(1,0)+rBoundingBox(1,1)),rBoundingBox(2,1) }});
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,1)+0.525*D,0.5*(rBoundingBox(1,0)+rBoundingBox(1,1)),rBoundingBox(2,1) }});
+
+			//add the edge
+			edges.push_back(boost::array<int, 3> {{0,1,-1}});
+			edges.push_back(boost::array<int, 3> {{2,1,0}});
+			edges.push_back(boost::array<int, 3> {{2,3,-1}});
+			edges.push_back(boost::array<int, 3> {{3,4,-1}});
+			edges.push_back(boost::array<int, 3> {{4,5,-1}});
+			edges.push_back(boost::array<int, 3> {{6,5,1}});
+			edges.push_back(boost::array<int, 3> {{6,7,-1}});
+			edges.push_back(boost::array<int, 3> {{7,0,-1}});
+
+			edges.push_back(boost::array<int, 3> {{8,9,-1}});
+			edges.push_back(boost::array<int, 3> {{10,9,2}});
+			edges.push_back(boost::array<int, 3> {{10,11,-1}});
+			edges.push_back(boost::array<int, 3> {{11,12,-1}});
+			edges.push_back(boost::array<int, 3> {{12,13,-1}});
+			edges.push_back(boost::array<int, 3> {{14,13,3}});
+			edges.push_back(boost::array<int, 3> {{14,15,-1}});
+			edges.push_back(boost::array<int, 3> {{15,8,-1}});
+
+			edges.push_back(boost::array<int, 3> {{0,8,-1}});
+			edges.push_back(boost::array<int, 3> {{1,9,-1}});
+			edges.push_back(boost::array<int, 3> {{2,10,-1}});
+			edges.push_back(boost::array<int, 3> {{3,11,-1}});
+			edges.push_back(boost::array<int, 3> {{4,12,-1}});
+			edges.push_back(boost::array<int, 3> {{5,13,-1}});
+			edges.push_back(boost::array<int, 3> {{6,14,-1}});
+			edges.push_back(boost::array<int, 3> {{7,15,-1}});
+
+			//add the faces (only the vertical ones, the horizontal ones are tricky and done separately
+			faces.push_back(boost::array<int, 4> {{0,16,0,0}});
+			faces.push_back(boost::array<int, 4> {{1,17,1,0}});
+			faces.push_back(boost::array<int, 4> {{2,18,0,0}});
+			faces.push_back(boost::array<int, 4> {{3,19,0,0}});
+			faces.push_back(boost::array<int, 4> {{4,20,0,0}});
+			faces.push_back(boost::array<int, 4> {{5,21,1,0}});
+			faces.push_back(boost::array<int, 4> {{6,22,0,0}});
+			faces.push_back(boost::array<int, 4> {{7,23,0,0}});
+
+			break;
+		case 2:
+		{
+			double rCuttingPlane(0.5*(rBoundingBox(2,0)+rBoundingBox(2,1)));
+
+			//add the corners
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),      rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1)-0.25*D,rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0)+0.25*D,rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),      rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),      rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0)+0.25*D,rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1)-0.25*D,rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),      rCuttingPlane }});
+
+			//add the help centers of the triangles
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,0)-0.525*D,0.5*(rBoundingBox(1,0)+rBoundingBox(1,1)),rCuttingPlane }});
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,1)+0.525*D,0.5*(rBoundingBox(1,0)+rBoundingBox(1,1)),rCuttingPlane }});
+
+			//add the edge
+			edges.push_back(boost::array<int, 3> {{0,1,-1}});
+			edges.push_back(boost::array<int, 3> {{2,1,0}});
+			edges.push_back(boost::array<int, 3> {{2,3,-1}});
+			edges.push_back(boost::array<int, 3> {{3,4,-1}});
+			edges.push_back(boost::array<int, 3> {{4,5,-1}});
+			edges.push_back(boost::array<int, 3> {{6,5,1}});
+			edges.push_back(boost::array<int, 3> {{6,7,-1}});
+			edges.push_back(boost::array<int, 3> {{7,0,-1}});
+		}
+		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] only implemented for 2D and 3D.");
+		}
+	}
+	break;
 	case 2:
 	{
+		//brazilian splitting (cylinder)
+		double D = rBoundingBox(0,1) - rBoundingBox(1,0);
+		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-D)>1e-10)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] for the cylinder specimen, the y dimension should be the same as the x-dimension.");
+		//dogbone specimen
+		switch (mDimension)
+		{
+		case 3:
+			//add the corners
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,0),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0)+0.5*D,rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,1),rBoundingBox(2,0) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0)+0.5*D,rBoundingBox(2,0) }});
 
-		double rCuttingPlane(0.5*(rBoundingBox(2,0)+rBoundingBox(2,1)));
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,0),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0)+0.5*D,rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,1),rBoundingBox(2,1) }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0)+0.5*D,rBoundingBox(2,1) }});
 
-		//add the corners
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,0) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rCuttingPlane }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rCuttingPlane }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rCuttingPlane }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rCuttingPlane }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0),rBoundingBox(2,1) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0),rBoundingBox(2,1) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,1),rBoundingBox(2,1) }});
-		nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,1),rBoundingBox(2,1) }});
+			//add the help centers of the triangles
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,0)+0.5*D,rBoundingBox(2,0) }});
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,0)+0.5*D,rBoundingBox(2,1) }});
 
-		//add the edge
-		edges.push_back(boost::array<int, 2> {{0,1}});
-		edges.push_back(boost::array<int, 2> {{1,3}});
-		edges.push_back(boost::array<int, 2> {{3,2}});
-		edges.push_back(boost::array<int, 2> {{2,0}});
-		edges.push_back(boost::array<int, 2> {{4,5}});
-		edges.push_back(boost::array<int, 2> {{5,7}});
-		edges.push_back(boost::array<int, 2> {{7,6}});
-		edges.push_back(boost::array<int, 2> {{6,4}});
-		edges.push_back(boost::array<int, 2> {{8,9}});
-		edges.push_back(boost::array<int, 2> {{9,11}});
-		edges.push_back(boost::array<int, 2> {{11,10}});
-		edges.push_back(boost::array<int, 2> {{10,8}});
+			//add the edge
+			edges.push_back(boost::array<int, 3> {{0,1,0}});
+			edges.push_back(boost::array<int, 3> {{1,2,0}});
+			edges.push_back(boost::array<int, 3> {{2,3,0}});
+			edges.push_back(boost::array<int, 3> {{3,0,0}});
 
+			edges.push_back(boost::array<int, 3> {{4,5,1}});
+			edges.push_back(boost::array<int, 3> {{5,6,1}});
+			edges.push_back(boost::array<int, 3> {{6,7,1}});
+			edges.push_back(boost::array<int, 3> {{7,4,1}});
 
-		edges.push_back(boost::array<int, 2> {{0,4}});
-		edges.push_back(boost::array<int, 2> {{4,8}});
-		edges.push_back(boost::array<int, 2> {{1,5}});
-		edges.push_back(boost::array<int, 2> {{5,9}});
-		edges.push_back(boost::array<int, 2> {{3,7}});
-		edges.push_back(boost::array<int, 2> {{7,11}});
-		edges.push_back(boost::array<int, 2> {{2,6}});
-		edges.push_back(boost::array<int, 2> {{6,10}});
+			edges.push_back(boost::array<int, 3> {{0,4,-1}});
+			edges.push_back(boost::array<int, 3> {{1,5,-1}});
+			edges.push_back(boost::array<int, 3> {{2,6,-1}});
+			edges.push_back(boost::array<int, 3> {{3,7,-1}});
 
-		//add the faces
-		faces.push_back(boost::array<int, 2> {{0,0}});
-		faces.push_back(boost::array<int, 2> {{0,1}});
-		faces.push_back(boost::array<int, 2> {{1,0}});
-		faces.push_back(boost::array<int, 2> {{1,1}});
-		faces.push_back(boost::array<int, 2> {{2,0}});
-		faces.push_back(boost::array<int, 2> {{2,1}});
+			//add the faces (only the vertical ones, the horizontal ones are tricky and done separately
+			faces.push_back(boost::array<int, 4> {{0,8,0,0}});
+			faces.push_back(boost::array<int, 4> {{1,9,0,0}});
+			faces.push_back(boost::array<int, 4> {{2,10,0,0}});
+			faces.push_back(boost::array<int, 4> {{3,11,0,0}});
+
+			break;
+		case 2:
+		{
+			double rCuttingPlane(0.5*(rBoundingBox(2,0)+rBoundingBox(2,1)));
+
+			//add the corners
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,0),rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,1),rBoundingBox(1,0)+0.5*D,rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,1),rCuttingPlane }});
+			nodes.push_back(boost::array<double, 3> {{rBoundingBox(0,0),rBoundingBox(1,0)+0.5*D,rCuttingPlane }});
+
+			//add the help centers of the triangles
+			helpCenters.push_back(boost::array<double, 3> {{rBoundingBox(0,0)+0.5*D,rBoundingBox(1,0)+0.5*D,rCuttingPlane }});
+
+			//add the edge
+			edges.push_back(boost::array<int, 3> {{0,1,0}});
+			edges.push_back(boost::array<int, 3> {{1,2,0}});
+			edges.push_back(boost::array<int, 3> {{2,3,0}});
+			edges.push_back(boost::array<int, 3> {{3,0,0}});
+		}
 		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] only implemented for 2D and 3D.");
+		}
 	}
 	break;
 	default:
-		throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] only implemented for 2D and 3D.");
-
+	throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] unknown specimen type.");
 	}
-	// first add the nodes
+
+	// first add the corners
 	for (unsigned int count=0; count<nodes.size(); count++)
 	{
 		// check size of table
@@ -2374,14 +2620,48 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 	// add particles along the edges
 	for (unsigned int theEdge=0; theEdge<edges.size(); theEdge++)
 	{
+		std::cout << "edge " << theEdge+1 << "/" << edges.size() << "\n";
 		boost::array<double,3>& node1(nodes[edges[theEdge][0]]);
 		boost::array<double,3>& node2(nodes[edges[theEdge][1]]);
 
-		boost::array<double,3> delta;
-		for (int count=0; count<3; count++)
-		    delta[count] = node2[count]-node1[count];
+		double lEdge;
+		double deltaAngle(0),angle1(0),radius(0);
+		if (edges[theEdge][2]!=-1)
+		{
+			//cirle
+			boost::array<double,3>& node3(helpCenters[edges[theEdge][2]]);
+			boost::array<double,3> delta1;
+			boost::array<double,3> delta2;
+			for (int count=0; count<3; count++)
+			{
+			    delta1[count] = node1[count]-node3[count];
+			    delta2[count] = node2[count]-node3[count];
+			}
+			double r1 = sqrt(delta1[0]*delta1[0]+delta1[1]*delta1[1]);
+			double r2 = sqrt(delta2[0]*delta2[0]+delta2[1]*delta2[1]);
+			if (fabs(delta1[2])>1e-10 || fabs(delta2[2])>1e-10)
+				throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] circular edges only in the xy plane.");
+			if (fabs(r1-r2)>1e-10)
+				throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] circumcenter of the circular edge is not correct.");
+			radius = r1;
+			angle1 = atan2(delta1[1],delta1[0]);
+			double angle2 = atan2(delta2[1],delta2[0]);
+			deltaAngle = angle2-angle1;
+			while (deltaAngle>2.*M_PI)
+				deltaAngle-=2.*M_PI;
+			while (deltaAngle<0)
+				deltaAngle+=2.*M_PI;
+			lEdge = r1*deltaAngle;
+		}
+		else
+		{
+			//straight line
+			boost::array<double,3> delta;
+			for (int count=0; count<3; count++)
+			    delta[count] = node2[count]-node1[count];
 
-		double lEdge = sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
+			lEdge = sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
+		}
 
 		int numParticlesPerEdge = lEdge/rDistanceBoundaryParticles;
 
@@ -2396,9 +2676,27 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 			}
 
 			double s = dsfmt_genrand_close_open(&randomNumberGenerator);
-			for (int count=0; count<3; count++)
+			if (edges[theEdge][2]==-1)
 			{
-				particles(numParticles,count) = node1[count]+s*delta[count];
+				//straight line
+				boost::array<double,3> delta;
+				for (int count=0; count<3; count++)
+				    delta[count] = node2[count]-node1[count];
+				//straight edge
+				for (int count=0; count<3; count++)
+				{
+					particles(numParticles,count) = node1[count]+s*delta[count];
+				}
+			}
+			else
+			{
+				//circle
+				boost::array<double,3>& node3(helpCenters[edges[theEdge][2]]);
+				double angle=angle1+s*deltaAngle;
+
+				particles(numParticles,0) = node3[0]+radius*cos(angle);
+				particles(numParticles,1) = node3[1]+radius*sin(angle);
+				particles(numParticles,2) = node1[2];
 			}
 
 			particles(numParticles,3) = rRadiusBoundaryParticles;
@@ -2428,7 +2726,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 			{
 				numTries++;
 				if (numTries>10000)
-					throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] could not add particles on a boundary edge.");
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] could not add particles on a boundary edge.");
 			}
 		}
 	}
@@ -2436,25 +2734,84 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 	// add particles along the faces
 	for (unsigned int theFace=0; theFace<faces.size(); theFace++)
 	{
-		boost::array<double,2> delta;
-	    delta[0] = rBoundingBox((faces[theFace][0]+1)%3,1)-rBoundingBox((faces[theFace][0]+1)%3,0);
-	    delta[1] = rBoundingBox((faces[theFace][0]+2)%3,1)-rBoundingBox((faces[theFace][0]+2)%3,0);
+		std::cout << "face " << theFace+1 << "/" << faces.size() << "\n";
 
-		double lArea = delta[0]*delta[1];
+		int theEdge[2];
+		theEdge[0] = faces[theFace][0];
+		theEdge[1] = faces[theFace][1];
+		int endPoint[2];
+		endPoint[0] = faces[theFace][2]; //first or second node of edge is the common one
+		endPoint[1] = faces[theFace][3];
+
+		if (edges[theEdge[0]][2]!=-1 && edges[theEdge[1]][2]!=-1)
+		{
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] only one edge might be curved.");
+		}
+
+		if (edges[theEdge[0]][endPoint[0]]!=edges[theEdge[1]][endPoint[1]])
+		{
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] the edges of the faces do not have a common end point.");
+		}
+
+
+		//define the nodes per face here (0,1 and 0,2 define the edge and 3 is at most one help node (there is only one)
+		boost::array<double,3>& node1(nodes[edges[theEdge[0]][endPoint[0]]]);
+
+		double lEdge[2];
+		double radius(0), angle1(0), deltaAngle(0);
+		boost::array<boost::array<double,3> ,2> delta;
+		for (int countEdge=0; countEdge<2; countEdge++)
+		{
+			boost::array<double,3>& node2(nodes[edges[theEdge[countEdge]][endPoint[countEdge]==1 ? 0 : 1]]);
+			if (edges[theEdge[countEdge]][2]!=-1)
+			{
+				boost::array<double,3>& node3(helpCenters[edges[theEdge[countEdge]][2]]);
+
+				//circle
+				boost::array<double,3> delta1;
+				boost::array<double,3> delta2;
+				for (int count=0; count<3; count++)
+				{
+				    delta1[count] = node1[count]-node3[count];
+				    delta2[count] = node2[count]-node3[count];
+				}
+				double r1 = sqrt(delta1[0]*delta1[0]+delta1[1]*delta1[1]);
+				double r2 = sqrt(delta2[0]*delta2[0]+delta2[1]*delta2[1]);
+				if (fabs(delta1[2])>1e-10 || fabs(delta2[2])>1e-10)
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] circular edges only in the xy plane.");
+				if (fabs(r1-r2)>1e-10)
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] circumcenter of the circular edge is not correct.");
+				radius = r1;
+				angle1 = atan2(delta1[1],delta1[0]);
+				double angle2 = atan2(delta2[1],delta2[0]);
+				deltaAngle = angle2-angle1;
+				if (endPoint[countEdge]==1)
+				{
+					angle1 = angle2;
+					deltaAngle*=-1;
+				}
+				while (deltaAngle>2.*M_PI)
+					deltaAngle-=2.*M_PI;
+				while (deltaAngle<0)
+					deltaAngle+=2.*M_PI;
+				lEdge[countEdge] = r1*deltaAngle;
+			}
+			else
+			{
+				//straight line
+				for (int count=0; count<3; count++)
+				    delta[countEdge][count] = node2[count]-node1[count];
+
+				lEdge[countEdge] = sqrt(delta[countEdge][0]*delta[countEdge][0]+delta[countEdge][1]*delta[countEdge][1]+delta[countEdge][2]*delta[countEdge][2]);
+			}
+		}
+
+		double lArea = lEdge[0]*lEdge[1];
 
 		int numParticlesPerFace = lArea/(rDistanceBoundaryParticles*rDistanceBoundaryParticles);
 
 		//the edges have already been inserted
-		int thisParticlesPerFace(2*((int)(delta[0]/rDistanceBoundaryParticles)+(int)(delta[1]/rDistanceBoundaryParticles)-2));
-		if (mDimension==2 && faces[theFace][0]==0)
-		{
-			thisParticlesPerFace+=int((rBoundingBox(1,1)-rBoundingBox(1,0)/rDistanceBoundaryParticles))-2;
-		}
-		if (mDimension==2 && faces[theFace][0]==1)
-		{
-			thisParticlesPerFace+=int((rBoundingBox(0,1)-rBoundingBox(0,0)/rDistanceBoundaryParticles))-2;
-		}
-
+		int thisParticlesPerFace(2*((int)(lEdge[0]/rDistanceBoundaryParticles)+(int)(lEdge[1]/rDistanceBoundaryParticles)-2));
 
 		int numTries(0);
 		while(thisParticlesPerFace<numParticlesPerFace)
@@ -2465,12 +2822,32 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 				particles.ConservativeResizeRows(particles.GetNumRows()+1000);
 			}
 
-			double s = dsfmt_genrand_close_open(&randomNumberGenerator);
-			double t = dsfmt_genrand_close_open(&randomNumberGenerator);
+			particles(numParticles,0) = node1[0];
+			particles(numParticles,1) = node1[1];
+			particles(numParticles,2) = node1[2];
+			for (int countEdge=0; countEdge<2; countEdge++)
+			{
+				double s = dsfmt_genrand_close_open(&randomNumberGenerator);
+				if (edges[theEdge[countEdge]][2]!=-1)
+				{
+					//circle
+					boost::array<double,3>& node3(helpCenters[edges[theEdge[countEdge]][2]]);
+					double angle=angle1+s*deltaAngle;
 
-			particles(numParticles,(faces[theFace][0]+1)%3) = rBoundingBox((faces[theFace][0]+1)%3,0) + s*delta[0];
-			particles(numParticles,(faces[theFace][0]+2)%3) = rBoundingBox((faces[theFace][0]+2)%3,0) + t*delta[1];
-			particles(numParticles,faces[theFace][0]) = rBoundingBox(faces[theFace][0],faces[theFace][1]);
+					//std::cout << "particle location " << node3[0] << " " << radius <<  " " << angle <<  " " << node1[0] << "\n";
+					particles(numParticles,0) += node3[0]+radius*cos(angle)-node1[0];
+					particles(numParticles,1) += node3[1]+radius*sin(angle)-node1[1];
+					//std::cout << "particle location " << particles(numParticles,0) << " " << particles(numParticles,1) <<  " " << particles(numParticles,2) << "\n";
+				}
+				else
+				{
+					//straight line
+					for (int count=0; count<3; count++)
+					{
+						particles(numParticles,count) += s*delta[countEdge][count];
+					}
+				}
+			}
 
 			particles(numParticles,3) = rRadiusBoundaryParticles;
 			//check for overlap
@@ -2499,10 +2876,180 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 			{
 				numTries++;
 				if (numTries>10000)
-					throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] could not add particles on a boundary face.");
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] could not add particles on a boundary face.");
 			}
 		}
 	}
+
+	// add particles along special faces not included in the general set up
+	switch(rTypeOfSpecimen)
+	{
+	case 0:
+		//box - nothing to be done
+		break;
+	case 1:
+		//dogbone - add the top and bottom surface
+		for (unsigned int theFace=0; theFace<2; theFace++)
+		{
+			double D = rBoundingBox(0,1) - rBoundingBox(0,0);
+			double lArea = 1.5*D*D;
+			if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-1.5*D)>1e-10)
+				throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
+			//subtract the circles
+			double radius = 0.725*D; ;
+			double deltaAngle = 2.*0.2/0.525;
+			lArea -= 2.*(deltaAngle/(2.*M_PI)*M_PI*radius*radius);
+
+			int numParticlesPerFace = lArea/(rDistanceBoundaryParticles*rDistanceBoundaryParticles);
+
+			//the edges have already been inserted
+			int thisParticlesPerFace(2*((int)(D/rDistanceBoundaryParticles)+
+					                    (int)(0.2*D/rDistanceBoundaryParticles)+
+					                    (int)(0.2*D/rDistanceBoundaryParticles)+
+					                    (int)(deltaAngle*radius/rDistanceBoundaryParticles))-8);
+
+			int numTries(0);
+			while(thisParticlesPerFace<numParticlesPerFace)
+			{
+				// check size of table
+				if(numParticles == particles.GetNumRows())
+				{
+					particles.ConservativeResizeRows(particles.GetNumRows()+1000);
+				}
+
+				//create random coordinate
+				particles(numParticles,0) = rRadiusBoundaryParticles+(D-2.*rRadiusBoundaryParticles)*dsfmt_genrand_close_open(&randomNumberGenerator);
+				particles(numParticles,1) = rRadiusBoundaryParticles+(1.5*D-2.*rRadiusBoundaryParticles)*dsfmt_genrand_close_open(&randomNumberGenerator);
+				particles(numParticles,2) = rBoundingBox(2,theFace);
+				particles(numParticles,3) = rRadiusBoundaryParticles;
+
+				bool noSeparation(true);
+				//check for overlapping with the boundary
+		    	//right circle
+				double deltaX = particles(numParticles,0)-(rBoundingBox(0,1)+0.525*D);
+				double deltaY = particles(numParticles,1)-(rBoundingBox(1,0)+0.75*D);
+				double sumR = particles(numParticles,3)+0.725*D;
+				if (deltaX*deltaX+deltaY*deltaY<sumR*sumR)
+					noSeparation=false;
+				//left circle
+				deltaX = particles(numParticles,0)-(rBoundingBox(0,0)-0.525*D);
+				deltaY = particles(numParticles,1)-(rBoundingBox(1,0)+0.75*D);
+				if (deltaX*deltaX+deltaY*deltaY<sumR*sumR)
+					noSeparation=false;;
+
+				//check for overlap
+				if (noSeparation==true)
+				{
+					for (int countParticle=0; countParticle<numParticles; countParticle++)
+					{
+						double deltaX = particles(countParticle,0)-particles(numParticles,0);
+						double deltaY = particles(countParticle,1)-particles(numParticles,1);
+						double deltaZ = particles(countParticle,2)-particles(numParticles,2);
+						double sumR = particles(countParticle,3)+particles(numParticles,3);
+						if (deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ<sumR*sumR)
+						{
+							noSeparation = false;
+							//std::cout << "failure at " << particles(numParticles,0 ) << " " << particles(numParticles,1 ) << "\n";
+							break;
+						}
+					}
+				}
+
+				if (noSeparation==true)
+				{
+					thisParticlesPerFace++;
+					numParticles++;
+					numTries=0;
+					//std::cout << "Particles " << "\n" << particles.mEigenMatrix.block(0,0,numParticles,4) << "\n";
+				}
+				else
+				{
+					numTries++;
+					if (numTries>10000)
+						throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] could not add particles on a boundary face.");
+				}
+			}
+		}
+		break;
+	case 2:
+		//cylinder - add the top and bottom surface
+		for (unsigned int theFace=0; theFace<2; theFace++)
+		{
+			double D = rBoundingBox(0,1) - rBoundingBox(0,0);
+			double lArea = 0.25*M_PI*D*D;
+			if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-D)>1e-10)
+				throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
+
+			int numParticlesPerFace = lArea/(rDistanceBoundaryParticles*rDistanceBoundaryParticles);
+
+			//the edges have already been inserted
+			int thisParticlesPerFace(4*((int)(0.5*M_PI*D/rDistanceBoundaryParticles))-4);
+
+			int numTries(0);
+			while(thisParticlesPerFace<numParticlesPerFace)
+			{
+				// check size of table
+				if(numParticles == particles.GetNumRows())
+				{
+					particles.ConservativeResizeRows(particles.GetNumRows()+1000);
+				}
+
+				//create random coordinate
+				particles(numParticles,0) = rRadiusBoundaryParticles+(D-2.*rRadiusBoundaryParticles)*dsfmt_genrand_close_open(&randomNumberGenerator);
+				particles(numParticles,1) = rRadiusBoundaryParticles+(D-2.*rRadiusBoundaryParticles)*dsfmt_genrand_close_open(&randomNumberGenerator);
+				particles(numParticles,2) = rBoundingBox(2,theFace);
+				particles(numParticles,3) = rRadiusBoundaryParticles;
+
+				bool noSeparation(true);
+				//check for overlapping with the boundary
+		    	//right circle
+				double deltaX = particles(numParticles,0)-(rBoundingBox(0,0)+0.5*D);
+				double deltaY = particles(numParticles,1)-(rBoundingBox(1,0)+0.5*D);
+				double sumR = 0.5*D-particles(numParticles,3);
+				if (sumR<0)
+					throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] that should not have happend.");
+				if (deltaX*deltaX+deltaY*deltaY>sumR*sumR)
+					noSeparation=false;
+
+				//check for overlap
+				if (noSeparation==true)
+				{
+					for (int countParticle=0; countParticle<numParticles; countParticle++)
+					{
+						double deltaX = particles(countParticle,0)-particles(numParticles,0);
+						double deltaY = particles(countParticle,1)-particles(numParticles,1);
+						double deltaZ = particles(countParticle,2)-particles(numParticles,2);
+						double sumR = particles(countParticle,3)+particles(numParticles,3);
+						if (deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ<sumR*sumR)
+						{
+							noSeparation = false;
+							//std::cout << "failure at " << particles(numParticles,0 ) << " " << particles(numParticles,1 ) << "\n";
+							break;
+						}
+					}
+				}
+
+				if (noSeparation==true)
+				{
+					thisParticlesPerFace++;
+					numParticles++;
+					numTries=0;
+					//std::cout << "Particles " << "\n" << particles.mEigenMatrix.block(0,0,numParticles,4) << "\n";
+				}
+				else
+				{
+					numTries++;
+					if (numTries>10000)
+						throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] could not add particles on a boundary face.");
+				}
+			}
+		}
+		break;
+	default:
+		throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] unknown specimen type.");
+	}
+
+
 
 	particles.ConservativeResizeRows(numParticles);
 	return particles;
@@ -2511,6 +3058,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 
 
 //! @brief is only true for structure used as multiscale (structure in a structure)
+//! @parameters rTypeOfSpecimen 0 box, 1 dogbone
 //! @parameters rBoundingBox box for the spheres (3*2 matrix)
 //! @parameters rRelParticleMass percentage of particle mass inside the box
 //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
@@ -2519,7 +3067,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnBoxBoundary(FullMat
 //! @parameters rSeed seed for the random number generator
 //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
 //! @return ... matrix with spheres (coordinates x y z and radius)
-NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInBox(FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
+NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
 		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double>& rSpheresBoundary)
 {
     if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
@@ -2545,7 +3093,36 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInBox(FullMatrix<doub
     numParticlesPerClass.resize(rGradingCurve.GetNumRows());
 
     // calculating volume of the specimen
-    double Vspecimen = lBox[0] * lBox[1] * lBox[2];
+    double Vspecimen;
+    switch (rTypeOfSpecimen)
+    {
+    case 0:
+    	//box
+    	Vspecimen = lBox[0] * lBox[1] * lBox[2];
+    break;
+    case 1:
+    {
+    	Vspecimen = lBox[0] * lBox[1] * lBox[2];
+		double D = rBoundingBox(0,1) - rBoundingBox(0,0);
+		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-1.5*D)>1e-10)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
+		//subtract the circles
+		double radius = 0.725*D; ;
+		double deltaAngle = 2.*0.2/0.525;
+		Vspecimen -= 2.*(deltaAngle/(2.*M_PI)*M_PI*radius*radius)* lBox[2];
+    }
+    break;
+    case 2:
+    {
+		double D = rBoundingBox(0,1) - rBoundingBox(0,0);
+    	Vspecimen =  M_PI*0.25*D*D*lBox[2];
+		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-D)>1e-10)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
+    }
+    break;
+    default:
+    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] specimen type not implemented.");
+    }
 
     if(Vspecimen < 1.0e-14)
     {
@@ -2563,7 +3140,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInBox(FullMatrix<doub
 	dsfmt_t randomNumberGenerator;
 	// init random number generator with milliseconds from ..
 	dsfmt_init_gen_rand(&randomNumberGenerator, rSeed);
-
+	double lastPrintedFraction = 0.;
 	for(int gc=0;gc<rGradingCurve.GetNumRows();gc++)
 	{
 		double dMin(rGradingCurve(gc,0));
@@ -2652,6 +3229,47 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInBox(FullMatrix<doub
 					particles(countParticle,count) = particles(countParticle,3)+(lBox[count]-2*particles(countParticle,3))*dsfmt_genrand_close_open(&randomNumberGenerator);
 					cSubBox[count] = (particles(countParticle,count)-rBoundingBox(count,0))/lSubBox[count];
 				}
+
+				//check for overlapping with the boundary
+			    switch (rTypeOfSpecimen)
+			    {
+			    case 0:
+			    	//box, do nothing
+			    break;
+			    case 1:
+			    {
+			    	//dogbone specimen right circle
+					double D = rBoundingBox(0,1) - rBoundingBox(0,0);
+					double deltaX = particles(countParticle,0)-(rBoundingBox(0,1)+0.525*D);
+					double deltaY = particles(countParticle,1)-(rBoundingBox(1,0)+0.75*D);
+					double sumR = particles(countParticle,3)+0.725*D;
+					if (deltaX*deltaX+deltaY*deltaY<sumR*sumR)
+						continue;
+					//left circle
+					deltaX = particles(countParticle,0)-(rBoundingBox(0,0)-0.525*D);
+					deltaY = particles(countParticle,1)-(rBoundingBox(1,0)+0.75*D);
+					if (deltaX*deltaX+deltaY*deltaY<sumR*sumR)
+						continue;
+			    }
+				break;
+			    case 2:
+			    {
+					//check for overlapping with the boundary
+					//circle
+			    	double D = rBoundingBox(0,1) - rBoundingBox(0,0);
+					double deltaX = particles(countParticle,0)-(rBoundingBox(0,0)+0.5*D);
+					double deltaY = particles(countParticle,1)-(rBoundingBox(1,0)+0.5*D);
+					double sumR = 0.5*D-particles(countParticle,3);
+					if (sumR<0)
+						throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] that should not have happend.");
+					if (deltaX*deltaX+deltaY*deltaY>sumR*sumR)
+						continue;
+			    }
+			    break;
+			    default:
+			    	throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] specimen type not implemented.");
+			    }
+
 				//calculate the corresponding box
 				int theBox = cSubBox[0]*nSubBox[1]*nSubBox[2]+cSubBox[1]*nSubBox[2]+cSubBox[2];
 
@@ -2676,6 +3294,11 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInBox(FullMatrix<doub
 					//insert
 					inserted = true;
 					InsertParticleIntoBox(particles,countParticle,subBox,nSubBox,lSubBox,rBoundingBox);
+					if ((double)(countParticle)/numParticles-lastPrintedFraction>0.01)
+					{
+						std::cout << (double)(countParticle)/numParticles*100. << "% of particles already inserted." << "\n";
+						lastPrintedFraction = (double)(countParticle)/numParticles;
+					}
 				}
 				else
 				{

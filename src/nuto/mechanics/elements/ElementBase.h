@@ -186,6 +186,11 @@ public:
     //! @return weight
     double GetIntegrationPointWeight(int rIpNum)const;
 
+    //! @brief calculate the length of an edge (belonging to an integration point for lattice elements)
+    //! @param rIp integration point
+    //! @return edge length
+    virtual double GetIpEdgeLength(int rIp)const;
+
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
     //! @param rResult ... coefficient matrix

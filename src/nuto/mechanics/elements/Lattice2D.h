@@ -204,6 +204,11 @@ protected:
     //! @brief calculates the local B-matrix for an edge connecting two nodes (with one ip)
     void CalculateBMatrixAndLatticeStrain(int rIP, Eigen::Matrix<double,2,6>& rBMatrix, LatticeStrain2D& rLatticeStrain)const;
 
+    //! @brief calculate the length of an edge (belonging to an integration point
+    //! @param rIp integration point
+    //! @return edge length
+    double GetIpEdgeLength(int rIp)const;
+
     void CalculateGlobalCoordinatesEdgeFacePoints(boost::array<boost::array<double, 2>,3 >& rCoordinatesEdgePoints,
     		boost::array<double, 2>& rCoordinateFacePoint)const;
 

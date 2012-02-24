@@ -220,9 +220,13 @@ public:
     NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rMatrix ... global coefficient matrix
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
     NuTo::Error::eError BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector);
+
+    // build global coefficient matrix2 (mass)
+    // general is used here, since it is added to a general matrix or (in case of constraints) might change to a C matrix M11+CM12 which is no longer symmetric)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2General<double>& rMatrix);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector
@@ -720,7 +724,20 @@ public:
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int  ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
-    #ifndef SWIG
+#ifndef SWIG
+    //! @brief adds a rotation constraint equation for a node
+    //! @param rNode pointer to node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue);
+#endif
+
+    //! @brief adds a rotation constraint equation for a node
+    //! @param rNode identifier for node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
+
+#ifndef SWIG
     //! @brief adds a fine scale displacement constraint equation for a node
     //! @param rNode pointer to node
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
@@ -751,7 +768,7 @@ public:
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
-    #ifndef SWIG
+#ifndef SWIG
     //! @brief adds a fine scale displacement constraint equation for a group of node
     //! @param rNode pointer to group of nodes
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
@@ -763,6 +780,19 @@ public:
     //! @brief adds a constraint equation for a group of nodes
     //! @param rGroupIdent identifier for group of nodes
     int ConstraintLinearSetFineScaleDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
+
+#ifndef SWIG
+    //! @brief adds a rotation constraint equation for a group of node
+    //! @param rNode pointer to group of nodes
+    //! @param rValue prescribed value (e.g. zero to fix a rotation to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue);
+#endif
+
+    //! @brief adds a constraint equation for a group of nodes
+    //! @param rGroupIdent identifier for group of nodes
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    int ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -1635,15 +1665,19 @@ public:
     }
 
     //! @brief is only true for structure used as multiscale (structure in a structure)
+    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
     //! @parameters rBoundingBox box for the spheres (3*2 matrix)
     //! @parameters rSeed seed for the random number generator
     //! @parameters rRadiusBoundaryParticles radius particles simulated on the boundary
     //! @parameters rDistanceBoundaryParticles distance of the boundary particles
+    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
     //! @return ... matrix with spheres (coordinates x y z and radius)
-    NuTo::FullMatrix<double> CreateSpheresOnBoxBoundary(FullMatrix<double>& rBoundingBox, int rSeed, double rRadiusBoundaryParticles, double rDistanceBoundaryParticles);
+    NuTo::FullMatrix<double> CreateSpheresOnSpecimenBoundary(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, int rSeed,
+    		double rRadiusBoundaryParticles, double rDistanceBoundaryParticles);
 
 
     //! @brief is only true for structure used as multiscale (structure in a structure)
+    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
     //! @parameters rBoundingBox box for the spheres (3*2 matrix)
     //! @parameters rRelParticleMass percentage of particle mass inside the box
     //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
@@ -1652,7 +1686,7 @@ public:
     //! @parameters rSeed seed for the random number generator
     //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
     //! @return ... matrix with spheres (coordinates x y z and radius)
-    NuTo::FullMatrix<double> CreateSpheresInBox(FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
+    NuTo::FullMatrix<double> CreateSpheresInSpecimen(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
     		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double>& rSpheresBoundary);
 
     //! @brief cut spheres at a given z-coordinate to create circles (in 2D)
@@ -1824,6 +1858,10 @@ protected:
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     virtual Error::eError BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    virtual Error::eError BuildGlobalCoefficientSubMatrices2General(NuTo::SparseMatrix<double>& rMatrixJJ) const = 0;
 
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs

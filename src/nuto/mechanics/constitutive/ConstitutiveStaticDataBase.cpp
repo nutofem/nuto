@@ -68,6 +68,18 @@ const NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveSta
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMultiscale2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
+//!@ brief reinterpret as lattice concrete 2D static data
+NuTo::ConstitutiveStaticDataLatticeConcrete2D* NuTo::ConstitutiveStaticDataBase::AsConstitutiveStaticDataLatticeConcrete2D()
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataLatticeConcrete2D] Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
+}
+
+//!@ brief reinterpret as lattice concrete 2D static data
+const NuTo::ConstitutiveStaticDataLatticeConcrete2D* NuTo::ConstitutiveStaticDataBase::AsConstitutiveStaticDataLatticeConcrete2D()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataLatticeConcrete2D] Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
+}
+
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");

@@ -28,6 +28,9 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
+//just for test purpose
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataLatticeConcrete2D.h"
+
 #include "nuto/math/FullMatrix.h"
 #include <eigen3/Eigen/Dense>
 
@@ -344,15 +347,62 @@ NuTo::Error::eError NuTo::Lattice2D::CalculateCoefficientMatrix_0(NuTo::FullMatr
         //calculate Bmatrix
     	CalculateBMatrixAndLatticeStrain(theIP, bMatrix, latticeStrain);
 
+    	//std::cout << "check in stiffness routine of lattice 2d" << "\n";
+//latticeStrain.mLatticeStrain[0] = -7.05825e-05;
+//latticeStrain.mLatticeStrain[1] = -0.000371756;
+
+
     	//calculate constitutive law
         //material pointer
         const ConstitutiveLatticeStressStrain *constitutivePtr;
         constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveLatticeStressStrain();
-		Error::eError error = constitutivePtr->GetTangent_LatticeStress_LatticeStrain(this, theIP,
+
+//const_cast<ConstitutiveLatticeStressStrain *>(constitutivePtr)->UpdateStaticData_LatticeStress_LatticeStrain(const_cast<Lattice2D*>(this), theIP, latticeStrain);
+//latticeStrain.mLatticeStrain[0] *= -0.5;
+//latticeStrain.mLatticeStrain[1] *= -1.5;
+
+        Error::eError error = constitutivePtr->GetTangent_LatticeStress_LatticeStrain(this, theIP,
 				latticeStrain, &stiffness);
 		if (error!=Error::SUCCESSFUL)
 			return error;
 
+/*		{
+			//central difference
+			FullMatrix<double> stiffnessCDF(2,2);
+			LatticeStress2D latticeStress2;
+			double deltaStrain(1e-14);
+			LatticeStress2D latticeStress;
+			error = constitutivePtr->GetLatticeStressFromLatticeStrain(this, theIP,
+					latticeStrain, latticeStress);
+	    	//std::cout << "stress " <<latticeStress.mLatticeStress[0] << " " <<  latticeStress.mLatticeStress[1] << "\n";
+
+			for (int count=0; count<2; count++)
+			{
+				latticeStrain.mLatticeStrain[count]+=deltaStrain;
+				error = constitutivePtr->GetLatticeStressFromLatticeStrain(this, theIP,
+						latticeStrain, latticeStress2);
+				latticeStrain.mLatticeStrain[count]-=deltaStrain;
+				stiffnessCDF(0,count) = (latticeStress2.mLatticeStress[0] - latticeStress.mLatticeStress[0])/deltaStrain;
+				stiffnessCDF(1,count) = (latticeStress2.mLatticeStress[1] - latticeStress.mLatticeStress[1])/deltaStrain;
+			}
+			if (fabs(stiffness.GetData()[0]-stiffnessCDF(0,0))+fabs(stiffness.GetData()[2]-stiffnessCDF(0,1))+
+				fabs(stiffness.GetData()[1]-stiffnessCDF(1,0))+fabs(stiffness.GetData()[3]-stiffnessCDF(1,1))>1)
+			{
+		    	std::cout << "strain " <<latticeStrain.mLatticeStrain[0] << " " <<  latticeStrain.mLatticeStrain[1] << "\n";
+		    	std::cout << "stress " <<latticeStress.mLatticeStress[0] << " " <<  latticeStress.mLatticeStress[1] << "\n";
+		    	std::cout << "max epsilon " << (this->GetStaticData(theIP))->AsConstitutiveStaticDataLatticeConcrete2D()->mEpsilonMax << "\n";
+		    	std::cout << "edge length " << GetIpEdgeLength(theIP) << "\n";
+
+		    	std::cout << "stiffness analytic " <<"\n";
+				std::cout << stiffness.GetData()[0] << " " <<  stiffness.GetData()[2] << "\n";
+				std::cout << stiffness.GetData()[1] << " " <<  stiffness.GetData()[3] << "\n";
+
+				std::cout << "stiffness CDF " << "\n" << stiffnessCDF << "\n";
+				std::cout <<" error in stiffness calculation " << "\n";
+				//exit(-1);
+			}
+		}
+*/
     	//add BtCB with l * projected area/length of facet add thickness
         //factor for the numerical integration
         assert(mSection->GetThickness()>0);
@@ -459,6 +509,22 @@ void NuTo::Lattice2D::CalculateBMatrixAndLatticeStrain(int rIP, Eigen::Matrix<do
 }
 
 
+//! @brief calculate the length of an edge (belonging to an integration point
+//! @param rIp integration point
+//! @return edge length
+double NuTo::Lattice2D::GetIpEdgeLength(int rIp)const
+{
+    //get coordinates
+    double coord1[2],coord2[2],delta[2];
+   	mNodes[rIp]->GetCoordinates2D(coord1);
+   	mNodes[(rIp+1)%3]->GetCoordinates2D(coord2);
+
+   	delta[0] = coord2[0]-coord1[0];
+   	delta[1] = coord2[1]-coord1[1];
+
+   	return sqrt(delta[0]*delta[0]+delta[1]*delta[1]);
+}
+
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
@@ -513,6 +579,7 @@ NuTo::Error::eError NuTo::Lattice2D::CalculateGradientInternalPotential(NuTo::Fu
     	//calculate constitutive law
         //material pointer
         const ConstitutiveLatticeStressStrain *constitutivePtr;
+
         constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveLatticeStressStrain();
 		Error::eError error = constitutivePtr->GetLatticeStressFromLatticeStrain(this, theIP,
 				latticeStrain, latticeStress);
@@ -593,7 +660,61 @@ NuTo::Error::eError NuTo::Lattice2D::CalculateCoefficientMatrix_1(NuTo::FullMatr
 NuTo::Error::eError NuTo::Lattice2D::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
-    throw MechanicsException("[NuTo::Lattice2D::CalculateCoefficientMatrix_2] to be implemented.");
+	rResult.Resize(9,9);
+
+    //calculate global coordinates of the edge points and face points
+    boost::array<boost::array<double, 2>,3 > globalCoordinatesEdgePoints;
+    boost::array<double, 2> globalCoordinatesFacePoint;
+    CalculateGlobalCoordinatesEdgeFacePoints(globalCoordinatesEdgePoints, globalCoordinatesFacePoint);
+
+    for (int theIP=0; theIP<3; theIP++)
+    {
+    	//calculate constitutive law
+        //material pointer
+        const ConstitutiveLatticeStressStrain *constitutivePtr;
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveLatticeStressStrain();
+    	double density(constitutivePtr->GetDensity());
+        for (int countNode=0; countNode<2; countNode++)
+        {
+			//calculate area/volume of the facet with the node
+			boost::array<double,3 > coordinatesNodes;
+			int theNode((theIP+countNode)%3);
+			mNodes[theNode]->GetCoordinates2D(&(coordinatesNodes[0]));
+
+			//calculate area of the triangle (node, edgePoint, Facepoint
+			double mass = density * 0.5*(coordinatesNodes[0]*globalCoordinatesEdgePoints[theIP][1]-coordinatesNodes[1]*globalCoordinatesEdgePoints[theIP][0]+
+					           globalCoordinatesEdgePoints[theIP][0]*globalCoordinatesFacePoint[1]-globalCoordinatesEdgePoints[theIP][1]*globalCoordinatesFacePoint[0]+
+					           globalCoordinatesFacePoint[0]*coordinatesNodes[1]-globalCoordinatesFacePoint[1]*coordinatesNodes[0]);
+			//this is the translational mass
+			rResult(3*theNode,3*theNode)+=mass;
+			rResult(3*theNode+1,3*theNode+1)+=mass;
+
+			//centroid w.r.t. node
+			boost::array<double,2 > centroid;
+			boost::array<double,2 > delta2;
+			delta2[0] = globalCoordinatesEdgePoints[theIP][0] - coordinatesNodes[0];
+			delta2[0] = globalCoordinatesEdgePoints[theIP][1] - coordinatesNodes[1];
+			boost::array<double,2 > delta3;
+			delta3[0] = globalCoordinatesFacePoint[0] - coordinatesNodes[0];
+			delta3[0] = globalCoordinatesFacePoint[1] - coordinatesNodes[1];
+			centroid[0] = (delta2[0]+delta3[0])/3.;
+			centroid[1] = (delta2[1]+delta3[1])/3.;
+
+			boost::array<double,2 > IiMulRho;
+			IiMulRho[0]=mass*centroid[0];
+			IiMulRho[1]=mass*centroid[1];
+
+			double IiiMulRho = mass/6.*(delta3[0]*delta3[0]+delta3[1]*delta3[1]+delta2[0]*delta2[0]+delta2[1]*delta2[1]+delta2[0]*delta3[0]+delta2[1]*delta3[1]);
+
+			//this is the rotational mass
+			rResult(3*theNode,3*theNode+2)-=IiMulRho[1];
+			rResult(3*theNode+2,3*theNode)-=IiMulRho[1];
+			rResult(3*theNode+1,3*theNode+2)+=IiMulRho[0];
+			rResult(3*theNode+2,3*theNode+1)+=IiMulRho[0];
+			rResult(3*theNode+2,3*theNode+2)+=IiiMulRho;
+        }
+    }
+    return Error::SUCCESSFUL;
 }
 
 // these headers are just for test purpose

@@ -28,6 +28,12 @@ NuTo::IpDataStaticDataWeightCoordinates2D::~IpDataStaticDataWeightCoordinates2D(
 
 void NuTo::IpDataStaticDataWeightCoordinates2D::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 {
+	if (mStaticData!=0)
+		delete mStaticData;
+	if (rConstitutive!=0)
+	    mStaticData = rElement->AllocateStaticData(rConstitutive);
+	else
+		mStaticData = 0;
 }
 
 //! @brief returns the enum of IP data type

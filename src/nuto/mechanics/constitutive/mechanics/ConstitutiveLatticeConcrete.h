@@ -255,6 +255,24 @@ protected:
     //! @brief ... density \f$ \rho \f$
     double mRho;
 
+    //! @brief ... shear factor \f$ \alpha \f$
+    double mAlpha;
+
+    //! @brief ... shear strength \f$ \sigma_t \f$
+    double mSigmaT;
+
+    //! @brief ... normal strength \f$ \sigma_n \f$
+    double mSigmaN;
+
+    //! @brief ... fracture energy \f$ G \f$
+    double mG;
+
+    //! @brief ...  \f$ n_t \f$
+    double mNt;
+
+    //! @brief ... friction coefficient \f$ \mu \f$
+    double mMu;
+
     //! @brief ... check if density is positive
     //! @param rRho ... density
     void CheckDensity(double rRho) const;
@@ -269,7 +287,25 @@ protected:
 
     //! @brief ... calculate the elastic parameters for the plane
     void CalculateElasticParameters(double& rEn,double& rEt)const;
-};
+
+    //! @brief ... calculate the stress and stiffness in tension (positive normal strain)
+    //! param rElement element
+    //! param rIp integration point
+    //! param rLatticeStrain lattice strain
+    //! param rLatticeStress lattice stress
+    void CutOffTension2D(const ElementBase* rElement, int rIp,
+    		  const LatticeStrain2D& rLatticeStrain, LatticeStress2D *rLatticeStress, ConstitutiveTangentLocal2x2 *rTangent)const;
+
+    //! @brief ... calculate the stress and  in compression (negative normal strain)
+    //! param rElement element
+    //! param rIp integration point
+    //! param rLatticeStrain lattice strain
+    //! param rLatticeStress lattice stress
+    void CutOffCompression2D(const ElementBase* rElement, int rIp,
+  		  const LatticeStrain2D& rLatticeStrain, LatticeStress2D *rLatticeStress, ConstitutiveTangentLocal2x2 *rTangent)const;
+
+
+ };
 
 }
 

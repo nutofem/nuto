@@ -16,6 +16,7 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal2x2.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveLatticeConcrete.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataLatticeConcrete2D.h"
 #include "nuto/mechanics/constitutive/mechanics/LatticeStress2D.h"
 #include "nuto/mechanics/constitutive/mechanics/LatticeStress3D.h"
 #include "nuto/mechanics/constitutive/mechanics/LatticeStrain2D.h"
@@ -25,9 +26,15 @@
 
 NuTo::ConstitutiveLatticeConcrete::ConstitutiveLatticeConcrete() : ConstitutiveLatticeStressStrain()
 {
-	mE = 0.;
+	mE = 30000.;
 	mNu = 0.;
 	mRho = 0.;
+	mAlpha = 0.25;
+	mSigmaT = 3.0;
+	mSigmaN = 3.0;
+	mG = 0.1;
+	mNt = 0.2;
+	mMu = 0.0;
 	SetParametersValid();
 }
 
@@ -44,7 +51,11 @@ void NuTo::ConstitutiveLatticeConcrete::serialize(Archive & ar, const unsigned i
    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveLatticeStressStrain)
       & BOOST_SERIALIZATION_NVP(mE)
       & BOOST_SERIALIZATION_NVP(mNu)
-      & BOOST_SERIALIZATION_NVP(mRho);
+      & BOOST_SERIALIZATION_NVP(mRho)
+      & BOOST_SERIALIZATION_NVP(mAlpha)
+      & BOOST_SERIALIZATION_NVP(mSigmaT)
+      & BOOST_SERIALIZATION_NVP(mSigmaN)
+      & BOOST_SERIALIZATION_NVP(mG);
 #ifdef DEBUG_SERIALIZATION
    std::cout << "finish serialize ConstitutiveLatticeConcrete" << std::endl;
 #endif
@@ -90,6 +101,7 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetLatticePlasticStrain(c
 //! @param rIp ... integration point
 //! @param rLatticeStrain ... deformation gradient
 //! @param rCauchyStress ... Cauchy stress
+#define tol 1e-14
 NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetLatticeStressFromLatticeStrain(const ElementBase* rElement, int rIp,
 			  const LatticeStrain2D& rLatticeStrain, LatticeStress2D& rLatticeStress) const
 {
@@ -103,13 +115,17 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetLatticeStressFromLatti
     	throw MechanicsException("[NuTo::ConstitutiveLatticeConcrete::GetLatticeStressFromLatticeStrain] Check the material parameters.");
     }
 
-    //Calculate parameters
-    double En,Et;
-    CalculateElasticParameters(En,Et);
-
-    // calculate Lattice stress
-	rLatticeStress.mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
-	rLatticeStress.mLatticeStress[1] = Et * rLatticeStrain.mLatticeStrain[1];
+	//calculate the boundary stress
+	if (rLatticeStrain.mLatticeStrain[0]>0)
+	{
+	    //tension cutoff
+		CutOffTension2D(rElement, rIp, rLatticeStrain, &rLatticeStress, 0);
+	}
+	else
+	{
+	    //compression cutoff
+		CutOffCompression2D(rElement, rIp, rLatticeStrain, &rLatticeStress, 0);
+	}
 
     return Error::SUCCESSFUL;
 }
@@ -214,7 +230,6 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTangent_LatticeStress_
 		const LatticeStrain2D& rLatticeStrain,
 		ConstitutiveTangentBase* rTangent) const
 {
-	ConstitutiveTangentLocal2x2 *tangent(rTangent->AsConstitutiveTangentLocal2x2());
     // check if parameters are valid
     if (this->mParametersValid == false)
     {
@@ -225,17 +240,19 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTangent_LatticeStress_
     	throw MechanicsException("[NuTo::ConstitutiveLatticeConcrete::GetTangent_LatticeStress_LatticeStrain] Check the material parameters.");
     }
 
-    //Calculate parameters
-    double En,Et;
-    CalculateElasticParameters(En,Et);
+	//calculate the boundary stress
+	if (rLatticeStrain.mLatticeStrain[0]>0)
+	{
+	    //tension cutoff
+		CutOffTension2D(rElement, rIp, rLatticeStrain, 0, rTangent->AsConstitutiveTangentLocal2x2());
+	}
+	else
+	{
+	    //compression cutoff
+		CutOffCompression2D(rElement, rIp, rLatticeStrain, 0, rTangent->AsConstitutiveTangentLocal2x2());
+	}
 
-    // store tangent at the output object
-    tangent->mTangent[ 0] = En;
-    tangent->mTangent[ 1] = 0;
-    tangent->mTangent[ 2] = 0;
-    tangent->mTangent[ 3] = Et;
-
-    rTangent->SetSymmetry(true);
+    rTangent->SetSymmetry(false);
     return Error::SUCCESSFUL;
 }
 
@@ -291,7 +308,25 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTangent_LatticeStress_
 NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::UpdateStaticData_LatticeStress_LatticeStrain(ElementBase* rElement, int rIp,
 		const LatticeStrain2D& rLatticeStrain) const
 {
-    //no static data required -> empty routine
+	double epsilonE;
+	if (rLatticeStrain.mLatticeStrain[0]>0)
+	{
+		//tension
+		epsilonE = sqrt(rLatticeStrain.mLatticeStrain[0]*rLatticeStrain.mLatticeStrain[0]+mAlpha*rLatticeStrain.mLatticeStrain[1]*rLatticeStrain.mLatticeStrain[1]);
+	}
+	else
+	{
+		//compression
+		epsilonE = sqrt(mAlpha)*fabs(rLatticeStrain.mLatticeStrain[1]);
+	}
+
+	ConstitutiveStaticDataLatticeConcrete2D*
+	    staticDataPtr(rElement->GetStaticData(rIp)->AsConstitutiveStaticDataLatticeConcrete2D());
+	if (epsilonE>staticDataPtr->mEpsilonMax)
+	{
+		staticDataPtr->mEpsilonMax = epsilonE;
+	}
+
     return Error::SUCCESSFUL;
 }
 
@@ -339,8 +374,7 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::UpdateTmpStaticData_Latti
 NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveLatticeConcrete::AllocateStaticDataLatticeStress_LatticeStrain2D(
 		const ElementBase* rElement) const
 {
-	//no static data return Null-Pointer
-	return 0;
+	return new NuTo::ConstitutiveStaticDataLatticeConcrete2D();
 }
 
 
@@ -349,8 +383,8 @@ NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveLatticeConcrete::AllocateSta
 NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveLatticeConcrete::AllocateStaticDataLatticeStress_LatticeStrain3D(
 		const ElementBase* rElement) const
 {
-	//no static data return Null-Pointer
 	return 0;
+	//return new NuTo::ConstitutiveStaticDataLatticeConcrete3D();
 }
 
 //! @brief ... calculate the total energy density
@@ -580,8 +614,427 @@ void NuTo::ConstitutiveLatticeConcrete::CheckParameters()const
 //! @brief ... calculate the elastic parameters for the plane
 void NuTo::ConstitutiveLatticeConcrete::CalculateElasticParameters(double& rEn,double& rEt)const
 {
-    rEn = mE/(1.-2*mNu);
+/*    rEn = mE/(1.-2*mNu);
     double alpha = (1.-4.*mNu)/(1.+mNu);
     rEt = rEn*alpha;
+*/
+	rEn = mE*(4.+mAlpha)/(2.+3.*mAlpha);
+	rEt = rEn*mAlpha;
 }
 
+/*//! @brief ... calculate the boundary stress in tension
+void NuTo::ConstitutiveLatticeConcrete::CutOffTension2D(const ElementBase* rElement, int rIp,
+		  const LatticeStrain2D& rLatticeStrain, LatticeStress2D&rLatticeStress)const
+{
+    //Calculate parameters
+    double En,Et;
+    CalculateElasticParameters(En,Et);
+
+    // calculate trial lattice stress
+	rLatticeStress.mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
+	rLatticeStress.mLatticeStress[1] = Et * rLatticeStrain.mLatticeStrain[1];
+
+	//get the static data
+	const ConstitutiveStaticDataLatticeConcrete2D *oldStaticData = (rElement->GetStaticData(rIp))->AsConstitutiveStaticDataLatticeConcrete2D();
+	double epsilonMax(oldStaticData->mEpsilonMax);
+	double ledge(rElement->GetIpEdgeLength(rIp));
+
+	//calculate omega
+	double omega;
+	if (fabs(rLatticeStrain.mLatticeStrain[1])>tol)
+	{
+		omega = atan(rLatticeStrain.mLatticeStrain[0]/(sqrt(mAlpha)*fabs(rLatticeStrain.mLatticeStrain[1])));
+	}
+	else
+	{
+		omega = 0;
+	}
+
+	//calculate maximum effective strain
+	double epsilonE = sqrt(rLatticeStrain.mLatticeStrain[0]*rLatticeStrain.mLatticeStrain[0]+mAlpha*rLatticeStrain.mLatticeStrain[1]*rLatticeStrain.mLatticeStrain[1]);
+	if (epsilonE>epsilonMax-toleranceEpsilonMax)
+		epsilonMax=epsilonE;
+
+	//calculate sigma0
+	double rst = mSigmaT/mSigmaN;
+	double sinOmega = sin(omega);
+	double cosOmega = cos(omega);
+
+	double sigma0(mSigmaN*(sqrt(rst*rst*cosOmega*cosOmega/mAlpha+sinOmega*sinOmega)));
+
+	double epsilon0 = sigma0/En;
+
+
+	double EmaxMinusE0 = epsilonMax-epsilon0;
+
+	double sigmaBT;
+	if (EmaxMinusE0>0)
+	{
+		double lt = 2.*En*mG/(mSigmaN*mSigmaN);
+		double Ht = 2.*En/(lt/ledge-1.);
+
+		double H0 = Ht*pow(2.*omega/M_PI,mNt);
+		sigmaBT = sigma0*exp(-H0*(EmaxMinusE0)/sigma0);
+	}
+	else
+	{
+		sigmaBT = sigma0;
+	}
+
+	double sigmaE = sqrt(rLatticeStress.mLatticeStress[0]*rLatticeStress.mLatticeStress[0]+rLatticeStress.mLatticeStress[1]*rLatticeStress.mLatticeStress[1]/mAlpha);
+	if (sigmaE>sigmaBT)
+	{
+		rLatticeStress.mLatticeStress[0] = sigmaBT * rLatticeStrain.mLatticeStrain[0]/epsilonE;
+		rLatticeStress.mLatticeStress[1] = sigmaBT * mAlpha * rLatticeStrain.mLatticeStrain[1]/epsilonE;
+	}
+
+}
+*/
+
+
+//#define SHOWSTRESS
+//! @brief ... calculate the stiffness in tension
+void NuTo::ConstitutiveLatticeConcrete::CutOffTension2D(const ElementBase* rElement, int rIp,
+		  const LatticeStrain2D& rLatticeStrain, LatticeStress2D *rLatticeStress, ConstitutiveTangentLocal2x2 *rTangent)const
+{
+    assert(rLatticeStrain.mLatticeStrain[0]>=0);
+
+	//Calculate parameters
+    double En,Et;
+    CalculateElasticParameters(En,Et);
+    //LatticeStress2D latticeStress;
+
+
+	LatticeStrain2D myLatticeStrain(rLatticeStrain);
+
+	//get the static data
+	const ConstitutiveStaticDataLatticeConcrete2D *oldStaticData = (rElement->GetStaticData(rIp))->AsConstitutiveStaticDataLatticeConcrete2D();
+	double ledge(rElement->GetIpEdgeLength(rIp));
+
+	//calculate maximum effective strain
+	double epsilonE = sqrt(rLatticeStrain.mLatticeStrain[0]*rLatticeStrain.mLatticeStrain[0]+mAlpha*rLatticeStrain.mLatticeStrain[1]*rLatticeStrain.mLatticeStrain[1]);
+
+	bool isLoading;
+	double epsilonMax(oldStaticData->mEpsilonMax);
+	if (epsilonE>epsilonMax-tol)
+	{
+		epsilonMax=epsilonE;
+		isLoading = true;
+	}
+	else
+		isLoading = false;
+
+	//calculate omega
+	double omega;
+	double dOmegadEpsilon[2];
+	double dEpsilonEdEpsilon[2];
+	double signTangentStrain(rLatticeStrain.mLatticeStrain[1]<0 ? -1 : 1);
+	if (fabs(rLatticeStrain.mLatticeStrain[1])>tol)
+	{
+		//tension with shear
+		omega = atan(rLatticeStrain.mLatticeStrain[0]/(sqrt(mAlpha)*fabs(rLatticeStrain.mLatticeStrain[1])));
+		dOmegadEpsilon[0] =  signTangentStrain*rLatticeStrain.mLatticeStrain[1]*sqrt(mAlpha)/(epsilonE* epsilonE);
+		dOmegadEpsilon[1] = -rLatticeStrain.mLatticeStrain[0]*sqrt(mAlpha)/(epsilonE* epsilonE)*signTangentStrain;
+
+		dEpsilonEdEpsilon[0] = rLatticeStrain.mLatticeStrain[0]/epsilonE;
+		dEpsilonEdEpsilon[1] = mAlpha*rLatticeStrain.mLatticeStrain[1]/epsilonE;
+	}
+	else
+	{
+		//pure tension
+		omega = M_PI*0.5;
+
+		dOmegadEpsilon[0] = 0.;
+		dOmegadEpsilon[1] = 0.;
+
+		if (epsilonE<tol)
+		{
+			//this is eventually not defined, but for epsilonE==0 we should not reach the boundary
+			dEpsilonEdEpsilon[0] = 0.;
+			dEpsilonEdEpsilon[1] = 0;
+		}
+		else
+		{
+			dEpsilonEdEpsilon[0] = rLatticeStrain.mLatticeStrain[0]/epsilonE;
+			dEpsilonEdEpsilon[1] = mAlpha*rLatticeStrain.mLatticeStrain[1]/epsilonE;
+		}
+	}
+
+	//check dOmegadEpsilon
+//	double dOmegadEpsilonCDF[2];
+//	double delta(1e-9);
+//	for (int count=0; count<2; count++)
+//	{
+//		myLatticeStrain.mLatticeStrain[count]+=delta;
+//		double omega2 = atan(myLatticeStrain.mLatticeStrain[0]/(sqrt(mAlpha)*fabs(myLatticeStrain.mLatticeStrain[1])));
+//		myLatticeStrain.mLatticeStrain[count]-=delta;
+//		dOmegadEpsilonCDF[count] = (omega2-omega)/delta;
+//	}
+//	std::cout << "dOmegadEpsilon ana " << dOmegadEpsilon[0] << " " << dOmegadEpsilon[1] << "\n";
+//	std::cout << "dOmegadEpsilon cdf " << dOmegadEpsilonCDF[0] << " " << dOmegadEpsilonCDF[1] << "\n";
+
+
+	//calculate sigma0
+	double rst = mSigmaT/mSigmaN;
+	double sinOmega = sin(omega);
+	double cosOmega = cos(omega);
+
+	double sigma0(mSigmaN*(sqrt(rst*rst*cosOmega*cosOmega/mAlpha+sinOmega*sinOmega)));
+	double dSigma0dOmega (mSigmaN*mSigmaN/sigma0*cosOmega*sinOmega*(1-rst*rst/mAlpha));
+
+//	double sigma0b (mSigmaN*(sqrt(mAlpha*rst*rst*cos(omega+delta)*cos(omega+delta)+sin(omega+delta)*sin(omega+delta))));
+//	std::cout << "dSigma0dOmega ana: " << dSigma0dOmega << " cdf: " << (sigma0b-sigma0)/delta << "\n";
+
+	double epsilon0 = sigma0/En;
+
+	if (epsilonMax<epsilon0)
+	{
+
+	    //elastic loading
+	    if (rLatticeStress!=0)
+	    {
+	    	rLatticeStress->mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
+	    	rLatticeStress->mLatticeStress[1] = Et * rLatticeStrain.mLatticeStrain[1];
+	    }
+	    if (rTangent!=0)
+	    {
+			rTangent->mTangent[0] = En;
+			rTangent->mTangent[1] = 0.;
+			rTangent->mTangent[2] = 0.;
+			rTangent->mTangent[3] = Et;
+	    }
+#ifdef SHOWSTRESS
+	    std::cout << rElement->ElementGetId() << ":" << rIp << " tension elastic" << "\n";
+#endif
+	}
+	else
+	{
+
+		double EmaxMinusE0 = epsilonMax-epsilon0;
+
+		double sigmaBT;
+		double dSigmaBTdEpsilon[2];
+		if (EmaxMinusE0>0)
+		{
+			double lt = 2.*En*mG/(mSigmaN*mSigmaN);
+			double Ht = 2.*En/(lt/ledge-1.);
+			if (lt/ledge<1.1)
+				throw MechanicsException("[NuTo::ConstitutiveLatticeConcrete::CutOffTension2D] snap back on material level - decrease your element size.");
+			double H0 = Ht*pow(2.*omega/M_PI,mNt);
+			double expValue = exp(-H0*(EmaxMinusE0)/sigma0);
+			sigmaBT = sigma0*expValue;
+
+			double dH0dOmega;
+			if (fabs(omega)>tol)
+			{
+				dH0dOmega = mNt/omega*H0;
+	//std::cout << "dH0dOmega ana : " << dH0dOmega << " cdf " <<  (Ht*pow(2.*(omega+delta)/M_PI,mNt)-H0)/delta << "\n";
+			}
+			else
+			{
+				dH0dOmega = Ht*pow(2*tol/M_PI,mNt-1.)*2./M_PI;
+			}
+
+			double dExpValuedOmega= expValue*(H0*epsilonMax*dSigma0dOmega/(sigma0*sigma0)-dH0dOmega*EmaxMinusE0/sigma0);
+
+	//		{
+	//			double sigma02 = mSigmaN*(sqrt(mAlpha*rst*rst*cos(omega+delta)*cos(omega+delta)+sin(omega+delta)*sin(omega+delta)));
+	//			double H02 = Ht*pow(2.*(omega+delta)/M_PI,mNt);
+	//			double expValue2 = exp(-H02*(epsilonMax/sigma02-1./En));
+	//			std::cout << "dExpValuedOmega ana : " << dExpValuedOmega << " cdf : " << (expValue2-expValue)/delta << "\n";
+	//		}
+
+			dSigmaBTdEpsilon[0] = (dSigma0dOmega*expValue+sigma0*dExpValuedOmega)*dOmegadEpsilon[0];
+			dSigmaBTdEpsilon[1] = (dSigma0dOmega*expValue+sigma0*dExpValuedOmega)*dOmegadEpsilon[1];
+			if (isLoading)
+			{
+				double dExpvaluedEpsilonMax = -expValue*H0/sigma0;
+	//			{
+	//				double EmaxMinusE02 = (epsilonMax+delta)-epsilon0;
+	//				double expValue2 = exp(-H0*(EmaxMinusE02)/sigma0);
+	//				std::cout << "dExpvaluedEpsilonMax ana : " << dExpvaluedEpsilonMax << " cdf : " << (expValue2-expValue)/delta << "\n";
+	//			}
+
+				dSigmaBTdEpsilon[0] += sigma0*dExpvaluedEpsilonMax*dEpsilonEdEpsilon[0];
+				dSigmaBTdEpsilon[1] += sigma0*dExpvaluedEpsilonMax*dEpsilonEdEpsilon[1];
+			}
+		}
+		else
+		{
+			sigmaBT = sigma0;
+			dSigmaBTdEpsilon[0] = dSigma0dOmega*dOmegadEpsilon[0];
+			dSigmaBTdEpsilon[1] = dSigma0dOmega*dOmegadEpsilon[1];
+		}
+
+	//	double dSigmaBTdEpsilon2[2];
+	//	for (int count=0; count<2; count ++)
+	//	{
+	//		LatticeStrain2D latticeStrain2(rLatticeStrain);
+	//		LatticeStress2D latticeStress2;
+	//		latticeStrain2.mLatticeStrain[count] +=delta;
+	//		double sigmaBT2;
+	//
+	//		CutOffTension2D(rElement, rIp,latticeStrain2, latticeStress2, sigmaBT2);
+	//		dSigmaBTdEpsilon2[count] = (sigmaBT2-sigmaBT)/delta;
+
+	//	}
+	//	std::cout << "dSigmaBTdEpsilon ana: " << dSigmaBTdEpsilon[0] << " " << dSigmaBTdEpsilon[1] ;
+	//    std::cout << " cdf " << dSigmaBTdEpsilon2[0] << " " << dSigmaBTdEpsilon2[1] << "\n";
+
+	//	double sigmaE = sqrt(latticeStress.mLatticeStress[0]*latticeStress.mLatticeStress[0]+latticeStress.mLatticeStress[1]*latticeStress.mLatticeStress[1]/mAlpha);
+		if (isLoading)
+		{
+			assert(fabs(epsilonE)>tol);
+
+			if (rLatticeStress!=0)
+			{
+				rLatticeStress->mLatticeStress[0] = sigmaBT * rLatticeStrain.mLatticeStrain[0]/epsilonE;
+				rLatticeStress->mLatticeStress[1] = sigmaBT * mAlpha * rLatticeStrain.mLatticeStrain[1]/epsilonE;
+			}
+
+			if (rTangent!=0)
+			{
+				rTangent->mTangent[0] = dSigmaBTdEpsilon[0]*rLatticeStrain.mLatticeStrain[0]/epsilonE+
+						sigmaBT*(epsilonE-rLatticeStrain.mLatticeStrain[0]*rLatticeStrain.mLatticeStrain[0]/epsilonE)/(epsilonE*epsilonE);
+				rTangent->mTangent[2] = dSigmaBTdEpsilon[1]*rLatticeStrain.mLatticeStrain[0]/epsilonE-
+						sigmaBT*(rLatticeStrain.mLatticeStrain[0]*rLatticeStrain.mLatticeStrain[1]*mAlpha)/(epsilonE*epsilonE*epsilonE);
+				rTangent->mTangent[1] = dSigmaBTdEpsilon[0]*mAlpha*rLatticeStrain.mLatticeStrain[1]/epsilonE-
+						sigmaBT*(mAlpha*rLatticeStrain.mLatticeStrain[0]*rLatticeStrain.mLatticeStrain[1])/(epsilonE*epsilonE*epsilonE);
+				rTangent->mTangent[3] = dSigmaBTdEpsilon[1]*rLatticeStrain.mLatticeStrain[1]*mAlpha/epsilonE+
+						sigmaBT*mAlpha*(epsilonE-mAlpha*rLatticeStrain.mLatticeStrain[1]*rLatticeStrain.mLatticeStrain[1]/epsilonE)/(epsilonE*epsilonE);
+			}
+#ifdef SHOWSTRESS
+			std::cout << rElement->ElementGetId() << ":" << rIp << " tension loading" << "\n";
+#endif
+		}
+		else
+		{
+			//unloading back to the origin
+			double help = sigmaBT/epsilonMax;
+
+			if (rLatticeStress->mLatticeStress!=0)
+			{
+				rLatticeStress->mLatticeStress[0] = help * rLatticeStrain.mLatticeStrain[0];
+				rLatticeStress->mLatticeStress[1] = help * mAlpha * rLatticeStrain.mLatticeStrain[1];
+			}
+
+
+			if (rTangent!=0)
+			{
+				rTangent->mTangent[0] = dSigmaBTdEpsilon[0]*rLatticeStrain.mLatticeStrain[0]/epsilonMax + help;
+				rTangent->mTangent[1] = dSigmaBTdEpsilon[0]*mAlpha*rLatticeStrain.mLatticeStrain[1]/epsilonMax;
+				rTangent->mTangent[2] = dSigmaBTdEpsilon[1]*rLatticeStrain.mLatticeStrain[0]/epsilonMax;
+				rTangent->mTangent[3] = dSigmaBTdEpsilon[1]*mAlpha*rLatticeStrain.mLatticeStrain[1]/epsilonMax + help*mAlpha;
+			}
+#ifdef SHOWSTRESS
+			std::cout << rElement->ElementGetId() << ":" << rIp << " tension unloading" << "\n";
+#endif
+		}
+	}
+#ifdef SHOWSTRESS
+	if (rLatticeStress!=0)
+	    std::cout << "stress " << rLatticeStress->mLatticeStress[0] << " " << rLatticeStress->mLatticeStress[1] << "\n";
+#endif
+}
+
+//! @brief ... calculate the stiffness in tension
+void NuTo::ConstitutiveLatticeConcrete::CutOffCompression2D(const ElementBase* rElement, int rIp,
+		  const LatticeStrain2D& rLatticeStrain, LatticeStress2D *rLatticeStress, ConstitutiveTangentLocal2x2 *rTangent)const
+{
+	assert(rLatticeStrain.mLatticeStrain[0]<=0);
+    //Calculate parameters
+    double En,Et;
+    CalculateElasticParameters(En,Et);
+
+    // calculate trial lattice stress
+    //LatticeStress2D latticeStress;
+    //latticeStress.mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
+    //latticeStress.mLatticeStress[1] = Et * rLatticeStrain.mLatticeStrain[1];
+
+	//get the static data
+	const ConstitutiveStaticDataLatticeConcrete2D *oldStaticData = (rElement->GetStaticData(rIp))->AsConstitutiveStaticDataLatticeConcrete2D();
+	bool isLoading;
+	double epsilonMax(oldStaticData->mEpsilonMax);
+	double epsilonE(fabs(rLatticeStrain.mLatticeStrain[1])*sqrt(mAlpha));
+	if (epsilonE>epsilonMax-tol)
+	{
+		epsilonMax=epsilonE;
+		isLoading = true;
+	}
+	else
+		isLoading = false;
+
+	//cohesive plus friction part
+
+	//calculate sqrt Alpha first
+	double sigma0  = (mSigmaT - mMu * En * rLatticeStrain.mLatticeStrain[0])/sqrt(mAlpha);
+	double epsilon0 = sigma0/En;
+
+	if (epsilonMax<epsilon0)
+	{
+	    //elastic loading
+	    if (rLatticeStress!=0)
+	    {
+	    	rLatticeStress->mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
+	    	rLatticeStress->mLatticeStress[1] = Et * rLatticeStrain.mLatticeStrain[1];
+	    }
+	    if (rTangent!=0)
+	    {
+			rTangent->mTangent[0] = En;
+			rTangent->mTangent[1] = 0.;
+			rTangent->mTangent[2] = 0.;
+			rTangent->mTangent[3] = Et;
+	    }
+#ifdef SHOWSTRESS
+	    std::cout << rElement->ElementGetId() << ":" << rIp << " compression elastic" << "\n";
+#endif
+	}
+	else
+	{
+
+		if (isLoading)
+		{
+			if (rLatticeStress!=0)
+			{
+				rLatticeStress->mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
+				rLatticeStress->mLatticeStress[1] = sigma0*sqrt(mAlpha)*(rLatticeStrain.mLatticeStrain[1]<0 ? -1 : 1);
+			}
+
+			if (rTangent!=0)
+			{
+				rTangent->mTangent[0] = En;
+				rTangent->mTangent[2] = 0;
+				rTangent->mTangent[1] = -mMu*En*(rLatticeStrain.mLatticeStrain[1]<0 ? -1 : 1);
+				rTangent->mTangent[3] = 0;
+			}
+#ifdef SHOWSTRESS
+			std::cout << rElement->ElementGetId() << ":" << rIp << " compression loading" << "\n";
+#endif
+		}
+		else
+		{
+			//unloading back to the origin, only for the tangential part
+			if (rLatticeStress->mLatticeStress!=0)
+			{
+				rLatticeStress->mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
+				rLatticeStress->mLatticeStress[1] = sigma0/epsilonMax * mAlpha * rLatticeStrain.mLatticeStrain[1];
+			}
+
+
+			if (rTangent!=0)
+			{
+				rTangent->mTangent[0] = En;
+				rTangent->mTangent[1] = - mMu * En*sqrt(mAlpha)/epsilonMax * rLatticeStrain.mLatticeStrain[1];
+				rTangent->mTangent[2] = 0;
+				rTangent->mTangent[3] = sigma0/epsilonMax * mAlpha;
+			}
+#ifdef SHOWSTRESS
+			std::cout << rElement->ElementGetId() << ":" << rIp << " compression unloading" << "\n";
+#endif
+		}
+	}
+#ifdef SHOWSTRESS
+	if (rLatticeStress!=0)
+		std::cout << "stress " << rLatticeStress->mLatticeStress[0] << " " << rLatticeStress->mLatticeStress[1] << "\n";
+#endif
+}

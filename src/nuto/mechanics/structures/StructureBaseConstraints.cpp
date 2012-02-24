@@ -18,6 +18,8 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeRotations2D.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 
 //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
@@ -128,6 +130,39 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, co
     return id;
 }
 
+//! @brief adds a rotation constraint equation for a node
+//! @param rNode pointer to node
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue)
+{
+	this->mNodeNumberingRequired = true;
+	//find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetDisplacementNode] not implemented for 1D.");
+        break;
+    case 2:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeRotations2D(rNode,rValue));
+        break;
+    case 3:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetDisplacementNode] not implemented for 3D.");
+        break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
 //! @brief adds a fine scale displacement constraint equation for a node
 //! @param rNode pointer to node
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
@@ -212,6 +247,30 @@ int  NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNode(int rIden
     return ConstraintLinearSetFineScaleDisplacementNode(nodePtr,rDirection, rValue);
 }
 
+//! @brief adds a rotation constraint equation for a node
+//! @param rNode identifier for node
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rValue)
+{
+	this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintLinearSetRotationNode] Node with the given identifier could not be found.");
+        throw e;
+    }
+    catch (...)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRotationNode] Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetRotationNode(nodePtr, rValue);
+}
+
 //! @brief adds a displacement constraint equation for a group of node
 //! @param rNode pointer to group of nodes
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
@@ -280,6 +339,40 @@ int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNodeGroup(Group
     return id;
 }
 
+//! @brief adds a rotation constraint equation for a group of node
+//! @param rNode pointer to group of nodes
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue)
+{
+	this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup] not implemented for 1D.");
+        break;
+    case 2:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupRotations2D(rGroup,rValue));
+        break;
+    case 3:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup] not implemented for 3D.");
+        break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup] Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+
 //! @brief adds a constraint equation for a group of nodes
 //! @param rGroupIdent identifier for group of nodes
 //! @param rAttribute displacements, rotations, temperatures
@@ -317,6 +410,24 @@ int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNodeGroup(int r
 
     return ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup,rDirection, rValue);
 }
+
+//! @brief adds a constraint equation for a group of nodes
+//! @param rGroupIdent identifier for group of nodes
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue)
+{
+	this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetRotationNodeGroup] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetRotationNodeGroup] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+
+    return ConstraintLinearSetRotationNodeGroup(nodeGroup, rValue);
+}
+
 
 //! @brief returns the number of constraint equations
 //! @return number of constraints

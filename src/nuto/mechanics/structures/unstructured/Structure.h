@@ -347,15 +347,19 @@ public:
     //************         Mesh routines        *****************
     //**  defined in structures/unstructured/StructureMesh.cpp **
     //***********************************************************
-    //! @brief creates a lattice mesh from the positions of the circles and the bounding box
-    //! @parameters rBoundingBox (min and max for x and y)
+    //! @brief creates a lattice mesh from the positions of the circles
+    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
+    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
     //! @parameters rCircles (coordinates x,y and radius)
-    void MeshCreateLattice2D(FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rCircles, NuTo::FullMatrix<double>& rTriangles);
+    //! @parameters rTriangles (triangles connecting the circle centers)
+   void MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rCircles, NuTo::FullMatrix<double>& rTriangles);
 
     //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
+    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
+    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
     //! @parameters rBoundingBox (min and max for x and y)
     //! @parameters rSpheres (coordinates x,y,z and radius)
-    void MeshCreateLattice3D(FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rSpheres, NuTo::FullMatrix<double>& rTetraeders);
+    void MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rSpheres, NuTo::FullMatrix<double>& rTetraeders);
 
     //*************************************************************
     //************         Crack routines        ******************
@@ -534,6 +538,10 @@ protected:
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     virtual NuTo::Error::eError BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const;
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    virtual NuTo::Error::eError BuildGlobalCoefficientSubMatrices2General(NuTo::SparseMatrix<double>& rMatrixJJ) const;
 
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs

@@ -129,12 +129,12 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
     		mLogger << "\t\t" << it->first;
 			if (rVerboseLevel>4)
 			{
-				mLogger << "\t:";
+				mLogger << "\t c:";
 				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
 					mLogger << "\t" << it->second->GetCoordinate(iDof);
                 if (it->second->GetNumDisplacements()>0 || it->second->GetNumFineScaleDisplacements()>0)
                 {
-                	mLogger << "\t:";
+                	mLogger << "\t d:";
                     for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements()+it->second->GetNumFineScaleDisplacements(); ++iDof)
                     {
                     	mLogger << "\t" << it->second->GetDisplacement(iDof) ;
@@ -143,6 +143,15 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
                         if (it->second->GetNumFineScaleDisplacements()>0)
                         	mLogger << "("<< it->second->GetDofFineScaleDisplacement(iDof)<< ")" ;
 
+                    }
+                }
+                if (it->second->GetNumRotations()>0 )
+                {
+                	mLogger << "\t r:";
+                    for(unsigned short iDof=0; iDof<it->second->GetNumRotations(); ++iDof)
+                    {
+                    	mLogger << "\t" << it->second->GetRotation(iDof) ;
+                        mLogger << "("<< it->second->GetDofRotation(iDof)<< ")" ;
                     }
                 }
 			}

@@ -681,7 +681,61 @@ NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<d
 NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
 {
-    throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_2] to be implemented.");
+    //calculate local coordinates
+    std::vector<double> localNodeCoord(GetNumLocalDofs());
+    CalculateLocalCoordinates(localNodeCoord);
+
+    //allocate space for ip coordinates in natural coordinate system (-1,1)
+    double naturalIPCoord[2];
+
+    //allocate space for derivatives of shape functions in natural coordinate system
+    std::vector<double> derivativeShapeFunctionsNatural(2*GetNumShapeFunctions());
+    //allocate space for shape functions in natural coordinate system
+    std::vector<double> shapeFunctions(GetNumShapeFunctions());
+
+    //InvJacobian and determinant of Jacobian
+    double invJacobian[4], detJac;
+
+    //material pointer
+    const ConstitutiveEngineeringStressStrain *constitutivePtr;
+
+    //allocate and initialize result matrix
+    rResult.Resize(GetNumLocalDofs(),GetNumLocalDofs());
+    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+    {
+        GetLocalIntegrationPointCoordinates(theIP, naturalIPCoord);
+
+        CalculateShapeFunctions(naturalIPCoord, shapeFunctions);
+
+        CalculateDerivativeShapeFunctionsNatural(naturalIPCoord, derivativeShapeFunctionsNatural);
+
+        CalculateJacobian(derivativeShapeFunctionsNatural,localNodeCoord, invJacobian, detJac);
+
+        //call constitutive law and calculate stress
+        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
+        if (constitutivePtr==0)
+            throw MechanicsException("[NuTo::Plane::CalculateGradientInternalPotential] Constitutive law can not deal with engineering stresses and strains");
+
+        //add to local mass vector
+        assert(mSection->GetThickness()>0);
+
+        //this global weight function is 1 for all standard problems, it's not equal to one for the multiscale method
+        double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+        Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix;
+        tmpMatrix = (factor*Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(shapeFunctions[0]),GetNumShapeFunctions()))*Eigen::Matrix<double,1,Eigen::Dynamic>::Map(&(shapeFunctions[0]),GetNumShapeFunctions());
+        for (int count=0; count<GetNumShapeFunctions(); count++)
+        {
+        	for (int count2=0; count2<GetNumShapeFunctions(); count2++)
+            {
+				rResult.mEigenMatrix(2*count,2*count2) += tmpMatrix(count,count2);
+				rResult.mEigenMatrix(2*count+1,2*count2+1) += tmpMatrix(count,count2);
+            }
+        }
+    }
+    // calculate list of global dofs related to the entries in the element stiffness matrix
+    this->CalculateGlobalRowDofs(rGlobalDofsRow);
+    rGlobalDofsColumn = rGlobalDofsRow;
+    return Error::SUCCESSFUL;
 }
 
 //! @brief returns the local coordinates of an integration point
