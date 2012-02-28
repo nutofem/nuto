@@ -28,6 +28,7 @@
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
+#include "nuto/mechanics/structures/StructureBaseEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
@@ -204,29 +205,68 @@ public:
     //@brief set the number of processors for openmp parallelization
     void SetOMPNested(bool rNested);
 
+#ifndef SWIG
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rType ... matrix type (stiffness or mass)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (symmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector);
+#endif //SWIG
+
+    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (symmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
     NuTo::Error::eError BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector);
 
-    // build global coefficient matrix2 (mass)
-    // general is used here, since it is added to a general matrix or (in case of constraints) might change to a C matrix M11+CM12 which is no longer symmetric)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2General<double>& rMatrix);
+    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (symmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector
@@ -808,6 +848,11 @@ public:
     //!@param rRHS new right hand side
     //!@param rRHS new right hand side
     void ConstraintSetRHS(int rConstraintEquation, double rRHS);
+
+    //!@brief gets the right hand side of the constraint equations
+    //!@param rConstraintEquation constraint equation
+    //!@return rRHS
+    double ConstraintGetRHS(int rConstraintEquation)const;
 
     //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
     //!@param rConstraintEquation id of the constraint equation
@@ -1836,32 +1881,32 @@ protected:
     //! @brief ... check for dof numbering and build of tmpStaticData
     void BuildGlobalCoefficientMatrixCheck();
 
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
 
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
 
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatrices2General(NuTo::SparseMatrix<double>& rMatrixJJ) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
 
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs

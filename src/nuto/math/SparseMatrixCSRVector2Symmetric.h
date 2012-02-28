@@ -17,7 +17,7 @@
 //! @param rNumColumns_ ... number of columns
 template<class T>
 NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rNumRows_, int rNumColumns_) :
-                             NuTo::SparseMatrixCSRVector2<T>(rNumRows_,rNumColumns_)
+                             NuTo::SparseMatrixCSRVector2<T>(rNumRows_)
 {
     if (rNumRows_!=rNumColumns_)
         throw MathException("[NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric] Symmetric matrix must have same number of rows and columns.");
@@ -29,8 +29,11 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rN
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
 NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(NuTo::FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
-                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows(),rFullMatrix.GetNumColumns())
+                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
 {
+	if (rFullMatrix.GetNumColumns()!=rFullMatrix.GetNumRows())
+        throw MathException("[NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric] Symmetric matrix must have same number of rows and columns.");
+
 	double tolerance = rAbsoluteTolerance;
 	if (rRelativeTolerance > 1e-14)
 	{
@@ -64,9 +67,8 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(NuTo::
 //! @param rCSRMatrix ... input matrix (full storage)
 template<class T>
 NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(const NuTo::SparseMatrixCSRSymmetric<T>& rCSRMatrix) :
-              NuTo::SparseMatrixCSRVector2<T>::SparseMatrixCSRVector2(rCSRMatrix.GetNumRows(),rCSRMatrix.GetNumColumns() )
+              NuTo::SparseMatrixCSRVector2<T>::SparseMatrixCSRVector2(rCSRMatrix.GetNumRows())
 {
-    this->mNumColumns = rCSRMatrix.GetNumColumns();
     this->mColumns.resize(rCSRMatrix.GetNumRows());
     this->mValues.resize(rCSRMatrix.GetNumRows());
     std::vector<int>::const_iterator startIteratorColumns(rCSRMatrix.mColumns.begin());
@@ -92,6 +94,14 @@ bool NuTo::SparseMatrixCSRVector2Symmetric<T>::IsSymmetric() const
 	return true;
 }
 
+//! @brief ... returns the number of columns
+//! @return number of columns
+template <class T>
+int NuTo::SparseMatrixCSRVector2Symmetric<T>::GetNumColumns() const
+{
+	return (int)this->mValues.size();
+}
+
 //! @brief ... add nonzero entry to matrix
 //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
 //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
@@ -110,7 +120,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddEntry(int rRow, int rColumn, T
 	{
 		throw MathException("[SparseMatrixCSRVector2Symmetric::addEntry] row index is out of bounds.");
 	}
-	if (rColumn >= this->mNumColumns || rColumn<0)
+	if (rColumn >= (int)this->mValues.size() || rColumn<0)
 	{
 		throw MathException("[SparseMatrixCSRVector2Symmetric::addEntry] column index is out of bounds.");
 	}
@@ -220,7 +230,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 			else
 			{
 				// no additional entries in this row (set column to an invalid value)
-				thisColumn = this->mNumColumns;
+				thisColumn = this->GetNumColumns();
 			}
 
 			int otherColumn;
@@ -231,7 +241,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 			else
 			{
 				// no additional entries in this row (set column to an invalid value)
-				otherColumn = this->mNumColumns;
+				otherColumn = this->GetNumColumns();
 			}
 
 			int resultColumn;
@@ -295,7 +305,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 			else
 			{
 				// no additional entries in this row (set column to an invalid value)
-				thisColumn = this->mNumColumns;
+				thisColumn = this->GetNumColumns();
 			}
 
 			int otherColumn;
@@ -306,7 +316,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 			else
 			{
 				// no additional entries in this row (set column to an invalid value)
-				otherColumn = this->mNumColumns;
+				otherColumn = this->GetNumColumns();
 			}
 
 			int resultColumn;
@@ -616,4 +626,40 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::ReorderColumns(const std::vector<
 	}
 */
 }
+
+//! @brief ... resize matrix
+//! @param rNumRows_ ... number of rows
+template<class T>
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::Resize(int rNumRows, int rNumColumns)
+{
+    // check for overflow
+    assert(rNumRows < INT_MAX);
+    assert(rNumRows >= 0);
+
+    if (rNumRows!=rNumColumns)
+		throw MathException("[SparseMatrixCSRVector2Symmetric::Resize] number of rows and column has to be identical for symmetric matrices.");
+
+    //no resize, since the reserved size is only decreased with a copy of a new object
+    this->mValues  = std::vector<std::vector<T> >(rNumRows);
+    this->mColumns = std::vector<std::vector<int > >(rNumRows);
+}
+
+//! @brief ... print info about the object
+template<class T>
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::Info() const
+{
+	std::cout << "number of rows: " << this->mValues.size() << std::endl;
+	std::cout << "number of columns: " << this->mValues.size() << std::endl;
+    for (unsigned int row = 0; row < this->mValues.size(); row++)
+    {
+        std::cout << "row " << row << ": ";
+        for (unsigned int col_count=0; col_count<this->mValues[row].size(); col_count++)
+        	if (this->mOneBasedIndexing)
+    	        std::cout << "col " << this->mColumns[row][col_count]-1 << " val " << this->mValues[row][col_count] << "    ";
+        	else
+	            std::cout << "col " << this->mColumns[row][col_count] << " val " << this->mValues[row][col_count] << " ";
+        std::cout << std::endl;
+    }
+}
+
 #endif // SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_H

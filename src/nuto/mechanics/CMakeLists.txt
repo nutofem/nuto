@@ -225,13 +225,20 @@ structures/grid/StructureGridNode.cpp
 structures/grid/StructureGridElement.cpp
 )
 
+SET(NuToMechanicsTimeIntegration_SOURCES
+timeIntegration/TimeIntegrationBase.cpp
+timeIntegration/Newmark.cpp
+)
+
+
+
 SET(NuToMechanics_SOURCES
 MechanicsException.cpp ${NuToMechanicsConstitutive_SOURCES} ${NuToMechanicsConstraint_SOURCES}
 ${NuToMechanicsCrack_SOURCES} ${NuToMechanicsElements_SOURCES} ${NuToMechanicsGroups_SOURCES}
 ${NuToMechanicsIntegrationtypes_SOURCES} ${NuToMechanicsLoads_SOURCES}
 ${NuToMechanicsNodes_SOURCES} ${NuToMechanicsSection_SOURCES} ${NuToMechanicsStructures_SOURCES}
+${NuToMechanicsTimeIntegration_SOURCES}
 )
-
 
 SET(NuToMechanics_SWIG_MODULES
   ModulMechanics

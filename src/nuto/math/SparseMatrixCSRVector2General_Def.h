@@ -29,7 +29,7 @@ public:
     //! @brief ... constructor
     //! @param rNumRows_ ... number of rows
     //! @param rNumColumns_ ... number of columns
-    SparseMatrixCSRVector2General(int rNumRows_=0, int rNumColumns_=0);
+    SparseMatrixCSRVector2General(int rNumRows=0, int rNumColumns=0);
 
     //! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a predefined tolerance)
     //! @param rFullMatrix ... input matrix (full storage)
@@ -46,9 +46,18 @@ public:
     //! @return    class name
     std::string GetTypeId()const;
 
+    //! @brief ... resize matrix
+    //! @param rNumRows_ ... number of rows
+    //! @param rNumColumns ... number of columns
+    void Resize(int rNumRows, int rNumColumns);
+
     //! @brief ... returns whether the matrix is symmetric or unsymmetric
     //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
     bool IsSymmetric() const;
+
+    //! @brief ... returns the number of columns
+    //! @return number of columns
+    int GetNumColumns() const;
 
     //! @brief ... add nonzero entry to matrix
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
@@ -140,7 +149,14 @@ public:
     //! @brief ... Concatenate rows from another matrix
     //! @param rOther ... other matrix with same number of columns
     void ConcatenateRows(const SparseMatrixCSRVector2General<T>& rOther);
+
+    //! @brief ... print info about the object
+    void Info() const;
+
 protected:
+    //! @brief ... number of columns
+    int mNumColumns;
+
 };
 }
 #endif // SPARSE_MATRIX_CSR_VECTOR2_GENERAL_DEF_H

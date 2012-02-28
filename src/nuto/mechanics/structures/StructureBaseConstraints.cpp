@@ -499,6 +499,19 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     it->second->SetRHS(rRHS);
 }
 
+//!@brief gets the right hand side of the constraint equations
+//!@param rConstraintEquation constraint equation
+//!@return rRHS
+double NuTo::StructureBase::ConstraintGetRHS(int rConstraintEquation)const
+{
+    boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.find(rConstraintEquation);
+    if (it==mConstraintMap.end())
+    {
+    	throw MechanicsException("[NuTo::StructureBase::ConstraintSetRHS] Constraint equation does not exist.");
+    }
+    return it->second->GetRHS();
+}
+
 //!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
 //!@param rConstraintEquation id of the constraint equation
 //!@param rCrackOpening new crack opening (x,y)

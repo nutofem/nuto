@@ -458,7 +458,7 @@ void NuTo::Solid::CalculateDeformationGradient(const std::vector<double>& rDeriv
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
 NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
+        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     throw MechanicsException("[NuTo::Solid::CalculateCoefficientMatrix_1] to be implemented.");
 }
@@ -466,7 +466,7 @@ NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_1(NuTo::FullMatrix<d
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
 NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
+        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     throw MechanicsException("[NuTo::Solid::CalculateCoefficientMatrix_2] to be implemented.");
 }

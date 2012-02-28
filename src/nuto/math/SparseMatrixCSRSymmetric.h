@@ -158,4 +158,32 @@ void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T>& 
 	}
 }
 
+//! @brief ... resize matrix
+//! @param rNumRows_ ... number of rows
+template <class T>
+void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows)
+{
+	// check for overflow
+	assert(rNumRows < INT_MAX);
+	assert(rNumRows >= 0);
+
+	// resize
+	SparseMatrixCSR<T>::Resize(rNumRows);
+}
+
+//! @brief ... resize matrix
+//! @param rNumRows_ ... number of rows
+//! @param rNumColumns_ ... number of columns
+template <class T>
+void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows_, int rNumColumns_)
+{
+	// check for overflow
+	assert(rNumColumns_ < INT_MAX);
+	assert(rNumColumns_ >= 0);
+	if (rNumRows_!=rNumColumns_)
+		throw MathException("[SparseMatrixCSRSymmetric::Resize] number of rows and column has to be identical for symmetric matrices.");
+
+	// resize
+	SparseMatrixCSR<T>::Resize(rNumRows_);
+}
 #endif // SPARSE_MATRIX_CSR_SYMMETRIC_H

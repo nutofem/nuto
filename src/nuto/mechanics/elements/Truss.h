@@ -39,12 +39,12 @@ public:
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
     Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const;
+            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
     Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const;
+            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector

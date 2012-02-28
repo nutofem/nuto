@@ -78,6 +78,15 @@ public:
     //! @return    class name
     std::string GetTypeId()const;
 
+    //! @brief ... resize the matrix and initialize everything to zero
+    //! @param  rRow ... number of rows
+    //! @param  rCol ... number of columns
+    void Resize(int rRow, int rCol);
+
+    //! @brief ... resize the matrix and initialize everything to zero
+    //! @param  rRow ... number of rows=number of columns
+    void Resize(int rRow);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

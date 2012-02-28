@@ -645,15 +645,8 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
@@ -690,7 +683,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -707,7 +700,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRGeneral<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -719,30 +712,12 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         // build equivalent load vector
         rVector = (transConstraintMatrix * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - this->mConstraintMatrix * activeDofValues);
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
     return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double>& rVector)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
@@ -778,7 +753,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -794,7 +769,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRSymmetric<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -807,30 +782,12 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         FullMatrix<double> Kdd_Mult_DeltaRHS = coefficientMatrixKK * deltaRHS;
         rVector = this->mConstraintMatrix.TransMult(Kdd_Mult_DeltaRHS) - coefficientMatrixJK * deltaRHS;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
     return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double>& rVector)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
@@ -867,7 +824,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -893,7 +850,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -906,30 +863,12 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         // build equivalent load vector
         rVector = (transConstraintMatrixVector2 * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - constraintMatrixVector2 * activeDofValues);
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
     return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
@@ -966,7 +905,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0General(rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -983,7 +922,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices0Symmetric(rMatrix, coefficientMatrixJK, coefficientMatrixKK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -998,6 +937,23 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         // build equivalent load vector
         rVector = (transConstraintMatrixVector2 * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - constraintMatrixVector2 * activeDofValues);
     }
+    return Error::SUCCESSFUL;
+}
+
+
+//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (nonsymmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1009,13 +965,13 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
-    return Error::SUCCESSFUL;
+    return error;
 }
 
-
-// build global coefficient matrix2 (mass)
-// general is used here, since it is added to a general matrix or (in case of constraints) might change to a C matrix M11+CM12 which is no longer symmetric)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2General<double>& rMatrix)
+//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (symmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1024,44 +980,91 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMat
 #endif
     start=clock();
 #endif
-    //check for dof numbering and build of tmp static data
-    BuildGlobalCoefficientMatrixCheck();
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
 
-    // get dof values stored at the nodes
-    FullMatrix<double> activeDofValues;
-    FullMatrix<double> dependentDofValues;
-    try
-    {
-        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] error extracting dof values from node.");
-        throw e;
-    }
 
-    // resize output objects
-    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
-    {
-        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    }
-    else
-    {
-        rMatrix.SetZeroEntries();
-    }
+//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (nonsymmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
 
-    if (this->mConstraintMatrix.GetNumEntries() == 0)
-    {
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatrices2General(rMatrix);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-    }
-    else
-    {
-    	//the static condensation with the constraint matrix only works for the static case where the rhs for the prescribed diplacements is given
-    	throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] mass matrix only implemented without constraints.");
-    }
+
+//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
+
+
+//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (nonsymmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1073,8 +1076,96 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMat
         mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
-    return Error::SUCCESSFUL;
+    return error;
 }
+
+
+//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (symmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
+
+
+//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (nonsymmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
+
+
+//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
+
+
+
+
 
 
 // build global external load vector

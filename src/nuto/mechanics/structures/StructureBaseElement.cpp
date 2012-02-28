@@ -627,10 +627,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_2(int rElementId,
     const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     std::vector<int> globalDofsRow,
     		         globalDofsColumn;
-
+    bool symmetryFlag;
     try
     {
-    	 elementPtr->CalculateCoefficientMatrix_2(rResult, globalDofsRow, globalDofsColumn);
+    	 elementPtr->CalculateCoefficientMatrix_2(rResult, globalDofsRow, globalDofsColumn, symmetryFlag);
     }
     catch(NuTo::MechanicsException e)
     {

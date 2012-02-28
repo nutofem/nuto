@@ -45,9 +45,18 @@ public:
     //! @return    class name
     std::string GetTypeId()const;
 
+    //! @brief ... resize matrix
+    //! @param rNumRows_ ... number of rows
+    //! @param rNumColumns ... number of columns
+    void Resize(int rNumRows_, int rNumColumns);
+
     //! @brief ... returns whether the matrix is symmetric or unsymmetric
     //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
     bool IsSymmetric() const;
+
+    //! @brief ... returns the number of columns
+    //! @return number of columns
+    int GetNumColumns() const;
 
     //! @brief ... add nonzero entry to matrix
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
@@ -127,6 +136,9 @@ public:
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering);
+
+    //! @brief ... print info about the object
+    void Info() const;
 
 protected:
 };

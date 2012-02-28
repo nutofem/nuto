@@ -69,6 +69,10 @@ public:
     //!@param rRHS new right hand side
     virtual void SetRHS(double rRHS);
 
+    //!@brief returns the right hand side of the constraint equations
+    //!@return rRHS
+    virtual double GetRHS()const;
+
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
     virtual void SetStrain(const EngineeringStrain2D& rStrain);

@@ -246,7 +246,7 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 
 
 // based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == false);
@@ -270,11 +270,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 	if (mUseMIS)
 	{
 		if (mMIS.size()==0)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] maximum independent set not calculated.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] maximum independent set not calculated.");
 		if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 		if (rMatrixJK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 		for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
 		{
 			std::vector<ElementBase*>::iterator elementIter;
@@ -287,13 +287,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 					// calculate element contribution
 					bool symmetryFlag = false;
 
-					Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+					Error::eError error;
+					switch(rType)
+					{
+					case NuTo::StructureBaseEnum::STIFFNESS:
+						error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+					break;
+					case NuTo::StructureBaseEnum::MASS:
+						error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+					break;
+					default:
+						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented. (only stiffness and mass).");
+					}
 					if (error!=Error::SUCCESSFUL)
 					{
 						if (errorGlobal==Error::SUCCESSFUL)
 							errorGlobal = error;
 						else if (errorGlobal!=error)
-							throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+							throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesGeneral] elements have returned multiple different error codes, can't handle that.");
 					}
 					else
 					{
@@ -342,13 +353,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 				// calculate element contribution
 				bool symmetryFlag = false;
 
-				Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				Error::eError error;
+				switch(rType)
+				{
+				case NuTo::StructureBaseEnum::STIFFNESS:
+					error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				case NuTo::StructureBaseEnum::MASS:
+					error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				default:
+					throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented. (only stiffness and mass).");
+				}
 				if (error!=Error::SUCCESSFUL)
 				{
 					if (errorGlobal==Error::SUCCESSFUL)
 						errorGlobal = error;
 					else if (errorGlobal!=error)
-						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesGeneral] elements have returned multiple different error codes, can't handle that.");
 				}
 				else
 				{
@@ -392,13 +414,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 		// calculate element contribution
 		bool symmetryFlag = false;
 
-		Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+		Error::eError error;
+		switch(rType)
+		{
+		case NuTo::StructureBaseEnum::STIFFNESS:
+			error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+		break;
+		case NuTo::StructureBaseEnum::MASS:
+			error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+		break;
+		default:
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented. (only stiffness and mass).");
+		}
 		if (error!=Error::SUCCESSFUL)
 		{
 			if (errorGlobal==Error::SUCCESSFUL)
 				errorGlobal = error;
 			else if (errorGlobal!=error)
-				throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+				throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesGeneral] elements have returned multiple different error codes, can't handle that.");
 		}
 		else
 		{
@@ -432,14 +465,17 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
     }
 #endif
 
-    //write contribution of Lagrange Multipliers
-    ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
+    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    {
+		//write contribution of Lagrange Multipliers
+		ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
+    }
 
     return errorGlobal;
 }
 
-// based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK) const
+// based on the global dofs build submatrices of the global coefficent matrix
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK) const
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == false);
@@ -471,15 +507,15 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 	if (mUseMIS)
 	{
 		if (mMIS.size()==0)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] maximum independent set not calculated.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] maximum independent set not calculated.");
 		if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 		if (rMatrixJK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 		if (rMatrixKJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixKJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] MatrixKJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 		if (rMatrixKK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0General] MatrixKK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] MatrixKK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 		for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
 		{
 			std::vector<ElementBase*>::iterator elementIter;
@@ -493,13 +529,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 					// calculate element contribution
 					bool symmetryFlag = false;
 
-					Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+					Error::eError error;
+					switch(rType)
+					{
+					case NuTo::StructureBaseEnum::STIFFNESS:
+						error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+					break;
+					case NuTo::StructureBaseEnum::MASS:
+						error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+					break;
+					default:
+						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented. (only stiffness and mass).");
+					}
 					if (error!=Error::SUCCESSFUL)
 					{
 						if (errorGlobal==Error::SUCCESSFUL)
 							errorGlobal = error;
 						else if (errorGlobal!=error)
-							throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+							throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesGeneral] elements have returned multiple different error codes, can't handle that.");
 					}
 					else
 					{
@@ -560,13 +607,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 				// calculate element contribution
 				bool symmetryFlag = false;
 
-				Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				Error::eError error;
+				switch(rType)
+				{
+				case NuTo::StructureBaseEnum::STIFFNESS:
+					error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				case NuTo::StructureBaseEnum::MASS:
+					error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				default:
+					throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented. (only stiffness and mass).");
+				}
 				if (error!=Error::SUCCESSFUL)
 				{
 					if (errorGlobal==Error::SUCCESSFUL)
 						errorGlobal = error;
 					else if (errorGlobal!=error)
-						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesGeneral] elements have returned multiple different error codes, can't handle that.");
 				}
 				else
 				{
@@ -625,13 +683,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 		// calculate element contribution
 		bool symmetryFlag = false;
 
-		Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+		Error::eError error;
+		switch(rType)
+		{
+		case NuTo::StructureBaseEnum::STIFFNESS:
+			error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+		break;
+		case NuTo::StructureBaseEnum::MASS:
+			error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+		break;
+		default:
+			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented. (only stiffness and mass).");
+		}
 		if (error!=Error::SUCCESSFUL)
 		{
 			if (errorGlobal==Error::SUCCESSFUL)
 				errorGlobal = error;
 			else if (errorGlobal!=error)
-				throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+				throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesGeneral] elements have returned multiple different error codes, can't handle that.");
 		}
 		else
 		{
@@ -677,14 +746,17 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0General(S
 		}
     }
 #endif
-    //write contribution of Lagrange Multipliers
-    ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
+    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    {
+		//write contribution of Lagrange Multipliers
+		ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
+    }
 
     return errorGlobal;
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK) const
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == true);
@@ -707,11 +779,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 	if (mNumProcessors!=0)
 		omp_set_num_threads(mNumProcessors);
     if (mMIS.size()==0)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] maximum independent set not calculated.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] maximum independent set not calculated.");
     if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
     if (rMatrixJK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
 
     for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
     {
@@ -732,13 +804,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 				// calculate element contribution
 				bool symmetryFlag = false;
 
-				Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				Error::eError error;
+				switch(rType)
+				{
+				case NuTo::StructureBaseEnum::STIFFNESS:
+					error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				case NuTo::StructureBaseEnum::MASS:
+					error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				default:
+					throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] matrix type not implemented. (only stiffness and mass).");
+				}
 	            if (error!=Error::SUCCESSFUL)
 	            {
 	            	if (errorGlobal==Error::SUCCESSFUL)
 	            		errorGlobal = error;
 	            	else if (errorGlobal!=error)
-	            		throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+	            		throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesSymmetric] elements have returned multiple different error codes, can't handle that.");
 	            }
 	            else
 	            {
@@ -746,7 +829,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 					assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 					if(symmetryFlag == false)
 					{
-						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] element matrix is not symmetric (general sparse matrix required).");
+						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] element matrix is not symmetric (general sparse matrix required).");
 					}
 
 					// write element contribution to global matrix
@@ -781,14 +864,17 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 #else
     }
 #endif
-    //write contribution of Lagrange Multipliers
-    ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK);
+    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    {
+		//write contribution of Lagrange Multipliers
+		ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK);
+    }
 
     return errorGlobal;
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric(SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK) const
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK) const
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == true);
@@ -815,13 +901,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 	if (mNumProcessors!=0)
 		omp_set_num_threads(mNumProcessors);
     if (mMIS.size()==0)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] maximum independent set not calculated.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] maximum independent set not calculated.");
     if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
     if (rMatrixJK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
     if (rMatrixKK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] MatrixKK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+    	throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] MatrixKK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
     for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
     {
         std::vector<ElementBase*>::iterator elementIter;
@@ -839,13 +925,24 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 #endif
 				// calculate element contribution
 				bool symmetryFlag = false;
-				Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				Error::eError error;
+				switch(rType)
+				{
+				case NuTo::StructureBaseEnum::STIFFNESS:
+					error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				case NuTo::StructureBaseEnum::MASS:
+					error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
+				break;
+				default:
+					throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] matrix type not implemented. (only stiffness and mass).");
+				}
 	            if (error!=Error::SUCCESSFUL)
 	            {
 	            	if (errorGlobal==Error::SUCCESSFUL)
 	            		errorGlobal = error;
 	            	else if (errorGlobal!=error)
-	            		throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+	            		throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatricesSymmetric] elements have returned multiple different error codes, can't handle that.");
 	            }
 	            else
 	            {
@@ -853,7 +950,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 					assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
 					if(symmetryFlag == false)
 					{
-						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric] element matrix is not symmetric (general sparse matrix required).");
+						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] element matrix is not symmetric (general sparse matrix required).");
 					}
 
 					// write element contribution to global matrix
@@ -904,192 +1001,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices0Symmetric
 #else
     }
 #endif
-    //write contribution of Lagrange Multipliers
-    ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK, rMatrixKK);
-    return errorGlobal;
-}
-
-
-// based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatrices2General(SparseMatrix<double>& rMatrixJJ) const
-{
-    assert(this->mNodeNumberingRequired == false);
-    assert(rMatrixJJ.IsSymmetric() == false);
-    assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
-
-    // define variables storing the element contribution
-	NuTo::FullMatrix<double> elementMatrix;
-	std::vector<int> elementMatrixGlobalDofsRow;
-	std::vector<int> elementMatrixGlobalDofsColumn;
-	Error::eError errorGlobal (Error::SUCCESSFUL);
-
-#ifdef _OPENMP
-	if (mNumProcessors!=0)
-		omp_set_num_threads(mNumProcessors);
-	if (mUseMIS)
-	{
-		if (mMIS.size()==0)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices2General] maximum independent set not calculated.");
-		if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
-			throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatrices2General] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
-		for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
-		{
-			std::vector<ElementBase*>::iterator elementIter;
-			#pragma omp parallel default(shared) private(elementIter,elementMatrix,elementMatrixGlobalDofsRow,elementMatrixGlobalDofsColumn)
-			for (elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
-			{
-				#pragma omp single nowait
-				{
-					const ElementBase* elementPtr = *elementIter;
-					// calculate element contribution
-					Error::eError error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn);
-					if (error!=Error::SUCCESSFUL)
-					{
-						if (errorGlobal==Error::SUCCESSFUL)
-							errorGlobal = error;
-						else if (errorGlobal!=error)
-							throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-					}
-					else
-					{
-						assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-						assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-
-						// write element contribution to global matrix
-						for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-						{
-							int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-							if (globalRowDof < this->mNumActiveDofs)
-							{
-								for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-								{
-									if (fabs(elementMatrix(rowCount, colCount))>mToleranceStiffnessEntries)
-									{
-										int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-										if (globalColumnDof < this->mNumActiveDofs)
-										{
-											rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-										}
-										else
-										{
-											// rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		//dont use MIS
-		// loop over all elements
-        #pragma omp parallel default(shared) private(elementMatrix,elementMatrixGlobalDofsRow,elementMatrixGlobalDofsColumn)
-		for (boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
-		{
-			#pragma omp single nowait
-			{
-				//std::cout << "thread in structure " << omp_get_thread_num() << "\n";
-				const ElementBase* elementPtr = elementIter->second;
-				// calculate element contribution
-				bool symmetryFlag = false;
-
-				Error::eError error = elementPtr->CalculateCoefficientMatrix_0(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn, symmetryFlag);
-				if (error!=Error::SUCCESSFUL)
-				{
-					if (errorGlobal==Error::SUCCESSFUL)
-						errorGlobal = error;
-					else if (errorGlobal!=error)
-						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-				}
-				else
-				{
-					assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-					assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-
-					// write element contribution to global matrix
-					for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-					{
-						int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-						if (globalRowDof < this->mNumActiveDofs)
-						{
-							for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-							{
-								if (fabs(elementMatrix(rowCount, colCount))>mToleranceStiffnessEntries)
-								{
-									int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-									if (globalColumnDof < this->mNumActiveDofs)
-									{
-										#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-										rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-									}
-									else
-									{
-										//#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-										//rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-	    }
-	}
-#else //_OPENMP
-
-	// loop over all elements
-	for (boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
-	{
-		const ElementBase* elementPtr = elementIter->second;
-		// calculate element contribution
-		Error::eError error = elementPtr->CalculateCoefficientMatrix_2(elementMatrix, elementMatrixGlobalDofsRow, elementMatrixGlobalDofsColumn);
-		if (error!=Error::SUCCESSFUL)
-		{
-			if (errorGlobal==Error::SUCCESSFUL)
-				errorGlobal = error;
-			else if (errorGlobal!=error)
-				throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
-		}
-		else
-		{
-			assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementMatrixGlobalDofsRow.size());
-			assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementMatrixGlobalDofsColumn.size());
-
-			// write element contribution to global matrix
-			for (unsigned int rowCount = 0; rowCount < elementMatrixGlobalDofsRow.size(); rowCount++)
-			{
-				int globalRowDof = elementMatrixGlobalDofsRow[rowCount];
-				if (globalRowDof < this->mNumActiveDofs)
-				{
-					for (unsigned int colCount = 0; colCount < elementMatrixGlobalDofsColumn.size(); colCount++)
-					{
-						if (fabs(elementMatrix(rowCount, colCount))>mToleranceStiffnessEntries)
-						{
-							int globalColumnDof = elementMatrixGlobalDofsColumn[colCount];
-							if (globalColumnDof < this->mNumActiveDofs)
-							{
-								rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
-							}
-							else
-							{
-								//rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
-							}
-						}
-					}
-				}
-			}
-		}
+    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    {
+		//write contribution of Lagrange Multipliers
+		ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK, rMatrixKK);
     }
-#endif //_OPENMP
-
     return errorGlobal;
 }
-
 
 NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
 {

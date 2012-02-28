@@ -45,29 +45,13 @@ public:
     //! @brief ... constructor
     //! @param rNumRows_ ... number of rows
     //! @param rNumReserveEntries_ ... number of entries per row for which memory is reserved (optional)
-    SparseMatrixCSRVector2(int rNumRows_, int rNumColumns) : SparseMatrix<T>()
+    SparseMatrixCSRVector2(int rNumRows_) : SparseMatrix<T>()
     {
         // check for overflow
         assert(rNumRows_ < INT_MAX);
         assert(rNumRows_ >= 0);
         this->mValues.resize(rNumRows_);
         this->mColumns.resize(rNumRows_);
-        mNumColumns = rNumColumns;
-    }
-
-    //! @brief ... resize matrix
-    //! @param rNumRows_ ... number of rows
-    void Resize(int rNumRows_, int rNumColumns)
-    {
-        // check for overflow
-        assert(rNumRows_ < INT_MAX);
-        assert(rNumRows_ >= 0);
-
-        //no resize, since the reserved size is only decreased with a copy of a new object
-        this->mValues  = std::vector<std::vector<T> >(rNumRows_);
-        this->mColumns = std::vector<std::vector<int > >(rNumRows_);
-
-        mNumColumns = rNumColumns;
     }
 
     //! @brief ... reserve memory for non-zero matrix entries
@@ -93,41 +77,11 @@ public:
     	return counter;
     }
 
-    //! @brief ... returns the number of columns
-    //! @return number of columns
-    int GetNumColumns() const
-    {
-        return this->mNumColumns;
-    }
-
     //! @brief ... returns the number of rows
     //! @return number of rows
     int GetNumRows() const
     {
         return this->mValues.size();
-    }
-
-    //! @brief ... add nonzero entry to matrix
-    //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
-    //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
-    //! @param rValue ... value of the nonzero entry
-    virtual void AddEntry(int rRow, int rColumn, T rValue) = 0;
-
-    //! @brief ... print info about the object
-    void Info() const
-    {
-    	std::cout << "number of rows: " << this->mValues.size() << std::endl;
-    	std::cout << "number of columns: " << this->mNumColumns << std::endl;
-        for (unsigned int row = 0; row < this->mValues.size(); row++)
-        {
-            std::cout << "row " << row << ": ";
-            for (unsigned int col_count=0; col_count<this->mValues[row].size(); col_count++)
-            	if (this->mOneBasedIndexing)
-        	        std::cout << "col " << this->mColumns[row][col_count]-1 << " val " << this->mValues[row][col_count] << "    ";
-            	else
-    	            std::cout << "col " << this->mColumns[row][col_count] << " val " << this->mValues[row][col_count] << " ";
-            std::cout << std::endl;
-        }
     }
 
     //! @brief ... switch to one based indexing (only internal indexing, interface still uses zero based indexing)
@@ -185,7 +139,6 @@ public:
     {
         ar & boost::serialization::make_nvp("SparseMatrix",boost::serialization::base_object< SparseMatrix<T> >(*this));
         ar & BOOST_SERIALIZATION_NVP(mColumns)
-           & BOOST_SERIALIZATION_NVP(mNumColumns)
            & BOOST_SERIALIZATION_NVP(mValues);
    }
 #endif  // ENABLE_SERIALIZATION
@@ -443,8 +396,6 @@ protected:
     std::vector<std::vector<T> > mValues;
     //! @brief columns of nonzero matrix entries
     std::vector<std::vector<int> > mColumns;
-    //! @brief ... number of columns
-    int mNumColumns;
 };
 }
 #endif // SPARSE_MATRIX_CSR_VECTOR2_H

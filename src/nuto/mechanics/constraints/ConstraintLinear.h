@@ -55,10 +55,6 @@ public:
     //! @return number of constraints
     virtual int GetNumLinearConstraints()const=0;
 
-    //!@brief sets/modifies the right hand side of the constraint equation
-    //!@param rRHS new right hand side
-    virtual void SetRHS(double rRHS);
-
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)

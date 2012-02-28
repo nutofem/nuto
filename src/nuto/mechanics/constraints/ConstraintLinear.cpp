@@ -24,13 +24,6 @@ NuTo::ConstraintLinear::~ConstraintLinear()
 {
 }
 
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-void NuTo::ConstraintLinear::SetRHS(double rRHS)
-{
-    throw MechanicsException("[NuTo::ConstraintLinear::SetRHS] not implemented for this linear constraint.");
-}
-
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstraintLinear::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

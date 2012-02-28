@@ -50,6 +50,14 @@ public:
     //! @return number of columns
     virtual int GetNumColumns() const = 0;
 
+    //! @brief ... resize the matrix and initialize everything to zero
+    //! @param  rRow ... number of rows
+    //! @param  rCol ... number of columns
+    virtual void Resize(int rRow, int rCol) = 0;
+
+    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
+    virtual void SetZeroEntries() = 0;
+
 	//! @brief ... add nonzero entry to matrix
     //! @param row ... row of the nonzero entry (zero based indexing!!!)
     //! @param column ... column of the nonzero entry (zero based indexing!!!)

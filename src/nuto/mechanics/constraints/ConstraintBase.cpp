@@ -106,6 +106,13 @@ void NuTo::ConstraintBase::SetRHS(double rRHS)
     throw MechanicsException("[NuTo::ConstraintBase] Set right hand side for this type of constraints not implemented.");
 }
 
+//!@brief returns the right hand side of the constraint equations
+//!@return rRHS
+double NuTo::ConstraintBase::GetRHS()const
+{
+    throw MechanicsException("[NuTo::ConstraintBase] Get right hand side for this type of constraints not implemented.");
+}
+
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)
 void NuTo::ConstraintBase::SetStrain(const NuTo::EngineeringStrain2D& rStrain)

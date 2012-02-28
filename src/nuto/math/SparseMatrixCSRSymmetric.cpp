@@ -10,6 +10,7 @@
 #include "nuto/math/SparseMatrix.h"
 #include "nuto/math/SparseMatrixCSR.h"
 #include "nuto/math/SparseMatrixCSRSymmetric_Def.h"
+#include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/MathException.h"
 

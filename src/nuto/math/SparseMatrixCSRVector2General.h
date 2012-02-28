@@ -17,9 +17,10 @@
 //! @param rNumRows_ ... number of rows
 //! @param rNumColumns_ ... number of columns
 template<class T>
-NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(int rNumRows_, int rNumColumns_) :
-                             NuTo::SparseMatrixCSRVector2<T>(rNumRows_,rNumColumns_)
+NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(int rNumRows, int rNumColumns) :
+                             NuTo::SparseMatrixCSRVector2<T>(rNumRows)
 {
+	mNumColumns = rNumColumns;
 }
 
 //! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a predefined tolerance)
@@ -28,8 +29,10 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(int rNumRo
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
 NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(NuTo::FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
-                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows(),rFullMatrix.GetNumColumns())
+                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
 {
+	this->mNumColumns = rFullMatrix.GetNumColumns();
+
 	double tolerance = rAbsoluteTolerance;
 	if (rRelativeTolerance > 1e-14)
 	{
@@ -59,7 +62,7 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(NuTo::Full
 //! @param rCSRMatrix ... input matrix (full storage)
 template<class T>
 NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(const NuTo::SparseMatrixCSRGeneral<T>& rCSRMatrix) :
-              NuTo::SparseMatrixCSRVector2<T>::SparseMatrixCSRVector2(rCSRMatrix.GetNumRows(),rCSRMatrix.GetNumColumns() )
+              NuTo::SparseMatrixCSRVector2<T>::SparseMatrixCSRVector2(rCSRMatrix.GetNumRows())
 {
     this->mNumColumns = rCSRMatrix.GetNumColumns();
     this->mColumns.resize(rCSRMatrix.GetNumRows());
@@ -85,6 +88,14 @@ template<class T>
 bool NuTo::SparseMatrixCSRVector2General<T>::IsSymmetric() const
 {
 	return false;
+}
+
+//! @brief ... returns the number of columns
+//! @return number of columns
+template <class T>
+int NuTo::SparseMatrixCSRVector2General<T>::GetNumColumns() const
+{
+	return this->mNumColumns;
 }
 
 //! @brief ... add nonzero entry to matrix
@@ -729,10 +740,44 @@ void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows(const SparseMatrixC
     if (this->mOneBasedIndexing!=rOther.mOneBasedIndexing)
         throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows] index base (0 or 1) should be identical for both matrices");
     if (this->mNumColumns!=rOther.mNumColumns)
-        throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns] number of columns has to be identical for both matrices.");
+        throw MathException("[NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows] number of columns has to be identical for both matrices.");
 
     this->mValues.insert(this->mValues.end(), rOther.mValues.begin(), rOther.mValues.end());
     this->mColumns.insert(this->mColumns.end(), rOther.mColumns.begin(), rOther.mColumns.end());
+}
+
+//! @brief ... resize matrix
+//! @param rNumRows_ ... number of rows
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::Resize(int rNumRows, int rNumColumns)
+{
+    // check for overflow
+    assert(rNumRows < INT_MAX);
+    assert(rNumRows >= 0);
+
+    //no resize, since the reserved size is only decreased with a copy of a new object
+    this->mValues  = std::vector<std::vector<T> >(rNumRows);
+    this->mColumns = std::vector<std::vector<int > >(rNumRows);
+
+    mNumColumns = rNumColumns;
+}
+
+//! @brief ... print info about the object
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::Info() const
+{
+	std::cout << "number of rows: " << this->mValues.size() << std::endl;
+	std::cout << "number of columns: " << this->mNumColumns << std::endl;
+    for (unsigned int row = 0; row < this->mValues.size(); row++)
+    {
+        std::cout << "row " << row << ": ";
+        for (unsigned int col_count=0; col_count<this->mValues[row].size(); col_count++)
+        	if (this->mOneBasedIndexing)
+    	        std::cout << "col " << this->mColumns[row][col_count]-1 << " val " << this->mValues[row][col_count] << "    ";
+        	else
+	            std::cout << "col " << this->mColumns[row][col_count] << " val " << this->mValues[row][col_count] << " ";
+        std::cout << std::endl;
+    }
 }
 
 #endif // SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H

@@ -671,7 +671,7 @@ void NuTo::Plane::CalculateDeformationGradient(const std::vector<double>& rDeriv
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
 NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
+        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_1] to be implemented.");
 }
@@ -679,9 +679,9 @@ NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<d
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
 NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
+        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
-    //calculate local coordinates
+	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
     CalculateLocalCoordinates(localNodeCoord);
 
@@ -732,6 +732,7 @@ NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<d
             }
         }
     }
+	rSymmetry = true;
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofsRow);
     rGlobalDofsColumn = rGlobalDofsRow;
