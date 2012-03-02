@@ -48,12 +48,6 @@ public:
     	mConstraintRHSDelta = rConstraintRHSDelta;
     }
 
-    //! @brief sets the initial time
-    void SetInitialTime(int rTime0)
-    {
-    	mTime0 = rTime0;
-    }
-
     //! @brief sets the delta time
     void SetDeltaTime(int rTimeDelta)
     {
@@ -73,8 +67,9 @@ public:
 protected:
     int mConstraintLoad;
 	double mConstraintRHSDelta;
-	double mTime0;
+	double mTime;
 	double mTimeDelta;
+    int mLoadStep;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -62,15 +62,12 @@ double NuTo::ConstraintLinearNodeGroupDisplacements3D::GetRHS()const
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
-        rRHS(curConstraintEquation,0) = mRHS;
-        if (itNode->second->GetNumDisplacements()==0)
+        if (itNode->second->GetNumDisplacements()!=3)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix] Node does not have displacements or has more than three displacement components.");
 
         if (fabs(mDirection[0])>1e-18)
@@ -83,6 +80,22 @@ void NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix(int& 
         curConstraintEquation++;
     }
 }
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearNodeGroupDisplacements3D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+	for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+	{
+		if (itNode->second->GetNumDisplacements()!=3)
+			throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements3D::GetRHS] Node does not have exactly 3 displacement components.");
+		rRHS(curConstraintEquation,0) = mRHS;
+		curConstraintEquation++;
+	}
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 // serialize

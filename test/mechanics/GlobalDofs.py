@@ -71,7 +71,8 @@ if (numberGlobalDofs!=15):
 #build constraint matrix and rhs
 constraintMatrixSparse = nuto.DoubleSparseMatrixCSRGeneral(numConstraints,numberGlobalDofs)
 rhs = nuto.DoubleFullMatrix(numConstraints,1)
-myStructure.ConstraintGetConstraintMatrix(constraintMatrixSparse,rhs)
+myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination(constraintMatrixSparse)
+myStructure.ConstraintGetRHSBeforeGaussElimination(rhs)
 constraintMatrixFull = nuto.DoubleFullMatrix(constraintMatrixSparse)
 
 #correct constraint matrix

@@ -311,13 +311,409 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 #define MIN_CONSTRAINT 1e-6
 void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
-    double LeftUpperCoordinates[2], LeftLowerCoordinates[2];
+	double LeftUpperCoordinates[2], LeftLowerCoordinates[2];
+    mLeftUpperCorner->GetCoordinates2D(LeftUpperCoordinates);
+    mLeftLowerCorner->GetCoordinates2D(LeftLowerCoordinates);
+
+    //calculate length of specimen
+    double length = LeftUpperCoordinates[1]-LeftLowerCoordinates[1];
+
+    //only du linear interpolation between nodes on the boundary, this is not exact for quadrativ elements, but the effort is much reduced
+    if (mAngle>=45 && mAngle<135)
+    {
+        double crackShift;
+        crackShift = length*tan((90-mAngle)*PI/180.);
+       //**************************************************************
+        //add  constraints for all the slave nodes of the right boundary
+        //**************************************************************
+        assert(mMasterNodesLeftBoundary.size()>1);
+        unsigned int nextMasterNodecount(1);
+
+        NodeCoordinatesDisplacements2D* curMasterNodePtr(mMasterNodesLeftBoundary[0]);
+        double coordinatesCurMaster[2];
+        curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
+
+        NodeCoordinatesDisplacements2D* nextMasterNodePtr(mMasterNodesLeftBoundary[nextMasterNodecount]);;
+        double coordinatesNextMaster[2];
+        nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+
+        //double deltaDisp[2];
+        for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
+        {
+            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
+            double coordinatesSlave[2];
+            curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
+
+            double coordinatesSlaveonMasterSideY;
+            coordinatesSlaveonMasterSideY = coordinatesSlave[1];
+
+            while (coordinatesNextMaster[1]<coordinatesSlaveonMasterSideY && nextMasterNodecount+1<mMasterNodesLeftBoundary.size())
+            {
+                 curMasterNodePtr = nextMasterNodePtr;
+                 coordinatesCurMaster[0] = coordinatesNextMaster[0];
+                 coordinatesCurMaster[1] = coordinatesNextMaster[1];
+                 nextMasterNodecount++;
+
+                 assert (nextMasterNodecount<mMasterNodesLeftBoundary.size());
+                 nextMasterNodePtr = mMasterNodesLeftBoundary[nextMasterNodecount];
+                 nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+            }
+            //slave is between two master nodes
+
+            //calculate weighting function for each master node
+            double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
+
+            //deltaDisp[0] = length*mStrain.mEngineeringStrain[0] + mCrackOpening[0];
+            //deltaDisp[1] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[1];
+
+/*            std::cout << "constraint equation " << curConstraintEquation
+                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
+                    << w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
+                    << 1-w << " node " << mStructure->NodeGetId(nextMasterNodePtr)
+                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
+                    << std::endl;
+*/
+            //constrain x direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[0];
+            curConstraintEquation++;
+
+            //constrain y direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[1];
+            curConstraintEquation++;
+        }
+
+        //**************************************************************
+        //add  constraints for all the slave nodes of the top boundary
+        //**************************************************************
+
+        assert(mMasterNodesBottomBoundary.size()>1);
+        nextMasterNodecount = 1;
+
+        curMasterNodePtr = mMasterNodesBottomBoundary[0];
+        curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
+
+        nextMasterNodePtr = mMasterNodesBottomBoundary[nextMasterNodecount];
+        nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+
+        double crackPosX((length-crackShift)*0.5);
+
+        for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
+        {
+            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
+            double coordinatesSlave[2];
+            curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
+
+            double coordinatesSlaveonMasterSideX;
+            coordinatesSlaveonMasterSideX = coordinatesSlave[0]-crackShift;
+            double deltaRHS[2];
+            if (coordinatesSlaveonMasterSideX<0)
+            {
+                coordinatesSlaveonMasterSideX+=length;
+                deltaRHS[0] = mStrain.mEngineeringStrain[0]*length+mCrackOpening[0];
+                deltaRHS[1] = 0.5 * mStrain.mEngineeringStrain[2]*length+mCrackOpening[1];
+            }
+            else
+            {
+                if (coordinatesSlaveonMasterSideX>length)
+                {
+                    coordinatesSlaveonMasterSideX-=length;
+                    deltaRHS[0] = -mStrain.mEngineeringStrain[0]*length-mCrackOpening[0];
+                    deltaRHS[1] = -0.5 * mStrain.mEngineeringStrain[2]*length-mCrackOpening[1];
+                }
+                else
+                {
+                    deltaRHS[0] = 0.;
+                    deltaRHS[1] = 0.;
+                }
+            }
+
+            while (coordinatesCurMaster[0]>coordinatesSlaveonMasterSideX || coordinatesNextMaster[0]<coordinatesSlaveonMasterSideX)
+            {
+                if (nextMasterNodePtr==mRightLowerCorner)
+                {
+                    //restart from the left corner
+                    curMasterNodePtr = mMasterNodesBottomBoundary[0];
+                    curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
+
+                    nextMasterNodecount=1;
+                }
+                else
+                {
+                    curMasterNodePtr = nextMasterNodePtr;
+                    coordinatesCurMaster[0] = coordinatesNextMaster[0];
+                    coordinatesCurMaster[1] = coordinatesNextMaster[1];
+
+                    nextMasterNodecount++;
+                }
+                nextMasterNodePtr = mMasterNodesBottomBoundary[nextMasterNodecount];
+                nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+            }
+
+            //slave is between two master nodes
+
+            //calculate weighting function for each master node
+            double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
+
+            if (coordinatesCurMaster[0]>crackPosX)
+            {
+                deltaRHS[0]-=w*mCrackOpening[0];
+                deltaRHS[1]-=w*mCrackOpening[1];
+            }
+            if (coordinatesNextMaster[0]>crackPosX)
+            {
+                deltaRHS[0]-=(1-w)*mCrackOpening[0];
+                deltaRHS[1]-=(1-w)*mCrackOpening[1];
+            }
+            if (coordinatesSlaveonMasterSideX>crackPosX)
+            {
+                deltaRHS[0]+=mCrackOpening[0];
+                deltaRHS[1]+=mCrackOpening[1];
+            }
+
+            //deltaDisp[0] = crackShift*mStrain.mEngineeringStrain[0] + length *0.5* mStrain.mEngineeringStrain[2] - deltaRHS[0];
+            //deltaDisp[1] = crackShift*0.5*mStrain.mEngineeringStrain[2] + length*mStrain.mEngineeringStrain[1] - deltaRHS[1];
+
+/*            std::cout << "constraint equation " << curConstraintEquation
+                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
+                    << -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
+                    << w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
+                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
+                    << std::endl;
+*/
+            //constrain x direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[0];
+            curConstraintEquation++;
+
+            //constrain y direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[1];
+            curConstraintEquation++;
+        }
+    }
+    else
+    {
+        double crackShift;
+        crackShift = length*tan((mAngle)*PI/180.);
+        //**************************************************************
+        // angle between 135 abnd 225 degrees
+        //**************************************************************
+        // add  constraints for all the slave nodes of the top boundary
+        //**************************************************************
+        assert(mMasterNodesBottomBoundary.size()>1);
+        unsigned int nextMasterNodecount(1);
+
+        NodeCoordinatesDisplacements2D* curMasterNodePtr(mMasterNodesBottomBoundary[0]);
+        double coordinatesCurMaster[2];
+        curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
+
+        NodeCoordinatesDisplacements2D* nextMasterNodePtr(mMasterNodesBottomBoundary[nextMasterNodecount]);;
+        double coordinatesNextMaster[2];
+        nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+
+        //double deltaDisp[2];
+        for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
+        {
+            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
+            double coordinatesSlave[2];
+            curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
+
+            double coordinatesSlaveonMasterSideX;
+            coordinatesSlaveonMasterSideX = coordinatesSlave[0];
+
+            while (coordinatesNextMaster[0]<coordinatesSlaveonMasterSideX && nextMasterNodecount+1<mMasterNodesBottomBoundary.size())
+            {
+                 curMasterNodePtr = nextMasterNodePtr;
+                 coordinatesCurMaster[0] = coordinatesNextMaster[0];
+                 coordinatesCurMaster[1] = coordinatesNextMaster[1];
+                 nextMasterNodecount++;
+
+                 assert (nextMasterNodecount<mMasterNodesBottomBoundary.size());
+                 nextMasterNodePtr = mMasterNodesBottomBoundary[nextMasterNodecount];
+                 nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+            }
+            //slave is between two master nodes
+
+            //calculate weighting function for each master node
+            double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
+
+            //deltaDisp[0] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[0];;
+            //deltaDisp[1] = length*mStrain.mEngineeringStrain[1] + mCrackOpening[1];;
+
+/*            std::cout << "constraint equation " << curConstraintEquation
+                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
+                    << -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
+                    << w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
+                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
+                    << std::endl;
+*/
+            //constrain x direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[0];
+            curConstraintEquation++;
+
+            //constrain y direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[1];
+            curConstraintEquation++;
+        }
+
+        //**************************************************************
+        //add  constraints for all the slave nodes of the right boundary
+        //**************************************************************
+
+        assert(mMasterNodesLeftBoundary.size()>1);
+        nextMasterNodecount = 1;
+
+        curMasterNodePtr = mMasterNodesLeftBoundary[0];
+        curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
+
+        nextMasterNodePtr = mMasterNodesLeftBoundary[nextMasterNodecount];
+        nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+
+        double crackPosY((length-crackShift)*0.5);
+
+        for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
+        {
+            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
+            double coordinatesSlave[2];
+            curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
+
+            double coordinatesSlaveonMasterSideY;
+            coordinatesSlaveonMasterSideY = coordinatesSlave[1]-crackShift;
+            double deltaRHS[2];
+            if (coordinatesSlaveonMasterSideY<0)
+            {
+                coordinatesSlaveonMasterSideY+=length;
+                deltaRHS[0] = 0.5 * mStrain.mEngineeringStrain[2]*length+mCrackOpening[0];
+                deltaRHS[1] = mStrain.mEngineeringStrain[1]*length+mCrackOpening[1];
+            }
+            else
+            {
+                if (coordinatesSlaveonMasterSideY>length)
+                {
+                    coordinatesSlaveonMasterSideY-=length;
+                    deltaRHS[0] = -0.5 * mStrain.mEngineeringStrain[2]*length-mCrackOpening[0];;
+                    deltaRHS[1] = -mStrain.mEngineeringStrain[1]*length-mCrackOpening[1];;
+                }
+                else
+                {
+                    deltaRHS[0] = 0.;
+                    deltaRHS[1] = 0.;
+                }
+            }
+
+            while (coordinatesCurMaster[1]>coordinatesSlaveonMasterSideY || coordinatesNextMaster[1]<coordinatesSlaveonMasterSideY)
+            {
+                if (nextMasterNodePtr==mLeftUpperCorner)
+                {
+                    //restart from the left corner
+                    curMasterNodePtr = mMasterNodesLeftBoundary[0];
+                    curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
+
+                    nextMasterNodecount=1;
+                }
+                else
+                {
+                    curMasterNodePtr = nextMasterNodePtr;
+                    coordinatesCurMaster[0] = coordinatesNextMaster[0];
+                    coordinatesCurMaster[1] = coordinatesNextMaster[1];
+
+                    nextMasterNodecount++;
+                }
+                nextMasterNodePtr = mMasterNodesLeftBoundary[nextMasterNodecount];
+                nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
+            }
+
+            //slave is between two master nodes
+
+            //calculate weighting function for each master node
+            double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
+
+            if (coordinatesCurMaster[1]>crackPosY)
+            {
+                deltaRHS[0]-=w*mCrackOpening[0];
+                deltaRHS[1]-=w*mCrackOpening[1];
+            }
+            if (coordinatesNextMaster[1]>crackPosY)
+            {
+                deltaRHS[0]-=(1-w)*mCrackOpening[0];
+                deltaRHS[1]-=(1-w)*mCrackOpening[1];
+            }
+            if (coordinatesSlaveonMasterSideY>crackPosY)
+            {
+                deltaRHS[0]+=mCrackOpening[0];
+                deltaRHS[1]+=mCrackOpening[1];
+            }
+
+            //deltaDisp[0] = crackShift*0.5*mStrain.mEngineeringStrain[2] + length*mStrain.mEngineeringStrain[0] - deltaRHS[0];
+            //deltaDisp[1] = crackShift*mStrain.mEngineeringStrain[1] + length *0.5* mStrain.mEngineeringStrain[2] - deltaRHS[1];
+
+/*            std::cout << "constraint equation " << curConstraintEquation
+                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
+                    << -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
+                    << w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
+                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
+                    << std::endl;
+*/
+            //constrain x direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[0];
+            curConstraintEquation++;
+
+            //constrain y direction
+            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            if (fabs(w)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            if (fabs(w-1.)>MIN_CONSTRAINT)
+                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rRHS(curConstraintEquation,0) = deltaDisp[1];
+            curConstraintEquation++;
+        }
+    }
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+	double LeftUpperCoordinates[2], LeftLowerCoordinates[2];
     mLeftUpperCorner->GetCoordinates2D(LeftUpperCoordinates);
     mLeftLowerCorner->GetCoordinates2D(LeftLowerCoordinates);
 
@@ -367,7 +763,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
             //slave is between two master nodes
 
             //calculate weighting function for each master node
-            double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
+            //double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
 
             deltaDisp[0] = length*mStrain.mEngineeringStrain[0] + mCrackOpening[0];
             deltaDisp[1] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[1];
@@ -380,20 +776,20 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
                     << std::endl;
 */
             //constrain x direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
         }
@@ -497,20 +893,20 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
                     << std::endl;
 */
             //constrain x direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
         }
@@ -559,7 +955,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
             //slave is between two master nodes
 
             //calculate weighting function for each master node
-            double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
+            //double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
 
             deltaDisp[0] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[0];;
             deltaDisp[1] = length*mStrain.mEngineeringStrain[1] + mCrackOpening[1];;
@@ -572,20 +968,20 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
                     << std::endl;
 */
             //constrain x direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
         }
@@ -689,20 +1085,20 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
                     << std::endl;
 */
             //constrain x direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
-                rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
+            //rConstraintMatrix.AddEntry(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
+            //if (fabs(w)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
+            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //    rConstraintMatrix.AddEntry(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
         }

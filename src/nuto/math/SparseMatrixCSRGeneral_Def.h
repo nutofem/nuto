@@ -133,6 +133,13 @@ public:
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
     void Gauss(FullMatrix<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
+    //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
+    //! @param rRhs ... right-hand side matrix (input and output object, kind of multiple rhs)
+    //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
+    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
+    //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
+    void Gauss(SparseMatrixCSRGeneral<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering);

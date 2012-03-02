@@ -58,6 +58,8 @@ public:
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
+
+protected:
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

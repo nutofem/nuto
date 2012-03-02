@@ -29,8 +29,9 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase()  : NuTo::NuToObject::NuToObject
 {
 	mConstraintLoad = -1;
 	mConstraintRHSDelta = 0.;
-	mTime0 = 0.;
+	mTime = 0.;
 	mTimeDelta = 1.;
+	mLoadStep = 1;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -49,8 +50,9 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
        & BOOST_SERIALIZATION_NVP(mConstraintLoad)
        & BOOST_SERIALIZATION_NVP(mConstraintRHSDelta)
-       & BOOST_SERIALIZATION_NVP(mTime0)
-       & BOOST_SERIALIZATION_NVP(mTimeDelta);
+       & BOOST_SERIALIZATION_NVP(mTime)
+       & BOOST_SERIALIZATION_NVP(mTimeDelta)
+       & BOOST_SERIALIZATION_NVP(mLoadStep);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";
 #endif

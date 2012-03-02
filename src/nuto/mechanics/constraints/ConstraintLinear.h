@@ -55,13 +55,17 @@ public:
     //! @return number of constraints
     virtual int GetNumLinearConstraints()const=0;
 
+    //!@brief writes for the current constraint equation(s) the rhs into the vector
+    // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+    //! @param curConstraintEquation (is incremented during the function call)
+    //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+    virtual void GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const=0;
+
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    //! @param rRHS right hand side of the constraint equation
     virtual void AddToConstraintMatrix(int& curConstraintEquation,
-                                       NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-                                       NuTo::FullMatrix<double>& rRHS)const=0;
+                                       NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

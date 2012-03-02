@@ -55,17 +55,24 @@ void NuTo::ConstraintLinearGlobalCrackOpening::SetRHS(double rRHS)
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearGlobalCrackOpening::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
-    rRHS(curConstraintEquation,0) = mRHS/mStructure->GetScalingFactorCrackOpening();
-
     if (fabs(mDirection[0])>1e-18)
         rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalCrackOpening2D()[0],mDirection[0]);
     if (fabs(mDirection[1])>1e-18)
         rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalCrackOpening2D()[1],mDirection[1]);
+
+    curConstraintEquation++;
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearGlobalCrackOpening::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+    rRHS(curConstraintEquation,0) = mRHS/mStructure->GetScalingFactorCrackOpening();
 
     curConstraintEquation++;
 }

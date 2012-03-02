@@ -33,22 +33,34 @@ int NuTo::ConstraintLinearGlobalTotalStrain::GetNumLinearConstraints()const
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearGlobalTotalStrain::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
     EngineeringStrain2D strain(mStructure->GetTotalEngineeringStrainConstraint());
-	rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[0]/mStructure->GetScalingFactorEpsilon();
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalTotalStrain2D()[0],1);
     curConstraintEquation++;
 
-    rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[1]/mStructure->GetScalingFactorEpsilon();
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalTotalStrain2D()[1],1);
     curConstraintEquation++;
 
-    rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[2]/mStructure->GetScalingFactorEpsilon();
     rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDofGlobalTotalStrain2D()[2],1);
+    curConstraintEquation++;
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearGlobalTotalStrain::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+    EngineeringStrain2D strain(mStructure->GetTotalEngineeringStrainConstraint());
+	rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[0]/mStructure->GetScalingFactorEpsilon();
+    curConstraintEquation++;
+
+    rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[1]/mStructure->GetScalingFactorEpsilon();
+    curConstraintEquation++;
+
+    rRHS(curConstraintEquation,0) = strain.mEngineeringStrain[2]/mStructure->GetScalingFactorEpsilon();
     curConstraintEquation++;
 }
 

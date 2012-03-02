@@ -43,8 +43,13 @@ public:
     //! @brief adds the constraint equation term to the matrix
     //! @param rConstraintEquation ... row in constraint matrix (is incremented during the function call)
     //! @param rConstraintMatrix ... constraint matrix
-    //! @param rRHS ... right hand side vector
-    void AddToConstraintMatrix(int& rConstraintEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix, NuTo::FullMatrix<double>& rRHS) const;
+    void AddToConstraintMatrix(int& rConstraintEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const;
+
+    //!@brief writes for the current constraint equation(s) the rhs into the vector
+    // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+    //! @param curConstraintEquation (is incremented during the function call)
+    //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+    void GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const;
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints

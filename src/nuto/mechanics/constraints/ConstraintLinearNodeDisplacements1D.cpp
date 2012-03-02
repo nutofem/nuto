@@ -50,14 +50,9 @@ void NuTo::ConstraintLinearNodeDisplacements1D::SetRHS(double rRHS)
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
-    // set right hand side value
-    rRHS(curConstraintEquation,0) = mRHS;
-
     // add constraint to constrain matrix
     if (mNode->GetNumDisplacements()!=1)
     {
@@ -68,6 +63,25 @@ void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curCo
     // increase constraint equation number
     curConstraintEquation++;
 }
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearNodeDisplacements1D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+    // add constraint to constrain matrix
+    if (mNode->GetNumDisplacements()!=1)
+    {
+        throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements1D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
+    }
+    // set right hand side value
+    rRHS(curConstraintEquation,0) = mRHS;
+
+    // increase constraint equation number
+    curConstraintEquation++;
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 // serialize

@@ -838,11 +838,27 @@ public:
     //! @return number of constraints
     int ConstraintGetNumLinearConstraints()const;
 
-    //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom
+    //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom (before gauss elimination)
+    //! @param rConstraintMatrix constraint matrix
+    void ConstraintGetConstraintMatrixBeforeGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);
+
+    //! @brief returns the constraint matrix  (after gauss elimination)
+    //! @param rConstraintMatrix constraint matrix
+    void ConstraintGetConstraintMatrixAfterGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);
+
+    //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
     //! @param rConstraintMatrix constraint matrix
-    //! @param rRHS right hand side
-    void ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix, NuTo::FullMatrix<double>& rRHS);
+    void ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double>& rRHS);
+
+    //! @brief returns the constraint vector after gauss elimination
+    //! rConstraintMatrix*DOFS = RHS
+    //! @param rConstraintMatrix constraint matrix
+    void ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatrix<double>& rhsBeforeGaussElimination);
+
+    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
+    //! the result is stored internally in mConstraintRHS
+    void ConstraintUpdateRHSAfterGaussElimination();
 
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
@@ -1786,6 +1802,23 @@ protected:
 
     //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
     SparseMatrixCSRGeneral<double> mConstraintMatrix;
+
+    //! @brief mapping matrix of the rhs to relate the rhs before the gauss elimination to the constraint matrix after
+    // (mConstraintRHS (after elimination) = mConstraintMappingRHS *  mConstraintRHS (before elimination)
+    // (the values of the RHS before elimination are stored at the individual constraints
+    //the initial system is e.g.
+    //[1 1 0]* [d1 d2 d3]^T = [rhs1]
+    //[0 0 2]                 [rhs2]
+    //this is replaced by
+    //[1 1 0]* [d1 d2 d3]^T = rhs1 *[1] + rhs2 *[0]
+    //[0 0 2]                       [0]         [1]
+    //after gauss elimination and reordering this gives
+    //[1 0 1]* [d1 d3 d2]^T = rhs1 *[1] + rhs2 *[0]
+    //[0 1 0]                       [0]         [0.5]
+    //as a consequence, the gauss elimination has only to be performed for a change of the constraint matrix
+    //for a change of the rhs it is sufficient to recalculate the rhs from the above vectors
+    //the mapping matrix [1,0; 0,0.5] is stored and the rhs is calculated from mConstraintMappingRHS*mConstraintRHSBeforGaussElimination
+    SparseMatrixCSRGeneral<double> mConstraintMappingRHS;
 
     //! @brief right hand side of the constraint equations
     FullMatrix<double> mConstraintRHS;

@@ -172,6 +172,12 @@ void SparseMatrixCSRGeneral<int>::Gauss(FullMatrix<int>& rRhs, std::vector<int>&
 }
 
 template<>
+void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+{
+    throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
+}
+
+template<>
 void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     // initialize help vectors for reordering
@@ -372,6 +378,237 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector
     // renumber columns
     this->ReorderColumns(rMappingInitialToNewOrdering);
 }
+
+
+template<>
+void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+{
+    // initialize help vectors for reordering
+    rMappingNewToInitialOrdering.resize(this->GetNumColumns());
+    rMappingInitialToNewOrdering.resize(this->GetNumColumns());
+    for (int colCount = 0; colCount < this->GetNumColumns(); colCount++)
+    {
+        rMappingNewToInitialOrdering[colCount] = colCount;
+        rMappingInitialToNewOrdering[colCount] = colCount;
+    }
+
+    // calculate tolerance
+    double tolerance = 0;
+    for (unsigned int valCount = 0; valCount < this->mValues.size(); valCount++)
+    {
+        if (fabs(this->mValues[valCount]) > tolerance)
+        {
+            tolerance = fabs(this->mValues[valCount]);
+        }
+    }
+    tolerance *= rRelativeTolerance;
+
+    if (this->mVerboseLevel > 0)
+    {
+        std::cout << "### start factorization ###" << std::endl;
+    }
+    for (int row = 0; row < this->GetNumRows(); row++)
+    {
+        // column pivoting
+        // search for largest element in column
+        double pivot = 0;
+        int swapCol = 0;
+        for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+        {
+            if (fabs(this->mValues[pos]) > fabs(pivot))
+            {
+                pivot = this->mValues[pos];
+                swapCol = rMappingInitialToNewOrdering[this->mColumns[pos]];
+            }
+        }
+        if (fabs(pivot) < tolerance)
+        {
+            throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+        }
+
+        // now swap the columns
+        int tmp = rMappingNewToInitialOrdering[row];
+        rMappingNewToInitialOrdering[row] = rMappingNewToInitialOrdering[swapCol];
+        rMappingNewToInitialOrdering[swapCol] = tmp;
+        rMappingInitialToNewOrdering[rMappingNewToInitialOrdering[row]] = row;
+        rMappingInitialToNewOrdering[rMappingNewToInitialOrdering[swapCol]] = swapCol;
+
+        // unit value on the diagonal
+        double invPivot = 1./pivot;
+        for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+        {
+            this->mValues[pos] *= invPivot;
+        }
+
+        for (int pos = rRhs.mRowIndex[row]; pos < rRhs.mRowIndex[row + 1]; pos++)
+        {
+        	rRhs.mValues[pos] *= invPivot;
+        }
+
+        // linear combination of rows
+        for (int tmpRow = row + 1; tmpRow < this->GetNumRows(); tmpRow++)
+        {
+            if (this->mRowIndex[tmpRow] == this->mRowIndex[tmpRow + 1])
+            {
+                throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+            }
+            else
+            {
+                int tmpPos = this->mRowIndex[tmpRow];
+                for (; tmpPos < this->mRowIndex[tmpRow + 1]; tmpPos++)
+                {
+                    if (rMappingInitialToNewOrdering[this->mColumns[tmpPos]] == row)
+                    {
+                        break;
+                    }
+                }
+                if (tmpPos < this->mRowIndex[tmpRow + 1])
+                {
+                    // scale tmpRow
+                    double factor = -1./this->mValues[tmpPos];
+                    for (int pos = this->mRowIndex[tmpRow]; pos < this->mRowIndex[tmpRow + 1]; pos++)
+                    {
+                        this->mValues[pos] *= factor;
+                    }
+                    for (int pos = rRhs.mRowIndex[tmpRow]; pos < rRhs.mRowIndex[tmpRow + 1]; pos++)
+                    {
+                    	rRhs.mValues[pos] *= factor;
+                    }
+
+                    // add row to tmpRow
+                    for (int rowPos = this->mRowIndex[row]; rowPos < this->mRowIndex[row + 1]; rowPos++)
+                    {
+                        this->AddEntry(tmpRow, this->mColumns[rowPos], this->mValues[rowPos]);
+                    }
+                    for (int rowPos = rRhs.mRowIndex[row]; rowPos < rRhs.mRowIndex[row + 1]; rowPos++)
+                    {
+                    	rRhs.AddEntry(tmpRow, rRhs.mColumns[rowPos], rRhs.mValues[rowPos]);
+                    }
+                }
+            }
+        }
+
+        // remove zero entries
+        for (int tmpRow = row + 1; tmpRow < this->GetNumRows(); tmpRow++)
+        {
+            for (int pos = this->mRowIndex[tmpRow]; pos < this->mRowIndex[tmpRow + 1]; pos++)
+            {
+                if (fabs(this->mValues[pos]) < tolerance)
+                {
+                    this->RemoveEntry(tmpRow, this->mColumns[pos]);
+                    pos--;
+                }
+            }
+        }
+        // remove zero entries
+        for (int tmpRow = row + 1; tmpRow < rRhs.GetNumRows(); tmpRow++)
+        {
+            for (int pos = rRhs.mRowIndex[tmpRow]; pos < rRhs.mRowIndex[tmpRow + 1]; pos++)
+            {
+                if (fabs(rRhs.mValues[pos]) < tolerance)
+                {
+                	rRhs.RemoveEntry(tmpRow, rRhs.mColumns[pos]);
+                    pos--;
+                }
+            }
+        }
+    }
+
+    if (this->mVerboseLevel > 0)
+    {
+        std::cout << "column order after factorization" << std::endl;
+        for (int colCount = 0; colCount < this->GetNumColumns(); colCount++)
+        {
+            std::cout << " " << rMappingNewToInitialOrdering[colCount];
+        }
+        std::cout << std::endl;
+        std::cout << "matrix after factorization" << std::endl;
+        for (int row = 0; row < this->GetNumRows(); row++)
+        {
+            for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row+1]; pos++)
+            {
+                std::cout << " row: " << row << " column: " << rMappingInitialToNewOrdering[this->mColumns[pos]] << " value: " << this->mValues[pos] << std::endl;
+            }
+        }
+        std::cout << "right-hand side after factorization" << std::endl;
+        rRhs.Info();
+        std::cout << "### end factorization ###" << std::endl;
+    }
+
+    // back substitution (start with the last but one row
+    if (this->mVerboseLevel > 0)
+    {
+        std::cout << "### start back substitution ###" << std::endl;
+    }
+    for (int row = this->GetNumRows() - 2; row >= 0; row--)
+    {
+        for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+        {
+            int column = rMappingInitialToNewOrdering[this->mColumns[pos]];
+            assert(column >= row);
+            if ((row != column) && (column < this->GetNumRows()))
+            {
+                //linear combination of rows
+                double factor = -this->mValues[pos];
+                for (int tmpPos = this->mRowIndex[column]; tmpPos < this->mRowIndex[column + 1]; tmpPos++)
+                {
+                    unsigned int oldsize = this->mValues.size();
+                    this->AddEntry(row, this->mColumns[tmpPos], factor * this->mValues[tmpPos]);
+                    //this is a dirty trick to check, if an element has been inserted in a previous row, which means, the position of the current value is
+                    // shifted by one
+                    if (oldsize != this->mValues.size())
+                        tmpPos++;
+                }
+                for (int tmpPos = rRhs.mRowIndex[column]; tmpPos < rRhs.mRowIndex[column + 1]; tmpPos++)
+                {
+                    unsigned int oldsize = rRhs.mValues.size();
+                    rRhs.AddEntry(row, rRhs.mColumns[tmpPos], factor * rRhs.mValues[tmpPos]);
+                    //this is a dirty trick to check, if an element has been inserted in a previous row, which means, the position of the current value is
+                    // shifted by one
+                    if (oldsize != rRhs.mValues.size())
+                        tmpPos++;
+                }
+            }
+        }
+        // remove zero entries
+        for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
+        {
+        	if (fabs(this->mValues[pos]) < tolerance)
+            {
+                this->RemoveEntry(row, this->mColumns[pos]);
+                pos--;
+            }
+        }
+        // remove zero entries
+        for (int pos = rRhs.mRowIndex[row]; pos < rRhs.mRowIndex[row + 1]; pos++)
+        {
+        	if (fabs(rRhs.mValues[pos]) < tolerance)
+            {
+        		rRhs.RemoveEntry(row, rRhs.mColumns[pos]);
+                pos--;
+            }
+        }
+    }
+
+    if (this->mVerboseLevel > 0)
+    {
+        std::cout << "matrix after back substitution" << std::endl;
+        for (int row = 0; row < this->GetNumRows(); row++)
+        {
+            for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row+1]; pos++)
+            {
+                std::cout << " row: " << row << " column: " << rMappingInitialToNewOrdering[this->mColumns[pos]] << " value: " << this->mValues[pos] << std::endl;
+            }
+        }
+        std::cout << "right-hand side after back substitution" << std::endl;
+        rRhs.Info();
+        std::cout << "### end back substitution ###" << std::endl;
+    }
+
+    // renumber columns
+    this->ReorderColumns(rMappingInitialToNewOrdering);
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 template <class T>

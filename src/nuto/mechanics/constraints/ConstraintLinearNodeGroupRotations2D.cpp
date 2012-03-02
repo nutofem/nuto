@@ -41,18 +41,31 @@ void NuTo::ConstraintLinearNodeGroupRotations2D::SetRHS(double rRHS)
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+{
+    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+    {
+        if (itNode->second->GetNumRotations()!=1)
+            throw MechanicsException("[NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix] Node should have exactly 1 rotational dof.");
+
+        rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofRotation(0),1);
+
+        curConstraintEquation++;
+    }
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         rRHS(curConstraintEquation,0) = mRHS;
         if (itNode->second->GetNumRotations()!=1)
-            throw MechanicsException("[NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix] Node should have exactly 1 rotational dof.");
-
-        rConstraintMatrix.AddEntry(curConstraintEquation,itNode->second->GetDofRotation(0),1);
+            throw MechanicsException("[NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS] Node should have exactly 1 rotational dof.");
 
         curConstraintEquation++;
     }

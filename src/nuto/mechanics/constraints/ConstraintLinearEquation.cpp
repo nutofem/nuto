@@ -40,7 +40,8 @@ void NuTo::ConstraintLinearEquation::AddTerm(const NodeBase* rNode, Node::eAttri
 }
 
 // add constraint equation to constraint matrix
-void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinearEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,NuTo::FullMatrix<double>& rRHS) const
+void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinearEquation,
+		NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
 {
     // loop over constraint terms
     for (unsigned int termCount = 0; termCount < this->mTerms.size(); termCount++)
@@ -49,6 +50,16 @@ void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinea
         this->mTerms[termCount].AddToConstraintMatrix(rConstraintLinearEquation, rConstraintMatrix);
     }
 
+    // increase constraint equation number
+    rConstraintLinearEquation++;
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearEquation::GetRHS(int& rConstraintLinearEquation,NuTo::FullMatrix<double>& rRHS)const
+{
     // set right hand side value
     rRHS(rConstraintLinearEquation,0) = this->mRhsValue;
 

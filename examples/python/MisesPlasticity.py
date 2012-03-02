@@ -62,6 +62,9 @@ myStructure.GroupAddNode(NodeGroupRightBoundary,myNode8)
 #apply displacement at right boundary
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
 constraint_right_side = myStructure.ConstraintLinearSetDisplacementNodeGroup(NodeGroupRightBoundary, direction, 0)
+   
+#number dofs and perform gauss elimination of the constraint matrix
+myStructure.NodeBuildGlobalDofs()
 
 #initialize gnuplot
 #g = Gnuplot.Gnuplot(debug=1)
@@ -95,9 +98,6 @@ for i in range(0, num_steps):
     boundaryDisplacement = max_disp*(i+1)/num_steps
     print "boundary displacement :" + str(boundaryDisplacement)
     myStructure.ConstraintSetRHS(constraint_right_side,boundaryDisplacement)
-   
-    #number dofs and perform gauss elimination of the constraint matrix
-    myStructure.NodeBuildGlobalDofs()
     
     if (numActiveDofs==0):
         numActiveDofs = myStructure.GetNumActiveDofs()
@@ -180,7 +180,7 @@ for i in range(0, num_steps):
     #g("plot 'MisesLoadDisp.dat' using 1:2 title'training set' with lines linestyle 1")
 
     # visualize results
-    myStructure.ExportVtkDataFile("MisesPlasticity.vtk")
+    myStructure.ExportVtkDataFileElements("MisesPlasticity.vtk")
     
 if printResult:
     _ = raw_input('press enter to continue...') 

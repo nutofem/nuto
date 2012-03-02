@@ -441,19 +441,28 @@ int NuTo::StructureBase::ConstraintGetNumLinearConstraints()const
     return numLinearConstraints;
 }
 
+//! @brief calculates returns constraint matrix that builds relations between the nodal dagrees of freedom
+void NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)
+{
+    if (mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination] build global numbering first");
+    }
+	rConstraintMatrix = mConstraintMatrix;
+}
+
 //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom
 //! rConstraintMatrix*DOFS = RHS
 //! @param rConstraintMatrix constraint matrix
 //! @param rRHS right hand side
-void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix, NuTo::FullMatrix<double>& rRHS)
+void NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)
 {
     if (mNodeNumberingRequired)
     {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] build global numbering first");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination] build global numbering first");
     }
     int numLinearConstraints = ConstraintGetNumLinearConstraints();
     rConstraintMatrix.Resize(numLinearConstraints,mNumDofs);
-    rRHS.Resize(numLinearConstraints,1);
     int curConstraintEquations(0);
     for (boost::ptr_map<int,ConstraintBase>::const_iterator itConstraint = mConstraintMap.begin(); itConstraint != mConstraintMap.end(); itConstraint++ )
     {
@@ -461,16 +470,16 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
         {
             try
             {
-                itConstraint->second->AsConstraintLinear()->AddToConstraintMatrix(curConstraintEquations, rConstraintMatrix, rRHS);
+                itConstraint->second->AsConstraintLinear()->AddToConstraintMatrix(curConstraintEquations, rConstraintMatrix);
             }
             catch (MechanicsException& e)
             {
-                e.AddMessage("[NuTo::StructureBase::ConstraintGetConstraintMatrix] mechanics exception while building constraint matrix for constraint with nonzero number of linear components.");
+                e.AddMessage("[NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination] mechanics exception while building constraint matrix for constraint with nonzero number of linear components.");
                 throw e;
             }
             catch (...)
             {
-                throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] error building constraint matrix for constraint with nonzero number of linear components.");
+                throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination] error building constraint matrix for constraint with nonzero number of linear components.");
             }
         }
     }
@@ -479,8 +488,84 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
     {
         std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
         std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
-        throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrix] Internal error, there is something wrong with the constraint equations.");
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination] Internal error, there is something wrong with the constraint equations.");
     }
+}
+
+//! @brief returns the constraint vector after gauss elimination
+//! rConstraintMatrix*DOFS = RHS
+//! @param rConstraintMatrix constraint matrix
+void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double>& rRHS)
+{
+    if (mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination] build global numbering first");
+    }
+    rRHS = mConstraintRHS;
+}
+
+//! @brief returns the constraint vector after gauss elimination
+//! rConstraintMatrix*DOFS = RHS
+//! @param rConstraintMatrix constraint matrix
+void NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatrix<double>& rhsBeforeGaussElimination)
+{
+    if (mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination] build global numbering first");
+    }
+    int numLinearConstraints = ConstraintGetNumLinearConstraints();
+
+    rhsBeforeGaussElimination.Resize(numLinearConstraints,1);
+
+    //calculate the rhs vector of the constraint equations before the Gauss elimination
+    int curConstraintEquations(0);
+    for (boost::ptr_map<int,ConstraintBase>::const_iterator itConstraint = mConstraintMap.begin(); itConstraint != mConstraintMap.end(); itConstraint++ )
+    {
+        if (itConstraint->second->GetNumLinearConstraints()>0)
+        {
+            try
+            {
+                itConstraint->second->AsConstraintLinear()->GetRHS(curConstraintEquations, rhsBeforeGaussElimination);
+            }
+            catch (MechanicsException& e)
+            {
+                e.AddMessage("[NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination] mechanics exception while building rhs vector after gauss elimination.");
+                throw e;
+            }
+            catch (...)
+            {
+                throw MechanicsException("[NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination] mechanics exception while building rhs vector after gauss elimination.");
+            }
+        }
+    }
+
+    if (curConstraintEquations!=numLinearConstraints)
+    {
+        std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
+        std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination] Internal error, there is something wrong with the constraint equations.");
+    }
+}
+
+//! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
+//! the result is stored internally in mConstraintRHS
+void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
+{
+    if (mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination] build global numbering first");
+    }
+
+    FullMatrix<double> rhsBeforeGaussElimination;
+    ConstraintGetRHSBeforeGaussElimination(rhsBeforeGaussElimination);
+
+    if (mConstraintMappingRHS.GetNumColumns()!=rhsBeforeGaussElimination.GetNumRows())
+    {
+    	throw MechanicsException("[NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination] here is something wrong in the implementation.");
+    }
+
+    //calculate the rhs vector of the constraint equations after the Gauss elimination using the mapping matrix
+    mConstraintRHS = mConstraintMappingRHS * rhsBeforeGaussElimination;
 }
 
 //!@brief sets/modifies the right hand side of the constraint equations
@@ -488,7 +573,6 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrix(NuTo::SparseMatrixCSRGen
 //!@param rRHS new right hand side
 void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
 {
-	this->mNodeNumberingRequired = true;
     //find unused integer id
     //int id(0);
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
@@ -497,6 +581,9 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     	throw MechanicsException("[NuTo::StructureBase::ConstraintSetRHS] Constraint equation does not exist.");
     }
     it->second->SetRHS(rRHS);
+
+    //since the rhs before Gauss elimination has changed, update the rhs after Gauss elimination using the mapping matrix
+    ConstraintUpdateRHSAfterGaussElimination();
 }
 
 //!@brief gets the right hand side of the constraint equations
@@ -531,6 +618,7 @@ void NuTo::StructureBase::ConstraintPeriodicSetCrackOpening(int rConstraintEquat
 //!@param rStrain new strain
 void NuTo::StructureBase::ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain)
 {
+    this->mNodeNumberingRequired = true;
     if (rStrain.GetNumColumns()==1)
         throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Matrix has to have exactly one column");
     if (rStrain.GetNumRows()==3)
@@ -556,6 +644,9 @@ void NuTo::StructureBase::ConstraintPeriodicSetStrain2D(int rConstraintEquation,
         throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Constraint equation does not exist.");
     }
     it->second->SetStrain(rStrain);
+
+    //since the rhs before Gauss elimination has changed, update the rhs after Gauss elimination using the mapping matrix
+    ConstraintUpdateRHSAfterGaussElimination();
 }
 
 // create a constraint equation
@@ -618,7 +709,7 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
         ConstraintBase* constraintPtr = new ConstraintLinearEquation(nodePtr, rDofType, rDofComponent, rCoefficient, rRHS);
 
         // insert constraint equation into map
-        this->mConstraintMap.insert(rConstraint, constraintPtr);
+        this->ConstraintAdd(rConstraint, constraintPtr);
     }
     catch(NuTo::MechanicsException& e)
     {
@@ -630,7 +721,6 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
 // add a term to a constraint equation
 void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient)
 {
-	this->mNodeNumberingRequired = true;
     try
     {
         // convert dof string
@@ -819,7 +909,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
                    nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
 
         // insert constraint equation into map
-        this->mConstraintMap.insert(id, constraintPtr);
+        this->ConstraintAdd(id, constraintPtr);
     }
     catch(NuTo::MechanicsException& e)
     {
@@ -1338,19 +1428,18 @@ void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
     }
 }
 
-
 //!@brief deletes a constraint equation
 //!@param rConstraintEquation id of the constraint equation
 //!@param rCrackOpening new crack opening (x,y)
 void NuTo::StructureBase::ConstraintDelete(int rConstraintId)
 {
-    this->mNodeNumberingRequired = true;
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
     if (it==mConstraintMap.end())
     {
         throw MechanicsException("[NuTo::StructureBase::ConstraintDelete] Constraint equation does not exist.");
     }
     mConstraintMap.erase(it);
+    this->mNodeNumberingRequired = true;
 }
 
 //! @brief releases a constraint, (remove from the list but don't delete it)
@@ -1358,13 +1447,13 @@ void NuTo::StructureBase::ConstraintDelete(int rConstraintId)
 //! @return ptr to constraint
 NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
 {
-    this->mNodeNumberingRequired = true;
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
     if (it==mConstraintMap.end())
     {
         throw MechanicsException("[NuTo::StructureBase::ConstraintRelease] Constraint equation does not exist.");
     }
     boost::ptr_map<int,ConstraintBase>::auto_type ptr = mConstraintMap.release(it);
+    this->mNodeNumberingRequired = true;
     return ptr.release();
 }
 
@@ -1377,5 +1466,5 @@ void NuTo::StructureBase::ConstraintAdd(int rConstraintId, NuTo::ConstraintBase*
     if (it!=mConstraintMap.end())
     	throw MechanicsException("[NuTo::StructureBase::ConstraintAdd] Id already exists in constraint map.");
     mConstraintMap.insert(rConstraintId, rConstraint);
-
+    mNodeNumberingRequired = true;
 }

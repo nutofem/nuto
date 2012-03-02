@@ -548,18 +548,27 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 
         // build constraint matrix
         this->mNodeNumberingRequired = false;
-        this->ConstraintGetConstraintMatrix(this->mConstraintMatrix, this->mConstraintRHS);
-        this->mNodeNumberingRequired = true;
+        this->ConstraintGetConstraintMatrixBeforeGaussElimination(this->mConstraintMatrix);
+
+        unsigned int numDependentDofs = this->mConstraintMatrix.GetNumRows();
+        this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
+
+        //init RHSMatrix as a diagonal identity matrix
+        mConstraintMappingRHS.Resize(numDependentDofs,numDependentDofs);
+        for (int count=0; count<numDependentDofs ; count++)
+        	mConstraintMappingRHS.AddEntry(count,count,1.);
 
         // perform gauss algorithm
         std::vector<int> mappingInitialToNewOrdering;
         std::vector<int> mappingNewToInitialOrdering;
-        this->mConstraintMatrix.Gauss(this->mConstraintRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
+
+        this->mConstraintMatrix.Gauss(mConstraintMappingRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
+
+        //calculate current rhs matrix
+        this->ConstraintUpdateRHSAfterGaussElimination();
 
         // move dependent dofs at the end
         // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
-        unsigned int numDependentDofs = this->mConstraintMatrix.GetNumRows();
-        this->mNumActiveDofs = this->mNumDofs - numDependentDofs;
         std::vector<int> tmpMapping;
         for (unsigned int dependentDofCount = 0; dependentDofCount < numDependentDofs; dependentDofCount++)
         {

@@ -10,7 +10,6 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/base/Logger.h"
-#include "nuto/base/ErrorEnum.h"
 %}
 
 // convert python string to std::string

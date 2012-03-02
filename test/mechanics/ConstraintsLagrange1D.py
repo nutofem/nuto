@@ -97,7 +97,7 @@ myStructure.AddVisualizationComponentDamage();
 myStructure.AddVisualizationComponentEngineeringPlasticStrain();
 myStructure.AddVisualizationComponentPrincipalEngineeringStress();
 myStructure.ElementTotalUpdateTmpStaticData();
-myStructure.ExportVtkDataFile("ConstraintsLagrange1D.vtk");
+myStructure.ExportVtkDataFileElements("ConstraintsLagrange1D.vtk");
 #endif
 
 # init some result data
@@ -137,8 +137,8 @@ myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVe
 curDisp = maxDisp*curDispFactor;
 myStructure.ConstraintSetRHS(constraintLHS,curDisp);
 
-#update conre mat
-myStructure.NodeBuildGlobalDofs();
+#update conre mat (not necessary any more)
+#myStructure.NodeBuildGlobalDofs();
 
 #update displacements of all nodes according to the new conre mat
 displacementsActiveDOFsCheck = nuto.DoubleFullMatrix(0,0);

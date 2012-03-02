@@ -72,10 +72,8 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::SetRHS(double rRHS
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
     if (mConstrainToStructureMultiscalePeriodicDofs)
     {
@@ -83,7 +81,6 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
 		{
             try
             {
-				rRHS(curConstraintEquation,0) = 0;
 				if (itNode->second->GetNumFineScaleDisplacements()!=2)
 				{
 					throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] Node does not have fine scale displacements or has more than two displacement components.");
@@ -97,7 +94,6 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
 
         		curConstraintEquation++;
 
-        		rRHS(curConstraintEquation,0) = 0;
         		//std::cout << "add constraint with " << itNode->second->GetDofFineScaleDisplacement(1) << " and " << mStructure->GetDOFPeriodicBoundaryDisplacements()[0] << " " << mStructure->GetDOFPeriodicBoundaryDisplacements()[1] << " "<<mStructure->GetDOFPeriodicBoundaryDisplacements()[2]<< std::endl;
         		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[0],nodePtr->GetShapeFunctionMultiscalePeriodicY()[0]);
         		rConstraintMatrix.AddEntry(curConstraintEquation,mStructure->GetDOFPeriodicBoundaryDisplacements()[1],nodePtr->GetShapeFunctionMultiscalePeriodicY()[1]);
@@ -126,7 +122,6 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
     {
     	for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
 		{
-			rRHS(curConstraintEquation,0) = mRHS;
 			if (itNode->second->GetNumFineScaleDisplacements()!=2)
 			{
 				throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] Node does not have fine scale displacements or has more than two displacement components.");
@@ -143,6 +138,23 @@ void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMat
 			curConstraintEquation++;
 		}
     }
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+	for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+	{
+		if (itNode->second->GetNumFineScaleDisplacements()!=2)
+		{
+			throw MechanicsException("[NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D::AddToConstraintMatrix] Node does not have fine scale displacements or has more than two displacement components.");
+		}
+		rRHS(curConstraintEquation,0) = mRHS;
+		curConstraintEquation++;
+	}
 }
 
 #ifdef ENABLE_SERIALIZATION

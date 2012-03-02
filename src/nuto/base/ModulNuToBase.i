@@ -3,6 +3,7 @@
 %feature("autodoc","1");
 %{
 /* Put headers and other declarations here to be added in the wrapper files */
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Exception.h"
 #include "nuto/base/NuToObject.h"
 #include <iostream>
@@ -42,3 +43,5 @@ class exception
     }
 }
 %include "nuto/base/NuToObject.h"
+%include "nuto/base/ErrorEnum.h"
+

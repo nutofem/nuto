@@ -54,12 +54,9 @@ void NuTo::ConstraintLinearNodeDisplacements3D::SetRHS(double rRHS)
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-//! @param rRHS right hand side of the constraint equation
 void NuTo::ConstraintLinearNodeDisplacements3D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix,
-        NuTo::FullMatrix<double>& rRHS)const
+        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
 {
-    rRHS(curConstraintEquation,0) = mRHS;
     if (mNode->GetNumDisplacements()!=3)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
     if (fabs(mDirection[0])>1e-18)
@@ -68,6 +65,20 @@ void NuTo::ConstraintLinearNodeDisplacements3D::AddToConstraintMatrix(int& curCo
         rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofDisplacement(1),mDirection[1]);
     if (fabs(mDirection[2])>1e-18)
         rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofDisplacement(2),mDirection[2]);
+
+    curConstraintEquation++;
+}
+
+//!@brief writes for the current constraint equation(s) the rhs into the vector
+// (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
+//! @param curConstraintEquation (is incremented during the function call)
+//! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
+void NuTo::ConstraintLinearNodeDisplacements3D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+{
+    if (mNode->GetNumDisplacements()!=3)
+        throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
+
+    rRHS(curConstraintEquation,0) = mRHS;
 
     curConstraintEquation++;
 }
