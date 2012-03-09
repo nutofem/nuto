@@ -272,12 +272,12 @@ void ScriptRunnerThreaded::ThreadStartup()
       NutoModuleOverlay::CallbackPtr callback (
 	boost::make_shared<OverlayCallback> (this));
       object overlay = object (NutoModuleOverlay (callback));
-      object overlay_ExportVtkDataFile = overlay.attr("ExportVtkDataFile");
+      object overlay_ExportVtkDataFileElements = overlay.attr("ExportVtkDataFileElements");
       
       object nuto_module = import ("nuto");
       nuto_module.attr("__nutoGuiOverlay__") = overlay;
       object nuto_StructureBase = nuto_module.attr("StructureBase");
-      nuto_StructureBase.attr("ExportVtkDataFile") = overlay_ExportVtkDataFile;
+      nuto_StructureBase.attr("ExportVtkDataFileElements") = overlay_ExportVtkDataFileElements;
     }
     
     startupSuccess = true;

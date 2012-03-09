@@ -37,16 +37,16 @@ void NutoModuleOverlay::BindToPython ()
 {
   class_<NutoModuleOverlay> ("_NutoModuleOverlay",
 			     no_init)
-    .def("ExportVtkDataFile", &NutoModuleOverlay::Overlay_ExportVtkDataFile)
-    .staticmethod("ExportVtkDataFile")
+    .def("ExportVtkDataFileElements", &NutoModuleOverlay::Overlay_ExportVtkDataFileElements)
+    .staticmethod("ExportVtkDataFileElements")
   ;
 }
 
-void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& self, const std::string& exportFile)
+void NutoModuleOverlay::Overlay_ExportVtkDataFileElements (const boost::python::object& self, const std::string& exportFile)
 {
   wxString exportFileStr (exportFile.c_str(), wxConvLibc);
   {
-    wxLogDebug (wxT ("intercepted ExportVtkDataFile() to %s"), exportFileStr.c_str());
+    wxLogDebug (wxT ("intercepted ExportVtkDataFileElements() to %s"), exportFileStr.c_str());
   }
   // 'self' contains nuto.Structure
   
@@ -58,7 +58,7 @@ void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& 
     return;
   }
   
-  /* Look for identifier of instance on which ExportVtkDataFile was called.
+  /* Look for identifier of instance on which ExportVtkDataFileElements was called.
      Will be used to name result display */
   wxString resultsTitle;
   {
@@ -95,7 +95,7 @@ void NutoModuleOverlay::Overlay_ExportVtkDataFile (const boost::python::object& 
    * destroyed...
    */
   std::string outputPath (newOutput.GetFullPath().fn_str());
-  nutoStruct->ExportVtkDataFile (outputPath);
+  nutoStruct->ExportVtkDataFileElements (outputPath);
   
   wxString resultName;
   {

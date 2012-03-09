@@ -40,7 +40,7 @@ public:
   
   static void BindToPython ();
   
-  static void Overlay_ExportVtkDataFile (const boost::python::object& self, const std::string& exportFile);
+  static void Overlay_ExportVtkDataFileElements (const boost::python::object& self, const std::string& exportFile);
 protected:
   CallbackPtr callback;
 };
