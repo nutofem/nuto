@@ -23,6 +23,10 @@ public:
     //! @param rFilename ... filename
     void ExportVtkDataFile(const std::string& rFilename) const;
 
+    //! @brief ... export to Vtu datafile
+    //! @param rFilename ... filename
+    void ExportVtuDataFile(const std::string& rFilename) const;
+
     //! @brief ... add Point to unstructured grid
     //! @param rCoordinates ... point coordinates
     //! @return ... point identifier (zero based indexing)

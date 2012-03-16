@@ -544,7 +544,7 @@ try
         myStructureCoarseScale.SetTotalStrain(curStrain);
         myStructureCoarseScale.NewtonRaphson();
        myStructureCoarseScale.ElementTotalUpdateStaticData();
-       double energy = myStructureCoarseScale.ElementTotalGetTotalEnergy();
+       double energy = myStructureCoarseScale.ElementTotalGetInternalEnergy();
         std::cout << "total energy on the macroscale " << energy << std::endl;
         //system("paraview --state=/home/unger3/develop/nuto_build/examples/c++/test.pvsm");
     }

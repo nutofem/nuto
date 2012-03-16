@@ -7,14 +7,14 @@
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "nuto/mechanics/timeIntegration/ImplicitNewtonRaphson.h"
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, NU
 //! @date February 2012
 //! @brief ... standard class for time integration with Newmark beta
-class Newmark : public TimeIntegrationBase
+class Newmark : public ImplicitNewtonRaphson
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -53,8 +53,11 @@ public:
         return std::string("Newmark");
     }
 
-    //! @brief deconstructor
-    NuTo::Error::eError Solve(NuTo::StructureBase* rStructure)const;
+    //! @brief ... true, if it is a dynamic Newmark solution with velocities and accelerations, false for a static solution procedure.
+    bool IsDynamic()const
+    {
+    	return true;
+    }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;

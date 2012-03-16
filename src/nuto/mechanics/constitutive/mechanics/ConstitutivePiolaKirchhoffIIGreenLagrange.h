@@ -134,7 +134,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    virtual Error::eError GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    virtual Error::eError GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient1D& rDeformationGradient, double& rEnergy) const=0;
 
     //! @brief ... calculate the total energy density
@@ -142,7 +142,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    virtual Error::eError GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    virtual Error::eError GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient2D& rDeformationGradient, double& rEnergy) const=0;
 
     //! @brief ... calculate the total energy density
@@ -150,7 +150,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    virtual Error::eError GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+    virtual Error::eError GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient, double& rEnergy) const=0;
 
     //! @brief ... calculate the elastic energy density

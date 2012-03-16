@@ -691,7 +691,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::LinearElastic::AllocateStaticDataEnginee
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
@@ -701,7 +701,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
     	CheckParameters();
     	//if there is no exception thrown there is a problem with the source code
     	//since every time a material parameter is changed, the parametes should be checked
-    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
     }
 
     // calculate engineering strain
@@ -718,7 +718,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
@@ -728,7 +728,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
     	CheckParameters();
     	//if there is no exception thrown there is a problem with the source code
     	//since every time a material parameter is changed, the parametes should be checked
-    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
     }
     // calculate engineering strain
     EngineeringStrain2D engineeringStrain;
@@ -737,7 +737,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 
 	const SectionBase* theSection(rElement->GetSection());
     if (theSection==0)
-    	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain] No section defined for element.");
     assert(rElement->GetSection()!=0);
     switch(rElement->GetSection()->GetType())
     {
@@ -762,7 +762,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 		engineeringStress.mEngineeringStress[2] = C33 * engineeringStrain.mEngineeringStrain[2] ;
     	break;}
     default:
-    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Invalid type of 2D section behavoir found!!!");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain] Invalid type of 2D section behavoir found!!!");
     }
 
 /*#ifdef DEBUG
@@ -794,7 +794,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
@@ -804,7 +804,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
     	CheckParameters();
     	//if there is no exception thrown there is a problem with the source code
     	//since every time a material parameter is changed, the parametes should be checked
-    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
     }
     // calculate engineering strain
     EngineeringStrain3D engineeringStrain;
@@ -843,7 +843,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_EngineeringStress_Engine
 NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
-	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
+	return GetInternalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
 }
 
 
@@ -855,7 +855,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_Engi
 NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
-	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
+	return GetInternalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
 }
 
 
@@ -867,7 +867,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_Engi
 NuTo::Error::eError NuTo::LinearElastic::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
-	return GetTotalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
+	return GetInternalEnergy_EngineeringStress_EngineeringStrain(rElement, rIp, rDeformationGradient, rEnergy);
 }
 
 
@@ -1187,7 +1187,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::LinearElastic::AllocateStaticDataSecondP
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
@@ -1197,7 +1197,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStre
     	CheckParameters();
     	//if there is no exception thrown there is a problem with the source code
     	//since every time a material parameter is changed, the parametes should be checked
-    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] Check the material parameters.");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] Check the material parameters.");
     }
 
     // calculate engineering strain
@@ -1214,10 +1214,10 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStre
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
-	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] To be implemented.");
+	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] To be implemented.");
 }
 
 
@@ -1226,7 +1226,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStre
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearElastic::GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
@@ -1236,7 +1236,7 @@ NuTo::Error::eError NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStre
     	CheckParameters();
     	//if there is no exception thrown there is a problem with the source code
     	//since every time a material parameter is changed, the parametes should be checked
-    	throw MechanicsException("[NuTo::LinearElastic::GetTotalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] Check the material parameters.");
+    	throw MechanicsException("[NuTo::LinearElastic::GetInternalEnergy_SecondPiolaKirchhoffStress_GreenLagrangeStrain] Check the material parameters.");
     }
     // calculate engineering strain
     GreenLagrangeStrain3D greenLagrangeStrain;
@@ -1476,9 +1476,9 @@ void NuTo::LinearElastic::CheckDensity(double rRho) const
 //! @param rE ... Young's modulus
 void NuTo::LinearElastic::CheckYoungsModulus(double rE) const
 {
-    if (rE <= 0.0)
+    if (rE < 0.0)
     {
-        throw NuTo::MechanicsException("[NuTo::LinearElastic::CheckYoungsModulus] The Young's modulus must be a positive value.");
+        throw NuTo::MechanicsException("[NuTo::LinearElastic::CheckYoungsModulus] The Young's modulus must be a non-negative value.");
     }
 }
 

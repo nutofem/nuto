@@ -34,7 +34,7 @@ NuTo::IntegrationType2DMod::~IntegrationType2DMod()
 //! @param rCoordinates (result)
 void NuTo::IntegrationType2DMod::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
-	assert(rIpNum>=0 && rIpNum<mIpMap.size());
+	assert(rIpNum>=0 && rIpNum<(int)mIpMap.size());
     boost::ptr_map< int, IntegrationPointBase >::const_iterator thisIP = boost::next(mIpMap.begin(),rIpNum);
     if (thisIP==mIpMap.end())
     {
@@ -71,7 +71,7 @@ int NuTo::IntegrationType2DMod::GetNumIntegrationPoints()const
 //! @return weight of integration points
 double NuTo::IntegrationType2DMod::GetIntegrationPointWeight(int rIpNum)const
 {
-	assert(rIpNum>=0 && rIpNum<mIpMap.size());
+	assert(rIpNum>=0 && rIpNum<(int)mIpMap.size());
     boost::ptr_map< int, IntegrationPointBase >::const_iterator thisIP = boost::next(mIpMap.begin(),rIpNum);
     if (thisIP==mIpMap.end())
     {

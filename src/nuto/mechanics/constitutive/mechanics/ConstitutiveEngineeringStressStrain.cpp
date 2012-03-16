@@ -147,10 +147,10 @@ NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetEngineeringStr
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
 {
-    throw MechanicsException("[ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] to be implemented.");
+    throw MechanicsException("[ConstitutiveEngineeringStressStrain::GetInternalEnergy_EngineeringStress_EngineeringStrain] to be implemented.");
 }
 
 //! @brief ... calculate the total energy density
@@ -158,10 +158,10 @@ NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_En
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
 {
-    throw MechanicsException("[ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] to be implemented.");
+    throw MechanicsException("[ConstitutiveEngineeringStressStrain::GetInternalEnergy_EngineeringStress_EngineeringStrain] to be implemented.");
 }
 
 //! @brief ... calculate the total energy density
@@ -169,13 +169,13 @@ NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_En
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveEngineeringStressStrain::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
 		const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
 {
     // check if parameters are valid
     if (this->mParametersValid == false)
     {
-    	throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
+    	throw MechanicsException("[NuTo::ConstitutiveEngineeringStressStrain::GetInternalEnergy_EngineeringStress_EngineeringStrain] Check the material parameters.");
     }
 
     // calculate stress

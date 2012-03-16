@@ -153,6 +153,110 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullM
 #endif
 }
 
+//! @brief sets the velocities of a node
+//! @param rIdent node identifier
+//! @param rRotations matrix (one column) with the rotations
+void NuTo::StructureBase::NodeSetVelocities(int rNode,const NuTo::FullMatrix<double>& rVelocities)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	NodeBase* nodePtr=NodeGetNodePtr(rNode);
+
+	if (rVelocities.GetNumColumns()!=1)
+	throw MechanicsException("[NuTo::StructureBase::NodeSetVelocities] Displacement matrix has to have a single column.");
+	try
+	{
+		switch (rVelocities.GetNumRows())
+		{
+		case 1:
+			nodePtr->SetVelocities1D(rVelocities.mEigenMatrix.data());
+		break;
+		case 2:
+			nodePtr->SetVelocities2D(rVelocities.mEigenMatrix.data());
+		break;
+		case 3:
+			nodePtr->SetVelocities3D(rVelocities.mEigenMatrix.data());
+		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::NodeSetVelocities] The number of velocity components is either 1, 2 or 3.");
+		}
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+    	b.AddMessage("[NuTo::StructureBase::NodeSetVelocities] Error setting velocities.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeSetVelocities] Error setting velocities of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeSetVelocities] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+
+}
+
+//! @brief sets the velocities of a group of nodes
+//! @param rIdent node group identifier
+//! @param rDisplacements matrix (one column) with the displacements
+void NuTo::StructureBase::NodeGroupSetVelocities(int rIdent, const FullMatrix<double>& rVelocities)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	if (rVelocities.GetNumColumns()!=1)
+	     throw MechanicsException("[NuTo::StructureBase::NodeGroupSetVelocities] Velocity matrix has to have a single column.");
+
+	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::NodeGroupSetVelocities] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::StructureBase::NodeGroupSetVelocities] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+
+    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+    {
+		try
+		{
+			switch (rVelocities.GetNumRows())
+			{
+			case 1:
+				itNode->second->SetVelocities1D(rVelocities.mEigenMatrix.data());
+			break;
+			case 2:
+				itNode->second->SetVelocities2D(rVelocities.mEigenMatrix.data());
+			break;
+			case 3:
+				itNode->second->SetVelocities3D(rVelocities.mEigenMatrix.data());
+			break;
+			default:
+				throw MechanicsException("[NuTo::StructureBase::NodeGroupSetVelocities] The number of velocity components is either 1, 2 or 3.");
+			}
+		}
+		catch(NuTo::MechanicsException & b)
+		{
+			b.AddMessage("[NuTo::StructureBase::NodeGroupSetVelocities] Error setting velocities.");
+			throw b;
+		}
+		catch(...)
+		{
+			throw MechanicsException("[NuTo::StructureBase::NodeGroupSetVelocities] Error setting displacements of node (unspecified exception).");
+		}
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::NodeGroupSetVelocities] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+
+}
+
 //! @brief gets the displacements of a node
 //! @param rIdent node identifier
 //! @param rDisplacements matrix (one column) with the displacements

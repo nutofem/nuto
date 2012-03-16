@@ -242,6 +242,16 @@ public:
     }
 #endif
 
+    //! @brief ... calculates the scalar product
+    //! @param other ... other matrix
+    //! @return reference to this matrix
+    T Dot( const FullMatrix<T> &other )
+    {
+        if ( mEigenMatrix.rows() !=other.mEigenMatrix.rows() || mEigenMatrix.cols() !=1 || other.mEigenMatrix.cols()!=1 )
+            throw MathException ( std::string ( "[FullMatrix::Dot] Dot product requires number of rows to be identical (and only a single column)." ) );
+         return (mEigenMatrix.transpose()*other.mEigenMatrix).eval()(0,0);
+    }
+
     //! @brief ... set the value of the (i,j)-th matrix entry
     //! @param i ... row
     //! @param j ... column

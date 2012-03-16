@@ -72,10 +72,10 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeStressStrain::GetLatticeStrain(cons
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rLatticeStrain ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveLatticeStressStrain::GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveLatticeStressStrain::GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
 		const LatticeStrain2D& rLatticeStrain, double& rEnergy) const
 {
-    throw MechanicsException("[ConstitutiveLatticeStressStrain::GetTotalEnergy_LatticeStress_LatticeStrain] to be implemented.");
+    throw MechanicsException("[ConstitutiveLatticeStressStrain::GetInternalEnergy_LatticeStress_LatticeStrain] to be implemented.");
 }
 
 //! @brief ... calculate the total energy density
@@ -83,10 +83,10 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeStressStrain::GetTotalEnergy_Lattic
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rLatticeStrain ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveLatticeStressStrain::GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveLatticeStressStrain::GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
 		const LatticeStrain3D& rLatticeStrain, double& rEnergy) const
 {
-    throw MechanicsException("[ConstitutiveLatticeStressStrain::GetTotalEnergy_LatticeStress_LatticeStrain] to be implemented.");
+    throw MechanicsException("[ConstitutiveLatticeStressStrain::GetInternalEnergy_LatticeStress_LatticeStrain] to be implemented.");
 }
 
 //! @brief ... calculate the elastic energy density

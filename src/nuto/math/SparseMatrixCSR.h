@@ -28,6 +28,8 @@
 
 namespace NuTo
 {
+template <class T> class SparseMatrixCSRVector2General;
+
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... abstract base class for sparse matrices which are stored in CSR format
@@ -37,6 +39,7 @@ class SparseMatrixCSR : public SparseMatrix<T>
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
+    friend class SparseMatrixCSRVector2General<T>;
 
 public:
     //! @brief ... constructor

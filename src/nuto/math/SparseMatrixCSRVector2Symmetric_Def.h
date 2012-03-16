@@ -12,6 +12,7 @@
 namespace NuTo
 {
 template <class T> class SparseMatrixCSRSymmetric;
+template <class T> class SparseMatrixCSRVector2General;
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... class for Symmetric sparse matrices which are stored in CSR format
@@ -24,6 +25,7 @@ class SparseMatrixCSRVector2Symmetric : public SparseMatrixCSRVector2<T>
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
+    friend class SparseMatrixCSRVector2General<T>;
 public:
     //! @brief ... constructor
     //! @param rNumRows_ ... number of rows
@@ -71,6 +73,16 @@ public:
     //! @brief ... write nonzero matrix entries into a full matrix
     //! @param rFullMatrix ... the full matrix
     void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const;
+
+    //! @brief ... adds \f$(\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{A})\f$ to the matrix
+    //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
+    //! @param rMatrixB ... matrix B (symmetric sparse matrix in csr storage)
+    void Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<T>& rMatrixA, const NuTo::SparseMatrixCSRVector2Symmetric<T>& rMatrixB);
+
+    //! @brief ... subtract t\f$(\boldsymbol{A}^T\boldsymbol{B}^T + \boldsymbol{B} \boldsymbol{A})\f$ from the matrix
+    //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
+    //! @param rMatrixB ... matrix B (general sparse matrix in csr storage)
+    void Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<T>& rMatrixA, const NuTo::SparseMatrixCSRVector2General<T>& rMatrixB);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file

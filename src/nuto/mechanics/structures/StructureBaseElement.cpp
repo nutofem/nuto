@@ -420,7 +420,7 @@ bool NuTo::StructureBase::CheckStiffness()
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
     //this->NodeInfo(10);
-    energy1 = this->ElementTotalGetTotalEnergy();
+    energy1 = this->ElementTotalGetInternalEnergy();
     energy1 += this->ConstraintTotalGetTotalEnergy();
     //std::cout << "check stiffness:: energy1 "<<  energy1 << "\n";
 
@@ -433,7 +433,7 @@ bool NuTo::StructureBase::CheckStiffness()
         //std::cout << "check stiffness:: intForceVector2"<< "\n";
         //intForceVector2.Trans().Info(10,6);
         //this->ConstraintInfo(10);
-        energy2 = this->ElementTotalGetTotalEnergy();
+        energy2 = this->ElementTotalGetInternalEnergy();
         energy2 += this->ConstraintTotalGetTotalEnergy();
         stiffnessMatrixCSRVector2_CDF.SetColumn(count,(intForceVector2-intForceVector1)*(1./interval));
         intForceVectorCDF(count,0) = (energy2-energy1)/interval;
@@ -1886,7 +1886,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
 }
 //! @brief calculates the total energy of the system
 //! @return total energy
-double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
+double NuTo::StructureBase::ElementTotalGetInternalEnergy()const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1901,7 +1901,7 @@ double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
     {
         try
         {
-            elementVector[elementCount]->GetIpData(NuTo::IpData::TOTAL_ENERGY,ipEnergy);
+            elementVector[elementCount]->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
@@ -1911,7 +1911,7 @@ double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalGetTotalEnergy] Error calculating integrated strain  for element "  + ss.str() + ".");
+            e.AddMessage("[NuTo::StructureBase::ElementTotalGetInternalEnergy] Error calculating integrated strain  for element "  + ss.str() + ".");
             throw e;
         }
         catch(...)
@@ -1919,7 +1919,7 @@ double NuTo::StructureBase::ElementTotalGetTotalEnergy()const
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
             throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementTotalGetTotalEnergy] Error calculating integrated strain  for element " + ss.str() + ".");
+               ("[NuTo::StructureBase::ElementTotalGetInternalEnergy] Error calculating integrated strain  for element " + ss.str() + ".");
         }
     }
 
@@ -1954,7 +1954,7 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)const
     {
         try
         {
-        	itElement->second->GetIpData(NuTo::IpData::TOTAL_ENERGY,ipEnergy);
+        	itElement->second->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);

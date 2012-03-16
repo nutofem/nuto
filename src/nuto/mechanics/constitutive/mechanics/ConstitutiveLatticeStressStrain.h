@@ -183,7 +183,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rLatticeStrain ... lattice strain
-    virtual Error::eError GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+    virtual Error::eError GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
             const LatticeStrain2D& rLatticeStrain, double& energy) const;
 
     //! @brief ... calculate the total energy density
@@ -191,7 +191,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rLatticeStrain ... lattice strain
-    virtual Error::eError GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+    virtual Error::eError GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
             const LatticeStrain3D& rLatticeStrain, double& energy) const;
 
     //! @brief ... calculate the elastic energy density

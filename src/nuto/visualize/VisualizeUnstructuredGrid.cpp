@@ -233,6 +233,133 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtkDataFile(const std::string& rFile
     file.close();
 }
 
+// export to Vtu Datafile (XML based file format)
+void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
+{
+    std::ofstream file(rFilename.c_str());
+    if (!file.is_open())
+    {
+    	throw NuTo::VisualizeException(std::string("[NuTo::VisualizeUnstructuredGrid::ExportVtuDatafile] Error opening file ")+rFilename.c_str());
+    }
+    // header /////////////////////////////////////////////////////////////////
+    file << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl;
+    file << "  <UnstructuredGrid>" << std::endl;
+    file << "    <Piece NumberOfPoints=\"" << this->mPoints.size() << "\" NumberOfCells=\"" << this->mCells.size() << "\">" << std::endl;
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    // point data /////////////////////////////////////////////////////////////////
+    file << "      <PointData>"<< std::endl;
+
+    for (unsigned int PointDataCount = 0; PointDataCount < this->mPointData.size(); PointDataCount++)
+    {
+        file << "        <DataArray type=\"Float32\" Name=\"" << this->mPointData[PointDataCount].GetIdent() << "\" NumberOfComponents=\"" << this->mPointData[PointDataCount].GetNumData() << "\" Format=\"ascii\">" << std::endl;
+        boost::ptr_vector<Point>::const_iterator PointIter = this->mPoints.begin();
+        while (PointIter != this->mPoints.end())
+        {
+            const VisualizeDataBase* tmpData = PointIter->GetData(PointDataCount);
+            if (tmpData->GetDataType() != this->mPointData[PointDataCount].GetDataType())
+            {
+                throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::ExportVtkDatafile] mismatch in point data.");
+            }
+            file <<"          " << *tmpData << std::endl;
+            PointIter++;
+        }
+        file << "        </DataArray>" << std::endl;
+    }
+
+    file << "      </PointData>"<< std::endl;
+
+    // cell data /////////////////////////////////////////////////////////////////
+    file << "      <CellData>"<< std::endl;
+
+    for (unsigned int CellDataCount = 0; CellDataCount < this->mCellData.size(); CellDataCount++)
+    {
+        file << "        <DataArray type=\"Float32\" Name=\"" << this->mCellData[CellDataCount].GetIdent() << "\" NumberOfComponents=\"" << this->mCellData[CellDataCount].GetNumData() << "\" Format=\"ascii\">" << std::endl;
+        boost::ptr_vector<CellBase>::const_iterator CellIter = this->mCells.begin();
+        while (CellIter != this->mCells.end())
+        {
+            const VisualizeDataBase* tmpData = CellIter->GetData(CellDataCount);
+            if (tmpData->GetDataType() != this->mCellData[CellDataCount].GetDataType())
+            {
+                throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::ExportVtkDatafile] mismatch in Cell data.");
+            }
+            file <<"          " << *tmpData << std::endl;
+            CellIter++;
+        }
+        file << "        </DataArray>" << std::endl;
+    }
+
+    file << "      </CellData>"<< std::endl;
+
+    // points /////////////////////////////////////////////////////////////////
+    // modify format for point coordinate output
+    std::ios_base::fmtflags OriginalFlags = file.flags(); // store original format
+    file.setf(std::ios_base::uppercase | std::ios_base::scientific | std::ios_base::showpos);
+
+    file << "      <Points>"<< std::endl;
+    file << "        <DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">" << std::endl;
+    // write point coordinates to file
+    boost::ptr_vector<Point>::const_iterator PointIter = this->mPoints.begin();
+    while (PointIter != this->mPoints.end())
+    {
+        const double* PointCoordinates = PointIter->GetCoordinates();
+        file <<"          " << PointCoordinates[0] << " " << PointCoordinates[1] << " " << PointCoordinates[2] << " " << std::endl;
+        PointIter++;
+    }
+    // reset original format
+    file.flags(OriginalFlags);
+    file << "        </DataArray>"<< std::endl;
+    file << "      </Points>"<< std::endl;
+    // end points /////////////////////////////////////////////////////////////////////
+
+
+    // Cells //////////////////////////////////////////////////////////////////
+    file << "      <Cells>"<< std::endl;
+    file << "        <DataArray type=\"Int32\" Name=\"connectivity\" Format=\"ascii\">" << std::endl;
+    boost::ptr_vector<CellBase>::const_iterator CellIter = this->mCells.begin();
+    while (CellIter != this->mCells.end())
+    {
+    	unsigned int NumPoints = CellIter->GetNumPoints();
+    	const unsigned int *Points = CellIter->GetPoints();
+    	file <<"          ";
+        for (unsigned int PointCount = 0; PointCount < NumPoints; PointCount++)
+        {
+            file << " " << Points[PointCount];
+        }
+        file << std::endl;
+        CellIter++;
+    }
+    file << "        </DataArray>" << std::endl;
+    file << "        <DataArray type=\"Int32\" Name=\"offsets\" Format=\"ascii\">" << std::endl;
+    CellIter = this->mCells.begin();
+    int offset(0);
+    while (CellIter != this->mCells.end())
+    {
+        offset+=CellIter->GetNumPoints();
+        file << " " << offset << std::endl;
+        CellIter++;
+    }
+    file << "        </DataArray>" << std::endl;
+    file << "        <DataArray type=\"Int32\" Name=\"types\" Format=\"ascii\">" << std::endl;
+    CellIter = this->mCells.begin();
+    while (CellIter != this->mCells.end())
+    {
+        file << CellIter->GetVtkCellType() << std::endl;
+        CellIter++;
+    }
+    file << "        </DataArray>" << std::endl;
+    file << "      </Cells>"<< std::endl;
+    //end cells /////////////////////////////////////////////////////////////////////////
+
+    // end header /////////////////////////////////////////////////////////////////
+    file << "    </Piece>" << std::endl;
+    file << "  </UnstructuredGrid>" << std::endl;
+    file << "</VTKFile>" << std::endl;
+
+    file.close();
+}
+
 
 // check points
 void NuTo::VisualizeUnstructuredGrid::CheckPoints(const unsigned int rNumPoints, const unsigned int *rPoints) const

@@ -256,7 +256,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     assert(rMatrixJK.IsSymmetric() == false);
     assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
     assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumEntries() == 0);
+//    assert(rMatrixJK.GetNumEntries() == 0);
 
     // define variables storing the element contribution
 	NuTo::FullMatrix<double> elementMatrix;
@@ -485,15 +485,15 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     assert(rMatrixJK.IsSymmetric() == false);
     assert(rMatrixJK.GetNumRows() == this->mNumActiveDofs);
     assert(rMatrixJK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixJK.GetNumEntries() == 0);
+    //assert(rMatrixJK.GetNumEntries() == 0);
     assert(rMatrixKJ.IsSymmetric() == false);
     assert(rMatrixKJ.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
     assert(rMatrixKJ.GetNumColumns() == this->mNumActiveDofs);
-    assert(rMatrixKJ.GetNumEntries() == 0);
+    //assert(rMatrixKJ.GetNumEntries() == 0);
     assert(rMatrixKK.IsSymmetric() == false);
     assert(rMatrixKK.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
     assert(rMatrixKK.GetNumColumns() == this->mNumDofs - this->mNumActiveDofs);
-    assert(rMatrixKK.GetNumEntries() == 0);
+    //assert(rMatrixKK.GetNumEntries() == 0);
 
 	// define variables storing the element contribution
 	NuTo::FullMatrix<double> elementMatrix;

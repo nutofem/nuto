@@ -226,8 +226,9 @@ structures/grid/StructureGridElement.cpp
 )
 
 SET(NuToMechanicsTimeIntegration_SOURCES
-timeIntegration/TimeIntegrationBase.cpp
+timeIntegration/ImplicitNewtonRaphson.cpp
 timeIntegration/Newmark.cpp
+timeIntegration/TimeIntegrationBase.cpp
 )
 
 

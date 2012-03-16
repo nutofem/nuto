@@ -460,6 +460,16 @@ void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName) const
 
 void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName) const
 {
+	ExportVtkDataFileNodes(rFileName, false);
+}
+
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName) const
+{
+	ExportVtkDataFileElements(rFileName, false);
+}
+
+void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, bool rXML) const
+{
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -467,7 +477,10 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName) c
     VisualizeUnstructuredGrid visualize;
     this->DefineVisualizeNodeData(visualize,mVisualizeComponents);
     this->NodeTotalAddToVisualize(visualize,mVisualizeComponents);
-    visualize.ExportVtkDataFile(rFileName);
+    if (rXML)
+        visualize.ExportVtuDataFile(rFileName);
+    else
+        visualize.ExportVtkDataFile(rFileName);
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -475,7 +488,7 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName) c
 #endif
 }
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName) const
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName, bool rXML) const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -484,7 +497,10 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName
     VisualizeUnstructuredGrid visualize;
     this->DefineVisualizeElementData(visualize,mVisualizeComponents);
     this->ElementTotalAddToVisualize(visualize,mVisualizeComponents);
-    visualize.ExportVtkDataFile(rFileName);
+    if (rXML)
+        visualize.ExportVtuDataFile(rFileName);
+    else
+        visualize.ExportVtkDataFile(rFileName);
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -1209,6 +1225,45 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
         mLogger<<"[NuTo::StructureBase::BuildGlobalExternalLoadVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
+
+// build global external load vector
+void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector_j, NuTo::FullMatrix<double>& rVector_k)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    // check dof numbering
+    if (this->mNodeNumberingRequired)
+    {
+        try
+        {
+            this->NodeBuildGlobalDofs();
+        }
+        catch (MechanicsException& e)
+        {
+            e.AddMessage("[NuTo::StructureBase::BuildGlobalExternalLoadVector] error building global dof numbering.");
+            throw e;
+        }
+    }
+
+    rVector_j.Resize(this->mNumActiveDofs, 1);
+    rVector_k.Resize(this->mNumDofs - this->mNumActiveDofs,1);
+
+    // loop over all loads
+    boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
+    while (loadIter != this->mLoadMap.end())
+    {
+        loadIter->second->AddLoadToGlobalSubVectors(rVector_j, rVector_k);
+        loadIter++;
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalExternalLoadVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
 
 // build global gradient of the internal potential (e.g. the internal forces)
 NuTo::Error::eError NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double>& rVector)

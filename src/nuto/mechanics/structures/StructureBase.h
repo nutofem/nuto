@@ -61,6 +61,7 @@ class StructureBase : public NuToObject
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
+    friend class ImplicitNewtonRaphson;
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -144,6 +145,18 @@ public:
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
     void ExportVtkDataFileNodes(const std::string& rFileName) const;
+
+    //! @brief ... export the entire structure to Vtk data file
+    //! @param rFileName ... file name
+    //! @param rWhat ... string which describes what to plot
+    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
+    void ExportVtkDataFileElements(const std::string& rFileName, bool rXML) const;
+
+    //! @brief ... export the entire structure to Vtk data file
+    //! @param rFileName ... file name
+    //! @param rWhat ... string which describes what to plot
+    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
+    void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML) const;
 
     //Visualize for all integration points the fine scale structure
     void ElementGroupVisualizeIpMultiscale(int rGroupIdent, const std::string& rFileName, bool rVisualizeDamage)const;
@@ -269,12 +282,49 @@ public:
     NuTo::Error::eError BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector);
 
     //! @brief ... build global external load vector
-    //! @param rVector ... external load vector
-    void BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector);
+    //! @param rVector ... external load vector on independent dofs - C external load vector on dependent dofs
+    void BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector_j);
+
+    //! @brief ... build global external load vector
+    //! @param rVector ... external load vector on independent dofs
+    //! @param rVector ... external load vector on dependent dofs
+    void BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector_j, NuTo::FullMatrix<double>& rVector_k);
 
     //! @brief ... build global gradient of the internal potential (e.g. the internal forces)
     //! @param rVector ... global gradient of the internal potential (e.g. internal force vector)
     NuTo::Error::eError BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double>& rVector);
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
+
+    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
+    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
+    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
+    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const = 0;
 
 //*************************************************
 //************ Node routines        ***************
@@ -331,6 +381,16 @@ public:
     //! @param rRotations matrix (one column) with the rotations
     void NodeSetRotations(int rId,const NuTo::FullMatrix<double>& rRotations);
 
+    //! @brief sets the velocities of a node
+    //! @param rIdent node identifier
+    //! @param rRotations matrix (one column) with the rotations
+    void NodeSetVelocities(int rId,const NuTo::FullMatrix<double>& rVelocities);
+
+    //! @brief sets the velocities of a group of nodes
+    //! @param rIdent node group identifier
+    //! @param rDisplacements matrix (one column) with the displacements
+    void NodeGroupSetVelocities(int rIdent, const FullMatrix<double>& rVelocities);
+
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rDisplacements matrix (one column) with the displacements
@@ -365,6 +425,31 @@ public:
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     virtual void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const = 0;
+
+    //! @brief write first time derivative of dof values (e.g. velocities) to the nodes
+    //! @param rActiveDofValues ... global vector of the first time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    virtual void NodeMergeDofFirstTimeDerivativeValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
+
+    //! @brief extract first time derivatives of dof values (e.g. velocities) from the nodes
+    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    virtual void NodeExtractDofFirstTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const=0;
+
+    //! @brief write second time derivative of dof values (e.g. accelerations) to the nodes
+    //! @param rActiveDofValues ... global vector of the first time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of the first time derivatives of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    virtual void NodeMergeDofSecondTimeDerivativeValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
+
+    //! @brief extract second time derivatives of dof values (e.g. accelerations) from the nodes
+    //! @param rActiveDofValues ... global vector of the second time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of the second time derivatives of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    virtual void NodeExtractDofSecondTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const=0;
+
+    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeDofValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
@@ -650,9 +735,9 @@ public:
     //! @param rEngineeringStrain  average strain (return value)
     void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const;
 
-    //! @brief calculates the total energy of the system
+    //! @brief calculates the internal energy of the system
     //! @return total energy
-    virtual double ElementTotalGetTotalEnergy()const;
+    virtual double ElementTotalGetInternalEnergy()const;
 
     //! @brief calculates the total energy of the system
     //! @return total energy
@@ -848,7 +933,7 @@ public:
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
-    //! @param rConstraintMatrix constraint matrix
+    //! @param rRHS rhs
     void ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double>& rRHS);
 
     //! @brief returns the constraint vector after gauss elimination
@@ -1914,37 +1999,6 @@ protected:
     //! @brief ... check for dof numbering and build of tmpStaticData
     void BuildGlobalCoefficientMatrixCheck();
 
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
-
-    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
-    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
-    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const = 0;
 
     //! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
     void InsertParticleIntoBox(NuTo::FullMatrix<double>& rParticles, int rTheParticle, std::vector<std::vector<int > >& rSubBox, std::array<int,3>& rNSubBox,std::array<double,3>& rLSubBox, FullMatrix<double>& rBoundingBox);

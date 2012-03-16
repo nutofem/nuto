@@ -454,6 +454,32 @@ NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::
 	return *this;
 }
 
+//! @brief ... add two matrices
+//! @param rOther ... symmetric sparse matrix stored in the CSRVector2 format
+//! @return reference to this matrix
+template<class T>
+NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::operator+=  ( const NuTo::SparseMatrixCSRVector2Symmetric<T> &rOther )
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRVector2General::operator+=] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRVector2General::operator+=] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[row][pos], rOther.mValues[row][pos]);
+			if (row!=rOther.mColumns[row][pos])
+				this->AddEntry(rOther.mColumns[row][pos], row, rOther.mValues[row][pos]);
+		}
+	}
+	return *this;
+}
+
 //! @brief ... matrix - matrix multiplication
 //! @param rOther ... general sparse matrix stored in the CSR format
 //! @return general sparse matrix stored in the CSR format
@@ -516,6 +542,7 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2General<T>::operator* (const Ful
 {
 	if (this->GetNumColumns() != rMatrix.GetNumRows())
 	{
+		std::cout << "this->GetNumColumns() " << this->GetNumColumns() << " rMatrix.GetNumRows() " << rMatrix.GetNumRows() << "\n";
 		throw MathException("[SparseMatrixCSRVector2General::operator*] invalid matrix dimensions.");
 	}
 	FullMatrix<T> result(this->GetNumRows(),rMatrix.GetNumColumns());
@@ -568,6 +595,103 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2General<T>::operator* (const Ful
 		}
 	}
 	return result;
+}
+
+//! @brief ... add the scaled other matrix
+//! @param rOther ... other matrix
+//! @param rFactor ... scalar factor
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRVector2General<T> &rOther, double rFactor)
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRVector2General::AddScal] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRVector2General::AddScal] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[row][pos], rFactor*rOther.mValues[row][pos]);
+		}
+	}
+}
+
+//! @brief ... add the scaled other matrix
+//! @param rOther ... other matrix
+//! @param rFactor ... scalar factor
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRVector2Symmetric<T> &rOther, double rFactor)
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRVector2General::AddScal] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRVector2General::AddScal] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[row][pos], rOther.mValues[row][pos]);
+			if (row!=rOther.mColumns[row][pos])
+				this->AddEntry(rOther.mColumns[row][pos], row, rFactor*rOther.mValues[row][pos]);
+		}
+	}
+}
+
+//! @brief ... add the scaled other matrix
+//! @param rOther ... other matrix
+//! @param rFactor ... scalar factor
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRGeneral<T> &rOther, double rFactor)
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRGeneral::AddScal] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::AddScal] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[pos], rFactor*rOther.mValues[pos]);
+		}
+	}
+}
+
+//! @brief ... add the scaled other matrix
+//! @param rOther ... other matrix
+//! @param rFactor ... scalar factor
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRSymmetric<T> &rOther, double rFactor)
+{
+	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRGeneral::AddScal] invalid matrix dimensions.");
+	}
+	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::AddScal] both matrices must have zero based indexing.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
+		{
+			this->AddEntry(row, rOther.mColumns[pos], rFactor*rOther.mValues[pos]);
+			if (row!=rOther.mColumns[pos])
+				this->AddEntry(rOther.mColumns[pos], row, rFactor*rOther.mValues[pos]);
+		}
+	}
+
 }
 
 template<class T>

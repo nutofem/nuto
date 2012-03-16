@@ -746,7 +746,7 @@ NuTo::Error::eError NuTo::Lattice2D::GetIpData(NuTo::IpData::eIpStaticDataType r
            rIpData.Resize(1,GetNumIntegrationPoints());
     break;
     case NuTo::IpData::ELASTIC_ENERGY:
-    case NuTo::IpData::TOTAL_ENERGY:
+    case NuTo::IpData::INTERNAL_ENERGY:
         rIpData.Resize(2,GetNumIntegrationPoints());
     break;
     default:
@@ -788,9 +788,9 @@ NuTo::Error::eError NuTo::Lattice2D::GetIpData(NuTo::IpData::eIpStaticDataType r
             rIpData.mEigenMatrix(1,theIP) = factor;
         }
         break;
-        case NuTo::IpData::TOTAL_ENERGY:
+        case NuTo::IpData::INTERNAL_ENERGY:
         {
-        	error = constitutivePtr->GetTotalEnergy_LatticeStress_LatticeStrain(this, theIP, latticeStrain,rIpData.mEigenMatrix(0,theIP));
+        	error = constitutivePtr->GetInternalEnergy_LatticeStress_LatticeStrain(this, theIP, latticeStrain,rIpData.mEigenMatrix(0,theIP));
             assert(mSection->GetThickness()>0);
             double factor(mSection->GetThickness()*this->mElementData->GetIntegrationPointWeight(theIP));
             rIpData.mEigenMatrix(1,theIP) = factor;

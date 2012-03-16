@@ -555,7 +555,7 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 
         //init RHSMatrix as a diagonal identity matrix
         mConstraintMappingRHS.Resize(numDependentDofs,numDependentDofs);
-        for (int count=0; count<numDependentDofs ; count++)
+        for (unsigned int count=0; count<numDependentDofs ; count++)
         	mConstraintMappingRHS.AddEntry(count,count,1.);
 
         // perform gauss algorithm
@@ -666,6 +666,37 @@ void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActive
     NodeMergeAdditionalGlobalDofValues(rActiveDofValues,dependentDofValues);
 }
 
+// merge dof values
+void NuTo::Structure::NodeMergeDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+{
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiceDofValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    }
+    if ((rActiveDofValues.GetNumRows() != this->mNumActiveDofs) || rActiveDofValues.GetNumColumns() != 1)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiceDofValues] invalid dimension of input object (number of active dofs,1).");
+    }
+    if ((rDependentDofValues.GetNumRows() != this->mNumDofs - this->mNumActiveDofs) || rDependentDofValues.GetNumColumns() != 1)
+    {
+        throw MechanicsException("[NuTo::Structure::NodeMergeActiceDofValues] invalid dimension of input object (number of dependent dofs,1).");
+    }
+	this->mUpdateTmpStaticDataRequired=true;
+
+
+    // write dof values to the nodes
+    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        it->second->SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+    }
+
+    //write the dof values of the Lagrange multipliers
+    ConstraintMergeGlobalDofValues(rActiveDofValues, rDependentDofValues);
+
+    //write dof values of additional DOFs
+    NodeMergeAdditionalGlobalDofValues(rActiveDofValues,rDependentDofValues);
+}
+
 // extract dof values
 void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
 {
@@ -741,7 +772,7 @@ void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNod
 }
 
 // merge dof first time derivative values
-void NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues)
+void NuTo::Structure::NodeMergeDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
 {
     if (this->mNodeNumberingRequired)
     {
@@ -753,13 +784,10 @@ void NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues(const FullMatr
     }
 	this->mUpdateTmpStaticDataRequired=true;
 
-    // calculate dependent dof values
-    FullMatrix<double> dependentDofValues = this->mConstraintMatrix * rActiveDofValues;
-
     // write dof values to the nodes
     for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
-        it->second->SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, dependentDofValues);
+        it->second->SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 }
 
@@ -781,7 +809,7 @@ void NuTo::Structure::NodeExtractDofFirstTimeDerivativeValues(FullMatrix<double>
 }
 
 // merge dof first time derivative values
-void NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues)
+void NuTo::Structure::NodeMergeDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
 {
     if (this->mNodeNumberingRequired)
     {
@@ -793,13 +821,10 @@ void NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues(const FullMat
     }
 	this->mUpdateTmpStaticDataRequired=true;
 
-    // calculate dependent dof values
-    FullMatrix<double> dependentDofValues = this->mConstraintMatrix * rActiveDofValues;
-
     // write dof values to the nodes
     for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
-        it->second->SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, dependentDofValues);
+        it->second->SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 }
 

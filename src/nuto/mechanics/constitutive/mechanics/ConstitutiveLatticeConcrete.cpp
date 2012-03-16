@@ -443,7 +443,7 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTotalEnergy_LatticeStr
     CalculateElasticParameters(En,Et);
 
     // calculate Lattice stress
-    LatticeStress2D latticeStress;
+    LatticeStress3D latticeStress;
 	latticeStress.mLatticeStress[0] = En * rLatticeStrain.mLatticeStrain[0];
 	latticeStress.mLatticeStress[1] = Et * rLatticeStrain.mLatticeStrain[1];
 	latticeStress.mLatticeStress[2] = Et * rLatticeStrain.mLatticeStrain[2];

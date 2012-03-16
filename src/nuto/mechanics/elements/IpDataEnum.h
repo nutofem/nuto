@@ -28,7 +28,7 @@ enum eIpStaticDataType
     DAMAGE,                    //!< isotropic damage variable
     ENGINEERING_PLASTIC_STRAIN, //!> plastic strain
     ELASTIC_ENERGY,            //!> elastic energy
-    TOTAL_ENERGY               //!> total (elastic + inelastic energy
+    INTERNAL_ENERGY            //!> internal (elastic + inelastic) energy
 };
 
 }

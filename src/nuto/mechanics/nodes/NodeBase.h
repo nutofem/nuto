@@ -36,6 +36,9 @@ public:
     //! @brief constructor
     NodeBase();
 
+    //! @brief destructor
+    virtual ~NodeBase(){};
+
     //! @brief assignment operator
     void operator=(NodeBase const& rOther)
     {

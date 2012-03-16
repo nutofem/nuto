@@ -110,6 +110,11 @@ public:
     //! @return reference to this matrix
     SparseMatrixCSRVector2General<T>& operator+=  ( const SparseMatrixCSRVector2General<T> &rOther );
 
+    //! @brief ... add two matrices
+    //! @param rOther ... symmetric sparse matrix stored in the CSRVector2 format
+    //! @return reference to this matrix
+    SparseMatrixCSRVector2General<T>& operator+=  ( const SparseMatrixCSRVector2Symmetric<T> &rOther );
+
     //! @brief ... matrix - matrix multiplication
     //! @param rOther ... general sparse matrix stored in the CSR format
     //! @return general sparse matrix stored in the CSR format
@@ -130,6 +135,26 @@ public:
     //! @brief ... calculate the transpose of the matrix (transpose row and columns)
     //! @return ... transpose of this matrix (sparse csr storage)
     SparseMatrixCSRVector2General<T> Transpose() const;
+
+    //! @brief ... add the scaled other matrix
+    //! @param rOther ... other matrix
+    //! @param rFactor ... scalar factor
+    void AddScal(const SparseMatrixCSRVector2General<T> &rOther, double rFactor);
+
+    //! @brief ... add the scaled other matrix
+    //! @param rOther ... other matrix
+    //! @param rFactor ... scalar factor
+    void AddScal(const SparseMatrixCSRVector2Symmetric<T> &rOther, double rFactor);
+
+    //! @brief ... add the scaled other matrix
+    //! @param rOther ... other matrix
+    //! @param rFactor ... scalar factor
+    void AddScal(const SparseMatrixCSRGeneral<T> &rOther, double rFactor);
+
+    //! @brief ... add the scaled other matrix
+    //! @param rOther ... other matrix
+    //! @param rFactor ... scalar factor
+    void AddScal(const SparseMatrixCSRSymmetric<T> &rOther, double rFactor);
 
     //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
     //! @param rRhs ... right-hand side vector (input and output object)

@@ -337,8 +337,8 @@ FullMatrix<double> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix
         {
             for (int thisPos = this->mRowIndex[thisRow]; thisPos < this->mRowIndex[thisRow + 1]; thisPos++)
             {
-                int thisColumn = this->mColumns[thisPos];
-                int thisValue = this->mValues[thisPos];
+            	int thisColumn = this->mColumns[thisPos];
+                double thisValue = this->mValues[thisPos];
                 resultValues[thisRow] += thisValue * matrixValues[thisColumn];
                 if (thisRow != thisColumn)
                 {

@@ -720,7 +720,7 @@ NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<d
         assert(mSection->GetThickness()>0);
 
         //this global weight function is 1 for all standard problems, it's not equal to one for the multiscale method
-        double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+        double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))*constitutivePtr->GetDensity());
         Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix;
         tmpMatrix = (factor*Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(shapeFunctions[0]),GetNumShapeFunctions()))*Eigen::Matrix<double,1,Eigen::Dynamic>::Map(&(shapeFunctions[0]),GetNumShapeFunctions());
         for (int count=0; count<GetNumShapeFunctions(); count++)
@@ -834,7 +834,7 @@ NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDa
            rIpData.Resize(1,GetNumIntegrationPoints());
     break;
     case NuTo::IpData::ELASTIC_ENERGY:
-    case NuTo::IpData::TOTAL_ENERGY:
+    case NuTo::IpData::INTERNAL_ENERGY:
         rIpData.Resize(2,GetNumIntegrationPoints());
     break;
     default:
@@ -888,9 +888,9 @@ NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDa
             rIpData.mEigenMatrix(1,theIP) = factor;
         }
         break;
-        case NuTo::IpData::TOTAL_ENERGY:
+        case NuTo::IpData::INTERNAL_ENERGY:
         {
-        	error = constitutivePtr->GetTotalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient,rIpData.mEigenMatrix(0,theIP));
+        	error = constitutivePtr->GetInternalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient,rIpData.mEigenMatrix(0,theIP));
             assert(mSection->GetThickness()>0);
             double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
             rIpData.mEigenMatrix(1,theIP) = factor;

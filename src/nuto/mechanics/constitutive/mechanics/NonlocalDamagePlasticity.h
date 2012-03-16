@@ -222,7 +222,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient1D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
@@ -230,7 +230,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient2D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
@@ -238,7 +238,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
