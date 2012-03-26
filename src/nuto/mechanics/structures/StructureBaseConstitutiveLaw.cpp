@@ -456,6 +456,38 @@ void NuTo::StructureBase::ConstitutiveLawSetTensileStrength(int rIdent, double r
     }
 }
 
+//! @brief ... get shear strength
+//! @param rIdent ...  constitutive model
+double NuTo::StructureBase::ConstitutiveLawGetShearStrength(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetShearStrength();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetshearStrength] error getting shear strength.");
+		throw e;
+	}
+}
+
+//! @brief ... set shear strength
+//! @param rShearStrength ...  shear strength
+void NuTo::StructureBase::ConstitutiveLawSetShearStrength(int rIdent, double rShearStrength)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetShearStrength(rShearStrength);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetShearStrength] error setting shear strength.");
+        throw e;
+    }
+}
+
 //! @brief ... get compressive strength
 //! @param rCompressiveStrength ...  compressive strength
 double NuTo::StructureBase::ConstitutiveLawGetCompressiveStrength(int rIdent)
@@ -548,6 +580,38 @@ void NuTo::StructureBase::ConstitutiveLawSetFractureEnergy(int rIdent, double rF
     catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetFractureEnergy] error setting fracture energy.");
+        throw e;
+    }
+}
+
+//! @brief ... get friction coefficient
+//! @param rIdent ...  constitutive model
+double NuTo::StructureBase::ConstitutiveLawGetFrictionCoefficient(int rIdent)
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetFrictionCoefficient();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetFrictionCoefficient] error getting friction coefficient.");
+		throw e;
+	}
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy ...  friction coefficient
+void NuTo::StructureBase::ConstitutiveLawSetFrictionCoefficient(int rIdent, double rFrictionCoefficient)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetFrictionCoefficient(rFrictionCoefficient);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetFrictionCoefficient] error setting friction coefficient.");
         throw e;
     }
 }

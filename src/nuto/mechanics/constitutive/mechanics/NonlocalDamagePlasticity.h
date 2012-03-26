@@ -296,6 +296,14 @@ public:
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
     // parameters /////////////////////////////////////////////////////////////
+    //! @brief ... get density
+    //! @return ... density
+    double GetDensity() const;
+
+    //! @brief ... set density
+    //! @param rRho ... density
+    void SetDensity(double rRho);
+
     //! @brief ... get Young's modulus
     //! @return ... Young's modulus
     double GetYoungsModulus() const;
@@ -442,6 +450,9 @@ public:
     bool IsNonlocalModel()const;
 
 protected:
+    //! @brief ... density
+    double mRho;
+
     //! @brief ... Young's modulus \f$ E \f$
     double mE;
 
@@ -469,6 +480,10 @@ protected:
     //! @brief ... either use a pure plasticity model (false) or add softening using the damage model (true)
     bool mDamage;
 
+
+    //! @brief ... check if density is non negativ
+    //! @param rRho ... Young's modulus
+    void CheckDensity(double rRho) const;
 
     //! @brief ... check if Young's modulus is positive
     //! @param rE ... Young's modulus

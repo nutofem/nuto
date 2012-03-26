@@ -4,7 +4,7 @@
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/Newmark.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
 #define createResult true
 
@@ -209,7 +209,7 @@ try
 //	myStructure.LoadCreateNodeGroupForce(grpNodes_Left,DirectionX , 1);
 	myStructure.LoadCreateNodeGroupForce(groupLeftBottomSupport,DirectionX, 1);
 
-	NuTo::Newmark myIntegrationScheme;
+	NuTo::NewmarkDirect myIntegrationScheme;
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.05);
 
@@ -262,7 +262,8 @@ try
     myIntegrationScheme.SetGroupNodesReactionForces(mGroupNodesReactionForces);
 
     //set result directory
-    myIntegrationScheme.SetResultDirectory(resultDir);
+    bool deleteResultDirectoryFirst(true);
+    myIntegrationScheme.SetResultDirectory(resultDir,true);
 
     //solve (perform Newton raphson iteration
     myIntegrationScheme.Solve(myStructure, simulationTime);
@@ -273,18 +274,20 @@ try
 
 	NuTo::FullMatrix<double> result;
     result.ReadFromFile(resultFile.string());
-    //result.Info(15,12,true);
+    result.Info(15,12,true);
 
-	NuTo::FullMatrix<double> resultRef(1,9);
-	resultRef(0,0) = 1.500009228786e+01;
-	resultRef(0,1) = 6.651888892659e-02;
-	resultRef(0,2) = 1.662972223165e-02;
-	resultRef(0,3) = 1.508324089902e+01;
-	resultRef(0,4) = 0.;
-	resultRef(0,5) = -3.001682840789e+02;
+	NuTo::FullMatrix<double> resultRef(1,11);
+	resultRef(0,0) = 0;
+	resultRef(0,1) = 0.1;
+	resultRef(0,2) = 1.500009228786e+01;
+	resultRef(0,3) = 6.452563911884e-02;
+	resultRef(0,4) = 1.700347727382e-02;
+	resultRef(0,5) = 1.508162134529e+01;
 	resultRef(0,6) = 0.;
-	resultRef(0,7) = 3.016648179806e+02;
+	resultRef(0,7) = -3.001683921119e+02;
 	resultRef(0,8) = 0.;
+	resultRef(0,9) = 3.016324269061e+02;
+	resultRef(0,10) = 0.;
 
     if ((resultRef-result).Abs().Max()>1e-4)
     {

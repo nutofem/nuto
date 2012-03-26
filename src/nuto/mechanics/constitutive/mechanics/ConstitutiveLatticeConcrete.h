@@ -154,7 +154,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rLatticeStrain ... deformation gradient
-    Error::eError GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
             const LatticeStrain2D& rLatticeStrain, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
@@ -162,7 +162,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rLatticeStrain ... deformation gradient
-    Error::eError GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
             const LatticeStrain3D& rLatticeStrain, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
@@ -206,6 +206,38 @@ public:
     //! @brief ... set Poisson's ratio
     //! @param rNu ... Poisson's ratio
     void SetPoissonsRatio(double rNu);
+
+    //! @brief ... get tensile strength
+    //! @return ... tensile strength
+    double GetTensileStrength() const;
+
+    //! @brief ... set tensile strength
+    //! @param rTensileStrength...  tensile strength
+    void SetTensileStrength(double rTensileStrength);
+
+    //! @brief ... get shear strength
+    //! @return ... shear strength
+    double GetShearStrength() const;
+
+    //! @brief ... set shear strength
+    //! @param rShearStrength...  shear strength
+    void SetShearStrength(double rShearStrength);
+
+    //! @brief ... get fracture energy
+    //! @return ... fracture energy
+    double GetFractureEnergy() const;
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy... fracture energy
+    void SetFractureEnergy(double rFractureEnergy);
+
+    //! @brief ... get friction coefficient
+    //! @return ... friction coefficient
+    double GetFrictionCoefficient() const;
+
+    //! @brief ... set friction coefficient
+    //! @param rFrictionCoefficient... friction coefficient
+    void SetFrictionCoefficient(double rFrictionCoefficient);
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get dimension of the constitutive relationship
@@ -284,6 +316,21 @@ protected:
     //! @brief ... check if Poisson's ratio is valid \f$ (-1.0 < \nu < 0.5) \f$
     //! @param rNu ... Poisson's ratio
     void CheckPoissonsRatio(double rNu) const;
+
+    //! @brief ... check if tensile strength is positive
+    //! @param rTensileStrength ... tensile strength
+    void CheckTensileStrength(double rTensileStrength) const;
+
+    //! @brief ... check if shear strength is positive
+    //! @param rShearStrength ... shear strength
+    void CheckShearStrength(double rShearStrength) const;
+
+    //! @brief ... check if fracture energy is positive
+    //! @param rFractureEnergy ... fracture energy
+    void CheckFractureEnergy(double rFractureEnergy) const;
+    //! @brief ... check friction coefficient is positive
+    //! @param rFrictionCoefficient ... friction coefficient
+    void CheckFrictionCoefficient(double rFrictionCoefficient) const;
 
     //! @brief ... calculate the elastic parameters for the plane
     void CalculateElasticParameters(double& rEn,double& rEt)const;

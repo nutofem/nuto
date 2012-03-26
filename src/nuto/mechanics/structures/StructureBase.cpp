@@ -56,6 +56,9 @@ extern "C" {
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#include "nuto/visualize/VisualizeComponentAcceleration.h"
+#include "nuto/visualize/VisualizeComponentAngularAcceleration.h"
+#include "nuto/visualize/VisualizeComponentAngularVelocity.h"
 #include "nuto/visualize/VisualizeComponentConstitutive.h"
 #include "nuto/visualize/VisualizeComponentCrack.h"
 #include "nuto/visualize/VisualizeComponentDamage.h"
@@ -69,7 +72,9 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
+#include "nuto/visualize/VisualizeComponentRotation.h"
 #include "nuto/visualize/VisualizeComponentSection.h"
+#include "nuto/visualize/VisualizeComponentVelocity.h"
 #endif // ENABLE_VISUALIZE
 
 
@@ -438,6 +443,83 @@ void NuTo::StructureBase::AddVisualizationComponentLatticeStrain()
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLatticeStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
+
+//! @brief ... Add rotation to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentRotation()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentRotation());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentRotation] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add velocity to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentVelocity()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentVelocity());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentVelocity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+
+//! @brief ... Add accelaration to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentAcceleration()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentAcceleration());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::VisualizeComponentAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentAngularVelocity()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentAngularVelocity());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentAngularVelocity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+
+//! @brief ... Add angular acceleration to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentAngularAcceleration()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentAngularAcceleration());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::VisualizeComponentAngularAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef SHOW_TIME
@@ -607,6 +689,21 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::PARTICLE_RADIUS:
             //do nothing;
             break;
+        case NuTo::VisualizeBase::ROTATION:
+            //do nothing;
+            break;
+        case NuTo::VisualizeBase::VELOCITY:
+            //do nothing;
+            break;
+        case NuTo::VisualizeBase::ACCELERATION:
+            //do nothing;
+            break;
+        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+            //do nothing;
+            break;
+        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+            //do nothing;
+            break;
         default:
         	throw MechanicsException("[NuTo::StructureBase::DefineVisualizeElementData] undefined visualize components.");
         }
@@ -626,6 +723,21 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
             break;
         case NuTo::VisualizeBase::PARTICLE_RADIUS:
         	rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::ROTATION:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::VELOCITY:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::ACCELERATION:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
         default:
         	;

@@ -27,6 +27,8 @@
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations1D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations2D.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations3D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -210,8 +212,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     // bit 5 : velocities
     // bit 6 : accelerations
     // bit 7 : radius
-    boost::tokenizer<> tok(rDOFs);
-    for (boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
+    // bit 8 : angular velocities
+    // bit 9 : angular accelerations
+    //check here the maximum number of bits for the integer
+
+    boost::char_separator<char> sep(" ");
+    boost::tokenizer< boost::char_separator<char> > tok(rDOFs, sep);
+    for (boost::tokenizer< boost::char_separator<char>  >::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
     {
         if (*beg=="COORDINATES")
         {
@@ -244,6 +251,14 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         else if (*beg=="RADIUS")
         {
             attributes = attributes | 1 << Node::RADIUS;
+        }
+        else if (*beg=="ANGULAR_VELOCITIES")
+        {
+            attributes = attributes | 1 << Node::ANGULAR_VELOCITIES;
+        }
+        else if (*beg=="ANGULAR_ACCELERATIONS")
+        {
+            attributes = attributes | 1 << Node::ANGULAR_ACCELERATIONS;
         }
         else
         {
@@ -305,6 +320,30 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
 			break;
 		case 3:
 			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations3D();
+			break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+		}
+		break;
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::VELOCITIES) | (1 << Node::ACCELERATIONS) |
+			(1 << Node::ROTATIONS) | (1 << Node::ANGULAR_VELOCITIES) | (1 << Node::ANGULAR_ACCELERATIONS):
+		// coordinates and displacements
+		switch (mDimension)
+		{
+		case 2:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D();
+			break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+		}
+		break;
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::VELOCITIES) | (1 << Node::ACCELERATIONS) |
+			(1 << Node::ROTATIONS) | (1 << Node::ANGULAR_VELOCITIES) | (1 << Node::ANGULAR_ACCELERATIONS | (1 << Node::RADIUS)):
+		// coordinates and displacements
+		switch (mDimension)
+		{
+		case 2:
+			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D();
 			break;
 		default:
 			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");

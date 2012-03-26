@@ -30,7 +30,12 @@ public:
         PARTICLE_RADIUS,                //!< visualize radius of particles/nodes
         LATTICE_STRAIN,                 //!< visualize strain of lattice models
         LATTICE_STRESS,                 //!< visualize stress of lattice models
-        LATTICE_PLASTIC_STRAIN          //!< visualize plastic strain of lattice models
+        LATTICE_PLASTIC_STRAIN,         //!< visualize plastic strain of lattice models
+        ROTATION,                       //!< visualize rotations
+        VELOCITY,                       //!< visualize velocity
+        ANGULAR_VELOCITY,               //!< visualize angular velocity
+        ACCELERATION,                   //!< visualize acceleration
+        ANGULAR_ACCELERATION               //!< visualize angular acceleration
     };
 
     //! @brief ... export to Vtk datafile

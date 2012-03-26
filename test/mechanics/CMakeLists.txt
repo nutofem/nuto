@@ -69,5 +69,24 @@ IF(ENABLE_C++_TESTS)
     SET_TARGET_PROPERTIES(NewmarkPlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
   ADD_TEST(mechanics::NewmarkPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/NewmarkPlane2D4N)
+
+
+  # test Newmark time integration with a dogbone specimen
+  ADD_EXECUTABLE(DogBoneDirectNewmark DogBoneDirectNewmark)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.geo ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.geo  COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.msh ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.msh  COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/results/Linuxx86_64/DogboneDirectNewmarkresultAllLoadStepsRef.dat ${CMAKE_CURRENT_BINARY_DIR}/DogboneDirectNewmarkresultAllLoadStepsRef.dat  COPYONLY)
+  
+  TARGET_LINK_LIBRARIES(DogBoneDirectNewmark NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(DogBoneDirectNewmark NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(DogBoneDirectNewmark ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(DogBoneDirectNewmark PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  ADD_TEST(mechanics::DogBoneDirectNewmark ${CMAKE_CURRENT_BUILD_DIR}/DogBoneDirectNewmark)
 ENDIF(ENABLE_C++_TESTS)
   

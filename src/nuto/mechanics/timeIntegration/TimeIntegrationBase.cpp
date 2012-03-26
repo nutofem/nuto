@@ -56,7 +56,7 @@ void NuTo::TimeIntegrationBase::ResetForNextLoad()
 void NuTo::TimeIntegrationBase::SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double>& rConstraintRHS)
 {
 	if (rConstraintRHS.GetNumColumns()!=2)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of columns must be 2, first column contains the time, second column contains the corresponding value.");
+		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
 	if (rConstraintRHS.GetNumRows()<2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of rows must be at least 2.");
 	if (rConstraintRHS(0,0)!=0)
@@ -95,7 +95,7 @@ void NuTo::TimeIntegrationBase::SetExternalLoads(const NuTo::FullMatrix<double>&
 }
 
 //! @brief apply the new rhs of the constraints as a function of the current time delta
-void NuTo::TimeIntegrationBase::ConstraintsCalculateRHSAndApply(StructureBase& rStructure, double curTime)
+double NuTo::TimeIntegrationBase::ConstraintsCalculateRHS(double curTime)
 {
     //calculate the two corresponding time steps between which a linear interpolation is performed
 	if (mConstraintRHS.GetNumRows()!=0)
@@ -103,19 +103,18 @@ void NuTo::TimeIntegrationBase::ConstraintsCalculateRHSAndApply(StructureBase& r
         int curStep(0);
         while (mConstraintRHS(curStep,0)<curTime && curStep<mConstraintRHS.GetNumRows()-1)
         	curStep++;
-		if (curStep==(mConstraintRHS.GetNumRows()-1))
-			curStep--;
+		if (curStep==0)
+			curStep++;
 
 		//extract the two data points
-		double s1 = mConstraintRHS(curStep,1);
-		double s2 = mConstraintRHS(curStep+1,1);
-		double t1 = mConstraintRHS(curStep,0);
-		double t2 = mConstraintRHS(curStep+1,0);
+		double s1 = mConstraintRHS(curStep-1,1);
+		double s2 = mConstraintRHS(curStep,1);
+		double t1 = mConstraintRHS(curStep-1,0);
+		double t2 = mConstraintRHS(curStep,0);
 
-		double s = 	s1 + (s2-s1)/(t2-t1) * (curTime-t1);
-
-		rStructure.ConstraintSetRHS(mConstraintLoad,s);
+		return s1 + (s2-s1)/(t2-t1) * (curTime-t1);
 	}
+	return 0;
 }
 
 //! @brief calculate the external force as a function of time delta
@@ -129,14 +128,14 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
         int curStep(0);
         while (mLoadRHSFactor(curStep,0)<curTime && curStep<mLoadRHSFactor.GetNumRows()-1)
         	curStep++;
-		if (curStep==(mLoadRHSFactor.GetNumRows()-1))
-			curStep--;
+		if (curStep==0)
+			curStep++;
 
 		//extract the two data points
-		double s1 = mLoadRHSFactor(curStep,1);
-		double s2 = mLoadRHSFactor(curStep+1,1);
-		double t1 = mLoadRHSFactor(curStep,0);
-		double t2 = mLoadRHSFactor(curStep+1,0);
+		double s1 = mLoadRHSFactor(curStep-1,1);
+		double s2 = mLoadRHSFactor(curStep,1);
+		double t1 = mLoadRHSFactor(curStep-1,0);
+		double t2 = mLoadRHSFactor(curStep,0);
 
 		double s = 	s1 + (s2-s1)/(t2-t1) * (curTime-t1);
 
@@ -273,19 +272,35 @@ void NuTo::TimeIntegrationBase::Info()const
 }
 
 //! @brief sets the result directory
-void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir)
+//! @param if delete is set, all the content of the directory will be removed
+void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool rDelete)
 {
 	mResultDir = rResultDir;
     //delete result directory
-    if (boost::filesystem::exists(rResultDir))    // does p actually exist?
+    if (rDelete)
     {
-        if (boost::filesystem::is_directory(rResultDir))      // is p a directory?
-        {
-        	boost::filesystem::remove_all(rResultDir);
-        }
+		if (boost::filesystem::exists(rResultDir))    // does p actually exist?
+		{
+			if (boost::filesystem::is_directory(rResultDir))      // is p a directory?
+			{
+				boost::filesystem::remove_all(rResultDir);
+			}
+		}
+		// create result directory
+		boost::filesystem::create_directory(rResultDir);
     }
-    // create result directory
-    boost::filesystem::create_directory(rResultDir);
+    else
+    {
+		if (boost::filesystem::exists(rResultDir))    // does p actually exist?
+		{
+			if (!boost::filesystem::is_directory(rResultDir))      // is p a directory?
+			{
+				// create result directory
+				boost::filesystem::create_directory(rResultDir);
+			}
+		}
+
+    }
 }
 
 //! @brief sets the minimum time step for the time integration procedure

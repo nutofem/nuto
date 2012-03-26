@@ -163,6 +163,8 @@ loads/LoadNodeGroupForces3D.cpp
 
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
+nodes/NodeAngularAccelerations2D.cpp
+nodes/NodeAngularVelocities2D.cpp
 nodes/NodeCoordinates1D.cpp
 nodes/NodeCoordinates2D.cpp
 nodes/NodeCoordinates3D.cpp
@@ -175,6 +177,8 @@ nodes/NodeCoordinatesDisplacementsRadius2D.cpp
 nodes/NodeCoordinatesDisplacementsRadius3D.cpp
 nodes/NodeCoordinatesDisplacementsRotationsRadius2D.cpp
 nodes/NodeCoordinatesDisplacementsRotationsRadius3D.cpp
+nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D.cpp
+nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D.cpp
 nodes/NodeDisplacements1D.cpp
 nodes/NodeDisplacements2D.cpp
 nodes/NodeDisplacementsMultiscale2D.cpp
@@ -226,8 +230,9 @@ structures/grid/StructureGridElement.cpp
 )
 
 SET(NuToMechanicsTimeIntegration_SOURCES
-timeIntegration/ImplicitNewtonRaphson.cpp
-timeIntegration/Newmark.cpp
+timeIntegration/NewmarkBase.cpp
+timeIntegration/NewmarkDirect.cpp
+timeIntegration/NewmarkIndirect.cpp
 timeIntegration/TimeIntegrationBase.cpp
 )
 

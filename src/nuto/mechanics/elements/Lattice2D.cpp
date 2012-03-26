@@ -682,9 +682,9 @@ NuTo::Error::eError NuTo::Lattice2D::CalculateCoefficientMatrix_2(NuTo::FullMatr
 			mNodes[theNode]->GetCoordinates2D(&(coordinatesNodes[0]));
 
 			//calculate area of the triangle (node, edgePoint, Facepoint
-			double mass = density * 0.5*(coordinatesNodes[0]*globalCoordinatesEdgePoints[theIP][1]-coordinatesNodes[1]*globalCoordinatesEdgePoints[theIP][0]+
+			double mass = fabs(density * 0.5*(coordinatesNodes[0]*globalCoordinatesEdgePoints[theIP][1]-coordinatesNodes[1]*globalCoordinatesEdgePoints[theIP][0]+
 					           globalCoordinatesEdgePoints[theIP][0]*globalCoordinatesFacePoint[1]-globalCoordinatesEdgePoints[theIP][1]*globalCoordinatesFacePoint[0]+
-					           globalCoordinatesFacePoint[0]*coordinatesNodes[1]-globalCoordinatesFacePoint[1]*coordinatesNodes[0]);
+					           globalCoordinatesFacePoint[0]*coordinatesNodes[1]-globalCoordinatesFacePoint[1]*coordinatesNodes[0]));
 			//this is the translational mass
 			rResult(3*theNode,3*theNode)+=mass;
 			rResult(3*theNode+1,3*theNode+1)+=mass;
@@ -693,10 +693,10 @@ NuTo::Error::eError NuTo::Lattice2D::CalculateCoefficientMatrix_2(NuTo::FullMatr
 			boost::array<double,2 > centroid;
 			boost::array<double,2 > delta2;
 			delta2[0] = globalCoordinatesEdgePoints[theIP][0] - coordinatesNodes[0];
-			delta2[0] = globalCoordinatesEdgePoints[theIP][1] - coordinatesNodes[1];
+			delta2[1] = globalCoordinatesEdgePoints[theIP][1] - coordinatesNodes[1];
 			boost::array<double,2 > delta3;
 			delta3[0] = globalCoordinatesFacePoint[0] - coordinatesNodes[0];
-			delta3[0] = globalCoordinatesFacePoint[1] - coordinatesNodes[1];
+			delta3[1] = globalCoordinatesFacePoint[1] - coordinatesNodes[1];
 			centroid[0] = (delta2[0]+delta3[0])/3.;
 			centroid[1] = (delta2[1]+delta3[1])/3.;
 
@@ -715,6 +715,12 @@ NuTo::Error::eError NuTo::Lattice2D::CalculateCoefficientMatrix_2(NuTo::FullMatr
         }
     }
     rSymmetry = true;
+
+    this->CalculateGlobalRowDofs(rGlobalDofsRow);
+    rGlobalDofsColumn = rGlobalDofsRow;
+
+    assert((int)rGlobalDofsRow.size()==rResult.GetNumRows());
+    assert((int)rGlobalDofsColumn.size()==rResult.GetNumColumns());
     return Error::SUCCESSFUL;
 }
 

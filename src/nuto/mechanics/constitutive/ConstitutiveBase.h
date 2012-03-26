@@ -152,6 +152,14 @@ public:
     //! @param rTensileStrength...  tensile strength
     virtual void SetTensileStrength(double rTensileStrength);
 
+    //! @brief ... get shear strength
+    //! @return ... shear strength
+    virtual double GetShearStrength() const;
+
+    //! @brief ... set shear strength
+    //! @param rShearStrength...  shear strength
+    virtual void SetShearStrength(double rShearStrength);
+
     //! @brief ... get compressive strength
     //! @return ... compressive strength
     virtual double GetCompressiveStrength() const;
@@ -175,6 +183,14 @@ public:
     //! @brief ... set fracture energy
     //! @param rFractureEnergy... fracture energy
     virtual void SetFractureEnergy(double rFractureEnergy);
+
+    //! @brief ... get friction coefficient
+    //! @return ... friction coefficient
+    virtual double GetFrictionCoefficient() const;
+
+    //! @brief ... set friction coefficient
+    //! @param rFrictionCoefficient... friction coefficient
+    virtual void SetFrictionCoefficient(double rFrictionCoefficient);
 
     //! @brief ... set the elastic matrix
     //! @param rElasticStiffness... elastic matrix

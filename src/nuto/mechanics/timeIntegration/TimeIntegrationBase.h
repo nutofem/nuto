@@ -52,8 +52,8 @@ public:
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
     void SetExternalLoads(const NuTo::FullMatrix<double>& rLoadRHSFactor);
 
-    //! @brief apply the new rhs of the constraints as a function of the current time delta
-    void ConstraintsCalculateRHSAndApply(StructureBase& rStructure, double rTimeDelta);
+    //! @brief apply calculate the new rhs of the constraints as a function of the current time delta
+    double ConstraintsCalculateRHS(double rTimeDelta);
 
     //! @brief calculate the external force as a function of time delta
     //! @param curTime ... current time in the load step
@@ -101,7 +101,8 @@ public:
     }
 
     //! @brief sets the result directory
-    void SetResultDirectory(std::string rResultDir);
+    //! @param if delete is set, all the content of the directory will be removed
+    void SetResultDirectory(std::string rResultDir, bool rDelete);
 
     //! @brief returns the result directory
     std::string GetResultDirectory()const

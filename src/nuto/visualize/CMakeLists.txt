@@ -9,6 +9,9 @@ SET(NuToVisualize_SOURCES
   CellTriangle.cpp
   Point.cpp
   VisualizeBase.cpp
+  VisualizeComponentAcceleration.cpp
+  VisualizeComponentAngularAcceleration.cpp
+  VisualizeComponentAngularVelocity.cpp
   VisualizeComponentBase.cpp
   VisualizeComponentConstitutive.cpp
   VisualizeComponentDamage.cpp
@@ -23,7 +26,9 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentNonlocalWeight.cpp
   VisualizeComponentParticleRadius.cpp
   VisualizeComponentPrincipalEngineeringStress.cpp
+  VisualizeComponentRotation.cpp
   VisualizeComponentSection.cpp
+  VisualizeComponentVelocity.cpp
   VisualizeDataBase.cpp
   VisualizeDataField.cpp
   VisualizeDataScalar.cpp

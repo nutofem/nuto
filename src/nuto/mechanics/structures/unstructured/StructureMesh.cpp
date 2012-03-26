@@ -15,7 +15,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
     	throw MechanicsException("[NuTo::Structure::MeshCreateLattice2D] structure is not 2D.");
 
     //create nodes
-    std::string dofs("COORDINATES DISPLACEMENTS ROTATIONS RADIUS");
+    std::string dofs("COORDINATES DISPLACEMENTS VELOCITIES ACCELERATIONS ROTATIONS ANGULAR_VELOCITIES ANGULAR_ACCELERATIONS RADIUS");
 	for (int count=0; count<rCircles.GetNumRows(); count++)
 	{
 		NuTo::FullMatrix<double> coordinates(2,1);

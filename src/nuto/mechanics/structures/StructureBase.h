@@ -61,7 +61,8 @@ class StructureBase : public NuToObject
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ImplicitNewtonRaphson;
+    friend class NewmarkIndirect;
+    friend class NewmarkDirect;
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -127,6 +128,21 @@ public:
 
     //! @brief ... Add visualization of lattice strain to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentLatticeStrain();
+
+    //! @brief ... Add visualization of rotations to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentRotation();
+
+    //! @brief ... Add visualization of velocity to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentVelocity();
+
+    //! @brief ... Add visualization of acceration to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentAcceleration();
+
+    //! @brief ... Add visualization of angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentAngularVelocity();
+
+    //! @brief ... Add visualization of angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentAngularAcceleration();
 
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
@@ -1249,6 +1265,14 @@ public:
     //! @param rTensileStrength ...  tensile strength
     void ConstitutiveLawSetTensileStrength(int rIdent, double rTensileStrength);
 
+    //! @brief ... get shear strength
+    //! @param rIdent ...  constitutive model
+    double ConstitutiveLawGetShearStrength(int rIdent);
+
+    //! @brief ... set shear strength
+    //! @param rShearStrength ...  shear strength
+    void ConstitutiveLawSetShearStrength(int rIdent, double rShearStrength);
+
     //! @brief ... get compressive strength
     //! @param rCompressiveStrength ...  compressive strength
     double ConstitutiveLawGetCompressiveStrength(int rIdent);
@@ -1272,6 +1296,14 @@ public:
     //! @brief ... set fracture energy
     //! @param rFractureEnergy ...  fracture energy
     void ConstitutiveLawSetFractureEnergy(int rIdent, double rFractureEnergy);
+
+    //! @brief ... get friction coefficient
+    //! @param rIdent ...  constitutive model
+    double ConstitutiveLawGetFrictionCoefficient(int rIdent);
+
+    //! @brief ... set friction coefficient
+    //! @param rFrictionCoefficient ...  friction coefficient
+    void ConstitutiveLawSetFrictionCoefficient(int rIdent, double rFrictionCoefficient);
 
     //! @brief ... get elastic stiffness
     //! @return ...  elastic stiffness

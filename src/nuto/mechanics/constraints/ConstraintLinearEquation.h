@@ -24,6 +24,7 @@ class ConstraintLinearEquation :  public NuTo::ConstraintLinear
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
+    friend class NewmarkIndirect;
 public:
     //! @brief constructor
     //! @param rNode ... node pointer
@@ -50,6 +51,9 @@ public:
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
     void GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const;
+
+    //!@brief returns the rhs
+    double GetRHS()const;
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints

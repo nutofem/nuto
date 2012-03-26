@@ -1,7 +1,7 @@
 // $Id$
 
-#ifndef IMPLICIT_NEWTON_RAPHSON_H
-#define IMPLICIT_NEWTON_RAPHSON_H
+#ifndef NEWMARKBASE_H
+#define NEWMARKBASE_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -13,8 +13,8 @@ namespace NuTo
 {
 //! @author Jörg F. Unger, NU
 //! @date February 2012
-//! @brief ... standard class for implicit timeintegration (static Newton Raphson or Newmark for dynamics)
-class ImplicitNewtonRaphson : public TimeIntegrationBase
+//! @brief ... standard class for implicit timeintegration (Newmark, but you can use it for statics as well with setting the flag isDynamic to false)
+class NewmarkBase : public TimeIntegrationBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -23,7 +23,7 @@ class ImplicitNewtonRaphson : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    ImplicitNewtonRaphson();
+    NewmarkBase();
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
@@ -55,16 +55,6 @@ public:
     	return mMaxNumIterations;
     }
 
-    void SetMinLineSearchStep(double rMinLineSearchStep)
-    {
-    	mMinLineSearchStep = rMinLineSearchStep;
-    }
-
-    double GetMinLineSearchStep()const
-    {
-    	return mMinLineSearchStep;
-    }
-
     void SetNewmarkBeta(double rBeta)
     {
     	mBeta = rBeta;
@@ -85,7 +75,7 @@ public:
     	return mGamma;
     }
 
-    virtual bool IsDynamic()const=0;
+    bool IsDynamic()const;
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -98,13 +88,9 @@ public:
 #endif// SWIG
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief perform the time integration
-    //! @param rStructure ... structure
-    //! @param rTimeDelta ... length of the simulation
-    NuTo::Error::eError Solve(StructureBase& rStructure, double rTimeDelta);
-
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
+
 
 protected:
     //damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
@@ -112,7 +98,6 @@ protected:
     //NewtonRaphson parameters
 	double mToleranceForce;
 	int mMaxNumIterations;
-	double mMinLineSearchStep;
 	//Newmark parameters
 	double mBeta;
 	double mGamma;
@@ -120,13 +105,16 @@ protected:
 	double mExternalEnergy;
 	double mKineticEnergy;
 	double mDampedEnergy;
+
+	bool mIsDynamic;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::ImplicitNewtonRaphson)
+BOOST_CLASS_EXPORT_KEY(NuTo::NewmarkBase)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
 
-#endif // IMPLICIT_NEWTON_RAPHSON_H
+
+#endif // NEWMARKBASE_H

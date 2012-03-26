@@ -31,6 +31,17 @@ public:
     //! @param rCoefficient ... weighting of this term in the constraint equation
     ConstraintEquationTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
 
+    //! @brief returns the dof that is related to that linear term
+    //! @return dof
+    int GetDof() const;
+
+    //! @brief returns the coefficient that is related to that linear term
+    //! @return coefficient
+    double GetCoefficient() const
+    {
+    	return mCoefficient;
+    }
+
     //! @brief adds the constraint equation term to the matrix
     //! @param rRow ... row in constraint matrix
     //! @param rConstraintMatrix ... constraint matrix

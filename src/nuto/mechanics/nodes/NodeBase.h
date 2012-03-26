@@ -212,6 +212,31 @@ public:
     //! @param rVelocities  given velocities
     virtual void SetVelocities3D(const double rVelocities[3]);
 
+    //! @brief returns the number of angular velocities of the node
+    //! @return number of velocities
+    virtual int GetNumAngularVelocities()const;
+
+    //! @brief gives the global DOF of a angular velocity component (Note: the velocity dof number is derived from the displacement dof)
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofAngularVelocity(int rComponent)const;
+
+    //! @brief returns the angular velocities of the node
+    //! @param rVelocities ... velocities
+    virtual void GetAngularVelocities2D(double rVelocities[1])const;
+
+    //! @brief set the angular velocities
+    //! @param rVelocities  given velocities
+    virtual void SetAngularVelocities2D(const double rVelocities[1]);
+
+    //! @brief returns the angular velocities of the node
+    //! @param rVelocities ... velocities
+    virtual void GetAngularVelocities3D(double rVelocities[3])const;
+
+    //! @brief set the angular velocities
+    //! @param rVelocities  given velocities
+    virtual void SetAngularVelocities3D(const double rVelocities[3]);
+
     //! @brief returns the number of accelerations of the node
     //! @return number of accelerations
     virtual int GetNumAccelerations()const;
@@ -244,6 +269,31 @@ public:
     //! @brief set the accelerations
     //! @param rVelocities  given accelerations
     virtual void SetAccelerations3D(const double rAccelerations[3]);
+
+    //! @brief returns the number of angular accelerations of the node
+    //! @return number of accelerations
+    virtual int GetNumAngularAccelerations()const;
+
+    //! @brief gives the global DOF of a angular acceleration component (Note: the angular acceleration dof number is derived from the rotation dof)
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofAngularAcceleration(int rComponent)const;
+
+    //! @brief returns the accelerations of the node
+    //! @param rAccelerations ... accelerations
+    virtual void GetAngularAccelerations2D(double rAngularAccelerations[1])const;
+
+    //! @brief set the accelerations
+    //! @param rVelocities  given accelerations
+    virtual void SetAngularAccelerations2D(const double rAngularAccelerations[1]);
+
+    //! @brief returns the accelerations of the node
+    //! @param rAccelerations ... accelerations
+    virtual void GetAngularAccelerations3D(double rAngularAccelerations[3])const;
+
+    //! @brief set the accelerations
+    //! @param rVelocities  given accelerations
+    virtual void SetAngularAccelerations3D(const double rAngularAccelerations[3]);
 
     //! @brief returns the number of Rotations of the node
     //! @return number of Rotations

@@ -178,6 +178,20 @@ void NuTo::ConstitutiveBase::SetTensileStrength(double rTensileStrength)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetTensileStrength] The constitutive relationship does not have a tensile strength.");
 }
 
+//! @brief ... get shear strength
+//! @return ... shear strength
+double NuTo::ConstitutiveBase::GetShearStrength() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetShearStrength] The constitutive relationship does not have a shear strength.");
+}
+
+//! @brief ... set shear strength
+//! @param rShearStrength...  shear strength
+void NuTo::ConstitutiveBase::SetShearStrength(double rShearStrength)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetShearStrength] The constitutive relationship does not have a shear strength.");
+}
+
 //! @brief ... get compressive strength
 //! @return ... compressive strength
 double NuTo::ConstitutiveBase::GetCompressiveStrength() const
@@ -218,6 +232,21 @@ double NuTo::ConstitutiveBase::GetFractureEnergy() const
 void NuTo::ConstitutiveBase::SetFractureEnergy(double rFractureEnergy)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFractureEnergy] The constitutive relationship does not have a fracture energy.");
+}
+
+//! @brief ... get friction coefficient
+//! @return ... friction coefficient
+double NuTo::ConstitutiveBase::GetFrictionCoefficient() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetFrictionCoefficient] The constitutive relationship does not have a friction coefficient.");
+}
+
+
+//! @brief ... set friction coefficient
+//! @param rFrictionCoefficient... friction coefficient
+void NuTo::ConstitutiveBase::SetFrictionCoefficient(double rFrictionCoefficient)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFrictioncoefficient] The constitutive relationship does not have a friction coefficient.");
 }
 
 //! @brief ... set the elastic matrix

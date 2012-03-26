@@ -804,6 +804,13 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::PARTICLE_RADIUS:
         	//do nothing
         break;
+        case NuTo::VisualizeBase::ROTATION:
+        case NuTo::VisualizeBase::VELOCITY:
+        case NuTo::VisualizeBase::ACCELERATION:
+        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+        	//do nothing
+        break;
 		default:
 			std::cout << WhatIter->GetComponentEnum() << "\n";
 			throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported datatype for visualization.");

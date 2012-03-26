@@ -46,6 +46,7 @@
 
 NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEngineeringStressStrain()
 {
+    mRho = 0.;
     mE = 0.;
     mNu = 0.;
     mNonlocalRadius = 1.;
@@ -69,6 +70,7 @@ NuTo::NonlocalDamagePlasticity::NonlocalDamagePlasticity() : ConstitutiveEnginee
        rLogger << "start serialize NonlocalDamagePlasticity" << "\n";
 #endif
        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveEngineeringStressStrain)
+          & BOOST_SERIALIZATION_NVP(mRho)
           & BOOST_SERIALIZATION_NVP(mE)
           & BOOST_SERIALIZATION_NVP(mNu)
           & BOOST_SERIALIZATION_NVP(mNonlocalRadius)
@@ -1024,6 +1026,22 @@ void NuTo::NonlocalDamagePlasticity::CalculateCoefficients3D(double& C11, double
 }
 
 // parameters /////////////////////////////////////////////////////////////
+//! @brief ... get density
+//! @return ... density
+double NuTo::NonlocalDamagePlasticity::GetDensity() const
+{
+	return this->mRho;
+}
+
+//! @brief ... set density
+//! @param rRho ... density
+void NuTo::NonlocalDamagePlasticity::SetDensity(double rRho)
+{
+    this->CheckDensity(rRho);
+    this->mRho = rRho;
+    this->SetParametersValid();
+}
+
 //! @brief ... get Young's modulus
 //! @return ... Young's modulus
 double NuTo::NonlocalDamagePlasticity::GetYoungsModulus() const
@@ -1173,6 +1191,16 @@ bool NuTo::NonlocalDamagePlasticity::CheckElementCompatibility(NuTo::Element::eE
         return true;
     default:
         return false;
+    }
+}
+
+//! @brief ... check if density is non negative
+//! @param rE ... Young's modulus
+void NuTo::NonlocalDamagePlasticity::CheckDensity(double rRho) const
+{
+    if (rRho < 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticity::CheckDensity] The density must not be negative.");
     }
 }
 
@@ -1437,7 +1465,7 @@ double NuTo::NonlocalDamagePlasticity::CalculateDerivativeEquivalentLength2D(con
 #define INACTIVE false
 #define toleranceResidual 1e-7      //tolerance to decide whether the Newton iteration has converged
 #define toleranceYieldSurface 1e-9  //tolerance whether a point is on the yield surface or not (multiplied by the tensile strength)
-#define toleranceDeterminant 1e-20  //tolerance to decide if a matrix is not invertible (only required in the debugging version)
+#define toleranceDeterminant 1e-50  //tolerance to decide if a matrix is not invertible (only required in the debugging version, be careful here with the units)
 #define maxSteps 25                 //maximum number of Newton iterations, until it is decided that there is no convergence and a cutback is performed
 #define minCutbackFactor 1e-3       //minimum cutback factor for the application of the total strain in steps
 #define minCutbackFactorLS 2e-3     //minimum cutback factor used for the linesearch in the Newton iteration
@@ -1824,12 +1852,13 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticity::ReturnMapping2D(
 
                     if (fabs(hessian.determinant())<toleranceDeterminant)
                     {
-                        rLogger << "hessian"<< "\n" << hessian << "\n";
-                        rLogger << "trialStress"<< "\n" << trialStress << "\n";
-                        rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
+                    	rLogger << "hessian"<< "\n" << hessian << "\n";
+                    	rLogger << "trialStress"<< "\n" << trialStress << "\n";
+                    	rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
                     }
 #endif
                     assert(fabs(hessian.determinant())>toleranceDeterminant);
+
                     hessian = hessian.inverse().eval();
 #ifdef ENABLE_DEBUG
                     rLogger << "determinant of hessian" << hessian.determinant() << "\n";
@@ -2607,11 +2636,11 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
             rStress(count)-=delta;
         }
 
-        if ((rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff()>1e-1)
+        if ((rdF_dSigmaCDF-rdF_dSigma).array().abs().maxCoeff()>1e-1)
         {
             std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
             std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-            std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).cwise().abs().maxCoeff() << "\n";
+            std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).array().abs().maxCoeff() << "\n";
 
             std::cout<< "rdF_dSigma " << "\n" << rdF_dSigma << "\n"<< "\n";
             std::cout<< "rdF_dSigmaCDF " << "\n" << rdF_dSigmaCDF << "\n"<< "\n";
@@ -2621,11 +2650,11 @@ void NuTo::NonlocalDamagePlasticity::YieldSurfaceRankine2DRoundedDerivatives(Eig
         // fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
         if (fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
         {
-            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
             {
             	std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
             	std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-            	std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).cwise().abs().maxCoeff() << "\n";
+            	std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff() << "\n";
 
             	std::cout<< "rd2F_d2SigmaCDF " << "\n" << rd2F_d2SigmaCDF << "\n"<< "\n";
             	std::cout<< "rd2F_d2Sigma " << "\n" << (*rd2F_d2Sigma) << "\n"<< "\n";
@@ -2745,6 +2774,7 @@ void NuTo::NonlocalDamagePlasticity::Info(unsigned short rVerboseLevel, Logger& 
 void NuTo::NonlocalDamagePlasticity::CheckParameters()const
 {
     this->CheckBiaxialCompressiveStrength(this->mBiaxialCompressiveStrength);
+    this->CheckDensity(this->mRho);
     this->CheckYoungsModulus(this->mE);
     this->CheckPoissonsRatio(this->mNu);
     this->CheckNonlocalRadius(this->mNonlocalRadius);

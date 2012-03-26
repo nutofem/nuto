@@ -11,6 +11,8 @@ enum eNodeType
     NodeAccelerations1D,
     NodeAccelerations2D,
     NodeAccelerations3D,
+    NodeAngularVelocities2D,
+    NodeAngularAccelerations2D,
     NodeCoordinates1D,
     NodeCoordinates2D,
     NodeCoordinates3D,
@@ -28,6 +30,8 @@ enum eNodeType
     NodeCoordinatesDisplacementsRotations3D,
     NodeCoordinatesDisplacementsRotationsRadius2D,
     NodeCoordinatesDisplacementsRotationsRadius3D,
+    NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D,
+    NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D,
     NodeTemperature,
     NodeCoordinatesDisplacementsVelocitiesAccelerations1D,
     NodeCoordinatesDisplacementsVelocitiesAccelerations2D,
@@ -62,7 +66,9 @@ enum eAttributes
     RADIUS,
     ROTATIONS,
     TEMPERATURES,
-    VELOCITIES
+    VELOCITIES,
+    ANGULAR_VELOCITIES,
+    ANGULAR_ACCELERATIONS
 };
 }
 }

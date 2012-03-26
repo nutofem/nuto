@@ -67,6 +67,12 @@ void NuTo::ConstraintLinearEquation::GetRHS(int& rConstraintLinearEquation,NuTo:
     rConstraintLinearEquation++;
 }
 
+//!@brief returns the rhs
+double NuTo::ConstraintLinearEquation::GetRHS()const
+{
+	return this->mRhsValue;
+}
+
 //! @brief returns the number of constraint equations
 //! @return number of constraints
 int NuTo::ConstraintLinearEquation::GetNumLinearConstraints()const

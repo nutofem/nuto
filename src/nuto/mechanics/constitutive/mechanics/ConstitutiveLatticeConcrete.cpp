@@ -26,16 +26,16 @@
 
 NuTo::ConstitutiveLatticeConcrete::ConstitutiveLatticeConcrete() : ConstitutiveLatticeStressStrain()
 {
-	mE = 30000.;
+	mE = 0.;
 	mNu = 0.;
-	mRho = 0.;
-	mAlpha = 0.25;
-	mSigmaT = 3.0;
-	mSigmaN = 3.0;
-	mG = 0.1;
-	mNt = 0.2;
-	mMu = 0.0;
+	mRho = -1;
+	mAlpha = 1.0;
+	mSigmaT = -1.0;
+	mSigmaN = -1.0;
+	mG = -1.0;
+	mMu = -1.0;
 	SetParametersValid();
+	mNt = 0.2;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -392,7 +392,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveLatticeConcrete::AllocateSta
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rLatticeStrain ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
 		const LatticeStrain2D& rLatticeStrain, double& rEnergy) const
 {
     // check if parameters are valid
@@ -426,7 +426,7 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTotalEnergy_LatticeStr
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rLatticeStrain ... deformation gradient
-NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTotalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetInternalEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
 		const LatticeStrain3D& rLatticeStrain, double& rEnergy) const
 {
     // check if parameters are valid
@@ -465,7 +465,7 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetTotalEnergy_LatticeStr
 NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetElasticEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
 		const LatticeStrain2D& rLatticeStrain, double& rEnergy) const
 {
-	return GetTotalEnergy_LatticeStress_LatticeStrain(rElement, rIp, rLatticeStrain, rEnergy);
+	return GetInternalEnergy_LatticeStress_LatticeStrain(rElement, rIp, rLatticeStrain, rEnergy);
 }
 
 
@@ -477,7 +477,7 @@ NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetElasticEnergy_LatticeS
 NuTo::Error::eError NuTo::ConstitutiveLatticeConcrete::GetElasticEnergy_LatticeStress_LatticeStrain(const ElementBase* rElement, int rIp,
 		const LatticeStrain3D& rLatticeStrain, double& rEnergy) const
 {
-	return GetTotalEnergy_LatticeStress_LatticeStrain(rElement, rIp, rLatticeStrain, rEnergy);
+	return GetInternalEnergy_LatticeStress_LatticeStrain(rElement, rIp, rLatticeStrain, rEnergy);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -530,8 +530,74 @@ void NuTo::ConstitutiveLatticeConcrete::SetPoissonsRatio(double rNu)
 {
     this->CheckPoissonsRatio(rNu);
     this->mNu = rNu;
+    this->mAlpha = (1.-4.*mNu)/(1.+mNu);
     this->SetParametersValid();
 }
+
+//! @brief ... get tensile strength
+//! @return ... tensile strength
+double NuTo::ConstitutiveLatticeConcrete::GetTensileStrength() const
+{
+    return mSigmaN;
+}
+
+//! @brief ... set tensile strength
+//! @param rTensileStrength...  tensile strength
+void NuTo::ConstitutiveLatticeConcrete::SetTensileStrength(double rTensileStrength)
+{
+    this->CheckTensileStrength(rTensileStrength);
+    this->mSigmaN = rTensileStrength;
+    this->SetParametersValid();
+}
+
+//! @brief ... get shear strength
+//! @return ... shear strength
+double NuTo::ConstitutiveLatticeConcrete::GetShearStrength() const
+{
+    return mSigmaT;
+}
+
+//! @brief ... set shear strength
+//! @param rShearStrength...  shear strength
+void NuTo::ConstitutiveLatticeConcrete::SetShearStrength(double rShearStrength)
+{
+    this->CheckShearStrength(rShearStrength);
+    this->mSigmaT = rShearStrength;
+    this->SetParametersValid();
+}
+
+//! @brief ... get fracture energy
+//! @return ... fracture energy
+double NuTo::ConstitutiveLatticeConcrete::GetFractureEnergy() const
+{
+    return mG;
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy... fracture energy
+void NuTo::ConstitutiveLatticeConcrete::SetFractureEnergy(double rFractureEnergy)
+{
+    this->CheckFractureEnergy(rFractureEnergy);
+    this->mG = rFractureEnergy;
+    this->SetParametersValid();
+}
+
+//! @brief ... get friction coefficient
+//! @return ... friction coefficient
+double NuTo::ConstitutiveLatticeConcrete::GetFrictionCoefficient() const
+{
+    return mMu;
+}
+
+//! @brief ... set friction coefficient
+//! @param rFrictionCoefficient... friction coefficient
+void NuTo::ConstitutiveLatticeConcrete::SetFrictionCoefficient(double rFrictionCoefficient)
+{
+    this->CheckFrictionCoefficient(rFrictionCoefficient);
+    this->mMu = rFrictionCoefficient;
+    this->SetParametersValid();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -593,6 +659,46 @@ void NuTo::ConstitutiveLatticeConcrete::CheckPoissonsRatio(double rNu) const
     }
 }
 
+//! @brief ... check if tensile strength is positive
+//! @param rTensileStrength ... tensile strength
+void NuTo::ConstitutiveLatticeConcrete::CheckTensileStrength(double rTensileStrength) const
+{
+    if (rTensileStrength <= 0.)
+    {
+        throw NuTo::MechanicsException("[NuTo::ConstitutiveLatticeConcrete::CheckTensileStrength] Tensile strength must be positive.");
+    }
+}
+
+//! @brief ... check if shear strength is positive
+//! @param rShearStrength ... shear strength
+void NuTo::ConstitutiveLatticeConcrete::CheckShearStrength(double rShearStrength) const
+{
+    if (rShearStrength <= 0.)
+    {
+        throw NuTo::MechanicsException("[NuTo::ConstitutiveLatticeConcrete::CheckShearStrength] Shear strength must be positive.");
+    }
+}
+
+//! @brief ... check if fracture energy is positive
+//! @param rFractureEnergy ... fracture energy
+void NuTo::ConstitutiveLatticeConcrete::CheckFractureEnergy(double rFractureEnergy) const
+{
+    if (rFractureEnergy <= 0.)
+    {
+        throw NuTo::MechanicsException("[NuTo::ConstitutiveLatticeConcrete::CheckFractureEnergy] Fracture energy must be positive.");
+    }
+}
+
+//! @brief ... check friction coefficient is not negative
+//! @param rFrictionCoefficient ... friction coefficient
+void NuTo::ConstitutiveLatticeConcrete::CheckFrictionCoefficient(double rFrictionCoefficient) const
+{
+    if (rFrictionCoefficient < 0.)
+    {
+        throw NuTo::MechanicsException("[NuTo::ConstitutiveLatticeConcrete::CheckFrictionCoefficient] Friction coefficient must not be negative.");
+    }
+}
+
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
 void NuTo::ConstitutiveLatticeConcrete::Info(unsigned short rVerboseLevel, Logger& rLogger) const
@@ -608,7 +714,11 @@ void NuTo::ConstitutiveLatticeConcrete::CheckParameters()const
 {
     this->CheckYoungsModulus(this->mE);
     this->CheckPoissonsRatio(this->mNu);
-    this->CheckDensity(this->mRho);
+    this->CheckDensity(this->mNu);
+    this->CheckTensileStrength(this->mSigmaN);
+    this->CheckShearStrength(this->mSigmaT);
+    this->CheckFractureEnergy(this->mG);
+    this->CheckFrictionCoefficient(this->mMu);
 }
 
 //! @brief ... calculate the elastic parameters for the plane

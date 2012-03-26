@@ -75,31 +75,33 @@ void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseM
     assert(rRow >= 0);
     assert(rRow < rConstraintMatrix.GetNumRows());
 
-    // determine column
-    int column;
+    // add entry to matrix
+    rConstraintMatrix.AddEntry(rRow, this->GetDof(), this->mCoefficient);
+}
+
+int NuTo::ConstraintEquationTerm::GetDof() const
+{
+    // determine dof
     switch (this->mDofType)
     {
     case Node::DISPLACEMENTS:
     {
-        column = mNode->GetDofDisplacement(this->mDofComponent);
+    	return mNode->GetDofDisplacement(this->mDofComponent);
     }
     break;
     case Node::ROTATIONS:
     {
-    	column = mNode->GetDofRotation(this->mDofComponent);
+    	return mNode->GetDofRotation(this->mDofComponent);
     }
     break;
     case Node::TEMPERATURES:
     {
-        column = mNode->GetDofTemperature(this->mDofComponent);
+    	return mNode->GetDofTemperature(this->mDofComponent);
     }
     break;
     default:
         throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] dof type is not supported.");
     }
-
-    // add entry to matrix
-    rConstraintMatrix.AddEntry(rRow, column, this->mCoefficient);
 }
 
 #ifdef ENABLE_SERIALIZATION

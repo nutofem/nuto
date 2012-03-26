@@ -241,6 +241,42 @@ void NuTo::NodeBase::SetVelocities3D(const double rVelocities[3])
 	throw MechanicsException("[NuTo::NodeBase::SetVelocities3D] Node of type " + GetNodeTypeStr() + " has no 3D velocities.");
 }
 
+// returns the number of velocities of the node
+int NuTo::NodeBase::GetNumAngularVelocities()const
+{
+	return 0;
+}
+
+// gives the global DOF of a velocity component (Note: the velocity dof number is derived from the displacement dof)
+int NuTo::NodeBase::GetDofAngularVelocity(int rComponent)const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDofAngularVelocity] Node of type " + GetNodeTypeStr() + " has no angular velocities.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetAngularVelocities2D(double rVelocities[2]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAngularVelocities2D] Node of type " + GetNodeTypeStr() + " has no 2D angular velocities.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetAngularVelocities2D(const double rVelocities[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAngularVelocities2D] Node of type " + GetNodeTypeStr() + " has no 2D angular velocities.");
+}
+
+// returns the velocities of the node
+void NuTo::NodeBase::GetAngularVelocities3D(double rVelocities[3]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAngularVelocities3D] Node of type " + GetNodeTypeStr() + " has no 3D angular velocities.");
+}
+
+//! set the velocities
+void NuTo::NodeBase::SetAngularVelocities3D(const double rVelocities[3])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAngularVelocities3D] Node of type " + GetNodeTypeStr() + " has no 3D angular velocities.");
+}
+
 // returns the number of accelerations of the node
 int NuTo::NodeBase::GetNumAccelerations()const
 {
@@ -289,6 +325,41 @@ void NuTo::NodeBase::SetAccelerations3D(const double rAccelerations[3])
 	throw MechanicsException("[NuTo::NodeBase::SetAccelerations3D] Node of type " + GetNodeTypeStr() + " has no 3D accelerations.");
 }
 
+// returns the number of accelerations of the node
+int NuTo::NodeBase::GetNumAngularAccelerations()const
+{
+	return 0;
+}
+
+// gives the global DOF of a acceleration component (Note: the angular acceleration dof number is derived from the rotation dof)
+int NuTo::NodeBase::GetDofAngularAcceleration(int rComponent)const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDofAngularAcceleration] Node of type " + GetNodeTypeStr() + " has no angular accelerations.");
+}
+
+// returns the angular accelerations of the node
+void NuTo::NodeBase::GetAngularAccelerations2D(double rAngularAccelerations[2]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAngularAccelerations2D] Node of type " + GetNodeTypeStr() + " has no 2D angular accelerations.");
+}
+
+//! set the angular accelerations
+void NuTo::NodeBase::SetAngularAccelerations2D(const double rAngularAccelerations[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAngularAccelerations2D] Node of type " + GetNodeTypeStr() + " has no 2D angular accelerations.");
+}
+
+// returns the angular accelerations of the node
+void NuTo::NodeBase::GetAngularAccelerations3D(double rAngularAccelerations[3]) const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetAngularAccelerations3D] Node of type " + GetNodeTypeStr() + " has no 3D angular accelerations.");
+}
+
+//! set the angular accelerations
+void NuTo::NodeBase::SetAngularAccelerations3D(const double rAngularAccelerations[3])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetAngularAccelerations3D] Node of type " + GetNodeTypeStr() + " has no 3D angular accelerations.");
+}
 
 //! @brief returns the number of Rotations of the node
 //! @return number of Rotations
@@ -448,6 +519,97 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither displacements in 1D, 2D or 3D.");
 				}
 					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements);
+			}
+				break;
+			case NuTo::VisualizeBase::ROTATION:
+			{
+				double rotations[3]={0,0,0};
+				switch (this->GetNumRotations())
+				{
+				case 1:
+					this->GetRotations2D(rotations);
+					break;
+				case 3:
+					this->GetRotations3D(rotations);
+					break;
+				default:
+					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither rotations in 2D or 3D.");
+				}
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), rotations);
+			}
+				break;
+			case NuTo::VisualizeBase::VELOCITY:
+			{
+				double velocities[3]={0,0,0};
+				switch (this->GetNumVelocities())
+				{
+				case 1:
+					this->GetVelocities1D(velocities);
+					break;
+				case 2:
+					this->GetVelocities2D(velocities);
+					break;
+				case 3:
+					this->GetVelocities3D(velocities);
+					break;
+				default:
+					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither velocities in 1D, 2D or 3D.");
+				}
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), velocities);
+			}
+				break;
+			case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+			{
+				double angularVelocities[3]={0,0,0};
+				switch (this->GetNumAngularVelocities())
+				{
+				case 1:
+					this->GetAngularVelocities2D(angularVelocities);
+					break;
+				case 3:
+					this->GetAngularVelocities3D(angularVelocities);
+					break;
+				default:
+					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular velocities in 2D or 3D.");
+				}
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularVelocities);
+			}
+				break;
+			case NuTo::VisualizeBase::ACCELERATION:
+			{
+				double accelerations[3]={0,0,0};
+				switch (this->GetNumAccelerations())
+				{
+				case 1:
+					this->GetAccelerations1D(accelerations);
+					break;
+				case 2:
+					this->GetAccelerations2D(accelerations);
+					break;
+				case 3:
+					this->GetAccelerations3D(accelerations);
+					break;
+				default:
+					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither accelerations in 1D, 2D or 3D.");
+				}
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), accelerations);
+			}
+				break;
+			case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+			{
+				double angularAccelerations[3]={0,0,0};
+				switch (this->GetNumAngularAccelerations())
+				{
+				case 1:
+					this->GetAngularAccelerations2D(angularAccelerations);
+					break;
+				case 3:
+					this->GetAngularAccelerations3D(angularAccelerations);
+					break;
+				default:
+					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular accelerations in 2D or 3D.");
+				}
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularAccelerations);
 			}
 				break;
 			case NuTo::VisualizeBase::PARTICLE_RADIUS:
