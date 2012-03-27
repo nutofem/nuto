@@ -487,12 +487,13 @@ public:
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
     void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
 
+#ifdef ENABLE_VISUALIZE
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
     void NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 
     //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
     void NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const NodeBase*>& rNodes) const;
-
+#endif // ENABLE_VISUALIZE
 #endif //SWIG
 
 //*************************************************
