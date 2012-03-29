@@ -248,7 +248,7 @@ print "residual: " + str(residualVector.Norm())
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile( "Patchtest_" + ElementType + ".vtk")
+myStructure.ExportVtkDataFileElements( "Patchtest_" + ElementType + ".vtk")
 
 if (error):
     sys.exit(-1)
