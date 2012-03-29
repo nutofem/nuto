@@ -196,16 +196,16 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 		    std::fstream file;
 		    if (curModLoadStep==1)
 		    {
-		    	file.open(resultFile.c_str(), std::fstream::out);
+		    	file.open(resultFile.string(), std::fstream::out);
 		    }
 		    else
 		    {
-		    	file.open(resultFile.c_str(), std::fstream::out | std::fstream::in |std::ios_base::ate);
+		    	file.open(resultFile.string(), std::fstream::out | std::fstream::in |std::ios_base::ate);
 		    }
 
 		    if (!file.is_open())
 		    {
-		    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.c_str());
+		    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.string());
 		    }
 		    std::stringstream endOfXML;
 		    endOfXML << "</Collection>" << std::endl;
