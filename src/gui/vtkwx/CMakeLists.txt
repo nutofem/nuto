@@ -1,8 +1,11 @@
 # Check for GTK (needed when wxGTK is in use)
-include(FindPkgConfig)
-pkg_check_modules(GTK gtk+-2.0)
+#include(FindPkgConfig)
+#pkg_check_modules(GTK gtk+-2.0)
 
-include_directories(${GTK_INCLUDE_DIRS})
+FIND_PACKAGE(GTK2 REQUIRED)
+if(GTK2_FOUND)
+   INCLUDE_DIRECTORIES(${GTK2_INCLUDE_DIRS})
+endif()
 
 try_compile(HAS_gtk_widget_get_window
             ${CMAKE_CURRENT_BINARY_DIR}/config.out 
