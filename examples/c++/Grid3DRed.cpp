@@ -30,9 +30,9 @@
 #include "nuto/optimize/ConjugateGradientGridRed.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 
+
 int main()
 {
-#define NEIGHBORS
 	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
 
 //	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
@@ -44,14 +44,12 @@ int main()
 	{
 		std::cout<<" NBN \n";
 		outputTime<<" NBN  ";
-
 	}
 	else
 	{
 		std::cout<<" EBE \n";
 		outputTime<<" EBE  ";
 	}
-
 	//double microTomm =0.001;
 	double microTomm =1.;
 
@@ -60,11 +58,10 @@ int main()
     //for local base stiffness matrix
     double YoungsModulus = 1.;
 
-    int rNumVoxel;
+    size_t rNumVoxel;
     double rVoxelSpacing[3];
     double rGridOrigin[3];
-    int rGridDimension[3];
-
+    size_t rGridDimension[3];
 
     // create structure
 #ifdef SHOW_TIME
@@ -73,7 +70,7 @@ int main()
 #endif
 	// read entries
 	NuTo::StructureGrid myGrid(3);
-	myGrid.SetVerboseLevel(2);
+	myGrid.SetVerboseLevel(0);
 	// input files have to have a one voxel thick frame without material
 	// dimensions are inclusive the frame
 	myGrid.ImportFromVtkASCIIFileHeader("InputTest",rGridDimension,rVoxelSpacing,rGridOrigin,rNumVoxel);
@@ -85,8 +82,13 @@ int main()
 	std::vector<int> imageValues (rNumVoxel);
 	myGrid.ImportFromVtkASCIIFile( "InputTest",imageValues);
 
-	int numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
-    int numBytesEBE=0;
+//	std::cout<<"\n[Grid3D] : imageValues ";
+//	for(int i=0;i<(int)rNumVoxel;++i)
+//		std::cout<<imageValues[i]<<" ";
+//	std::cout<<"\n";
+
+	size_t numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
+    size_t numBytesEBE=0;
 
  	//RB
 	double Force = -1.;
@@ -94,11 +96,11 @@ int main()
 //	bool EnableDisplacementControl = false;
 	double BoundaryDisplacement = -1.0;
 //	double BoundaryDisplacement = -(rGridDimension[2]*rVoxelSpacing[2]*microTomm)/20.0;
-	std::cout<<"[NuTo::Grid3D]  Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
+	std::cout<<"[NuTo::Grid3D]  Boundary Displacement: "<<BoundaryDisplacement<<"\n";
 	//calculate one element stiffness matrix with E=1
 	NuTo::Structure myHelpStruc(3);
 
-	myHelpStruc.SetVerboseLevel(1);
+	myHelpStruc.SetVerboseLevel(0);
 	// create material law
 	int myMat=myHelpStruc.ConstitutiveLawCreate("LinearElastic");
 	myHelpStruc.ConstitutiveLawSetPoissonsRatio(myMat, PoissonsRatio);
@@ -173,6 +175,159 @@ int main()
 			baseStiffness[(24*i)+j]=stiffnessMatrix(i,j); //row based saved
 		}
 	}
+	// new without Youngs Moduluds - general edge Stiffness
+	// edgeStiffness 3x3 ************************
+	std::vector<double> edgeStiffness(0);
+	if (matrixFreeMethod)
+	{
+//		edgeStiffness.resize(9*64*27);
+		edgeStiffness.resize(9*64);
+
+		std::cout<<" set edge stiffness\n";
+		// init edgeStiffness in order,
+		// description: node nbr, elem nbr, row nbr (nodes), col nbr (nodes) of base
+		int count=0;
+		for(int row=0;row<3;++row)
+		{
+			for(int col=0;col<3;++col)
+			{
+				count=-1;
+				// 0 - 0 - 6  0
+				edgeStiffness[(++count)*9+(3*row+col)]=baseStiffness[(6*3+row)*24+0*3+col];
+				// 1 - 0 - 6  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+1*3+col];
+				// 1 - 1 - 7  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+0*3+col];
+				// 2 - 1 - 7  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+1*3+col];
+				// 3 - 0 - 6  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+3*3+col];
+				// 3 - 2 - 5  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+0*3+col];
+				// 4 - 0 - 6  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+2*3+col];
+				// 4 - 1 - 7  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+3*3+col];
+				// 4 - 2 - 5  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+1*3+col];
+				// 4 - 3 - 4  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+0*3+col];
+				// 5 - 1 - 7  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+2*3+col];
+				// 5 - 3 - 4  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+1*3+col];
+				// 6 - 2 - 5  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+3*3+col];
+				// 7 - 2 - 5  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+2*3+col];
+				// 7 - 3 - 4  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+3*3+col];
+				// 8 - 3 - 4  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+2*3+col];
+				// 9 - 0 - 6  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+4*3+col];
+				// 9 - 4 - 2  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+0*3+col];
+				//10- 0 - 6  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+5*3+col];
+				//10 - 1 - 7  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+4*3+col];
+				//10 - 4 - 2  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+1*3+col];
+				//10 - 5 - 3  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+0*3+col];
+				//11 - 1 - 7  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+5*3+col];
+				//11 - 5 - 3  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+1*3+col];
+				//12 - 0 - 6  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+7*3+col];
+				//12 - 2 - 5  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+4*3+col];
+				//12 - 4 - 2  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+3*3+col];
+				//12 - 6 - 1  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+0*3+col];
+				//13 - 0 - 6  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(6*3+row)*24+6*3+col];
+				//13 - 1 - 7  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+7*3+col];
+				//13 - 2 - 5  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+5*3+col];
+				//13 - 3 - 4  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+4*3+col];
+				//13 - 4 - 2  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+2*3+col];
+				//13 - 5 - 3  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+3*3+col];
+				//13 - 6 - 1  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+1*3+col];
+				//13 - 7 - 0  0
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+0*3+col];
+				//14 - 1 - 7  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(7*3+row)*24+6*3+col];
+				//14 - 3 - 4  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+5*3+col];
+				//14 - 5 - 3  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+2*3+col];
+				//14 - 7 - 0  1
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+1*3+col];
+				//15 - 2 - 5  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+7*3+col];
+				//15 - 6 - 1  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+3*3+col];
+				//16 - 2 - 5  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(5*3+row)*24+6*3+col];
+				//16 - 3 - 4  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+7*3+col];
+				//16 - 6 - 1  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+2*3+col];
+				//16 - 7 - 0  3
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+3*3+col];
+				//17 - 3 - 4  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(4*3+row)*24+6*3+col];
+				//17 - 7 - 0  2
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+2*3+col];
+				//18 - 4 - 2  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+4*3+col];
+				//19 - 4 - 2  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+5*3+col];
+				//19 - 5 - 3  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+4*3+col];
+				//20 - 5 - 3  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+5*3+col];
+				//21 - 4 - 2  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+7*3+col];
+				//21 - 6 - 1  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+4*3+col];
+				//22 - 4 - 2  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(2*3+row)*24+6*3+col];
+				//22 - 5 - 3  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+7*3+col];
+				//22 - 6 - 1  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+5*3+col];
+				//22 - 7 - 0  4
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+4*3+col];
+				//23 - 5 - 3  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(3*3+row)*24+6*3+col];
+				//23 - 7 - 0  5
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+5*3+col];
+				//24 - 6 - 1  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+7*3+col];
+				//25 - 6 - 1  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(1*3+row)*24+6*3+col];
+				//25 - 7 - 0  7
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+7*3+col];
+				//26 - 7 - 0  6
+				edgeStiffness[++count*9+(3*row+col)]=baseStiffness[(0*3+row)*24+6*3+col];
+
+			}
+		}
+//			std::cout<<"\n edgeStiff ";
+//			for (int i=0;i<9*64;++i)
+//				std::cout<<i<<": "<<edgeStiffness[i]<<" ";
+//			std::cout<<"\n";
+	}
 
 //	stiffnessMatrix=NuTo::FullMatrix<double>(24,24,baseStiffness);
 //	stiffnessMatrix.WriteToFile("baseStiffness.txt"," ");
@@ -206,63 +361,61 @@ int main()
 	size_t numNodes=0;
 	boost::dynamic_bitset<> nodeExist(numGridNodes); //0 = false, all 0 here
 	std::vector<size_t>  edgeId(numNodes);		//saves the id of the edge of this node
-	std::vector<int>  nodeId(numGridNodes);		//saves the id of the edges of this node
+	std::vector<size_t>  nodeId(numGridNodes);		//saves the id of the edges of this node
 	std::vector<size_t> voxelId(numElems);		//saves the id of the voxel of this element
 	std::vector<double> youngsModulus(0);
-	std::vector<int> materialOfElem(numElems);
+	std::vector<int> materialOfElem(0);
 
 	// put get routines for a while here
 	// get voxel locations of voxels
 	std::vector<int> allEdgesAtVoxel(rNumVoxel*8);
-//	std::vector<int> allFirstNodesOfElem(numElems);
-	for (int element=0;element<rNumVoxel;++element)
+	for (size_t element=0;element<rNumVoxel;++element)
 	{
-//		if (elemExist[element]) // elem exist
-//		{
-			int numDimxy=element/((rGridDimension[0])*(rGridDimension[1]));
-			int numDimx=0;
-			int residual1=element%((rGridDimension[0])*(rGridDimension[1]));
-			int residual2=0;
+			size_t numDimxy=element/((rGridDimension[0])*(rGridDimension[1]));
+			size_t numDimx=0;
+			size_t residual1=element%((rGridDimension[0])*(rGridDimension[1]));
+			size_t residual2=0;
 			numDimx=residual1/(rGridDimension[0]);
 			residual2=residual1%(rGridDimension[0]);
-			int rVoxelLocation[3];
+			size_t rVoxelLocation[3];
 			rVoxelLocation[0]=residual2;
 			rVoxelLocation[1]=numDimx;
 			rVoxelLocation[2]=numDimxy;
-			allEdgesAtVoxel[8*element+0] = rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0];
-			allEdgesAtVoxel[8*element+1] = rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0]+1;
-			allEdgesAtVoxel[8*element+2] = rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0] +1;
-			allEdgesAtVoxel[8*element+3] = rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0];
+			allEdgesAtVoxel[8*element+0] = (int) rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0];
+			allEdgesAtVoxel[8*element+1] =  (int)rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0]+1;
+			allEdgesAtVoxel[8*element+2] = (int) rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0] +1;
+			allEdgesAtVoxel[8*element+3] = (int) rVoxelLocation[2]*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0];
 
-			allEdgesAtVoxel[8*element+4] = (rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0];
-			allEdgesAtVoxel[8*element+5] = (rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0]+1;
-			allEdgesAtVoxel[8*element+6] = (rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0]+1;
-			allEdgesAtVoxel[8*element+7] = (rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0];
+			allEdgesAtVoxel[8*element+4] = (int) (rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0];
+			allEdgesAtVoxel[8*element+5] =  (int)(rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + rVoxelLocation[1]     * (rGridDimension[1]+1) + rVoxelLocation[0]+1;
+			allEdgesAtVoxel[8*element+6] = (int) (rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0]+1;
+			allEdgesAtVoxel[8*element+7] =  (int)(rVoxelLocation[2]+1)*(rGridDimension[0]+1)*(rGridDimension[1]+1) + (rVoxelLocation[1]+1) * (rGridDimension[1]+1) + rVoxelLocation[0];
 
 		//	std::cout<<" nodesAtVoxel "<<element<<": "<<allEdgesAtVoxel[8*element+0]<<" "<<allEdgesAtVoxel[8*element+1]<<" "<<allEdgesAtVoxel[8*element+2]<<" "<<allEdgesAtVoxel[8*element+3]<<" "<<allEdgesAtVoxel[8*element+4]<<" "<<allEdgesAtVoxel[8*element+5]<<" "<<allEdgesAtVoxel[8*element+6]<<" "<<allEdgesAtVoxel[8*element+7]<<"\n";
 			//also for global vector
 			//allVoxelLocation[element]=new int[3];
 			//allVoxelLocation[element]=rVoxelLocation;
-//		}
-//	allFirstNodesOfElem[element]=allEdgesAtVoxel[8*voxelId[element]];
-
 	}
 
-	int numCoeffMat=0;
+	int numCoeffMat=1;		// set material 0 with E=0
+	youngsModulus.push_back(0.);
+
 	bool matExistsAlready=false;
-	for (int countVoxels=0;countVoxels<rNumVoxel;++countVoxels)
+	for (size_t countVoxels=0;countVoxels<rNumVoxel;++countVoxels)
 	{
 		if (imageValues[countVoxels]<thresholdMaterialValue)
 		{
 			voxelId.push_back(countVoxels);
+//			std::cout<<" voxel "<<countVoxels<<" elem "<<numElems;
 			++numElems;
 			for (int node=0;node<8;++node)
 			{
 				nodeExist.set(allEdgesAtVoxel[8*countVoxels+node],true);
+//				std::cout<<" nodeExist "<<allEdgesAtVoxel[8*countVoxels+node];
 			}
 
 			// nodes are no more set here but not yet elsewhere
-			for(int countMat=0;countMat<numCoeffMat;countMat++)
+			for(int countMat=1;countMat<numCoeffMat;countMat++)
 			{
 				if (myMapColorModul[imageValues[countVoxels]]==youngsModulus.at(countMat)) //same modulus already used
 				{
@@ -283,26 +436,69 @@ int main()
 				}
   		}
 	}
-    int numDofs=0;
- 	for (int node=0;node<numGridNodes;++node)
+    size_t numDofs=0;
+ 	for (size_t node=0;node<numGridNodes;++node)
 	{
 		if (nodeExist[node])
 		{
 			edgeId.push_back(node);
-		//	std::cout<<" Grid3DRed: edge "<<node<<" node "<<numNodes<<"\n";
 			nodeId[node]=numNodes++;
 		}
 		else
 		{
-			nodeId[node]=-1;
+			nodeId[node]=numGridNodes;
 		}
 	}
+ 	for (size_t node=0;node<numGridNodes;++node)
+ 	{
+		if (nodeId[node]==numGridNodes)
+		{
+			nodeId[node]=numNodes;
+		}
+
+ 	}
+//	std::cout<<"\n[Grid3D] : voxelId ";
+//	for(size_t i=0;i<numElems;++i)
+//		std::cout<<voxelId[i]<<" ";
+//	std::cout<<"\n";
+//
+//	std::cout<<"[Grid3D] : nodeId ";
+//	for(size_t i=0;i<numGridNodes;++i)
+//		std::cout<<nodeId[i]<<" ";
+//	std::cout<<"\n";
+//
+//	std::cout<<"[Grid3D] : edgeId ";
+//	for(size_t i=0;i<numNodes;++i)
+//		std::cout<<edgeId[i]<<" ";
+//	std::cout<<"\n";
+
  	numDofs=3*numNodes;
+
+	std::vector<int> allNodesAtElem(8*numElems);
+	int voxel=0;
+	for (size_t element=0;element<numElems;++element)
+	{
+		voxel=voxelId[element];
+		allNodesAtElem[8*element+0]=	nodeId[allEdgesAtVoxel[8*voxel+0]];
+		allNodesAtElem[8*element+1]=	nodeId[allEdgesAtVoxel[8*voxel+1]];
+		allNodesAtElem[8*element+2]=	nodeId[allEdgesAtVoxel[8*voxel+2]];
+		allNodesAtElem[8*element+3]=	nodeId[allEdgesAtVoxel[8*voxel+3]];
+		allNodesAtElem[8*element+4]=	nodeId[allEdgesAtVoxel[8*voxel+4]];
+		allNodesAtElem[8*element+5]=	nodeId[allEdgesAtVoxel[8*voxel+5]];
+		allNodesAtElem[8*element+6]=	nodeId[allEdgesAtVoxel[8*voxel+6]];
+		allNodesAtElem[8*element+7]=	nodeId[allEdgesAtVoxel[8*voxel+7]];
+}
+	allEdgesAtVoxel.clear();
+
+
 	std::cout<<"[NuTo::Grid3D] numElems = "<<numElems<<"\n";
 	std::cout<<"[NuTo::Grid3D] numNodes = "<<numNodes<<"\n";
 	std::cout<<"[NuTo::Grid3D] numDofs = "<<numDofs<<"\n";
 
-	std::cout<<"[NuTo::Grid3D] Young's Modulus = "<<youngsModulus[0]<<"\n";
+	std::cout<<"[NuTo::Grid3D] Young's Modulus 0= "<<youngsModulus[0]<<"\n";
+	std::cout<<"[NuTo::Grid3D] Young's Modulus 1= "<<youngsModulus[1]<<"\n";
+
+//	std::cout<<"[NuTo::Grid3D] Young's Modulus = "<<youngsModulus[0]<<"\n";
 //	std::cout<<" nodeExist reverse "<<nodeExist<<"\n";
 //	std::cout<<" elemExist "<<elemExist<<"\n";
 
@@ -318,11 +514,10 @@ int main()
 //		{12,13,16,15,21,22,25,24},
 //	};
 	//field of 27 nodes which contain element and node of element
-	std::vector<int> allNodesAtNode;
-	std::vector<double> edgeStiffness;
+	std::vector<int> allNodesAtNode(27);
 	if(matrixFreeMethod)
 	{
-		allNodesAtNode.resize(27*numGridNodes);
+//		allNodesAtNode.resize(27*numGridNodes);
 
 		int neighborNodes[27];
 		neighborNodes[0]=-(rGridDimension[0]+1)*(rGridDimension[1]+1)-(rGridDimension[0]+1)-1;
@@ -353,77 +548,81 @@ int main()
 		neighborNodes[25]=+(rGridDimension[0]+1)*(rGridDimension[1]+1)+(rGridDimension[0]+1);
 		neighborNodes[26]=+(rGridDimension[0]+1)*(rGridDimension[1]+1)+(rGridDimension[0]+1)+1;
 
-
-	//	std::cout<<"                Neighbors: ";
-	//	for (int count=0;count<27;count++)
-	//		std::cout<< neighborNodes[count]<<" ";
-	//	std::cout<<" "<<std::endl;
-	//
-		for(int node=0;node<numGridNodes;++node)
-		{
-			std::vector<int> locNeighbor(27);
-			for (int i=0;i<27;++i)
-				locNeighbor[i]=node+neighborNodes[i];
-
-	// -------------------------------------------------------------------------------------------
-	// special handling of neighbor nodes no longer needed because of the zero margin
-	// -------------------------------------------------------------------------------------------
-			for(int i=0;i<27;++i)
-				allNodesAtNode[27*node+i]=locNeighbor[i];
-
-	//		std::cout<<" Knoten "<<node<< " Neighbors: ";
-	//		for (int count=0;count<27;count++)
-	//			std::cout<< locNeighbor[count]<<" ";
-	//		std::cout<<" "<<std::endl;
-		}
-
-		// edgeStiffness 3x3 ************************
-		// first field of 8 local nodes of one element
-		// second field of 8 local nodes of one element
-		// contains NBN ordering local node id
-		int orderNode[8][8]={
-			{13,14,17,16,22,23,26,25},
-			{12,13,16,15,21,22,25,24},
-			{9,10,13,12,18,19,22,21},
-			{10,11,14,13,19,20,23,22},
-			{4,5,8,7,13,14,17,16},
-			{3,4,7,6,12,13,16,15},
-			{0,1,4,3,9,10,13,12},
-			{1,2,5,4,10,11,14,13},
-		};
-
-		edgeStiffness.resize(numGridNodes*9*27);
-
-		for (size_t element=0;element<numElems;++element)
-		{
-			int numMat =materialOfElem[element];
-			for (int i=0;i<8;++i)
-			{
-				for(int j=0;j<8;++j)
-				{
-					for(int row=0;row<3;++row)
-					{
-						for(int col=0;col<3;++col)
-						{
-							edgeStiffness[27*9*allEdgesAtVoxel[i+8*voxelId[element]]+9*orderNode[i][j]+3*row+col]+=youngsModulus[numMat]*baseStiffness[(i*3+row)*24+j*3+col];
-						}
-					}
-				}
-			}
-		}
-//		std::cout<<"\n edgeStiff ";
-//		for (int i=0;i<numGridNodes*9*27;++i)
-//			std::cout<<edgeStiffness[i]<<" ";
+//		std::cout<<"[Grid3D] : neighborNodes \n";
+//		for(int i=0;i<27;++i)
+//			std::cout<<neighborNodes[i]<<" ";
 //		std::cout<<"\n";
+
+//#ifdef NEIGHBORS
+//		allNodesAtNode.resize(27*numGridNodes);
+
+//		for(int node=0;node<numGridNodes;++node)
+//		{
+//			for(int i=0;i<27;++i)
+//				allNodesAtNode[27*node+i]=node+neighborNodes[i];
+//		}
+
+//#else //NEIGHBORS
+//	allNodesAtNode.resize(27);
+	for(int i=0;i<27;++i)
+		allNodesAtNode[i]=neighborNodes[i];
+//#endif
 	}
 
+//	std::cout<<"[Grid3D] : neighborNodes \n";
+//	for(int i=0;i<27;++i)
+//		std::cout<<allNodesAtNode[i]<<"  ";
+//	std::cout<<"\n";
+
+	std::vector<int> matOfEdge(0);
+	if(matrixFreeMethod)
+	{
+		matOfEdge.resize(64*numNodes,0);
+		int orderEdgesForElem[8][8]={
+			{35,39,47,45,57,59,63,62},// 7.
+			{27,34,44,41,53,56,61,60},// 6.
+			{17,20,32,26,48,49,54,52},// 4.
+			{21,23,38,33,50,51,58,55},//5.
+			{9,11,15,14,31,37,46,43},//3.
+			{5,8,13,12,25,30,42,40}, //2.
+			{0,1,6,4,16,18,28,24},//0. elem
+			{2,3,10,7,19,22,36,29},//1. elem
+		};
+		std::vector<int> numElemPerNeigh={1,2,1,2,4,2,1,2,1,2,4,2,4,8,4,2,4,2,1,2,1,2,4,2,1,2,1};
+		std::vector<int> edgesNumOfNeigh={0,1,3,4,6,10,12,13,15,17,21,23,27,35,39,41,45,47,48,50,51,53,57,59,60,62,63};
+
+		for(size_t element=0;element<numElems;++element)
+		{
+//			std::cout<<" mat "<<materialOfElem[element];
+			// over local 8 nodes to get correct neighbor element
+			for(int locNode=0;locNode<8;++locNode)
+			{
+//				std::cout<<" node "<allNodesAtElem[8*element+locNode]<< " edge at ";
+				// save edge matrix at all edges of element
+				for(int node=0;node<8;++node)
+				{
+					matOfEdge.at(64*allNodesAtElem[8*element+locNode]+orderEdgesForElem[locNode][node])=materialOfElem[element];
+//					std::cout<<orderEdgesForElem[locNode][node]<<" ";
+
+				}
+//				std::cout<<" "<<std::endl;
+//				std::cout<<" matOfEdge: node"<<allNodesAtElem[8*element+locNode]<< " - ";
+//				for (int i=0;i<64;++i)
+//				{
+//					if(matOfEdge[64*locNode+i]==1)
+//					std::cout<< 64*locNode+i<<" ";
+//				}
+//				std::cout<<" "<<std::endl;
+			}
+		}
+	}
 
 
 	//********************************************************************************
 
 	boost::dynamic_bitset<> rDofIsConstraint(3*numNodes); //0 = false, all 0 here
 
-	std::vector<double> displVector(3*numNodes,0.0);// initialized with zero
+	std::vector<double> displVector(3*(numNodes+1),0.0);// initialized with zero
 
 	//myMapColorModul.WriteToFile("$HOME/develop/nuto/MapColorModul.txt"," ");
 
@@ -507,9 +706,9 @@ int main()
 	// Boundary condition: set x,y,z direction zero
 	//----------------------------------------------------------------------------------------//
 	std::cout<<"[NuTo::Grid3D] Boundary conditions: all dofs constraint for z=0 \n";
-	for (int count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1);count<2*(rGridDimension[0] + 1)*(rGridDimension[1] + 1);++count)
+	for (size_t count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1);count<2*(rGridDimension[0] + 1)*(rGridDimension[1] + 1);++count)
 	{
-		if(nodeId[count]>-1)
+		if(nodeExist[count])
 		{
 			rDofIsConstraint.set(nodeId[count]*3+0,true);
 			rDofIsConstraint.set(nodeId[count]*3+1,true);
@@ -534,10 +733,10 @@ int main()
 		//----------------------------------------------------------------------------------------//
 		// Boundary condition: all nodes with z=max, uz=BoundaryDisplacement
 		std::cout<<"[NuTo::Grid3D] Boundary conditions: Displacement at z=max in z-direction \n";
-		int help=numConstraintDofs;
-		for (int count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*(rGridDimension[2]-1);count<(rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];++count)
+		size_t help=numConstraintDofs;
+		for (size_t count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*(rGridDimension[2]-1);count<(rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];++count)
 		{
-			if(nodeId[count]>-1)
+			if(nodeExist[count])
 			{
 				rDofIsConstraint.set(nodeId[count]*3+2,true);
 				displVector[nodeId[count]*3+2]=BoundaryDisplacement;
@@ -551,7 +750,7 @@ int main()
 		//----------------------------------------------------------------------------------------//
 		// Boundary condition: all nodes with x=max, ux=BoundaryDisplacement
 		//----------------------------------------------------------------------------------------//
-//		for (int count = rGridDimension[0];count<numGridNodes;count+=(rGridDimension[0] + 1))
+//		for (size_t count = rGridDimension[0];count<numGridNodes;count+=(rGridDimension[0] + 1))
 //		{
 //			rDofIsConstraint.set(count*3,true);
 //			displVector[count*3]=BoundaryDisplacement;
@@ -562,9 +761,9 @@ int main()
 	else
 	{
 		std::cout << "[NuTo::Grid3D] Load control" <<std::endl;
-		extForces.resize(3*numGridNodes,0.);
+		extForces.resize(3*numNodes,0.);
 		// Boundary condition: fz=-1
-//		for (int count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];count<numGridNodes;++count)
+//		for (size_t count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];count<numGridNodes;++count)
 //		{
 //
 // 			if(nodeExist[count])
@@ -573,7 +772,7 @@ int main()
 //			}
 //		}
 		// for 8 element example, unit force 1
-		int count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];
+		size_t count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];
 //		std::cout <<__FILE__<<" "<<__LINE__<< "first node" <<count<<std::endl;
 		extForces[count*3+2]=Force/4;
 		++count;
@@ -594,13 +793,13 @@ int main()
 		extForces[count*3+2]=Force/4;
 
 		std::cout<<"  extForces ";
-		for (int i=0;i<3*numGridNodes;++i)
+		for (size_t i=0;i<3*numNodes;++i)
 				std::cout<< extForces[i] <<" ";
 			std::cout<<"\n";
 
 	///////////////////////////////////////////////////////////
 
-//		for (int xcount=0;xcount< rGridDimension[0];++xcount)
+//		for (size_t xcount=0;xcount< rGridDimension[0];++xcount)
 //		{
 //			double nodeForce;
 //				if(xCount == 0 || xCount == rGridDimension[0])
@@ -613,7 +812,7 @@ int main()
 //				}
 //
 //		}
-// 		for (int count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];count<numGridNodes;++count)
+// 		for (size_t count = (rGridDimension[0] + 1)*(rGridDimension[1] + 1)*rGridDimension[2];count<numGridNodes;++count)
 //		{
 //
 // 			if(nodeExist[count])
@@ -663,7 +862,7 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 //		voxelId.resize(0);
 //	}
 //	std::cout<<"  nodeId ";
-//	for (int i=0;i<numGridNodes;++i)
+//	for (size_t i=0;i<numGridNodes;++i)
 //			std::cout<< nodeId[i] <<" ";
 //		std::cout<<"\n";
 //
@@ -674,25 +873,57 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 
 	//
 	// overhead std constructors
-	// with savig neighbors,
+	// with saving neighbors,
 	numBytesEBE=7*sizeof(std::vector<double>)+sizeof(rDofIsConstraint);
-	numBytesEBE+=sizeof(numNodes)+sizeof(rGridDimension)+sizeof(matrixFreeMethod)
+	if(matrixFreeMethod)
+	{
+		//NBN
+		numBytesEBE+=sizeof(numNodes)+sizeof(rGridDimension)+sizeof(matrixFreeMethod)
+					+sizeof(double)*(
+						rDofIsConstraint.num_blocks()+youngsModulus.size()
+						+edgeStiffness.size()+displVector.size()+extForces.size())
+				+sizeof(size_t)*(
+						edgeId.size()+nodeId.size()+matOfEdge.size()
+						+allNodesAtNode.size());
+	}
+	else
+	{
+		numBytesEBE+=sizeof(numNodes)+sizeof(rGridDimension)+sizeof(matrixFreeMethod)
 					+sizeof(double)*(
 						rDofIsConstraint.num_blocks()+youngsModulus.size()+baseStiffness.size()
-						+edgeStiffness.size()+displVector.size()+extForces.size())
-				+sizeof(int)*(
-						voxelId.size()+edgeId.size()+nodeId.size()+materialOfElem.size()
-						+allEdgesAtVoxel.size()+allNodesAtNode.size());
+						+displVector.size()+extForces.size())
+				+sizeof(size_t)*(voxelId.size()+nodeId.size()+materialOfElem.size());
+#ifdef NODESATELEM
+		numBytesEBE+=+sizeof(size_t)*allNodesAtElem.size();
+#endif
+	}
 	// with overhead of CGMethode with P: p,r,pr,d,h
-	numBytesEBE+=6*sizeof(double)+5*sizeof(int)+5*sizeof(std::vector<double>)+5*sizeof(double)*displVector.size();
+	numBytesEBE+=6*sizeof(double)+5*sizeof(size_t)+5*sizeof(std::vector<double>)+5*sizeof(double)*displVector.size();
 
 	std::cout<<"[NuTo::Grid3D] Required memory: "<<numBytesEBE/(1024.*1024)<<" MiB ,"<<numBytesEBE/(1000000.)<<" MB ("<<numBytesEBE<<" byte) "<<std::endl;
 	outputTime<<numBytesEBE/(1000000.)<<"   ";
 	outputTime.close();
-	myOptimizer.Initialize(numNodes*3,rGridDimension,matrixFreeMethod,voxelId,edgeId,nodeId,
-			rDofIsConstraint,youngsModulus,baseStiffness,edgeStiffness,materialOfElem,
+	if (matrixFreeMethod)
+	{
+		voxelId.clear();
+		baseStiffness.clear();
+		myOptimizer.Initialize(numNodes*3,rGridDimension,matrixFreeMethod,voxelId,edgeId,nodeId,
+			rDofIsConstraint,youngsModulus,baseStiffness,edgeStiffness,matOfEdge,
 			allEdgesAtVoxel,allNodesAtNode,displVector,extForces);
-//	myOptimizer.AnsysInput(numGridNodes*3,elemExist,nodeExist,rDofIsConstraint,youngsModulus,rGridDimension,rVoxelSpacing,materialOfElem,allEdgesAtVoxel,displVector);
+	}
+	else
+	{
+		edgeId.clear();
+#ifndef NODESATELEM
+		allNodesAtElem.clear();
+#endif
+		allNodesAtNode.clear();
+		myOptimizer.Initialize(numNodes*3,rGridDimension,matrixFreeMethod,voxelId,edgeId,nodeId,
+			rDofIsConstraint,youngsModulus,baseStiffness,edgeStiffness,materialOfElem,
+			allNodesAtElem,allNodesAtNode,displVector,extForces);
+	}
+
+	myOptimizer.AnsysInput(numNodes,nodeId,rDofIsConstraint,youngsModulus,rGridDimension,rVoxelSpacing,materialOfElem,allNodesAtElem,displVector);
 
 //	std::cout<<"[NuTo::Grid3D] sizeof std::vector "<<sizeof(std::vector<double>)<<std::endl;
 //	std::cout<<"[NuTo::Grid3D] sizeof double "<<sizeof(double)<<std::endl;
@@ -734,10 +965,23 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	myOptimizer.GetParameters(displVector);
 	// open file
 	std::ofstream file;
-//    file.open("displVTK.txt");
-//	for(int i=0;i<3*numGridNodes;++i)
-//		file<<displVector[i]<<"\n";
-//	file.close();
+    file.open("displVTK.txt");
+	for(size_t i=0;i<numGridNodes;++i)
+	{
+		if (nodeId[i]<0)
+		{
+			file<<0.0<<"\n";
+			file<<0.0<<"\n";
+			file<<0.0<<"\n";
+		}
+		else
+		{
+			file<<displVector[3*nodeId[i]]<<"\n";
+			file<<displVector[3*nodeId[i]+1]<<"\n";
+			file<<displVector[3*nodeId[i]+2]<<"\n";
+		}
+	}
+	file.close();
 
     file.open("displacements.txt");
 	for(size_t i=0;i<numNodes;++i)
@@ -755,17 +999,17 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	input.open("result.txt");
 	if(input)	// file is open
 	{
-		int i=0;
+		size_t count=0;
 		while(!input.eof()) // keep reading untill end-of-file
 		{
 			input>>help;
 			dispRef.push_back(help);
-			++i;
+			++count;
 		}
 		input.close();
-		--i; // for last empty line
+		--count; // for last empty line
 
-		if (i==numDofs)
+		if (count==numDofs)
 		{
 			double squareDiffNorm=0;
 			double squareRefNorm=0;
@@ -773,41 +1017,26 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 //			std::ofstream diffFile;
 //			diffFile.open("displDiffVTK.txt");
 //			file.open("displRefVTK.txt");
-			int k=0;
-			for(int i=0;i<numGridNodes;++i)
+			for(size_t i=0;i<numNodes;++i)
 			{
-				if (nodeExist[i])
-				{
 //					diffFile<<displVector[3*i]-dispRef[3*i]<<"\n";
 //					diffFile<<displVector[3*i+1]-dispRef[3*i+1]<<"\n";
 //					diffFile<<displVector[3*i+2]-dispRef[3*i+2]<<"\n";
 //					file<<dispRef[3*i]<<"\n";
 //					file<<dispRef[3*i+1]<<"\n";
 //					file<<dispRef[3*i+2]<<"\n";
-					squareDiffNorm+=(displVector[3*i]-dispRef[3*k])*(displVector[3*i]-dispRef[3*k]);
-					squareDiffNorm+=(displVector[3*i+1]-dispRef[3*k+1])*(displVector[3*i+1]-dispRef[3*k+1]);
-					squareDiffNorm+=(displVector[3*i+2]-dispRef[3*k+2])*(displVector[3*i+2]-dispRef[3*k+2]);
-					squareRefNorm+=(dispRef[3*k])*(dispRef[3*k]);
-					squareRefNorm+=(dispRef[3*k+1])*(dispRef[3*k+1]);
-					squareRefNorm+=(dispRef[3*k+2])*(dispRef[3*k+2]);
-					++k;
-				}
-//				else
-//				{
-//					diffFile<<"0.0 \n";
-//					diffFile<<"0.0 \n";
-//					diffFile<<"0.0 \n";
-//					file<<"0.0 \n";
-//					file<<"0.0 \n";
-//					file<<"0.0 \n";
-//				}
+				squareDiffNorm+=(displVector[3*i]-dispRef[3*i])*(displVector[3*i]-dispRef[3*i]);
+				squareDiffNorm+=(displVector[3*i+1]-dispRef[3*i+1])*(displVector[3*i+1]-dispRef[3*i+1]);
+				squareDiffNorm+=(displVector[3*i+2]-dispRef[3*i+2])*(displVector[3*i+2]-dispRef[3*i+2]);
+				squareRefNorm+=(dispRef[3*i])*(dispRef[3*i]);
+				squareRefNorm+=(dispRef[3*i+1])*(dispRef[3*i+1]);
+				squareRefNorm+=(dispRef[3*i+2])*(dispRef[3*i+2]);
 			}
-			std::cout<<"[NuTo::Grid3D] squared diff norm " <<squareDiffNorm<<std::endl;
-			std::cout<<"[NuTo::Grid3D] error " <<sqrt(squareDiffNorm)/sqrt(squareRefNorm)*100<<" %"<<std::endl;
+		std::cout<<"[NuTo::Grid3D] squared diff norm " <<squareDiffNorm<<std::endl;
+		std::cout<<"[NuTo::Grid3D] error " <<sqrt(squareDiffNorm)/sqrt(squareRefNorm)*100<<" %"<<std::endl;
 		}
 		else
 			std::cout<<"[NuTo::Grid3D] Comparison with reference results is not possible (wrong size).\n";
-
 	}
 	else
 		std::cout<<"[NuTo::Grid3D] Comparison with reference results is not possible (no result file).\n";

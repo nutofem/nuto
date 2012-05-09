@@ -71,7 +71,7 @@ typedef std::vector<double> myType;
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-    void Initialize(int rNumParameters,int* rGridDimension,bool matrixFreeMethod,boost::dynamic_bitset<>& elemExist,boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,std::vector<double>&  baseStiffness,std::vector<double>&  edgeStiffness,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<int>& neighborNodes,std::vector<double>& parameters,std::vector<double>& extForces)
+    void Initialize(size_t rNumParameters,size_t* rGridDimension,bool matrixFreeMethod,boost::dynamic_bitset<>& elemExist,boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,std::vector<double>&  baseStiffness,std::vector<double>&  edgeStiffness,std::vector<int>& materialOfElem,std::vector<size_t>& allNodesAtVoxel,std::vector<int>& neighborNodes,std::vector<double>& parameters,std::vector<double>& extForces)
     {
     	mNumParameters=rNumParameters;
     	mGridDimension=rGridDimension;
@@ -89,7 +89,7 @@ typedef std::vector<double> myType;
         mForces=extForces;
     }
 
-    void AnsysInput(int rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,int* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<double>& parameters);
+    void AnsysInput(size_t rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,size_t* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<size_t>& allNodesAtVoxel,std::vector<double>& parameters);
 
     int Optimize();
 
@@ -201,8 +201,8 @@ protected:
     bool   mUseDiagHessian;
     bool   mUseMultiGrid;
 
-   	int mNumParameters;
-   	int* mGridDimension;
+   	size_t mNumParameters;
+   	size_t* mGridDimension;
    	bool mMatrixFreeMethod;
    	boost::dynamic_bitset<> mElemExist;
    	boost::dynamic_bitset<> mNodeExist;
@@ -211,7 +211,7 @@ protected:
    	std::vector<double> mBaseStiffness;
    	std::vector<double> mEdgeStiffness;
    	std::vector<int> mMaterialOfElem;
-    std::vector<int> mNodeIds;
+    std::vector<size_t> mNodeIds;
     std::vector<int> mNeighborNodes;
     std::vector<double> mParameters;
     std::vector<double> mForces;

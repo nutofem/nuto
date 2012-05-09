@@ -83,7 +83,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	double mAccuracyGradientScaled = mAccuracyGradient;
 	std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] gradient accuracy "<<mAccuracyGradientScaled <<std::endl;
 
-	int localMaxGradientCalls=mNumParameters;
+	int localMaxGradientCalls=(int) mNumParameters;
 //	int localMaxGradientCalls=2*mNumParameters;
 	if (localMaxGradientCalls<mMaxGradientCalls)
 		SetMaxGradientCalls(localMaxGradientCalls);
@@ -169,7 +169,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			//or r=KU-f test
 //			r-=f;
 #else
-			for(int i=0;i<mNumParameters;++i)
+			for(size_t i=0;i<mNumParameters;++i)
 			{
 				if(r[i]!=0)
 					r[i]*=-1;
@@ -179,7 +179,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 #endif
 			// print r
 //			std::cout<<" r ";
-//			for(int i=0;i<mNumParameters;++i)
+//			for(size_t i=0;i<mNumParameters;++i)
 //				std::cout<<r[i]<<" ";
 //			std::cout<<"\n";
 
@@ -189,7 +189,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			d = pr;
 #else
 //			pr=r;
-			for(int i=0;i<mNumParameters;++i)
+			for(size_t i=0;i<mNumParameters;++i)
 			{
 //				pr[i]=r[i];
  				pr[i]=p[i]*r[i];
@@ -202,7 +202,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			alphaNumerator = r.dot(pr);
 #else
 			alphaNumerator=0;
-			for(int i=0;i<mNumParameters;++i)
+			for(size_t i=0;i<mNumParameters;++i)
  				alphaNumerator+=r[i]*pr[i];
 #endif
 			if (mVerboseLevel>2)
@@ -222,7 +222,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			std::cout<<__FILE__<<" "<<__LINE__<<" calc search direction"<<std::endl;
 
 
-		for(int i=0;i<mNumParameters;++i)
+		for(size_t i=0;i<mNumParameters;++i)
 			h[i]=0;
 
 		if(!mMatrixFreeMethod)
@@ -246,11 +246,11 @@ int NuTo::ConjugateGradientGrid::Optimize()
 #else
 	    alphaDenominator=0;
 	    squaredNorm=0;
-		for(int i=0;i<mNumParameters;++i)
+		for(size_t i=0;i<mNumParameters;++i)
 			alphaDenominator+=d[i]*h[i];
 		alpha = alphaNumerator/alphaDenominator;
 		betaNumerator =0;
-		for(int i=0;i<mNumParameters;++i)
+		for(size_t i=0;i<mNumParameters;++i)
 		{
 				u[i]+= alpha*d[i];
 				r[i]-=alpha*h[i];
@@ -260,7 +260,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		}
 		beta = betaNumerator/ alphaNumerator;
 		alphaNumerator = betaNumerator;
-		for(int i=0;i<mNumParameters;++i)
+		for(size_t i=0;i<mNumParameters;++i)
 		{
 			d[i] *=beta;
 			d[i] +=pr[i];
@@ -276,31 +276,31 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //			std::cout <<std::setw(width)<<" It.: "<< curIteration<< " norm gradient squared "<<squaredNorm<<std::endl;
 			std::cout <<std::setw(width)<<" It.: "<< curIteration<< " norm gradient squared "<<betaNumerator<<std::endl;
 			std::cout << std::setw(width)<< "pr " ;
-			for (int count=0; count<mNumParameters; count++)
+			for (size_t count=0; count<mNumParameters; count++)
 			{
 				std::cout << std::setw(width)<< pr[count] << "   " ;
 			}
 			std::cout << std::endl;
 			std::cout << std::setw(width)<< "r " ;
-			for (int count=0; count<mNumParameters; count++)
+			for (size_t count=0; count<mNumParameters; count++)
 			{
 				std::cout << std::setw(width)<< r[count] << "   " ;
 			}
 			std::cout << std::endl;
 			std::cout << std::setw(width)<< "h " ;
-			for (int count=0; count<mNumParameters; count++)
+			for (size_t count=0; count<mNumParameters; count++)
 			{
 				std::cout << std::setw(width)<< h[count] << "   " ;
 			}
 			std::cout << std::endl;
 			std::cout << std::setw(width)<< "d " ;
-			for (int count=0; count<mNumParameters; count++)
+			for (size_t count=0; count<mNumParameters; count++)
 			{
 				std::cout << std::setw(width)<< d[count] << "   " ;
 			}
 			std::cout << std::endl;
 			std::cout << std::setw(width)<< "u " ;
-			for (int count=0; count<mNumParameters; count++)
+			for (size_t count=0; count<mNumParameters; count++)
 			{
 				std::cout << std::setw(width)<<u[count] << "   " ;
 			}
@@ -355,7 +355,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //	r.clear();
 //	CalculateReactionForcesEBE(u,r);
 //	std::cout<<" Reaction forces \n";
-//	for (int count=0; count<mNumParameters; count++)
+//	for (size_t count=0; count<mNumParameters; count++)
 //	{
 //		std::cout << std::setw(width)<< r[count] << "\n   " ;
 //	}
@@ -404,7 +404,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		std::cout << std::endl;
 		std::cout.precision(precision);
 		std::cout << std::setw(width)<< "displacements " ;
-		for (int count=0; count<mNumParameters; count++)
+		for (size_t count=0; count<mNumParameters; count++)
 		{
 			std::cout << std::setw(width)<<u[count] << "   " ;
 
@@ -432,7 +432,7 @@ void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,myType
     outputTime.close();
 //    if(mVerboseLevel>0)
     	std::cout<<"[ConjugateGradientGrid::CalcScalingFactors] scale factor "<<scalefactor<<"\n";
-    for (int count=0; count<mNumParameters; ++count)
+    for (size_t count=0; count<mNumParameters; ++count)
         p[count] *=scalefactor;
 
 //#ifdef SHOW_TIME
@@ -449,12 +449,12 @@ void NuTo::ConjugateGradientGrid::HessianDiag(myType& rHessianDiag)const
 //    start=clock();
 //#endif
     	std::cout<<"[ConjugateGradientGrid::HessianDiag] "<<std::endl;
-	int numElems=mElemExist.size();
+	size_t numElems=mElemExist.size();
 
 	// global external force vector (active dofs)
     //	myType  force(mNumParameters,1);
 	//loop over all elements
-	for (int elementNumber=0;elementNumber<numElems;elementNumber++)
+	for (size_t elementNumber=0;elementNumber<numElems;elementNumber++)
     {
 		if (mElemExist[elementNumber])
 		{
@@ -468,7 +468,7 @@ void NuTo::ConjugateGradientGrid::HessianDiag(myType& rHessianDiag)const
 			}
 		}
 	}
-	for (int i=0;i<mNumParameters;++i)
+	for (size_t i=0;i<mNumParameters;++i)
 	{
 		if (rHessianDiag[i]!=0)
 			rHessianDiag[i]=1./rHessianDiag[i];
@@ -478,7 +478,7 @@ void NuTo::ConjugateGradientGrid::HessianDiag(myType& rHessianDiag)const
 //	std::cout<<"Hessian: "<<rHessianDiag.transpose()<<std::endl;
 //#else
 //	std::cout<<"Hessian: ";
-//	for(int i=0;i<mNumParameters;++i)
+//	for(size_t i=0;i<mNumParameters;++i)
 //		std::cout<<rHessianDiag[i]<<" ";
 //	std::cout<<std::endl;
 //#endif
@@ -499,18 +499,18 @@ void NuTo::ConjugateGradientGrid::CalculateMatrixVectorProductEBE(myType &u,myTy
 //    start=clock();
 //#endif //SHOW_TIME
 
-	int numElems=(int) mElemExist.size();
+	size_t numElems=mElemExist.size();
 	int dofsElem=24;
 	// global external force vector (active dofs)
     //	myType  force(mNumParameters,1);
-	int nodeId=0;
+	size_t nodeId=0;
 	int numStiff=0;
 
 	std::vector<double> residual (24);
 	std::vector<double> displacement(24);
 
 	//loop over all elements
-	for (int elementNumber=0;elementNumber<numElems;++elementNumber)
+	for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
     {
 		if (mElemExist[elementNumber])
 		{
@@ -943,7 +943,7 @@ void NuTo::ConjugateGradientGrid::Info () const
 	std::cout<< "MaxIterations" << mMaxIterations << std::endl;
 	std::cout<< "ShowSteps" << mShowSteps << std::endl;
 }
-void  NuTo::ConjugateGradientGrid::AnsysInput(int rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,int* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<double>& parameters)
+void  NuTo::ConjugateGradientGrid::AnsysInput(size_t rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,size_t* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<size_t>& allNodesAtVoxel,std::vector<double>& parameters)
 {
 	// open file
 	std::ofstream file;
@@ -958,11 +958,11 @@ void  NuTo::ConjugateGradientGrid::AnsysInput(int rNumParameters,boost::dynamic_
 
     }
 
-    for (int z=0;z<rGridDimension[2]+1;++z)
+    for (size_t z=0;z<rGridDimension[2]+1;++z)
     {
-    	for (int y=0;y<rGridDimension[1]+1;++y)
+    	for (size_t y=0;y<rGridDimension[1]+1;++y)
     	{
-    		for (int x=0;x<rGridDimension[0]+1;++x)
+    		for (size_t x=0;x<rGridDimension[0]+1;++x)
 			{
     			file<<"n,,"<<x*rVoxelSpacing[0]<<","<<y*rVoxelSpacing[1]<<","<<z*rVoxelSpacing[2]<<"\n";
 			}
@@ -970,10 +970,10 @@ void  NuTo::ConjugateGradientGrid::AnsysInput(int rNumParameters,boost::dynamic_
     }
     int mat=1;
     file<<"type,1 \n mat,"<<mat<<" \n";
-    int numElems=(int) elemExist.size();
+    size_t numElems=elemExist.size();
     int numExistElem(0);
     // attention for more materials
-    for (int i=0;i<numElems;++i)
+    for (size_t i=0;i<numElems;++i)
     {
     	if(elemExist[i])
     	{

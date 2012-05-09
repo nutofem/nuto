@@ -49,7 +49,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief import routine for basic grid data without StructureGrid data space
-    void ImportFromVtkASCIIFileHeader(const char* rFileName,int *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, int &rNumVoxel);
+    void ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t &rNumVoxel);
 
     //! @brief import routine for basic grid data with StructureGrid data space
     void ImportFromVtkASCIIFileHeader(const char* rFileName);

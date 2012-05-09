@@ -26,9 +26,8 @@
 
 int main()
 {
-	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
-
-//	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
+//	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
+	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
 	std::fstream outputTime;
 	std::string filename = "timeOutput";
     outputTime.open(filename,std::fstream::out|std::fstream::app);
@@ -53,10 +52,10 @@ int main()
     //for local base stiffness matrix
     double YoungsModulus = 1.;
 
-    int rNumVoxel;
+    size_t rNumVoxel;
     double rVoxelSpacing[3];
     double rGridOrigin[3];
-    int rGridDimension[3];
+    size_t rGridDimension[3];
 
 
     // create structure
@@ -80,9 +79,9 @@ int main()
 //		std::cout<<imageValues[i] <<" ";
 //	std::cout<<"\n";
 
-	int numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
-    int numDofs=3*numGridNodes;
-    int numBytesEBE=0;
+	size_t numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
+    size_t numDofs=3*numGridNodes;
+    size_t numBytesEBE=0;
 
  	//RB
 	double Force = -1.;
@@ -203,22 +202,22 @@ int main()
 
 	//std::vector<int*> allVoxelLocation(0,rNumVoxel);
 //		std::vector<int> allFirstNodes(-1,rNumVoxel);
-	std::vector<int> allNodesAtVoxel(rNumVoxel*8);
+	std::vector<size_t> allNodesAtVoxel(rNumVoxel*8);
 
 
 	// put get routines for a while here
 	// get voxel locations of voxels
-	for (int element=0;element<rNumVoxel;++element)
+	for (size_t element=0;element<rNumVoxel;++element)
 	{
 //		if (elemExist[element]) // elem exist
 //		{
-			int numDimxy=element/((rGridDimension[0])*(rGridDimension[1]));
-			int numDimx=0;
-			int residual1=element%((rGridDimension[0])*(rGridDimension[1]));
-			int residual2=0;
+			size_t numDimxy=element/((rGridDimension[0])*(rGridDimension[1]));
+			size_t numDimx=0;
+			size_t residual1=element%((rGridDimension[0])*(rGridDimension[1]));
+			size_t residual2=0;
 			numDimx=residual1/(rGridDimension[0]);
 			residual2=residual1%(rGridDimension[0]);
-			int rVoxelLocation[3];
+			size_t rVoxelLocation[3];
 			rVoxelLocation[0]=residual2;
 			rVoxelLocation[1]=numDimx;
 			rVoxelLocation[2]=numDimxy;
@@ -244,7 +243,7 @@ int main()
 	//myGrid.SetAllPartCoefficientMatrix0();
 	int numCoeffMat=0;
 	bool matExistsAlready=false;
-	for (int countVoxels=0;countVoxels<rNumVoxel;++countVoxels)
+	for (size_t countVoxels=0;countVoxels<rNumVoxel;++countVoxels)
 	{
 		if (imageValues[countVoxels]<thresholdMaterialValue)
 		{
@@ -302,7 +301,7 @@ int main()
 	{
 		allNodesAtNode.resize(27*numGridNodes);
 
-		int neighborNodes[27];
+		size_t neighborNodes[27];
 		neighborNodes[0]=-(rGridDimension[0]+1)*(rGridDimension[1]+1)-(rGridDimension[0]+1)-1;
 		neighborNodes[1]=-(rGridDimension[0]+1)*(rGridDimension[1]+1)-(rGridDimension[0]+1);
 		neighborNodes[2]=-(rGridDimension[0]+1)*(rGridDimension[1]+1)-(rGridDimension[0]+1)+1;
@@ -333,71 +332,71 @@ int main()
 
 
 	//	std::cout<<"                Neighbors: ";
-	//	for (int count=0;count<27;count++)
+	//	for (size_t count=0;count<27;count++)
 	//		std::cout<< neighborNodes[count]<<" ";
 	//	std::cout<<" "<<std::endl;
 	//
-		for(int node=0;node<numGridNodes;++node)
+		for(size_t node=0;node<numGridNodes;++node)
 		{
 			std::vector<int> locNeighbor(27);
-			for (int i=0;i<27;++i)
-				locNeighbor[i]=node+neighborNodes[i];
+			for (size_t i=0;i<27;++i)
+				locNeighbor[i]=(int) (node+neighborNodes[i]);
 
 	//	    std::cout<<" Knoten "<<node<< " Neighbors: ";
-	//		for (int count=0;count<27;count++)
+	//		for (size_t count=0;count<27;count++)
 	//			std::cout<< locNeighbor[count]<<" ";
 	//		std::cout<<" "<<std::endl;
-			int numDimxy=node/((rGridDimension[0]+1)*(rGridDimension[1]+1));
-			int residual1=node%((rGridDimension[0]+1)*(rGridDimension[1]+1));
-			int numDimx=residual1/(rGridDimension[0]+1);
+			size_t numDimxy=node/((rGridDimension[0]+1)*(rGridDimension[1]+1));
+			size_t residual1=node%((rGridDimension[0]+1)*(rGridDimension[1]+1));
+			size_t numDimx=residual1/(rGridDimension[0]+1);
 	//		std::cout<<"numDimxy "<<numDimxy<<"residual1 "<<residual1<<" numDimx "<<numDimx<<"node % (rGridDimension[0]+1) " <<node % (rGridDimension[0]+1)<<"\n";
 			// for nodes in first level related to z
 			if (numDimxy==0)
 			{
-				for (int count =0;count<9;count++)
+				for (size_t count =0;count<9;count++)
 					locNeighbor[count]=-1;
 			}
 			// for nodes in last level related to z
 			else if (numDimxy==rGridDimension[2])
 			{
-				for (int count =18;count<27;count++)
+				for (size_t count =18;count<27;count++)
 					locNeighbor[count]=-1;
 			}
 			// for nodes in the first level related to x
 			if (node % (rGridDimension[0]+1)==0 )
 			{
-				 for(int i=0;i<27;i+=3)
+				 for(size_t i=0;i<27;i+=3)
 					 locNeighbor[i]=-1;
 			}
 			// for nodes in the last level related to x
 			else if (node % (rGridDimension[0]+1)==rGridDimension[0] )
 			{
-				 for(int i=2;i<27;i+=3)
+				 for(size_t i=2;i<27;i+=3)
 					 locNeighbor[i]=-1;
 			}
 			// for nodes in the first level related to y
 			if (numDimx==0)
 			{
-				for (int count =0;count<27;count+=9)
+				for (size_t count =0;count<27;count+=9)
 				{
-					for(int i=0;i<3;++i)
+					for(size_t i=0;i<3;++i)
 						locNeighbor[count+i]=-1;
 				}
 			}
 			// for nodes in the last level related to y
 			else if (numDimx==rGridDimension[1])
 			{
-				for (int count =6;count<27;count+=9)
+				for (size_t count =6;count<27;count+=9)
 				{
-					for(int i=0;i<3;++i)
+					for(size_t i=0;i<3;++i)
 						locNeighbor[count+i]=-1;
 				}
 			}
-			for(int i=0;i<27;++i)
+			for(size_t i=0;i<27;++i)
 				allNodesAtNode[27*node+i]=locNeighbor[i];
 
 	//		std::cout<<" Knoten "<<node<< " Neighbors: ";
-	//		for (int count=0;count<27;count++)
+	//		for (size_t count=0;count<27;count++)
 	//			std::cout<< locNeighbor[count]<<" ";
 	//		std::cout<<" "<<std::endl;
 		}
@@ -419,7 +418,7 @@ int main()
 
 		edgeStiffness.resize(numGridNodes*9*27);
 
-		for (int element=0;element<rNumVoxel;++element)
+		for (size_t element=0;element<rNumVoxel;++element)
 		{
 			if (elemExist[element])
 			{
@@ -451,7 +450,7 @@ int main()
 
 	boost::dynamic_bitset<> rDofIsConstraint(3*numGridNodes); //0 = false, all 0 here
 
-	for (int i=0;i<numGridNodes;++i)
+	for (size_t i=0;i<numGridNodes;++i)
 	{
 		if (!nodeExist[i]) //node does not exist
 		{
@@ -580,7 +579,7 @@ int main()
 		// Boundary condition: all nodes with z=max, uz=BoundaryDisplacement
 		std::cout<<"[NuTo::Grid3D] Boundary conditions: Displacement at z=max in z-direction \n";
 		int help=numConstraintDofs;
-		for (int count = (NumElementsX + 1)*(NumElementsY + 1)*NumElementsZ;count<numGridNodes;++count)
+		for (size_t count = (NumElementsX + 1)*(NumElementsY + 1)*NumElementsZ;count<numGridNodes;++count)
 		{
 			if(nodeExist[count])
 			{
@@ -639,7 +638,7 @@ int main()
 		extForces[count*3+2]=Force/4;
 
 		std::cout<<"  extForces ";
-		for (int i=0;i<3*numGridNodes;++i)
+		for (size_t i=0;i<3*numGridNodes;++i)
 				std::cout<< extForces[i] <<" ";
 			std::cout<<"\n";
 
@@ -746,12 +745,12 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	// open file
 	std::ofstream file;
     file.open("displVTK.txt");
-	for(int i=0;i<3*numGridNodes;++i)
+	for(size_t i=0;i<3*numGridNodes;++i)
 		file<<displVector[i]<<"\n";
 	file.close();
 
     file.open("displacements.txt");
-	for(int i=0;i<numGridNodes;++i)
+	for(size_t i=0;i<numGridNodes;++i)
 	{
 		if (nodeExist[i])
 		{
@@ -770,7 +769,7 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	input.open("result.txt");
 	if(input)	// file is open
 	{
-		int i=0;
+		size_t i=0;
 		while(!input.eof()) // keep reading untill end-of-file
 		{
 			input>>help;
@@ -788,8 +787,8 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 //			std::ofstream diffFile;
 //			diffFile.open("displDiffVTK.txt");
 //			file.open("displRefVTK.txt");
-			int k=0;
-			for(int i=0;i<numGridNodes;++i)
+			size_t k=0;
+			for(size_t i=0;i<numGridNodes;++i)
 			{
 				if (nodeExist[i])
 				{

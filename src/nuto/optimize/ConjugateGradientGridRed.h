@@ -16,6 +16,7 @@
 #include "nuto/optimize/OptimizeException.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 
+//#define NODESATELEM
 
 namespace NuTo
 {
@@ -71,14 +72,14 @@ typedef std::vector<double> myType;
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-	void Initialize(size_t rNumParameters, int* rGridDimension,
+	void Initialize(size_t rNumParameters, size_t* rGridDimension,
 			bool matrixFreeMethod, std::vector<size_t> &voxelId,
-			std::vector<size_t> &edgeId, std::vector<int> &nodeId,
+			std::vector<size_t> &edgeId, std::vector<size_t> &nodeId,
 			boost::dynamic_bitset<> &rDofIsConstraint,
 			std::vector<double>& youngsModulus,
 			std::vector<double>& baseStiffness,
 			std::vector<double>& edgeStiffness,
-			std::vector<int>& materialOfElem, std::vector<int>& allEdgesAtVoxel,
+			std::vector<int>& materialOfElem, std::vector<int>& allNodesAtElem,
 			std::vector<int>& neighborNodes, std::vector<double>& parameters,
 			std::vector<double>& extForces) {
 		mNumParameters = rNumParameters;
@@ -92,13 +93,13 @@ typedef std::vector<double> myType;
 		mBaseStiffness = baseStiffness;
 		mEdgeStiffness = edgeStiffness;
 		mMaterialOfElem = materialOfElem;
-		mEdgesAtVoxel = allEdgesAtVoxel;
+		mNodesAtElem = allNodesAtElem;
 		mNeighborNodes = neighborNodes;
 		mParameters = parameters;
 		mForces = extForces;
 	}
 
-	void AnsysInput(int rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,int* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtVoxel,std::vector<double>& parameters);
+	void AnsysInput(size_t numNodes,std::vector<size_t>& nodeId,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,size_t* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<int>& allNodesAtElem,std::vector<double>& parameters);
 
     int Optimize();
 
@@ -183,7 +184,7 @@ typedef std::vector<double> myType;
 	virtual void Info()const;
 
 	//! @brief ..calculate node numbers at one element
-	void CalculateNodesAtElement(int elementNumber,int* nodeNumbers);
+	void CalculateNodesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers)const;
 
 
 protected:
@@ -214,8 +215,8 @@ protected:
     bool   mUseDiagHessian;
     bool   mUseMultiGrid;
 
-   	int mNumParameters;
-   	int* mGridDimension;
+   	size_t mNumParameters;
+   	size_t* mGridDimension;
    	bool mMatrixFreeMethod;
    	boost::dynamic_bitset<> mElemExist;
    	boost::dynamic_bitset<> mNodeExist;
@@ -224,13 +225,13 @@ protected:
    	std::vector<double> mBaseStiffness;
    	std::vector<double> mEdgeStiffness;
    	std::vector<int> mMaterialOfElem;
-    std::vector<int> mEdgesAtVoxel;
+    std::vector<int> mNodesAtElem;
     std::vector<int> mNeighborNodes;
     std::vector<double> mParameters;
     std::vector<double> mForces;
 	std::vector<size_t> mVoxelId;
 	std::vector<size_t> mEdgeId;
-	std::vector<int> mNodeId;
+	std::vector<size_t> mNodeId;
 
 };
 } // namespace NuTo

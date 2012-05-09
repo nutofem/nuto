@@ -293,7 +293,7 @@ void NuTo::StructureMultiscale::Save (const std::string &filename, std::string r
         // close file
         ofs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception &e )
     {
         std::string s ( std::string ( "[NuTo::StructureMultiscale::Save]File save exception in boost - " ) + std::string ( e.what() ) );
         throw MechanicsException ( s );
@@ -373,7 +373,7 @@ void NuTo::StructureMultiscale::Restore (const std::string &filename, std::strin
         // close file
         ifs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception &e )
     {
         std::string s ( std::string ( "[NuTo::StructureMultiscale::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
         throw MechanicsException ( s );

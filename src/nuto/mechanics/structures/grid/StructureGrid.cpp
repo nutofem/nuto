@@ -210,7 +210,7 @@ void NuTo::StructureGrid::Restore (const std::string &filename, std::string rTyp
 #endif // ENABLE_SERIALIZATION
 
 //! @brief import routine for basic grid data without StructureGrid data space
-void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,int *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, int &rNumVoxel)
+void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t &rNumVoxel)
 {
     std::cout<<__FILE__<<" "<<__LINE__<<" in ImportFromVtkASCIIFileHeader without StructureGrid data \n ";
     try
@@ -233,9 +233,9 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,int
         getline (file, line);
         // read dimension
         getline (file, line);
-       if (parse(line.c_str(),("DIMENSIONS " >> int_p[assign_a(rGridDimension[0])] >> ' '
-                                           >> int_p[assign_a(rGridDimension[1])] >> ' '
-                                           >> int_p[assign_a(rGridDimension[2])] >> *space_p)).full == false)
+       if (parse(line.c_str(),("DIMENSIONS " >> uint_p[assign_a(rGridDimension[0])] >> ' '
+                                           >> uint_p[assign_a(rGridDimension[1])] >> ' '
+                                           >> uint_p[assign_a(rGridDimension[2])] >> *space_p)).full == false)
        {
             throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader]error reading dimension.");
        }
@@ -257,7 +257,7 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,int
         }
         // read number of entries
         getline (file, line);
-        if (parse(line.c_str(),("POINT_DATA ">> int_p[assign_a(rNumVoxel)] >>  *space_p)).full == false)
+        if (parse(line.c_str(),("POINT_DATA ">> uint_p[assign_a(rNumVoxel)] >>  *space_p)).full == false)
 	   {
 		   throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader]error reading number of entries.");
 	   }
