@@ -12,10 +12,12 @@
 #include <boost/utility.hpp>
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 
 //! @brief constructor
 NuTo::IntegrationType2DMod::IntegrationType2DMod()
 {
+    mName='\0';
 }
 
 //! @brief constructor
@@ -141,6 +143,17 @@ void NuTo::IntegrationType2DMod::GetVisualizationCells(
 	rNumVisualizationCells=rVisualizationCellsIP.size();
 }
 #endif // ENABLE_VISUALIZE
+
+    //! @brief adds a new integration point
+    //! @param rIp (Input) integration point
+void NuTo::IntegrationType2DMod::AddIntegrationPoint(const IntegrationPointBase &rIp){
+	//! with this informations we build up the new IP
+	IntegrationPointBase* ptrIP(0);
+	ptrIP = new IntegrationPointBase(rIp);
+	//! and finally insert it into the map
+	int id=mIpMap.size();
+	this->mIpMap.insert(id,ptrIP);
+}
 
 //! @brief deletes an integration point
 //! @param rIpNum (Input) integration point (counting from zero)

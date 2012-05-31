@@ -11,6 +11,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 //! @brief constructor
 NuTo::IntegrationTypeBase::IntegrationTypeBase()
 {}
@@ -70,6 +71,21 @@ void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates2D(int rIpNum
 void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
 {
     throw MechanicsException("[NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates] This integration type does not support 3D coordinates.");
+}
+
+//! @brief creates new integration-cells/order/area
+//! @param rArea (Input) polygonal surface of integration area
+//! @param rOrder (Input) integration order (or number of integration points)
+void NuTo::IntegrationTypeBase::AddIntegrationPoints(std::vector< std::vector<double> > & rArea, const unsigned short rOrder)
+{
+    throw MechanicsException("[NuTo::IntegrationTypeBase::AddIntegrationPoints] Cannot add an IP to this integration type.");
+}
+
+//! @brief adds a new integration point
+//! @param rIp (Input) integration point
+void NuTo::IntegrationTypeBase::AddIntegrationPoint(const IntegrationPointBase & rIp)
+{
+    throw MechanicsException("[NuTo::IntegrationTypeBase::AddIntegrationPoint] Cannot add an IP to this integration type.");
 }
 
 //! @brief deletes an integration point

@@ -33,6 +33,7 @@ OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
 OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
 OPTION(ENABLE_EIGEN "enables eigen libraries for grid routines only" FALSE)
+OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 
 IF(ENABLE_EIGEN)
     ADD_DEFINITIONS("-DENABLE_EIGEN")
@@ -282,6 +283,33 @@ IF(EIGEN_FOUND)
 ELSE(EIGEN_FOUND)
   message(FATAL_ERROR "Fatal error: Eigen (version >= 3.0) required.\n")
 ENDIF(EIGEN_FOUND)
+
+
+# find CGAL installation
+IF(ENABLE_CGAL)
+  # initialize variables
+  MESSAGE(STATUS "Checking for CGAL headers ...")
+  # check if CGAL_ROOT is set
+  IF(NOT CGAL_ROOT AND NOT $ENV{CGAL_ROOT} STREQUAL "")
+    SET(CGAL_ROOT $ENV{CGAL_ROOT})
+  ENDIF(NOT CGAL_ROOT AND NOT $ENV{CGAL_ROOT} STREQUAL "")
+  IF(NOT CGAL_ROOT)
+    SET(CGAL_ROOT ${NUTO_EXTERNAL_LIBRARIES_ROOT})
+  ENDIF(NOT CGAL_ROOT)
+  
+  FIND_PACKAGE(CGAL)
+  
+  IF(CGAL_FOUND)
+    MESSAGE(STATUS "CGAL_LIBRARIES = ${CGAL_LIBRARIES}")
+    MESSAGE(STATUS "CGAL_INCLUDE_DIR = ${CGAL_INCLUDE_DIR}")
+    INCLUDE_DIRECTORIES(${CGAL_INCLUDE_DIR})
+    ADD_DEFINITIONS("-DHAVE_CGAL")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
+  ELSE(CGAL_FOUND)
+    MESSAGE(WARNING "CGAL not found")
+  ENDIF(CGAL_FOUND)
+ENDIF(ENABLE_CGAL)
+
 
 # find lapack library
 IF(ENABLE_MKL)

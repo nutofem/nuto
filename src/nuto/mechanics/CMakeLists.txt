@@ -140,6 +140,7 @@ integrationtypes/IntegrationType2D3NGauss3Ip.cpp
 integrationtypes/IntegrationType2D4NConstVariableIp.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp
+integrationtypes/IntegrationType2D4NModTriangle.cpp
 integrationtypes/IntegrationType2D4NModVariableIp.cpp
 integrationtypes/IntegrationType2DMod.cpp
 integrationtypes/IntegrationType3D.cpp
@@ -260,6 +261,10 @@ IF (ENABLE_SHOW_TIME)
 #add library for clock_gettime routines
   TARGET_LINK_LIBRARIES(NuToMechanics rt)
 ENDIF (ENABLE_SHOW_TIME)
+IF (ENABLE_CGAL)
+#add library for clock_gettime routines
+  TARGET_LINK_LIBRARIES(NuToMechanics ${CGAL_LIBRARIES})
+ENDIF (ENABLE_CGAL)
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
   SET_TARGET_PROPERTIES(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
 ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )

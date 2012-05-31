@@ -12,6 +12,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NModTriangle.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
@@ -178,6 +179,25 @@ with variable number of Ips is e.g. 2D4NMOD100IP12.");
     		it = mIntegrationTypeMap.insert(
 					const_cast<std::string&>(IntegrationTypeString),
 					new NuTo::IntegrationType2D4NModVariableIp(const_cast<std::string&>(IntegrationTypeString),numIp)
+    			).first;
+            return it->second;
+    	}
+        else if (IntegrationTypeString.substr(0,7)=="2D4NTRI")
+    	{
+    		//Allocate an integration type in 2D with variable number of integration points
+    		int Id;
+    		try
+    		{
+    			std::istringstream is(IntegrationTypeString.substr(7,IntegrationTypeString.length()-7));
+    			is >> Id;
+    		}
+    		catch(...)
+    		{
+    			throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Error converting ID to integer.");
+    		}
+    		it = mIntegrationTypeMap.insert(
+					const_cast<std::string&>(IntegrationTypeString),
+					new NuTo::IntegrationType2D4NModTriangle(const_cast<std::string&>(IntegrationTypeString))
     			).first;
             return it->second;
     	}

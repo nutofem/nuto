@@ -445,6 +445,11 @@ public:
     //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
     //! @return  ... id vector of cracked elements
     NuTo::FullMatrix<int> InitiatePhantomNodeMethod(int rNumIp);
+
+    //! @brief ... take cracked elements and initiate PhantomNodeMethod
+    //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
+    //! @return  ... id vector of cracked elements
+    NuTo::FullMatrix<int> InitiatePhantomNodeMethodTriangle(int rNumIp);
 #ifndef SWIG
     //! @brief ... extends an existing crack
     //! @param rIdent ... crack identifier

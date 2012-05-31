@@ -14,6 +14,7 @@
 #endif // ENABLE_VISUALIZE
 namespace NuTo
 {
+class IntegrationPointBase;
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
 //! @brief ... standard abstract class for all integration types
@@ -79,6 +80,14 @@ public:
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const = 0;
 
+    //! @brief creates new integration-cells/order/area
+    //! @param rArea (Input) polygonal surface of integration area
+    //! @param rOrder (Input) integration order (or number of integration points)
+    virtual void AddIntegrationPoints(std::vector< std::vector<double> > & rArea, const unsigned short rOrder);
+    
+    //! @brief adds a new integration point
+    //! @param rIp (Input) integration point
+    virtual void AddIntegrationPoint(const IntegrationPointBase & rIp);
     // @brief deletes an integration point
     // @param rIpNum (Input) integration point (counting from zero)
     virtual void DeleteIntegrationPoint(const int rIpNum);

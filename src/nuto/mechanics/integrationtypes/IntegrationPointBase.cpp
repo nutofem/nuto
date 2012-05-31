@@ -2,6 +2,8 @@
 
 #include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 
+#include "nuto/mechanics/MechanicsException.h"
+
 // constructor
 NuTo::IntegrationPointBase::IntegrationPointBase()
 {
@@ -14,10 +16,22 @@ NuTo::IntegrationPointBase::IntegrationPointBase(const std::vector<double>& rCoo
 	mWeight(rWeight) , mCoords(rCoords)
 {
 #ifdef ENABLE_VISUALIZE
-    mNumVisualizationPoints=4;
-    mVisualizationCellType=NuTo::CellBase::QUAD;
-    mVisualizationPointLocalCoordinates = rBoundingBox;
-    mVisualizationCellsIncidence=std::vector<unsigned int>({0,1,2,3});
+	switch (rBoundingBox.size()){
+	case 6:
+		mNumVisualizationPoints=3;
+		mVisualizationCellType=NuTo::CellBase::TRIANGLE;
+		mVisualizationPointLocalCoordinates = rBoundingBox;
+		mVisualizationCellsIncidence=std::vector<unsigned int>({0,1,2});
+		break;
+	case 8:
+		mNumVisualizationPoints=4;
+		mVisualizationCellType=NuTo::CellBase::QUAD;
+		mVisualizationPointLocalCoordinates = rBoundingBox;
+		mVisualizationCellsIncidence=std::vector<unsigned int>({0,1,2,3});
+		break;
+	default:
+		throw NuTo::MechanicsException("[" + std::string(__PRETTY_FUNCTION__) + "] Invalid size of bounding box's coordinates for this integration point!");
+	}
 #endif // ENABLE_VISUALIZE
 }
 

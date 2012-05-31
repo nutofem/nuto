@@ -18,6 +18,12 @@
 #include <assert.h>
 
 
+#ifdef HAVE_CGAL
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_2_algorithms.h>
+#endif //HAVE_CGAL
+
+
 NuTo::Plane2D::Plane2D(const NuTo::StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
 		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType) :
         Plane(rStructure, rElementDataType, rIntegrationType, rIpDataType)
@@ -129,6 +135,44 @@ double NuTo::Plane2D::CalculateArea()const
 //! @param rPoint (input) ... a pointer to a 2D tuple containing the coordinates
 //! @param rPoint (input) ... a pointer to a vector of 2D tuples representing the polyline
 //! @return True if coordinates are within the element, False otherwise
+//! @todo move to geometry class
+bool NuTo::Plane2D::CheckPointInsidePolygon( const std::tuple<double,double> *rPoint, const std::vector<std::tuple<double,double> > * rPolygon)const
+{
+#ifdef HAVE_CGAL
+	/// this is from CGAL examples
+	
+	typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+	typedef K::Point_2 Point;
+	
+	Point pt(std::get<0>(*rPoint),std::get<1>(*rPoint));
+	
+	std::vector<Point> polygon;
+	
+	for (size_t i=0; i<rPolygon->size();++i){
+		//std::cout << "The Polygon point " << std::get<0>((*rPolygon)[i]) << " " << std::get<1>((*rPolygon)[i]) << std::endl;
+		polygon.push_back(Point( std::get<0>((*rPolygon)[i]), std::get<1>((*rPolygon)[i])));
+	}
+	polygon.push_back(Point( std::get<0>((*rPolygon)[0]), std::get<1>((*rPolygon)[0])));
+	//~ Point points[] = { Point(0,0), Point(5.1,0), Point(1,1), Point(0.5,6)};
+
+	bool inside=false;
+	//std::cout << "The point " << pt;
+	switch(CGAL::bounded_side_2(polygon.begin(), polygon.end(),pt, K())) {
+		case CGAL::ON_BOUNDED_SIDE :
+			//std::cout << " is inside the polygon.\n";
+			inside=true;
+			break;
+		case CGAL::ON_BOUNDARY:
+			//std::cout << " is on the polygon boundary.\n";
+			inside=true;
+			break;
+		case CGAL::ON_UNBOUNDED_SIDE:
+			//std::cout << " is outside the polygon.\n";
+			inside=false;
+			break;
+	}
+	return inside;
+#else //HAVE_CGAL
 /*! This function is a modified function of
  *
  *  public domain function by Darel Rex Finley
@@ -145,9 +189,6 @@ double NuTo::Plane2D::CalculateArea()const
  *  Note that division by zero is avoided because the division is protected
  *  by the "if" clause which surrounds it.
  */
-//! @todo move to geometry class
-bool NuTo::Plane2D::CheckPointInsidePolygon( const std::tuple<double,double> *rPoint, const std::vector<std::tuple<double,double> > * rPolygon)const
-{
 	double fuzzy=1e-14;
 	bool  inside=false ;
 
@@ -173,6 +214,7 @@ bool NuTo::Plane2D::CheckPointInsidePolygon( const std::tuple<double,double> *rP
 	}
 
 	return inside;
+#endif //HAVE_CGAL
 }
 
 //! @brief help function used in the Cracklength calculation to sort

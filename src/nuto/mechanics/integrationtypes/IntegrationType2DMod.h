@@ -76,6 +76,10 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
 
+    //! @brief adds a new integration point
+    //! @param rIp (Input) integration point
+    void AddIntegrationPoint(const IntegrationPointBase & rIp);
+
     //! @brief deletes an integration point
     //! @param rIpNum (Input) integration point (counting from zero)
     void DeleteIntegrationPoint(const int rIpNum);
