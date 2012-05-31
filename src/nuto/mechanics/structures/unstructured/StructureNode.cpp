@@ -106,7 +106,7 @@ void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vecto
 	boost::ptr_map<int,NuTo::ElementBase>::iterator ElementIter = this->mElementMap.begin();
 	while (ElementIter != this->mElementMap.end())
 	{
-		for(size_t thisNode=ElementIter->second->GetNumNodes();--thisNode;){
+		for(size_t thisNode=ElementIter->second->GetNumNodes();thisNode--;){
 			NuTo::NodeBase* thisNodePtr=ElementIter->second->GetNode(thisNode);
 			if(thisNodePtr==rNodePtr)
 			{
