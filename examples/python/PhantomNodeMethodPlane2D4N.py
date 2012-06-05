@@ -9,8 +9,8 @@ from time import time
 # definitions
 Width = 5.
 Height = 10.
-NumElementsX = 13
-NumElementsY = 25
+NumElementsX = 51
+NumElementsY = 101
 
 YoungsModulus = 20000.
 PoissonsRatio = 0.2
@@ -81,7 +81,8 @@ myStructure.CrackInfo(5);
 
 #PhantomNode
 print "initiate PhantomNode"
-myStructure.InitiatePhantomNodeMethod(1000);
+#~ myStructure.InitiatePhantomNodeMethod(1000);
+myStructure.InitiatePhantomNodeMethodTriangle(3);
 print "initiate PhantomNode done"
 
 myStructure.CrackInfo(5);
@@ -127,8 +128,14 @@ oldTime = curTime
 curTime = time()
 print "time required for dof numbering: " + str(curTime - oldTime) + " s"
 
+#build maximum independent sets
+myStructure.CalculateMaximumIndependentSets()
+oldTime = curTime
+curTime = time()
+print "time required for calculating maximum independent sets: " + str(curTime - oldTime) + " s"
+
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral()
+stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
 dispForceVector = nuto.DoubleFullMatrix()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 oldTime = curTime
@@ -151,8 +158,9 @@ print "time required for calculating right-hand-side vector: " + str(curTime - o
 # solve
 mySolver = nuto.SparseDirectSolverMUMPS()
 displacementVector = nuto.DoubleFullMatrix()
-stiffnessMatrix.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
+stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
+stiffnessMatrixCSR.SetOneBasedIndexing()
+mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
 oldTime = curTime
 curTime = time()
 print "time required for solving: " + str(curTime - oldTime) + " s"
@@ -173,7 +181,7 @@ residualVector = extForceVector - intForceVector
 print "residual: " + str(residualVector.Norm())
 
 # visualize results
-myStructure.ExportVtkDataFile("PhantomNodeMethodPlane2D4N-deformed.vtk");
+myStructure.ExportVtkDataFileElements("PhantomNodeMethodPlane2D4N-deformed.vtk");
 
 if (error):
     sys.exit(-1)
