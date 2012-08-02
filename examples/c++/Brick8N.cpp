@@ -48,9 +48,11 @@ try
         NuTo::Structure myStructure(3);
 
         // create material law
-        int Material1 = myStructure.ConstitutiveLawCreate("LinearElastic");
+        int Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
         myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
         myStructure.ConstitutiveLawSetPoissonsRatio(Material1, PoissonsRatio);
+
+        int mySection1 = myStructure.SectionCreate("VOLUME");
 
         // create nodes
         NuTo::FullMatrix<double> nodeCoordinates(3,1);
@@ -93,6 +95,7 @@ try
                     //elementIncidence.Info();
                     myStructure.ElementCreate(element, "Brick8N", elementIncidence);
                     myStructure.ElementSetConstitutiveLaw(element,Material1);
+            	    myStructure.ElementSetSection(element,mySection1);
                     element ++;
                 }
             }

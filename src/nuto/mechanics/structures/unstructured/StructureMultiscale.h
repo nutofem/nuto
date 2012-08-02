@@ -506,11 +506,11 @@ public:
 
     //! @brief calculates the total energy of the system
     //! @return total energy
-    double ElementTotalGetTotalEnergy()const;
+    double ElementTotalGetTotalEnergy();
 
     //! @brief calculates the total energy of the system
     //! @return total energy
-    double ElementGroupGetTotalEnergy(int rGroupId)const;
+    double ElementGroupGetTotalEnergy(int rGroupId);
 
     //! @brief sets the result directory where the results are written to
     void SetResultDirectory(std::string rResultDirectory);

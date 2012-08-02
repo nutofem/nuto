@@ -19,6 +19,7 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeRotations2D.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 
@@ -428,6 +429,43 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, d
     return ConstraintLinearSetRotationNodeGroup(nodeGroup, rValue);
 }
 
+//! @brief adds a constraint equation for a group of nodes
+//! @param rGroupIdent identifier for group of nodes
+//! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
+int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue)
+{
+	this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetTemperatureNodeGroup] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetTemperatureNodeGroup] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+
+    return ConstraintLinearSetTemperatureNodeGroup(nodeGroup, rValue);
+}
+
+
+//! @brief adds a temperature constraint equation for a group of nodes
+//! @param rNode pointer to group of nodes
+//! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue)
+{
+	this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupTemperature(rGroup,rValue));
+    return id;
+}
 
 //! @brief returns the number of constraint equations
 //! @return number of constraints

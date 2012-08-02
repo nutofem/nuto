@@ -60,7 +60,7 @@ void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) con
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
         const NodeBase *nodePtr = this->GetNode(nodeCount);
-        if (nodePtr->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        if (nodePtr->GetNumFineScaleDisplacements()==2)
         {
             rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofFineScaleDisplacement(0);
             rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofFineScaleDisplacement(1);
@@ -95,7 +95,7 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
         	for (int nodeCount = 0; nodeCount < nonlocalElement->GetNumNodes(); nodeCount++)
             {
                 const NodeBase *nodePtr = nonlocalElement->GetNode(nodeCount);
-                if (nodePtr->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+                if (nodePtr->GetNumFineScaleDisplacements()==2)
                 {
                     rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofFineScaleDisplacement(0);
                     rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofFineScaleDisplacement(1);

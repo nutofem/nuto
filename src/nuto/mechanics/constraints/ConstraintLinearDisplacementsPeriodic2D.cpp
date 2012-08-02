@@ -16,8 +16,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
-#include "nuto/mechanics/nodes/NodeDisplacements2D.h"
+#include "nuto/mechanics/nodes/NodeDof.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -181,7 +180,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
     mMasterNodesLeftBoundary.reserve(mGroupLeft->GetNumMembers());
     for (Group<NodeBase>::const_iterator itNode=mGroupLeft->begin(); itNode!=mGroupLeft->end();itNode++)
     {
-        mMasterNodesLeftBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
+        mMasterNodesLeftBoundary.push_back(itNode->second);
     }
     sort(mMasterNodesLeftBoundary.begin(), mMasterNodesLeftBoundary.end(), less_YCoordinate2D());
 
@@ -190,7 +189,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
     mMasterNodesBottomBoundary.reserve(mGroupBottom->GetNumMembers());
     for (Group<NodeBase>::const_iterator itNode=mGroupBottom->begin(); itNode!=mGroupBottom->end();itNode++)
     {
-        mMasterNodesBottomBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
+        mMasterNodesBottomBoundary.push_back(itNode->second);
     }
     sort(mMasterNodesBottomBoundary.begin(), mMasterNodesBottomBoundary.end(), less_XCoordinate2D());
 
@@ -204,13 +203,13 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         double coordinates[3];
         for (Group<NodeBase>::const_iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
         {
-            NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
+            NodeBase* nodePtr = itNode->second;
             nodePtr->GetCoordinates2D(coordinates);
             double DeltaX((length-crackShift)*0.5);
             double DeltaY(length-coordinates[1]);
 
             if (DeltaX*DeltaX + DeltaY*DeltaY >=mRadiusToCrackWithoutConstraints * mRadiusToCrackWithoutConstraints)
-                mSlaveNodesRightBoundary.push_back((dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second)));
+                mSlaveNodesRightBoundary.push_back(itNode->second);
         }
     }
     else
@@ -223,10 +222,10 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         {
             if (itNode->second!=mRightLowerCorner)
             {
-                NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
+                NodeBase* nodePtr = itNode->second;
                 nodePtr->GetCoordinates2D(coordinates);
                 if (fabs(coordinates[1]-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
-                    mSlaveNodesRightBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
+                    mSlaveNodesRightBoundary.push_back(itNode->second);
             }
         }
     }
@@ -245,7 +244,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         {
             if (itNode->second!=mLeftUpperCorner)
             {
-                NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
+                NodeBase* nodePtr = itNode->second;
                 nodePtr->GetCoordinates2D(coordinates);
                 if (fabs(coordinates[0]-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
                     mSlaveNodesTopBoundary.push_back(nodePtr);
@@ -260,13 +259,13 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         double coordinates[3];
         for (Group<NodeBase>::const_iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
         {
-            NodeCoordinatesDisplacements2D* nodePtr = dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second);
+            NodeBase* nodePtr = itNode->second;
             nodePtr->GetCoordinates2D(coordinates);
             double DeltaX(coordinates[0]-(length+crackShift)*0.5);
             double DeltaY((length-crackShift)*0.5);
 
             if (DeltaX*DeltaX + DeltaY*DeltaY >=mRadiusToCrackWithoutConstraints * mRadiusToCrackWithoutConstraints)
-                mSlaveNodesTopBoundary.push_back(dynamic_cast<NodeCoordinatesDisplacements2D*>(itNode->second));
+                mSlaveNodesTopBoundary.push_back(itNode->second);
         }
 
     }
@@ -278,7 +277,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
     {
         for (int countBoundary=0; countBoundary<4; countBoundary++)
         {
-            std::vector<NodeCoordinatesDisplacements2D*>* nodeVectorPtr;
+            std::vector<NodeBase*>* nodeVectorPtr;
             switch(countBoundary)
             {
             case 0:
@@ -333,18 +332,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
         assert(mMasterNodesLeftBoundary.size()>1);
         unsigned int nextMasterNodecount(1);
 
-        NodeCoordinatesDisplacements2D* curMasterNodePtr(mMasterNodesLeftBoundary[0]);
+        NodeBase* curMasterNodePtr(mMasterNodesLeftBoundary[0]);
         double coordinatesCurMaster[2];
         curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
 
-        NodeCoordinatesDisplacements2D* nextMasterNodePtr(mMasterNodesLeftBoundary[nextMasterNodecount]);;
+        NodeBase* nextMasterNodePtr(mMasterNodesLeftBoundary[nextMasterNodecount]);;
         double coordinatesNextMaster[2];
         nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
 
         //double deltaDisp[2];
         for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -413,7 +412,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 
         for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -525,18 +524,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
         assert(mMasterNodesBottomBoundary.size()>1);
         unsigned int nextMasterNodecount(1);
 
-        NodeCoordinatesDisplacements2D* curMasterNodePtr(mMasterNodesBottomBoundary[0]);
+        NodeBase* curMasterNodePtr(mMasterNodesBottomBoundary[0]);
         double coordinatesCurMaster[2];
         curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
 
-        NodeCoordinatesDisplacements2D* nextMasterNodePtr(mMasterNodesBottomBoundary[nextMasterNodecount]);;
+        NodeBase* nextMasterNodePtr(mMasterNodesBottomBoundary[nextMasterNodecount]);;
         double coordinatesNextMaster[2];
         nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
 
         //double deltaDisp[2];
         for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -605,7 +604,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 
         for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -731,18 +730,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
         assert(mMasterNodesLeftBoundary.size()>1);
         unsigned int nextMasterNodecount(1);
 
-        NodeCoordinatesDisplacements2D* curMasterNodePtr(mMasterNodesLeftBoundary[0]);
+        NodeBase* curMasterNodePtr(mMasterNodesLeftBoundary[0]);
         double coordinatesCurMaster[2];
         curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
 
-        NodeCoordinatesDisplacements2D* nextMasterNodePtr(mMasterNodesLeftBoundary[nextMasterNodecount]);;
+        NodeBase* nextMasterNodePtr(mMasterNodesLeftBoundary[nextMasterNodecount]);;
         double coordinatesNextMaster[2];
         nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
 
         double deltaDisp[2];
         for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -811,7 +810,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 
         for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -923,18 +922,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
         assert(mMasterNodesBottomBoundary.size()>1);
         unsigned int nextMasterNodecount(1);
 
-        NodeCoordinatesDisplacements2D* curMasterNodePtr(mMasterNodesBottomBoundary[0]);
+        NodeBase* curMasterNodePtr(mMasterNodesBottomBoundary[0]);
         double coordinatesCurMaster[2];
         curMasterNodePtr->GetCoordinates2D(coordinatesCurMaster);
 
-        NodeCoordinatesDisplacements2D* nextMasterNodePtr(mMasterNodesBottomBoundary[nextMasterNodecount]);;
+        NodeBase* nextMasterNodePtr(mMasterNodesBottomBoundary[nextMasterNodecount]);;
         double coordinatesNextMaster[2];
         nextMasterNodePtr->GetCoordinates2D(coordinatesNextMaster);
 
         double deltaDisp[2];
         for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 
@@ -1003,7 +1002,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 
         for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
         {
-            NodeCoordinatesDisplacements2D* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
+        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
             double coordinatesSlave[2];
             curSlaveNodePtr->GetCoordinates2D(coordinatesSlave);
 

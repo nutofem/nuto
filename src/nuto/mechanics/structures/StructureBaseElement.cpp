@@ -15,12 +15,15 @@
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
+#include "nuto/mechanics/elements/ElementOutputVectorInt.h"
+#include "nuto/mechanics/elements/ElementOutputIpData.h"
 
 //! @brief calls ElementCoefficientMatrix_0,
 //! renaming only for clarification in mechanical problems for the end user
 void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<double>& rResult ,
 		NuTo::FullMatrix<int>& rGlobalDofsRow,
-		NuTo::FullMatrix<int>& rGlobalDofsColumn)const
+		NuTo::FullMatrix<int>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -398,12 +401,12 @@ bool NuTo::StructureBase::CheckStiffness()
     mShowTime = false;
 
     //recalculate stiffness
-    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
     //mLogger << "active dof values " << "\n";
     //displacementsActiveDOFsCheck.Trans().Info(12,4);
     //mLogger << "dependent dof values " << "\n";
     //displacementsDependentDOFsCheck.Trans().Info(12,4);
-    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
     //this->ConstraintInfo(10);
@@ -415,8 +418,8 @@ bool NuTo::StructureBase::CheckStiffness()
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
-    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
     //this->NodeInfo(10);
@@ -427,7 +430,7 @@ bool NuTo::StructureBase::CheckStiffness()
     for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
     {
     	displacementsActiveDOFsCheck(count,0)+=interval;
-        this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
         this->ElementTotalUpdateTmpStaticData();
         this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
         //std::cout << "check stiffness:: intForceVector2"<< "\n";
@@ -439,7 +442,7 @@ bool NuTo::StructureBase::CheckStiffness()
         intForceVectorCDF(count,0) = (energy2-energy1)/interval;
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
-    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
 
     mShowTime=oldShowtime;
@@ -500,7 +503,7 @@ bool NuTo::StructureBase::CheckStiffness()
 void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
 		                 NuTo::FullMatrix<double>& rResult,
 		                 NuTo::FullMatrix<int>& rGlobalDofsRow,
-		                 NuTo::FullMatrix<int>& rGlobalDofsColumn)const
+		                 NuTo::FullMatrix<int>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -512,14 +515,26 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
         throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0] First update of tmp static data required.");
     }
 
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     std::vector<int> globalDofsRow,
     		         globalDofsColumn;
 
     try
     {
-         bool symmetryFlag;
-    	 elementPtr->CalculateCoefficientMatrix_0(rResult, globalDofsRow, globalDofsColumn, symmetryFlag);
+		// define variables storing the element contribution
+		ElementOutputFullMatrixDouble elementOutputMatrix;
+		ElementOutputVectorInt elementOutputVectorGlobalDofsRow;
+		ElementOutputVectorInt elementOutputVectorGlobalDofsColumn;
+
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::HESSIAN_0_TIME_DERIVATIVE,&elementOutputMatrix) );
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::GLOBAL_ROW_DOF,&elementOutputVectorGlobalDofsRow) );
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::GLOBAL_COLUMN_DOF,&elementOutputVectorGlobalDofsColumn) );
+
+		elementPtr->Evaluate(elementOutput);
+		rResult = elementOutputMatrix.GetFullMatrixDouble();
+		globalDofsRow = elementOutputVectorGlobalDofsRow.GetVectorInt();
+		globalDofsColumn = elementOutputVectorGlobalDofsColumn.GetVectorInt();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -554,7 +569,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
 //! for a mechanical problem, this corresponds to the internal force vector
 void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 		NuTo::FullMatrix<double>& rResult,
-		NuTo::FullMatrix<int>& rGlobalDofsRow)const
+		NuTo::FullMatrix<int>& rGlobalDofsRow)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -566,12 +581,26 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
         throw MechanicsException("[NuTo::StructureBase::ElementGradientInternalPotential] First update of tmp static data required.");
     }
 
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-    std::vector<int> globalDofsRow;
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
     {
-    	 elementPtr->CalculateGradientInternalPotential(rResult, globalDofsRow);
+		// define variables storing the element contribution
+		ElementOutputFullMatrixDouble elementOutputMatrix;
+		ElementOutputVectorInt elementOutputVectorGlobalDofsRow;
+
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::INTERNAL_GRADIENT,&elementOutputMatrix) );
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::GLOBAL_ROW_DOF,&elementOutputVectorGlobalDofsRow) );
+
+		elementPtr->Evaluate(elementOutput);
+		rResult = elementOutputMatrix.GetFullMatrixDouble();
+		std::vector<int>& globalDofsRow(elementOutputVectorGlobalDofsRow.GetVectorInt());
+
+		//cast to FullMatrixInt
+	    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
+	    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
+
     }
     catch(NuTo::MechanicsException e)
     {
@@ -589,10 +618,6 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
     	   ("[NuTo::StructureBase::ElementGradientInternalPotential] Error buildung element vector for element " + ss.str() + ".");
     }
 
-    //cast to FullMatrixInt
-    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
-    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
-
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -606,7 +631,7 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 void NuTo::StructureBase::ElementCoefficientMatrix_1(int rElementId,
 		     NuTo::FullMatrix<double>& rResult,
              NuTo::FullMatrix<int>& rGlobalDofsRow,
-             NuTo::FullMatrix<int>& rGlobalDofsColumn)const
+             NuTo::FullMatrix<int>& rGlobalDofsColumn)
 {
 	throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_1] To be implemented.");
 }
@@ -616,7 +641,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_1(int rElementId,
 void NuTo::StructureBase::ElementCoefficientMatrix_2(int rElementId,
 		     NuTo::FullMatrix<double>& rResult,
              NuTo::FullMatrix<int>& rGlobalDofsRow,
-             NuTo::FullMatrix<int>& rGlobalDofsColumn)const
+             NuTo::FullMatrix<int>& rGlobalDofsColumn)
 {
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
@@ -1277,7 +1302,7 @@ void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const
 //! @brief calculates the engineering strain
 //! @param rElemIdent  identifier for the element
 //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix<double>& rEngineeringStrain)const
+void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix<double>& rEngineeringStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1288,11 +1313,18 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
     {
         throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringStrain] First update of tmp static data required.");
     }
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
     {
-    	elementPtr->GetIpData(NuTo::IpData::ENGINEERING_STRAIN, rEngineeringStrain);
+		// define variables storing the element contribution
+    	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRAIN);
+
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
+		elementPtr->Evaluate(elementOutput);
+		rEngineeringStrain = elementOutputIpData.GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1319,7 +1351,7 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 //! @brief calculates the engineering plastic strain
 //! @param rElemIdent  identifier for the element
 //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringPlasticStrain)const
+void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringPlasticStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1330,11 +1362,18 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
     {
         throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringPlasticStrain] First update of tmp static data required.");
     }
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
 
     try
     {
-    	elementPtr->GetIpData(NuTo::IpData::ENGINEERING_PLASTIC_STRAIN, rEngineeringPlasticStrain);
+		// define variables storing the element contribution
+    	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_PLASTIC_STRAIN);
+
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
+		elementPtr->Evaluate(elementOutput);
+		rEngineeringPlasticStrain = elementOutputIpData.GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1361,7 +1400,7 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
 //! @brief calculates the engineering stress
 //! @param rElemIdent  identifier for the element
 //! @param rEngineeringStress engineering stress (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix<double>& rEngineeringStress)const
+void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix<double>& rEngineeringStress)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1373,10 +1412,17 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
         throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringStress] First update of tmp static data required.");
     }
 
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     try
     {
-    	elementPtr->GetIpData(NuTo::IpData::ENGINEERING_STRESS, rEngineeringStress);
+		// define variables storing the element contribution
+    	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRESS);
+
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
+		elementPtr->Evaluate(elementOutput);
+		rEngineeringStress = elementOutputIpData.GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1404,7 +1450,7 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
 //! @brief calculates the damage
 //! @param rElemIdent  identifier for the element
 //! @param rEngineeringStress damage (return value, always 1xnumIp matrix)
-void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& rDamage)const
+void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& rDamage)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1416,10 +1462,17 @@ void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& r
         throw MechanicsException("[NuTo::StructureBase::ElementGetDamage] First update of tmp static data required.");
     }
 
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     try
     {
-    	elementPtr->GetIpData(NuTo::IpData::DAMAGE, rDamage);
+		// define variables storing the element contribution
+    	ElementOutputIpData elementOutputIpData(IpData::DAMAGE);
+
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
+		elementPtr->Evaluate(elementOutput);
+		rDamage = elementOutputIpData.GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1446,7 +1499,7 @@ void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& r
 //! @brief calculates the maximum damage in all elements
 //! @param rElemIdent  identifier for the element
 //! @return max damage value
-double NuTo::StructureBase::ElementTotalGetMaxDamage()const
+double NuTo::StructureBase::ElementTotalGetMaxDamage()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1457,15 +1510,22 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()const
     {
         throw MechanicsException("[NuTo::StructureBase::ElementTotalGetMaxDamage] First update of tmp static data required.");
     }
-	std::vector<const ElementBase*> elementVector;
+	std::vector<ElementBase*> elementVector;
 	GetElementsTotal(elementVector);
 	FullMatrix<double> damage;
 	double maxDamage(0);
+	// define variables storing the element contribution
+	ElementOutputIpData elementOutputIpData(IpData::DAMAGE);
+
+	std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+	elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
 	for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
 	{
 		try
 		{
-			elementVector[countElement]->GetIpData(NuTo::IpData::DAMAGE, damage);
+			elementVector[countElement]->Evaluate(elementOutput);
+			damage = elementOutputIpData.GetFullMatrixDouble();
 			if (damage.Max()>maxDamage)
 				maxDamage = damage.Max();
 		}
@@ -1529,6 +1589,8 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
     int exception(0);
     std::string exceptionStringTotal;
 
+	std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+	elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(NuTo::Element::UPDATE_STATIC_DATA,0));
 #ifdef _OPENMP
 	if (mNumProcessors!=0)
 		omp_set_num_threads(mNumProcessors);
@@ -1539,7 +1601,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 	{
 		try
 		{
-            Error::eError error = elementVector[countElement]->UpdateStaticData(NuTo::Element::STATICDATA);
+            Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
             if (error!=Error::SUCCESSFUL)
             {
             	if (errorGlobal==Error::SUCCESSFUL)
@@ -1603,6 +1665,8 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 		GetElementsTotal(elementVector);
 	    int exception(0);
 	    std::string exceptionStringTotal;
+		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(NuTo::Element::UPDATE_TMP_STATIC_DATA,0));
 #ifdef _OPENMP
 		if (mNumProcessors!=0)
 			omp_set_num_threads(mNumProcessors);
@@ -1613,7 +1677,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 		{
 			try
 			{
-				Error::eError error = elementVector[countElement]->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+				Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
 				if (error!=Error::SUCCESSFUL)
 				{
 					if (errorGlobal==Error::SUCCESSFUL)
@@ -1665,7 +1729,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
 //! @param rEngineeringStress  average stress (return value)
-void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const
+void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1677,7 +1741,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
     NuTo::FullMatrix<double> elementEngineeringStress;
     rEngineeringStress.Resize(6,1);
 
-    std::vector<const ElementBase*> elementVector;
+    std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
     for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
     {
@@ -1721,7 +1785,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
 //! @param rEngineeringStress  average stress (return value)
-void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const
+void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1731,18 +1795,18 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
     start=clock();
 #endif
 
-    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStress] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStress] Group is not an element group.");
-    const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
+    Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
     NuTo::FullMatrix<double> elementEngineeringStress;
     rEngineeringStress.Resize(6,1);
 
-    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         try
         {
@@ -1786,7 +1850,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
 //! @param rEngineeringStraiu  average strain (return value)
-void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const
+void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1795,7 +1859,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
     NuTo::FullMatrix<double> elementEngineeringStrain;
     rEngineeringStrain.Resize(6,1);
 
-    std::vector<const ElementBase*> elementVector;
+    std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
     for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
     {
@@ -1833,19 +1897,19 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
 //! @param rEngineeringStrain  average strain (return value)
-void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const
+void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
 
-    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStrain] Group with the given identifier does not exist.");
     if (itGroup->second->GetType()!=NuTo::Groups::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStrain] Group is not an element group.");
-    const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
+    Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
     NuTo::FullMatrix<double> elementEngineeringStrain;
@@ -1886,7 +1950,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
 }
 //! @brief calculates the total energy of the system
 //! @return total energy
-double NuTo::StructureBase::ElementTotalGetInternalEnergy()const
+double NuTo::StructureBase::ElementTotalGetInternalEnergy()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1933,7 +1997,7 @@ double NuTo::StructureBase::ElementTotalGetInternalEnergy()const
 
 //! @brief calculates the total energy of a group of elements
 //! @return total energy
-double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)const
+double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1988,7 +2052,7 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)const
 
 //! @brief calculates the elastic energy of the system
 //! @return elastic energy
-double NuTo::StructureBase::ElementTotalGetElasticEnergy()const
+double NuTo::StructureBase::ElementTotalGetElasticEnergy()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;

@@ -12,6 +12,8 @@
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
@@ -57,7 +59,8 @@ void NuTo::LinearElastic::serialize(Archive & ar, const unsigned int version)
       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutivePiolaKirchhoffIIGreenLagrange)
       & BOOST_SERIALIZATION_NVP(mE)
       & BOOST_SERIALIZATION_NVP(mNu)
-      & BOOST_SERIALIZATION_NVP(mRho);
+      & BOOST_SERIALIZATION_NVP(mRho)
+      & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
 #ifdef DEBUG_SERIALIZATION
    std::cout << "finish serialize LinearElastic" << std::endl;
 #endif
@@ -1413,6 +1416,7 @@ double NuTo::LinearElastic::GetPoissonsRatio() const
     return mNu;
 }
 
+
 //! @brief ... set Poisson's ratio
 //! @param rNu ... Poisson's ratio
 void NuTo::LinearElastic::SetPoissonsRatio(double rNu)
@@ -1422,6 +1426,21 @@ void NuTo::LinearElastic::SetPoissonsRatio(double rNu)
     this->SetParametersValid();
 }
 
+//! @brief ... get thermal expansion coefficient
+//! @return ... thermal expansion coefficient
+double NuTo::LinearElastic::GetThermalExpansionCoefficient() const
+{
+    return mThermalExpansionCoefficient;
+}
+
+//! @brief ... set thermal expansion coefficient
+//! @param rNu ... thermal expansion coefficient
+void NuTo::LinearElastic::SetThermalExpansionCoefficient(double rAlpha)
+{
+    this->CheckThermalExpansionCoefficient(rAlpha);
+    this->mThermalExpansionCoefficient = rAlpha;
+    this->SetParametersValid();
+}
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -1496,14 +1515,21 @@ void NuTo::LinearElastic::CheckPoissonsRatio(double rNu) const
     }
 }
 
+//! @brief ... check thermal expansion coefficient
+//! @param rAlpha ... thermal expansion coefficient
+void NuTo::LinearElastic::CheckThermalExpansionCoefficient(double rAlpha) const
+{
+}
+
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
 void NuTo::LinearElastic::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
-    rLogger << "    Young's modulus: " << this->mE << "\n";
-    rLogger << "    Poisson's ratio: " << this->mNu << "\n";
-    rLogger << "    Density        : " << this->mRho << "\n";
+    rLogger << "    Young's modulus               : " << this->mE << "\n";
+    rLogger << "    Poisson's ratio               : " << this->mNu << "\n";
+    rLogger << "    Density                       : " << this->mRho << "\n";
+    rLogger << "    thermal expansion coefficient : " << this->mThermalExpansionCoefficient << "\n";
 }
 
 // check parameters
@@ -1512,5 +1538,6 @@ void NuTo::LinearElastic::CheckParameters()const
     this->CheckYoungsModulus(this->mE);
     this->CheckPoissonsRatio(this->mNu);
     this->CheckDensity(this->mRho);
+    this->CheckThermalExpansionCoefficient(this->mThermalExpansionCoefficient);
 }
 

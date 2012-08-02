@@ -11,6 +11,8 @@
 namespace NuTo
 {
 class DeformationGradient1D;
+class DeformationGradient2D;
+class DeformationGradient3D;
 class LinearElastic;
 
 //! @brief ... three-dimensional deformation gradient
@@ -22,6 +24,9 @@ class GreenLagrangeStrain1D
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
+    friend class DeformationGradient1D;
+    friend class DeformationGradient2D;
+    friend class DeformationGradient3D;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure

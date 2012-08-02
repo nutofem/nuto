@@ -17,6 +17,7 @@
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
+#include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
@@ -202,25 +203,6 @@ void NuTo::ElementBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisual
 }
 #endif
 
-//! @brief sets the section of an element
-//! implemented with an exception for all elements, reimplementation required for those elements
-//! which actually need a section
-//! @param rSection pointer to section
-//! @return pointer to constitutive law
-void NuTo::ElementBase::SetSection(const SectionBase* rSection)
-{
-    throw MechanicsException("[NuTo::ElementBase::SetSection] Section for this type of elements not required.");
-}
-
-//! @brief returns a pointer to the section of an element
-//! implemented with an exception for all elements, reimplementation required for those elements
-//! which actually need a section
-//! @return pointer to section
-const NuTo::SectionBase* NuTo::ElementBase::GetSection()const
-{
-    throw MechanicsException("[NuTo::ElementBase::GetSection] Section for this type of elements not required.");
-}
-
 void NuTo::ElementBase::InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateCoordinatesFrom1D] 1D geometry interpolation routine not implemented.");
@@ -249,6 +231,21 @@ void NuTo::ElementBase::InterpolateDisplacementsFrom2D(double rLocalCoordinates[
 void NuTo::ElementBase::InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom3D] 3D displacement interpolation routine not implemented.");
+}
+
+void NuTo::ElementBase::InterpolateTemperatureFrom1D(double rLocalCoordinates, double& rTemperature) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom1D] 1D temperature interpolation routine not implemented.");
+}
+
+void NuTo::ElementBase::InterpolateTemperatureFrom2D(double rLocalCoordinates[2], double& rTemperature) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom2D] 2D temperature interpolation routine not implemented.");
+}
+
+void NuTo::ElementBase::InterpolateTemperatureFrom3D(double rLocalCoordinates[3], double& rTemperature) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom3D] 3D temperature interpolation routine not implemented.");
 }
 
 //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
@@ -811,6 +808,42 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
         	//do nothing
         break;
+        case NuTo::VisualizeBase::HEAT_FLUX:
+/*        {
+            FullMatrix<double> heatFlux;
+            this->GetIpData(NuTo::IpData::HEAT_FLUX,heatFlux);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataVector(CellId, WhatIter->GetComponentName(), &(heatFlux.mEigenMatrix.data()[theIp*3]));
+            }
+        }
+*/
+        break;
+        case NuTo::VisualizeBase::TEMPERATURE:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                double temperature;
+                switch (dimension)
+                {
+                case 1:
+                    this->InterpolateTemperatureFrom1D(VisualizationPointLocalCoordinates[PointCount], temperature);
+                    break;
+                case 2:
+                    this->InterpolateTemperatureFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], temperature);
+                    break;
+                case 3:
+                    this->InterpolateTemperatureFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], temperature);
+                    break;
+                default:
+                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                }
+
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), &temperature);
+            }
+            break;
 		default:
 			std::cout << WhatIter->GetComponentEnum() << "\n";
 			throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported datatype for visualization.");
@@ -863,10 +896,17 @@ int NuTo::ElementBase::GetNumNonlocalElements()const
 
 //! @brief integrates the stress over the element
 //! @param rStress integrated stress
-void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)const
+void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)
 {
-    NuTo::FullMatrix<double> rIpStress;
-    this->GetIpData(NuTo::IpData::ENGINEERING_STRESS, rIpStress);
+	// define variables storing the element contribution
+	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRESS);
+
+	std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+	elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
+	this->Evaluate(elementOutput);
+	NuTo::FullMatrix<double>&  rIpStress(elementOutputIpData.GetFullMatrixDouble());
+
     //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
     std::vector<double> ipVolume;
     this->GetIntegrationPointVolume(ipVolume);
@@ -880,10 +920,17 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)const
 
 //! @brief integrates the strain over the element
 //! @param rStrain integrated strain
-void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)const
+void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)
 {
-    NuTo::FullMatrix<double> rIpStrain;
-    this->GetIpData(NuTo::IpData::ENGINEERING_STRAIN, rIpStrain);
+	// define variables storing the element contribution
+	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRAIN);
+
+	std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
+	elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+
+	this->Evaluate(elementOutput);
+	NuTo::FullMatrix<double>&  rIpStrain(elementOutputIpData.GetFullMatrixDouble());
+
     //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
     std::vector<double> ipVolume;
     this->GetIntegrationPointVolume(ipVolume);

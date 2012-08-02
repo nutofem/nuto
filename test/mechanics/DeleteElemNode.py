@@ -47,10 +47,12 @@ Force = 1.
 myStructure = nuto.Structure(3)
 
 # create material law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin, YoungsModulus)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin, PoissonsRatio)
 
+# create section
+mySection = myStructure.SectionCreate("Volume")
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullMatrix(3,1)
@@ -88,6 +90,7 @@ for zCount in range (0, NumElementsZ):
             #elementIncidence.Info()
             myStructure.ElementCreate(element, "Brick8N", elementIncidence)
             myStructure.ElementSetConstitutiveLaw(element,myMatLin)
+            myStructure.ElementSetSection(element,mySection)
             myStructure.GroupAddElement(ElementGroup1,element)
             element += 1
             

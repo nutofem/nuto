@@ -566,13 +566,13 @@ void NuTo::StructureMultiscale::TransformMultiscaleNodes(int rGroupBoundaryNodes
 
         switch (nodeType)
         {
-        case Node::NodeCoordinatesDisplacements2D:
+        case Node::NodeCoordinatesDof:
             newNode = new NodeCoordinatesDisplacementsMultiscale2D(this, rCrackedDomain);
             newNode->SetCoordinates2D(coordinates);
             //old node is deleted in Exchange routine when being removed from node table
             NodeExchangePtr(nodeVec[countNode].first,nodeVec[countNode].second,newNode);
             break;
-        case Node::NodeCoordinatesDisplacementsMultiscale2D:
+        case Node::NodeCoordinatesMultiscale2D:
             break;
             break;
         default:
@@ -2123,7 +2123,7 @@ void NuTo::StructureMultiscale::CalculatedDispdCrackOpening(std::vector<int>& rM
     int numMultiscaleDofs(0);
     for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
     {
-        if (itNode->second->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        if (itNode->second->GetNodeType()==Node::NodeCoordinatesMultiscale2D)
         {
             numMultiscaleDofs+=2;
         }
@@ -2139,7 +2139,7 @@ void NuTo::StructureMultiscale::CalculatedDispdCrackOpening(std::vector<int>& rM
     //second loop, calculate derivates
     for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
     {
-        if (itNode->second->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        if (itNode->second->GetNodeType()==Node::NodeCoordinatesMultiscale2D)
         {
             rMappingDofMultiscaleNode[itNode->second->GetDofFineScaleDisplacement(0)] = countMultiscaleDofs;
             rMappingDofMultiscaleNode[itNode->second->GetDofFineScaleDisplacement(1)] = countMultiscaleDofs+1;
@@ -2174,7 +2174,7 @@ void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMap
     int numMultiscaleDofs(0);
     for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
     {
-        if (itNode->second->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        if (itNode->second->GetNodeType()==Node::NodeCoordinatesMultiscale2D)
         {
             numMultiscaleDofs+=2;
         }
@@ -2265,7 +2265,7 @@ void NuTo::StructureMultiscale::CalculatedDispdGlobalDofs(std::vector<int>& rMap
     //second loop, calculate derivates
     for (boost::ptr_map<int,NodeBase>::const_iterator itNode=mNodeMap.begin(); itNode!=mNodeMap.end(); itNode++)
     {
-        if (itNode->second->GetNodeType()==Node::NodeCoordinatesDisplacementsMultiscale2D)
+        if (itNode->second->GetNodeType()==Node::NodeCoordinatesMultiscale2D)
         {
             rMappingDofMultiscaleNode[itNode->second->GetDofFineScaleDisplacement(0)] = countMultiscaleDofs;
             rMappingDofMultiscaleNode[itNode->second->GetDofFineScaleDisplacement(1)] = countMultiscaleDofs+1;
@@ -3264,7 +3264,7 @@ void NuTo::StructureMultiscale::InitBeforeNewLoadStep(int rLoadStep)
 
 //! @brief calculates the total energy of the system
 //! @return total energy
-double NuTo::StructureMultiscale::ElementGroupGetTotalEnergy(int rGroupId)const
+double NuTo::StructureMultiscale::ElementGroupGetTotalEnergy(int rGroupId)
 {
     throw MechanicsException("[NuTo::StructureMultiscale::ElementGroupGetTotalEnergy] not implemented if you do, consider the different scaling of each element.");
     // e.g. make an intersection with the damage and homogeneous part into new groups, call the Structure routine for these tmp groups scale the energies.
@@ -3274,7 +3274,7 @@ double NuTo::StructureMultiscale::ElementGroupGetTotalEnergy(int rGroupId)const
 
 //! @brief calculates the total energy of the system
 //! @return total energy
-double NuTo::StructureMultiscale::ElementTotalGetTotalEnergy()const
+double NuTo::StructureMultiscale::ElementTotalGetTotalEnergy()
 {
     double energyDamage(Structure::ElementGroupGetTotalEnergy(mGroupElementsDamage));
     double energyHomogeneous(Structure::ElementGroupGetTotalEnergy(mGroupElementsHomogeneous));
@@ -3617,8 +3617,8 @@ void NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions(double r
         SetLoadFactor(0);
         NodeBuildGlobalDofs();
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
-        NodeExtractDofValues(activeDOF,dependentDOF);
-        NodeMergeActiveDofValues(activeDOF);
+        NodeExtractDofValues(0,activeDOF,dependentDOF);
+        NodeMergeActiveDofValues(0,activeDOF);
 
         // calculate engineering strain
         EngineeringStrain2D engineeringStrain;
@@ -3712,7 +3712,7 @@ void NuTo::StructureMultiscale::CalculatePeriodicBoundaryShapeFunctions(double r
             //set load factor to zero in order to get the same ordering of the displacements as before the routine
             SetLoadFactor(0);
             NodeBuildGlobalDofs();
-            NodeMergeActiveDofValues(activeDOF);
+            NodeMergeActiveDofValues(0,activeDOF);
         }
     }
 
@@ -4364,12 +4364,12 @@ bool NuTo::StructureMultiscale::CheckStiffness()
     NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
 
     //recalculate stiffness
-    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
     mLogger << "active dof values " << "\n";
     displacementsActiveDOFsCheck.Trans().Info(12,4);
     mLogger << "dependent dof values " << "\n";
     displacementsDependentDOFsCheck.Trans().Info(12,4);
-    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
 
     //check element stiffness
@@ -4388,8 +4388,8 @@ bool NuTo::StructureMultiscale::CheckStiffness()
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
-    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
     //this->NodeInfo(10);
@@ -4401,7 +4401,7 @@ bool NuTo::StructureMultiscale::CheckStiffness()
         //for (int count=94; count<95; count++)
     {
         displacementsActiveDOFsCheck(count,0)+=interval;
-        this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
         this->ElementTotalUpdateTmpStaticData();
         this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
         //std::cout << "check stiffness:: intForceVector2"<< "\n";
@@ -4413,7 +4413,7 @@ bool NuTo::StructureMultiscale::CheckStiffness()
         intForceVectorCDF(count,0) = (energy2-energy1)/interval;
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
-    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
 
     //if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
@@ -4609,8 +4609,7 @@ void NuTo::StructureMultiscale::CreateDamageDomainFromHomogeneousDomain()
             //set the node to be in the cracked domain instead of the homogeneous domain
             switch(newNodePtr->GetNodeType())
             {
-            case Node::NodeDisplacementsMultiscale2D:
-            case Node::NodeCoordinatesDisplacementsMultiscale2D:
+            case Node::NodeCoordinatesMultiscale2D:
                 newNodePtr->AsNodeDisplacementsMultiscale2D()->SetCrackedDomain(true);
                 break;
             default:

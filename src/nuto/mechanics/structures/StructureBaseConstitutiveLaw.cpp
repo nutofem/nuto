@@ -4,9 +4,11 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveLatticeConcrete.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElastic.h"
+#include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveMisesPlasticity.h"
 #include "nuto/mechanics/constitutive/mechanics/Multiscale.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
+#include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -20,6 +22,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     if (ConstitutiveLawTypeString == "LINEARELASTIC")
     {
         ConstitutiveLawType = Constitutive::LINEAR_ELASTIC;
+    }
+    else if (ConstitutiveLawTypeString == "LINEARELASTICENGINEERINGSTRESS")
+    {
+        ConstitutiveLawType = Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS;
     }
     else if (ConstitutiveLawTypeString == "MISESPLASTICITY")
     {
@@ -36,6 +42,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "LATTICECONCRETE")
     {
         ConstitutiveLawType = Constitutive::LATTICE_CONCRETE;
+    }
+    else if (ConstitutiveLawTypeString == "LINEARHEATFLUX")
+    {
+        ConstitutiveLawType = Constitutive::LINEAR_HEAT_FLUX;
     }
     else
     {
@@ -69,6 +79,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         case NuTo::Constitutive::LINEAR_ELASTIC:
             ConstitutiveLawPtr = new NuTo::LinearElastic();
             break;
+        case NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
+            break;
         case NuTo::Constitutive::MISES_PLASTICITY:
             ConstitutiveLawPtr = new NuTo::ConstitutiveMisesPlasticity();
             break;
@@ -80,6 +93,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::LATTICE_CONCRETE:
             ConstitutiveLawPtr = new NuTo::ConstitutiveLatticeConcrete();
+            break;
+        case NuTo::Constitutive::LINEAR_HEAT_FLUX:
+            ConstitutiveLawPtr = new NuTo::LinearHeatFlux();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
@@ -1002,4 +1018,68 @@ void NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackShifts(int rIdent, i
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackShifts] error setting number of possible crack shifts.");
         throw e;
     }
+}
+
+// set heat cpacity
+void NuTo::StructureBase::ConstitutiveLawSetHeatCapacity(int rIdent, double rHeatCapacity)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetHeatCapacity(rHeatCapacity);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetHeatCapacity] error setting density.");
+        throw e;
+    }
+}
+
+// get heat cpacity
+double NuTo::StructureBase::ConstitutiveLawGetheatCapacity(int rIdent) const
+{
+    double heatCapacity;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        heatCapacity = ConstitutiveLawPtr->GetHeatCapacity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDensity] error getting density.");
+        throw e;
+    }
+    return heatCapacity;
+}
+
+// set thermal conductivity
+void NuTo::StructureBase::ConstitutiveLawSetThermalConductivity(int rIdent, double rThermalConductivity)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetThermalConductivity(rThermalConductivity);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetThermalConductivity] error setting density.");
+        throw e;
+    }
+}
+
+// get thermal conductivity
+double NuTo::StructureBase::ConstitutiveLawGetThermalConductivity(int rIdent) const
+{
+    double thermalConductivity;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        thermalConductivity = ConstitutiveLawPtr->GetThermalConductivity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDensity] error getting density.");
+        throw e;
+    }
+    return thermalConductivity;
 }

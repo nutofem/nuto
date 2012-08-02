@@ -14,6 +14,7 @@
 namespace NuTo
 {
 class LinearElastic;
+class LinearElasticEngineeringStress;
 class ConstitutiveMisesPlasticity;
 //! @brief ... tangent matrix for local constitutive formulations
 //! @author Jörg F. Unger, ISM
@@ -24,6 +25,7 @@ class ConstitutiveTangentLocal6x6: public NuTo::ConstitutiveTangentBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
+    friend class LinearElasticEngineeringStress;
     friend class ConstitutiveMisesPlasticity;
     friend class NonlocalDamagePlasticity;
 
@@ -45,6 +47,11 @@ public:
     //! @brief ... get the tangent matrix
     //! @brief ... pointer to the tangent matrix (column major storage)
     const double* GetData() const;
+
+    ConstitutiveTangentLocal6x6& GetConstitutiveTangentLocal6x6()
+    {
+    	return *this;
+    }
 
     //! @brief reinterpret as ConstitutiveTangentNonlocal3x3, otherwise throw an exception
     ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3()

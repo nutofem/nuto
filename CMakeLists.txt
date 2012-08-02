@@ -31,7 +31,7 @@ OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
-OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
+OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" TRUE)
 OPTION(ENABLE_EIGEN "enables eigen libraries for grid routines only" FALSE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 
@@ -183,7 +183,7 @@ ENDIF(ENABLE_MKL)
 
 # boost
 MESSAGE(STATUS "Checking for Boost...")
-SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47")
+SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50")
 IF(ENABLE_STATIC_EXTERNALS)
   SET(Boost_USE_STATIC_LIBS TRUE)
 ENDIF(ENABLE_STATIC_EXTERNALS)

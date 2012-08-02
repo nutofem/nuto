@@ -9,9 +9,11 @@
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutivePiolaKirchhoffIIGreenLagrange.h"
 
+
 namespace NuTo
 {
-
+class ConstitutiveInput3D;
+class ConstitutiveOutput3D;
 //! @brief ... linear elastic material model
 /*!
  * Assuming linear elastic material behavior, the one-dimensional constitutive relationship reads
@@ -534,6 +536,14 @@ public:
     //! @brief ... set Poisson's ratio
     //! @param rNu ... Poisson's ratio
     void SetPoissonsRatio(double rNu);
+
+    //! @brief ... get thermal expansion coefficient
+    //! @return ... thermal expansion coefficient
+    double GetThermalExpansionCoefficient() const;
+
+    //! @brief ... set thermal expansion coefficient
+    //! @param rAlpha ... thermal expansion coefficient
+    void SetThermalExpansionCoefficient(double rNu);
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get dimension of the constitutive relationship
@@ -583,6 +593,9 @@ protected:
     //! @brief ... density \f$ \rho \f$
     double mRho;
 
+    //! @brief ... thermal expansion coefficient \f$ \alpha \f$
+    double mThermalExpansionCoefficient;
+
     //! @brief ... check if density is positive
     //! @param rRho ... density
     void CheckDensity(double rRho) const;
@@ -594,6 +607,10 @@ protected:
     //! @brief ... check if Poisson's ratio is valid \f$ (-1.0 < \nu < 0.5) \f$
     //! @param rNu ... Poisson's ratio
     void CheckPoissonsRatio(double rNu) const;
+
+    //! @brief ... check thermal expansion coefficient
+    //! @param rAlpha ... thermal expansion coefficient
+    void CheckThermalExpansionCoefficient(double rAlpha) const;
 };
 
 }

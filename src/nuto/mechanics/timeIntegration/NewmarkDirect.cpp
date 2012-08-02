@@ -131,16 +131,16 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
         //store last converged displacements, velocities and accelerations
         NuTo::FullMatrix<double> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
-        rStructure.NodeExtractDofValues(lastConverged_disp_j, lastConverged_disp_k);
-		mInternalEnergy = rStructure.ElementTotalGetInternalEnergy();
+        rStructure.NodeExtractDofValues(0,lastConverged_disp_j, lastConverged_disp_k);
+//		mInternalEnergy = rStructure.ElementTotalGetInternalEnergy();
         FullMatrix<double> plotHistory(1,7);
         plotHistory(0,0) = mTime;
-        plotHistory(0,2) = mInternalEnergy;
-        plotHistory(0,6) = mInternalEnergy;
+//        plotHistory(0,2) = mInternalEnergy;
+//        plotHistory(0,6) = mInternalEnergy;
         if (this->IsDynamic())
         {
-			rStructure.NodeExtractDofFirstTimeDerivativeValues(lastConverged_vel_j,lastConverged_vel_k);
-			rStructure.NodeExtractDofSecondTimeDerivativeValues(lastConverged_acc_j,lastConverged_acc_k);
+			rStructure.NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
+			rStructure.NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
 
 			mKineticEnergy = 0.5*(lastConverged_vel_j.Dot(massMatrix_jj*lastConverged_vel_j+massMatrix_jk*lastConverged_vel_k)+lastConverged_vel_k.Dot(massMatrix_kj*lastConverged_vel_j+massMatrix_kk*lastConverged_vel_k));
 			mExternalEnergy = 0;
@@ -160,7 +160,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 		rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
 		plotHistory(0,1) = RHSConstraint;
     	rStructure.ConstraintGetRHSAfterGaussElimination(bRHSprev);
-        rStructure.NodeMergeActiveDofValues(lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
+        rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
         rStructure.ElementTotalUpdateTmpStaticData();
 
     	//calculate internal force
@@ -170,9 +170,12 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
         if (this->IsDynamic())
         {
-			//add damping terme
-        	prevResidual_j += (massMatrix_jj*lastConverged_vel_j+massMatrix_jk*lastConverged_vel_k) *mMuDampingMass;
-        	prevResidual_k += (massMatrix_kj*lastConverged_vel_j+massMatrix_kk*lastConverged_vel_k) *mMuDampingMass;
+			if (mMuDampingMass>0)
+			{
+				//add damping terme
+				prevResidual_j += (massMatrix_jj*lastConverged_vel_j+massMatrix_jk*lastConverged_vel_k) *mMuDampingMass;
+				prevResidual_k += (massMatrix_kj*lastConverged_vel_j+massMatrix_kk*lastConverged_vel_k) *mMuDampingMass;
+			}
 			//add mass terme
 			prevResidual_j += (massMatrix_jj*lastConverged_acc_j+massMatrix_jk*lastConverged_acc_k);
 			prevResidual_k += (massMatrix_kj*lastConverged_acc_j+massMatrix_kk*lastConverged_acc_k);
@@ -201,7 +204,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
         	RHSConstraint = ConstraintsCalculateRHS(curTime);
     		rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
         	rStructure.ConstraintGetRHSAfterGaussElimination(bRHSprev);
-            rStructure.NodeMergeActiveDofValues(lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
+            rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
             rStructure.ElementTotalUpdateTmpStaticData();
 
             //add external force
@@ -230,7 +233,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 					throw MechanicsException("[NuTo::NewmarkDirect::Solve] Factor for the mass matrix is negative - reduce your time step.");
             }
 
-            rStructure.NodeMergeActiveDofValues(lastConverged_disp_j);
+            rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j);
             rStructure.ElementTotalUpdateTmpStaticData();
 
         	//calculate the initial out-of-balance force
@@ -273,9 +276,12 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 				acc_k = bRHSddot - (Cmat*acc_j);
 				vel_k = bRHSdot - (Cmat*vel_j);
 
-				//add damping terme
-				residual_j += (massMatrix_jj*vel_j+massMatrix_jk*vel_k) *mMuDampingMass;
-				residual_k += (massMatrix_kj*vel_j+massMatrix_kk*vel_k) *mMuDampingMass;
+				if (mMuDampingMass>0)
+				{
+					//add damping terme
+					residual_j += (massMatrix_jj*vel_j+massMatrix_jk*vel_k) *mMuDampingMass;
+					residual_k += (massMatrix_kj*vel_j+massMatrix_kk*vel_k) *mMuDampingMass;
+				}
 				//add mass terme
 				residual_j += (massMatrix_jj*acc_j+massMatrix_jk*acc_k);
 				residual_k += (massMatrix_kj*acc_j+massMatrix_kk*acc_k);
@@ -344,7 +350,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             }
 
             //apply displacements
-            rStructure.NodeMergeActiveDofValues(disp_j);
+            rStructure.NodeMergeActiveDofValues(0,disp_j);
             rStructure.ElementTotalUpdateTmpStaticData();
 
             //calculate internal force
@@ -353,9 +359,12 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             residual_k = intForce_k;
             if (this->IsDynamic())
             {
-				//add damping terme
-				residual_j += (massMatrix_jj*vel_j+massMatrix_jk*vel_k) *mMuDampingMass;
-				residual_k += (massMatrix_kj*vel_j+massMatrix_kk*vel_k) *mMuDampingMass;
+				if (mMuDampingMass>0)
+				{
+					//add damping terme
+					residual_j += (massMatrix_jj*vel_j+massMatrix_jk*vel_k) *mMuDampingMass;
+					residual_k += (massMatrix_kj*vel_j+massMatrix_kk*vel_k) *mMuDampingMass;
+				}
 
 				//add mass terme
 				residual_j += massMatrix_jj*acc_j+massMatrix_jk*acc_k;
@@ -440,7 +449,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                     }
 
                     //apply displacements
-                    rStructure.NodeMergeActiveDofValues(trial_disp_j);
+                    rStructure.NodeMergeActiveDofValues(0,trial_disp_j);
                     rStructure.ElementTotalUpdateTmpStaticData();
 
                     //calculate internal force
@@ -450,9 +459,12 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
                     if (this->IsDynamic())
                     {
-						//add damping terme
-						residual_j += (massMatrix_jj*trial_vel_j+massMatrix_jk*trial_vel_k) *mMuDampingMass;
-						residual_k += (massMatrix_jk.TransMult(trial_vel_j)+massMatrix_kk*trial_vel_k) *mMuDampingMass;
+						if (mMuDampingMass>0)
+						{
+							//add damping terme
+							residual_j += (massMatrix_jj*trial_vel_j+massMatrix_jk*trial_vel_k) *mMuDampingMass;
+							residual_k += (massMatrix_jk.TransMult(trial_vel_j)+massMatrix_kk*trial_vel_k) *mMuDampingMass;
+						}
 
 						//add mass terme
 						residual_j += (massMatrix_jj*trial_acc_j+massMatrix_jk*trial_acc_k);
@@ -526,8 +538,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 mKineticEnergy+= 0.5*(delta_disp_j.Dot(massMatrix_jj*(acc_j+lastConverged_acc_j)+massMatrix_jk*(acc_k+lastConverged_acc_k))+
                 		          delta_disp_k.Dot(massMatrix_kj*(acc_j+lastConverged_acc_j)+massMatrix_kk*(acc_k+lastConverged_acc_k)));
 
-                mDampedEnergy+=mMuDampingMass*0.5*(delta_disp_j.Dot(massMatrix_jj*(vel_j+lastConverged_vel_j)+massMatrix_jk*(vel_k+lastConverged_vel_k))+
-                		                           delta_disp_k.Dot(massMatrix_kj*(vel_j+lastConverged_vel_j)+massMatrix_kk*(vel_k +lastConverged_vel_k)));
+                if (mMuDampingMass>0)
+                {
+					mDampedEnergy+=mMuDampingMass*0.5*(delta_disp_j.Dot(massMatrix_jj*(vel_j+lastConverged_vel_j)+massMatrix_jk*(vel_k+lastConverged_vel_k))+
+													   delta_disp_k.Dot(massMatrix_kj*(vel_j+lastConverged_vel_j)+massMatrix_kk*(vel_k +lastConverged_vel_k)));
+                }
 
                 mExternalEnergy += 0.5*(delta_disp_j.Dot(extForce_j+prevExtForce_j) + delta_disp_k.Dot(extForce_k+prevExtForce_k)+
                 		                delta_disp_j.Dot(residual_j+prevResidual_j) + delta_disp_k.Dot(residual_k+prevResidual_k));
@@ -602,11 +617,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 prevResidual_k = residual_k;
 
                 //update nodal data
-                rStructure.NodeMergeActiveDofValues(disp_j);
+                rStructure.NodeMergeActiveDofValues(0,disp_j);
                 if (this->IsDynamic())
                 {
-					rStructure.NodeMergeDofFirstTimeDerivativeValues(vel_j,vel_k);
-					rStructure.NodeMergeDofSecondTimeDerivativeValues(acc_j,acc_k);
+					rStructure.NodeMergeDofValues(1,vel_j,vel_k);
+					rStructure.NodeMergeDofValues(2,acc_j,acc_k);
                 }
                 rStructure.ElementTotalUpdateTmpStaticData();
                 //postprocess

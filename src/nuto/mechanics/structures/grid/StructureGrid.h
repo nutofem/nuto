@@ -94,8 +94,8 @@ public:
     //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
     FullMatrix<int>* GetVoxelNumAndLocMatrix();
 
-   //! @brief Calculate ElementVoxelLocMatrix
-   void CalculateVoxelLocations();
+    //! @brief Calculate ElementVoxelLocMatrix
+    void CalculateVoxelLocations();
 
     //! @brief Get voxels corner numbers from bottom to top counter-clockwise
     //! @return array of number of corners with corner numbers

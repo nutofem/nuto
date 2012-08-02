@@ -241,11 +241,11 @@ std::string NuTo::NodeDisplacementsMultiscale2D::GetNodeTypeStr()const
 
 //! @brief returns the type of node as an enum (all the data stored at the node)
 //! @return enum
-NuTo::Node::eNodeType NuTo::NodeDisplacementsMultiscale2D::GetNodeType()const
+/*NuTo::Node::eNodeType NuTo::NodeDisplacementsMultiscale2D::GetNodeType()const
 {
     return Node::NodeDisplacementsMultiscale2D;
 }
-
+*/
 //! @brief scales the shape functions
 //! @parameter rShapeFunction  (1..3 corresponding to macro strains exx, eyy, and gxy)
 //! @parameter rScalingFactor rScalingFactor

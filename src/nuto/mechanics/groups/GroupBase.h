@@ -32,6 +32,9 @@ public:
 	//! @brief constructor
 	GroupBase();
 
+	//! @brief ... destructor
+    virtual ~GroupBase(){};
+
 #ifdef ENABLE_SERIALIZATION
 	//! @brief serializes the class
 	//! @param ar         archive

@@ -143,8 +143,8 @@ myStructure.ConstraintSetRHS(constraintLHS,curDisp);
 #update displacements of all nodes according to the new conre mat
 displacementsActiveDOFsCheck = nuto.DoubleFullMatrix(0,0);
 displacementsDependentDOFsCheck = nuto.DoubleFullMatrix(0,0);
-myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+myStructure.NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+myStructure.NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
 myStructure.ElementTotalUpdateTmpStaticData();
 
 #build global external load vector and RHS vector
@@ -211,14 +211,14 @@ while (not convergenceStatusLoadSteps):
         mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
 
         # write displacements to node
-        myStructure.NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
+        myStructure.NodeExtractDofValues(0,oldDisplacementsActiveDOFs, displacementsDependentDOFs);
 
         #perform a linesearch
         alpha = 1.;
         while True:
             #add new displacement state
             displacementsActiveDOFs = oldDisplacementsActiveDOFs + deltaDisplacementsActiveDOFs*alpha;
-            myStructure.NodeMergeActiveDofValues(displacementsActiveDOFs);
+            myStructure.NodeMergeActiveDofValues(0,displacementsActiveDOFs);
             myStructure.ElementTotalUpdateTmpStaticData();
 
             # calculate residual
@@ -296,7 +296,7 @@ while (not convergenceStatusLoadSteps):
             print "disp left and right, boundary force left and right, lagrange multiplier left and right";
             SinglePlotData.Trans().Info();
 
-        myStructure.NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
+        myStructure.NodeExtractDofValues(0,displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
         if (curDispFactor==1):
             convergenceStatusLoadSteps=True;
         else:
@@ -364,7 +364,7 @@ while (not convergenceStatusLoadSteps):
         #update displacements of all nodes according to the new conre mat
         displacementsActiveDOFsCheck = nuto.DoubleFullMatrix();
         displacementsDependentDOFsCheck = nuto.DoubleFullMatrix();
-	myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+	myStructure.NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
         myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
         myStructure.ElementTotalUpdateTmpStaticData();
 

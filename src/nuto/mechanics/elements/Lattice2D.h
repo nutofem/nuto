@@ -43,6 +43,11 @@ public:
         return 3;
     }
 
+    //! @brief calculates output data fo the elmement
+    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+    NuTo::Error::eError Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput);
+
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
     //! @param rResult ... coefficient matrix

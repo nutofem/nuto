@@ -11,6 +11,7 @@
 
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 NuTo::GreenLagrangeStrain2D::GreenLagrangeStrain2D()
 {
@@ -22,9 +23,7 @@ NuTo::GreenLagrangeStrain2D::GreenLagrangeStrain2D()
 
 NuTo::GreenLagrangeStrain2D::GreenLagrangeStrain2D(const DeformationGradient2D& rDeformationGradient)
 {
-    mGreenLagrangeStrain[0] = 0.5 * (rDeformationGradient.GetDeformationGradient2D()[0] * rDeformationGradient.GetDeformationGradient2D()[0] + rDeformationGradient.GetDeformationGradient2D()[1] * rDeformationGradient.GetDeformationGradient2D()[1] - 1.0);
-    mGreenLagrangeStrain[1] = 0.5 * (rDeformationGradient.GetDeformationGradient2D()[3] * rDeformationGradient.GetDeformationGradient2D()[3] + rDeformationGradient.GetDeformationGradient2D()[2] * rDeformationGradient.GetDeformationGradient2D()[2] - 1.0);
-    mGreenLagrangeStrain[2] = rDeformationGradient.GetDeformationGradient2D()[0] * rDeformationGradient.GetDeformationGradient2D()[2] + rDeformationGradient.GetDeformationGradient2D()[1] * rDeformationGradient.GetDeformationGradient2D()[3];
+	throw MechanicsException("[NuTo::GreenLagrangeStrain2D::GreenLagrangeStrain2D] to be implemented.");
 }
 
 //! @brief ... get number of strain components

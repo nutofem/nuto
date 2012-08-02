@@ -35,7 +35,9 @@ public:
         VELOCITY,                       //!< visualize velocity
         ANGULAR_VELOCITY,               //!< visualize angular velocity
         ACCELERATION,                   //!< visualize acceleration
-        ANGULAR_ACCELERATION               //!< visualize angular acceleration
+        ANGULAR_ACCELERATION,           //!< visualize angular acceleration
+        TEMPERATURE,                    //!< visualize temperature
+        HEAT_FLUX                       //!< visualize heat flux
     };
 
     //! @brief ... export to Vtk datafile

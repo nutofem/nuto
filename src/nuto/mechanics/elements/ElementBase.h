@@ -10,6 +10,8 @@
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
+#include <map>
+
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -43,7 +45,7 @@ class StructureBase;
 class Truss;
 class VisualizeComponentBase;
 class IpDataBase;
-
+class ElementOutputBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -151,13 +153,13 @@ public:
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section
     //! @param rSection pointer to section
-    virtual void SetSection(const SectionBase* rSection);
+    virtual void SetSection(const SectionBase* rSection)=0;
 
     //! @brief returns a pointer to the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section
     //! @return pointer to section
-    virtual const SectionBase* GetSection()const;
+    virtual const SectionBase* GetSection()const=0;
 
     //! @brief sets the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -191,6 +193,11 @@ public:
     //! @return edge length
     virtual double GetIpEdgeLength(int rIp)const;
 
+    //! @brief calculates output data fo the elmement
+    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+    virtual Error::eError Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput)=0;
+
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
     //! @param rResult ... coefficient matrix
@@ -222,11 +229,11 @@ public:
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
-    void GetIntegratedStress(FullMatrix<double>& rStress)const;
+    void GetIntegratedStress(FullMatrix<double>& rStress);
 
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
-    void GetIntegratedStrain(FullMatrix<double>& rStress)const;
+    void GetIntegratedStrain(FullMatrix<double>& rStress);
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -279,6 +286,21 @@ public:
     //! @param rLocalCoordinates ... three-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
     virtual void InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
+
+    //! @brief ... interpolate three-dimensional global temperature from one-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... one-dimensional local point coordinates
+    //! @param rGlobalDisplacements ... three-dimension global point displacements
+    virtual void InterpolateTemperatureFrom1D(double rLocalCoordinates, double& rTemperature) const;
+
+    //! @brief ... interpolate three-dimensional global temperature from two-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... two-dimensional local point coordinates
+    //! @param rGlobalDisplacements ... three-dimension global point displacements
+    virtual void InterpolateTemperatureFrom2D(double rLocalCoordinates[2], double& rTemperature) const;
+
+    //! @brief ... interpolate three-dimensional global temperature from three-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... three-dimensional local point coordinates
+    //! @param rGlobalDisplacements ... three-dimension global point displacements
+    virtual void InterpolateTemperatureFrom3D(double rLocalCoordinates[3], double& rTemperature) const;
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
@@ -423,11 +445,11 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const = 0;
+    //virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const = 0;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const = 0;
+    //virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const = 0;
 
     //the base class of the elements must not contain any data apart from a const pointer to the structure and a data pointer
     const StructureBase* mStructure;

@@ -8,13 +8,16 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/cracks/CrackExplicit2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinates2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
 
 //! @brief constructor
 NuTo::CrackExplicit2D::CrackExplicit2D() : CrackBase(), std::list<NuTo::NodeBase*>()
 {}
 
 NuTo::CrackExplicit2D::CrackExplicit2D(const std::string rName): CrackBase(rName), std::list<NuTo::NodeBase*>()
+{}
+
+NuTo::CrackExplicit2D::~CrackExplicit2D()
 {}
 
 
@@ -73,7 +76,7 @@ void NuTo::CrackExplicit2D::Initiate(std::vector<NuTo::ElementBase*>& rElements,
 				/// check if at least 1 element edge is intersected by the crack
 				for(int j=0; j<numElemNodes; j++)
 				{
-					NuTo::NodeBase* nodeI=new NuTo::NodeCoordinates2D();
+					NuTo::NodeBase* nodeI=new NuTo::NodeCoordinates<2>();
 					double relCoor=0.0;
 					size_t seg;
 					isCracked=Intersect(thisElement->GetNode(j),thisElement->GetNode(((j+1)%numElemNodes)),nodeI, relCoor, seg);

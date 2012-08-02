@@ -8,6 +8,8 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+
 namespace NuTo
 {
 class LinearElastic;
@@ -24,7 +26,7 @@ class ConstitutiveEngineeringStressStrain;
  */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class EngineeringStress1D
+class EngineeringStress1D: public ConstitutiveOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

@@ -2,7 +2,7 @@
 #ifndef NodeCoordinatesDisplacementsMultiscale2D_H
 #define NodeCoordinatesDisplacementsMultiscale2Dd_H
 
-#include "nuto/mechanics/nodes/NodeCoordinates2D.h"
+#include "nuto/mechanics/nodes/NodeCoordinates_Def.h"
 #include "nuto/mechanics/nodes/NodeDisplacementsMultiscale2D.h"
 
 namespace NuTo
@@ -11,7 +11,7 @@ class NodeCoordinatesDisplacements2D;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for nodes having coordinates and displacements
-class NodeCoordinatesDisplacementsMultiscale2D : public NodeCoordinates2D, public NodeDisplacementsMultiscale2D
+class NodeCoordinatesDisplacementsMultiscale2D : public NodeCoordinates<2>, public NodeDisplacementsMultiscale2D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -49,7 +49,6 @@ public:
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)
     {
-        NodeCoordinates2D::SetGlobalDofs(rDOF);
         NodeDisplacementsMultiscale2D::SetGlobalDofs(rDOF);
     }
 
@@ -58,7 +57,6 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
     {
-        NodeCoordinates2D::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
         NodeDisplacementsMultiscale2D::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 
@@ -67,7 +65,6 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
     {
-        NodeCoordinates2D::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
         NodeDisplacementsMultiscale2D::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
     }
 
@@ -76,7 +73,6 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
     {
-        NodeCoordinates2D::SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
         NodeDisplacementsMultiscale2D::SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 
@@ -85,7 +81,6 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
     {
-        NodeCoordinates2D::GetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
         NodeDisplacementsMultiscale2D::GetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 
@@ -94,7 +89,6 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
     {
-        NodeCoordinates2D::SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
         NodeDisplacementsMultiscale2D::SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 
@@ -103,7 +97,6 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
     {
-        NodeCoordinates2D::GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
         NodeDisplacementsMultiscale2D::GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 
@@ -111,7 +104,6 @@ public:
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     {
-        NodeCoordinates2D::RenumberGlobalDofs(rMappingInitialToNewOrdering);
         NodeDisplacementsMultiscale2D::RenumberGlobalDofs(rMappingInitialToNewOrdering);
     }
 
@@ -122,13 +114,13 @@ public:
     	return std::string("NodeCoordinatesDisplacementsMultiscale2D");
     }
 
-    //! @brief returns the type of node as an enum (all the data stored at the node)
+/*    //! @brief returns the type of node as an enum (all the data stored at the node)
     //! @return enum
     virtual Node::eNodeType GetNodeType()const
     {
         return Node::NodeCoordinatesDisplacementsMultiscale2D;
     }
-
+*/
 protected:
     //! @brief constructor
     NodeCoordinatesDisplacementsMultiscale2D(){};
@@ -138,7 +130,7 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeCoordinatesDisplacementsMultiscale2D)
 namespace boost{
 template<>
-struct is_virtual_base_of<NuTo::NodeCoordinates2D, NuTo::NodeCoordinatesDisplacementsMultiscale2D>: public mpl::true_ {};
+struct is_virtual_base_of<NuTo::NodeCoordinates<2>, NuTo::NodeCoordinatesDisplacementsMultiscale2D>: public mpl::true_ {};
 template<>
 struct is_virtual_base_of<NuTo::NodeDisplacementsMultiscale2D, NuTo::NodeCoordinatesDisplacementsMultiscale2D>: public mpl::true_ {};
 }

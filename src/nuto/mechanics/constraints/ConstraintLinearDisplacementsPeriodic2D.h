@@ -120,10 +120,10 @@ protected:
     const NodeBase* mRightUpperCorner;
     const NodeBase* mRightLowerCorner;
 
-    std::vector<NodeCoordinatesDisplacements2D*> mSlaveNodesRightBoundary;
-    std::vector<NodeCoordinatesDisplacements2D*> mSlaveNodesTopBoundary;
-    std::vector<NodeCoordinatesDisplacements2D*> mMasterNodesLeftBoundary;
-    std::vector<NodeCoordinatesDisplacements2D*> mMasterNodesBottomBoundary;
+    std::vector<NodeBase*> mSlaveNodesRightBoundary;
+    std::vector<NodeBase*> mSlaveNodesTopBoundary;
+    std::vector<NodeBase*> mMasterNodesLeftBoundary;
+    std::vector<NodeBase*> mMasterNodesBottomBoundary;
 
     const StructureBase* mStructure;
 };

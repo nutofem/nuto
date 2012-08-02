@@ -15,6 +15,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
+#include "nuto/mechanics/constitutive/thermal/TemperatureGradient1D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/Truss.h"
@@ -31,18 +32,50 @@ NuTo::Truss::Truss(const StructureBase* rStructure, ElementData::eElementDataTyp
     mSection = 0;
 }
 
+//! @brief calculates output data fo the elmement
+//! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+//!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+NuTo::Error::eError NuTo::Truss::Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput)
+{
+	throw MechanicsException("[NuTo::Trues::Evaluate] not implemented.");
+}
+
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
 NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
+    // get section information determining which input on the constitutive level should be used
+    const SectionBase* section(GetSection());
+    if (section==0)
+        throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_0] no section allocated for element.");
+
     //calculate local coordinates
-    std::vector<double> localNodeCoord(GetNumLocalDofs());
+    std::vector<double> localNodeCoord(GetNumShapeFunctions());
     CalculateLocalCoordinates(localNodeCoord);
 
     //calculate local displacements
-    std::vector<double> localNodeDisp(GetNumLocalDofs());
-    CalculateLocalDisplacements(localNodeDisp);
+    int numDisp(GetNumShapeFunctions());
+    std::vector<double> localNodeDisp(numDisp);
+    if (section->GetInputConstitutiveIsDeformationGradient())
+    {
+        CalculateLocalDisplacements(localNodeDisp);
+    }
+    int numDispDofs(0);
+    if (section->GetIsDisplacementDof())
+        numDispDofs = numDisp;
+
+    //calculate temperatures
+    int numTemp(GetNumShapeFunctions());
+    std::vector<double> nodeTemp(numTemp);
+    if (section->GetInputConstitutiveIsTemperatureGradient() || section->GetInputConstitutiveIsTemperature())
+    {
+        throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_0] temperature not fully implemented.");
+    	//CalculateTemperatures(nodeTemp);
+    }
+    int numTempDofs(0);
+    if (section->GetIsTemperatureDof())
+        numTempDofs=numTemp;
 
     //allocate space for local ip coordinates
     double localIPCoord;
@@ -54,7 +87,13 @@ NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<d
     DeformationGradient1D deformationGradient;
 
     //allocate deformation gradient
-    ConstitutiveTangentLocal1x1 tangent;
+    TemperatureGradient1D temperatureGradient;
+
+    //allocate deformation gradient
+    ConstitutiveTangentLocal1x1 tangentStressStrain;
+
+    //allocate deformation gradient
+    ConstitutiveTangentLocal1x1 tangentFluxGradTemp;
 
     //material pointer
     const ConstitutiveEngineeringStressStrain *constitutivePtr;
@@ -77,11 +116,11 @@ NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<d
         if (constitutivePtr==0)
             throw MechanicsException("[NuTo::Solid::GetEngineeringStress] Constitutive law can not deal with engineering stresses and strains");
         Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
-                deformationGradient, &tangent);
+                deformationGradient, &tangentStressStrain);
         if (error!=Error::SUCCESSFUL)
         	return error;
 
-        areAllIpsSymmetric &= tangent.GetSymmetry();
+        areAllIpsSymmetric &= tangentStressStrain.GetSymmetry();
 
         // calculate local stiffness matrix
         // don't forget to include determinant of the Jacobian and area
@@ -91,7 +130,7 @@ NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<d
                        /DetJacobian(derivativeShapeFunctions,localNodeCoord)
                        *(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
-        AddDetJBtCB(derivativeShapeFunctions,tangent, factor, rCoefficientMatrix);
+        AddDetJBtCB(derivativeShapeFunctions,tangentStressStrain, factor, rCoefficientMatrix);
     }
 
     // eventually blow local matrix to full matrix - only relevant for
@@ -103,7 +142,7 @@ NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<d
 
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofsRow);
-    this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
+	this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
 
     return Error::SUCCESSFUL;
 }

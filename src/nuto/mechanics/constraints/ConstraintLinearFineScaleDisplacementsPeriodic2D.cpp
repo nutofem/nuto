@@ -17,7 +17,6 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
-#include "nuto/mechanics/nodes/NodeDisplacements2D.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintLinearFineScaleDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/structures/StructureBase.h"

@@ -67,12 +67,14 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
+#include "nuto/visualize/VisualizeComponentHeatFlux.h"
 #include "nuto/visualize/VisualizeComponentLatticeStrain.h"
 #include "nuto/visualize/VisualizeComponentLatticeStress.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentRotation.h"
+#include "nuto/visualize/VisualizeComponentTemperature.h"
 #include "nuto/visualize/VisualizeComponentSection.h"
 #include "nuto/visualize/VisualizeComponentVelocity.h"
 #endif // ENABLE_VISUALIZE
@@ -520,6 +522,38 @@ void NuTo::StructureBase::AddVisualizationComponentAngularAcceleration()
         mLogger<<"[NuTo::StructureBase::VisualizeComponentAngularAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
+
+//! @brief ... Add temperature to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentTemperature()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentTemperature());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentTemperature] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add heat flux to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentHeatFlux()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentHeatFlux());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentHeatFlux] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef SHOW_TIME
@@ -704,6 +738,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
             //do nothing;
             break;
+        case NuTo::VisualizeBase::TEMPERATURE:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
         default:
         	throw MechanicsException("[NuTo::StructureBase::DefineVisualizeElementData] undefined visualize components.");
         }
@@ -739,8 +776,11 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
         case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
             rVisualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
+        case NuTo::VisualizeBase::TEMPERATURE:
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
         default:
-        	;
+        	break;
          }
         itWhat++;
     }
@@ -783,7 +823,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
     FullMatrix<double> dependentDofValues;
     try
     {
-        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
     }
     catch (MechanicsException& e)
     {
@@ -854,7 +894,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
     FullMatrix<double> dependentDofValues;
     try
     {
-        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
     }
     catch (MechanicsException& e)
     {
@@ -924,7 +964,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
     FullMatrix<double> dependentDofValues;
     try
     {
-        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
     }
     catch (MechanicsException& e)
     {
@@ -1005,7 +1045,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
     FullMatrix<double> dependentDofValues;
     try
     {
-        this->NodeExtractDofValues(activeDofValues, dependentDofValues);
+        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
     }
     catch (MechanicsException& e)
     {
@@ -1579,7 +1619,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
         this->ElementTotalUpdateTmpStaticData();
 
         NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
-        this->NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
+        this->NodeExtractDofValues(0,displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
 
         InitBeforeNewLoadStep(loadStep);
         if (mNumActiveDofs==0)
@@ -1600,8 +1640,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                     this->NodeBuildGlobalDofs();
                     NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
                     NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-                    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-                    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+                    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+                    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
                     Error::eError error = this->ElementTotalUpdateTmpStaticData();
                     if (error!=Error::SUCCESSFUL)
                     {
@@ -1674,7 +1714,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
         {
             try
             {
-                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
                 Error::eError error = this->ElementTotalUpdateTmpStaticData();
                 if (error!=Error::SUCCESSFUL)
                 {
@@ -1732,7 +1772,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         //restore initial state
                         this->SetLoadFactor(0);
                         this->NodeBuildGlobalDofs();
-                        this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
 
                         //check for minimum delta (this mostly indicates an error in the software
                         if (deltaLoadFactor<mMinDeltaLoadFactor)
@@ -1757,7 +1797,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         //restore initial state
                         this->SetLoadFactor(0);
                         this->NodeBuildGlobalDofs();
-                        this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
 
                         //check for minimum delta (this mostly indicates an error in the software
                         if (deltaLoadFactor<mMinDeltaLoadFactor)
@@ -1782,8 +1822,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                 {
                     NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
                     NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-                    this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-                    this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+                    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+                    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
                     error = this->ElementTotalUpdateTmpStaticData();
                     if (error!=Error::SUCCESSFUL)
                     {
@@ -1795,7 +1835,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                             //restore initial state
                             this->SetLoadFactor(0);
                             this->NodeBuildGlobalDofs();
-                            this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                            this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
 
                             //check for minimum delta (this mostly indicates an error in the software
                             if (deltaLoadFactor<mMinDeltaLoadFactor)
@@ -1824,7 +1864,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         //restore initial state
                         this->SetLoadFactor(0);
                         this->NodeBuildGlobalDofs();
-                        this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
 
                         //check for minimum delta (this mostly indicates an error in the software
                         if (deltaLoadFactor<mMinDeltaLoadFactor)
@@ -1917,7 +1957,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                 // solve
                 NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
                 NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
-                this->NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
+                this->NodeExtractDofValues(0,oldDisplacementsActiveDOFs, displacementsDependentDOFs);
                 NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
                 stiffnessMatrixCSR.SetOneBasedIndexing();
                 try
@@ -1961,7 +2001,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
 
                     //mLogger << " displacementsActiveDOFs" << "\n";
                     //displacementsActiveDOFs.Trans().Info(10,3);
-                    this->NodeMergeActiveDofValues(displacementsActiveDOFs);
+                    this->NodeMergeActiveDofValues(0,displacementsActiveDOFs);
                     try
                     {
                         Error::eError error = this->ElementTotalUpdateTmpStaticData();
@@ -2097,7 +2137,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                                     //restore initial state
                                     this->SetLoadFactor(0);
                                     this->NodeBuildGlobalDofs();
-                                    this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                                    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
                                     convergenceStatus=2;
 
                                     mLogger << "********************************************************************************" << "\n";
@@ -2226,7 +2266,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                 this->NodeBuildGlobalDofs();
 
                 //set previous converged displacements
-                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
                 Error::eError error = this->ElementTotalUpdateTmpStaticData();
                 if (error!=Error::SUCCESSFUL)
                     throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] last converged state could not be recalculated, but since the gradient at that point has been evaluated successfully, there is a problem in the implementation.");
@@ -2283,7 +2323,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                             this->NodeBuildGlobalDofs();
 
                             //set previous converged displacements
-                            this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                            this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
                             Error::eError error = this->ElementTotalUpdateTmpStaticData();
                             if (error!=Error::SUCCESSFUL)
                                 throw MechanicsException("[NuTo::StructureBase::NewtonRaphson] previous converged load step could not be recalculated, check your implementation.");
@@ -2308,8 +2348,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         //update displacements of all nodes according to the new conre mat
                         NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
                         NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
-                        this->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-                        this->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+                        this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+                        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
                         error = this->ElementTotalUpdateTmpStaticData();
                         if (error!=Error::SUCCESSFUL)
                         {
@@ -2331,7 +2371,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                                 this->NodeBuildGlobalDofs();
 
                                 //set previous converged displacements
-                                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                                this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
                                 Error::eError error = this->ElementTotalUpdateTmpStaticData();
                                 if (error!=Error::SUCCESSFUL)
                                     return error;
@@ -2376,7 +2416,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                                 this->NodeBuildGlobalDofs();
 
                                 //set previous converged displacements
-                                this->NodeMergeActiveDofValues(displacementsActiveDOFsLastConverged);
+                                this->NodeMergeActiveDofValues(0,displacementsActiveDOFsLastConverged);
                                 Error::eError error = this->ElementTotalUpdateTmpStaticData();
                                 if (error!=Error::SUCCESSFUL)
                                     return error;

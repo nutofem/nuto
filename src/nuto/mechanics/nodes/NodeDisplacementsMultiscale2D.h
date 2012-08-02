@@ -117,7 +117,7 @@ public:
 
     //! @brief returns the type of node as an enum (all the data stored at the node)
     //! @return enum
-    virtual Node::eNodeType GetNodeType()const;
+    //virtual Node::eNodeType GetNodeType()const;
 
     virtual NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()
     {

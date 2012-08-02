@@ -8,6 +8,8 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
+
 namespace NuTo
 {
 class DeformationGradient2D;
@@ -31,12 +33,15 @@ class Truss;
 */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class DeformationGradient1D
+class DeformationGradient1D : public ConstitutiveInputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class NuTo::Truss;
+    friend class EngineeringStrain1D;
+    friend class EngineeringStrain2D;
+    friend class EngineeringStrain3D;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure
@@ -51,10 +56,10 @@ public:
     //! @return ... number of strain components
     unsigned int GetNumberOfComponents() const;
 
-    //! @brief ... get deformation gradient
+    //! @brief ... get deformation gradient (this is a virtual function overwriting the exception in constitutive input)
     //! @return ... one-dimensional deformation gradient (column major format)
     //! @sa mDeformationGradient
-    const double* GetDeformationGradient1D() const;
+    const DeformationGradient1D& GetDeformationGradient1D() const;
 
     //! @brief ... get deformation gradient
     //! @param  rDeformationGradient ... one-dimensional deformation gradient (column major format)
@@ -73,7 +78,7 @@ public:
      */
     //! @param  rDeformationGradient ... two-dimensional deformation gradient (column major format)
     //! @sa mDeformationGradient
-    void GetDeformationGradient(NuTo::DeformationGradient2D& rDeformationGradient) const;
+    //void GetDeformationGradient(NuTo::DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... get deformation gradient
     /*!
@@ -88,7 +93,7 @@ public:
      */
     //! @param  rDeformationGradient ... three-dimensional deformation gradient (column major format)
     //! @sa mDeformationGradient
-    void GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const;
+    //void GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... set deformation gradient
     //! @param rDeformationGradient ... one-dimensional deformation gradient (column major format)

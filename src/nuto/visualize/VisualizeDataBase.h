@@ -12,6 +12,7 @@ namespace NuTo
 class VisualizeDataBase
 {
 public:
+    virtual ~VisualizeDataBase(){};
     //! @brief ... get data type
     //! @return ... visualize data type
     virtual NuTo::VisualizeDataType::eDataType GetDataType() const = 0;

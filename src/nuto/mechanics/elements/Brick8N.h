@@ -76,13 +76,6 @@ public:
         const double rLocalCoordinates[3],
         std::vector<double>& rDerivativeShapeFunctions) const;
 
-    //! @brief returns the number of local degrees of freedom
-    //! @return number of local degrees of freedom
-    inline int GetNumDofs() const
-    {
-        return 24;
-    }
-
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node

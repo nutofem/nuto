@@ -27,7 +27,7 @@ public:
         mNumLocalCoefficientMatrix0 =rNumLocalCoefficientMatrix0;
     }
     //! @brief destructor
-    ~Voxel8N()
+    virtual ~Voxel8N()
     {
         delete [] mVoxelLocation;
         mVoxelLocation=0;

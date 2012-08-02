@@ -9,16 +9,21 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <string>
+#include <vector>
+#include <map>
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
 {
 // forward declarations
 class ConstitutiveEngineeringStressStrain;
 class ConstitutiveLatticeStressStrain;
+class ConstitutiveStaticDataBase;
 class ConstitutiveTangentLocal1x1;
 class ConstitutiveTangentLocal2x2;
 class ConstitutiveTangentLocal3x3;
@@ -55,6 +60,22 @@ public:
     virtual ~ConstitutiveBase()
     {}
 
+    //! @brief ... evaluate the constitutive relation in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    virtual NuTo::Error::eError Evaluate2D(const ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
+
+    //! @brief ... evaluate the constitutive relation in 3D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    virtual NuTo::Error::eError Evaluate3D(const ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
+
     // parameters /////////////////////////////////////////////////////////////
     //! @brief ... get density
     //! @return ... density
@@ -84,6 +105,14 @@ public:
     //! @brief ... set Poisson's ratio
     //! @param rNu ... Poisson's ratio
     virtual void SetPoissonsRatio(double rNu);
+
+    //! @brief ... get thermal expansion coefficient
+    //! @return ... thermal expansion coefficient
+    virtual double GetThermalExpansionCoefficient() const;
+
+    //! @brief ... set thermal expansion coefficient
+    //! @param rAlpha ... thermal expansion coefficient
+    virtual void SetThermalExpansionCoefficient(double rAlpha);
 
     //! @brief ... get factor to modify Poisson's ratio (using random fields)
     //! @param rElement ...  element
@@ -360,6 +389,22 @@ public:
     //! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
     virtual void SetNumPossibleCrackShifts(int rNumPossibleCrackShifts);
 
+    //! @brief ... get HeatCapacity
+    //! @return ... HeatCapacity
+    virtual double GetHeatCapacity() const;
+
+    //! @brief ... set HeatCapacity
+    //! @param rHeatCapacity ... HeatCapacity
+    virtual void SetHeatCapacity(double rHeatCapacity);
+
+    //! @brief ... get thermal conductivity
+    //! @return ... thermal conductivity
+    virtual double GetThermalConductivity() const;
+
+    //! @brief ... set thermal conductivity
+    //! @param rRho ... thermal conductivity
+    virtual void SetThermalConductivity(double rThermalConductivity);
+
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship
@@ -406,6 +451,10 @@ public:
     //! @brief ... avoid dynamic cast
     //! @return ... see brief explanation
     virtual ConstitutiveLatticeStressStrain* AsConstitutiveLatticeStressStrain();
+
+    //! @brief ... allocate the correct static data
+    //! @return ... see brief explanation
+    virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const;
 
 
 #ifdef ENABLE_SERIALIZATION

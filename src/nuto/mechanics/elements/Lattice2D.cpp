@@ -104,6 +104,15 @@ NuTo::Lattice2D::Lattice2D(const NuTo::StructureBase* rStructure,
     }
 }
 
+//! @brief calculates output data fo the elmement
+//! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+//!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+NuTo::Error::eError NuTo::Lattice2D::Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput)
+{
+	throw MechanicsException("[NuTo::Lattice2D::Evaluate] not implemented.");
+}
+
+
 void NuTo::Lattice2D::CalculateHelpTransformationGlobalLocal(
 		Eigen::Matrix<double,2,2>& rAinv,
 		boost::array<double, 2>& rCoordinatesNode0)const

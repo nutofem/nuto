@@ -22,6 +22,34 @@ NuTo::ConstitutiveBase::ConstitutiveBase()
     this->mParametersValid = false;
 }
 
+//! @brief ... evaluate the constitutive relation in 2D
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(const ElementBase* rElement, int rIp,
+		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
+{
+	std::cout << "[ConstitutiveBase::Evaluate] make this function pure virtual." << std::endl;
+	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
+	return Error::SUCCESSFUL;
+}
+
+//! @brief ... evaluate the constitutive relation in 3D
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(const ElementBase* rElement, int rIp,
+		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
+{
+	std::cout << "[ConstitutiveBase::Evaluate] make this function pure virtual." << std::endl;
+	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
+	return Error::SUCCESSFUL;
+}
+
 // set density
 void NuTo::ConstitutiveBase::SetDensity(double rRho)
 {
@@ -45,6 +73,20 @@ void NuTo::ConstitutiveBase::SetYoungsModulus(double rE)
 double NuTo::ConstitutiveBase::GetYoungsModulus() const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetYoungsModulus] The constitutive relationship does not have a parameter Young's modulus.");
+}
+
+//! @brief ... get thermal expansion coefficient
+//! @return ... thermal expansion coefficient
+double NuTo::ConstitutiveBase::GetThermalExpansionCoefficient() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetThermalExpansionCoefficient] The constitutive relationship does not have a thermal expansion coefficient.");
+}
+
+//! @brief ... set thermal expansion coefficient
+//! @param rAlpha ... thermal expansion coefficient
+void NuTo::ConstitutiveBase::SetThermalExpansionCoefficient(double rAlpha)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetThermalExpansionCoefficient] The constitutive relationship does not have a thermal expansion coefficient.");
 }
 
 //! @brief ... get factor to modify Young's modulus (using random fields)
@@ -544,6 +586,34 @@ void NuTo::ConstitutiveBase::SetNumPossibleCrackShifts(int rNumPossibleCrackShif
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNumPossibleCrackShifts] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get HeatCapacity
+//! @return ... HeatCapacity
+double NuTo::ConstitutiveBase::GetHeatCapacity() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetHeatCapacity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set HeatCapacity
+//! @param rHeatCapacity ... HeatCapacity
+void NuTo::ConstitutiveBase::SetHeatCapacity(double rHeatCapacity)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetHeatCapacity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get thermal conductivity
+//! @return ... thermal conductivity
+double NuTo::ConstitutiveBase::GetThermalConductivity() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetThermalConductivity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set thermal conductivity
+//! @param rRho ... thermal conductivity
+void NuTo::ConstitutiveBase::SetThermalConductivity(double rThermalConductivity)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetThermalConductivity] The constitutive relationship does not have this parameter.");
+}
+
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
@@ -592,11 +662,20 @@ const NuTo::ConstitutiveLatticeStressStrain* NuTo::ConstitutiveBase::AsConstitut
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveLatticeStressStrain] Constitutive Law is not of type LatticeStressStrain.");
 }
 
+
 // info routine
 void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
 }
+
+//! @brief ... allocate the correct static data
+//! @return ... see brief explanation
+NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain3D] Allocate routine for 3D EngineeringStressStrain not implemented.");
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

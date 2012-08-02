@@ -16,6 +16,7 @@ namespace NuTo
 class LinearElastic;
 class ConstitutiveMisesPlasticity;
 class ConstitutiveLatticeConcrete;
+class LinearHeatFlux;
 template <class T> class FullMatrix;
 //! @brief ... tangent matrix for local constitutive formulations
 //! @author Jörg F. Unger, ISM
@@ -30,6 +31,7 @@ class ConstitutiveTangentLocal3x3: public NuTo::ConstitutiveTangentBase
     friend class Multiscale;
     friend class NonlocalDamagePlasticity;
     friend class ConstitutiveLatticeConcrete;
+    friend class LinearHeatFlux;
 
 public:
     //! @brief ... constructor
@@ -52,6 +54,11 @@ public:
     //! @brief ... get the tangent matrix
     //! @brief ... pointer to the tangent matrix (column major storage)
     const double* GetData() const;
+
+    NuTo::ConstitutiveTangentLocal3x3& GetConstitutiveTangentLocal3x3()
+    {
+    	return *this;
+    }
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3()

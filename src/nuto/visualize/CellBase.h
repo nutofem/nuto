@@ -28,6 +28,8 @@ public:
     //! @param rDataTypes ... data type definitions
     CellBase(const std::vector<VisualizeDataType>& rDataTypes);
 
+    virtual ~CellBase(){};
+
     //! @brief ... return number of cell points
     //! @return ... number of cell points
     virtual unsigned int GetNumPoints() const = 0;

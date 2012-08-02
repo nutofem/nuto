@@ -27,6 +27,11 @@ public:
     		IpData::eIpDataType rIpDataType
     		);
 
+    //! @brief calculates output data fo the elmement
+    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+    NuTo::Error::eError Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput);
+
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
     //! @param rResult ... coefficient matrix
@@ -158,12 +163,6 @@ public:
     //! relevant only for 2D and 3D truss elements
     virtual void BlowLocalVectorToGlobal(NuTo::FullMatrix<double>& rFullVector)const=0;
 
-    // calculate list of global dofs related to the entries in the element stiffness matrix
-    // rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    // rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    virtual void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const=0;
-
-
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
@@ -199,6 +198,18 @@ protected:
     Truss(){}
 
     const SectionBase *mSection;
+
+    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
+    //! @param rGlobalRowDofs ... vector of global row dofs
+    //! @param rNumDisp ... number of displacement dofs
+    //! @param rNumTemp ... number of temperature dofs
+    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const=0;
+
+    //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
+    //! @param rGlobalColumnDofs ... vector of global column dofs
+    //! @param rNumDisp ... number of displacement dofs
+    //! @param rNumTemp ... number of temperature dofs
+    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const=0;
 
     //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
     //! @param rShapeFunctions ... shape functions

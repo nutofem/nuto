@@ -230,9 +230,9 @@ NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(
 
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
-        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
+        fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
 
-        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
         //std::cout << "last converged dofs " << activeDOF.Norm() <<  " " << dependentDOF.Norm()<< "\n";
         //activeDOF.Trans().Info(12,5);
         //dependentDOF.Trans().Info(12,5);
@@ -286,7 +286,7 @@ NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(
                     //set load factor to zero in order to get the same ordering of the displacements as before the routine
                     fineScaleStructure->SetLoadFactor(0);
                     fineScaleStructure->NodeBuildGlobalDofs();
-                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                    fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
                 }
                 std::cout << "[NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain] return with no convergence for ip "<< fineScaleStructure->GetIPName() << "\n";
                 return error;
@@ -344,7 +344,7 @@ NuTo::Error::eError NuTo::Multiscale::GetEngineeringStressFromEngineeringStrain(
             //set load factor to zero in order to get the same ordering of the displacements as before the routine
             fineScaleStructure->SetLoadFactor(0);
             fineScaleStructure->NodeBuildGlobalDofs();
-            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
         }
         fineScaleStructure->GetLogger().CloseFile();
     }
@@ -506,8 +506,8 @@ NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringSt
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
-        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 
         //Get and set previous delta strain
         EngineeringStrain2D engineeringStrain;
@@ -557,7 +557,7 @@ NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringSt
                     //set load factor to zero in order to get the same ordering of the displacements as before the routine
                     fineScaleStructure->SetLoadFactor(0);
                     fineScaleStructure->NodeBuildGlobalDofs();
-                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                    fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
                 }
                 std::cout << "[NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringStrain] return with no convergence for ip "<< fineScaleStructure->GetIPName() << "\n";
                 return error;
@@ -700,7 +700,7 @@ NuTo::Error::eError NuTo::Multiscale::GetTangent_EngineeringStress_EngineeringSt
             //fineScaleStructure->ConstraintAdd(fineScaleStructure->GetConstraintCrackAngle(),nonlinearConstraintAlphaPtr);
             fineScaleStructure->SetLoadFactor(0);
             fineScaleStructure->NodeBuildGlobalDofs();
-            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
         }
 		//std::cout << "crack opening "<< fineScaleStructure->GetGlobalCrackOpening2D()[0] << " " << fineScaleStructure->GetGlobalCrackOpening2D()[1] << std::endl;
 		//std::cout << "crack angle "<< fineScaleStructure->GetCrackAngle()*180./M_PI << ", crack angle elastic "<< fineScaleStructure->GetCrackAngleElastic()*180./M_PI  << std::endl;
@@ -843,8 +843,8 @@ NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_Enginee
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
         NuTo::FullMatrix<double> activeDOF, dependentDOF;
-        fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 
         // calculate engineering strain
         EngineeringStrain2D deltaStrain(engineeringStrain-prevStrain);
@@ -892,7 +892,7 @@ NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_Enginee
                     //set load factor to zero in order to get the same ordering of the displacements as before the routine
                     fineScaleStructure->SetLoadFactor(0);
                     fineScaleStructure->NodeBuildGlobalDofs();
-                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                    fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
                 }
                 std::cout << "[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] return with no convergence for ip "<< fineScaleStructure->GetIPName() << "\n";
                 return error;
@@ -914,7 +914,7 @@ NuTo::Error::eError NuTo::Multiscale::UpdateStaticData_EngineeringStress_Enginee
                 //set load factor to zero in order to get the same ordering of the displacements as before the routine
                 fineScaleStructure->SetLoadFactor(0);
                 fineScaleStructure->NodeBuildGlobalDofs();
-                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
             }
             e.AddMessage(std::string("[NuTo::Multiscale::UpdateStaticData_EngineeringStress_EngineeringStrain] Error in performing Newton-iteration on fine scale for ip") + fineScaleStructure->GetIPName());
         	throw e;
@@ -1080,8 +1080,8 @@ NuTo::Error::eError NuTo::Multiscale::GetTotalEnergy_EngineeringStress_Engineeri
     fineScaleStructure->SetLoadFactor(0);
     fineScaleStructure->NodeBuildGlobalDofs();
     NuTo::FullMatrix<double> activeDOF, dependentDOF;
-    fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+    fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
+    fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 
     // calculate engineering strain
     EngineeringStrain2D engineeringStrain;
@@ -1134,7 +1134,7 @@ NuTo::Error::eError NuTo::Multiscale::GetTotalEnergy_EngineeringStress_Engineeri
                 //set load factor to zero in order to get the same ordering of the displacements as before the routine
                 fineScaleStructure->SetLoadFactor(0);
                 fineScaleStructure->NodeBuildGlobalDofs();
-                fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
             }
             std::cout << "[NuTo::Multiscale::GetTotalEnergy_EngineeringStress_EngineeringStrain] return with no convergence " << "\n";
             return error;
@@ -1196,7 +1196,7 @@ NuTo::Error::eError NuTo::Multiscale::GetTotalEnergy_EngineeringStress_Engineeri
         //set load factor to zero in order to get the same ordering of the displacements as before the routine
         fineScaleStructure->SetLoadFactor(0);
         fineScaleStructure->NodeBuildGlobalDofs();
-        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+        fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
     }
     fineScaleStructure->GetLogger() << "Energy of fine scale exact  "  << fineScaleStructure->ElementTotalGetTotalEnergy()  << "\n";
     fineScaleStructure->GetLogger() << "Energy of fine scale approx "  << rEnergy * fineScaleStructure->GetCoarseScaleArea() << "\n";
@@ -1924,8 +1924,8 @@ bool NuTo::Multiscale::CheckStiffness(NuTo::StructureMultiscale* rFineScaleStruc
     NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
     NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
-    rFineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-    rFineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    rFineScaleStructure->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    rFineScaleStructure->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     rFineScaleStructure->ElementTotalUpdateTmpStaticData();
     rFineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector1);
     std::cout << "check stiffness:: intForceVector1"<< std::endl;
@@ -1935,7 +1935,7 @@ bool NuTo::Multiscale::CheckStiffness(NuTo::StructureMultiscale* rFineScaleStruc
     for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
     {
         displacementsActiveDOFsCheck(count,0)+=interval;
-        rFineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        rFineScaleStructure->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
         rFineScaleStructure->ElementTotalUpdateTmpStaticData();
         rFineScaleStructure->BuildGlobalGradientInternalPotentialVector(intForceVector2);
         std::cout << "check stiffness:: intForceVector2"<< std::endl;
@@ -1947,7 +1947,7 @@ bool NuTo::Multiscale::CheckStiffness(NuTo::StructureMultiscale* rFineScaleStruc
         intForceVectorCDF(count,0) = (energy2-energy1)/interval;
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
-    rFineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    rFineScaleStructure->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-3)
     {
         std::cout << "globalStiffnessMatrix algo" << std::endl;
@@ -1987,22 +1987,22 @@ bool NuTo::Multiscale::CheckGradient(NuTo::StructureMultiscale* rFineScaleStruct
     NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
     NuTo::FullMatrix<double> intForceVectorCDF(intForceVector.GetNumRows(),1);
     double energy1,energy2;
-    rFineScaleStructure->NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-    rFineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    rFineScaleStructure->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+    rFineScaleStructure->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     rFineScaleStructure->ElementTotalUpdateTmpStaticData();
     energy1 = rFineScaleStructure->ElementTotalGetTotalEnergy();
     energy1 += rFineScaleStructure->ConstraintTotalGetTotalEnergy();
     for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
     {
         displacementsActiveDOFsCheck(count,0)+=interval;
-        rFineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+        rFineScaleStructure->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
         rFineScaleStructure->ElementTotalUpdateTmpStaticData();
         energy2 = rFineScaleStructure->ElementTotalGetTotalEnergy();
         energy2 += rFineScaleStructure->ConstraintTotalGetTotalEnergy();
         intForceVectorCDF(count,0) = (energy2-energy1)/interval;
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
-    rFineScaleStructure->NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
+    rFineScaleStructure->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     if ((intForceVectorCDF-intForceVector).Abs().Max()>1e-3)
     {
         std::cout << "intForceVector algo" << std::endl;
@@ -2136,8 +2136,8 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 		//fineScaleStructure->ConstraintInfo(10);
 		fineScaleStructure->NodeBuildGlobalDofs();
 		NuTo::FullMatrix<double> activeDOF, dependentDOF;
-		fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-		fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+		fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
+		fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 
 		// calculate delta engineering strain from zero to the previous strain
 		fineScaleStructure->SetDeltaTotalEngineeringStrain(staticData->GetPrevStrain());
@@ -2221,8 +2221,8 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
             fineScaleStructure->SetLoadFactor(0);
             fineScaleStructure->NodeBuildGlobalDofs();
             NuTo::FullMatrix<double> activeDOF, dependentDOF;
-            fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-            fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+            fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
+            fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 
             //Get and set previous delta strain
             EngineeringStrain2D engineeringStrain;
@@ -2276,7 +2276,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
                     //set load factor to zero in order to get the same ordering of the displacements as before the routine
                     fineScaleStructure->SetLoadFactor(0);
                     fineScaleStructure->NodeBuildGlobalDofs();
-                    fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+                    fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
                 }
                 std::cout << std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
                 e.AddMessage(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] No convergence in multiscale for ip ") + fineScaleStructure->GetIPName());
@@ -2462,7 +2462,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
     	        //set load factor to zero in order to get the same ordering of the displacements as before the routine
     	        fineScaleStructure->SetLoadFactor(0);
     	        fineScaleStructure->NodeBuildGlobalDofs();
-    	        fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+    	        fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
     	    }
 
     	    //if (engineeringStrain.mEngineeringStrain[0]>0.0001)
@@ -2525,8 +2525,8 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 
 				fineScaleStructure->SetLoadFactor(0);
 				fineScaleStructure->NodeBuildGlobalDofs();
-				fineScaleStructure->NodeExtractDofValues(activeDOF,dependentDOF);
-				fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+				fineScaleStructure->NodeExtractDofValues(0,activeDOF,dependentDOF);
+				fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 
 				//Get and set previous delta strain
 				EngineeringStrain2D zeroDeltaStrain;
@@ -2567,7 +2567,7 @@ NuTo::Error::eError NuTo::Multiscale::MultiscaleSwitchToNonlinear(ElementBase* r
 						//set load factor to zero in order to get the same ordering of the displacements as before the routine
 						fineScaleStructure->SetLoadFactor(0);
 						fineScaleStructure->NodeBuildGlobalDofs();
-						fineScaleStructure->NodeMergeActiveDofValues(activeDOF);
+						fineScaleStructure->NodeMergeActiveDofValues(0,activeDOF);
 					}
 					std::cout << std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] Error in performing Newton-iteration on fine scale for ip ") + fineScaleStructure->GetIPName() << std::endl;
 					e.AddMessage(std::string("[NuTo::Multiscale::MultiscaleSwitschToNonlinear] No convergence in multiscale for ip ") + fineScaleStructure->GetIPName());

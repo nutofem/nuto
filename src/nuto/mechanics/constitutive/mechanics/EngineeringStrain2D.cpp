@@ -12,7 +12,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 
-NuTo::EngineeringStrain2D::EngineeringStrain2D()
+NuTo::EngineeringStrain2D::EngineeringStrain2D() : ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
 	mEngineeringStrain[0] = 0.0;
 	mEngineeringStrain[1] = 0.0;
@@ -21,9 +21,9 @@ NuTo::EngineeringStrain2D::EngineeringStrain2D()
 
 NuTo::EngineeringStrain2D::EngineeringStrain2D(const DeformationGradient2D& rDeformationGradient)
 {
-    mEngineeringStrain[0] = rDeformationGradient.GetDeformationGradient2D()[0] -1;
-    mEngineeringStrain[1] = rDeformationGradient.GetDeformationGradient2D()[3] -1;
-    mEngineeringStrain[2] = rDeformationGradient.GetDeformationGradient2D()[1]+rDeformationGradient.GetDeformationGradient2D()[2];
+    mEngineeringStrain[0] = rDeformationGradient.mDeformationGradient[0] -1;
+    mEngineeringStrain[1] = rDeformationGradient.mDeformationGradient[3] -1;
+    mEngineeringStrain[2] = rDeformationGradient.mDeformationGradient[1]+rDeformationGradient.mDeformationGradient[2];
 }
 
 NuTo::EngineeringStrain2D::EngineeringStrain2D(const EngineeringStrain2D& rEngineeringStrain)
@@ -74,7 +74,8 @@ void NuTo::EngineeringStrain2D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStrain2D" << std::endl;
 #endif
-   ar & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
+       & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStrain2D" << std::endl;
 #endif

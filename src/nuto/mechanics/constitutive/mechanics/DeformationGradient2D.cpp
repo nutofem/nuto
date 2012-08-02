@@ -17,8 +17,10 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 
+#include "nuto/mechanics/MechanicsException.h"
+
 // constructor
-NuTo::DeformationGradient2D::DeformationGradient2D()
+NuTo::DeformationGradient2D::DeformationGradient2D(): ConstitutiveInputBase::ConstitutiveInputBase()
 {
     this->mDeformationGradient[0] = 0.0;
     this->mDeformationGradient[1] = 0.0;
@@ -26,14 +28,15 @@ NuTo::DeformationGradient2D::DeformationGradient2D()
     this->mDeformationGradient[3] = 0.0;
 }
 
-//! @brief ... copy constructor
+/*//! @brief ... copy constructor
 NuTo::DeformationGradient2D::DeformationGradient2D(const DeformationGradient1D& rOther)
 {
-	mDeformationGradient[0] = rOther.GetDeformationGradient1D()[0];
+	mDeformationGradient[0] = rOther.mDeformationGradient[0];
     mDeformationGradient[1] = 0.0;
     mDeformationGradient[2] = 0.0;
     mDeformationGradient[3] = 0.0;
 }
+*/
 
 //! @brief ... copy constructor
 NuTo::DeformationGradient2D::DeformationGradient2D(const DeformationGradient2D& rOther)
@@ -52,9 +55,9 @@ unsigned int NuTo::DeformationGradient2D::GetNumberOfComponents() const
 }
 
 // get deformation gradient
-const double* NuTo::DeformationGradient2D::GetDeformationGradient2D() const
+const NuTo::DeformationGradient2D& NuTo::DeformationGradient2D::GetDeformationGradient2D() const
 {
-    return this->mDeformationGradient;
+    return *this;
 }
 
 void NuTo::DeformationGradient2D::GetDeformationGradient(NuTo::DeformationGradient2D& rDeformationGradient) const
@@ -62,10 +65,11 @@ void NuTo::DeformationGradient2D::GetDeformationGradient(NuTo::DeformationGradie
     rDeformationGradient = NuTo::DeformationGradient2D(*this);
 }
 
-void NuTo::DeformationGradient2D::GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const
+/*void NuTo::DeformationGradient2D::GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const
 {
 	rDeformationGradient = NuTo::DeformationGradient3D(*this);
 }
+*/
 
 // set deformation gradient
 void NuTo::DeformationGradient2D::SetDeformationGradient2D(const double* rDeformationGradient)
@@ -79,22 +83,25 @@ void NuTo::DeformationGradient2D::SetDeformationGradient2D(const double* rDeform
 // calculate engineering strain
 void NuTo::DeformationGradient2D::GetEngineeringStrain(NuTo::EngineeringStrain2D& rEngineeringStrain) const
 {
-	rEngineeringStrain =  NuTo::EngineeringStrain2D(*this);
+	rEngineeringStrain.mEngineeringStrain[0] = mDeformationGradient[0] -1;
+	rEngineeringStrain.mEngineeringStrain[1] = mDeformationGradient[3] -1;
+	rEngineeringStrain.mEngineeringStrain[2] = mDeformationGradient[1]+mDeformationGradient[2];
 }
 
 void NuTo::DeformationGradient2D::GetEngineeringStrain(NuTo::EngineeringStrain3D& rEngineeringStrain) const
 {
-	rEngineeringStrain =  NuTo::EngineeringStrain3D(*this);}
+	throw MechanicsException("[NuTo::DeformationGradient2D::GetGreenLagrangeStrain] to be implemented.");
+}
 
 // calculate Green strain
 void NuTo::DeformationGradient2D::GetGreenLagrangeStrain(NuTo::GreenLagrangeStrain2D& rGreenLagrangeStrain) const
 {
-	rGreenLagrangeStrain = NuTo::GreenLagrangeStrain2D(*this);
+	throw MechanicsException("[NuTo::DeformationGradient2D::GetGreenLagrangeStrain] to be implemented.");
 }
 
 void NuTo::DeformationGradient2D::GetGreenLagrangeStrain(NuTo::GreenLagrangeStrain3D& rGreenLagrangeStrain) const
 {
-	rGreenLagrangeStrain = NuTo::GreenLagrangeStrain3D(*this);
+	throw MechanicsException("[NuTo::DeformationGradient2D::GetGreenLagrangeStrain] to be implemented.");
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -113,7 +120,8 @@ void NuTo::DeformationGradient2D::serialize(Archive & ar, const unsigned int ver
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize DeformationGradient2D" << std::endl;
 #endif
-   ar & BOOST_SERIALIZATION_NVP(mDeformationGradient);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveInputBase)
+       & BOOST_SERIALIZATION_NVP(mDeformationGradient);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize DeformationGradient2D" << std::endl;
 #endif

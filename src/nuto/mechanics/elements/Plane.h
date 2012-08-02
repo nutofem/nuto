@@ -36,6 +36,11 @@ public:
         return 3;
     }
 
+    //! @brief calculates output data fo the elmement
+    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+    Error::eError Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput);
+
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
     //! @param rResult ... coefficient matrix
@@ -93,6 +98,11 @@ public:
     void CalculateDeformationGradient(const std::vector<double>& rDerivativeShapeFunctionsLocal,
                                       const std::vector<double>& rDisp,
                                       DeformationGradient2D& rDeformationGradient)const;
+
+    //! @brief stores the temperatures of the nodes
+    //! @param temperature vector with already correct size allocated
+    //! this can be checked with an assertation
+    void CalculateTemperatures(std::vector<double>& rTemperatures)const;
 
     //! @brief Calculates the the inverse of the Jacobian and its determinant
     //! @param rDerivativeShapeFunctions Derivatives of the shape functions (dN1dx, dN1dy, dN1dz, dN2dx, ..
@@ -234,11 +244,15 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-//    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const;
+    //! @param rNumDisp ... number of displacement dofs
+    //! @param rNumTemp ... number of temperature dofs
+    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const=0;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-//    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const;
+    //! @param rNumDisp ... number of displacement dofs
+    //! @param rNumTemp ... number of temperature dofs
+    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const=0;
 
     const SectionBase *mSection;
 };

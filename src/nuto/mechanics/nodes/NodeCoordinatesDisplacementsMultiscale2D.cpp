@@ -8,19 +8,19 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
 #include "nuto/mechanics/structures/unstructured/StructureMultiscale.h"
 
 //! @brief constructor
 NuTo::NodeCoordinatesDisplacementsMultiscale2D::NodeCoordinatesDisplacementsMultiscale2D(NuTo::StructureMultiscale* rStructureMultiscale, bool rCrackedDomain):
-    NuTo::NodeCoordinates2D::NodeCoordinates2D (), NuTo::NodeDisplacementsMultiscale2D::NodeDisplacementsMultiscale2D(rStructureMultiscale, rCrackedDomain)
+    NuTo::NodeCoordinates<2>::NodeCoordinates (), NuTo::NodeDisplacementsMultiscale2D::NodeDisplacementsMultiscale2D(rStructureMultiscale, rCrackedDomain)
 {
 }
 
 NuTo::NodeCoordinatesDisplacementsMultiscale2D& NuTo::NodeCoordinatesDisplacementsMultiscale2D::operator= (NuTo::NodeCoordinatesDisplacementsMultiscale2D const& rOther)
 {
-    NuTo::NodeCoordinates2D::operator= (rOther);
+	NodeCoordinates<2>::operator= (rOther);
     NuTo::NodeDisplacementsMultiscale2D::operator= (rOther);
     return *this;
 }
@@ -39,7 +39,7 @@ void NuTo::NodeCoordinatesDisplacementsMultiscale2D::serialize(Archive & ar, con
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize NodeCoordinatesDisplacementsMultiscale2D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeCoordinates2D)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(BOOST_IDENTITY_TYPE((NodeCoordinates<2>)))
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacementsMultiscale2D);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize NodeCoordinatesDisplacementsMultiscale2D" << std::endl;

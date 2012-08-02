@@ -17,6 +17,8 @@ class MonadicOperator
 public:
     MonadicOperator<T>()
     {}
+    virtual ~MonadicOperator<T>()
+    {}
 
     //! @brief ... operater with one inputs and one output
     //! @param rInput ... input
@@ -35,6 +37,9 @@ class DyadicOperator
 {
 public:
     DyadicOperator<T>()
+    {}
+
+    virtual ~DyadicOperator<T>()
     {}
 
     //! @brief ... operater with two inputs and one output
