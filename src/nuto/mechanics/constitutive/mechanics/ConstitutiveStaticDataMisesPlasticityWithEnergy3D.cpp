@@ -28,7 +28,7 @@ NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D& NuTo::ConstitutiveStati
 //! @brief check, if the static data is compatible with a given element and a given constitutive model
 bool NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const
 {
-	if (rConstitutiveType==NuTo::Constitutive::MISES_PLASTICITY)
+	if (rConstitutiveType==NuTo::Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS)
 	{
 		if (rElementType==NuTo::Element::BRICK8N || rElementType==NuTo::Element::TETRAHEDRON4N || rElementType==NuTo::Element::TETRAHEDRON10N)
 			return true;

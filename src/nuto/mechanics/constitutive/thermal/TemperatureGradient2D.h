@@ -21,7 +21,7 @@ class TemperatureGradient2D : public ConstitutiveInputBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
-    friend class Solid;
+    friend class Plane;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure

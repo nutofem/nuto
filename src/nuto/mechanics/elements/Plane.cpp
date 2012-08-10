@@ -17,10 +17,9 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/thermal/HeatFlux2D.h"
 #include "nuto/mechanics/constitutive/thermal/HeatFlux3D.h"
+#include "nuto/mechanics/constitutive/thermal/Temperature.h"
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient2D.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal3x3.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
+#include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
@@ -30,7 +29,6 @@
 #include "nuto/mechanics/elements/Plane.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
@@ -48,327 +46,505 @@ NuTo::Plane::Plane(const StructureBase* rStructure, ElementData::eElementDataTyp
 //! @brief calculates output data fo the elmement
 //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
 //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
-NuTo::Error::eError NuTo::Plane::Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rElementOutput)
+NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput)
 {
-    // get section information determining which input on the constitutive level should be used
-    const SectionBase* section(GetSection());
-    if (section==0)
-        throw MechanicsException("[NuTo::Plane::Evaluate] no section allocated for element.");
+	if (mStructure->GetHessianConstant(1)==false)
+    	throw MechanicsException("[NuTo::Plane::Evaluate] only implemented for a constant Hessian for the first derivative (damping).");
+    if (mStructure->GetHessianConstant(2)==false)
+    	throw MechanicsException("[NuTo::Plane::Evaluate] only implemented for a constant Hessian for the second derivative (mass).");
 
-    //calculate coordinates
-    int numLocalCoordinates(2*GetNumShapeFunctions());
-    std::vector<double> localNodeCoord(numLocalCoordinates);
-    CalculateLocalCoordinates(localNodeCoord);
-
-    //calculate local displacements
-    int numLocalDisp(2*GetNumShapeFunctions());
-    std::vector<double> localNodeDisp(numLocalDisp);
-    if (section->GetInputConstitutiveIsDeformationGradient())
+    try
     {
-    	CalculateLocalDisplacements(localNodeDisp);
-    }
-    int numLocalDispDofs(0);
-    if (section->GetIsDisplacementDof())
-    	numLocalDispDofs = numLocalDisp;
+    	// get section information determining which input on the constitutive level should be used
+		const SectionBase* section(GetSection());
+		if (section==0)
+			throw MechanicsException("[NuTo::Plane::Evaluate] no section allocated for element.");
 
-    //calculate temperatures
-    int numTemp(GetNumShapeFunctions());
-    std::vector<double> nodeTemp(numTemp);
-    if (section->GetInputConstitutiveIsTemperatureGradient() || section->GetInputConstitutiveIsTemperature())
-    {
-        CalculateTemperatures(nodeTemp);
-    }
-    int numTempDofs(0);
-    if (section->GetIsTemperatureDof())
-        numTempDofs=numTemp;
+		//calculate coordinates
+		int numLocalCoordinates(2*GetNumShapeFunctions());
+		std::vector<double> localNodeCoord(numLocalCoordinates);
+		CalculateLocalCoordinates(localNodeCoord);
 
-    //allocate space for ip coordinates in natural coordinate system (-1,1)
-    double naturalIPCoord[2];
-    double nonlocalNaturalIPCoord[2];
+		//calculate local displacements
+		int numLocalDisp(2*GetNumShapeFunctions());
+		std::vector<double> localNodeDisp(numLocalDisp);
+		if (section->GetInputConstitutiveIsDeformationGradient())
+		{
+			CalculateLocalDisplacements(localNodeDisp);
+		}
+		int numLocalDispDofs(0);
+		if (section->GetIsDisplacementDof())
+			numLocalDispDofs = numLocalDisp;
 
-    //allocate space for derivatives of shape functions in natural coordinate system
-    std::vector<double> derivativeShapeFunctionsNatural(2*GetNumShapeFunctions());
-    //allocate space for derivatives of shape functions in local coordinate system
-    std::vector<double> derivativeShapeFunctionsLocal(2*GetNumShapeFunctions());
+		//calculate temperatures
+		int numTemp(GetNumShapeFunctions());
+		std::vector<double> nodeTemp(numTemp);
+		if (section->GetInputConstitutiveIsTemperatureGradient() || section->GetInputConstitutiveIsTemperature())
+		{
+			CalculateTemperatures(nodeTemp);
+		}
+		int numTempDofs(0);
+		if (section->GetIsTemperatureDof())
+			numTempDofs=numTemp;
 
-    std::vector<double> nonlocalDerivativeShapeFunctionsNatural;
-    std::vector<double> nonlocalDerivativeShapeFunctionsLocal;
+		//allocate space for ip coordinates in natural coordinate system (-1,1)
+		double naturalIPCoord[2];
+		double nonlocalNaturalIPCoord[2];
 
-    //allocate deformation gradient
-    DeformationGradient2D deformationGradient;
+		//allocate space for derivatives of shape functions in natural coordinate system
+		std::vector<double> derivativeShapeFunctionsNatural(2*GetNumShapeFunctions());
+		//allocate space for derivatives of shape functions in local coordinate system
+		std::vector<double> derivativeShapeFunctionsLocal(2*GetNumShapeFunctions());
+		std::vector<double> shapeFunctions(GetNumShapeFunctions());    //allocate space for shape functions
 
-    EngineeringStrain2D engineeringStrain2D;
-    EngineeringStrain3D engineeringStrain3D;
+		std::vector<double> nonlocalDerivativeShapeFunctionsNatural;
+		std::vector<double> nonlocalDerivativeShapeFunctionsLocal;
 
-    //allocate global engineering plastic strain
-    EngineeringStrain2D engineeringplasticStrain;
+		//allocate deformation gradient
+		DeformationGradient2D deformationGradient;
 
-    //allocate damage
-    Damage damage;
+		EngineeringStrain2D engineeringStrain2D;
+		EngineeringStrain3D engineeringStrain3D;
 
-    //allocate temperature gradient
-    TemperatureGradient2D temperatureGradient;
+		//allocate global engineering plastic strain
+		EngineeringStrain3D engineeringPlasticStrain3D;
 
-    //allocate global engineering stress
-    EngineeringStress2D engineeringStress2D;
-    EngineeringStress3D engineeringStress3D;
+		//allocate damage
+		Damage damage;
 
-    //allocate global heat flux
-    HeatFlux2D heatFlux2D;
-    HeatFlux3D heatFlux3D;
+		//allocate temperature
+	    Temperature temperature;
 
-    //allocate vector of tangent matrices
-    int NumNonlocalElements(GetNumNonlocalElements());
-    // in case of a local formulation, just use a nonlocal matrix with 1 entry
+		//allocate temperature gradient
+		TemperatureGradient2D temperatureGradient;
 
-    // calculate number of DOFS involved in all nonlocal elements
-    int NumNonlocalIps;
-    int numNonlocalDofs(0);
-    if (NumNonlocalElements==0)
-    {
-        NumNonlocalIps = 1;
-        numNonlocalDofs = numLocalDispDofs + numTempDofs;
-    }
-    else
-    {
-        //allocate and initialize result matrix
-        const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
-        NumNonlocalIps=0;
-        numNonlocalDofs=0;
-        for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
-        {
-        	numNonlocalDofs += nonlocalElements[theNonlocalElement]->AsPlane()->GetNumLocalDofs();
-            NumNonlocalIps += nonlocalElements[theNonlocalElement]->GetNumIntegrationPoints();
-        }
-    }
+		//allocate global engineering stress
+		EngineeringStress2D engineeringStress2D;
+		EngineeringStress3D engineeringStress3D;
 
-    //can't use an array here, since that does not allow to call the nondefault constructor
-    ConstitutiveTangentNonlocal<3,3> nonlocalTangentStressStrain[3];
-    //ConstitutiveTangentNonlocal<3,1> nonlocalTangentStressTemperature(NumNonlocalIps)[3];
-    ConstitutiveTangentLocal<2,2> tangentHeatFluxTemperatureGradient[3];
+		//allocate global heat flux
+		HeatFlux2D heatFlux2D;
+		HeatFlux3D heatFlux3D;
 
-    //InvJacobian and determinant of Jacobian
-    double invJacobian[4], detJac;
+		//allocate vector of tangent matrices
+		int NumNonlocalElements(GetNumNonlocalElements());
+		// in case of a local formulation, just use a nonlocal matrix with 1 entry
 
-    //InvJacobian and determinant of Jacobian for nonlocal model
-     double nonlocalInvJacobian[4], nonlocalDetJac;
-
-    //define inputs and outputs
-    std::map< NuTo::Constitutive::eInput, const ConstitutiveInputBase* > constitutiveInputList;
-    std::map< NuTo::Constitutive::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
-
-    if (section->GetInputConstitutiveIsDeformationGradient())
-    {
-        constitutiveInputList[NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_2D] = &deformationGradient;
-    }
-
-    if (section->GetInputConstitutiveIsTemperatureGradient())
-    {
-        constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_2D] = &temperatureGradient;
-    }
-
-    if (section->GetInputConstitutiveIsTemperature())
-    {
-        throw MechanicsException("[NuTo::Plane::Evaluate] Temperature dependence not yet implemented.");
-    	//constitutiveInputList.insert(std::pair<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>(NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_3D,&temperature));
-    }
-
-    //define outputs
-    for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
-    {
-    	switch(it->first)
-    	{
-    	case Element::INTERNAL_GRADIENT:
-    		it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,1);
-    		if (numLocalDispDofs>0)
-    		{
-     			constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_2D] = &engineeringStress2D;
-    		}
-    		if (numTempDofs>0)
-    		{
-    			constitutiveOutputList[NuTo::Constitutive::eOutput::HEAT_FLUX_2D] = &heatFlux2D;
-    		}
-    	break;
-    	case Element::HESSIAN_0_TIME_DERIVATIVE:
-    	case Element::HESSIAN_1_TIME_DERIVATIVE:
-    	case Element::HESSIAN_2_TIME_DERIVATIVE:
+		// calculate number of DOFS involved in all nonlocal elements
+		int NumNonlocalIps;
+		int numNonlocalDispDofs(0);
+		if (NumNonlocalElements==0)
+		{
+			NumNonlocalIps = 1;
+			numNonlocalDispDofs = numLocalDispDofs;
+		}
+		else
+		{
+			//allocate and initialize result matrix
+			const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
+			NumNonlocalIps=0;
+			numNonlocalDispDofs=0;
+			for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
 			{
-				int timeDerivative = (it->first == Element::HESSIAN_0_TIME_DERIVATIVE) ? 0 : (it->first == Element::HESSIAN_1_TIME_DERIVATIVE ? 1 : 2);
-				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,numDispDofs+numTempDofs);
+				numNonlocalDispDofs += nonlocalElements[theNonlocalElement]->AsPlane()->GetNumShapeFunctions()*2;
+				NumNonlocalIps += nonlocalElements[theNonlocalElement]->GetNumIntegrationPoints();
+			}
+		}
+
+		ConstitutiveTangentNonlocal<3,3> nonlocalTangentStressStrain;
+		//ConstitutiveTangentNonlocal<3,1> nonlocalTangentStressTemperature(NumNonlocalIps)[3];
+		ConstitutiveTangentLocal<2,2> tangentHeatFluxTemperatureGradient;
+		ConstitutiveTangentLocal<2,1> tangentHeatFluxTemperatureRate;
+
+		//InvJacobian and determinant of Jacobian
+		double invJacobian[4], detJac;
+
+		//InvJacobian and determinant of Jacobian for nonlocal model
+		 double nonlocalInvJacobian[4], nonlocalDetJac;
+
+		//define inputs and outputs
+		std::map< NuTo::Constitutive::eInput, const ConstitutiveInputBase* > constitutiveInputList;
+		std::map< NuTo::Constitutive::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
+
+		if (numLocalDispDofs>0)
+		{
+			constitutiveInputList[NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_2D] = &deformationGradient;
+		}
+
+		if (numTempDofs>0)
+		{
+			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_2D] = &temperatureGradient;
+		}
+
+		if (section->GetInputConstitutiveIsTemperature())
+		{
+			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE] = &temperature;
+		}
+
+		//define outputs
+		for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
+		{
+			switch(it->first)
+			{
+			case Element::INTERNAL_GRADIENT:
+				it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,1);
+	    	    //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
+	    		//on the global level
+	    		if (mStructure->GetHessianConstant(0)==false)
+	    	    {
+					if (numLocalDispDofs>0)
+					{
+						 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_2D] = &engineeringStress2D;
+					}
+					if (numTempDofs>0)
+					{
+						constitutiveOutputList[NuTo::Constitutive::eOutput::HEAT_FLUX_2D] = &heatFlux2D;
+					}
+	    	    }
+			break;
+			case Element::HESSIAN_0_TIME_DERIVATIVE:
+				{
+					it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,numNonlocalDispDofs+numTempDofs);
+					it->second->SetSymmetry(true);
+					it->second->SetConstant(true);
+
+					if (numLocalDispDofs>0)
+					{
+						if (NumNonlocalElements==0)
+						{
+							nonlocalTangentStressStrain.SetNumSubMatrices(1);
+							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &(nonlocalTangentStressStrain.GetSubMatrix_3x3(0));
+						}
+						else
+						{
+							nonlocalTangentStressStrain.SetNumSubMatrices(NumNonlocalIps);
+							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &nonlocalTangentStressStrain;
+						}
+
+						//mixed term
+						if (numTempDofs)
+							//constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE_2D] = &tangentStressTemperature[timeDerivative];
+							throw MechanicsException("[NuTo::Plane::Evaluate] Mixed problem not implemented.");
+					}
+					if (numTempDofs>0)
+					{
+						constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D] = &tangentHeatFluxTemperatureGradient;
+						//mixed term
+						//if (numDispDofs)
+						//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
+					}
+				}
+			break;
+			case Element::HESSIAN_1_TIME_DERIVATIVE:
+                it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,numNonlocalDispDofs+numTempDofs);
+                it->second->SetSymmetry(true);
+                it->second->SetConstant(true);
+                if (numLocalDispDofs>0)
+                {
+                        // Rayleigh damping should be introduced on the global level
+                }
+                if (numTempDofs>0)
+                {
+                        constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_RATE_2D] = &tangentHeatFluxTemperatureRate;
+                }
+			break;
+			case Element::HESSIAN_2_TIME_DERIVATIVE:
+	        {
+				it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,numNonlocalDispDofs+numTempDofs);
 				it->second->SetSymmetry(true);
 				it->second->SetConstant(true);
-				if (numDispDofs>0)
+				//there is only a constant mass part for the mechanics problem
+	        }
+			break;
+			case Element::UPDATE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+			break;
+			case Element::UPDATE_TMP_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+			break;
+			case Element::IP_DATA:
+				switch(it->second->GetIpDataType())
 				{
-					constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &tangentStressStrain[timeDerivative];
-					//mixed term
-					if (numTempDofs)
-						constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE_2D] = &tangentStressTemperature[timeDerivative];
+				case NuTo::IpData::ENGINEERING_STRAIN:
+					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
+					 //define outputs
+					constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D] = &engineeringStrain3D;
+				break;
+				case NuTo::IpData::ENGINEERING_STRESS:
+					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
+					 //define outputs
+					 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D] = &engineeringStress3D;
+				break;
+				case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
+					 //define outputs
+					 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D] = &engineeringPlasticStrain3D;
+					 break;
+				break;
+				case NuTo::IpData::DAMAGE:
+					it->second->GetFullMatrixDouble().Resize(1,GetNumIntegrationPoints());
+					//define outputs
+					  constitutiveOutputList[NuTo::Constitutive::eOutput::DAMAGE] = &damage;
+				break;
+				default:
+					throw MechanicsException("[NuTo::Plane::Evaluate] this ip data type is not implemented.");
 				}
-				if (numTempDofs>0)
-				{
-					constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D] = &tangentHeatFluxTemperatureGradient[timeDerivative];
-					//mixed term
-					//if (numDispDofs)
-					//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
-				}
+			break;
+			case Element::GLOBAL_ROW_DOF:
+				this->CalculateGlobalRowDofs(it->second->GetVectorInt(),numLocalDispDofs,numTempDofs);
+			break;
+			case Element::GLOBAL_COLUMN_DOF:
+				this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),numNonlocalDispDofs,numTempDofs);
+			break;
+			default:
+				throw MechanicsException("[NuTo::Plane::Evaluate] element output not implemented.");
 			}
-    	break;
-    	case Element::UPDATE_STATIC_DATA:
-    		constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
-    	break;
-        case Element::UPDATE_TMP_STATIC_DATA:
-        	constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
-    	break;
-        case Element::IP_DATA:
-        	switch(it->second->GetIpDataType())
-        	{
-            case NuTo::IpData::ENGINEERING_STRAIN:
-            	it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
-                 //define outputs
-            	constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D] = &engineeringStrain;
-            break;
-            case NuTo::IpData::ENGINEERING_STRESS:
-            	it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
-                 //define outputs
-              	 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D] = &engineeringStress;
-            break;
-            case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            	it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
-                 //define outputs
-            	 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D] = &engineeringplasticStrain;
-                 break;
-            break;
-            case NuTo::IpData::DAMAGE:
-            	it->second->GetFullMatrixDouble().Resize(1,GetNumIntegrationPoints());
-                //define outputs
-          	    constitutiveOutputList[NuTo::Constitutive::eOutput::DAMAGE] = &damage;
-            break;
-        	default:
-        		throw MechanicsException("[NuTo::Plane::Evaluate] this ip data type is not implemented.");
-        	}
-    	break;
-        case Element::GLOBAL_ROW_DOF:
-        case Element::GLOBAL_COLUMN_DOF:
-        break;
-        default:
-    		throw MechanicsException("[NuTo::Plane::Evaluate] element output not implemented.");
-    	}
-    }
+		}
 
-    // loop over the integration points
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
-    {
-        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
+		// loop over the integration points
+		for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+		{
+			GetLocalIntegrationPointCoordinates(theIP, naturalIPCoord);
 
-        CalculateDerivativeShapeFunctionsLocal(localIPCoord, derivativeShapeFunctionsLocal);
+			CalculateDerivativeShapeFunctionsNatural(naturalIPCoord, derivativeShapeFunctionsNatural);
 
-        CalculateJacobian(derivativeShapeFunctionsLocal,nodeCoord, invJacobian, detJac);
+			CalculateJacobian(derivativeShapeFunctionsNatural,localNodeCoord, invJacobian, detJac);
 
-        CalculateDerivativeShapeFunctionsGlobal(derivativeShapeFunctionsLocal,invJacobian,
-                                                derivativeShapeFunctionsGlobal);
+			CalculateDerivativeShapeFunctionsLocal(derivativeShapeFunctionsNatural,invJacobian,
+													derivativeShapeFunctionsLocal);
 
-        if (section->GetInputConstitutiveIsDeformationGradient())
-        {
-            // determine deformation gradient from the local Displacements and the derivative of the shape functions
-            // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-            CalculateDeformationGradient(derivativeShapeFunctionsGlobal, nodeDisp, deformationGradient);
-        }
-        if (section->GetInputConstitutiveIsTemperatureGradient())
-        {
-            // determine deformation gradient from the local Displacements and the derivative of the shape functions
-            // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-            CalculateTemperatureGradient(derivativeShapeFunctionsGlobal, nodeTemp, temperatureGradient);
-        }
-
-        Error::eError error = GetConstitutiveLaw(theIP)->Evaluate3D(this, theIP,
-                constitutiveInputList, constitutiveOutputList);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        //calculate output
-        for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
-        {
-        	switch(it->first)
-        	{
-        	case Element::INTERNAL_GRADIENT:
+			if (section->GetInputConstitutiveIsDeformationGradient())
 			{
-				// Jacobian
-				double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
-				if (numDispDofs>0)
+				// determine deformation gradient from the local Displacements and the derivative of the shape functions
+				// this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
+				CalculateDeformationGradient(derivativeShapeFunctionsLocal, localNodeDisp, deformationGradient);
+			}
+			if (section->GetInputConstitutiveIsTemperatureGradient())
+			{
+				// determine deformation gradient from the local Displacements and the derivative of the shape functions
+				// this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
+				CalculateTemperatureGradient(derivativeShapeFunctionsLocal, nodeTemp, temperatureGradient);
+			}
+
+	        ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
+			try
+			{
+				Error::eError error = constitutivePtr->Evaluate2D(this, theIP,
+						constitutiveInputList, constitutiveOutputList);
+				if (error!=Error::SUCCESSFUL)
+					return error;
+			}
+			catch (NuTo::MechanicsException &e)
+			{
+				e.AddMessage("[NuTo::Plane::Evaluate] error evaluating the constitutive model.");
+				throw e;
+			}
+
+
+			//calculate output
+			for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
+			{
+				switch(it->first)
 				{
-					AddDetJBtSigma(derivativeShapeFunctionsGlobal,engineeringStress, factor, 0, it->second->GetFullMatrixDouble());
+				case Element::INTERNAL_GRADIENT:
+				{
+		    	    //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
+		    		//on the global level
+		    		if (mStructure->GetHessianConstant(0)==false)
+		    	    {
+						// Jacobian
+						double factor(mSection->GetThickness()*fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+						if (numLocalDispDofs>0)
+						{
+							AddDetJBtSigma(derivativeShapeFunctionsLocal,engineeringStress2D, factor, 0, it->second->GetFullMatrixDouble());
+						}
+						if (numTempDofs>0)
+						{
+							AddDetJBtHeatFlux(derivativeShapeFunctionsLocal,heatFlux2D, factor, numLocalDispDofs, it->second->GetFullMatrixDouble());
+						}
+		    	    }
 				}
-				if (numTempDofs>0)
+				break;
+				case Element::HESSIAN_0_TIME_DERIVATIVE:
+					{
+						//factor for the numerical integration
+						assert(mSection->GetThickness()>0);
+						double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+						if (nonlocalTangentStressStrain.GetConstant()==false)
+							it->second->SetConstant(false);
+						if (nonlocalTangentStressStrain.GetSymmetry()==false)
+							it->second->SetSymmetry(false);
+
+						if (numLocalDispDofs>0)
+						{
+							if (NumNonlocalElements!=0)
+							{
+								//Nonlocal Model where the material model is still local
+								if (nonlocalTangentStressStrain.GetLocalSolution())
+								{
+									//same as local model, e.g. in the unloading range or
+
+									// calculate element stiffness matrix
+									// don't forget to include determinant of the Jacobian and area
+									AddDetJBtCB(derivativeShapeFunctionsLocal, derivativeShapeFunctionsLocal, nonlocalTangentStressStrain.GetSubMatrix_3x3(0), factor, it->second->GetFullMatrixDouble(), 0, 0);
+								}
+								else
+								{
+									//nonlocal BMatrix of nonlocal other integration point
+									//sum over nonlocal elements and their ips
+									const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
+									int firstCol(0);
+									int totalNonlocalIp(0);
+									for (unsigned int theNonlocalElement = 0; theNonlocalElement<nonlocalElements.size(); theNonlocalElement++)
+									{
+										const Plane* nonlocalElement(nonlocalElements[theNonlocalElement]->AsPlane());
+										//calculate local coordinates
+										std::vector<double> nonlocalLocalNodeCoord(nonlocalElement->GetNumShapeFunctions()*2);
+										nonlocalElement->CalculateLocalCoordinates(nonlocalLocalNodeCoord);
+
+										//get weights
+										const std::vector<double>& weights(GetNonlocalWeights(theIP,theNonlocalElement));
+
+										for (int theNonlocalIp = 0; theNonlocalIp < nonlocalElement->GetNumIntegrationPoints(); theNonlocalIp++, totalNonlocalIp++)
+										{
+											if (weights[theNonlocalIp]==0.)
+												continue;
+
+											// get IP coordinates
+											nonlocalElement->GetLocalIntegrationPointCoordinates(theNonlocalIp, nonlocalNaturalIPCoord);
+
+											// calculate derivatives of shape functions in natural coordinate system
+											nonlocalDerivativeShapeFunctionsNatural.resize(2*nonlocalElement->GetNumShapeFunctions());
+											nonlocalElement->CalculateDerivativeShapeFunctionsNatural(nonlocalNaturalIPCoord, nonlocalDerivativeShapeFunctionsNatural);
+
+											// calculate Jacobian in order to transform natural to local coordinate system
+											nonlocalElement->CalculateJacobian(nonlocalDerivativeShapeFunctionsNatural,nonlocalLocalNodeCoord, nonlocalInvJacobian, nonlocalDetJac);
+
+											// calculate derivates of shape functions in local coordinate system
+											nonlocalDerivativeShapeFunctionsLocal.resize(nonlocalDerivativeShapeFunctionsNatural.size());
+											nonlocalElement->CalculateDerivativeShapeFunctionsLocal(nonlocalDerivativeShapeFunctionsNatural,nonlocalInvJacobian,
+																					nonlocalDerivativeShapeFunctionsLocal);
+
+											// calculate element stiffness matrix
+											// don't forget to include determinant of the Jacobian and area
+											AddDetJBtCB(derivativeShapeFunctionsLocal, nonlocalDerivativeShapeFunctionsLocal, nonlocalTangentStressStrain.GetSubMatrix_3x3(totalNonlocalIp), factor, it->second->GetFullMatrixDouble(), 0, firstCol);
+										}
+										firstCol+=2*nonlocalElement->GetNumShapeFunctions();
+									}
+									assert(totalNonlocalIp==NumNonlocalIps);
+								}
+							}
+							else
+							{
+								// calculate element stiffness matrix
+								// don't forget to include determinant of the Jacobian and area
+								AddDetJBtCB(derivativeShapeFunctionsLocal,derivativeShapeFunctionsLocal, nonlocalTangentStressStrain.GetSubMatrix_3x3(0), factor, it->second->GetFullMatrixDouble(),0,0);
+							}
+							if (numTempDofs>0)
+								 throw MechanicsException("[NuTo::Plane::Evaluate] mixed terms not yet implemented.");
+						} // end disp dof
+						if (numTempDofs>0)
+						{
+							AddDetJBtCB(derivativeShapeFunctionsLocal, tangentHeatFluxTemperatureGradient, factor, numLocalDispDofs,numNonlocalDispDofs, it->second->GetFullMatrixDouble());
+							if (tangentHeatFluxTemperatureGradient.GetSymmetry()==false)
+								it->second->SetSymmetry(false);
+							if (tangentHeatFluxTemperatureGradient.GetConstant()==false)
+								it->second->SetConstant(false);
+							if (numLocalDispDofs>0)
+								throw MechanicsException("[NuTo::Plane::Evaluate] mixed terms not yet implemented.");
+						}
+					}
+				break;
+				case Element::HESSIAN_1_TIME_DERIVATIVE:
+                {
+					if (numLocalDispDofs>0)
+					{
+									//no damping term, do Rayleigh damping on the global level
+					}
+					if (numTempDofs>0)
+					{
+					throw MechanicsException("[Nuto::Plane::Evaluate] temperature not yet implemented.");
+					}
+                }
+                break;
+				case Element::HESSIAN_2_TIME_DERIVATIVE:
 				{
-					AddDetJBtHeatFlux(derivativeShapeFunctionsGlobal,heatFlux, factor, numDispDofs, it->second->GetFullMatrixDouble());
+                    if (numLocalDispDofs>0)
+                    {
+						this->CalculateShapeFunctions(naturalIPCoord, shapeFunctions);
+
+						// calculate local mass matrix (the nonlocal terms are zero)
+						// don't forget to include determinant of the Jacobian and area
+						// detJ * area * density * HtH, :
+				        double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))*constitutivePtr->GetDensity());
+				        Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix;
+				        tmpMatrix = (factor*Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(shapeFunctions[0]),GetNumShapeFunctions()))*Eigen::Matrix<double,1,Eigen::Dynamic>::Map(&(shapeFunctions[0]),GetNumShapeFunctions());
+				        Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>& result(it->second->GetFullMatrixDouble().mEigenMatrix);
+				        		for (int count=0; count<GetNumShapeFunctions(); count++)
+				        {
+				            for (int count2=0; count2<GetNumShapeFunctions(); count2++)
+				            {
+				            	result(2*count,2*count2) += tmpMatrix(count,count2);
+				            	result(2*count+1,2*count2+1) += tmpMatrix(count,count2);
+				            }
+				        }
+
+						//if (numTemp>0) no mixed terms
+                    }
+					if (numTempDofs>0)
+					{
+							//no termperature terms
+					}
+				}
+				break;
+				case Element::UPDATE_STATIC_DATA:
+				case Element::UPDATE_TMP_STATIC_DATA:
+				break;
+				case Element::IP_DATA:
+					switch (it->second->GetIpDataType())
+					{
+					case NuTo::IpData::ENGINEERING_STRAIN:
+						//error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
+						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStrain3D.GetData(),6*sizeof(double));
+					break;
+					case NuTo::IpData::ENGINEERING_STRESS:
+						//error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
+						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStress3D.GetData(),6*sizeof(double));
+					break;
+					case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+						//error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
+						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringPlasticStrain3D.GetData(),6*sizeof(double));
+					break;
+					case NuTo::IpData::DAMAGE:
+						//error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP]),damage.GetData(),sizeof(double));
+					break;
+					default:
+						throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
+					}
+				break;
+				case Element::GLOBAL_ROW_DOF:
+				case Element::GLOBAL_COLUMN_DOF:
+				break;
+				default:
+					throw MechanicsException("[NuTo::Plane::Evaluate] element output not implemented.");
 				}
 			}
-		    break;
-        	case Element::HESSIAN_0_TIME_DERIVATIVE:
-        	case Element::HESSIAN_1_TIME_DERIVATIVE:
-        	case Element::HESSIAN_2_TIME_DERIVATIVE:
-    			{
-    				int timeDerivative = (it->first == Element::HESSIAN_0_TIME_DERIVATIVE) ? 0 : (it->first == Element::HESSIAN_1_TIME_DERIVATIVE ? 1 : 2);
-       		        double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+		}
 
-    				if (numDispDofs>0)
-    				{
-    					AddDetJBtCB(derivativeShapeFunctionsGlobal, tangentStressStrain[timeDerivative], factor, 0,0, it->second->GetFullMatrixDouble());
-    					if (tangentStressStrain[timeDerivative].GetSymmetry()==false)
-    						it->second->SetSymmetry(false);
-    					if (tangentStressStrain[timeDerivative].GetConstant()==false)
-    						it->second->SetConstant(false);
-    					if (numTempDofs>0)
-    						throw MechanicsException("[NuTo::Plane::Evaluate] mixed terms not yet implemented.");
-            		}
-    				if (numTempDofs>0)
-    				{
-    					AddDetJBtCB(derivativeShapeFunctionsGlobal, tangentHeatFluxTemperatureGradient[timeDerivative], factor, numDispDofs,numDispDofs, it->second->GetFullMatrixDouble());
-    					if (tangentHeatFluxTemperatureGradient[timeDerivative].GetSymmetry()==false)
-    						it->second->SetSymmetry(false);
-    					if (tangentHeatFluxTemperatureGradient[timeDerivative].GetConstant()==false)
-    						it->second->SetConstant(false);
-    					if (numDispDofs>0)
-    						throw MechanicsException("[NuTo::Plane::Evaluate] mixed terms not yet implemented.");
-    				}
-    			}
-    		break;
-        	case Element::UPDATE_STATIC_DATA:
-            case Element::UPDATE_TMP_STATIC_DATA:
-        	break;
-            case Element::IP_DATA:
-                switch (it->second->GetIpDataType())
-                {
-                case NuTo::IpData::ENGINEERING_STRAIN:
-                    //error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
-                    memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
-                break;
-                case NuTo::IpData::ENGINEERING_STRESS:
-                    //error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
-                    memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStress.GetData(),6*sizeof(double));
-                break;
-                case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-                    //error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
-                    memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
-                break;
-                case NuTo::IpData::DAMAGE:
-                    //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
-                    memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP]),damage.GetData(),sizeof(double));
-                break;
-                default:
-                    throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
-                }
-            break;
-            case Element::GLOBAL_ROW_DOF:
-            	this->CalculateGlobalRowDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs);
-            break;
-            case Element::GLOBAL_COLUMN_DOF:
-            	this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs);
-            break;
-            default:
-        		throw MechanicsException("[NuTo::Plane::Evaluate] element output not implemented.");
-        	}
-        }
+		//resize the matrix in case of a local matrix
+		/*if (numLocalDispDofs>0)
+		{
+			auto it = rElementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE);
+		}
+		*/
+    }
+    catch (NuTo::MechanicsException e)
+    {
+        std::stringstream ss;
+        ss << mStructure->ElementGetId(this);
+    	e.AddMessage("[NuTo::Plane::Evaluate] Error evaluating element data of element"	+ ss.str() + ".");
+        throw e;
     }
 
     return Error::SUCCESSFUL;
@@ -376,7 +552,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(std::multimap<NuTo::Element::eOutput, 
 
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
-NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     //calculate local coordinates
@@ -468,10 +644,10 @@ NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<d
             Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
                 deformationGradient, &NonlocalTangent);
             if (error!=Error::SUCCESSFUL)
-            	return error;
+                return error;
 
-            /*
-            NuTo::FullMatrix<double> stiffnessAnalytic(Eigen::Matrix<double,3,3>::Map(NonlocalTangent.GetSubMatrix(0)->GetData(),3,3));
+
+NuTo::FullMatrix<double> stiffnessAnalytic(Eigen::Matrix<double,3,3>::Map(NonlocalTangent.GetSubMatrix(0)->GetData(),3,3));
 std::cout << "Element " << this << std::endl;
 std::cout << "stiffness analytic " << std::endl<< stiffnessAnalytic << std::endl << std::endl;
 
@@ -528,7 +704,7 @@ if ((stiffnessAnalytic-stiffnessCDF).Abs().Max()/stiffnessCDF.Abs().Max()>0.1)
     throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_0] stiffness is wrong (ip stiffness");
 }
 exit(0);
-*/
+
 
             if (NonlocalTangent.IsLocal())
             {
@@ -576,12 +752,7 @@ exit(0);
                     //calculate local coordinates
                     std::vector<double> nonlocalLocalNodeCoord(nonlocalElement->GetNumLocalDofs());
                     nonlocalElement->CalculateLocalCoordinates(nonlocalLocalNodeCoord);
-/*
-                    for (int counter=0; counter<(int)nonlocalLocalNodeCoord.size(); counter++)
-                    {
-                        std::cout << counter << "  " << nonlocalLocalNodeCoord[counter]<< std::endl;
-                    }
-*/
+
                     //get weights
                     const std::vector<double>& weights(GetNonlocalWeights(theIP,theNonlocalElement));
 
@@ -619,7 +790,7 @@ exit(0);
             Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
                 deformationGradient, NonlocalTangent.GetSubMatrix(0));
             if (error!=Error::SUCCESSFUL)
-        	    return error;
+                return error;
 
             areAllIpsSymmetric &= NonlocalTangent.GetSubMatrix(0)->GetSymmetry();
 
@@ -650,9 +821,10 @@ exit(0);
 
     return Error::SUCCESSFUL;
 }
+*/
 
 //! @brief adds to a matrix the product B^tCBnonlocal, where B contains the derivatives of the shape functions and C is the constitutive tangent and Bnonlocal is the nonlocal B matrix
-//! eventually include also area/width of an element
+//! eventually include also area/width of an element (that's the mechanics solution)
 //! @param rLocalDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
 //! @param rNonlocalDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
 //! @param ConstitutiveTangentBase constitutive tangent matrix
@@ -660,12 +832,12 @@ exit(0);
 //! @param rCoefficientMatrix to be added to
 //! &param rFirstCol first column of the coefficient matrix to be modified (corresponding to the current nonlocal element)
 void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFunctionsLocal,const std::vector<double>& rNonlocalDerivativeShapeFunctionsLocal,
-                              const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
-                              FullMatrix<double>& rCoefficientMatrix, int rFirstCol)const
+                              const ConstitutiveTangentLocal<3,3>& rConstitutiveTangent, double rFactor,
+                              FullMatrix<double>& rCoefficientMatrix, int rFirstRow, int rFirstCol)const
 {
     assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rFirstCol + (int)rNonlocalDerivativeShapeFunctionsLocal.size()<=rCoefficientMatrix.GetNumColumns());
     assert((int)rLocalDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
-    const double *C = rConstitutiveTangent->GetData();
+    const double *C = rConstitutiveTangent.GetData();
     double x1,x2,y1,y2,x1x2,y2x1,x2y1,y2y1;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {
@@ -688,64 +860,71 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFu
             x2y1 = x2*y1;
             y2y1 = y2*y1;
 
-            rCoefficientMatrix(node1mul2,rFirstCol+node2mul2)          +=x1x2*C[0] +x2y1*C[2] + y2x1*C[6] +y2y1*C[8];
-            rCoefficientMatrix(node1mul2,rFirstCol+node2mul2plus1)     +=x1x2*C[6] +x2y1*C[8] + y2x1*C[3] +y2y1*C[5];
-            rCoefficientMatrix(node1mul2plus1,rFirstCol+node2mul2)     +=x1x2*C[2] +x2y1*C[1] + y2x1*C[8] +y2y1*C[7];
-            rCoefficientMatrix(node1mul2plus1,rFirstCol+node2mul2plus1)+=x1x2*C[8] +x2y1*C[7] + y2x1*C[5] +y2y1*C[4];
+            rCoefficientMatrix(rFirstRow+node1mul2,rFirstCol+node2mul2)           +=x1x2*C[0] +x2y1*C[2] + y2x1*C[6] +y2y1*C[8];
+            rCoefficientMatrix(rFirstRow+node1mul2,rFirstCol+node2mul2plus1)     +=x1x2*C[6] +x2y1*C[8] + y2x1*C[3] +y2y1*C[5];
+            rCoefficientMatrix(rFirstRow+node1mul2plus1,rFirstCol+node2mul2)     +=x1x2*C[2] +x2y1*C[1] + y2x1*C[8] +y2y1*C[7];
+            rCoefficientMatrix(rFirstRow+node1mul2plus1,rFirstCol+node2mul2plus1)+=x1x2*C[8] +x2y1*C[7] + y2x1*C[5] +y2y1*C[4];
         }
     }
 }
 
 //! @brief adds to a matrix the product B^tCB, where B contains the derivatives of the shape functions and C is the constitutive tangent
-//! eventually include also area/width of an element
+//! eventually include also area/width of an element (that's the thermal solution)
 //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
 //! @param ConstitutiveTangentBase constitutive tangent matrix
 //! @param rFactor factor including determinant of Jacobian and IP weight
+//! @param rRow row, where to start to add the submatrix
 //! @param rCoefficientMatrix to be added to
-void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsLocal,
-                              const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
+void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
+                              const ConstitutiveTangentLocal<2,2>& rConstitutiveTangent, double rFactor,
+                              int rRow, int rCol,
                               FullMatrix<double>& rCoefficientMatrix)const
 {
-    assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rCoefficientMatrix.GetNumColumns()==2*GetNumShapeFunctions());
-    assert((int)rDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
-    const double *C = rConstitutiveTangent->GetData();
-    double x1,x2,y1,y2,x1x2,y2x1,x2y1,y2y1;
+    const double *C = rConstitutiveTangent.GetData();
+    double x1,x2,y1,y2;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {
-        int node1mul2 = 2*theNode1;
+        int node1mul2 = theNode1+theNode1;
         int node1mul2plus1 = node1mul2+1;
 
-        x1 = rFactor * rDerivativeShapeFunctionsLocal[node1mul2];
-        y1 = rFactor * rDerivativeShapeFunctionsLocal[node1mul2plus1];
+        assert((int)rDerivativeShapeFunctionsGlobal.size()>node1mul2plus1);
+        x1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul2];
+        y1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul2plus1];
+        node1mul2 +=rRow;
+        node1mul2plus1 +=rRow;
         for (int theNode2=0; theNode2<GetNumNodes(); theNode2++)
         {
-            int node2mul2 = 2*theNode2;
+            int node2mul2 = theNode2 + theNode2;
             int node2mul2plus1 = node2mul2+1;
+            node2mul2 +=rCol;
+            node2mul2plus1 +=rCol;
 
-            x2 = rDerivativeShapeFunctionsLocal[node2mul2];
-            y2 = rDerivativeShapeFunctionsLocal[node2mul2plus1];
+            assert((int)rDerivativeShapeFunctionsGlobal.size()>node2mul2plus1);
+            x2 = rDerivativeShapeFunctionsGlobal[node2mul2];
+            y2 = rDerivativeShapeFunctionsGlobal[node2mul2plus1];
 
-            x1x2 = x2*x1;
-            y2x1 = y2*x1;
-            x2y1 = x2*y1;
-            y2y1 = y2*y1;
+            assert(rCoefficientMatrix.GetNumRows()>node1mul2plus1 && rCoefficientMatrix.GetNumColumns()>node1mul2plus1);
+            assert(rCoefficientMatrix.GetNumRows()>node2mul2plus1 && rCoefficientMatrix.GetNumColumns()>node2mul2plus1);
 
-            rCoefficientMatrix(node1mul2,node2mul2)          +=x1x2*C[0] +x2y1*C[2] + y2x1*C[6] +y2y1*C[8];
-            rCoefficientMatrix(node1mul2,node2mul2plus1)     +=x1x2*C[6] +x2y1*C[8] + y2x1*C[3] +y2y1*C[5];
-            rCoefficientMatrix(node1mul2plus1,node2mul2)     +=x1x2*C[2] +x2y1*C[1] + y2x1*C[8] +y2y1*C[7];
-            rCoefficientMatrix(node1mul2plus1,node2mul2plus1)+=x1x2*C[8] +x2y1*C[7] + y2x1*C[5] +y2y1*C[4];
+            rCoefficientMatrix(node1mul2,node2mul2)          +=x1*C[0]*x2;
+            rCoefficientMatrix(node1mul2,node2mul2plus1)     +=x1*C[2]*y2;
+            rCoefficientMatrix(node1mul2plus1,node2mul2)     +=y1*C[1]*x2;
+            rCoefficientMatrix(node1mul2plus1,node2mul2plus1)+=y1*C[3]*y2;
         }
     }
 }
+
 
 //! @brief adds up the internal force vector
 //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
 //! @param rEngineeringStress stress
 //! @param factor factor including det Jacobian area and integration point weight
+//! @param rRow start row (in case of a multifield problem)
 //! @param rResult resforce vector
 void NuTo::Plane::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunctionsLocal,
                                  const EngineeringStress2D& rEngineeringStress,
                                  double rFactor,
+                                 int rRow,
                                  FullMatrix<double>& rResult)const
 {
     assert(rResult.GetNumRows()==2*GetNumShapeFunctions() && rResult.GetNumColumns()==1);
@@ -759,10 +938,39 @@ void NuTo::Plane::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
         x1 = rFactor * rDerivativeShapeFunctionsLocal[node1mul2];
         y1 = rFactor * rDerivativeShapeFunctionsLocal[node1mul2plus1];
 
-        rResult(node1mul2,0)     +=x1*s[0]+y1*s[2];
-        rResult(node1mul2plus1,0)+=y1*s[1]+x1*s[2];
+        rResult(rRow + node1mul2,0)     +=x1*s[0]+y1*s[2];
+        rResult(rRow + node1mul2plus1,0)+=y1*s[1]+x1*s[2];
     }
 }
+
+//! @brief adds up the internal force vector
+//! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+//! @param rHeatFlux stress
+//! @param factor factor including det Jacobian area and integration point weight
+//! @param rRow start row (in case of a multifield problem)
+//! @param rResult resforce vector
+void NuTo::Plane::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
+                                 const HeatFlux2D& rHeatFlux,
+                                 double rFactor,
+                                 int rRow,
+                                 FullMatrix<double>& rResult)const
+{
+    const double *s = rHeatFlux.GetData();
+    double x1,y1;
+    for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
+    {
+        int node1mul2 = 2*theNode1;
+        int node1mul2plus1 = node1mul2+1;
+
+        assert(rResult.GetNumRows()>node1mul2plus1);
+        x1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul2];
+        y1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul2plus1];
+
+        rResult(rRow + node1mul2,0)     +=x1*s[0];
+        rResult(rRow + node1mul2plus1,0)+=y1*s[1];
+    }
+}
+
 
 //! @brief Calculates the the inverse of the Jacobian and its determinant
 //! @param rDerivativeShapeFunctions Derivatives of the shape functions (dN1dx, dN1dy, dN1dz, dN2dx, ..
@@ -836,7 +1044,7 @@ void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<doubl
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     //calculate local coordinates
@@ -891,7 +1099,7 @@ NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMa
         Error::eError error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
                 deformationGradient, engineeringStress);
         if (error!=Error::SUCCESSFUL)
-        	return error;
+            return error;
 
         //add to local resforce vector
         assert(mSection->GetThickness()>0);
@@ -905,9 +1113,10 @@ NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMa
 
     return Error::SUCCESSFUL;
 }
+*/
 
 //! @brief Update the static data of an element
-NuTo::Error::eError NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
+/*NuTo::Error::eError NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
 {
 	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
@@ -960,22 +1169,24 @@ NuTo::Error::eError NuTo::Plane::UpdateStaticData(NuTo::Element::eUpdateType rUp
         switch(rUpdateType)
         {
         case NuTo::Element::STATICDATA:
-        	error = constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+            error = constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
         break;
         case NuTo::Element::TMPSTATICDATA:
-        	error = constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
+            error = constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
         break;
         case NuTo::Element::SWITCHMULTISCALE2NONLINEAR:
-        	error = constitutivePtr->MultiscaleSwitchToNonlinear(this, theIP, deformationGradient);
+            error = constitutivePtr->MultiscaleSwitchToNonlinear(this, theIP, deformationGradient);
         break;
         default:
             throw MechanicsException("[NuTo::Plane::UpdateStaticData] update static data flag not known (neither static not tmpstatic data");
         }
         if (error!=Error::SUCCESSFUL)
-        	return error;
+            return error;
     }
+
     return Error::SUCCESSFUL;
 }
+*/
 
 //! @brief calculates the deformation gradient in 2D
 //! @param rRerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -1008,6 +1219,34 @@ void NuTo::Plane::CalculateDeformationGradient(const std::vector<double>& rDeriv
     }
 }
 
+//! @brief calculates the temperature gradient in 3D
+//! @param rRerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+//! @param rTemp nodal temperatures
+//! @param rTemperatureGradient (return value)
+void NuTo::Plane::CalculateTemperatureGradient(const std::vector<double>& rDerivativeShapeFunctionsLocal,
+        const std::vector<double>& rTemp,
+        TemperatureGradient2D& rTemperatureGradient)const
+{
+    assert((int)rTemp.size()==GetNumNodes() && (int)rDerivativeShapeFunctionsLocal.size()==2*GetNumNodes());
+
+    rTemperatureGradient.mTemperatureGradient[0] = 0.;
+    rTemperatureGradient.mTemperatureGradient[1] = 0.;
+
+    int theTemp(0);
+    double dNdX,dNdY;
+    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    {
+        dNdX = rDerivativeShapeFunctionsLocal[theTemp];
+        theTemp++;
+        dNdY = rDerivativeShapeFunctionsLocal[theTemp];
+        theTemp++;
+
+        rTemperatureGradient.mTemperatureGradient[0]+=rTemp[theNode]* dNdX;
+        rTemperatureGradient.mTemperatureGradient[1]+=rTemp[theNode]* dNdY;
+    }
+}
+
+
 //! @brief stores the temperatures of the nodes
 //! @param temperature vector with already correct size allocated
 //! this can be checked with an assertation
@@ -1024,18 +1263,19 @@ void NuTo::Plane::CalculateTemperatures(std::vector<double>& rTemperatures)const
 
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
-NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_1] to be implemented.");
 }
+*/
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
-	//calculate local coordinates
+   //calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
     CalculateLocalCoordinates(localNodeCoord);
 
@@ -1079,19 +1319,21 @@ NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<d
         tmpMatrix = (factor*Eigen::Matrix<double,Eigen::Dynamic,1>::Map(&(shapeFunctions[0]),GetNumShapeFunctions()))*Eigen::Matrix<double,1,Eigen::Dynamic>::Map(&(shapeFunctions[0]),GetNumShapeFunctions());
         for (int count=0; count<GetNumShapeFunctions(); count++)
         {
-        	for (int count2=0; count2<GetNumShapeFunctions(); count2++)
+            for (int count2=0; count2<GetNumShapeFunctions(); count2++)
             {
-				rResult.mEigenMatrix(2*count,2*count2) += tmpMatrix(count,count2);
-				rResult.mEigenMatrix(2*count+1,2*count2+1) += tmpMatrix(count,count2);
+                rResult.mEigenMatrix(2*count,2*count2) += tmpMatrix(count,count2);
+                rResult.mEigenMatrix(2*count+1,2*count2+1) += tmpMatrix(count,count2);
             }
         }
     }
-	rSymmetry = true;
+    rSymmetry = true;
     // calculate list of global dofs related to the entries in the element stiffness matrix
     this->CalculateGlobalRowDofs(rGlobalDofsRow);
     rGlobalDofsColumn = rGlobalDofsRow;
+
     return Error::SUCCESSFUL;
 }
+*/
 
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point
@@ -1134,16 +1376,12 @@ void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     return;
 }
 
-// these headers are just for test purpose
-//#include <eigen2/Eigen/LU>
-//#include <eigen2/Eigen/Array>
-
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
-NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
+/*NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
 {
-    //calculate local coordinates
+	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
     CalculateLocalCoordinates(localNodeCoord);
 
@@ -1220,23 +1458,23 @@ NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDa
         switch (rIpDataType)
         {
         case NuTo::IpData::ENGINEERING_STRAIN:
-        	error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
+            error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::ENGINEERING_STRESS:
-        	error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
+            error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStress.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-        	error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
+            error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
             memcpy(&(rIpData.mEigenMatrix.data()[theIP*6]),engineeringStrain.GetData(),6*sizeof(double));
         break;
         case NuTo::IpData::DAMAGE:
-        	error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+            error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
         break;
         case NuTo::IpData::ELASTIC_ENERGY:
         {
-        	error = constitutivePtr->GetElasticEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient, rIpData.mEigenMatrix(0,theIP));
+            error = constitutivePtr->GetElasticEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient, rIpData.mEigenMatrix(0,theIP));
             assert(mSection->GetThickness()>0);
             double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
             rIpData.mEigenMatrix(1,theIP) = factor;
@@ -1244,7 +1482,7 @@ NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDa
         break;
         case NuTo::IpData::INTERNAL_ENERGY:
         {
-        	error = constitutivePtr->GetInternalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient,rIpData.mEigenMatrix(0,theIP));
+            error = constitutivePtr->GetInternalEnergy_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient,rIpData.mEigenMatrix(0,theIP));
             assert(mSection->GetThickness()>0);
             double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
             rIpData.mEigenMatrix(1,theIP) = factor;
@@ -1254,22 +1492,20 @@ NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDa
             throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");
         }
         if (error!=Error::SUCCESSFUL)
-        	return error;
+            return error;
     }
-    return Error::SUCCESSFUL;
-}
 
+    return Error::SUCCESSFUL;
+
+}
+*/
 
 //! @brief Allocates static data for an integration point of an element
 //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
 //! actually, both - the element type and the constitutive law are required to determine the static data object actually required
 NuTo::ConstitutiveStaticDataBase* NuTo::Plane::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw)const
 {
-    const ConstitutiveEngineeringStressStrain *constitutivePtr =
-        dynamic_cast<const ConstitutiveEngineeringStressStrain*>(rConstitutiveLaw);
-    if (constitutivePtr==0)
-        throw MechanicsException("[NuTo::Plane::AllocateStaticData] Constitutive law can not deal with engineering stresses and strains");
-    return constitutivePtr->AllocateStaticDataEngineeringStress_EngineeringStrain2D(this);
+    return rConstitutiveLaw->AllocateStaticDataEngineeringStress_EngineeringStrain2D(this);
 }
 
 // interpolate geometry
@@ -1317,7 +1553,7 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], 
         // get node displacements
         double NodeDisplacement[3];
         const NodeBase *nodePtr(GetNode(NodeCount));
-        if (nodePtr->GetNumDisplacements()==2 || nodePtr->GetNumFineScaleDisplacements()==2)
+        if (nodePtr->GetNumDisplacements()==2)
             nodePtr->GetDisplacements2D(NodeDisplacement);
         else
             nodePtr->GetDisplacements3D(NodeDisplacement);
@@ -1388,7 +1624,7 @@ void NuTo::Plane::CheckElement()
         if (detJacobian <= 0)
         {
             std::cout << "jac " << detJacobian << std::endl;
-        	throw MechanicsException("[NuTo::Plane::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
+            throw MechanicsException("[NuTo::Plane::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
         }
         volume += this->GetIntegrationPointWeight(ipCount) * detJacobian;
     }

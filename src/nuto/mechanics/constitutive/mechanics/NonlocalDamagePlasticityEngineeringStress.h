@@ -1,28 +1,59 @@
-// $Id$
-#ifndef CONSTITUTIVEMULTISCALE_H_
-#define CONSTITUTIVEMULTISCALE_H_
+// $Id$ 
+#ifndef CONSTITUTIVENONLOCALDAMAGEPLASTICITYENGINEERINGSTRESS_H_
+#define CONSTITUTIVENONLOCALDAMAGEPLASTICITYENGINEERINGSTRESS_H_
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveEngineeringStressStrain.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 namespace NuTo
 {
-class StructureMultiscale;
-class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
+class Logger;
+class ConstitutiveTangentBase;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
 //! @brief ...
-class Multiscale : public ConstitutiveEngineeringStressStrain
+class NonlocalDamagePlasticityEngineeringStress : public ConstitutiveBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    Multiscale();
+    NonlocalDamagePlasticityEngineeringStress();
 
-    //  Engineering strain /////////////////////////////////////
+    //! @brief ... evaluate the constitutive relation in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rUpdateHistory ... update history variables after leaving the routine
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
+    		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+
+    //! @brief ... evaluate the constitutive relation in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rUpdateHistory ... update history variables after leaving the routine
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
+    		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+
+    //! @brief ... evaluate the constitutive relation in 3D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rUpdateHistory ... update history variables after leaving the routine
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
+    		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+
+/*    //  Engineering strain /////////////////////////////////////
     //! @brief ... calculate engineering plastic strain from deformation gradient in 3D
     //! @param rElement ... element
     //! @param rIp ... integration point
@@ -182,6 +213,7 @@ public:
     		const DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
@@ -189,6 +221,7 @@ public:
             const DeformationGradient1D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
@@ -196,37 +229,31 @@ public:
             const DeformationGradient2D& rDeformationGradient) const;
 
     //! @brief ... update tmp static data (history variables) of the constitutive relationship
+    //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
     Error::eError UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient) const;
-
-    //! @brief ... checks, if a model has to be switched from linear to nonlinear, and then performs the adaption
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rDeformationGradient ... deformation gradient
-    Error::eError MultiscaleSwitchToNonlinear(ElementBase* rElement, int rIp,
-            const DeformationGradient2D& rDeformationGradient) const;
+*/
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const;
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const;
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement) const override;
 
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement) const;
-
-    //! @brief ... calculate the total energy density
+/*    //! @brief ... calculate the total energy density
     //! @param rStructure ... structure
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient1D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
@@ -234,7 +261,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient2D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the total energy density
@@ -242,7 +269,7 @@ public:
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rDeformationGradient ... deformation gradient
-    Error::eError GetTotalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
+    Error::eError GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient, double& rEnergy) const;
 
     //! @brief ... calculate the elastic energy density
@@ -295,48 +322,42 @@ public:
     //! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
     void GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
             const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rDeltaElasticEngineeringStrain) const;
+*/
+    // calculate coefficients of the material matrix
+    void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
-///////////////////////////////////////////////////////////////////////////
-    //! @brief ... get dimension of the constitutive relationship
-    //! @return ... dimension of the constitutive relationship (1, 2 or 3)
-    int GetGlobalDimension() const;
+    // parameters /////////////////////////////////////////////////////////////
+    //! @brief ... get density
+    //! @return ... density
+    double GetDensity() const;
 
-    //! @brief ... get type of constitutive relationship
-    //! @return ... type of constitutive relationship
-    //! @sa eConstitutiveType
-    Constitutive::eConstitutiveType GetType() const;
+    //! @brief ... set density
+    //! @param rRho ... density
+    void SetDensity(double rRho);
 
-    //! @brief ... set the elastic matrix
-    //! @param rElasticStiffness... elastic matrix
-    NuTo::FullMatrix<double> GetElasticStiffness()const;
+    //! @brief ... get Young's modulus
+    //! @return ... Young's modulus
+    double GetYoungsModulus() const;
 
-    //! @brief ... set the elastic matrix
-    //! @param rElasticStiffness... elastic matrix
-    void SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness);
+    //! @brief ... set Young's modulus
+    //! @param rE ... Young's modulus
+    void SetYoungsModulus(double rE);
 
-    //! @brief ... check elastic stiffness
-    //! @param rElasticStiffness ... crack transition radius
-    void CheckElasticStiffness(const NuTo::FullMatrix<double>& rElasticStiffness) const;
+    //! @brief ... get Poisson's ratio
+    //! @return ... Poisson's ratio
+    double GetPoissonsRatio() const;
 
-    //! @brief ... return the binary file from which the fine scale model is eventually deserialized
-    //! @return name of the file
-    std::string GetMultiscaleFile()const;
+    //! @brief ... set Poisson's ratio
+    //! @param rNu ... Poisson's ratio
+    void SetPoissonsRatio(double rNu);
 
-    //! @brief ... set the binary file from which the fine scale model is eventually deserialized
-    //! @param rFileName... name of the file
-    void SetMultiscaleFile(std::string rFileName);
+    //! @brief ... get nonlocal radius
+    //! @return ... nonlocal radius
+    double GetNonlocalRadius() const;
 
-    //! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
-    //! @return crack transition radius
-    double GetCrackTransitionRadius()const;
-
-    //! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
-    //! @param rCrackTransitionRadius... crack transition radius
-    void SetCrackTransitionRadius(double rCrackTransitionRadius);
-
-    //! @brief ... check if crack transition radius is positive
-    //! @param rCrackTransitionRadius ... crack transition radius
-    void CheckCrackTransitionRadius(double rCrackTransitionRadius) const;
+    //! @brief ... set nonlocal radius
+    //! @param rRadius...  nonlocal radius
+    void SetNonlocalRadius(double rNonlocalRadius);
 
     //! @brief ... get tensile strength
     //! @return ... tensile strength
@@ -346,241 +367,46 @@ public:
     //! @param rTensileStrength...  tensile strength
     void SetTensileStrength(double rTensileStrength);
 
-    //! @brief ... check if tensile strength is positive
-    //! @param rTensileStrength ... tensile strength
-    void CheckTensileStrength(double rTensileStrength) const;
+    //! @brief ... get compressive strength
+    //! @return ... compressive strength
+    double GetCompressiveStrength() const;
 
-    //! @brief ... get penalty stiffness crack angle
-    //! @return ... penalty stiffness crack angle
-    double GetPenaltyStiffnessCrackAngle() const;
+    //! @brief ... set compressive strength
+    //! @param rCompressiveStrength...  compressive strength
+    void SetCompressiveStrength(double rCompressiveStrength);
 
-    //! @brief ... set PenaltyStiffnessCrackAngle
-    //! @param rPenaltyStiffnessCrackAngle...  penalty stiffness crack angle
-    void SetPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle);
+    //! @brief ... get biaxial compressive strength
+    //! @return ... biaxial compressive strength
+    double GetBiaxialCompressiveStrength() const;
 
-    //! @brief ... check if penalty stiffness crack angle is positive
-    //! @param rPenaltyStiffnessCrackAngle ... PenaltyStiffnessCrackAngle
-    void CheckPenaltyStiffnessCrackAngle(double rPenaltyStiffnessCrackAngle) const;
+    //! @brief ... set biaxial compressive strength
+    //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
+    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength);
 
-    //! @brief ... get scaling factor for the dofs of the crack angle
-    //! @return ... scaling factor
-    double GetScalingFactorCrackAngle() const;
+    //! @brief ... get fracture energy
+    //! @return ... fracture energy
+    double GetFractureEnergy() const;
 
-    //! @brief ... set scaling factor for the dofs of the crack angle
-    //! @param rScalingFactor...  scaling factor
-    void SetScalingFactorCrackAngle(double rScalingFactorCrackAngle);
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy... fracture energy
+    void SetFractureEnergy(double rFractureEnergy);
 
-    //! @brief ... check if ScalingFactorCrackAngle is positive
-    //! @param rScalingFactorCrackAngle ... ScalingFactorCrackAngle
-    void CheckScalingFactorCrackAngle(double rScalingFactorCrackAngle) const;
+    //! @brief ... get thermal expansion coefficient
+    //! @return ... thermal expansion coefficient
+    double GetThermalExpansionCoefficient() const override;
 
-    //! @brief ... get scaling factor for the dofs of the crack opening
-    //! @return ... scaling factor
-    double GetScalingFactorCrackOpening() const;
+    //! @brief ... set thermal expansion coefficient
+    //! @param rAlpha ... thermal expansion coefficient
+    void SetThermalExpansionCoefficient(double rNu) override;
+///////////////////////////////////////////////////////////////////////////
+    //! @brief ... get dimension of the constitutive relationship
+    //! @return ... dimension of the constitutive relationship (1, 2 or 3)
+    int GetGlobalDimension() const;
 
-    //! @brief ... set scaling factor for the dofs of the crack opening
-    //! @param rScalingFactor...  scaling factor
-    void SetScalingFactorCrackOpening(double rScalingFactorCrackOpening);
-
-    //! @brief ... check if ScalingFactorCrackOpening is positive
-    //! @param rScalingFactorCrackOpening ... ScalingFactorCrackOpening
-    void CheckScalingFactorCrackOpening(double rScalingFactorCrackOpening) const;
-
-    //! @brief ... get scaling factor for the dofs of total strain
-    //! @return ... scaling factor
-    double GetScalingFactorEpsilon() const;
-
-    //! @brief ... set scaling factor for the dofs of the total strain
-    //! @param rScalingFactor...  scaling factor
-    void SetScalingFactorEpsilon(double rScalingFactorEpsilon);
-
-    //! @brief ... check if ScalingFactorEpsilon is positive
-    //! @param rScalingFactorEpsilon ... ScalingFactorEpsilon
-    void CheckScalingFactorEpsilon(double rScalingFactorEpsilon) const;
-
-    //! @brief ... get AugmentedLagrangeStiffnessCrackOpening
-    //! @return ...AugmentedLagrangeStiffnessCrackOpening
-    double GetAugmentedLagrangeStiffnessCrackOpening() const;
-
-    //! @brief ... set AugmentedLagrangeStiffnessCrackOpening
-    //! @param rAugmentedLagrangeStiffnessCrackOpening...AugmentedLagrangeStiffnessCrackOpening
-    void SetAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening);
-
-    //! @brief ... check AugmentedLagrangeStiffnessCrackOpening
-    //! @param rAugmentedLagrangeStiffnessCrackOpening ...AugmentedLagrangeStiffnessCrackOpening
-    void CheckAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening) const;
-
-    //! @brief ... get ToleranceResidualForce
-    //! @return ...ToleranceResidualForce
-    double GetToleranceResidualForce() const;
-
-    //! @brief ... set ToleranceResidualForce
-    //! @param rToleranceResidualForce... ToleranceResidualForce
-    void SetToleranceResidualForce(double rToleranceResidualForce);
-
-    //! @brief ... check ToleranceResidualForce
-    //! @param r ...
-    void CheckToleranceResidualForce(double rToleranceResidualForce) const;
-
-    //! @brief ... get MaxNumNewtonIterations
-    //! @return ...MaxNumNewtonIterations
-    int GetMaxNumNewtonIterations() const;
-
-    //! @brief ... MaxNumNewtonIterations
-    //! @param rMaxNumNewtonIterations...MaxNumNewtonIterations
-    void SetMaxNumNewtonIterations(int rMaxNumNewtonIterations);
-
-    //! @brief ... check MaxNumNewtonIterations
-    //! @param rMaxNumNewtonIterations ...MaxNumNewtonIterations
-    void CheckMaxNumNewtonIterations(int rMaxNumNewtonIterations) const;
-
-    //! @brief ... get MaxDeltaLoadFactor
-    //! @return ...MaxDeltaLoadFactor
-    double GetMaxDeltaLoadFactor() const;
-
-    //! @brief ... set MaxDeltaLoadFactor
-    //! @param rMaxDeltaLoadFactor...MaxDeltaLoadFactor
-    void SetMaxDeltaLoadFactor(double rMaxDeltaLoadFactor);
-
-    //! @brief ... check MaxDeltaLoadFactor
-    //! @param rMaxDeltaLoadFactor ...MaxDeltaLoadFactor
-    void CheckMaxDeltaLoadFactor(double rMaxDeltaLoadFactor) const;
-
-    //! @brief ... get DecreaseFactor
-    //! @return ...DecreaseFactor
-    double GetDecreaseFactor() const;
-
-    //! @brief ... set DecreaseFactor
-    //! @param rDecreaseFactor...DecreaseFactor
-    void SetDecreaseFactor(double rDecreaseFactor);
-
-    //! @brief ... check DecreaseFactor
-    //! @param rDecreaseFactor ...DecreaseFactor
-    void CheckDecreaseFactor(double r) const;
-
-    //! @brief ... get MinNumNewtonIterations
-    //! @return ...MinNumNewtonIterations
-    int GetMinNumNewtonIterations() const;
-
-    //! @brief ... set MinNumNewtonIterations
-    //! @param rMinNumNewtonIterations...MinNumNewtonIterations
-    void SetMinNumNewtonIterations(double rMinNumNewtonIterations);
-
-    //! @brief ... check MinNumNewtonIterations
-    //! @param rMinNumNewtonIterations ...
-    void CheckMinNumNewtonIterations(int rMinNumNewtonIterations) const;
-
-    //! @brief ... get IncreaseFactor
-    //! @return ...IncreaseFactor
-    double GetIncreaseFactor() const;
-
-    //! @brief ... set IncreaseFactor
-    //! @param rIncreaseFactor...
-    void SetIncreaseFactor(double rIncreaseFactor);
-
-    //! @brief ... check IncreaseFactor
-    //! @param rIncreaseFactor ...IncreaseFactor
-    void CheckIncreaseFactor(double rIncreaseFactor) const;
-
-    //! @brief ... get MinLoadFactor
-    //! @return ...MinLoadFactor
-    double GetMinLoadFactor() const;
-
-    //! @brief ... set MinLoadFactor
-    //! @param rMinLoadFactor...MinLoadFactor
-    void SetMinLoadFactor(double rMinLoadFactor);
-
-    //! @brief ... check MinLoadFactor
-    //! @param rMinLoadFactor ...MinLoadFactor
-    void CheckMinLoadFactor(double rMinLoadFactor) const;
-
-    //! @brief ... get MinLineSearchFactor
-    //! @return ... MinLineSearchFactor
-    double GetMinLineSearchFactor() const;
-
-    //! @brief ... set MinLineSearchFactor
-    //! @param rMinLineSearchFactor...MinLineSearchFactor
-    void SetMinLineSearchFactor(double rMinLineSearchFactor);
-
-    //! @brief ... check MinLineSearchFactor
-    //! @param rMinLineSearchFactor ...MinLineSearchFactor
-    void CheckMinLineSearchFactor(double rMinLineSearchFactor) const;
-
-    //! @brief ... get result directory
-    //! @return ... ResultDirectory
-    const std::string& GetResultDirectory() const;
-
-    //! @brief ... set ResultDirectory
-    //! @param rResultDirectory...ResultDirectory
-    void SetResultDirectory(const std::string& rResultDirectory);
-
-    //! @brief ... check ResultDirectory
-    //! @param ResultDirectory ...ResultDirectory
-    void CheckResultDirectory(const std::string& rResultDirectory) const;
-
-    //! @brief ... get load step macro
-    //! @return ... LoadStepMacro
-    int GetLoadStepMacro() const;
-
-    //! @brief ... set LoadStepMacro
-    //! @param LoadStepMacro...LoadStepMacro
-    void SetLoadStepMacro(int rLoadStepMacro);
-
-    //! @brief ... check LoadStepMacro
-    //! @param LoadStepMacro ...LoadStepMacro
-    void CheckLoadStepMacro(int rLoadStepMacro) const;
-
-    //! @brief ... check LoadStepMacro
-    //! @param LoadStepMacro ...LoadStepMacro
-    void CheckSquareCoarseScaleModel(bool rSquareCoarseScaleModel) const;
-
-    //! @brief ... get if additional periodic shape functions are used
-    //! @return ... true (periodic) or false (fixed displacements)
-    bool GetUseAdditionalPeriodicShapeFunctions() const;
-
-    //! @brief ... set to use additional periodic shape functions
-    //! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
-    void SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions);
-
-    //! @brief ... check
-    //! @param rUseAddPeriodicShapeFunctions ...rUseAddPeriodicShapeFunctions
-    void CheckUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions) const;
-
-    //! @brief ... get threshold for crack initiation based on the maximum damage value within the structure
-    //! @return ... mDamageTresholdCrackInitiation
-    double GetDamageTresholdCrackInitiation() const;
-
-    //! @brief ... set DamageTresholdCrackInitiation
-    //! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
-    void SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation);
-
-    //! @brief ... check DamageTresholdCrackInitiation
-    //! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
-    void CheckDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation) const;
-
-    //! @brief ... get number of possible crack shifts that are checked when the crack is inserted
-    //! @return ... NumPossibleCrackAngles
-    int GetNumPossibleCrackAngles() const;
-
-    //! @brief ... set number of possible crack shifts that are checked when the crack is inserted
-    //! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
-    void SetNumPossibleCrackAngles(int rNumPossibleCrackAngles);
-
-    //! @brief ... check number of possible crack shifts that are checked when the crack is inserted
-    //! @param rNumPossibleCrackAngles ...NumPossibleCrackAngles
-    void CheckNumPossibleCrackAngles(int rNumPossibleCrackAngles) const;
-
-    //! @brief ... get number of possible crack orientations that are checked when the crack is inserted
-    //! @return ... mNumPossibleCrackShifts
-    int GetNumPossibleCrackShifts() const;
-
-    //! @brief ... set number of possible crack orientations that are checked when the crack is inserted
-    //! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
-    void SetNumPossibleCrackShifts(int rNumPossibleCrackShifts);
-
-    //! @brief ... check number of possible crack orientations that are checked when the crack is inserted
-    //! @param rDamageTresholdCrackInitiation ...DamageTresholdCrackInitiation
-    void CheckNumPossibleCrackShifts(int rNumPossibleCrackShifts) const;
+    //! @brief ... get type of constitutive relationship
+    //! @return ... type of constitutive relationship
+    //! @sa eConstitutiveType
+    Constitutive::eConstitutiveType GetType() const;
 
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;
@@ -592,7 +418,7 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const;
+    void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -602,6 +428,57 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
+    //! @brief ... performs the return mapping procedure for the plasticity model
+    //! @param rStrain              ... current total strain
+    //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
+    //! @param rPrevTotalStrain     ... previous total strain (history variable)
+    //! @param rPrevEqPlasticStrain ... previous equiavalente plastic strain (history variable)
+    //! @param rEpsilonP            ... new plastic strain after return mapping
+    //! @param rEqPlasticStrain     ... new equivalente olastic strain after return mapping
+    //! @param rdEpsilonPdEpsilon   ... new derivative of current plastic strain with respect to the total strain
+    NuTo::Error::eError ReturnMapping2D(
+            const EngineeringStrain2D& rStrain,
+            const double rPrevPlasticStrain[4],
+            const EngineeringStrain2D& rPrevTotalStrain,
+            Eigen::Matrix<double,4,1>& rStress,
+            Eigen::Matrix<double,4,1>& rEpsilonP,
+                double& rDeltaEqPlasticStrain,
+            Eigen::Matrix<double,4,4>& rdEpsilonPdEpsilon,
+            Logger& rLogger)const;
+
+    //! @brief calculates the rounded rankine yield surface
+    //! @param rStress current stress
+    //! @param rSigma_1 first principal stress
+    //! @param rSigma_2 second principal stress
+    //! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm 0.5*value_sqrt$
+    //! @return yield condition
+    double YieldSurfaceRankine2DRounded(Eigen::Matrix<double,4,1>& rStress, double rFct)const;
+
+    //! @brief calculates the first and second derivative of the rounded Rankine yield surface with respect to the stress
+    //! @param dF_dsigma return value (first derivative)
+    //! @param d2F_d2sigma return value (second derivative)
+    //! @param stress vector
+    //! @param sigma_1 first principal stress in the plane
+    //! @param sigma_2 second principal stress in the plane
+    //! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm value_sqrt$
+    void YieldSurfaceRankine2DRoundedDerivatives(Eigen::Matrix<double,4,1>& rdF_dSigma,Eigen::Matrix<double,4,4>* rd2F_d2Sigma,
+    		Eigen::Matrix<double,4,1>& rStress)const;
+
+    //! @brief calculates the drucker prager yield surface
+    //! @param rStress current stress
+    //! @param rBeta parameter of the Drucker-Prager yield surface
+    //! @param rHP parameter of the Drucker-Prager yield surface
+    //! @return yield condition
+    double YieldSurfaceDruckerPrager2D(Eigen::Matrix<double,4,1>& rStress, double rBeta, double rHP)const;
+
+    //! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
+    //! @param dF_dsigma return value (first derivative)
+    //! @param d2F_d2sigma return value (second derivative)
+    //! @param elasticStress current stress
+     //! @param BETA parameter of the Drucker Prager yield surface
+    //! @return false, if the stress is on the hydrostatic axis otherwise true
+    bool YieldSurfaceDruckerPrager2DDerivatives(Eigen::Matrix<double,4,1>& dF_dsigma,Eigen::Matrix<double,4,4>* d2F_d2sigma,
+    		Eigen::Matrix<double,4,1>& elasticStress, double BETA)const;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
@@ -612,75 +489,119 @@ public:
     bool IsNonlocalModel()const;
 
 protected:
-    // calculate coefficients of the linear elastic material matrix
-    void CalculateCoefficients3D(double& C11, double& C12, double& C33) const;
+    //! @brief ... density
+    double mRho;
 
-    // this is just for debugging purposes
-    bool CheckStiffness(NuTo::StructureMultiscale* rFineScaleStructure)const;
+    //! @brief ... Young's modulus \f$ E \f$
+    double mE;
 
-    // this is just for debugging purposes
-    bool CheckGradient(NuTo::StructureMultiscale* rFineScaleStructure)const;
+    //! @brief ... Poisson's ratio \f$ \nu \f$
+    double mNu;
 
-    //move from elastic to nonlinear solution
-    void SwitchToNonlinear(ConstitutiveStaticDataMultiscale2DPlaneStrain *rStaticData, ElementBase* rElement, int rIp, EngineeringStrain2D& rEngineeringStrain)const;
+    //! @brief ... nonlocal radius
+    double mNonlocalRadius;
 
-    //! @brief elastic stiffness (before the model has to be transfered to the fine scale)
-    NuTo::FullMatrix<double> mElasticStiffness;
-
-    //! @brief stores the file to read in the fine scale model
-    std::string mFileName;
-
-    //! @brief stiffness of the augmented Lagrangian to prevent crack opening
-    double mAugmentedLagrangeStiffnessCrackOpening;
-
-    //! @brief tensile strength, this parameter should be chosen smaller than the actual value
-    //! it is used to determine the transition from the linear elastic model to the full mesoscale model
+    //! @brief ... uniaxial tensile strength
     double mTensileStrength;
 
-    //! @brief scaling factof for the dofs in order to reflect the different dimensions (remember, the standard displacements are not scaled)
-    double mScalingFactorCrackAngle;
-    double mScalingFactorCrackOpening;
-    double mScalingFactorEpsilon;
+    //! @brief ... uniaxial compressive strength
+    double mCompressiveStrength;
 
-    //! @brief crack transition radius
-    double mCrackTransitionRadius;
+    //! @brief ... biaxial compressive strength
+    double mBiaxialCompressiveStrength;
 
-    //! @brief parameters for the Newton Raphson iteration on the fine scale
-    double mToleranceResidualForce;
-    int mMaxNumNewtonIterations;
-    double mMaxDeltaLoadFactor;
-    double mDecreaseFactor;
-    int mMinNumNewtonIterations;
-    double mIncreaseFactor;
-    double mMinLoadFactor;
-    double mMinLineSearchFactor;
+    //! @brief ... fracture energy
+    double mFractureEnergy;
 
-    //! @brief criterion to add the crack enrichment function
-    double mDamageTresholdCrackInitiation;
+    //! @brief ... yield mode (Drucker Prager, Rankine and combinations)
+    Constitutive::eNonlocalDamageYieldSurface mYieldSurface;
 
-    //! @brief determine the crack angle and location (shift from the center) by checking all different angles and shifts based on these parameters
-    int mNumPossibleCrackAngles;
-    int mNumPossibleCrackShifts;
+    //! @brief ... either use a pure plasticity model (false) or add softening using the damage model (true)
+    bool mDamage;
 
-    //directory, where all the results for the fine scale solutions are stored
-    std::string mResultDirectory;
-    int mLoadStepMacro;
+    //! @brief ... thermal expansion coefficient \f$ \alpha \f$
+    double mThermalExpansionCoefficient;
 
-    //enrich the solution with
-    bool mUseAdditionalPeriodicShapeFunctions;
+    //! @brief ... check if density is non negativ
+    //! @param rRho ... Young's modulus
+    void CheckDensity(double rRho) const;
 
-    //number of threads for openmp parallelization
-    int mNumProcessors;
+    //! @brief ... check if Young's modulus is positive
+    //! @param rE ... Young's modulus
+    void CheckYoungsModulus(double rE) const;
+
+    //! @brief ... check if Poisson's ratio is valid \f$ (-1.0 < \nu < 0.5) \f$
+    //! @param rNu ... Poisson's ratio
+    void CheckPoissonsRatio(double rNu) const;
+
+    //! @brief ... check if nonlocal radius is positive
+    //! @param rRadius ... nonlocal radius
+    void CheckNonlocalRadius(double rNonlocalRadius) const;
+
+    //! @brief ... check if tensile strength is positive
+    //! @param rTensileStrength ... nonlocal radius
+    void CheckTensileStrength(double rTensileStrength) const;
+
+    //! @brief ... check if compressive strength is positive
+    //! @param rRadius ... compressive strength
+    void CheckCompressiveStrength(double rCompressiveStrength) const;
+
+    //! @brief ... check if biaxial compressive strength is positive
+    //! @param rBiaxialCompressiveStrength ... biaxial compressive strength
+    void CheckBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) const;
+
+    //! @brief ... check if fracture energy is positive
+    //! @param rFractureEnergy ... fracture energy
+    void CheckFractureEnergy(double rFractureEnergy) const;
+
+    //! @brief ... check thermal expansion coefficient
+    //! @param rAlpha ... thermal expansion coefficient
+    void CheckThermalExpansionCoefficient(double rAlpha) const;
+
+    //! @brief ... calculate the length of the element in plane coordinates (square root of area)
+    //! @brief ... an interpolation is made based on the principal elastic stress in plane and thickness direction
+    double CalculateEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress) const;
+
+    //! @brief ... calculates the derivative of the equivalent length of the element in plane coordinates (square root of area) with respect to the plastic strains
+    //! @brief ... an interpolation is made based on the principal strains in plane and thickness direction
+    double CalculateDerivativeEquivalentLength2D(const ElementBase* rElement, const Eigen::Matrix<double,4,1>& rStress,
+    		                    Eigen::Matrix<double,4,1>& rdLdStress) const;
+
+    //! @brief ... calculate the nonlocal equivalente plastic strain of an integration point
+    //! @param rElement Element
+    //! @param rIp integration point
+    //! @param rUnloading true, if all nonlocal integration points are in an unloading state
+    //! @return equivalente plastic strain
+    double CalculateNonlocalEquivalentPlasticStrain(const ElementBase* rElement, int rIp, bool& rUnloading)const;
+
+    //! @brief ... calculate the nonlocal plastic strain of an integration point
+    //! @param rElement Element
+    //! @param rIp integration point
+    //! @param rNonlocalPlasticStrain nonlocal plastic strain (return value)
+    //! @return void
+    void CalculateNonlocalPlasticStrain(const ElementBase* rElement, int rIp, double rNonlocalPlasticStrain[4])const;
+
+    //! @brief ... calculate the isotropic damage variable from the nonlocal equivalente plastic strain
+    //! @param rkappa scaled nonlocal equivalente plastic strain
+    //! @param rKappaD material parameter related to the fracture energy and the nonlocal radius
+    //! @return isotropic damage variable
+    double CalculateDamage(double rNonlocalEpsilonPEq, double rKappaUnscaled)const;
+
+    //! @brief ... calculate the isotropic damage variable from the nonlocal equivalente plastic strain and its derivative
+    //! @param rkappa scaled nonlocal equivalente plastic strain
+    //! @param rKappaD material parameter related to the fracture energy and the nonlocal radius
+    //! @param rdOmegadKappa derivative of omega w.r.t. Kappa
+    //! @return isotropic damage variable
+    double CalculateDerivativeDamage(double rkappa, double rKappaD, double& rdOmegadKappa)const;
+
+    //! @brief ... calculate the unscaled kappa_d used for scaling the equivalent plastic strain (related to the fracture energy)
+    //! @brief ... return kappa_d
+    double CalculateKappaD()const;
 };
 }
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Multiscale)
-//this is due to the diamond structure (virtual public derivative)
-namespace boost{
-template<>
-struct is_virtual_base_of<NuTo::ConstitutiveEngineeringStressStrain, NuTo::Multiscale>: public mpl::true_ {};
-}
+BOOST_CLASS_EXPORT_KEY(NuTo::NonlocalDamagePlasticityEngineeringStress)
 #endif // ENABLE_SERIALIZATION
 
-#endif /* CONSTITUTIVEMULTISCALE_H_ */
+#endif /* CONSTITUTIVENONLOCALDAMAGEPLASTICITY_H_ */

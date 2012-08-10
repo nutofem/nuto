@@ -1,5 +1,10 @@
 // $Id$
 
+#include <boost/assign/ptr_map_inserter.hpp>
+
+#include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
+#include "nuto/mechanics/elements/ElementOutputVectorInt.h"
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -378,7 +383,7 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<
     if(nodeGroup->GetNumMembers()<1)
     	throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] Group has no members.");
 
-    int numDisp= nodeGroup->begin()->second->GetNumDisplacements()+nodeGroup->begin()->second->GetNumFineScaleDisplacements();
+    int numDisp= nodeGroup->begin()->second->GetNumDisplacements();
     //resize the matrix
     rDisplacements.Resize(nodeGroup->GetNumMembers(),numDisp);
 	double disp[3];
@@ -544,7 +549,7 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<do
 //! @brief calculate the internal force vector for a node
 //! @param rId ... node id
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -574,7 +579,7 @@ void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& r
 //! @brief calculate the internal force vector for a node group of nodes
 //! @param rGroupIdent ... group identifier
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -623,34 +628,43 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatr
 //! @brief calculate the internal force vector for a node
 //! @param rNodePtr  node for which this has to be calculated
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const
+void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce)
 {
 	try
 	{
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+
+		boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
+		boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
+
 		rNodeForce.Resize(rNodePtr->GetNumDisplacements(),1);
 
 		//go through all elements and check, if the node belongs to the element
-		std::vector<const ElementBase*> elements;
+		std::vector<ElementBase*> elements;
 		GetElementsTotal(elements);
 		for (unsigned int countElement=0; countElement<elements.size(); countElement++)
 		{
-			const ElementBase* elementPtr=elements[countElement];
+			ElementBase* elementPtr=elements[countElement];
 			for (int countNode=0; countNode<elementPtr->GetNumNodes(); countNode++)
 			{
 				if (elementPtr->GetNode(countNode)==rNodePtr)
 				{
-					NuTo::FullMatrix<double> result;
-					std::vector<int> globalDofs;
-					elementPtr->CalculateGradientInternalPotential(result,globalDofs);
+					elementPtr->Evaluate(elementOutput);
+
+					NuTo::FullMatrix<double>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+					assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
 
 					for (int countDof=0; countDof< rNodePtr->GetNumDisplacements(); countDof++)
 					{
                         int theDof = rNodePtr->GetDofDisplacement(countDof);
-                        for (unsigned int countGlobalDofs=0; countGlobalDofs<globalDofs.size(); countGlobalDofs++)
+                        for (unsigned int countGlobalDofs=0; countGlobalDofs<elementVectorGlobalDofs.size(); countGlobalDofs++)
                         {
-                        	if (globalDofs[countGlobalDofs] == theDof)
+                        	if (elementVectorGlobalDofs[countGlobalDofs] == theDof)
                         	{
-                        		rNodeForce(countDof,0)+=result(countGlobalDofs,0);
+                        		rNodeForce(countDof,0)+=elementVector(countGlobalDofs,0);
                         	}
                         }
 					}

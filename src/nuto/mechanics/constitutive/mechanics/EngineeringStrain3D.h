@@ -17,7 +17,7 @@ class DeformationGradient2D;
 class DeformationGradient3D;
 class LinearElastic;
 class LinearElasticEngineeringStress;
-class ConstitutiveMisesPlasticity;
+class MisesPlasticityEngineeringStress;
 class ConstitutiveEngineeringStressStrain;
 
 //! @brief ... three-dimensional deformation gradient
@@ -30,9 +30,9 @@ class EngineeringStrain3D: public ConstitutiveOutputBase
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
     friend class LinearElasticEngineeringStress;
-    friend class ConstitutiveMisesPlasticity;
+    friend class MisesPlasticityEngineeringStress;
     friend class ConstitutiveEngineeringStressStrain;
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
     friend class Multiscale;
     friend class DeformationGradient1D;
     friend class DeformationGradient2D;

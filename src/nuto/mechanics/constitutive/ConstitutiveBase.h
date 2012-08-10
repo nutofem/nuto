@@ -60,12 +60,20 @@ public:
     virtual ~ConstitutiveBase()
     {}
 
+    //! @brief ... evaluate the constitutive relation in 1D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    virtual NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
+
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate2D(const ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+    virtual NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
     		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
 
     //! @brief ... evaluate the constitutive relation in 3D
@@ -73,7 +81,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate3D(const ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+    virtual NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
     		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
 
     // parameters /////////////////////////////////////////////////////////////
@@ -221,174 +229,6 @@ public:
     //! @param rFrictionCoefficient... friction coefficient
     virtual void SetFrictionCoefficient(double rFrictionCoefficient);
 
-    //! @brief ... set the elastic matrix
-    //! @param rElasticStiffness... elastic matrix
-    virtual NuTo::FullMatrix<double> GetElasticStiffness()const;
-
-    //! @brief ... set the elastic matrix
-    //! @param rElasticStiffness... elastic matrix
-    virtual void SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness);
-
-    //! @brief ... return the binary file from which the fine scale model is eventually deserialized
-    //! @return name of the file
-    virtual std::string GetMultiscaleFile()const;
-
-    //! @brief ... set the binary file from which the fine scale model is eventually deserialized
-    //! @param rFileName... name of the file
-    virtual void SetMultiscaleFile(std::string rFileName);
-
-    //! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
-    //! @return crack transition radius
-    virtual double GetCrackTransitionRadius()const;
-
-    //! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
-    //! @param rCrackTransitionRadius... crack transition radius
-    virtual void SetCrackTransitionRadius(double rCrackTransitionRadius);
-
-    //! @brief ... get scaling factor for the dofs of the crack angle
-    //! @return ... scaling factor
-    virtual double GetScalingFactorCrackAngle() const;
-
-    //! @brief ... set scaling factor for the dofs of the crack angle
-    //! @param rScalingFactor...  scaling factor
-    virtual void SetScalingFactorCrackAngle(double rScalingFactorCrackAngle);
-
-    //! @brief ... get scaling factor for the dofs of the crack opening
-    //! @return ... scaling factor
-    virtual double GetScalingFactorCrackOpening() const;
-
-    //! @brief ... set scaling factor for the dofs of the crack opening
-    //! @param rScalingFactor...  scaling factor
-    virtual void SetScalingFactorCrackOpening(double rScalingFactorCrackOpening);
-
-    //! @brief ... get scaling factor for the dofs of total strain
-    //! @return ... scaling factor
-    virtual double GetScalingFactorEpsilon() const;
-
-    //! @brief ... set scaling factor for the dofs of the total strain
-    //! @param rScalingFactor...  scaling factor
-    virtual void SetScalingFactorEpsilon(double rScalingFactorEpsilon);
-
-    //! @brief ... get AugmentedLagrangeStiffnessCrackOpening
-    //! @return ...AugmentedLagrangeStiffnessCrackOpening
-    virtual double GetAugmentedLagrangeStiffnessCrackOpening() const;
-
-    //! @brief ... set AugmentedLagrangeStiffnessCrackOpening
-    //! @param rAugmentedLagrangeStiffnessCrackOpening...AugmentedLagrangeStiffnessCrackOpening
-    virtual void SetAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening);
-
-    //! @brief ... get ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
-    //! @return ...ToleranceResidualForce
-    virtual double GetToleranceResidualForce() const;
-
-    //! @brief ... set ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
-    //! @param rToleranceResidualForce... ToleranceResidualForce
-    virtual void SetToleranceResidualForce(double rToleranceResidualForce);
-
-    //! @brief ... get MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-    //! @return ...MaxNumNewtonIterations
-    virtual int GetMaxNumNewtonIterations() const;
-
-    //! @brief ... MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-    //! @param rMaxNumNewtonIterations...MaxNumNewtonIterations
-    virtual void SetMaxNumNewtonIterations(int rMaxNumNewtonIterations);
-
-    //! @brief ... get MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
-    //! @return ...MaxDeltaLoadFactor
-    virtual double GetMaxDeltaLoadFactor() const;
-
-    //! @brief ... set MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
-    //! @param rMaxDeltaLoadFactor...MaxDeltaLoadFactor
-    virtual void SetMaxDeltaLoadFactor(double rMaxDeltaLoadFactor);
-
-    //! @brief ... get DecreaseFactor in Newton iteration (for multiscale constitutive model)
-    //! @return ...DecreaseFactor
-    virtual double GetDecreaseFactor() const;
-
-    //! @brief ... set DecreaseFactor in Newton iteration (for multiscale constitutive model)
-    //! @param rDecreaseFactor...DecreaseFactor
-    virtual void SetDecreaseFactor(double rDecreaseFactor);
-
-    //! @brief ... get MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-    //! @return ...MinNumNewtonIterations
-    virtual int GetMinNumNewtonIterations() const;
-
-    //! @brief ... set MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-    //! @param rMinNumNewtonIterations...MinNumNewtonIterations
-    virtual void SetMinNumNewtonIterations(int rMinNumNewtonIterations);
-
-    //! @brief ... get IncreaseFactor in Newton iteration (for multiscale constitutive model)
-    //! @return ...IncreaseFactor
-    virtual double GetIncreaseFactor() const;
-
-    //! @brief ... set IncreaseFactor in Newton iteration (for multiscale constitutive model)
-    //! @param rIncreaseFactor...
-    virtual void SetIncreaseFactor(double rIncreaseFactor);
-
-    //! @brief ... get MinLoadFactor in Newton iteration (for multiscale constitutive model)
-    //! @return ...MinLoadFactor
-    virtual double GetMinLoadFactor() const;
-
-    //! @brief ... set MinLoadFactor in Newton iteration (for multiscale constitutive model)
-    //! @param rMinLoadFactor...MinLoadFactor
-    virtual void SetMinLoadFactor(double rMinLoadFactor);
-
-    //! @brief ... get MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
-    //! @return ... MinLineSearchFactorFactor
-    virtual double GetMinLineSearchFactor() const;
-
-    //! @brief ... set MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
-    //! @param rMinLineSearchFactorFactor...MinLineSearchFactorFactor
-    virtual void SetMinLineSearchFactor(double rMinLineSearchFactorFactor);
-
-    //! @brief ... get result directory (for results of finescale in multiscale simulations)
-    //! @return ... ResultDirectory
-    virtual const std::string& GetResultDirectory() const;
-
-    //! @brief ... set ResultDirectory (for results of finescale in multiscale simulations)
-    //! @param rResultDirectory...ResultDirectory
-    virtual void SetResultDirectory(const std::string& rResultDirectory);
-
-    //! @brief ... get load step macro
-    //! @return ... LoadStepMacro
-    virtual int GetLoadStepMacro() const;
-
-    //! @brief ... set LoadStepMacro
-    //! @param LoadStepMacro...LoadStepMacro
-    virtual void SetLoadStepMacro(int rLoadStepMacro);
-
-    //! @brief ... get if additional periodic shape functions are used
-    //! @return ... true (periodic) or false (fixed displacements)
-    virtual bool GetUseAdditionalPeriodicShapeFunctions() const;
-
-    //! @brief ... set to use additional periodic shape functions
-    //! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
-    virtual void SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions);
-
-    //! @brief ... get threshold for crack initiation based on the maximum damage value within the structure
-    //! @return ... mDamageTresholdCrackInitiation
-    virtual double GetDamageTresholdCrackInitiation() const;
-
-    //! @brief ... set DamageTresholdCrackInitiation
-    //! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
-    virtual void SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation);
-
-    //! @brief ... get number of possible crack shifts that are checked when the crack is inserted
-    //! @return ... NumPossibleCrackAngles
-    virtual int GetNumPossibleCrackAngles() const;
-
-    //! @brief ... set number of possible crack shifts that are checked when the crack is inserted
-    //! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
-    virtual void SetNumPossibleCrackAngles(int rNumPossibleCrackAngles);
-
-    //! @brief ... get number of possible crack orientations that are checked when the crack is inserted
-    //! @return ... mNumPossibleCrackShifts
-    virtual int GetNumPossibleCrackShifts() const;
-
-    //! @brief ... set number of possible crack orientations that are checked when the crack is inserted
-    //! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
-    virtual void SetNumPossibleCrackShifts(int rNumPossibleCrackShifts);
-
     //! @brief ... get HeatCapacity
     //! @return ... HeatCapacity
     virtual double GetHeatCapacity() const;
@@ -451,6 +291,14 @@ public:
     //! @brief ... avoid dynamic cast
     //! @return ... see brief explanation
     virtual ConstitutiveLatticeStressStrain* AsConstitutiveLatticeStressStrain();
+
+    //! @brief ... allocate the correct static data
+    //! @return ... see brief explanation
+    virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement)const;
+
+    //! @brief ... allocate the correct static data
+    //! @return ... see brief explanation
+    virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement)const;
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation

@@ -18,8 +18,6 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)

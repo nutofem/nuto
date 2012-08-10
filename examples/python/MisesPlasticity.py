@@ -22,8 +22,11 @@ myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1, 
 #create element
 myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullMatrix(8,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)),"ConstitutiveLawIp","StaticData")
 
+#create section
+mySection = myStructure.SectionCreate("Volume")
+
 #create constitutive law
-myMat = myStructure.ConstitutiveLawCreate("MisesPlasticity")
+myMat = myStructure.ConstitutiveLawCreate("MisesPlasticityEngineeringStress")
 #myStructure.ConstitutiveLawCreate("myMat","LinearElastic")
 
 myStructure.ConstitutiveLawSetYoungsModulus(myMat,100)
@@ -38,6 +41,7 @@ myStructure.ConstitutiveLawInfo(10)
 
 #assign constitutive law 
 myStructure.ElementSetConstitutiveLaw(myElement1,myMat)
+myStructure.ElementSetSection(myElement1,mySection)
 
 #apply constraints of left boundary
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))

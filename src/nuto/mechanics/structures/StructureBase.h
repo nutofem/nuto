@@ -123,12 +123,6 @@ public:
     //! @param rIp ... local ip number
     void AddVisualizationComponentNonlocalWeights(int rElementId, int rIp);
 
-    //! @brief ... Add visualization of lattice stresses to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentLatticeStress();
-
-    //! @brief ... Add visualization of lattice strain to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentLatticeStrain();
-
     //! @brief ... Add visualization of rotations to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentRotation();
 
@@ -156,44 +150,35 @@ public:
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFile(const std::string& rFileName) const;
+    void ExportVtkDataFile(const std::string& rFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFileElements(const std::string& rFileName) const;
+    void ExportVtkDataFileElements(const std::string& rFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFileNodes(const std::string& rFileName) const;
-
-    //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileElements(const std::string& rFileName, bool rXML) const;
+    void ExportVtkDataFileNodes(const std::string& rFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
     //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML) const;
+    void ExportVtkDataFileElements(const std::string& rFileName, bool rXML);
 
-    //Visualize for all integration points the fine scale structure
-    void ElementGroupVisualizeIpMultiscale(int rGroupIdent, const std::string& rFileName, bool rVisualizeDamage)const;
-
-    //Visualize for all integration points the fine scale structure
-    void ElementGroupVisualizeIpMultiscaleDamage(int rGroupIdent, const std::string& rFileName)const;
-
-    //Visualize for all integration points the fine scale structure
-    void ElementGroupVisualizeIpMultiscaleHomogeneous(int rGroupIdent, const std::string& rFileName)const;
+    //! @brief ... export the entire structure to Vtk data file
+    //! @param rFileName ... file name
+    //! @param rWhat ... string which describes what to plot
+    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
+    void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML);
 
     //! @brief ... export an element group to Vtk data file
     //! @param rGroupIdent ... group ident
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const;
+    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName);
 
 #ifndef SWIG
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
@@ -203,25 +188,14 @@ public:
     void DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements) const;
+    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<ElementBase*>& rElements);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
     //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
-    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat,
-    		const std::vector<const ElementBase*>& rElements, bool rVisualizeDamage) const;
-
-    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const;
-
-    //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualizeIpMultiscale(int rGroupId, VisualizeUnstructuredGrid& rVisualize,
-    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const;
 #endif //SWIG
 #endif // ENABLE_VISUALIZE
 
@@ -488,18 +462,18 @@ public:
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce);
 
     //! @brief calculate the internal force vector for a node group of nodes
     //! @param rIdent ... group id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeGroupInternalForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeGroupInternalForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce);
 
 #ifndef SWIG
     //! @brief calculate the internal force vector for a node
     //! @param rNodePtr  node for which this has to be calculated
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce);
 
 #ifdef ENABLE_VISUALIZE
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
@@ -554,9 +528,10 @@ public:
                           NuTo::FullMatrix<int>& rGlobalDofsRow,
                           NuTo::FullMatrix<int>& rGlobalDofsColumn);
 
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the stiffness matrix
-    void ElementCoefficientMatrix_0(int rElementId,
+    //! @brief calculates the coefficient matrix for the rTimeDerivative derivative in the differential equation
+    //! for a mechanical problem, this corresponds to the stiffness, damping or mass matrix (rTimeDerivative=0,1,2)
+    void ElementCoefficientMatrix(int rElementId,
+    		                        int rTimeDerivative,
                                     NuTo::FullMatrix<double>& rResult,
                                     NuTo::FullMatrix<int>& rGlobalDofsRow,
                                     NuTo::FullMatrix<int>& rGlobalDofsColumn);
@@ -596,20 +571,6 @@ public:
     //! @return false, if stiffness is not correct
     virtual bool CheckStiffness();
 
-    //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the damping matrix
-    void ElementCoefficientMatrix_1(int rElementId,
-                                    NuTo::FullMatrix<double>& rResult,
-                                    NuTo::FullMatrix<int>& rGlobalDofsRow,
-                                    NuTo::FullMatrix<int>& rGlobalDofsColumn);
-
-    //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the Mass matrix
-    void ElementCoefficientMatrix_2(int rElementId,
-                                    NuTo::FullMatrix<double>& rResult,
-                                    NuTo::FullMatrix<int>& rGlobalDofsRow,
-                                    NuTo::FullMatrix<int>& rGlobalDofsColumn);
-
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
     void ElementGradientInternalPotential(int rElementId,
@@ -636,29 +597,6 @@ public:
     //! @param rConstitutive material pointer
     void ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive);
 #endif //SWIG
-
-     //! @brief modifies the fine scale model at an ip for a multiscale approach
-     //! @param rElementIdent identifier for the element
-     //! @param rIp integration point
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementIpSetFineScaleModel(int rElementId, int rIp, std::string rFileName);
-
-     //! @brief modifies the fine scale model for a group of elements for a multiscale approach
-     //! @param rGroupIdent identifier for the group of elements
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementGroupSetFineScaleModel(int rGroupIdent, std::string rFileName);
-
-     //  @brief modifies the fine scale model for all element ips for a multiscale approach
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementTotalSetFineScaleModel(std::string rFileName);
-
- #ifndef SWIG
-     //! @brief modifies the constitutive law of a single element
-     //! @param rElement element pointer
-     //! @param rIp integration point number
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName);
- #endif //SWIG
 
      //! @brief modifies the section of a single element
     //! @param rElementIdent element number
@@ -778,48 +716,6 @@ public:
     //! @return elastic energy
     double ElementTotalGetElasticEnergy();
 
-    //! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, double rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, std::string rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for all elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementTotalSetFineScaleParameter(std::string rName, double rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for all elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementTotalSetFineScaleParameter(std::string rName, std::string rParameter);
-
-#ifndef SWIG
-    //! @brief sets the parameters  of the finescale model (structure ip)
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, double rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip)
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter);
-
-    //! @brief modifies the finescale model of a multiscale element from the initial elastic solution phase to the nonlinear phase if principal stress is larger than tensile strength
-    //! @return true, if an adaptation has been performed, otherwise false
-    void ElementTotalMultiscaleSwitchToNonlinear();
-#endif
-
     //*************************************************
     //************ Constraint routines     ***************
     //**  defined in StructureBaseConstraints.cpp **
@@ -894,21 +790,6 @@ public:
     int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
 
 #ifndef SWIG
-    //! @brief adds a fine scale displacement constraint equation for a node
-    //! @param rNode pointer to node
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetFineScaleDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
-#endif
-
-    //! @brief adds a displacement constraint equation for a node
-    //! @param rNode identifier for node
-    //! @param rComponent e.g. the first (count from zero) displacement component
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int  ConstraintLinearSetFineScaleDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
-
-#ifndef SWIG
     //! @brief adds a displacement constraint equation for a group of node
     //! @param rNode pointer to group of nodes
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
@@ -923,19 +804,6 @@ public:
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
-
-#ifndef SWIG
-    //! @brief adds a fine scale displacement constraint equation for a group of node
-    //! @param rNode pointer to group of nodes
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetFineScaleDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
-#endif
-
-    //! @brief adds a constraint equation for a group of nodes
-    //! @param rGroupIdent identifier for group of nodes
-    int ConstraintLinearSetFineScaleDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
 #ifndef SWIG
     //! @brief adds a rotation constraint equation for a group of node
@@ -999,11 +867,6 @@ public:
     //!@return rRHS
     double ConstraintGetRHS(int rConstraintEquation)const;
 
-    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rStrain new strain
-    void ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain);
-
 #ifndef SWIG
     //!@brief number the free DOFS in the constraints (Lagrange multipliers)
     //!@param rDOF current maximum DOF number, increased in the number
@@ -1023,17 +886,8 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     void ConstraintMergeGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& dependentDofValues);
 
-    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rStrain new strain
-    void ConstraintPeriodicSetStrain2D(int rConstraintEquation, const NuTo::EngineeringStrain2D& rStrain);
 #endif
 
-    //!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rCrackOpening new crack opening (x,y)
-    void ConstraintPeriodicSetCrackOpening(int rConstraintEquation,
-            NuTo::FullMatrix<double> rCrackOpeningdouble);
 
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term
@@ -1332,102 +1186,6 @@ public:
     //! @brief ... set friction coefficient
     //! @param rFrictionCoefficient ...  friction coefficient
     void ConstitutiveLawSetFrictionCoefficient(int rIdent, double rFrictionCoefficient);
-
-    //! @brief ... get elastic stiffness
-    //! @return ...  elastic stiffness
-    NuTo::FullMatrix<double> ConstitutiveLawGetElasticStiffness(int rIdent);
-
-    //! @brief ... set fracture energy
-    //! @param rElasticStiffness ...  fracture energy
-    void ConstitutiveLawSetElasticStiffness(int rIdent, NuTo::FullMatrix<double> rElasticStiffness);
-
-    //! @brief ... get elastic stiffness
-    //! @param rIdent ...  fracture energy
-    std::string ConstitutiveLawGetMultiscaleFile(int rIdent);
-
-    //! @brief ... set fracture energy
-    //! @param rFractureEnergy ...  file name
-    void ConstitutiveLawSetMultiscaleFile(int rIdent, std::string rFileName);
-
-    //! @brief ... get crack transition radius
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetCrackTransitionRadius(int rIdent);
-
-    //! @brief ... set crack transition radius
-    //! @param rCrackTransitionRadius ...  fracture energy
-    void ConstitutiveLawSetCrackTransitionRadius(int rIdent, double rCrackTransitionRadius);
-
-    //! @brief ... get scaling factor for the crack angle
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetScalingFactorCrackAngle(int rIdent);
-
-    //! @brief ... set scaling factor for the crack angle
-    //! @param rScalingFactorCrackAngle ...  scaling factor
-    void ConstitutiveLawSetScalingFactorCrackAngle(int rIdent, double rScalingFactorCrackAngle);
-
-    //! @brief ... get scaling factor for the crack opening
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetScalingFactorCrackOpening(int rIdent);
-
-    //! @brief ... set scaling factor for the crack opening
-    //! @param rScalingFactorCrackAngle ...  scaling factor
-    void ConstitutiveLawSetScalingFactorCrackOpening(int rIdent, double rScalingFactorCrackOpening);
-
-    //! @brief ... get scaling factor for the total strain
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetScalingFactorEpsilon(int rIdent);
-
-    //! @brief ... set PenaltyStiffnessCrackAngle
-    //! @param rScalingFactorCrackAngle ...  scaling factor
-    void ConstitutiveLawSetScalingFactorEpsilon(int rIdent, double rScalingFactorEpsilon);
-
-    //! @brief ... get result directory for fine scale models in multiscale simulation
-    //! @param rIdent ...  identifier
-    std::string ConstitutiveLawGetResultDirectory(int rIdent);
-
-    //! @brief ... set ResultDirectory for fine scale models in multiscale simulation
-    //! @param rResultDirectory ...  ResultDirectory
-    void ConstitutiveLawSetResultDirectory(int rIdent, std::string rResultDirectory);
-
-    //! @brief ... get load step macro for fine scale models in multiscale simulation
-    //! @param rIdent ...  identifier
-    int ConstitutiveLawGetLoadStepMacro(int rIdent);
-
-    //! @brief ... set LoadStepMacro for fine scale models in multiscale simulation
-    //! @param rLoadStepMacro ...  LoadStepMacro
-    void ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadStepMacro);
-
-    //! @brief ... get if the fine scale model is to be used with the linear elastic periodic boundary shape functions
-    //! @return rUseAdditionalPeriodicShapeFunctions
-    bool ConstitutiveLawGetUseAdditionalPeriodicShapeFunctions(int rIdent)const;
-
-    //! @brief ... set if the fine scale model is to be used with the linear elastic periodic boundary shape functions
-    //! @param rUseAdditionalPeriodicShapeFunctions ...  true or false
-    void ConstitutiveLawSetUseAdditionalPeriodicShapeFunctions(int rIdent, bool rUseAdditionalPeriodicShapeFunctions);
-
-    //! @brief ... get the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
-    //! @return treshold
-    double ConstitutiveLawGetDamageTresholdCrackInitiation(int rIdent)const;
-
-    //! @brief ... set the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
-    //! @param rDamageTresholdCrackInitiation ...  treshold
-    void ConstitutiveLawSetDamageTresholdCrackInitiation(int rIdent, double rDamageTresholdCrackInitiation);
-
-    //! @brief ... get the number of possible crack angles that are checked when the crack is inserted
-    //! @return number of crack angles
-    int ConstitutiveLawGetNumPossibleCrackAngles(int rIdent)const;
-
-    //! @brief ... set the number of possible crack angles that are checked when the crack is inserted
-    //! @param rNumPossibleCrackAngles ...  number of crack angles
-    void ConstitutiveLawSetNumPossibleCrackAngles(int rIdent, int rNumPossibleCrackAngles);
-
-    //! @brief ... get the number of possible crack shifts that are checked when the crack is inserted
-    //! @return number of crack angles
-    int ConstitutiveLawGetNumPossibleCrackShifts(int rIdent)const;
-
-    //! @brief ... set the number of possible crack shifts that are checked when the crack is inserted
-    //! @param rNumPossibleCrackShifts ...  number of crack shifts
-    void ConstitutiveLawSetNumPossibleCrackShifts(int rIdent, int rNumPossibleCrackShifts);
 
     //! @brief ... set heat cpacity
     void ConstitutiveLawSetHeatCapacity(int rIdent, double rHeatCapacity);
@@ -1876,12 +1634,6 @@ public:
     {}
 
     //! @brief is only true for structure used as multiscale (structure in a structure)
-    virtual bool IsMultiscaleStructure()const
-    {
-    	return false;
-    }
-
-    //! @brief is only true for structure used as multiscale (structure in a structure)
     virtual void ScaleCoordinates(double rCoordinates[3])const
     {
     	throw MechanicsException("[NuTo::StructureBase::ScaleCoordinates] only implemented for multiscale structures.");
@@ -1923,6 +1675,16 @@ public:
     //! @parameters rMinRadius minimal radius of the circle
     //! @return ... matrix with the circles (x,y,r)
     NuTo::FullMatrix<double> CutSpheresZ(NuTo::FullMatrix<double>& rSpheres, double rZCoord, double rMinRadius);
+
+    //! @brief sets the Hessian to be constant or variable
+    //! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
+    //! @parameters rValue (true = const false=variable)
+    void SetHessianConstant(int rTimeDerivative, bool rValue);
+
+	//! @brief sets the Hessian to be constant or variable
+	//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
+    //! @return (true = const false=variable)
+	bool GetHessianConstant(int rTimeDerivative)const;
 
 
 protected:
@@ -2022,6 +1784,11 @@ protected:
     double mMinLineSearchFactor;
     //*********************************************
 
+    //! @brief parameters of the time integration scheme indicating, if the hessian is constant (0 stiffness, 1 damping, 2 mass)
+    //! note that if a matrix is constant, the corresponding term is no longer considered in the gradient calculation
+    //! because the term can be obtained from the global solution procedure
+    bool mHessianConstant[3];
+
 #ifdef _OPENMP
     //@brief maximum independent sets used for parallel assembly of the stiffness resforce etc.
     mutable std::vector<std::vector<ElementBase*> > mMIS;
@@ -2073,10 +1840,15 @@ protected:
     virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
 #endif
 
-    //! @brief ... store all elements of a group in a vector
+    //! @brief ... get all elements of a group in a vector
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer
     void GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const;
+
+    //! @brief ... get all elements of a group in a vector
+    //! @param rElementGroup ... element group
+    //! @param rElements ... vector of element pointer
+    void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements);
 
     //! @brief ... check for dof numbering and build of tmpStaticData
     void BuildGlobalCoefficientMatrixCheck();

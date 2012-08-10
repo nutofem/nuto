@@ -27,6 +27,11 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
+    ElementOutputFullMatrixInt* Clone() const
+    {
+    	return new ElementOutputFullMatrixInt(*this);
+    }
+
     FullMatrix<int>& GetFullMatrixInt()
 	{
         return mMatrix;

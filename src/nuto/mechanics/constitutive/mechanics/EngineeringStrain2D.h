@@ -38,7 +38,7 @@ class EngineeringStrain2D: public ConstitutiveOutputBase
     friend class LinearElastic;
     friend class LinearElasticEngineeringStress;
     friend class Multiscale;
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
     friend class StructureMultiscale;
     friend class DeformationGradient1D;
     friend class DeformationGradient2D;

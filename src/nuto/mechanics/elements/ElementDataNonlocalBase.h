@@ -26,12 +26,12 @@ public:
     //! @brief gets the nonlocal elements for a constitutive model
     //! @param rConstitutive constitutive model
     //! @return vector to nonlocal elements
-	virtual const std::vector<const ElementBase*>& GetNonlocalElements()const;
+	virtual const std::vector<const ElementBase*>& GetNonlocalElements()const override;
 
     //! @brief gets the number of nonlocal elements for a constitutive model
     //! @param rConstitutive constitutive model
     //! @return number of nonlocal elements
-	virtual int GetNumNonlocalElements()const;
+	virtual int GetNumNonlocalElements()const override;
 
     //! @brief adds an element to the nonlocal elements
     //! @param rConstitutive  constitutive model

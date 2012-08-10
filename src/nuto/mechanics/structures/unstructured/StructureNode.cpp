@@ -10,24 +10,6 @@
 #include "nuto/mechanics/nodes/NodeDof.h"
 #include "nuto/mechanics/nodes/NodeCoordinates.h"
 #include "nuto/mechanics/nodes/NodeCoordinatesDof.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsMultiscale2D.h"
-/*#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRadius2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRadius3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotationsRadius2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotationsRadius3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperature1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperature2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperature3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D.h"
-*/
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -133,17 +115,13 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 				mLogger << "\t c:";
 				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
 					mLogger << "\t" << it->second->GetCoordinate(iDof);
-                if (it->second->GetNumDisplacements()>0 || it->second->GetNumFineScaleDisplacements()>0)
+                if (it->second->GetNumDisplacements()>0)
                 {
                 	mLogger << "\t d:";
-                    for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements()+it->second->GetNumFineScaleDisplacements(); ++iDof)
+                    for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements(); ++iDof)
                     {
                     	mLogger << "\t" << it->second->GetDisplacement(iDof) ;
-                        if (it->second->GetNumDisplacements()>0)
-                        	mLogger << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
-                        if (it->second->GetNumFineScaleDisplacements()>0)
-                        	mLogger << "("<< it->second->GetDofFineScaleDisplacement(iDof)<< ")" ;
-
+                       	mLogger << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
                     }
                 }
                 if (it->second->GetNumRotations()>0 )

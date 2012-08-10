@@ -12,7 +12,6 @@
 #include <algorithm>
 
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Plane2D.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
@@ -54,40 +53,34 @@ void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDispl
 }
 
 // build global row dofs
-void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const
+void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int numDispDofs, int numTempDofs) const
 {
-	rGlobalRowDofs.resize(2 * this->GetNumNodes());
+    rGlobalRowDofs.resize(numDispDofs+numTempDofs);
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        const NodeBase *nodePtr = this->GetNode(nodeCount);
-        if (nodePtr->GetNumFineScaleDisplacements()==2)
-        {
-            rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofFineScaleDisplacement(0);
-            rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofFineScaleDisplacement(1);
-        }
-        else
+        const NodeBase * nodePtr(GetNode(nodeCount));
+        if (nodePtr->GetNumDisplacements()>0 && numDispDofs>0)
         {
             rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
             rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+        }
+        if (nodePtr->GetNumTemperatures()>0 && numTempDofs>0)
+        {
+            rGlobalRowDofs[numDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
         }
     }
 }
 
 // build global column dof
-void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const
+void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int numDispDofs, int numTempDofs) const
 {
     int NumNonlocalElements(GetNumNonlocalElements());
 	if (GetNumNonlocalElements()==0)
-	    this->CalculateGlobalRowDofs(rGlobalColumnDofs);
+	    this->CalculateGlobalRowDofs(rGlobalColumnDofs,numDispDofs,numTempDofs);
     else
     {
+        rGlobalColumnDofs.resize(numDispDofs+numTempDofs);
 	    const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
-        int NumCols(0);
-        for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
-        {
-        	NumCols += nonlocalElements[theNonlocalElement]->AsPlane()->GetNumLocalDofs();
-        }
-        rGlobalColumnDofs.resize(NumCols);
         int shift(0);
         for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
         {
@@ -95,20 +88,23 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
         	for (int nodeCount = 0; nodeCount < nonlocalElement->GetNumNodes(); nodeCount++)
             {
                 const NodeBase *nodePtr = nonlocalElement->GetNode(nodeCount);
-                if (nodePtr->GetNumFineScaleDisplacements()==2)
+                if (nodePtr->GetNumDisplacements()>0 && numDispDofs>0)
                 {
-                    rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofFineScaleDisplacement(0);
-                    rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofFineScaleDisplacement(1);
-                }
-                else
-                {
-                    rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
-                    rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+					rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
+					rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
                 }
             }
             shift+=2*nonlocalElement->GetNumNodes();
         }
-        assert(shift==NumCols);
+        assert(shift==numDispDofs);
+        for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
+        {
+            const NodeBase * nodePtr(GetNode(nodeCount));
+            if (nodePtr->GetNumTemperatures()>0 && numTempDofs>0)
+            {
+            	rGlobalColumnDofs[numDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
+            }
+        }
     }
 }
 

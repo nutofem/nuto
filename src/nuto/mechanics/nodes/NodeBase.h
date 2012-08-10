@@ -181,23 +181,6 @@ public:
     //! @return displacement
     virtual double GetDisplacement(short rIndex)const;
 
-    //! @brief returns the number of displacements of the node
-    //! @return number of displacements
-    virtual int GetNumFineScaleDisplacements()const;
-
-    //! @brief gives the global DOF of a displacement component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofFineScaleDisplacement(int rComponent)const;
-
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    virtual void SetFineScaleDisplacements2D(const double rDisplacements[2]);
-
-    //! @brief writes the displacements of a node to the prescribed pointer
-    //! @param rDisplacements displacements
-    virtual void GetFineScaleDisplacements2D(double rDisplacements[2])const;
-
     //! @brief returns the number of Rotations of the node
     //! @return number of Rotations
     virtual int GetNumRotations()const;
@@ -267,9 +250,19 @@ public:
     //! @return temperature
     virtual void GetTemperature(double* rTemperature)const;
 
+    //! @brief returns the temperature of the node
+    //! @param rTimeDerivative time derivative
+    //! @return temperature
+    virtual void GetTemperature(int rTimeDerivative, double* rTemperature)const;
+
     //! @brief set the temperature of the node
     //! @param rTemperature  given temperature
     virtual void SetTemperature(const double* rTemperature);
+
+    //! @brief set the temperature of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rTemperature  given temperature
+    virtual void SetTemperature(int rTimeDerivative, const double* rTemperature);
 
     //! @brief gives the global DOF of a temperature component
     //! @param rComponent component
@@ -291,37 +284,6 @@ public:
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 
 #endif // ENABLE_VISUALIZE
-
-    //! @brief set the shape functions based on the actual oscillations
-    //! @parameter shape function number (0..2)
-    virtual void SetShapeFunctionMultiscalePeriodic(int rShapeFunction);
-
-    //! @brief returns the shape function for the periodic bc for the nodes
-    virtual const boost::array<double,3>& GetShapeFunctionMultiscalePeriodicX()const;
-
-    //! @brief returns the shape function for the periodic bc for the nodes
-    virtual const boost::array<double,3>& GetShapeFunctionMultiscalePeriodicY() const;
-
-    //! @brief scales the shape functions
-    //! @parameter rShapeFunction  (1..3 corresponding to macro strains exx, eyy, and gxy)
-    //! @parameter rScalingFactor rScalingFactor
-    virtual void ScaleShapeFunctionMultiscalePeriodic(int rShapeFunction, double rScalingFactor);
-
-    //! @brief only relevant for multiscale nodes, where they are either in the homogeneous (false) or cracked domain (true)
-    virtual bool IsInCrackedDomain()const
-    {
-    	throw MechanicsException("[NuTo::NodeBase::IsInCrackedDomain] not implemented for this type of nodes.");
-    }
-
-    virtual NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()
-    {
-    	throw MechanicsException("[NuTo::NodeBase::AsNodeDisplacementsMultiscale2D] conversion can't be performed, types do not match.");
-    }
-
-    virtual const NodeDisplacementsMultiscale2D* AsNodeDisplacementsMultiscale2D()const
-    {
-    	throw MechanicsException("[NuTo::NodeBase::AsNodeDisplacementsMultiscale2D] conversion can't be performed, types do not match.");
-    }
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     virtual NodeBase* Clone()const=0;

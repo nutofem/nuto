@@ -30,6 +30,11 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
+    ElementOutputFullMatrixDouble* Clone() const
+    {
+    	return new ElementOutputFullMatrixDouble(*this);
+    }
+
     FullMatrix<double>& GetFullMatrixDouble()
 	{
         return mMatrix;

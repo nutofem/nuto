@@ -22,16 +22,30 @@ NuTo::ConstitutiveBase::ConstitutiveBase()
     this->mParametersValid = false;
 }
 
+//! @brief ... evaluate the constitutive relation in 1D
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate1D(ElementBase* rElement, int rIp,
+		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
+{
+	std::cout << "[ConstitutiveBase::Evaluate1D] make this function pure virtual." << std::endl;
+	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
+	return Error::SUCCESSFUL;
+}
+
 //! @brief ... evaluate the constitutive relation in 2D
 //! @param rElement ... element
 //! @param rIp ... integration point
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(ElementBase* rElement, int rIp,
 		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
 		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-	std::cout << "[ConstitutiveBase::Evaluate] make this function pure virtual." << std::endl;
+	std::cout << "[ConstitutiveBase::Evaluate1D] make this function pure virtual." << std::endl;
 	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
 	return Error::SUCCESSFUL;
 }
@@ -41,11 +55,11 @@ NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(const ElementBase* rEleme
 //! @param rIp ... integration point
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(ElementBase* rElement, int rIp,
 		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
 		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-	std::cout << "[ConstitutiveBase::Evaluate] make this function pure virtual." << std::endl;
+	std::cout << "[ConstitutiveBase::Evaluate3D] make this function pure virtual." << std::endl;
 	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
 	return Error::SUCCESSFUL;
 }
@@ -291,300 +305,6 @@ void NuTo::ConstitutiveBase::SetFrictionCoefficient(double rFrictionCoefficient)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFrictioncoefficient] The constitutive relationship does not have a friction coefficient.");
 }
 
-//! @brief ... set the elastic matrix
-//! @param rElasticStiffness... elastic matrix
-NuTo::FullMatrix<double> NuTo::ConstitutiveBase::GetElasticStiffness()const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetElasticStiffness] The constitutive relationship does not have an elastic stiffness as material parameter.");
-}
-
-//! @brief ... set the elastic matrix
-//! @param rElasticStiffness... elastic matrix
-void NuTo::ConstitutiveBase::SetElasticStiffness(NuTo::FullMatrix<double> rElasticStiffness)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetElasticStiffness] The constitutive relationship does not have an elastic stiffness as material parameter.");
-}
-
-//! @brief ... return the binary file from which the fine scale model is eventually deserialized
-//! @return name of the file
-std::string NuTo::ConstitutiveBase::GetMultiscaleFile()const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMultiscaleFile] The constitutive relationship does not have a multiscale file.");
-}
-
-//! @brief ... set the binary file from which the fine scale model is eventually deserialized
-//! @param rFileName... name of the file
-void NuTo::ConstitutiveBase::SetMultiscaleFile(std::string rFileName)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMultiscaleFile] The constitutive relationship does not have a multiscale file.");
-}
-
-//! @brief ... return crack transition radius to smooth the Heaviside function in the multiscale model
-//! @return crack transition radius
-double NuTo::ConstitutiveBase::GetCrackTransitionRadius()const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetCrackTransitionRadius] The constitutive relationship does not have a crack transition radius.");
-}
-
-//! @brief ... crack transition radius to smooth the Heaviside function in the multiscale model
-//! @param rCrackTransitionRadius... crack transition radius
-void NuTo::ConstitutiveBase::SetCrackTransitionRadius(double rCrackTransitionRadius)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetCrackTransitionRadius] The constitutive relationship does not have a crack transition radius.");
-}
-
-//! @brief ... get scaling factor for the dofs of the crack angle
-//! @return ... scaling factor
-double NuTo::ConstitutiveBase::GetScalingFactorCrackAngle() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetScalingFactorCrackAngle] The constitutive relationship does not have a scaling factor for the crack angle.");
-}
-
-//! @brief ... set scaling factor for the dofs of the crack angle
-//! @param rScalingFactor...  scaling factor
-void NuTo::ConstitutiveBase::SetScalingFactorCrackAngle(double rScalingFactorCrackAngle)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetScalingFactorCrackAngle] The constitutive relationship does not have a scaling factor for the crack angle.");
-}
-
-//! @brief ... get scaling factor for the dofs of the crack opening
-//! @return ... scaling factor
-double NuTo::ConstitutiveBase::GetScalingFactorCrackOpening() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetScalingFactorCrackOpening] The constitutive relationship does not have a scaling factor for the crack opening.");
-}
-
-//! @brief ... set scaling factor for the dofs of the crack opening
-//! @param rScalingFactor...  scaling factor
-void NuTo::ConstitutiveBase::SetScalingFactorCrackOpening(double rScalingFactorCrackOpening)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetScalingFactorCrackOpening] The constitutive relationship does not have a scaling factor for the crack opening.");
-}
-
-//! @brief ... get scaling factor for the dofs of total strain
-//! @return ... scaling factor
-double NuTo::ConstitutiveBase::GetScalingFactorEpsilon() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetScalingFactorEpsilon] The constitutive relationship does not have a scaling factor for the strain.");
-}
-
-//! @brief ... set scaling factor for the dofs of the total strain
-//! @param rScalingFactor...  scaling factor
-void NuTo::ConstitutiveBase::SetScalingFactorEpsilon(double rScalingFactorEpsilon)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetScalingFactorEpsilon] The constitutive relationship does not have a scaling factor for the strain.");
-}
-
-
-//! @brief ... get AugmentedLagrangeStiffnessCrackOpening
-//! @return ...AugmentedLagrangeStiffnessCrackOpening
-double NuTo::ConstitutiveBase::GetAugmentedLagrangeStiffnessCrackOpening() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetAugmentedLagrangeStiffnessCrackOpening] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set AugmentedLagrangeStiffnessCrackOpening
-//! @param rAugmentedLagrangeStiffnessCrackOpening...AugmentedLagrangeStiffnessCrackOpening
-void NuTo::ConstitutiveBase::SetAugmentedLagrangeStiffnessCrackOpening(double rAugmentedLagrangeStiffnessCrackOpening)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAugmentedLagrangeStiffnessCrackOpening] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
-//! @return ...ToleranceResidualForce
-double NuTo::ConstitutiveBase::GetToleranceResidualForce() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetToleranceResidualForce] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set ToleranceResidualForce in Newton iteration (for multiscale constitutive model)
-//! @param rToleranceResidualForce... ToleranceResidualForce
-void NuTo::ConstitutiveBase::SetToleranceResidualForce(double rToleranceResidualForce)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetToleranceResidualForce] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-//! @return ...MaxNumNewtonIterations
-int NuTo::ConstitutiveBase::GetMaxNumNewtonIterations() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMaxNumNewtonIterations] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... MaxNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-//! @param rMaxNumNewtonIterations...MaxNumNewtonIterations
-void NuTo::ConstitutiveBase::SetMaxNumNewtonIterations(int rMaxNumNewtonIterations)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMaxNumNewtonIterations] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
-//! @return ...MaxDeltaLoadFactor
-double NuTo::ConstitutiveBase::GetMaxDeltaLoadFactor() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMaxDeltaLoadFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set MaxDeltaLoadFactor in Newton iteration (for multiscale constitutive model)
-//! @param rMaxDeltaLoadFactor...MaxDeltaLoadFactor
-void NuTo::ConstitutiveBase::SetMaxDeltaLoadFactor(double rMaxDeltaLoadFactor)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMaxDeltaLoadFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get DecreaseFactor in Newton iteration (for multiscale constitutive model)
-//! @return ...DecreaseFactor
-double NuTo::ConstitutiveBase::GetDecreaseFactor() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDecreaseFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set DecreaseFactor in Newton iteration (for multiscale constitutive model)
-//! @param rDecreaseFactor...DecreaseFactor
-void NuTo::ConstitutiveBase::SetDecreaseFactor(double rDecreaseFactor)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDecreaseFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-//! @return ...MinNumNewtonIterations
-int NuTo::ConstitutiveBase::GetMinNumNewtonIterations() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMinNumNewtonIterations] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set MinNumNewtonIterations in Newton iteration (for multiscale constitutive model)
-//! @param rMinNumNewtonIterations...MinNumNewtonIterations
-void NuTo::ConstitutiveBase::SetMinNumNewtonIterations(int rMinNumNewtonIterations)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMinNumNewtonIterations] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get IncreaseFactor in Newton iteration (for multiscale constitutive model)
-//! @return ...IncreaseFactor
-double NuTo::ConstitutiveBase::GetIncreaseFactor() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetIncreaseFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set IncreaseFactor in Newton iteration (for multiscale constitutive model)
-//! @param rIncreaseFactor...
-void NuTo::ConstitutiveBase::SetIncreaseFactor(double rIncreaseFactor)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetIncreaseFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get MinLoadFactor in Newton iteration (for multiscale constitutive model)
-//! @return ...MinLoadFactor
-double NuTo::ConstitutiveBase::GetMinLoadFactor() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMinLoadFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set MinLoadFactor in Newton iteration (for multiscale constitutive model)
-//! @param rMinLoadFactor...MinLoadFactor
-void NuTo::ConstitutiveBase::SetMinLoadFactor(double rMinLoadFactor)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMinLoadFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
-//! @return ... MinLineSearchFactor
-double NuTo::ConstitutiveBase::GetMinLineSearchFactor() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMinLineSearchFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set MinLineSearchFactorFactor in Newton iteration (for multiscale constitutive model)
-//! @param rMinLineSearchFactor...MinLineSearchFactor
-void NuTo::ConstitutiveBase::SetMinLineSearchFactor(double rMinLineSearchFactor)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMinLineSearchFactor] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get result directory (for results of finescale in multiscale simulations)
-//! @return ... ResultDirectory
-const std::string& NuTo::ConstitutiveBase::GetResultDirectory() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetResultDirectory] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set ResultDirectory (for results of finescale in multiscale simulations)
-//! @param rResultDirectory...ResultDirectory
-void NuTo::ConstitutiveBase::SetResultDirectory(const std::string& rResultDirectory)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetResultDirectory] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get load step macro
-//! @return ... LoadStepMacro
-int NuTo::ConstitutiveBase::GetLoadStepMacro() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetLoadStepMacro] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set LoadStepMacro
-//! @param LoadStepMacro...LoadStepMacro
-void NuTo::ConstitutiveBase::SetLoadStepMacro(int rLoadStepMacro)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetLoadStepMacro] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get if additional periodic shape functions are used
-//! @return ... true (periodic) or false (fixed displacements)
-bool NuTo::ConstitutiveBase::GetUseAdditionalPeriodicShapeFunctions() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set to use additional periodic shape functions
-//! @param rUseAddPeriodicShapeFunctions...rUseAddPeriodicShapeFunctions
-void NuTo::ConstitutiveBase::SetUseAdditionalPeriodicShapeFunctions(bool rUseAddPeriodicShapeFunctions)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetUseAddPeriodicShapeFunctions] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get threshold for crack initiation based on the maximum damage value within the structure
-//! @return ... mDamageTresholdCrackInitiation
-double NuTo::ConstitutiveBase::GetDamageTresholdCrackInitiation() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDamageTresholdCrackInitiation] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set DamageTresholdCrackInitiation
-//! @param rDamageTresholdCrackInitiation...DamageTresholdCrackInitiation
-void NuTo::ConstitutiveBase::SetDamageTresholdCrackInitiation(double rDamageTresholdCrackInitiation)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDamageTresholdCrackInitiation] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get number of possible crack shifts that are checked when the crack is inserted
-//! @return ... NumPossibleCrackAngles
-int NuTo::ConstitutiveBase::GetNumPossibleCrackAngles() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetNumPossibleCrackAngles] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set number of possible crack shifts that are checked when the crack is inserted
-//! @param rNumPossibleCrackAngles...NumPossibleCrackAngles
-void NuTo::ConstitutiveBase::SetNumPossibleCrackAngles(int rNumPossibleCrackAngles)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNumPossibleCrackAngles] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get number of possible crack orientations that are checked when the crack is inserted
-//! @return ... mNumPossibleCrackShifts
-int NuTo::ConstitutiveBase::GetNumPossibleCrackShifts() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetNumPossibleCrackShifts] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set number of possible crack orientations that are checked when the crack is inserted
-//! @param mNumPossibleCrackShifts...mNumPossibleCrackShifts
-void NuTo::ConstitutiveBase::SetNumPossibleCrackShifts(int rNumPossibleCrackShifts)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNumPossibleCrackShifts] The constitutive relationship does not have this parameter.");
-}
 
 //! @brief ... get HeatCapacity
 //! @return ... HeatCapacity
@@ -613,7 +333,6 @@ void NuTo::ConstitutiveBase::SetThermalConductivity(double rThermalConductivity)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetThermalConductivity] The constitutive relationship does not have this parameter.");
 }
-
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
@@ -667,6 +386,20 @@ const NuTo::ConstitutiveLatticeStressStrain* NuTo::ConstitutiveBase::AsConstitut
 void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
+}
+
+//! @brief ... allocate the correct static data
+//! @return ... see brief explanation
+NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement)const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Allocate routine for 1D EngineeringStressStrain not implemented.");
+}
+
+//! @brief ... allocate the correct static data
+//! @return ... see brief explanation
+NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement)const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain2D] Allocate routine for 2D EngineeringStressStrain not implemented.");
 }
 
 //! @brief ... allocate the correct static data

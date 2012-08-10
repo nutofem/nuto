@@ -11,7 +11,6 @@
 
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include <assert.h>
 

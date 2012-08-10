@@ -14,7 +14,7 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
-#include "nuto/mechanics/elements/Voxel8N.h"
+//#include "nuto/mechanics/elements/Voxel8N.h"
 #define machine_precision 1e-15
 //sqrt machine_precision
 

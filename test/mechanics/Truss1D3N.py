@@ -40,7 +40,7 @@ myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(1,1,(3,))
 myElement1 = myStructure.ElementCreate("Truss1D3N",nuto.IntFullMatrix(3,1,(myNode1,myNode2,myNode3)))
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,3)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 myStructure.ConstitutiveLawSetDensity(myMatLin,0.3)
@@ -66,6 +66,8 @@ myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(1,1,(0.2,)))
 Ke = nuto.DoubleFullMatrix(0,0)
 rowIndex = nuto.IntFullMatrix(0,0)
 colIndex = nuto.IntFullMatrix(0,0)
+timeDerivative = 0
+# this is the same : myStructure.ElementStiffness(myElement1,timeDerivative,Ke,rowIndex,colIndex)   
 myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
 
 #correct stiffness matrix
@@ -192,16 +194,17 @@ myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss3Ip","NOIPDATA")
 Me = nuto.DoubleFullMatrix(0,0)
 rowIndex = nuto.IntFullMatrix(0,0)
 colIndex = nuto.IntFullMatrix(0,0)
-myStructure.ElementCoefficientMatrix_2(myElement1,Me,rowIndex,colIndex)
+timeDerivative = 2
+myStructure.ElementCoefficientMatrix(myElement1,timeDerivative,Me,rowIndex,colIndex)
 
 #correct stiffness matrix
 MeCorrect = nuto.DoubleFullMatrix(3,3,(8e-4, 4e-4, -2e-4, 4e-4, 32e-4, 4e-4, -2e-4, 4e-4, 8e-4))
 
 if (printResult):
     print "MeCorrect"
-    MeCorrect.Info()
+    MeCorrect.Info(6,5)
     print "Me"
-    Me.Info()
+    Me.Info(6,5)
     
 if ((Me-MeCorrect).Abs().Max()[0]>1e-8):
     print '[' + system,sys.argv[0] + '] : mass is not correct.'

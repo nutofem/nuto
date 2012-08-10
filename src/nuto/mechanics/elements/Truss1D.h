@@ -41,9 +41,10 @@ public:
     void CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const;
 
     //! @brief calculates the local displacements of the nodes
+    //! @param time derivative (0 temperature, 1 temperature rate, 2 second time derivative of temperature)
     //! @param localDisplacements vector with already correct size allocated
     //! this can be checked with an assertation
-    void CalculateLocalDisplacements(std::vector<double>& rLocalDisplacements)const;
+    void CalculateLocalDisplacements(int rTimeDerivative, std::vector<double>& rLocalDisplacements)const;
 
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
@@ -74,11 +75,11 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const;
+    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const;
+    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs) const;
 
 
 };

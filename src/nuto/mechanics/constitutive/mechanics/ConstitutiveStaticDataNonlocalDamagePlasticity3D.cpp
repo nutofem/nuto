@@ -46,7 +46,7 @@ NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity3D& NuTo::ConstitutiveStatic
 //! @brief check, if the static data is compatible with a given element and a given constitutive model
 bool NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity3D::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const
 {
-	if (rConstitutiveType==NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY)
+	if (rConstitutiveType==NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS)
 	{
 		if (rElementType==NuTo::Element::BRICK8N || rElementType==NuTo::Element::TETRAHEDRON4N || rElementType==NuTo::Element::TETRAHEDRON10N)
 			return true;

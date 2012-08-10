@@ -17,7 +17,7 @@ class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain : public Const
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
 public:
 	//! @brief constructor
     ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain();

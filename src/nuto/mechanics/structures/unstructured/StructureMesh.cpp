@@ -50,7 +50,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
 			if ((coordX-X2)*(coordX-X2)+(coordY-Y)*(coordY-Y)<R2)
 				continue;
 		}
-		ElementCreate(NuTo::Element::LATTICE2D, nodeVector, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATAWEIGHTCOORDINATES2D);
+//		ElementCreate(NuTo::Element::LATTICE2D, nodeVector, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATAWEIGHTCOORDINATES2D);
 	}
 }
 

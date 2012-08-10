@@ -4,7 +4,6 @@
 //just for test
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include <eigen3/Eigen/Core>

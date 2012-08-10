@@ -33,7 +33,7 @@ error = False
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 structure=nuto.Structure(3)
 
-Material1 = structure.ConstitutiveLawCreate("LinearElastic")
+Material1 = structure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 structure.ConstitutiveLawSetYoungsModulus(Material1, 20000)
 structure.ConstitutiveLawSetPoissonsRatio(Material1, 0.2)
 structure.ConstitutiveLawSetDensity(Material1, 0.5)

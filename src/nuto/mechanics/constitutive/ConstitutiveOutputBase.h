@@ -73,16 +73,19 @@ public:
     virtual NuTo::ConstitutiveTangentLocal<1,1>& AsConstitutiveTangentLocal_1x1();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    virtual NuTo::ConstitutiveTangentLocal<2,1>& AsConstitutiveTangentLocal_2x1();
+
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     virtual NuTo::ConstitutiveTangentLocal<2,2>& AsConstitutiveTangentLocal_2x2();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     virtual NuTo::ConstitutiveTangentLocal<3,3>& AsConstitutiveTangentLocal_3x3();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentLocal<6,6>& AsConstitutiveTangentLocal_6x6();
+    virtual NuTo::ConstitutiveTangentLocal<6,1>& AsConstitutiveTangentLocal_6x1();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentLocal<6,1>& AsConstitutiveTangentLocal_6x1();
+    virtual NuTo::ConstitutiveTangentLocal<6,6>& AsConstitutiveTangentLocal_6x6();
 
     //! @brief return part of the nonlocal matrix
     virtual NuTo::ConstitutiveTangentLocal<1,1>& GetSubMatrix_1x1(int rSubMatrix);
@@ -94,11 +97,19 @@ public:
     virtual NuTo::ConstitutiveTangentLocal<3,3>& GetSubMatrix_3x3(int rSubMatrix);
 
     //! @brief return part of the nonlocal matrix
-    virtual NuTo::ConstitutiveTangentLocal<6,6>& GetSubMatrix_6x1(int rSubMatrix);
+    virtual NuTo::ConstitutiveTangentLocal<6,1>& GetSubMatrix_6x1(int rSubMatrix);
 
     //! @brief return part of the nonlocal matrix
-    virtual NuTo::ConstitutiveTangentLocal<6,1>& GetSubMatrix_6x6(int rSubMatrix);
+    virtual NuTo::ConstitutiveTangentLocal<6,6>& GetSubMatrix_6x6(int rSubMatrix);
 
+    //! @brief return number of nonlocal matrices (one for each nonlocal integration point)
+    virtual int GetNumSubMatrices()const;
+
+    //! @brief set if a nonlocal matrix is actually local (because of the loading regime)
+    virtual void SetLocalSolution(bool rLocalSolution);
+
+    //! @brief return if a nonlocal matrix is actually local (because of the loading regime)
+    virtual bool GetLocalSolution()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

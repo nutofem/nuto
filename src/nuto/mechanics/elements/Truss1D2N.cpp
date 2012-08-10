@@ -12,8 +12,6 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include <assert.h>
 
 NuTo::Truss1D2N::Truss1D2N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,

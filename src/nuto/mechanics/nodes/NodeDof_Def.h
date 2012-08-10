@@ -216,9 +216,19 @@ public:
     //! @return temperature
     void GetTemperature(double* rTemperature)const override;
 
+    //! @brief returns the temperature of the node
+    //! @param rTimeDerivative time derivative
+    //! @return temperature
+    void GetTemperature(int rTimeDerivative, double* rTemperature)const override;
+
     //! @brief set the temperature of the node
     //! @param rTemperature  given temperature
     void SetTemperature(const double* rTemperature) override;
+
+    //! @brief set the temperature of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rTemperature  given temperature
+    void SetTemperature(int rTimeDerivative, const double* rTemperature) override;
 
     //! @brief gives the global DOF of a temperature component
     //! @param rComponent component

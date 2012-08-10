@@ -14,7 +14,7 @@ namespace NuTo
 {
 class LinearElastic;
 class LinearElasticEngineeringStress;
-class ConstitutiveMisesPlasticity;
+class MisesPlasticityEngineeringStress;
 class ConstitutiveEngineeringStressStrain;
 
 //! @brief ... three-dimensional Engineering stress
@@ -48,9 +48,9 @@ class EngineeringStress3D: public ConstitutiveOutputBase
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
     friend class LinearElasticEngineeringStress;
-   friend class ConstitutiveMisesPlasticity;
+    friend class MisesPlasticityEngineeringStress;
     friend class ConstitutiveEngineeringStressStrain;
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
     friend class Multiscale;
 public:
     //! @brief ... constructor
@@ -65,7 +65,7 @@ public:
     //! @sa mEngineeringStress
     const double* GetData() const;
 
-    EngineeringStress3D& GetEngineeringStress3D()
+    EngineeringStress3D& GetEngineeringStress3D()override
     {
     	return *this;
     }

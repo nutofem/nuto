@@ -26,6 +26,19 @@ NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatur
 			mTemperatures[countDerivatives][count]=0.;
 		}
 	}
+	for (int count=0; count<TNumDisplacements; count++)
+	{
+		mDofDisplacements[count]=-1;
+	}
+	for (int count=0; count<TNumRotations; count++)
+	{
+		mDofRotations[count]=-1;
+	}
+	for (int count=0; count<TNumTemperatures; count++)
+	{
+		mDofTemperatures[count]=-1;
+	}
+
 }
 
 //! @brief ... destructor
@@ -535,6 +548,18 @@ GetTemperature(double* rTemperatures)const
 	rTemperatures[0] = mTemperatures[0][0];
 }
 
+//! @brief returns the temperature of the node
+//! @return temperature
+template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures >
+void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures>::
+GetTemperature(int rTimeDerivative, double* rTemperatures)const
+{
+	assert(TNumTemperatures==1);
+	assert(rTimeDerivative>=0);
+	assert(rTimeDerivative<TNumTimeDerivatives);
+	rTemperatures[0] = mTemperatures[rTimeDerivative][0];
+}
+
 //! @brief set the temperature of the node
 //! @param rTemperature  given temperature
 template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures >
@@ -543,6 +568,18 @@ SetTemperature(const double* rTemperatures)
 {
 	assert(TNumTemperatures==1);
 	mTemperatures[0][0] = rTemperatures[0];
+}
+
+//! @brief set the temperature of the node
+//! @param rTemperature  given temperature
+template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures >
+void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures>::
+SetTemperature(int rTimeDerivative, const double* rTemperatures)
+{
+	assert(TNumTemperatures==1);
+	assert(rTimeDerivative>=0);
+	assert(rTimeDerivative<TNumTimeDerivatives);
+	mTemperatures[rTimeDerivative][0] = rTemperatures[0];
 }
 
 //! @brief gives the global DOF of a temperature component

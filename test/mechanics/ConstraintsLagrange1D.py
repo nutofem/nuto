@@ -52,7 +52,7 @@ Incidence.SetValue(1,0,node2);
 myStructure.ElementCreate("TRUSS1D2N",Incidence);
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
 

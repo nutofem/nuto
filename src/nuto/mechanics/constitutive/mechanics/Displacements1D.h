@@ -1,7 +1,7 @@
 // $Id$
 
-#ifndef CONSTITUTIVE_TEMPERATURE_H_
-#define CONSTITUTIVE_TEMPERATURE_H_
+#ifndef TEMPERATURE_H_
+#define TEMPERATURE_H_
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -16,7 +16,7 @@ class LinearElastic;
 //! @brief ... temperature
 //! @author Jörg F. Unger, BAM
 //! @date July 2012
-class Temperature : public ConstitutiveInputBase
+class Displacements1D: public ConstitutiveInputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -24,18 +24,16 @@ class Temperature : public ConstitutiveInputBase
     friend class LinearElastic;
 public:
     //! @brief ... constructor
-    Temperature();
+    Displacements1D();
 
     //! @brief ... constructor
-    virtual ~Temperature(){};
+    virtual ~Displacements1D(){};
 
-    //! @brief ... get the temperature
-    //! @sa mTemperature
-    const double& GetData() const;
+    //! @brief ... get the values
+    const double* GetData() const;
 
-    //! @brief ... get the temperature
-    //! @sa mTemperature
-    double& GetData();
+    //! @brief ... get the values
+    double* GetData();
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
@@ -50,12 +48,12 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 private:
-    double mTemperature;
+    double mDisplacements;
 };
 
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Temperature)
+BOOST_CLASS_EXPORT_KEY(NuTo::Displacements1D)
 #endif // ENABLE_SERIALIZATION
 
-#endif // CONSTITUTIVE_TEMPERATURE_H_
+#endif // TEMPERATURE_H_

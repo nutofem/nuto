@@ -253,35 +253,6 @@ double NuTo::NodeBase::GetDisplacement(short rIndex)const
 	throw MechanicsException("[NuTo::NodeBase::GetDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
 }
 
-//! @brief returns the number of displacements of the node
-//! @return number of displacements
-int NuTo::NodeBase::GetNumFineScaleDisplacements()const
-{
-    return 0;
-}
-
-//! @brief gives the global DOF of a displacement component
-//! @param rComponent component
-//! @return global DOF
-int NuTo::NodeBase::GetDofFineScaleDisplacement(int rComponent)const
-{
-    throw MechanicsException("[NuTo::NodeBase::GetDofFineScaleDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
-}
-
-//! @brief set the displacements
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetFineScaleDisplacements2D(const double rDisplacements[2])
-{
-    throw MechanicsException("[NuTo::NodeBase::SetFineScaleDisplacements2D] Node of type " + GetNodeTypeStr() + " has no fine scale displacements.");
-}
-
-//! @brief writes the displacements of a node to the prescribed pointer
-//! @param rDisplacements displacements
-void NuTo::NodeBase::GetFineScaleDisplacements2D(double rDisplacements[2])const
-{
-    throw MechanicsException("[NuTo::NodeBase::GetFineScaleDisplacements2D] Node of type " + GetNodeTypeStr() + " has no fine scale displacements.");
-}
-
 //! @brief returns the number of Rotations of the node
 //! @return number of Rotations
 int NuTo::NodeBase::GetNumRotations()const
@@ -402,7 +373,21 @@ void NuTo::NodeBase::SetTemperature(const double rTemperature[1])
 
 //! @brief returns the temperature of the node
 //! @return temperature
+void NuTo::NodeBase::SetTemperature(int rTimeDerivative, const double rTemperature[1])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
+}
+
+//! @brief returns the temperature of the node
+//! @return temperature
 void NuTo::NodeBase::GetTemperature(double rTemperature[1])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
+}
+
+//! @brief returns the temperature of the node
+//! @return temperature
+void NuTo::NodeBase::GetTemperature(int rTimeDerivative, double rTemperature[1])const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
@@ -415,32 +400,6 @@ int NuTo::NodeBase::GetDofTemperature()const
 	throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
-//! @brief set the shape functions based on the actual oscillations
-//! @parameter shape function number (0..2)
-void NuTo::NodeBase::SetShapeFunctionMultiscalePeriodic(int rShapeFunction)
-{
-	throw MechanicsException("[NuTo::NodeBase::SetShapeFunctionMultiscalePeriodic] Node of type " + GetNodeTypeStr() + " is not a multiscale node.");
-}
-
-//! @brief returns the shape function for the periodic bc for the nodes
-const boost::array<double,3>& NuTo::NodeBase::GetShapeFunctionMultiscalePeriodicX()const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetShapeFunctionMultiscalePeriodicX] Node of type " + GetNodeTypeStr() + " is not a multiscale node.");
-}
-
-//! @brief returns the shape function for the periodic bc for the nodes
-const boost::array<double,3>& NuTo::NodeBase::GetShapeFunctionMultiscalePeriodicY() const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetShapeFunctionMultiscalePeriodicY] Node of type " + GetNodeTypeStr() + " is not a multiscale node.");
-}
-
-//! @brief scales the shape functions
-//! @parameter rShapeFunction  (1..3 corresponding to macro strains exx, eyy, and gxy)
-//! @parameter rScalingFactor rScalingFactor
-void NuTo::NodeBase::ScaleShapeFunctionMultiscalePeriodic(int rShapeFunction, double rScalingFactor)
-{
-	throw MechanicsException("[NuTo::NodeBase::ScaleShapeFunctionMultiscalePeriodic] Node of type " + GetNodeTypeStr() + " is not a multiscale node.");
-}
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const

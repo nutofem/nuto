@@ -8,12 +8,14 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
+
 namespace NuTo
 {
 //! @brief ... temperature gradient
 //! @author Jörg F. Unger, BAM
 //! @date June 2012
-class TemperatureGradient1D
+class TemperatureGradient1D : public ConstitutiveInputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

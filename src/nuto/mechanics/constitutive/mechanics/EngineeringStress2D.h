@@ -46,16 +46,24 @@ class EngineeringStress2D: public ConstitutiveOutputBase
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
     friend class StructureMultiscale;
     friend class Multiscale;
 public:
     //! @brief ... constructor
     EngineeringStress2D();
 
+    //! @brief ... copy constructor
+    EngineeringStress2D(const EngineeringStress2D& rOther);
+
     //! @brief ... get number of components stored in this object
     //! @return ... number of components stored in this object
     unsigned int GetNumberOfComponents() const;
+
+    EngineeringStress2D& GetEngineeringStress2D() override
+    {
+    	return *this;
+    }
 
     //! @brief ... get the components of the Engineering stress tensor
     //! @return ... components of the Engineering stress tensor (stored in an array)

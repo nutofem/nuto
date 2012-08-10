@@ -28,6 +28,13 @@ const double* NuTo::Damage::GetData() const
     return &mDamage;
 }
 
+//! @brief ... set damage value
+void NuTo::Damage::SetDamage(double rDamage)
+{
+	assert(rDamage>=0.);
+	mDamage = rDamage;
+}
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive

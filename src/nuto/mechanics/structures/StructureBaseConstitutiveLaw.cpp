@@ -2,12 +2,9 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveLatticeConcrete.h"
-#include "nuto/mechanics/constitutive/mechanics/LinearElastic.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveMisesPlasticity.h"
-#include "nuto/mechanics/constitutive/mechanics/Multiscale.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
+#include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 
 // create a new constitutive law
@@ -19,29 +16,17 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
 
     // get section type from string
     Constitutive::eConstitutiveType ConstitutiveLawType;
-    if (ConstitutiveLawTypeString == "LINEARELASTIC")
-    {
-        ConstitutiveLawType = Constitutive::LINEAR_ELASTIC;
-    }
-    else if (ConstitutiveLawTypeString == "LINEARELASTICENGINEERINGSTRESS")
+    if (ConstitutiveLawTypeString == "LINEARELASTICENGINEERINGSTRESS")
     {
         ConstitutiveLawType = Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS;
     }
-    else if (ConstitutiveLawTypeString == "MISESPLASTICITY")
+    else if (ConstitutiveLawTypeString == "MISESPLASTICITYENGINEERINGSTRESS")
     {
-        ConstitutiveLawType = Constitutive::MISES_PLASTICITY;
+        ConstitutiveLawType = Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS;
     }
-    else if (ConstitutiveLawTypeString == "NONLOCALDAMAGEPLASTICITY")
+    else if (ConstitutiveLawTypeString == "NONLOCALDAMAGEPLASTICITYENGINEERINGSTRESS")
     {
-        ConstitutiveLawType = Constitutive::NONLOCAL_DAMAGE_PLASTICITY;
-    }
-    else if (ConstitutiveLawTypeString == "MULTISCALE")
-    {
-        ConstitutiveLawType = Constitutive::MULTISCALE;
-    }
-    else if (ConstitutiveLawTypeString == "LATTICECONCRETE")
-    {
-        ConstitutiveLawType = Constitutive::LATTICE_CONCRETE;
+        ConstitutiveLawType = Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
     }
     else if (ConstitutiveLawTypeString == "LINEARHEATFLUX")
     {
@@ -76,23 +61,14 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         ConstitutiveBase* ConstitutiveLawPtr;
         switch (rType)
         {
-        case NuTo::Constitutive::LINEAR_ELASTIC:
-            ConstitutiveLawPtr = new NuTo::LinearElastic();
-            break;
         case NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
             break;
-        case NuTo::Constitutive::MISES_PLASTICITY:
-            ConstitutiveLawPtr = new NuTo::ConstitutiveMisesPlasticity();
+        case NuTo::Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::MisesPlasticityEngineeringStress();
             break;
-        case NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY:
-            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticity();
-            break;
-        case NuTo::Constitutive::MULTISCALE:
-            ConstitutiveLawPtr = new NuTo::Multiscale();
-            break;
-        case NuTo::Constitutive::LATTICE_CONCRETE:
-            ConstitutiveLawPtr = new NuTo::ConstitutiveLatticeConcrete();
+        case NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticityEngineeringStress();
             break;
         case NuTo::Constitutive::LINEAR_HEAT_FLUX:
             ConstitutiveLawPtr = new NuTo::LinearHeatFlux();
@@ -628,394 +604,6 @@ void NuTo::StructureBase::ConstitutiveLawSetFrictionCoefficient(int rIdent, doub
     catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetFrictionCoefficient] error setting friction coefficient.");
-        throw e;
-    }
-}
-
-//! @brief ... get elastic stiffness
-//! @param rFractureEnergy ...  fracture energy
-NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetElasticStiffness(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetElasticStiffness();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetElasticStiffness] error getting elastic stiffness.");
-		throw e;
-	}
-}
-
-//! @brief ... set fracture energy
-//! @param rFractureEnergy ...  fracture energy
-void NuTo::StructureBase::ConstitutiveLawSetElasticStiffness(int rIdent, NuTo::FullMatrix<double> rElasticStiffness)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetElasticStiffness(rElasticStiffness);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetElasticStiffness] error setting elastic stiffness.");
-        throw e;
-    }
-}
-
-//! @brief ... get elastic stiffness
-//! @param rFractureEnergy ...  fracture energy
-std::string NuTo::StructureBase::ConstitutiveLawGetMultiscaleFile(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetMultiscaleFile();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetMultiscaleFile] error getting multiscale file.");
-		throw e;
-	}
-}
-
-//! @brief ... set fracture energy
-//! @param rFractureEnergy ...  fracture energy
-void NuTo::StructureBase::ConstitutiveLawSetMultiscaleFile(int rIdent, std::string rFileName)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetMultiscaleFile(rFileName);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetMultiscaleFile] error setting multiscale file.");
-        throw e;
-    }
-}
-
-//! @brief ... get crack transition radius
-//! @param rIdent ...  identifier
-double NuTo::StructureBase::ConstitutiveLawGetCrackTransitionRadius(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetCrackTransitionRadius();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetCrackTransitionRadius] error getting crack transition radius.");
-		throw e;
-	}
-}
-
-//! @brief ... set crack transition radius
-//! @param rCrackTransitionRadius ...  fracture energy
-void NuTo::StructureBase::ConstitutiveLawSetCrackTransitionRadius(int rIdent, double rCrackTransitionRadius)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetCrackTransitionRadius(rCrackTransitionRadius);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetCrackTransitionRadius] error setting crack transition radius.");
-        throw e;
-    }
-}
-
-//! @brief ... get scaling factor for the crack angle
-//! @param rIdent ...  identifier
-double NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackAngle(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetScalingFactorCrackAngle();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackAngle] error getting scaling factor for crack angle.");
-		throw e;
-	}
-}
-
-//! @brief ... set scaling factor for the crack angle
-//! @param rScalingFactorCrackAngle ...  scaling factor
-void NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackAngle(int rIdent, double rScalingFactorCrackAngle)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetScalingFactorCrackAngle(rScalingFactorCrackAngle);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackAngle] error setting scaling factor for crack angle.");
-        throw e;
-    }
-}
-
-//! @brief ... get scaling factor for the crack opening
-//! @param rIdent ...  identifier
-double NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackOpening(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetScalingFactorCrackOpening();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetScalingFactorCrackOpening] error getting scaling factor for crack opening.");
-		throw e;
-	}
-}
-
-//! @brief ... set scaling factor for the crack opening
-//! @param rScalingFactorCrackAngle ...  scaling factor
-void NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackOpening(int rIdent, double rScalingFactorCrackOpening)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetScalingFactorCrackOpening(rScalingFactorCrackOpening);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetScalingFactorCrackOpening] error setting scaling factor for crack opening.");
-        throw e;
-    }
-}
-
-//! @brief ... get scaling factor for the total strain
-//! @param rIdent ...  identifier
-double NuTo::StructureBase::ConstitutiveLawGetScalingFactorEpsilon(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetScalingFactorEpsilon();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetScalingFactorEpsilon] error getting scaling factor for strain.");
-		throw e;
-	}
-}
-
-//! @brief ... set PenaltyStiffnessCrackAngle
-//! @param rScalingFactorCrackAngle ...  scaling factor
-void NuTo::StructureBase::ConstitutiveLawSetScalingFactorEpsilon(int rIdent, double rScalingFactorEpsilon)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetScalingFactorEpsilon(rScalingFactorEpsilon);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetScalingFactorEpsilon] error setting scaling factor for strain.");
-        throw e;
-    }
-}
-
-//! @brief ... get result directory for fine scale models in multiscale simulation
-//! @param rIdent ...  identifier
-std::string NuTo::StructureBase::ConstitutiveLawGetResultDirectory(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetResultDirectory();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetResultDirectory] error getting result directory.");
-		throw e;
-	}
-}
-
-//! @brief ... set ResultDirectory for fine scale models in multiscale simulation
-//! @param rResultDirectory ...  ResultDirectory
-void NuTo::StructureBase::ConstitutiveLawSetResultDirectory(int rIdent, std::string rResultDirectory)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetResultDirectory(rResultDirectory);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetResultDirectory] error setting result directory.");
-        throw e;
-    }
-
-}
-
-//! @brief ... get LoadStepMacro for fine scale models in multiscale simulation
-//! @param rIdent ...  identifier
-int NuTo::StructureBase::ConstitutiveLawGetLoadStepMacro(int rIdent)
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetLoadStepMacro();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetResultDirectory] error getting LoadStepMacro.");
-		throw e;
-	}
-}
-
-//! @brief ... set LoadStepMacro for fine scale models in multiscale simulation
-//! @param rLoadStepMacro ...  LoadStepMacro
-void NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadStepMacro)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetLoadStepMacro(rLoadStepMacro);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro] error setting LoadStepMacro.");
-        throw e;
-    }
-}
-
-//! @brief ... get if the fine scale model is to be used with the linear elastic periodic boundary shape functions
-//! @return rUseAdditionalPeriodicShapeFunctions
-bool NuTo::StructureBase::ConstitutiveLawGetUseAdditionalPeriodicShapeFunctions(int rIdent)const
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetUseAdditionalPeriodicShapeFunctions();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetUseAdditionalPeriodicShapeFunctions] error getting UseAdditionalPeriodicShapeFunctions.");
-		throw e;
-	}
-}
-
-//! @brief ... set if the fine scale model is to be used with the linear elastic periodic boundary shape functions
-//! @param rUseAdditionalPeriodicShapeFunctions ...  true or false
-void NuTo::StructureBase::ConstitutiveLawSetUseAdditionalPeriodicShapeFunctions(int rIdent, bool rUseAdditionalPeriodicShapeFunctions)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetUseAdditionalPeriodicShapeFunctions(rUseAdditionalPeriodicShapeFunctions);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetLoadStepMacro] error setting UseAdditionalPeriodicShapeFunctions.");
-        throw e;
-    }
-}
-
-//! @brief ... get the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
-//! @return treshold
-double NuTo::StructureBase::ConstitutiveLawGetDamageTresholdCrackInitiation(int rIdent)const
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetDamageTresholdCrackInitiation();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDamageTresholdCrackInitiation] error getting DamageTresholdCrackInitiation.");
-		throw e;
-	}
-
-}
-
-//! @brief ... set the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
-//! @param rDamageTresholdCrackInitiation ...  treshold
-void NuTo::StructureBase::ConstitutiveLawSetDamageTresholdCrackInitiation(int rIdent, double rDamageTresholdCrackInitiation)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetDamageTresholdCrackInitiation(rDamageTresholdCrackInitiation);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDamageTresholdCrackInitiation] error setting DamageTresholdCrackInitiation.");
-        throw e;
-    }
-}
-
-//! @brief ... get the number of possible crack angles that are checked when the crack is inserted
-//! @return number of crack angles
-int NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackAngles(int rIdent)const
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetNumPossibleCrackAngles();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackAngles] error getting number of possible crack angles.");
-		throw e;
-	}
-
-}
-
-//! @brief ... set the number of possible crack angles that are checked when the crack is inserted
-//! @param rNumPossibleCrackAngles ...  number of crack angles
-void NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackAngles(int rIdent, int rNumPossibleCrackAngles)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetNumPossibleCrackAngles(rNumPossibleCrackAngles);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackAngles] error setting number of possible crack angles.");
-        throw e;
-    }
-}
-
-//! @brief ... get the number of possible crack shifts that are checked when the crack is inserted
-//! @return number of crack angles
-int NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackShifts(int rIdent)const
-{
-	try
-	{
-		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-		return ConstitutiveLawPtr->GetNumPossibleCrackShifts();
-	}
-	catch (NuTo::MechanicsException& e)
-	{
-		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetNumPossibleCrackShifts] error getting number of possible crack shifts.");
-		throw e;
-	}
-
-}
-
-//! @brief ... set the number of possible crack shifts that are checked when the crack is inserted
-//! @param rNumPossibleCrackShifts ...  number of crack shifts
-void NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackShifts(int rIdent, int rNumPossibleCrackShifts)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetNumPossibleCrackShifts(rNumPossibleCrackShifts);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNumPossibleCrackShifts] error setting number of possible crack shifts.");
         throw e;
     }
 }

@@ -43,7 +43,7 @@ public:
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
-    Error::eError Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput);
+    Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rConstitutiveOutput);
 
 
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
@@ -52,23 +52,23 @@ public:
     //! @param rGlobalDofsRow ... row numbers in global system
     //! @param rGlobalDofsColumn ... column numbers in global system
     //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
+    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
+    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
-    Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
+    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
-    Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
+    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
-                                            std::vector<int>& rGlobalDofs)const;
+    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+    //                                        std::vector<int>& rGlobalDofs)const;
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -84,7 +84,7 @@ public:
     const SectionBase* GetSection()const;
 
     //! @brief Update the static data of an element
-    Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
+    //Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
 
     //! @brief stores the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
@@ -215,7 +215,7 @@ public:
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
+    //Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -245,9 +245,6 @@ public:
 
     //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
     Solid* AsSolid();
-
-    //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(int rIp, std::string rFileName);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

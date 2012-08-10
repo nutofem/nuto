@@ -11,7 +11,7 @@
 
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient1D.h"
 
-NuTo::TemperatureGradient1D::TemperatureGradient1D()
+NuTo::TemperatureGradient1D::TemperatureGradient1D(): ConstitutiveInputBase()
 {
 	mTemperatureGradient = 0.0;
 }
@@ -46,7 +46,8 @@ void NuTo::TemperatureGradient1D::serialize(Archive & ar, const unsigned int ver
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize TemperatureGradient1D" << std::endl;
 #endif
-   ar & BOOST_SERIALIZATION_NVP(mTemperatureGradient);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveInputBase)
+       & BOOST_SERIALIZATION_NVP(mTemperatureGradient);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize TemperatureGradient1D" << std::endl;
 #endif

@@ -43,10 +43,13 @@ class Damage: public ConstitutiveOutputBase
     	return *this;
     }
 
-    //! @brief ... get Engineering Strain
+    //! @brief ... get Damage
     //! @return ... Engineering Strain (exx)
     //! @sa mDeformationGradient
     const double* GetData() const;
+
+    //! @brief ... set damage value
+    void SetDamage(double rDamage);
 
 
 #ifdef ENABLE_SERIALIZATION

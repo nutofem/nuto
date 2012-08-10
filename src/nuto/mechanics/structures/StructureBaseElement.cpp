@@ -10,6 +10,8 @@
 
 #include <assert.h>
 #include <boost/tokenizer.hpp>
+#include <boost/assign/ptr_map_inserter.hpp>
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
@@ -18,6 +20,7 @@
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
+#include "nuto/mechanics/elements/ElementOutputDummy.h"
 
 //! @brief calls ElementCoefficientMatrix_0,
 //! renaming only for clarification in mechanical problems for the end user
@@ -31,7 +34,7 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 #endif
 	try
 	{
-		ElementCoefficientMatrix_0(rElementId, rResult, rGlobalDofsRow, rGlobalDofsColumn);
+		ElementCoefficientMatrix(rElementId, 0, rResult, rGlobalDofsRow, rGlobalDofsColumn);
 	}
 	catch(NuTo::MechanicsException &e)
 	{
@@ -77,14 +80,14 @@ int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, Nu
 	std::vector<int> globalDofsRow,globalDofsColumn;
 	NuTo::FullMatrix<double> stiffnessAnalytic;
 	NuTo::FullMatrix<double> stiffnessCDF;
-	bool symmetryFlag;
+//	bool symmetryFlag;
     for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
     {
         try
         {
         	std::cout << "Element Id " << this->ElementGetId(elementVector[countElement]) << "\n" << "\n";
 
-        	elementVector[countElement]->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
+//        	elementVector[countElement]->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
         	std::cout << "stiffnessAnalytic " << "\n" << stiffnessAnalytic << "\n" << "\n";
 
         	stiffnessCDF.Resize(stiffnessAnalytic.GetNumRows(),stiffnessAnalytic.GetNumColumns());
@@ -146,7 +149,7 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
         throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] First update of tmp static data required.");
     }
 
-    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+//    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     double maxError;
 
     try
@@ -154,12 +157,12 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
     	std::vector<int> globalDofsRow,globalDofsColumn;
     	NuTo::FullMatrix<double> stiffnessAnalytic;
     	NuTo::FullMatrix<double> stiffnessCDF;
-    	bool symmetryFlag;
-    	elementPtr->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
+//    	bool symmetryFlag;
+//    	elementPtr->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
     	std::cout << "stiffnessAnalytic " << "\n" << stiffnessAnalytic << "\n" << "\n";
 
     	stiffnessCDF.Resize(stiffnessAnalytic.GetNumRows(),stiffnessAnalytic.GetNumColumns());
-    	this->ElementCoefficientMatrix_0_Resforce(elementPtr,rDelta,stiffnessCDF);
+//    	this->ElementCoefficientMatrix_0_Resforce(elementPtr,rDelta,stiffnessCDF);
     	std::cout << "stiffnessCDF " << "\n" << stiffnessCDF << "\n" << "\n";
 
     	//check the maximum error
@@ -245,10 +248,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 	{
 		for (unsigned int countElement2=0; countElement2<nonlocalElements.size(); countElement2++)
 		{
-            const_cast<NuTo::ElementBase*>(nonlocalElements[countElement2])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+//            const_cast<NuTo::ElementBase*>(nonlocalElements[countElement2])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
 		}
 	}
-	rElementPtr->CalculateGradientInternalPotential(resforce1,globalDofsRow);
+//	rElementPtr->CalculateGradientInternalPotential(resforce1,globalDofsRow);
 	//std::cout << "resforce 1" << std::endl;
 	//resforce1.Trans().Info(12,10);
 
@@ -260,17 +263,13 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 		{
 			NodeBase *theNode=const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->GetNode(countNode);
 			double disp[3];
-			int numDisp = theNode->GetNumDisplacements()+theNode->GetNumFineScaleDisplacements();
+			int numDisp = theNode->GetNumDisplacements();
 			assert(numDisp<=3);
 
 			for (int countDisp=0; countDisp<numDisp; countDisp++)
 			{
 				switch (theNode->GetNumDisplacements())
 				{
-				case 0:
-					assert(theNode->GetNumFineScaleDisplacements()==2);
-					theNode->GetFineScaleDisplacements2D(disp);
-					break;
 				case 1:
 					theNode->GetDisplacements1D(disp);
 					break;
@@ -286,10 +285,6 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 				disp[countDisp]+=rDelta;
 				switch (theNode->GetNumDisplacements())
 				{
-				case 0:
-					assert(theNode->GetNumFineScaleDisplacements()==2);
-					theNode->SetFineScaleDisplacements2D(disp);
-					break;
 				case 1:
 					theNode->SetDisplacements1D(disp);
 					break;
@@ -306,21 +301,17 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 				//update tmpstatic data of nonlocal elements
 				if (mHaveTmpStaticData)
 				{
-                     const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+//                     const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
 				}
 
 				if (nonlocalElements[countElement]==rElementPtr)
 				{
 					//calculate new residual vector and afterwards reset the displacements
-					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
+//					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
 
 					disp[countDisp]-=rDelta;
 					switch (theNode->GetNumDisplacements())
 					{
-					case 0:
-						assert(theNode->GetNumFineScaleDisplacements()==2);
-						theNode->SetFineScaleDisplacements2D(disp);
-						break;
 					case 1:
 						theNode->SetDisplacements1D(disp);
 						break;
@@ -336,7 +327,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 					//update tmpstatic data of nonlocal elements
 					if (mHaveTmpStaticData)
 					{
-						const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+//						const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
 					}
 				}
 				else
@@ -358,12 +349,12 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 						throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Check] Only nodes with 1,2 or 3 displacement components considered.");
 					}
 
-					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
+//					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
 
 					//update tmpstatic data of nonlocal elements
 					if (mHaveTmpStaticData)
 					{
-						const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
+//						const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->UpdateStaticData(NuTo::Element::TMPSTATICDATA);
 					}
 
 				}
@@ -498,12 +489,13 @@ bool NuTo::StructureBase::CheckStiffness()
 }
 
 
-//! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-//! for a mechanical problem, this corresponds to the stiffness matrix
-void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
-		                 NuTo::FullMatrix<double>& rResult,
-		                 NuTo::FullMatrix<int>& rGlobalDofsRow,
-		                 NuTo::FullMatrix<int>& rGlobalDofsColumn)
+//! @brief calculates the coefficient matrix for the rTimeDerivative derivative in the differential equation
+//! for a mechanical problem, this corresponds to the stiffness, damping or mass matrix (rTimeDerivative=0,1,2)
+void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
+		                        int rTimeDerivative,
+                                NuTo::FullMatrix<double>& rResult,
+                                NuTo::FullMatrix<int>& rGlobalDofsRow,
+                                NuTo::FullMatrix<int>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -515,26 +507,52 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0(int rElementId,
         throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0] First update of tmp static data required.");
     }
 
-     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-    std::vector<int> globalDofsRow,
-    		         globalDofsColumn;
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    std::vector<int> globalDofsRow, globalDofsColumn;
 
     try
     {
-		// define variables storing the element contribution
-		ElementOutputFullMatrixDouble elementOutputMatrix;
-		ElementOutputVectorInt elementOutputVectorGlobalDofsRow;
-		ElementOutputVectorInt elementOutputVectorGlobalDofsColumn;
+    	//define output
+    	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    	switch(rTimeDerivative)
+    	{
+    	case 0:
+        	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_0_TIME_DERIVATIVE );
+    		break;
+    	case 1:
+        	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_1_TIME_DERIVATIVE );
+    		break;
+    	case 2:
+        	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_2_TIME_DERIVATIVE );
+    		break;
+    	default:
+    		throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix] only time derivatives 0,1 and 2 supported.");
+    	}
+    	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
+    	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_COLUMN_DOF );
 
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::HESSIAN_0_TIME_DERIVATIVE,&elementOutputMatrix) );
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::GLOBAL_ROW_DOF,&elementOutputVectorGlobalDofsRow) );
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::GLOBAL_COLUMN_DOF,&elementOutputVectorGlobalDofsColumn) );
 
-		elementPtr->Evaluate(elementOutput);
-		rResult = elementOutputMatrix.GetFullMatrixDouble();
-		globalDofsRow = elementOutputVectorGlobalDofsRow.GetVectorInt();
-		globalDofsColumn = elementOutputVectorGlobalDofsColumn.GetVectorInt();
+		//evaluate output
+    	elementPtr->Evaluate(elementOutput);
+
+    	//assign output
+    	switch(rTimeDerivative)
+    	{
+    	case 0:
+    		rResult = elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
+    		break;
+    	case 1:
+    		rResult = elementOutput.find(Element::HESSIAN_1_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
+    		break;
+    	case 2:
+    		rResult = elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
+    		break;
+    	default:
+    		throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix] only time derivatives 0,1 and 2 supported.");
+    	}
+
+		globalDofsRow = elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt();
+		globalDofsColumn = elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -585,22 +603,20 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 
     try
     {
-		// define variables storing the element contribution
-		ElementOutputFullMatrixDouble elementOutputMatrix;
-		ElementOutputVectorInt elementOutputVectorGlobalDofsRow;
+    	//define output
+    	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
+    	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
 
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::INTERNAL_GRADIENT,&elementOutputMatrix) );
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::GLOBAL_ROW_DOF,&elementOutputVectorGlobalDofsRow) );
+		//evaluate output
+    	elementPtr->Evaluate(elementOutput);
 
-		elementPtr->Evaluate(elementOutput);
-		rResult = elementOutputMatrix.GetFullMatrixDouble();
-		std::vector<int>& globalDofsRow(elementOutputVectorGlobalDofsRow.GetVectorInt());
-
+    	//assign output
+		rResult = elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble();
+		std::vector<int>& globalDofsRow = elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt();
 		//cast to FullMatrixInt
 	    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
 	    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
-
     }
     catch(NuTo::MechanicsException e)
     {
@@ -623,62 +639,6 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::ElementGradientInternalPotential] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
-}
-
-
-//! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
-//! for a mechanical problem, this corresponds to the damping matrix
-void NuTo::StructureBase::ElementCoefficientMatrix_1(int rElementId,
-		     NuTo::FullMatrix<double>& rResult,
-             NuTo::FullMatrix<int>& rGlobalDofsRow,
-             NuTo::FullMatrix<int>& rGlobalDofsColumn)
-{
-	throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_1] To be implemented.");
-}
-
-//! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
-//! for a mechanical problem, this corresponds to the Mass matrix
-void NuTo::StructureBase::ElementCoefficientMatrix_2(int rElementId,
-		     NuTo::FullMatrix<double>& rResult,
-             NuTo::FullMatrix<int>& rGlobalDofsRow,
-             NuTo::FullMatrix<int>& rGlobalDofsColumn)
-{
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_2] First update of tmp static data required.");
-    }
-
-    const ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-    std::vector<int> globalDofsRow,
-    		         globalDofsColumn;
-    bool symmetryFlag;
-    try
-    {
-    	 elementPtr->CalculateCoefficientMatrix_2(rResult, globalDofsRow, globalDofsColumn, symmetryFlag);
-    }
-    catch(NuTo::MechanicsException e)
-    {
-        std::stringstream ss;
-        ss << rElementId;
-    	e.AddMessage("[NuTo::StructureBase::ElementCoefficientMatrix_2] Error building element matrix for element "
-        	+ ss.str() + ".");
-        throw e;
-    }
-    catch(...)
-    {
-        std::stringstream ss;
-        ss << rElementId;
-    	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementCoefficientMatrix_2] Error building element matrix for element " + ss.str() + ".");
-    }
-
-    //cast to FullMatrixInt
-    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
-    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
-
-    rGlobalDofsColumn.Resize(globalDofsColumn.size(),1);
-    memcpy(rGlobalDofsColumn.mEigenMatrix.data(),&globalDofsColumn[0],globalDofsColumn.size()*sizeof(int));
 }
 
 //! @brief sets the constitutive law of a single element
@@ -827,162 +787,6 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
 {
     //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << "\n";
 	rElement->SetConstitutiveLaw(rConstitutive);
-}
-
-//! @brief sets the constitutive law of a single element
-//! @param rElementIdent identifier for the element
-//! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementIpSetFineScaleModel(int rElementId, int rIp, std::string rFileName)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-    if (elementPtr->GetNumIntegrationPoints()>=rIp)
-        throw MechanicsException("[NuTo::StructureBase::ElementIpSetFineScaleModel] Integration point number is higher than total number of integration points.");
-
-    try
-    {
-        double rLengthCoarseScale = sqrt(elementPtr->CalculateArea());
-        std::stringstream elementString;
-        elementString << rElementId;
-        std::stringstream rIPString;
-        rIPString << rIp;
-        ElementIpSetFineScaleModel(elementPtr,rIp,rFileName,rLengthCoarseScale, elementString.str()+std::string("_")+rIPString.str());
-    }
-    catch(NuTo::MechanicsException e)
-    {
-        std::stringstream ss;
-        ss << rElementId;
-        e.AddMessage("[NuTo::StructureBase::ElementIpSetFineScaleModel] Error setting fine scale model for element "
-            + ss.str() + ".");
-        throw e;
-    }
-    catch(...)
-    {
-        std::stringstream ss;
-        ss << rElementId;
-        throw NuTo::MechanicsException
-           ("[NuTo::StructureBase::ElementIpSetFineScaleModel] Error setting fine scale model for element " + ss.str() + ".");
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementIpSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief sets the constitutive law of a group of elements
-//! @param rGroupIdent identifier for the group of elements
-//! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementGroupSetFineScaleModel(int rGroupIdent, std::string rFileName)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Group is not an element group.");
-    Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
-    assert(elementGroup!=0);
-
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
-    {
-        try
-        {
-            double rLengthCoarseScale = sqrt(itElement->second->CalculateArea());
-            std::stringstream elementString;
-            elementString << itElement->first;
-            for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
-            {
-                std::stringstream rIPString;
-                rIPString << theIp;
-                ElementIpSetFineScaleModel(itElement->second, theIp, rFileName, rLengthCoarseScale, elementString.str()+std::string("_")+rIPString.str());
-            }
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Error setting fine scale model for element "
-                + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementGroupSetFineScaleModel] Error setting fine scale model for element " + ss.str() + ".");
-        }
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief sets the constitutive law of a all elements
-//! @param rConstitutiveLawIdent identifier for the material
-void NuTo::StructureBase::ElementTotalSetFineScaleModel(std::string rFileName)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    std::vector<std::pair<int, ElementBase*> > elementVector;
-    GetElementsTotal(elementVector);
-    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
-    {
-        try
-        {
-            double lCoarseScale = sqrt(elementVector[countElement].second->CalculateArea());
-            std::stringstream elementString;
-            elementString << elementVector[countElement].first;
-            for (int theIp=0; theIp<elementVector[countElement].second->GetNumIntegrationPoints(); theIp++)
-            {
-                std::stringstream rIPString;
-                rIPString << theIp;
-                ElementIpSetFineScaleModel(elementVector[countElement].second, theIp, rFileName, lCoarseScale, elementString.str()+std::string("_")+rIPString.str());
-            }
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            ss << elementVector[countElement].first;
-            e.AddMessage("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
-                    + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            ss << elementVector[countElement].first;
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementTotalSetFineScaleModel] Error setting fine scale model for element "
-                       + ss.str() + ".");
-        }
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleModel] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief sets the constitutive law of a single element
-//! @param rElement element pointer
-//! @param rConstitutive material pointer
-void NuTo::StructureBase::ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName)
-{
-    rElement->SetFineScaleModel(rIp, rFileName, rLengthCoarseScale, rIPName);
 }
 
 //! @brief sets the section of a single element
@@ -1318,13 +1122,13 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
     try
     {
 		// define variables storing the element contribution
-    	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRAIN);
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    	boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRAIN);
 
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+		//evaluate the strain
+    	elementPtr->Evaluate(elementOutput);
 
-		elementPtr->Evaluate(elementOutput);
-		rEngineeringStrain = elementOutputIpData.GetFullMatrixDouble();
+    	rEngineeringStrain = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1367,13 +1171,13 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
     try
     {
 		// define variables storing the element contribution
-    	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_PLASTIC_STRAIN);
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    	boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_PLASTIC_STRAIN);
 
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+		//evaluate the strain
+    	elementPtr->Evaluate(elementOutput);
 
-		elementPtr->Evaluate(elementOutput);
-		rEngineeringPlasticStrain = elementOutputIpData.GetFullMatrixDouble();
+    	rEngineeringPlasticStrain = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1416,13 +1220,13 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
     try
     {
 		// define variables storing the element contribution
-    	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRESS);
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    	boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRESS);
 
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+		//evaluate the strain
+    	elementPtr->Evaluate(elementOutput);
 
-		elementPtr->Evaluate(elementOutput);
-		rEngineeringStress = elementOutputIpData.GetFullMatrixDouble();
+    	rEngineeringStress = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
     }
     catch(NuTo::MechanicsException e)
     {
@@ -1466,14 +1270,14 @@ void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& r
     try
     {
 		// define variables storing the element contribution
-    	ElementOutputIpData elementOutputIpData(IpData::DAMAGE);
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    	boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::DAMAGE);
 
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+		//evaluate the strain
+    	elementPtr->Evaluate(elementOutput);
 
-		elementPtr->Evaluate(elementOutput);
-		rDamage = elementOutputIpData.GetFullMatrixDouble();
-    }
+    	rDamage = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
+     }
     catch(NuTo::MechanicsException e)
     {
         std::stringstream ss;
@@ -1512,20 +1316,18 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
     }
 	std::vector<ElementBase*> elementVector;
 	GetElementsTotal(elementVector);
-	FullMatrix<double> damage;
+
 	double maxDamage(0);
 	// define variables storing the element contribution
-	ElementOutputIpData elementOutputIpData(IpData::DAMAGE);
-
-	std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-	elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(Element::IP_DATA,&elementOutputIpData) );
+	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+	boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::DAMAGE);
 
 	for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
 	{
 		try
 		{
 			elementVector[countElement]->Evaluate(elementOutput);
-			damage = elementOutputIpData.GetFullMatrixDouble();
+			FullMatrix<double>& damage = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
 			if (damage.Max()>maxDamage)
 				maxDamage = damage.Max();
 		}
@@ -1589,8 +1391,9 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
     int exception(0);
     std::string exceptionStringTotal;
 
-	std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-	elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(NuTo::Element::UPDATE_STATIC_DATA,0));
+	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+	boost::assign::ptr_map_insert<ElementOutputDummy>( elementOutput )( Element::UPDATE_STATIC_DATA );
+
 #ifdef _OPENMP
 	if (mNumProcessors!=0)
 		omp_set_num_threads(mNumProcessors);
@@ -1659,14 +1462,17 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 
     Error::eError errorGlobal (Error::SUCCESSFUL);
 
+    std::cout << "do we really have tmp static data " << mHaveTmpStaticData << std::endl;
     if (mHaveTmpStaticData)
 	{
 		std::vector<ElementBase*> elementVector;
 		GetElementsTotal(elementVector);
 	    int exception(0);
 	    std::string exceptionStringTotal;
-		std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*> elementOutput;
-		elementOutput.insert(std::pair<NuTo::Element::eOutput, NuTo::ElementOutputBase*>(NuTo::Element::UPDATE_TMP_STATIC_DATA,0));
+
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+		boost::assign::ptr_map_insert<ElementOutputDummy>( elementOutput )( Element::UPDATE_TMP_STATIC_DATA );
+
 #ifdef _OPENMP
 		if (mNumProcessors!=0)
 			omp_set_num_threads(mNumProcessors);
@@ -1965,7 +1771,8 @@ double NuTo::StructureBase::ElementTotalGetInternalEnergy()
     {
         try
         {
-            elementVector[elementCount]->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
+        	throw MechanicsException("[NuTo::StructureBase::ElementTotalGetInternalEnerg] not yet implemented on ip level.");
+//            elementVector[elementCount]->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
@@ -2018,7 +1825,8 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)
     {
         try
         {
-        	itElement->second->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
+        	throw MechanicsException("[NuTo::StructureBase::ElementGroupGetTotalEnergy] not yet implemented on ip level.");
+        	//itElement->second->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
@@ -2067,7 +1875,8 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
     {
         try
         {
-            elementVector[elementCount]->GetIpData(NuTo::IpData::ELASTIC_ENERGY,ipEnergy);
+        	throw MechanicsException("[NuTo::StructureBase::ElementTotalGetElasticEnergy] not yet implemented on ip level.");
+        	//elementVector[elementCount]->GetIpData(NuTo::IpData::ELASTIC_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {
                 elasticEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
@@ -2097,327 +1906,27 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
     return elasticEnergy;
 }
 
-
-//! @brief sets the parameters  of the finescale model (structure ip)
-//! @parameter rElement Element pointer
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::StructureBase::ElementTotalSetFineScaleParameter(std::string rName, double rParameter)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
-    {
-        try
-        {
-            for (int theIp=0; theIp<elementVector[elementCount]->GetNumIntegrationPoints(); theIp++)
-                elementVector[elementCount]->SetFineScaleParameter(theIp, rName, rParameter);
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[elementCount]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[elementCount]);
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementTotalSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
-        }
-    }
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief sets the parameters  of the finescale model (structure ip)
-//! @parameter rElement Element pointer
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::StructureBase::ElementTotalSetFineScaleParameter(std::string rName, std::string rParameter)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-    for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
-    {
-        try
-        {
-            for (int theIp=0; theIp<elementVector[elementCount]->GetNumIntegrationPoints(); theIp++)
-                elementVector[elementCount]->SetFineScaleParameter(theIp, rName, rParameter);
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[elementCount]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[elementCount]);
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementTotalSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
-        }
-    }
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-
-//! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
-//! @parameter rElement Element pointer
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, double rParameter)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Group is not an element group.");
-    Group<ElementBase> *elementGroup = dynamic_cast<Group< ElementBase >*>(itGroup->second);
-    assert(elementGroup!=0);
-
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
-    {
-        try
-        {
-            for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
-            	itElement->second->SetFineScaleParameter(theIp, rName, rParameter);
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
-            throw e;
-        }
-        catch(NuTo::Exception e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
-        }
-    }
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
-//! @parameter rElement Element pointer
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::StructureBase::ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, std::string rParameter)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Group is not an element group.");
-    Group<ElementBase> *elementGroup = dynamic_cast<Group< ElementBase >*>(itGroup->second);
-    assert(elementGroup!=0);
-
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
-    {
-        try
-        {
-            for (int theIp=0; theIp<itElement->second->GetNumIntegrationPoints(); theIp++)
-            	itElement->second->SetFineScaleParameter(theIp, rName, rParameter);
-        }
-        catch(NuTo::MechanicsException e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element "  + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementGroupSetFineScaleParameter] Error setting fine scale parameter for element " + ss.str() + ".");
-        }
-    }
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetFineScaleParameter] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief sets the parameters  of the finescale model (structure ip)
-//! @parameter rElement Element pointer
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, double rParameter)
-{
-}
-
-//! @brief sets the parameters  of the finescale model (structure ip)
-//! @parameter rElement Element pointer
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::StructureBase::ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter)
-{
-}
-
-//! @brief modifies the finescale model of a multiscale element from the initial elastic solution phase to the nonlinear phase
-//! @parameter rElement Element pointer
-//! @return true, if an adaption has been performed, otherwise false
-void NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear()
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] First update of tmp static data required.");
-    }
-	std::vector<NuTo::ElementBase*> elementVector;
-	GetElementsTotal(elementVector);
-
-#ifdef _OPENMP
-    int error(0);
-    std::string errorTotal;
-    if (mNumProcessors!=0)
-    	omp_set_num_threads(mNumProcessors);
-    #pragma omp parallel default(shared)
-    #pragma omp for schedule(dynamic,1) nowait
-#endif //_OPENMP
-	for (unsigned int countElement=0;  countElement<elementVector.size() ;countElement++)
-	{
-		try
-		{
-			//if (this->mUpdateTmpStaticDataRequired==false)
-			    elementVector[countElement]->UpdateStaticData(NuTo::Element::SWITCHMULTISCALE2NONLINEAR);
-		}
-#ifdef _OPENMP
-		catch(NuTo::Exception& e)
-		{
-			std::stringstream ss;
-			ss << ElementGetId(elementVector[countElement]);
-			std::string errorLocal(e.ErrorMessage()
-					+"[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switching to nonlinear for element " + ss.str() + ".\n");
-			error+=1;
-			errorTotal+=errorLocal;
-		}
-		catch(...)
-		{
-			std::stringstream ss;
-			ss << ElementGetId(elementVector[countElement]);
-			std::string errorLocal("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switching to nonlinear for element " + ss.str() + ".\n");
-			error+=1;
-			errorTotal+=errorLocal;
-		}
-	}
-    if(error>0)
-    {
-	    throw MechanicsException(errorTotal);
-    }
-#else
-		catch(NuTo::MechanicsException e)
-		{
-			std::stringstream ss;
-			ss << ElementGetId(elementVector[countElement]);
-			e.AddMessage("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switch to nonlinear for element "
-				+ ss.str() + ". ");
-			throw e;
-		}
-		catch(...)
-		{
-			std::stringstream ss;
-			ss << ElementGetId(elementVector[countElement]);
-			throw NuTo::MechanicsException
-			   ("[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] Error switch to nonlinear for element "
-						+ ss.str() + ". ");
-		}
-	}
-#endif //openmp
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ElementTotalMultiscaleSwitchToNonlinear] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-}
-
 #ifdef ENABLE_VISUALIZE
 //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-void NuTo::StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+void NuTo::StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
 {
-    std::vector<const ElementBase*> elementVec;
+    std::vector< ElementBase*> elementVec;
     this->GetElementsTotal(elementVec);
     ElementVectorAddToVisualize(rVisualize,rWhat,elementVec);
 }
 
 //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-void NuTo::StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+void NuTo::StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
 {
 	// find group by name
-	const Group<ElementBase>* elementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupId));
-	std::vector<const ElementBase*> elementVec;
+	Group<ElementBase>* elementGroup = this->GroupGetGroupPtr(rGroupId)->AsGroupElement();
+	std::vector< ElementBase*> elementVec;
 	this->GetElementsByGroup(elementGroup,elementVec);
     ElementVectorAddToVisualize(rVisualize,rWhat,elementVec);
 }
 
 //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements) const
+void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<ElementBase*>& rElements)
 {
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
@@ -2433,48 +1942,6 @@ void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid&
     for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
     {
         rElements[ElementCount]->Visualize(rVisualize, rWhat);
-    }
-}
-
-//! @brief ... adds all the elements in a group to the data structure that is finally visualized
-void NuTo::StructureBase::ElementGroupAddToVisualizeIpMultiscale(int rGroupId, VisualizeUnstructuredGrid& rVisualize,
-		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const
-{
-	// find group by name
-	const Group<ElementBase>* elementGroup = dynamic_cast<const Group<ElementBase>*>( this->GroupGetGroupPtr(rGroupId));
-	std::vector<const ElementBase*> elementVec;
-	this->GetElementsByGroup(elementGroup,elementVec);
-	ElementVectorAddToVisualizeIpMultiscale(rVisualize,rWhat,elementVec,rVisualizeDamage);
-}
-
-//! @brief ... adds all the elements to the data structure that is finally visualized
-void NuTo::StructureBase::ElementTotalAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const
-{
-	// find group by name
-    std::vector<const ElementBase*> elementVec;
-    this->GetElementsTotal(elementVec);
-	ElementVectorAddToVisualizeIpMultiscale(rVisualize,rWhat,elementVec,rVisualizeDamage);
-}
-
-//! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-void NuTo::StructureBase::ElementVectorAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements, bool rVisualizeDamage) const
-{
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] First update of tmp static data required.");
-    }
-
-    if (mHaveTmpStaticData && mUpdateTmpStaticDataRequired)
-    {
-    	throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] Update of tmpStaticData required first.");
-    }
-
-    for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
-    {
-        rElements[ElementCount]->VisualizeIpMultiscale(rVisualize, rWhat, rVisualizeDamage);
     }
 }
 

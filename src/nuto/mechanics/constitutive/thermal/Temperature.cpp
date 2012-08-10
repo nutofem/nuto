@@ -13,13 +13,19 @@
 #include "nuto/mechanics/constitutive/thermal/Temperature.h"
 
 // constructor
-NuTo::Temperature::Temperature()
+NuTo::Temperature::Temperature(): ConstitutiveInputBase()
 {
     this->mTemperature = 0.0;
 }
 
 // get temperature
-double NuTo::Temperature::GetTemperature() const
+const double& NuTo::Temperature::GetData() const
+{
+    return mTemperature;
+}
+
+// get temperature
+double& NuTo::Temperature::GetData()
 {
     return mTemperature;
 }
@@ -34,19 +40,20 @@ void NuTo::Temperature::Info(unsigned short rVerboseLevel) const
 //! @brief serializes the class
 //! @param ar         archive
 //! @param version    version
-template void NuTo::EngineeringStress1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::EngineeringStress1D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::EngineeringStress1D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::EngineeringStress1D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::EngineeringStress1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::EngineeringStress1D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::Temperature::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Temperature::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Temperature::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Temperature::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Temperature::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Temperature::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::EngineeringStress1D::serialize(Archive & ar, const unsigned int version)
+void NuTo::Temperature::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize Temperature" << std::endl;
 #endif
-   ar & BOOST_SERIALIZATION_NVP(Temperature);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveInputBase)
+       & BOOST_SERIALIZATION_NVP(mTemperature);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Temperature" << std::endl;
 #endif

@@ -13,8 +13,8 @@ enum eConstitutiveType
 {
     LINEAR_ELASTIC,            //!< linear-elastic behavior
     LINEAR_ELASTIC_ENGINEERING_STRESS,            //!< linear-elastic behavior
-    MISES_PLASTICITY,          //!< mises plasticity with isotropic and kinematic hardening
-    NONLOCAL_DAMAGE_PLASTICITY,//!< nonlocal damage model with plasticity in the effective stress space
+    MISES_PLASTICITY_ENGINEERING_STRESS,          //!< mises plasticity with isotropic and kinematic hardening
+    NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,//!< nonlocal damage model with plasticity in the effective stress space
     MULTISCALE,                //!< multiscale model, where the average stress is calculated from a full fine scale model
     LATTICE_CONCRETE,          //!< material law for lattice model
     LINEAR_HEAT_FLUX           //!< material law for lattice model
@@ -67,17 +67,26 @@ static inline std::string InputToString ( const eInput& e )
 
 enum eOutput
 {
+	ENGINEERING_STRAIN_1D,           //!<
 	ENGINEERING_STRAIN_2D,           //!<
 	ENGINEERING_STRAIN_3D,           //!<
 	ENGINEERING_PLASTIC_STRAIN_3D,   //!<
+	ENGINEERING_STRESS_1D,           //!<
 	ENGINEERING_STRESS_2D,           //!<
 	ENGINEERING_STRESS_3D,           //!<
+	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,
+	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
+	D_HEAT_FLUX_D_TEMPERATURE_RATE_1D,
+	D_HEAT_FLUX_D_TEMPERATURE_RATE_2D,
+	D_HEAT_FLUX_D_TEMPERATURE_RATE_3D,
+	HEAT_FLUX_1D,
 	HEAT_FLUX_2D,
 	HEAT_FLUX_3D,
+	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_1D,
 	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D,
 	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,
 	DAMAGE,
@@ -88,15 +97,26 @@ enum eOutput
 static inline std::string OutputToString( const eOutput& e )
 {
 	const std::map< eOutput, std::string > lut =
-    boost::assign::map_list_of(ENGINEERING_STRAIN_2D, "ENGINEERING_STRAIN_2D" )
+    boost::assign::map_list_of(ENGINEERING_STRAIN_1D, "ENGINEERING_STRAIN_1D" )
+                              (ENGINEERING_STRAIN_2D, "ENGINEERING_STRAIN_2D" )
                               (ENGINEERING_STRAIN_3D, "ENGINEERING_STRAIN_3D" )
                               (ENGINEERING_PLASTIC_STRAIN_3D, "ENGINEERING_PLASTIC_STRAIN_3D" )
+                              (ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
                               (ENGINEERING_STRESS_2D,"ENGINEERING_STRESS_2D")
                               (ENGINEERING_STRESS_3D,"ENGINEERING_STRESS_3D")
+                              (D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D")
                               (D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D")
                               (D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D")
+                              (D_ENGINEERING_STRESS_D_TEMPERATURE_1D,"D_ENGINEERING_STRESS_D_TEMPERATURE_1D")
+                              (D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
+                              (D_ENGINEERING_STRESS_D_TEMPERATURE_3D,"D_ENGINEERING_STRESS_D_TEMPERATURE_3D")
+                              (D_HEAT_FLUX_D_TEMPERATURE_RATE_1D,"D_HEAT_FLUX_D_TEMPERATURE_RATE_1D")
+                              (D_HEAT_FLUX_D_TEMPERATURE_RATE_2D,"D_HEAT_FLUX_D_TEMPERATURE_RATE_2D")
+                              (D_HEAT_FLUX_D_TEMPERATURE_RATE_3D,"D_HEAT_FLUX_D_TEMPERATURE_RATE_3D")
+                              (HEAT_FLUX_1D,"HEAT_FLUX_1D")
                               (HEAT_FLUX_2D,"HEAT_FLUX_2D")
                               (HEAT_FLUX_3D,"HEAT_FLUX_3D")
+                              (D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_1D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_1D")
                               (D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D")
                               (D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D")
                               (DAMAGE,"DAMAGE")

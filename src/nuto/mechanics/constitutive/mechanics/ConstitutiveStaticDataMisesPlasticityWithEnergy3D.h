@@ -13,7 +13,7 @@
 //! @date December 2009
 namespace NuTo
 {
-class ConstitutiveMisesPlasticity;
+class MisesPlasticityEngineeringStress;
 
 class ConstitutiveStaticDataMisesPlasticityWithEnergy3D :
 	public ConstitutiveStaticDataMisesPlasticity3D ,
@@ -22,7 +22,7 @@ class ConstitutiveStaticDataMisesPlasticityWithEnergy3D :
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ConstitutiveMisesPlasticity;
+    friend class MisesPlasticityEngineeringStress;
 public:
 	//! @brief constructor
     ConstitutiveStaticDataMisesPlasticityWithEnergy3D();

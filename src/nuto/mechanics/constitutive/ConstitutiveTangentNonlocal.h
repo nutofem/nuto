@@ -19,6 +19,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
@@ -49,7 +50,7 @@ public:
 
     //! @brief ... sets the number of local matrices
     //! @return ... n
-    void SetNumSubMatrices(int rNumSubMatrices) const
+    void SetNumSubMatrices(int rNumSubMatrices)
     {
     	mMatrices.resize(rNumSubMatrices);
     }
@@ -104,7 +105,7 @@ public:
 	}
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    NuTo::ConstitutiveTangentLocal<6,6>& GetSubMatrix_6x1(int rSubMatrix) override
+    NuTo::ConstitutiveTangentLocal<6,1>& GetSubMatrix_6x1(int rSubMatrix) override
 	{
 		if (rSubMatrix<(int)mMatrices.size())
 			return mMatrices[rSubMatrix].AsConstitutiveTangentLocal_6x1();
@@ -114,7 +115,7 @@ public:
 
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    NuTo::ConstitutiveTangentLocal<6,1>& GetSubMatrix_6x6(int rSubMatrix) override
+    NuTo::ConstitutiveTangentLocal<6,6>& GetSubMatrix_6x6(int rSubMatrix) override
 	{
         if (rSubMatrix<(int)mMatrices.size())
         	return mMatrices[rSubMatrix].AsConstitutiveTangentLocal_6x6();
@@ -139,10 +140,27 @@ public:
     #endif
     }
 
+    //! @brief return number of nonlocal matrices (one for each nonlocal integration point)
+    int GetNumSubMatrices()const override
+    {
+        return (int)mMatrices.size();
+    }
+
+    void SetLocalSolution(bool rLocalSolution) override
+    {
+    	mLocalSolution = rLocalSolution;
+    }
+
+    bool GetLocalSolution()const override
+    {
+    	return mLocalSolution;
+    }
+
 #endif // ENABLE_SERIALIZATION
 private:
      //! @brief ... tangent matrices
     std::vector<ConstitutiveTangentLocal<TNumRows,TNumColumns> > mMatrices;
+    bool mLocalSolution;
 };
 
 }

@@ -1,6 +1,8 @@
 // $Id $
-#ifndef ELEMENT_OUTPUT_VECTOR_INT_H_
-#define ELEMENT_OUTPUT_VECTOR_INT_H_
+#ifndef ELEMENT_OUTPUT_DUMMY_H_
+#define ELEMENT_OUTPUT_DUMMY_H_
+
+#include "nuto/math/FullMatrix.h"
 
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 
@@ -9,13 +11,19 @@ namespace NuTo
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...
-class ElementOutputVectorInt : public ElementOutputBase
+class ElementOutputDummy : public ElementOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    ElementOutputVectorInt(){};
+    ElementOutputDummy()
+    {}
+
+    ElementOutputDummy* Clone() const
+    {
+    	return new ElementOutputDummy(*this);
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -24,22 +32,9 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
-
-    ElementOutputVectorInt* Clone() const
-    {
-    	return new ElementOutputVectorInt(*this);
-    }
-
-    std::vector<int>& GetVectorInt()
-	{
-        return mVector;
-	}
-
-private:
-    std::vector<int> mVector;
 };
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputVectorInt)
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputDummy)
 #endif // ENABLE_SERIALIZATION
-#endif /* ElementOutputVectorInt */
+#endif /* ELEMENT_OUTPUT_DUMMY_H_ */

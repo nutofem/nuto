@@ -2,12 +2,12 @@ SET(NuToOptimize_SOURCES
   ConjugateGradientGrid.cpp  
   ConjugateGradientGridRed.cpp  
   ConjugateGradientNonLinear.cpp
-  ConjugateGradientStructureGrid.cpp  
   CallbackHandler.cpp
   CallbackHandlerPython.cpp
   CallbackHandlerGrid.cpp
   OptimizeException.cpp
 )
+#  ConjugateGradientStructureGrid.cpp  
 
 SET(NuToOptimize_SWIG_MODULES
   ModulOptimizer

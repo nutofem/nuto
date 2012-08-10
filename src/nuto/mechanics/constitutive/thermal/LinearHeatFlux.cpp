@@ -10,7 +10,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal3x3.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient1D.h"
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient2D.h"
@@ -58,7 +58,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearHeatFlux)
 //! @param rIp ... integration point
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(const ElementBase* rElement, int rIp,
+NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(ElementBase* rElement, int rIp,
 		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
 		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
@@ -116,7 +116,7 @@ NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(const ElementBase* rElement
     	}
     	case NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D:
     	{
-			ConstitutiveTangentLocal3x3& tangent(itOutput->second->GetConstitutiveTangentLocal3x3());
+			ConstitutiveTangentLocal<3,3>& tangent(itOutput->second->AsConstitutiveTangentLocal_3x3());
  		    double *data(tangent.mTangent);
 
 		    // store tangent at the output object

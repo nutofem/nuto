@@ -33,8 +33,9 @@ class ConstitutiveTangentLocal: public NuTo::ConstitutiveTangentBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElasticEngineeringStress;
-    friend class ConstitutiveMisesPlasticity;
-    friend class NonlocalDamagePlasticity;
+    friend class MisesPlasticityEngineeringStress;
+    friend class NonlocalDamagePlasticityEngineeringStress;
+    friend class LinearHeatFlux;
 
 public:
     //! @brief ... constructor
@@ -59,16 +60,19 @@ public:
     NuTo::ConstitutiveTangentLocal<1,1>& AsConstitutiveTangentLocal_1x1() override;
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    NuTo::ConstitutiveTangentLocal<2,1>& AsConstitutiveTangentLocal_2x1() override;
+
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     NuTo::ConstitutiveTangentLocal<2,2>& AsConstitutiveTangentLocal_2x2() override;
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     NuTo::ConstitutiveTangentLocal<3,3>& AsConstitutiveTangentLocal_3x3() override;
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    NuTo::ConstitutiveTangentLocal<6,6>& AsConstitutiveTangentLocal_6x6() override;
+    NuTo::ConstitutiveTangentLocal<6,1>& AsConstitutiveTangentLocal_6x1() override;
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    NuTo::ConstitutiveTangentLocal<6,1>& AsConstitutiveTangentLocal_6x1() override;
+    NuTo::ConstitutiveTangentLocal<6,6>& AsConstitutiveTangentLocal_6x6() override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

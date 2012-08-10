@@ -6,7 +6,9 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/ptr_container/serialize_ptr_map.hpp>
 #else
+#include <boost/ptr_container/ptr_map.hpp>
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
@@ -136,19 +138,6 @@ public:
     //! @brief returns true, if the constitutive law has been assigned
     bool HasConstitutiveLawAssigned(int rIp)const;
 
-    //! @brief sets the fine scale model (deserialization from a binary file)
-    void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void SetFineScaleParameter(int rIp, const std::string& rName, double rParameter);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter);
-
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section
@@ -196,36 +185,7 @@ public:
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
-    virtual Error::eError Evaluate(std::multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase*>& rConstitutiveOutput)=0;
-
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the stiffness matrix
-    //! @param rResult ... coefficient matrix
-    //! @param rGlobalDofsRow ... row numbers in global system
-    //! @param rGlobalDofsColumn ... column numbers in global system
-    //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    virtual Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const=0;
-
-    //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the damping matrix
-    virtual Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const=0;
-
-    //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the Mass matrix
-    virtual Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const=0;
-
-    //! @brief calculates the gradient of the internal potential
-    //! for a mechanical problem, this corresponds to the internal force vector
-    virtual Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofs)const=0;
-
-    //! @brief calculates the integration point data with the current displacements applied
-    //! @param rIpDataType data type to be stored for each integration point
-    //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    virtual Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const=0;
+    virtual Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rConstitutiveOutput)=0;
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
@@ -255,7 +215,7 @@ public:
     void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
 
     //! @brief Update the static data of an element
-    virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
+    //virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
     //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
@@ -398,7 +358,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
     virtual void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,
@@ -407,9 +367,6 @@ public:
         std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
-
-    //Visualize for all integration points the fine scale structure
-    void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
 
 #endif // ENABLE_VISUALIZE
 

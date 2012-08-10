@@ -218,11 +218,15 @@ public:
     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
     virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues);
 
+    using StructureBase::NodeMergeActiveDofValues;
+
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValuess ... vector of global dependent values (ordering according to global dofs, size is number of active dofs)
     virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues,const NuTo::FullMatrix<double>& rDependentDofValuess);
+
+    using StructureBase::NodeMergeDofValues;
 
     //! @brief ...merge additional dof values
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
@@ -234,6 +238,8 @@ public:
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
     virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
+
+    using StructureBase::NodeExtractDofValues;
 
     //! @brief extract dof values additional dof values
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)

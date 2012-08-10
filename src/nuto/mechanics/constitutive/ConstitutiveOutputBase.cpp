@@ -73,6 +73,12 @@ NuTo::ConstitutiveTangentLocal<1,1>& NuTo::ConstitutiveOutputBase::AsConstitutiv
 }
 
 //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+NuTo::ConstitutiveTangentLocal<2,1>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_2x1()
+{
+    throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 2x1.");
+}
+
+//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
 NuTo::ConstitutiveTangentLocal<2,2>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_2x2()
 {
     throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 2x2.");
@@ -85,15 +91,15 @@ NuTo::ConstitutiveTangentLocal<3,3>& NuTo::ConstitutiveOutputBase::AsConstitutiv
 }
 
 //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-NuTo::ConstitutiveTangentLocal<6,6>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_6x6()
-{
-    throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 6x6.");
-}
-
-//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
 NuTo::ConstitutiveTangentLocal<6,1>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_6x1()
 {
     throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 6x1.");
+}
+
+//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+NuTo::ConstitutiveTangentLocal<6,6>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_6x6()
+{
+    throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 6x6.");
 }
 
 //! @brief return part of the nonlocal matrix
@@ -115,17 +121,34 @@ NuTo::ConstitutiveTangentLocal<3,3>& NuTo::ConstitutiveOutputBase::GetSubMatrix_
 }
 
 //! @brief return part of the nonlocal matrix
-NuTo::ConstitutiveTangentLocal<6,6>& NuTo::ConstitutiveOutputBase::GetSubMatrix_6x1(int rSubMatrix)
+NuTo::ConstitutiveTangentLocal<6,1>& NuTo::ConstitutiveOutputBase::GetSubMatrix_6x1(int rSubMatrix)
 {
     throw MechanicsException("[ConstitutiveTangentBase::GetSubMatrix_6x1] matrix is not of type tangent nonlocal  6x1.");
 }
 
 //! @brief return part of the nonlocal matrix
-NuTo::ConstitutiveTangentLocal<6,1>& NuTo::ConstitutiveOutputBase::GetSubMatrix_6x6(int rSubMatrix)
+NuTo::ConstitutiveTangentLocal<6,6>& NuTo::ConstitutiveOutputBase::GetSubMatrix_6x6(int rSubMatrix)
 {
     throw MechanicsException("[ConstitutiveTangentBase::GetSubMatrix_6x6] matrix is not of type tangent nonlocal  6x6.");
 }
 
+//! @brief return number of nonlocal matrices (one for each nonlocal integration point)
+int NuTo::ConstitutiveOutputBase::GetNumSubMatrices()const
+{
+    throw MechanicsException("[ConstitutiveTangentBase::GetNumSubMatrices] matrix is not of type tangent nonlocal.");
+}
+
+//! @brief set if a nonlocal matrix is actually local (because of the loading regime)
+void NuTo::ConstitutiveOutputBase::SetLocalSolution(bool rLocalSolution)
+{
+    throw MechanicsException("[ConstitutiveOutputBase::SetLocalSolution] output object is not a nonlocal matrix.");
+}
+
+//! @brief return if a nonlocal matrix is actually local (because of the loading regime)
+bool NuTo::ConstitutiveOutputBase::GetLocalSolution()const
+{
+    throw MechanicsException("[ConstitutiveOutputBase::GetLocalSolution] output object is not a nonlocal matrix.");
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

@@ -68,8 +68,6 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentHeatFlux.h"
-#include "nuto/visualize/VisualizeComponentLatticeStrain.h"
-#include "nuto/visualize/VisualizeComponentLatticeStress.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
@@ -124,6 +122,9 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mIncreaseFactor=1.5;
     mMinDeltaLoadFactor=1e-6;
     mMinLineSearchFactor=1e-3;
+    mHessianConstant[0] = false;  // consider only the stiffness matrix to be variable, damping and mass are constant
+    mHessianConstant[1] = true;   // as a consequence, the inertia term is not considered in the internal gradient routine
+    mHessianConstant[2] = true;   // similar the damping term
 
 #ifdef _OPENMP
     mUseMIS = true;
@@ -185,7 +186,8 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     & BOOST_SERIALIZATION_NVP(mMIS)
     & BOOST_SERIALIZATION_NVP(mNumProcessors)
 #endif // _OPENMP
-    & BOOST_SERIALIZATION_NVP(mLogger);
+    & BOOST_SERIALIZATION_NVP(mLogger)
+    & BOOST_SERIALIZATION_NVP(mHessianConstant);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";
 #endif
@@ -210,6 +212,17 @@ void NuTo::StructureBase::Info()const
 void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const
 {
     Group<ElementBase>::const_iterator ElementIter = rElementGroup->begin();
+    while (ElementIter != rElementGroup->end())
+    {
+        rElements.push_back(ElementIter->second);
+        ElementIter++;
+    }
+}
+
+// store all elements of a group in a vector
+void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements)
+{
+    Group<ElementBase>::iterator ElementIter = rElementGroup->begin();
     while (ElementIter != rElementGroup->end())
     {
         rElements.push_back(ElementIter->second);
@@ -416,36 +429,6 @@ void NuTo::StructureBase::AddVisualizationComponentParticleRadius()
 #endif
 }
 
-//! @brief ... Add lattice stress to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentLatticeStress()
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentLatticeStress());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLatticeStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief ... Add lattice stress to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentLatticeStrain()
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentLatticeStrain());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLatticeStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
 //! @brief ... Add rotation to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentRotation()
 {
@@ -569,22 +552,22 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 }
 
 
-void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName) const
+void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName)
 {
     mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] this routine is deprecated, use ExportVtkDataFileElements instead." << "\n";
 }
 
-void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName) const
+void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName)
 {
 	ExportVtkDataFileNodes(rFileName, false);
 }
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName) const
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName)
 {
 	ExportVtkDataFileElements(rFileName, false);
 }
 
-void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, bool rXML) const
+void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, bool rXML)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -604,7 +587,7 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, b
 #endif
 }
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName, bool rXML) const
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName, bool rXML)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -624,7 +607,7 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName
 #endif
 }
 
-void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const
+void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -639,36 +622,6 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::ElementGroupExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
-}
-
-//Visualize for all integration points the fine scale structure(either damage or homogeneous part)
-void NuTo::StructureBase::ElementGroupVisualizeIpMultiscale(int rGroupIdent, const std::string& rFileName, bool rVisualizeDamage)const
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeElementData(visualize,mVisualizeComponents);
-    this->ElementGroupAddToVisualizeIpMultiscale(rGroupIdent,visualize,mVisualizeComponents,rVisualizeDamage);
-    visualize.ExportVtkDataFile(rFileName);
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ElementGroupVisualizeIpMultiscale] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//Visualize for all integration points the fine scale structure
-void NuTo::StructureBase::ElementGroupVisualizeIpMultiscaleDamage(int rGroupIdent, const std::string& rFileName)const
-{
-    ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, true);
-}
-
-//Visualize for all integration points the fine scale structure
-void NuTo::StructureBase::ElementGroupVisualizeIpMultiscaleHomogeneous(int rGroupIdent, const std::string& rFileName)const
-{
-    ElementGroupVisualizeIpMultiscale(rGroupIdent, rFileName, false);
 }
 
 void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
@@ -3702,6 +3655,28 @@ void NuTo::StructureBase::SetOMPNested(bool rNested)
 	omp_set_nested(rNested);
 #endif //_OPENMP
 }
+
+//! @brief sets the Hessian to be constant or variable
+//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
+//! @parameters rValue (true = const false=variable)
+void NuTo::StructureBase::SetHessianConstant(int rTimeDerivative, bool rValue)
+{
+	assert(rTimeDerivative>=0);
+	assert(rTimeDerivative<3);
+	mHessianConstant[rTimeDerivative] = rValue;
+}
+
+//! @brief sets the Hessian to be constant or variable
+//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
+//! @return (true = const false=variable)
+bool NuTo::StructureBase::GetHessianConstant(int rTimeDerivative)const
+{
+	assert(rTimeDerivative>=0);
+	assert(rTimeDerivative<3);
+	return mHessianConstant[rTimeDerivative];
+}
+
+
 
 
 #ifdef ENABLE_SERIALIZATION

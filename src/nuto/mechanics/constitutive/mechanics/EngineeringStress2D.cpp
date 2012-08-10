@@ -20,6 +20,14 @@ NuTo::EngineeringStress2D::EngineeringStress2D(): ConstitutiveOutputBase::Consti
     this->mEngineeringStress[2] = 0.0;
 }
 
+//! @brief ... copy constructor
+NuTo::EngineeringStress2D::EngineeringStress2D(const EngineeringStress2D& rOther)
+{
+	this->mEngineeringStress[0] = rOther.mEngineeringStress[0];
+	this->mEngineeringStress[1] = rOther.mEngineeringStress[1];
+	this->mEngineeringStress[2] = rOther.mEngineeringStress[2];
+}
+
 // number of components
 unsigned int NuTo::EngineeringStress2D::GetNumberOfComponents() const
 {

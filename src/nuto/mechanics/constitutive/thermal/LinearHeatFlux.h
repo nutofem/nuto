@@ -42,7 +42,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(const ElementBase* rElement, int rIp,
+    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
     		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
     		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
 

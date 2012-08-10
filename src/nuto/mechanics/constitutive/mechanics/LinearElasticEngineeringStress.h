@@ -10,8 +10,6 @@
 
 namespace NuTo
 {
-class ConstitutiveInput3D;
-class ConstitutiveOutput3D;
 //! @brief ... linear elastic material model
 /*!
  * Assuming linear elastic material behavior, the one-dimensional constitutive relationship reads
@@ -85,7 +83,17 @@ public:
     //! @param rUpdateHistory ... update history variables after leaving the routine
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate2D(const ElementBase* rElement, int rIp,
+    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
+    		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+    		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+
+    //! @brief ... evaluate the constitutive relation in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rUpdateHistory ... update history variables after leaving the routine
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
     		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
     		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
 
@@ -95,13 +103,21 @@ public:
     //! @param rUpdateHistory ... update history variables after leaving the routine
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(const ElementBase* rElement, int rIp,
+    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
     		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
     		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
 
-    //! @brief ... allocate the correct static data
-    //! @return ... see brief explanation
-    NuTo::ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(ElementBase* rElement)const;
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement) const override;
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const override;
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement) const override;
 
     ///////////////////////////////////////////////////////////////////////////
 

@@ -32,6 +32,7 @@ class EngineeringStress1D: public ConstitutiveOutputBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
+    friend class LinearElasticEngineeringStress;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class NonlocalDamagePlasticity;
@@ -50,6 +51,11 @@ public:
     //! @return ... components of the Engineering stress tensor (stored in an array)
     //! @sa mEngineeringStress
     const double* GetData() const;
+
+    EngineeringStress1D& GetEngineeringStress1D()override
+    {
+    	return *this;
+    }
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

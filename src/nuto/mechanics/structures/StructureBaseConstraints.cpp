@@ -13,11 +13,9 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements1D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements3D.h"
-#include "nuto/mechanics/constraints/ConstraintLinearNodeFineScaleDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements1D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
-#include "nuto/mechanics/constraints/ConstraintLinearNodeGroupFineScaleDisplacements2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeRotations2D.h"
@@ -164,40 +162,6 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double
     return id;
 }
 
-//! @brief adds a fine scale displacement constraint equation for a node
-//! @param rNode pointer to node
-//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
-{
-    this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
-
-    switch (mDimension)
-    {
-    case 1:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 1D.");
-        break;
-    case 2:
-        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeFineScaleDisplacements2D(rNode,rDirection,rValue));
-        break;
-    case 3:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 3D.");
-        break;
-    default:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
-    }
-    return id;
-}
-
 //! @brief adds a displacement constraint equation for a node
 //! @param rNode identifier for node
 //! @param rComponent e.g. the first (count from zero) displacement component
@@ -221,31 +185,6 @@ int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const 
     }
 
     return ConstraintLinearSetDisplacementNode(nodePtr,rDirection, rValue);
-}
-
-//! @brief adds a fine scale displacement constraint equation for a node
-//! @param rNode identifier for node
-//! @param rComponent e.g. the first (count from zero) displacement component
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int  NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
-{
-    this->mNodeNumberingRequired = true;
-    NodeBase* nodePtr;
-    try
-    {
-        nodePtr = NodeGetNodePtr(rIdent);
-    }
-    catch (NuTo::MechanicsException &e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstraintSetFineScaleDisplacementNode] Node with the given identifier could not be found.");
-        throw e;
-    }
-    catch (...)
-    {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetFineScaleDisplacementNode] Node with the given identifier could not be found.");
-    }
-
-    return ConstraintLinearSetFineScaleDisplacementNode(nodePtr,rDirection, rValue);
 }
 
 //! @brief adds a rotation constraint equation for a node
@@ -306,40 +245,6 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase
     return id;
 }
 
-//! @brief adds a fine scale displacement constraint equation for a group of node
-//! @param rNode pointer to group of nodes
-//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
-{
-    this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
-
-    switch (mDimension)
-    {
-    case 1:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 1D.");
-        break;
-    case 2:
-        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupFineScaleDisplacements2D(rGroup,rDirection,rValue));
-        break;
-    case 3:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetfineScaleDisplacementNode] not implemented for 2D.");
-        break;
-    default:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintSetDisplacementNode] Incorrect dimension of the structure.");
-    }
-    return id;
-}
-
 //! @brief adds a rotation constraint equation for a group of node
 //! @param rNode pointer to group of nodes
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
@@ -391,25 +296,6 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIden
     assert(nodeGroup!=0);
 
     return ConstraintLinearSetDisplacementNodeGroup(nodeGroup,rDirection, rValue);
-}
-
-//! @brief adds a constraint equation for a group of nodes
-//! @param rGroupIdent identifier for group of nodes
-//! @param rAttribute displacements, rotations, temperatures
-//! @param rComponent e.g. the first (count from zero) displacement component
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int NuTo::StructureBase::ConstraintLinearSetFineScaleDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
-{
-    this->mNodeNumberingRequired = true;
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::Structure::ConstraintSetFineScaleDisplacementNodeGroup] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
-        throw MechanicsException("[NuTo::Structure::ConstraintSetFineScaleDisplacementNodeGroup] Group is not a node group.");
-    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
-    assert(nodeGroup!=0);
-
-    return ConstraintLinearSetFineScaleDisplacementNodeGroup(nodeGroup,rDirection, rValue);
 }
 
 //! @brief adds a constraint equation for a group of nodes
@@ -635,56 +521,6 @@ double NuTo::StructureBase::ConstraintGetRHS(int rConstraintEquation)const
     	throw MechanicsException("[NuTo::StructureBase::ConstraintSetRHS] Constraint equation does not exist.");
     }
     return it->second->GetRHS();
-}
-
-//!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
-//!@param rConstraintEquation id of the constraint equation
-//!@param rCrackOpening new crack opening (x,y)
-void NuTo::StructureBase::ConstraintPeriodicSetCrackOpening(int rConstraintEquation, NuTo::FullMatrix<double> rCrackOpening)
-{
-    this->mNodeNumberingRequired = true;
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
-    if (it==mConstraintMap.end())
-    {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetCrackOpening] Constraint equation does not exist.");
-    }
-    it->second->SetCrackOpening(rCrackOpening);
-}
-
-//!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
-//!@param rConstraintEquation id of the constraint equation
-//!@param rStrain new strain
-void NuTo::StructureBase::ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain)
-{
-    this->mNodeNumberingRequired = true;
-    if (rStrain.GetNumColumns()==1)
-        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Matrix has to have exactly one column");
-    if (rStrain.GetNumRows()==3)
-    {
-        EngineeringStrain2D engineeringStrain;
-        engineeringStrain.SetData(rStrain.mEigenMatrix.data());
-        ConstraintPeriodicSetStrain2D(rConstraintEquation,engineeringStrain);
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Matrix has to have exactly three rows");
-    }
-}
-    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rStrain new strain
-void NuTo::StructureBase::ConstraintPeriodicSetStrain2D(int rConstraintEquation, const NuTo::EngineeringStrain2D& rStrain)
-{
-    this->mNodeNumberingRequired = true;
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintEquation);
-    if (it==mConstraintMap.end())
-    {
-        throw MechanicsException("[NuTo::StructureBase::ConstraintPeriodicSetStrain] Constraint equation does not exist.");
-    }
-    it->second->SetStrain(rStrain);
-
-    //since the rhs before Gauss elimination has changed, update the rhs after Gauss elimination using the mapping matrix
-    ConstraintUpdateRHSAfterGaussElimination();
 }
 
 // create a constraint equation
