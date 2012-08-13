@@ -123,12 +123,6 @@ public:
     //! @param rIp ... local ip number
     void AddVisualizationComponentNonlocalWeights(int rElementId, int rIp);
 
-    //! @brief ... Add visualization of lattice stresses to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentLatticeStress();
-
-    //! @brief ... Add visualization of lattice strain to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentLatticeStrain();
-
     //! @brief ... Add visualization of rotations to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentRotation();
 
@@ -144,50 +138,47 @@ public:
     //! @brief ... Add visualization of angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentAngularAcceleration();
 
+    //! @brief ... Add visualization of temperature to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentTemperature();
+
+    //! @brief ... Add visualization of heat flux to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentHeatFlux();
+
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFile(const std::string& rFileName) const;
+    void ExportVtkDataFile(const std::string& rFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFileElements(const std::string& rFileName) const;
+    void ExportVtkDataFileElements(const std::string& rFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFileNodes(const std::string& rFileName) const;
-
-    //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileElements(const std::string& rFileName, bool rXML) const;
+    void ExportVtkDataFileNodes(const std::string& rFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
     //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML) const;
+    void ExportVtkDataFileElements(const std::string& rFileName, bool rXML);
 
-    //Visualize for all integration points the fine scale structure
-    void ElementGroupVisualizeIpMultiscale(int rGroupIdent, const std::string& rFileName, bool rVisualizeDamage)const;
-
-    //Visualize for all integration points the fine scale structure
-    void ElementGroupVisualizeIpMultiscaleDamage(int rGroupIdent, const std::string& rFileName)const;
-
-    //Visualize for all integration points the fine scale structure
-    void ElementGroupVisualizeIpMultiscaleHomogeneous(int rGroupIdent, const std::string& rFileName)const;
+    //! @brief ... export the entire structure to Vtk data file
+    //! @param rFileName ... file name
+    //! @param rWhat ... string which describes what to plot
+    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
+    void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML);
 
     //! @brief ... export an element group to Vtk data file
     //! @param rGroupIdent ... group ident
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
-    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName) const;
+    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName);
 
 #ifndef SWIG
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
@@ -197,25 +188,14 @@ public:
     void DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const ElementBase*>& rElements) const;
+    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<ElementBase*>& rElements);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
     //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
-    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat,
-    		const std::vector<const ElementBase*>& rElements, bool rVisualizeDamage) const;
-
-    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const;
-
-    //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualizeIpMultiscale(int rGroupId, VisualizeUnstructuredGrid& rVisualize,
-    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage) const;
 #endif //SWIG
 #endif // ENABLE_VISUALIZE
 
@@ -314,7 +294,7 @@ public:
     //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) = 0;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rType   ... matrix type (stiffness damping mass)
@@ -322,25 +302,25 @@ public:
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
     //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) = 0;
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
     //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const = 0;
+    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
 
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const = 0;
+    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) = 0;
 
 //*************************************************
 //************ Node routines        ***************
@@ -394,18 +374,20 @@ public:
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
+    //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
+    //! @param rDisplacements matrix (one column) with the displacements
+    void NodeSetDisplacements(int rId, int rTimeDerivative, const NuTo::FullMatrix<double>& rDisplacements);
+
+    //! @brief sets the displacements of a node
+    //! @param rIdent node identifier
     //! @param rRotations matrix (one column) with the rotations
     void NodeSetRotations(int rId,const NuTo::FullMatrix<double>& rRotations);
 
-    //! @brief sets the velocities of a node
-    //! @param rIdent node identifier
-    //! @param rRotations matrix (one column) with the rotations
-    void NodeSetVelocities(int rId,const NuTo::FullMatrix<double>& rVelocities);
-
-    //! @brief sets the velocities of a group of nodes
+    //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
+    //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGroupSetVelocities(int rIdent, const FullMatrix<double>& rVelocities);
+    void NodeGroupSetDisplacements(int rIdent, int rTimeDerivative, const FullMatrix<double>& rDisplacements);
 
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
@@ -438,54 +420,60 @@ public:
     void NodeGroupGetDisplacements(int rNodeGroup, NuTo::FullMatrix<double>& rDisplacements);
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const = 0;
+    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const = 0;
 
-    //! @brief write first time derivative of dof values (e.g. velocities) to the nodes
-    //! @param rActiveDofValues ... global vector of the first time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeMergeDofFirstTimeDerivativeValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
-
-    //! @brief extract first time derivatives of dof values (e.g. velocities) from the nodes
+    //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofFirstTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const=0;
+    inline void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
+    {
+    	NodeExtractDofValues(0,rActiveDofValues,rDependentDofValues);
+    }
 
-    //! @brief write second time derivative of dof values (e.g. accelerations) to the nodes
-    //! @param rActiveDofValues ... global vector of the first time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of the first time derivatives of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeMergeDofSecondTimeDerivativeValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
-
-    //! @brief extract second time derivatives of dof values (e.g. accelerations) from the nodes
-    //! @param rActiveDofValues ... global vector of the second time derivatives of dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of the second time derivatives of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofSecondTimeDerivativeValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const=0;
+    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)=0;
+    inline void NodeMergeDofValues(const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)
+    {
+    	NodeMergeDofValues(0,rActiveDofValues,rDependentDofValues);
+    }
+
+    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
+    //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues)=0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues)=0;
+    inline void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues)
+    {
+    	NodeMergeActiveDofValues(0,rActiveDofValues);
+    }
 
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce);
 
     //! @brief calculate the internal force vector for a node group of nodes
     //! @param rIdent ... group id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeGroupInternalForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeGroupInternalForce(int rIdent, NuTo::FullMatrix<double>& rNodeForce);
 
 #ifndef SWIG
     //! @brief calculate the internal force vector for a node
     //! @param rNodePtr  node for which this has to be calculated
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce) const;
+    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce);
 
 #ifdef ENABLE_VISUALIZE
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
@@ -538,14 +526,15 @@ public:
     //! renaming only for clarification in mechanical problems for the end user
     void ElementStiffness(int rElementId, NuTo::FullMatrix<double>& rResult ,
                           NuTo::FullMatrix<int>& rGlobalDofsRow,
-                          NuTo::FullMatrix<int>& rGlobalDofsColumn)const;
+                          NuTo::FullMatrix<int>& rGlobalDofsColumn);
 
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the stiffness matrix
-    void ElementCoefficientMatrix_0(int rElementId,
+    //! @brief calculates the coefficient matrix for the rTimeDerivative derivative in the differential equation
+    //! for a mechanical problem, this corresponds to the stiffness, damping or mass matrix (rTimeDerivative=0,1,2)
+    void ElementCoefficientMatrix(int rElementId,
+    		                        int rTimeDerivative,
                                     NuTo::FullMatrix<double>& rResult,
                                     NuTo::FullMatrix<int>& rGlobalDofsRow,
-                                    NuTo::FullMatrix<int>& rGlobalDofsColumn)const;
+                                    NuTo::FullMatrix<int>& rGlobalDofsColumn);
 
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! and compares it to the matrix using central differences
@@ -582,25 +571,11 @@ public:
     //! @return false, if stiffness is not correct
     virtual bool CheckStiffness();
 
-    //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the damping matrix
-    void ElementCoefficientMatrix_1(int rElementId,
-                                    NuTo::FullMatrix<double>& rResult,
-                                    NuTo::FullMatrix<int>& rGlobalDofsRow,
-                                    NuTo::FullMatrix<int>& rGlobalDofsColumn)const;
-
-    //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the Mass matrix
-    void ElementCoefficientMatrix_2(int rElementId,
-                                    NuTo::FullMatrix<double>& rResult,
-                                    NuTo::FullMatrix<int>& rGlobalDofsRow,
-                                    NuTo::FullMatrix<int>& rGlobalDofsColumn)const;
-
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
     void ElementGradientInternalPotential(int rElementId,
                                           NuTo::FullMatrix<double>& rResult,
-                                          NuTo::FullMatrix<int>& rGlobalDofsRow)const;
+                                          NuTo::FullMatrix<int>& rGlobalDofsRow);
 
     //! @brief modifies the constitutive law of a single element
     //! @param rElementIdent identifier for the element
@@ -622,29 +597,6 @@ public:
     //! @param rConstitutive material pointer
     void ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive);
 #endif //SWIG
-
-     //! @brief modifies the fine scale model at an ip for a multiscale approach
-     //! @param rElementIdent identifier for the element
-     //! @param rIp integration point
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementIpSetFineScaleModel(int rElementId, int rIp, std::string rFileName);
-
-     //! @brief modifies the fine scale model for a group of elements for a multiscale approach
-     //! @param rGroupIdent identifier for the group of elements
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementGroupSetFineScaleModel(int rGroupIdent, std::string rFileName);
-
-     //  @brief modifies the fine scale model for all element ips for a multiscale approach
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementTotalSetFineScaleModel(std::string rFileName);
-
- #ifndef SWIG
-     //! @brief modifies the constitutive law of a single element
-     //! @param rElement element pointer
-     //! @param rIp integration point number
-     //! @param rFileName binary file to be deserialize the structure from
-     void ElementIpSetFineScaleModel(ElementBase* rElement, int rIp, std::string rFileName, double rLengthCoarseScale, std::string rIPName);
- #endif //SWIG
 
      //! @brief modifies the section of a single element
     //! @param rElementIdent element number
@@ -697,27 +649,27 @@ public:
     //! @brief calculates the engineering strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    void ElementGetEngineeringStrain(int rElementId, NuTo::FullMatrix<double>& rEngineeringStrain)const;
+    void ElementGetEngineeringStrain(int rElementId, NuTo::FullMatrix<double>& rEngineeringStrain);
 
     //! @brief calculates the engineering plastic strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-    void ElementGetEngineeringPlasticStrain(int rElementId, NuTo::FullMatrix<double>& rEngineeringPlasticStrain)const;
+    void ElementGetEngineeringPlasticStrain(int rElementId, NuTo::FullMatrix<double>& rEngineeringPlasticStrain);
 
     //! @brief calculates the engineering stress
     //! @param rElemIdent  element number
     //! @param rEingineeringStress Engineering Stress (return value, always 6xnumIp matrix)
-    void ElementGetEngineeringStress(int rElementId, NuTo::FullMatrix<double>& rEngineeringStress)const;
+    void ElementGetEngineeringStress(int rElementId, NuTo::FullMatrix<double>& rEngineeringStress);
 
     //! @brief calculates the damage
     //! @param rElemIdent  identifier for the element
     //! @param rDamage (return value, always 1xnumIp matrix)
-    void ElementGetDamage(int rElementId, FullMatrix<double>& rDamage)const;
+    void ElementGetDamage(int rElementId, FullMatrix<double>& rDamage);
 
     //! @brief calculates the maximum damage in all elements
     //! @param rElemIdent  identifier for the element
     //! @return max damage value
-    double ElementTotalGetMaxDamage()const;
+    double ElementTotalGetMaxDamage();
 
     //! @brief updates the history data of a all elements
     NuTo::Error::eError ElementTotalUpdateStaticData();
@@ -730,81 +682,39 @@ public:
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStress  average stress (return value)
-    void ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const;
+    void ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress);
 
     //! @brief calculates the average stress
     //! @param rGroupId  group number
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStress  average stress (return value)
-    void ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)const;
+    void ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress);
 
     //! @brief calculates the average strain
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
-    void ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const;
+    void ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain);
 
     //! @brief calculates the average strain
     //! @param rGroupId  group number
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
-    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)const;
+    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain);
 
     //! @brief calculates the internal energy of the system
     //! @return total energy
-    virtual double ElementTotalGetInternalEnergy()const;
+    virtual double ElementTotalGetInternalEnergy();
 
     //! @brief calculates the total energy of the system
     //! @return total energy
-    virtual double ElementGroupGetTotalEnergy(int rGroupId)const;
+    virtual double ElementGroupGetTotalEnergy(int rGroupId);
 
     //! @brief calculates the elastic energy of the system
     //! @return elastic energy
-    double ElementTotalGetElasticEnergy()const;
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, double rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for a group of elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementGroupSetFineScaleParameter(int rGroupId, std::string rName, std::string rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for all elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementTotalSetFineScaleParameter(std::string rName, double rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip) for all elements
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementTotalSetFineScaleParameter(std::string rName, std::string rParameter);
-
-#ifndef SWIG
-    //! @brief sets the parameters  of the finescale model (structure ip)
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, double rParameter);
-
-    //! @brief sets the parameters  of the finescale model (structure ip)
-    //! @parameter rElement Element pointer
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    void ElementSetFineScaleParameter(ElementBase* rElement, std::string rName, std::string rParameter);
-
-    //! @brief modifies the finescale model of a multiscale element from the initial elastic solution phase to the nonlinear phase if principal stress is larger than tensile strength
-    //! @return true, if an adaptation has been performed, otherwise false
-    void ElementTotalMultiscaleSwitchToNonlinear();
-#endif
+    double ElementTotalGetElasticEnergy();
 
     //*************************************************
     //************ Constraint routines     ***************
@@ -880,21 +790,6 @@ public:
     int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
 
 #ifndef SWIG
-    //! @brief adds a fine scale displacement constraint equation for a node
-    //! @param rNode pointer to node
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetFineScaleDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
-#endif
-
-    //! @brief adds a displacement constraint equation for a node
-    //! @param rNode identifier for node
-    //! @param rComponent e.g. the first (count from zero) displacement component
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int  ConstraintLinearSetFineScaleDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
-
-#ifndef SWIG
     //! @brief adds a displacement constraint equation for a group of node
     //! @param rNode pointer to group of nodes
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
@@ -911,19 +806,6 @@ public:
     int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
 
 #ifndef SWIG
-    //! @brief adds a fine scale displacement constraint equation for a group of node
-    //! @param rNode pointer to group of nodes
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetFineScaleDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
-#endif
-
-    //! @brief adds a constraint equation for a group of nodes
-    //! @param rGroupIdent identifier for group of nodes
-    int ConstraintLinearSetFineScaleDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue);
-
-#ifndef SWIG
     //! @brief adds a rotation constraint equation for a group of node
     //! @param rNode pointer to group of nodes
     //! @param rValue prescribed value (e.g. zero to fix a rotation to zero)
@@ -935,6 +817,19 @@ public:
     //! @param rGroupIdent identifier for group of nodes
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue);
+
+#ifndef SWIG
+    //! @brief adds a temperature constraint equation for a group of nodes
+    //! @param rNode pointer to group of nodes
+    //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue);
+#endif
+
+    //! @brief adds a constraint equation for a group of nodes
+    //! @param rGroupIdent identifier for group of nodes
+    //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
+    int ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -972,11 +867,6 @@ public:
     //!@return rRHS
     double ConstraintGetRHS(int rConstraintEquation)const;
 
-    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rStrain new strain
-    void ConstraintPeriodicSetStrain(int rConstraintEquation, NuTo::FullMatrix<double> rStrain);
-
 #ifndef SWIG
     //!@brief number the free DOFS in the constraints (Lagrange multipliers)
     //!@param rDOF current maximum DOF number, increased in the number
@@ -996,17 +886,8 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     void ConstraintMergeGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& dependentDofValues);
 
-    //!@brief sets/modifies the strain of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rStrain new strain
-    void ConstraintPeriodicSetStrain2D(int rConstraintEquation, const NuTo::EngineeringStrain2D& rStrain);
 #endif
 
-    //!@brief sets/modifies the crack opening of a constraint equation (works only for periodic bc)
-    //!@param rConstraintEquation id of the constraint equation
-    //!@param rCrackOpening new crack opening (x,y)
-    void ConstraintPeriodicSetCrackOpening(int rConstraintEquation,
-            NuTo::FullMatrix<double> rCrackOpeningdouble);
 
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term
@@ -1306,101 +1187,17 @@ public:
     //! @param rFrictionCoefficient ...  friction coefficient
     void ConstitutiveLawSetFrictionCoefficient(int rIdent, double rFrictionCoefficient);
 
-    //! @brief ... get elastic stiffness
-    //! @return ...  elastic stiffness
-    NuTo::FullMatrix<double> ConstitutiveLawGetElasticStiffness(int rIdent);
+    //! @brief ... set heat cpacity
+    void ConstitutiveLawSetHeatCapacity(int rIdent, double rHeatCapacity);
 
-    //! @brief ... set fracture energy
-    //! @param rElasticStiffness ...  fracture energy
-    void ConstitutiveLawSetElasticStiffness(int rIdent, NuTo::FullMatrix<double> rElasticStiffness);
+    //! @brief ... get heat cpacity
+    double ConstitutiveLawGetheatCapacity(int rIdent) const;
 
-    //! @brief ... get elastic stiffness
-    //! @param rIdent ...  fracture energy
-    std::string ConstitutiveLawGetMultiscaleFile(int rIdent);
+    //! @brief ... set thermal conductivity
+    void ConstitutiveLawSetThermalConductivity(int rIdent, double rThermalConductivity);
 
-    //! @brief ... set fracture energy
-    //! @param rFractureEnergy ...  file name
-    void ConstitutiveLawSetMultiscaleFile(int rIdent, std::string rFileName);
-
-    //! @brief ... get crack transition radius
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetCrackTransitionRadius(int rIdent);
-
-    //! @brief ... set crack transition radius
-    //! @param rCrackTransitionRadius ...  fracture energy
-    void ConstitutiveLawSetCrackTransitionRadius(int rIdent, double rCrackTransitionRadius);
-
-    //! @brief ... get scaling factor for the crack angle
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetScalingFactorCrackAngle(int rIdent);
-
-    //! @brief ... set scaling factor for the crack angle
-    //! @param rScalingFactorCrackAngle ...  scaling factor
-    void ConstitutiveLawSetScalingFactorCrackAngle(int rIdent, double rScalingFactorCrackAngle);
-
-    //! @brief ... get scaling factor for the crack opening
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetScalingFactorCrackOpening(int rIdent);
-
-    //! @brief ... set scaling factor for the crack opening
-    //! @param rScalingFactorCrackAngle ...  scaling factor
-    void ConstitutiveLawSetScalingFactorCrackOpening(int rIdent, double rScalingFactorCrackOpening);
-
-    //! @brief ... get scaling factor for the total strain
-    //! @param rIdent ...  identifier
-    double ConstitutiveLawGetScalingFactorEpsilon(int rIdent);
-
-    //! @brief ... set PenaltyStiffnessCrackAngle
-    //! @param rScalingFactorCrackAngle ...  scaling factor
-    void ConstitutiveLawSetScalingFactorEpsilon(int rIdent, double rScalingFactorEpsilon);
-
-    //! @brief ... get result directory for fine scale models in multiscale simulation
-    //! @param rIdent ...  identifier
-    std::string ConstitutiveLawGetResultDirectory(int rIdent);
-
-    //! @brief ... set ResultDirectory for fine scale models in multiscale simulation
-    //! @param rResultDirectory ...  ResultDirectory
-    void ConstitutiveLawSetResultDirectory(int rIdent, std::string rResultDirectory);
-
-    //! @brief ... get load step macro for fine scale models in multiscale simulation
-    //! @param rIdent ...  identifier
-    int ConstitutiveLawGetLoadStepMacro(int rIdent);
-
-    //! @brief ... set LoadStepMacro for fine scale models in multiscale simulation
-    //! @param rLoadStepMacro ...  LoadStepMacro
-    void ConstitutiveLawSetLoadStepMacro(int rIdent, int rLoadStepMacro);
-
-    //! @brief ... get if the fine scale model is to be used with the linear elastic periodic boundary shape functions
-    //! @return rUseAdditionalPeriodicShapeFunctions
-    bool ConstitutiveLawGetUseAdditionalPeriodicShapeFunctions(int rIdent)const;
-
-    //! @brief ... set if the fine scale model is to be used with the linear elastic periodic boundary shape functions
-    //! @param rUseAdditionalPeriodicShapeFunctions ...  true or false
-    void ConstitutiveLawSetUseAdditionalPeriodicShapeFunctions(int rIdent, bool rUseAdditionalPeriodicShapeFunctions);
-
-    //! @brief ... get the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
-    //! @return treshold
-    double ConstitutiveLawGetDamageTresholdCrackInitiation(int rIdent)const;
-
-    //! @brief ... set the treshold for crack initiation (transistion from a single fine scale model to a combined cracked/uncracked model)
-    //! @param rDamageTresholdCrackInitiation ...  treshold
-    void ConstitutiveLawSetDamageTresholdCrackInitiation(int rIdent, double rDamageTresholdCrackInitiation);
-
-    //! @brief ... get the number of possible crack angles that are checked when the crack is inserted
-    //! @return number of crack angles
-    int ConstitutiveLawGetNumPossibleCrackAngles(int rIdent)const;
-
-    //! @brief ... set the number of possible crack angles that are checked when the crack is inserted
-    //! @param rNumPossibleCrackAngles ...  number of crack angles
-    void ConstitutiveLawSetNumPossibleCrackAngles(int rIdent, int rNumPossibleCrackAngles);
-
-    //! @brief ... get the number of possible crack shifts that are checked when the crack is inserted
-    //! @return number of crack angles
-    int ConstitutiveLawGetNumPossibleCrackShifts(int rIdent)const;
-
-    //! @brief ... set the number of possible crack shifts that are checked when the crack is inserted
-    //! @param rNumPossibleCrackShifts ...  number of crack shifts
-    void ConstitutiveLawSetNumPossibleCrackShifts(int rIdent, int rNumPossibleCrackShifts);
+    //! @brief ... get thermal conductivity
+    double ConstitutiveLawGetThermalConductivity(int rIdent) const;
 
     #ifndef SWIG
     //! @brief ... create a new section
@@ -1463,6 +1260,16 @@ public:
     //! @param rIdent ... section identifier
     //! @return section thickness
     double SectionGetThickness(int rId) const;
+
+    //! @brief ... set section dofs
+    //! @param rIdent ... section identifier
+    //! @param rDOFs ... displacements, temperatures, rotations
+   void SectionSetDOF(int rId, const std::string& rDOFs);
+
+   //! @brief ... set constitutive input for section
+   //! @param rIdent ... section identifier
+   //! @param rDOFs ... Temperature, TemperatureGradient, DeformationGradient
+   void SectionSetInputConstitutive(int rId, const std::string& rDOFs);
 
     //! @brief ... print information about all sections
     //! @param rVerboseLevel ... controls the verbosity of the information
@@ -1827,12 +1634,6 @@ public:
     {}
 
     //! @brief is only true for structure used as multiscale (structure in a structure)
-    virtual bool IsMultiscaleStructure()const
-    {
-    	return false;
-    }
-
-    //! @brief is only true for structure used as multiscale (structure in a structure)
     virtual void ScaleCoordinates(double rCoordinates[3])const
     {
     	throw MechanicsException("[NuTo::StructureBase::ScaleCoordinates] only implemented for multiscale structures.");
@@ -1874,6 +1675,16 @@ public:
     //! @parameters rMinRadius minimal radius of the circle
     //! @return ... matrix with the circles (x,y,r)
     NuTo::FullMatrix<double> CutSpheresZ(NuTo::FullMatrix<double>& rSpheres, double rZCoord, double rMinRadius);
+
+    //! @brief sets the Hessian to be constant or variable
+    //! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
+    //! @parameters rValue (true = const false=variable)
+    void SetHessianConstant(int rTimeDerivative, bool rValue);
+
+	//! @brief sets the Hessian to be constant or variable
+	//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
+    //! @return (true = const false=variable)
+	bool GetHessianConstant(int rTimeDerivative)const;
 
 
 protected:
@@ -1973,6 +1784,11 @@ protected:
     double mMinLineSearchFactor;
     //*********************************************
 
+    //! @brief parameters of the time integration scheme indicating, if the hessian is constant (0 stiffness, 1 damping, 2 mass)
+    //! note that if a matrix is constant, the corresponding term is no longer considered in the gradient calculation
+    //! because the term can be obtained from the global solution procedure
+    bool mHessianConstant[3];
+
 #ifdef _OPENMP
     //@brief maximum independent sets used for parallel assembly of the stiffness resforce etc.
     mutable std::vector<std::vector<ElementBase*> > mMIS;
@@ -2024,10 +1840,15 @@ protected:
     virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
 #endif
 
-    //! @brief ... store all elements of a group in a vector
+    //! @brief ... get all elements of a group in a vector
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer
     void GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const;
+
+    //! @brief ... get all elements of a group in a vector
+    //! @param rElementGroup ... element group
+    //! @param rElements ... vector of element pointer
+    void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements);
 
     //! @brief ... check for dof numbering and build of tmpStaticData
     void BuildGlobalCoefficientMatrixCheck();

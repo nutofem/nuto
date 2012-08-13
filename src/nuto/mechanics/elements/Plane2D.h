@@ -74,11 +74,15 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const;
+    //! @param numDispDofs number of displacement dofs
+    //! @param numTempDofs number of temperature dofs
+    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int numDispDofs, int numTempDofs) const override;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const;
+    //! @param numDispDofs number of displacement dofs
+    //! @param numTempDofs number of temperature dofs
+    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int numDispDofs, int numTempDofs) const override;
 
 
 };

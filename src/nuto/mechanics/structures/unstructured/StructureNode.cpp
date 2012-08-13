@@ -7,28 +7,9 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/groups/Group.h"
-#include "nuto/mechanics/nodes/NodeCoordinates1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinates2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinates3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacements3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRadius2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRadius3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotations3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotationsRadius2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsRotationsRadius3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperature1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperature2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesTemperature3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsNonlocalData3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations1D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerations3D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D.h"
-#include "nuto/mechanics/nodes/NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D.h"
+#include "nuto/mechanics/nodes/NodeDof.h"
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDof.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -134,17 +115,13 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 				mLogger << "\t c:";
 				for(unsigned short iDof=0; iDof<it->second->GetNumCoordinates(); ++iDof)
 					mLogger << "\t" << it->second->GetCoordinate(iDof);
-                if (it->second->GetNumDisplacements()>0 || it->second->GetNumFineScaleDisplacements()>0)
+                if (it->second->GetNumDisplacements()>0)
                 {
                 	mLogger << "\t d:";
-                    for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements()+it->second->GetNumFineScaleDisplacements(); ++iDof)
+                    for(unsigned short iDof=0; iDof<it->second->GetNumDisplacements(); ++iDof)
                     {
                     	mLogger << "\t" << it->second->GetDisplacement(iDof) ;
-                        if (it->second->GetNumDisplacements()>0)
-                        	mLogger << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
-                        if (it->second->GetNumFineScaleDisplacements()>0)
-                        	mLogger << "("<< it->second->GetDofFineScaleDisplacement(iDof)<< ")" ;
-
+                       	mLogger << "("<< it->second->GetDofDisplacement(iDof)<< ")" ;
                     }
                 }
                 if (it->second->GetNumRotations()>0 )
@@ -184,13 +161,31 @@ int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCo
         id++;
         it = mNodeMap.find(id);
     }
-    this->NodeCreate(id, rDOFs, rCoordinates);
+    this->NodeCreate(id, rDOFs, rCoordinates, 0);
 
     //return int identifier of the new node
     return id;
 }
 
-void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates)
+//! creates a node
+int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates, int rNumTimeDerivatives)
+{
+
+    //find unused integer id
+    int id(mNodeMap.size());
+    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
+    while (it!=mNodeMap.end())
+    {
+        id++;
+        it = mNodeMap.find(id);
+    }
+    this->NodeCreate(id, rDOFs, rCoordinates, rNumTimeDerivatives);
+
+    //return int identifier of the new node
+    return id;
+}
+
+void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates, int rNumTimeDerivatives)
 {
 	// check node number
 	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -209,11 +204,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
     // bit 2 : rotations
     // bit 3 : temperatures
     // bit 4 : nonlocal data
-    // bit 5 : velocities
-    // bit 6 : accelerations
-    // bit 7 : radius
-    // bit 8 : angular velocities
-    // bit 9 : angular accelerations
+    // bit 5 : radius
     //check here the maximum number of bits for the integer
 
     boost::char_separator<char> sep(" ");
@@ -227,14 +218,6 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         else if (*beg=="DISPLACEMENTS")
         {
             attributes = attributes | 1 << Node::DISPLACEMENTS;
-        }
-        else if (*beg=="VELOCITIES")
-        {
-            attributes = attributes | 1 << Node::VELOCITIES;
-        }
-        else if (*beg=="ACCELERATIONS")
-        {
-            attributes = attributes | 1 << Node::ACCELERATIONS;
         }
         else if (*beg=="ROTATIONS")
         {
@@ -252,14 +235,6 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         {
             attributes = attributes | 1 << Node::RADIUS;
         }
-        else if (*beg=="ANGULAR_VELOCITIES")
-        {
-            attributes = attributes | 1 << Node::ANGULAR_VELOCITIES;
-        }
-        else if (*beg=="ANGULAR_ACCELERATIONS")
-        {
-            attributes = attributes | 1 << Node::ANGULAR_ACCELERATIONS;
-        }
         else
         {
     		throw MechanicsException("[NuTo::Structure::NodeCreate] invalid dof type: " + *beg +".");
@@ -270,6 +245,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
  Dimension of the coordinate vector does not fit the dimension of the structure");
 
     NodeBase* nodePtr;
+
     switch (attributes)
     {
         // the << shifts the 1 bitwise to the left, so 1<<n = 2^n
@@ -279,144 +255,234 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         switch (mDimension)
         {
         case 1:
-        	nodePtr = new NuTo::NodeCoordinates1D();
+        	nodePtr = new NuTo::NodeCoordinates<1>();
             break;
         case 2:
-        	nodePtr = new NuTo::NodeCoordinates2D();
+        	nodePtr = new NuTo::NodeCoordinates<2>();
             break;
         case 3:
-        	nodePtr = new NuTo::NodeCoordinates3D();
+        	nodePtr = new NuTo::NodeCoordinates<3>();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
         }
-        break;
+    break;
     case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS):
         // coordinates and displacements
-        switch (mDimension)
+        switch (rNumTimeDerivatives)
         {
-        case 1:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacements1D();
-            break;
-        case 2:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacements2D();
-            break;
-        case 3:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacements3D();
-            break;
-        default:
-            throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+        case 0:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+	    case 2:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates and Displacements only implemented for 0 and 2 time derivatives.");
         }
-        break;
-	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::VELOCITIES) | (1 << Node::ACCELERATIONS):
-		// coordinates and displacements
-		switch (mDimension)
+    break;
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS):
+		// coordinates and displacements and rotations
+		switch (rNumTimeDerivatives)
 		{
-		case 1:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations1D();
-			break;
-		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations2D();
-			break;
-		case 3:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerations3D();
-			break;
-		default:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
-		}
+		case 0:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,1,0>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,3,0>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
 		break;
-	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::VELOCITIES) | (1 << Node::ACCELERATIONS) |
-			(1 << Node::ROTATIONS) | (1 << Node::ANGULAR_VELOCITIES) | (1 << Node::ANGULAR_ACCELERATIONS):
-		// coordinates and displacements
-		switch (mDimension)
-		{
 		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerations2D();
-			break;
-		default:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
-		}
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,1,0>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,3,0>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
 		break;
-	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::VELOCITIES) | (1 << Node::ACCELERATIONS) |
-			(1 << Node::ROTATIONS) | (1 << Node::ANGULAR_VELOCITIES) | (1 << Node::ANGULAR_ACCELERATIONS | (1 << Node::RADIUS)):
-		// coordinates and displacements
-		switch (mDimension)
-		{
-		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsVelocitiesAccelerationsRotationsAngularVelocitiesAngularAccelerationsRadius2D();
-			break;
 		default:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
-		}
-		break;
-    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::RADIUS):
-        // coordinates, displacements and a radius
-        switch (mDimension)
-        {
-        case 1:
-            throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a radius is not implemented.");
-            break;
-        case 2:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRadius2D();
-            break;
-        case 3:
-        	nodePtr = new NuTo::NodeCoordinatesDisplacementsRadius3D();
-            break;
-        default:
-            throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
-        }
-        break;
-	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) |  (1 << Node::ROTATIONS):
-		// coordinates, displacements, rotations
-		switch (mDimension)
-		{
-		case 1:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a rotation is not implemented.");
-			break;
-		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations2D();
-			break;
-		case 3:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotations3D();
-			break;
-		default:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and Rotations only implemented for 0 and 2 time derivatives.");
 		}
 	break;
-	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) |  (1 << Node::ROTATIONS) |(1 << Node::RADIUS):
-		// coordinates, displacements, rotations and a radius
-		switch (mDimension)
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::RADIUS):
+		// coordinates and displacements and rotations and radius
+		switch (rNumTimeDerivatives)
 		{
-		case 1:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with a rotation is not implemented.");
-			break;
+		case 0:
+			switch (mDimension)
+			{
+			//case 1:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<1,0,1,0,0>();
+				//break;
+			//case 2:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<2,0,2,0,0>();
+				//break;
+			//case 3:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<3,0,3,0,0>();
+				//break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
 		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotationsRadius2D();
-			break;
-		case 3:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsRotationsRadius3D();
-			break;
+			switch (mDimension)
+			{
+			//case 1:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<1,2,1,0,0>();
+				//break;
+			//case 2:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<2,2,2,0,0>();
+				//break;
+			//case 3:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<3,2,3,0,0>();
+				//break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
 		default:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and Rotations only implemented for 0 and 2 time derivatives.");
 		}
-	 break;
-     case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
+	break;
+	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS) | (1 << Node::RADIUS):
+		// coordinates and displacements and rotations and radius
+		switch (rNumTimeDerivatives)
+		{
+		case 0:
+			switch (mDimension)
+			{
+			//case 1:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<1,0,1,0,0>();
+				//break;
+			//case 2:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<2,0,2,1,0>();
+				//break;
+			//case 3:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<3,0,3,3,0>();
+				//break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		case 2:
+			switch (mDimension)
+			{
+			//case 1:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<1,2,1,0,0>();
+				//break;
+			//case 2:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<2,2,2,1,0>();
+				//break;
+			//case 3:
+				//nodePtr = new NuTo::NodeCoordinatesDofRadius<3,2,3,3,0>();
+				//break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and Rotations only implemented for 0 and 2 time derivatives.");
+	    }
+    break;
+    case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
         // coordinates and temperatures
-        switch (mDimension)
-        {
-        case 1:
-        	nodePtr = new NuTo::NodeCoordinatesTemperature1D();
-            break;
-        case 2:
-        	nodePtr = new NuTo::NodeCoordinatesTemperature2D();
-            break;
-        case 3:
-        	nodePtr = new NuTo::NodeCoordinatesTemperature3D();
-            break;
-        default:
-            throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
-        }
-        break;
+		switch (rNumTimeDerivatives)
+		{
+		case 0:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,1>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,0,0,1>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,0,0,1>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		case 1:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,1>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,1,0,0,1>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,1,0,0,1>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		case 2:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,0,0,1>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,0,0,1>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,0,0,1>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		default:
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and Rotations only implemented for 0, 1 and 2 time derivatives.");
+		}
+    break;
 	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::NONLOCALDATA):
 		// coordinates, displacements and nonlocal data
 		switch (mDimension)
@@ -425,15 +491,16 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
 			throw MechanicsException("[NuTo::Structure::NodeCreate] A 1D node with nonlocal data is not implemented");
 			break;
 		case 2:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData2D();
+			throw MechanicsException("[NuTo::Structure::NodeCreate] nonlocal not yet implemented.");
+			//nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData2D();
 			break;
-		case 3:
-			nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData3D();
-			break;
+		//case 3:
+		//	nodePtr = new NuTo::NodeCoordinatesDisplacementsNonlocalData3D();
+		//	break;
 		default:
 			throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
 		}
-		break;
+	break;
     default:
         throw MechanicsException("[NuTo::Structure::NodeCreate] This combination of attributes is not implemented (just add in the source file the relevant combination).");
     }
@@ -673,7 +740,7 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 }
 
 // merge dof values
-void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActiveDofValues)
+void NuTo::Structure::NodeMergeActiveDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues)
 {
     if (this->mNodeNumberingRequired)
     {
@@ -695,18 +762,18 @@ void NuTo::Structure::NodeMergeActiveDofValues(const FullMatrix<double>& rActive
     // write dof values to the nodes
     for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
-        it->second->SetGlobalDofValues(rActiveDofValues, dependentDofValues);
+        it->second->SetGlobalDofValues(rTimeDerivative, rActiveDofValues, dependentDofValues);
     }
 
     //write the dof values of the Lagrange multipliers
     ConstraintMergeGlobalDofValues(rActiveDofValues, dependentDofValues);
 
     //write dof values of additional DOFs
-    NodeMergeAdditionalGlobalDofValues(rActiveDofValues,dependentDofValues);
+    NodeMergeAdditionalGlobalDofValues(rTimeDerivative, rActiveDofValues,dependentDofValues);
 }
 
 // merge dof values
-void NuTo::Structure::NodeMergeDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
 {
     if (this->mNodeNumberingRequired)
     {
@@ -726,18 +793,18 @@ void NuTo::Structure::NodeMergeDofValues(const FullMatrix<double>& rActiveDofVal
     // write dof values to the nodes
     for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
-        it->second->SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        it->second->SetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
 
     //write the dof values of the Lagrange multipliers
     ConstraintMergeGlobalDofValues(rActiveDofValues, rDependentDofValues);
 
     //write dof values of additional DOFs
-    NodeMergeAdditionalGlobalDofValues(rActiveDofValues,rDependentDofValues);
+    NodeMergeAdditionalGlobalDofValues(rTimeDerivative,rActiveDofValues,rDependentDofValues);
 }
 
 // extract dof values
-void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::Structure::NodeExtractDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
 {
     if (this->mNodeNumberingRequired)
     {
@@ -749,13 +816,13 @@ void NuTo::Structure::NodeExtractDofValues(FullMatrix<double>& rActiveDofValues,
     // extract dof values from nodes
     for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
-        it->second->GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        it->second->GetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
     //extract dof values of Lagrange multipliers
     ConstraintExtractGlobalDofValues(rActiveDofValues,rDependentDofValues);
 
     //extract dof values of additional DOFs
-    NodeExtractAdditionalGlobalDofValues(rActiveDofValues,rDependentDofValues);
+    NodeExtractAdditionalGlobalDofValues(rTimeDerivative, rActiveDofValues,rDependentDofValues);
 }
 
 // store all nodes of a structure in a vector
@@ -807,80 +874,6 @@ void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNod
     {
     	rNodes.push_back(std::pair<int, NodeBase*>(NodeIter->first,NodeIter->second));
         NodeIter++;
-    }
-}
-
-// merge dof first time derivative values
-void NuTo::Structure::NodeMergeDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
-{
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
-    }
-    if ((rActiveDofValues.GetNumRows() != this->mNumActiveDofs) || rActiveDofValues.GetNumColumns() != 1)
-    {
-        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofFirstTimeDerivativeValues] invalid dimension of input object (number of active dofs,1).");
-    }
-	this->mUpdateTmpStaticDataRequired=true;
-
-    // write dof values to the nodes
-    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
-    {
-        it->second->SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-}
-
-// extract dof first time derivative values
-void NuTo::Structure::NodeExtractDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
-{
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::Structure::NodeExtractDofFirstTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
-    }
-    rActiveDofValues.Resize(this->mNumActiveDofs,1);
-    rDependentDofValues.Resize(this->mNumDofs - this->mNumActiveDofs,1);
-
-    // extract dof values from nodes
-    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
-    {
-        it->second->GetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-}
-
-// merge dof first time derivative values
-void NuTo::Structure::NodeMergeDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
-{
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
-    }
-    if ((rActiveDofValues.GetNumRows() != this->mNumActiveDofs) || rActiveDofValues.GetNumColumns() != 1)
-    {
-        throw MechanicsException("[NuTo::Structure::NodeMergeActiveDofSecondTimeDerivativeValues] invalid dimension of input object (number of active dofs,1).");
-    }
-	this->mUpdateTmpStaticDataRequired=true;
-
-    // write dof values to the nodes
-    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
-    {
-        it->second->SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-}
-
-// extract dof first time derivative values
-void NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
-{
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::Structure::NodeExtractDofSecondTimeDerivativeValues] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
-    }
-    rActiveDofValues.Resize(this->mNumActiveDofs,1);
-    rDependentDofValues.Resize(this->mNumDofs - this->mNumActiveDofs,1);
-
-    // extract dof values from nodes
-    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
-    {
-        it->second->GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
     }
 }
 

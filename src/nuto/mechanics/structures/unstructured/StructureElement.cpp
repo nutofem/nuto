@@ -5,7 +5,6 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/elements/Brick8N.h"
-#include "nuto/mechanics/elements/Lattice2D.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
@@ -205,14 +204,6 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
     {
     	elementType = NuTo::Element::TETRAHEDRON10N;
     }
-    else if (upperCaseElementType=="LATTICE2D")
-    {
-    	elementType = NuTo::Element::LATTICE2D;
-    }
-    else if (upperCaseElementType=="LATTICE3D")
-    {
-    	elementType = NuTo::Element::LATTICE3D;
-    }
     else
     {
     	throw MechanicsException("[NuTo::Structure::ElementCreate] Element type "+upperCaseElementType +" does not exist.");
@@ -345,13 +336,6 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
             throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron10N is a 3D element.");
         }
         ptrElement = new NuTo::Tetrahedron10N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-    case NuTo::Element::LATTICE2D:
-        if (this->mDimension != 2)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] Lattice2D is a 2D element.");
-        }
-        ptrElement = new NuTo::Lattice2D(this, rNodeVector, rElementDataType, rIpDataType);
         break;
 	default:
 		throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Invalid element type.");

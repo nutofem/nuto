@@ -2,8 +2,10 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/sections/SectionVolume.h"
 
 // create a new section
 int NuTo::StructureBase::SectionCreate(const std::string& rType)
@@ -25,6 +27,10 @@ int NuTo::StructureBase::SectionCreate(const std::string& rType)
     else if (SectionTypeString == "PLANE_STRESS")
     {
         SectionType = Section::PLANE_STRESS;
+    }
+    else if (SectionTypeString == "VOLUME")
+    {
+        SectionType = Section::VOLUME;
     }
     else
     {
@@ -55,6 +61,9 @@ int NuTo::StructureBase::SectionCreate(Section::eSectionType rType)
 	case Section::PLANE_STRAIN:
 	case Section::PLANE_STRESS:
 		SectionPtr = new SectionPlane(rType);
+		break;
+	case Section::VOLUME:
+		SectionPtr = new SectionVolume();
 		break;
 	default:
 		throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] invalid section type.");
@@ -195,4 +204,119 @@ double NuTo::StructureBase::SectionGetThickness(int rId) const
         throw e;
     }
     return thickness;
+}
+
+// set section dofs
+void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
+{
+    try
+    {
+        SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
+
+        //now check, if the section is not assigned to any element
+        std::vector<ElementBase*> elementVector;
+        GetElementsTotal(elementVector);
+        for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+        {
+        	if (elementVector[countElement]->GetSection()==SectionPtr)
+        	{
+        		throw MechanicsException("[NuTo::Structure::SectionSetDOF] the section is already assigned to elements, but modification of the properties is only allowed before assigning the section to elements.");
+        	}
+        }
+
+        // transform string to uppercase
+        std::string DOFsUpperCase;
+        std::transform(rDOFs.begin(), rDOFs.end(), std::back_inserter(DOFsUpperCase), (int(*)(int)) toupper);
+
+    	// unset all dofs
+        SectionPtr->SetIsDisplacementDof(false);
+    	SectionPtr->SetIsRotationDof(false);
+    	SectionPtr->SetIsTemperatureDof(false);
+
+    	boost::char_separator<char> sep(" ");
+        boost::tokenizer< boost::char_separator<char> > tok(DOFsUpperCase, sep);
+        for (boost::tokenizer< boost::char_separator<char>  >::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
+        {
+            if (*beg=="DISPLACEMENTS")
+            {
+            	SectionPtr->SetIsDisplacementDof(true);
+            }
+            else if (*beg=="ROTATIONS")
+            {
+            	SectionPtr->SetIsRotationDof(true);
+            }
+            else if (*beg=="TEMPERATURE")
+            {
+            	SectionPtr->SetIsTemperatureDof(true);
+            }
+            else
+            {
+        		throw MechanicsException("[NuTo::Structure::SectionSetDOF] invalid dof type: " + *beg +".");
+            }
+        }
+
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::SectionSetDOF] error setting section DOFs.");
+        throw e;
+    }
+}
+
+
+// set section constitutive inputs
+void NuTo::StructureBase::SectionSetInputConstitutive(int rId, const std::string& rDOFs)
+{
+    try
+    {
+        SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
+
+        //now check, if the section is not assigned to any element
+        std::vector<ElementBase*> elementVector;
+        GetElementsTotal(elementVector);
+        for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+        {
+        	if (elementVector[countElement]->GetSection()==SectionPtr)
+        	{
+        		throw MechanicsException("[NuTo::Structure::SectionSetInputConstitutive] the section is already assigned to elements, but modification of the properties is only allowed before assigning the section to elements.");
+        	}
+        }
+
+        // transform string to uppercase
+        std::string DOFsUpperCase;
+        std::transform(rDOFs.begin(), rDOFs.end(), std::back_inserter(DOFsUpperCase), (int(*)(int)) toupper);
+
+    	// unset all dofs
+        SectionPtr->SetInputConstitutiveIsTemperature(false);
+    	SectionPtr->SetInputConstitutiveIsTemperatureGradient(false);
+    	SectionPtr->SetInputConstitutiveIsDeformationGradient(false);
+
+    	boost::char_separator<char> sep(" ");
+        boost::tokenizer< boost::char_separator<char> > tok(DOFsUpperCase, sep);
+        for (boost::tokenizer< boost::char_separator<char>  >::iterator beg=tok.begin(); beg!=tok.end(); ++beg)
+        {
+            if (*beg=="TEMPERATURE")
+            {
+            	SectionPtr->SetInputConstitutiveIsTemperature(true);
+            }
+            else if (*beg=="TEMPERATUREGRADIENT")
+            {
+            	SectionPtr->SetInputConstitutiveIsTemperatureGradient(true);
+            }
+            else if (*beg=="DEFORMATIONGRADIENT")
+            {
+            	SectionPtr->SetInputConstitutiveIsDeformationGradient(true);
+            }
+            else
+            {
+        		throw MechanicsException("[NuTo::Structure::SectionSetInputConstitutive] invalid constitutive input type: " + *beg +".");
+            }
+        }
+
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::SectionSetInputConstitutive] error setting constitutive input for section.");
+        throw e;
+    }
 }

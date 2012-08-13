@@ -8,6 +8,8 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
+
 namespace NuTo
 {
 class DeformationGradient1D;
@@ -31,13 +33,15 @@ class Plane;
 */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class DeformationGradient2D
+class DeformationGradient2D : public ConstitutiveInputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class NuTo::Plane;
     friend class NuTo::Multiscale;
+    friend class EngineeringStrain2D;
+    friend class EngineeringStrain3D;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure
@@ -46,7 +50,7 @@ public:
     DeformationGradient2D();
 
     //! @brief ... copy constructor
-    DeformationGradient2D(const DeformationGradient1D& rOther);
+    //DeformationGradient2D(const DeformationGradient1D& rOther);
 
     //! @brief ... copy constructor
     DeformationGradient2D(const DeformationGradient2D& rOther);
@@ -58,7 +62,7 @@ public:
     //! @brief ... get deformation gradient
     //! @return ... two-dimensional deformation gradient (column major format)
     //! @sa mDeformationGradient
-    const double* GetDeformationGradient2D() const;
+    const DeformationGradient2D& GetDeformationGradient2D() const;
 
     //! @brief ... get deformation gradient
     //! @param  rDeformationGradient ... two-dimensional deformation gradient (column major format)
@@ -78,7 +82,7 @@ public:
      */
     //! @param  rDeformationGradient ... three-dimensional deformation gradient (column major format)
     //! @sa mDeformationGradient
-    void GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const;
+    //void GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const;
 
     //! @brief ... set deformation gradient
     //! @param rDeformationGradient ... deformation gradient (column major format)

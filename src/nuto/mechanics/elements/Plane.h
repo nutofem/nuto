@@ -8,8 +8,12 @@ namespace NuTo
 {
 class StructureBase;
 class DeformationGradient2D;
+class TemperatureGradient2D;
 class ConstitutiveTangentLocal3x3;
 class EngineeringStress2D;
+class HeatFlux2D;
+template <int TNumRows, int TNumColumns> class ConstitutiveTangentLocal;
+template <int TNumRows, int TNumColumns> class ConstitutiveTangentNonlocal;
 //! @author Jörg F. Unger, ISM
 //! @date March 2010
 //! @brief ... standard abstract class for all isoparametric displacement based finite elements in 2D
@@ -36,29 +40,34 @@ public:
         return 3;
     }
 
+    //! @brief calculates output data fo the elmement
+    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+    Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rConstitutiveOutput);
+
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness matrix
     //! @param rResult ... coefficient matrix
     //! @param rGlobalDofsRow ... row numbers in global system
     //! @param rGlobalDofsColumn ... column numbers in global system
     //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
+    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
+    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
-    Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
+    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
-    Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
-            std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
+    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
-                                            std::vector<int>& rGlobalDofs)const;
+    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+    //                                        std::vector<int>& rGlobalDofs)const;
 
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
@@ -84,7 +93,7 @@ public:
     const SectionBase* GetSection()const;
 
     //! @brief Update the static data of an element
-    Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
+    //Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
 
     //! @brief calculates the deformation gradient in 2D
     //! @param rRerivativeShapeFunctions derivatives of the shape functions with respect to local coordinates (plane world coordinates)
@@ -93,6 +102,19 @@ public:
     void CalculateDeformationGradient(const std::vector<double>& rDerivativeShapeFunctionsLocal,
                                       const std::vector<double>& rDisp,
                                       DeformationGradient2D& rDeformationGradient)const;
+
+    //! @brief stores the temperatures of the nodes
+    //! @param temperature vector with already correct size allocated
+    //! this can be checked with an assertation
+    void CalculateTemperatures(std::vector<double>& rTemperatures)const;
+
+    //! @brief calculates the temperature gradient in 3D
+    //! @param rRerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+    //! @param rTemp nodal temperatures
+    //! @param rTemperatureGradient (return value)
+    void CalculateTemperatureGradient(const std::vector<double>& rDerivativeShapeFunctionsLocal,
+            const std::vector<double>& rTemp,
+            TemperatureGradient2D& rTemperatureGradient)const;
 
     //! @brief Calculates the the inverse of the Jacobian and its determinant
     //! @param rDerivativeShapeFunctions Derivatives of the shape functions (dN1dx, dN1dy, dN1dz, dN2dx, ..
@@ -143,16 +165,6 @@ public:
     //! first all the directions for a single node, and then for the next node
     virtual void CalculateDerivativeShapeFunctionsLocal(const std::vector<double>& rDerivativeShapeFunctionsNatural, const double rJacInv[4], std::vector<double>& rDerivativeShapeFunctionsLocal)const;
 
-    //! @brief adds to a matrix the product B^tCB, where B contains the derivatives of the shape functions and C is the constitutive tangent
-    //! eventually include also area/width of an element
-    //! @param rDerivativeShapeFunctionsLocal derivatives of the shape functions with respect to local coordinates (rotated global system)
-    //! @param ConstitutiveTangentBase constitutive tangent matrix
-    //! @param rFactor factor including determinant of Jacobian and IP weight
-    //! @param rCoefficientMatrix to be added to
-    void AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsLocal,
-                     const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
-                     FullMatrix<double>& rCoefficientMatrix)const;
-
     //! @brief adds to a matrix the product B^tCBnonlocal, where B contains the derivatives of the shape functions and C is the constitutive tangent and Bnonlocal is the nonlocal B matrix
     //! eventually include also area/width of an element
     //! @param rLocalDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -162,23 +174,49 @@ public:
     //! @param rCoefficientMatrix to be added to
     //! &param rFirstCol first column of the coefficient matrix to be modified (corresponding to the current nonlocal element)
     void AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFunctionsLocal,const std::vector<double>& rNonlocalDerivativeShapeFunctionsLocal,
-                                  const ConstitutiveTangentLocal3x3* rConstitutiveTangent, double rFactor,
-                                  FullMatrix<double>& rCoefficientMatrix, int rFirstCol)const;
+                                  const ConstitutiveTangentLocal<3,3>& rConstitutiveTangent, double rFactor,
+                                  FullMatrix<double>& rCoefficientMatrix, int rFirstRow, int rFirstCol)const;
+
+    //! @brief adds to a matrix the product B^tCB, where B contains the derivatives of the shape functions and C is the constitutive tangent
+    //! eventually include also area/width of an element (that's the thermal solution)
+    //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rFactor factor including determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the submatrix
+    //! @param rCoefficientMatrix to be added to
+    void AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
+                                  const ConstitutiveTangentLocal<2,2>& rConstitutiveTangent, double rFactor,
+                                  int rRow, int rCol,
+                                  FullMatrix<double>& rCoefficientMatrix)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
     //! @param rEngineeringStress stress
     //! @param factor factor including det Jacobian area and integration point weight
+    //! @param rRow start row (in case of a multifield problem)
     //! @param rResult resforce vector
     void AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
                         const EngineeringStress2D& rEngineeringStress,
                         double factor,
+                        int rRow,
                         FullMatrix<double>& rResult)const;
+
+    //! @brief adds up the internal force vector
+    //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
+    //! @param rHeatFlux stress
+    //! @param factor factor including det Jacobian area and integration point weight
+    //! @param rRow start row (in case of a multifield problem)
+    //! @param rResult resforce vector
+    void AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
+                                     const HeatFlux2D& rHeatFlux,
+                                     double rFactor,
+                                     int rRow,
+                                     FullMatrix<double>& rResult)const;
 
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
+    //Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -234,11 +272,15 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-//    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const;
+    //! @param numDispDofs number of displacement dofs
+    //! @param numTempDofs number of temperature dofs
+    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int numDispDofs, int numTempDofs) const = 0;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-//    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const;
+    //! @param numDispDofs number of displacement dofs
+    //! @param numTempDofs number of temperature dofs
+    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int numDispDofs, int numTempDofs) const = 0;
 
     const SectionBase *mSection;
 };

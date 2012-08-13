@@ -45,13 +45,17 @@ myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(-1.,
 myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullMatrix(8,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)))
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
+
+#create section
+mySection = myStructure.SectionCreate("Volume")
 
 #assign constitutive law 
 #myStructure.ElementSetIntegrationType(myElement1,"3D8NGauss1Ip")
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
+myStructure.ElementSetSection(myElement1,mySection)
 
 #set displacements of right node
 myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(3,1,(0.2,0.2,0.2)))
@@ -86,6 +90,10 @@ else:
 Fi = nuto.DoubleFullMatrix(0,0)
 rowIndex = nuto.IntFullMatrix(0,0)
 myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
+
+if (printResult):
+    print "Fe"
+    Fi.Info()
 
 #correct resforce vector
 if createResult:

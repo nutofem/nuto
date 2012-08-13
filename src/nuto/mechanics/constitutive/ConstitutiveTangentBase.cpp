@@ -9,11 +9,13 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveTangentBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 
 // constructor
-NuTo::ConstitutiveTangentBase::ConstitutiveTangentBase()
+NuTo::ConstitutiveTangentBase::ConstitutiveTangentBase() : NuTo::ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
     this->mSymmetry = false;
+    this->mConstant = false;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -30,7 +32,9 @@ void NuTo::ConstitutiveTangentBase::serialize(Archive & ar, const unsigned int v
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstitutiveTangentBase" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mSymmetry);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
+       & BOOST_SERIALIZATION_NVP(mSymmetry)
+       & BOOST_SERIALIZATION_NVP(mConstant);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveTangentBase" << std::endl;
 #endif

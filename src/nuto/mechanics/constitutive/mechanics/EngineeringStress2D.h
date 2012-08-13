@@ -8,6 +8,8 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+
 namespace NuTo
 {
 class LinearElastic;
@@ -34,25 +36,34 @@ class ConstitutiveEngineeringStressStrain;
  */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class EngineeringStress2D
+class EngineeringStress2D: public ConstitutiveOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
+    friend class LinearElasticEngineeringStress;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
     friend class StructureMultiscale;
     friend class Multiscale;
 public:
     //! @brief ... constructor
     EngineeringStress2D();
 
+    //! @brief ... copy constructor
+    EngineeringStress2D(const EngineeringStress2D& rOther);
+
     //! @brief ... get number of components stored in this object
     //! @return ... number of components stored in this object
     unsigned int GetNumberOfComponents() const;
+
+    EngineeringStress2D& GetEngineeringStress2D() override
+    {
+    	return *this;
+    }
 
     //! @brief ... get the components of the Engineering stress tensor
     //! @return ... components of the Engineering stress tensor (stored in an array)

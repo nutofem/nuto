@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeDisplacements1D.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements1D.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"

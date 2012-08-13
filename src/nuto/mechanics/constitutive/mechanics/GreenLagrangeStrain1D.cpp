@@ -12,6 +12,8 @@
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 
+#include "nuto/mechanics/MechanicsException.h"
+
 NuTo::GreenLagrangeStrain1D::GreenLagrangeStrain1D()
 {
 	mGreenLagrangeStrain = 0.0;
@@ -19,7 +21,7 @@ NuTo::GreenLagrangeStrain1D::GreenLagrangeStrain1D()
 
 NuTo::GreenLagrangeStrain1D::GreenLagrangeStrain1D(const DeformationGradient1D& rDeformationGradient)
 {
-    mGreenLagrangeStrain = 0.5*(rDeformationGradient.GetDeformationGradient1D()[0]*rDeformationGradient.GetDeformationGradient1D()[0] -1);
+	throw MechanicsException("[NuTo::GreenLagrangeStrain1D::GreenLagrangeStrain1D] to be implemented.");
 }
 
 //! @brief ... get number of strain components

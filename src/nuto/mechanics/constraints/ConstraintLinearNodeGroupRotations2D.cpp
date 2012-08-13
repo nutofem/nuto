@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeRotations2D.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
 #include "nuto/math/FullMatrix.h"

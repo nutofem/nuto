@@ -28,8 +28,11 @@ public:
 #ifndef SWIG
 #endif
 
-//! @brief constructor
+    //! @brief constructor
     IntegrationTypeBase();
+
+    //! @brief ... destructor
+    virtual ~IntegrationTypeBase(){};
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -15,42 +15,16 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 
+#include "nuto/mechanics/MechanicsException.h"
+
 // constructor
-NuTo::DeformationGradient3D::DeformationGradient3D()
+NuTo::DeformationGradient3D::DeformationGradient3D(): ConstitutiveInputBase::ConstitutiveInputBase()
 {
     mDeformationGradient[0] = 0.0;
     mDeformationGradient[1] = 0.0;
     mDeformationGradient[2] = 0.0;
     mDeformationGradient[3] = 0.0;
     mDeformationGradient[4] = 0.0;
-    mDeformationGradient[5] = 0.0;
-    mDeformationGradient[6] = 0.0;
-    mDeformationGradient[7] = 0.0;
-    mDeformationGradient[8] = 0.0;
-}
-
-//! @brief ... copy constructor
-NuTo::DeformationGradient3D::DeformationGradient3D(const DeformationGradient1D& rOther)
-{
-	mDeformationGradient[0] = rOther.GetDeformationGradient1D()[0];
-    mDeformationGradient[1] = 0.0;
-    mDeformationGradient[2] = 0.0;
-    mDeformationGradient[3] = 0.0;
-    mDeformationGradient[4] = 0.0;
-    mDeformationGradient[5] = 0.0;
-    mDeformationGradient[6] = 0.0;
-    mDeformationGradient[7] = 0.0;
-    mDeformationGradient[8] = 0.0;
-}
-
-//! @brief ... copy constructor
-NuTo::DeformationGradient3D::DeformationGradient3D(const DeformationGradient2D& rOther)
-{
-    mDeformationGradient[0] = rOther.GetDeformationGradient2D()[0];
-    mDeformationGradient[1] = rOther.GetDeformationGradient2D()[1];
-    mDeformationGradient[2] = 0.0;
-    mDeformationGradient[3] = rOther.GetDeformationGradient2D()[2];
-    mDeformationGradient[4] = rOther.GetDeformationGradient2D()[3];
     mDeformationGradient[5] = 0.0;
     mDeformationGradient[6] = 0.0;
     mDeformationGradient[7] = 0.0;
@@ -78,15 +52,11 @@ unsigned int NuTo::DeformationGradient3D::GetNumberOfComponents() const
 }
 
 // get deformation gradient
-const double* NuTo::DeformationGradient3D::GetDeformationGradient3D() const
+const NuTo::DeformationGradient3D& NuTo::DeformationGradient3D::GetDeformationGradient3D() const
 {
-    return this->mDeformationGradient;
+    return *this;
 }
 
-void NuTo::DeformationGradient3D::GetDeformationGradient(NuTo::DeformationGradient3D& rDeformationGradient) const
-{
-	rDeformationGradient = NuTo::DeformationGradient3D(*this);
-}
 // set deformation gradient
 void NuTo::DeformationGradient3D::SetDeformationGradient3D(const double* rDeformationGradient)
 {
@@ -124,7 +94,8 @@ void NuTo::DeformationGradient3D::serialize(Archive & ar, const unsigned int ver
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize DeformationGradient3D" << std::endl;
 #endif
-   ar & BOOST_SERIALIZATION_NVP(mDeformationGradient);
+   ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveInputBase)
+      & BOOST_SERIALIZATION_NVP(mDeformationGradient);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize DeformationGradient3D" << std::endl;
 #endif

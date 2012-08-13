@@ -11,6 +11,7 @@
 
 #include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 NuTo::GreenLagrangeStrain3D::GreenLagrangeStrain3D()
 {
@@ -24,12 +25,7 @@ NuTo::GreenLagrangeStrain3D::GreenLagrangeStrain3D()
 
 NuTo::GreenLagrangeStrain3D::GreenLagrangeStrain3D(const DeformationGradient3D& rDeformationGradient)
 {
-	mGreenLagrangeStrain[0] = 0.5 * (rDeformationGradient.GetDeformationGradient3D()[0] * rDeformationGradient.GetDeformationGradient3D()[0] + rDeformationGradient.GetDeformationGradient3D()[1] * rDeformationGradient.GetDeformationGradient3D()[1] + rDeformationGradient.GetDeformationGradient3D()[2] * rDeformationGradient.GetDeformationGradient3D()[2] - 1.0);
-	mGreenLagrangeStrain[1] = 0.5 * (rDeformationGradient.GetDeformationGradient3D()[3] * rDeformationGradient.GetDeformationGradient3D()[3] + rDeformationGradient.GetDeformationGradient3D()[4] * rDeformationGradient.GetDeformationGradient3D()[4] + rDeformationGradient.GetDeformationGradient3D()[5] * rDeformationGradient.GetDeformationGradient3D()[5] - 1.0);
-	mGreenLagrangeStrain[2] = 0.5 * (rDeformationGradient.GetDeformationGradient3D()[6] * rDeformationGradient.GetDeformationGradient3D()[6] + rDeformationGradient.GetDeformationGradient3D()[7] * rDeformationGradient.GetDeformationGradient3D()[7] + rDeformationGradient.GetDeformationGradient3D()[8] * rDeformationGradient.GetDeformationGradient3D()[8] - 1.0);
-	mGreenLagrangeStrain[3] = rDeformationGradient.GetDeformationGradient3D()[0] * rDeformationGradient.GetDeformationGradient3D()[3] + rDeformationGradient.GetDeformationGradient3D()[1] * rDeformationGradient.GetDeformationGradient3D()[4] + rDeformationGradient.GetDeformationGradient3D()[2] * rDeformationGradient.GetDeformationGradient3D()[5];
-	mGreenLagrangeStrain[4] = rDeformationGradient.GetDeformationGradient3D()[3] * rDeformationGradient.GetDeformationGradient3D()[6] + rDeformationGradient.GetDeformationGradient3D()[4] * rDeformationGradient.GetDeformationGradient3D()[7] + rDeformationGradient.GetDeformationGradient3D()[5] * rDeformationGradient.GetDeformationGradient3D()[8];
-	mGreenLagrangeStrain[5] = rDeformationGradient.GetDeformationGradient3D()[0] * rDeformationGradient.GetDeformationGradient3D()[6] + rDeformationGradient.GetDeformationGradient3D()[1] * rDeformationGradient.GetDeformationGradient3D()[7] + rDeformationGradient.GetDeformationGradient3D()[2] * rDeformationGradient.GetDeformationGradient3D()[8];
+	throw MechanicsException("[NuTo::GreenLagrangeStrain3D::GreenLagrangeStrain3D] to be implemented.");
 }
 
 //! @brief ... get number of strain components

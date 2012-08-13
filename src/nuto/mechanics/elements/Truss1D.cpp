@@ -10,7 +10,6 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal1x1.h"
 #include "nuto/mechanics/elements/Truss1D.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
@@ -34,14 +33,17 @@ void NuTo::Truss1D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
 }
 
 //! @brief calculates the local displacements of the nodes
+//! @param time derivative (0 temperature, 1 temperature rate, 2 second time derivative of temperature)
 //! @param localDisplacements vector with already correct size allocated
 //! this can be checked with an assertation
-void NuTo::Truss1D::CalculateLocalDisplacements(std::vector<double>& rLocalDisplacements)const
+void NuTo::Truss1D::CalculateLocalDisplacements(int rTimeDerivative, std::vector<double>& rLocalDisplacements)const
 {
+    assert(rTimeDerivative>=0);
+    assert(rTimeDerivative<3);
     assert((int)rLocalDisplacements.size()==GetNumNodes());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        GetNode(theNode)->GetDisplacements1D(&(rLocalDisplacements[theNode]));
+        GetNode(theNode)->GetDisplacements1D(rTimeDerivative, &(rLocalDisplacements[theNode]));
     }
 }
 
@@ -90,19 +92,27 @@ void NuTo::Truss1D::InterpolateDisplacementsFrom1D(double rLocalCoordinates, dou
 }
 
 // build global row dofs
-void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const
+void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumTempDofs) const
 {
-    rGlobalRowDofs.resize(this->GetNumNodes());
+    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs);
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
-        rGlobalRowDofs[nodeCount] = GetNode(nodeCount)->GetDofDisplacement(0);
+        const NodeBase * nodePtr(GetNode(nodeCount));
+        if (nodePtr->GetNumDisplacements()>0 && rNumDispDofs>0)
+        {
+            rGlobalRowDofs[nodeCount] = nodePtr->GetDofDisplacement(0);
+        }
+        if (nodePtr->GetNumTemperatures()>0 && rNumTempDofs>0)
+        {
+            rGlobalRowDofs[rNumDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
+        }
     }
 }
 
 // build global column dof
-void NuTo::Truss1D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const
+void NuTo::Truss1D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int rNumDispDofs, int rNumTempDofs) const
 {
-    this->CalculateGlobalRowDofs(rGlobalColumnDofs);
+    this->CalculateGlobalRowDofs(rGlobalColumnDofs,rNumDispDofs,rNumTempDofs);
 }
 
 // check element definition

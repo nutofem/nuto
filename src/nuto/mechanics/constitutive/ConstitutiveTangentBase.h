@@ -8,6 +8,9 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+#include "nuto/mechanics/MechanicsException.h"
+
 namespace NuTo
 {
 class ConstitutiveTangentLocal1x1;
@@ -15,11 +18,10 @@ class ConstitutiveTangentLocal2x2;
 class ConstitutiveTangentLocal3x3;
 class ConstitutiveTangentLocal6x6;
 class ConstitutiveTangentNonlocal3x3;
-
 //! @brief ... base class storing the tangent of the constitutive relationship
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class ConstitutiveTangentBase
+class ConstitutiveTangentBase : public ConstitutiveOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -28,6 +30,10 @@ public:
     //! @brief ... constructor
     ConstitutiveTangentBase();
 
+    //! @brief ... constructor
+    virtual ~ConstitutiveTangentBase()
+    {}
+
     //! @brief ... get the number of rows of the tangent matrix
     //! @return ... number of rows
     virtual unsigned int GetNumberOfRows() const = 0;
@@ -35,14 +41,6 @@ public:
     //! @brief ... get the number of columns of the tangent matrix
     //! @return ... number of columns
     virtual unsigned int GetNumberOfColumns() const = 0;
-
-    //! @brief ... returns the shape of the tangent matrix (symmetric or nonsymmetric)
-    //! @return ... <B>true</B> if the matrix is symmetric / <B>false</B> if the matrix is not symmetric
-    //! @sa mSymmetry
-    inline bool GetSymmetry() const
-    {
-        return this->mSymmetry;
-    }
 
     //! @brief ... get the tangent matrix
     //! @brief ... pointer to the tangent matrix (column major storage)
@@ -56,20 +54,62 @@ public:
         this->mSymmetry = rSymmetry;
     }
 
+    //! @brief ... returns the shape of the tangent matrix (symmetric or nonsymmetric)
+    //! @return ... <B>true</B> if the matrix is symmetric / <B>false</B> if the matrix is not symmetric
+    //! @sa mSymmetry
+    inline bool GetSymmetry() const
+    {
+        return this->mSymmetry;
+    }
+
+    //! @brief ... set shape of the tangent matrix (symmetric or nonsymmetric)
+    //! @param rSymmetry ... symmetry flag: <B>true</B> if the tangent matrix has a symmetric shape and <B>false</B> if the tangent is nonsymmetric.
+    //! @sa mSymmetry
+    inline void SetConstant(bool rConstant)
+    {
+        this->mConstant = rConstant;
+    }
+
+    //! @brief ... returns if the tangent matrix is constant (independent of the inputs, e.g. the linear elastic material)
+    //! @return ... <B>true</B> if the matrix is constant / <B>false</B> if the matrix is not constant
+    //! @sa mSymmetry
+    inline bool GetConstant() const
+    {
+        return this->mConstant;
+    }
+
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    virtual ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3() = 0;
+    virtual NuTo::ConstitutiveTangentLocal1x1* AsConstitutiveTangentLocal1x1()
+	{
+    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal1x1] to be removed.");
+	}
+
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    virtual NuTo::ConstitutiveTangentLocal2x2* AsConstitutiveTangentLocal2x2()
+	{
+    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal2x2] to be removed.");
+	}
 
     //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
-    virtual ConstitutiveTangentLocal1x1* AsConstitutiveTangentLocal1x1() = 0;
+    virtual NuTo::ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3()
+	{
+    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal3x3] to be removed.");
+	}
 
     //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
-    virtual ConstitutiveTangentLocal2x2* AsConstitutiveTangentLocal2x2() = 0;
+    virtual NuTo::ConstitutiveTangentLocal6x6* AsConstitutiveTangentLocal6x6()
+	{
+    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal6x6] to be removed.");
+	}
 
-    //! @brief reinterpret as ConstitutiveTangentLocal3x3, otherwise throw an exception
-    virtual ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3() = 0;
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    virtual NuTo::ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3()
+	{
+    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentNonlocal3x3] to be removed.");
+	}
 
-    //! @brief reinterpret as ConstitutiveTangentLocal6x6, otherwise throw an exception
-    virtual ConstitutiveTangentLocal6x6* AsConstitutiveTangentLocal6x6() = 0;
+
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -81,6 +121,9 @@ public:
 private:
     //! @brief ... determines the shape of the tangent matrix (symmetric or nonsymmetric)
     bool mSymmetry;
+
+    //! @brief ... determines if the matrix is constant (linear problem) or variable (false)
+    bool mConstant;
 };
 
 }

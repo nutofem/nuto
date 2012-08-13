@@ -43,7 +43,7 @@ myStructure.GroupAddNode(myNodeGroup,myNode1)
 myStructure.GroupAddNode(myNodeGroup,myNode3)
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 

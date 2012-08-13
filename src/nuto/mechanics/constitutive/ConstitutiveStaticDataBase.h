@@ -23,6 +23,7 @@ namespace NuTo
 {
 class ConstitutiveStaticDataLatticeConcrete2D;
 class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
+class ConstitutiveStaticDataMisesPlasticity3D;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ElementBase;
 class VisualizeUnstructuredGrid;
@@ -77,6 +78,12 @@ public:
 
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual const ConstitutiveStaticDataMultiscale2DPlaneStrain* AsMultiscale2DPlaneStrain()const;
+
+    //!@ brief reinterpret
+    virtual ConstitutiveStaticDataMisesPlasticity3D* AsConstitutiveStaticDataMisesPlasticity3D();
+
+    //!@ brief reinterpret
+    virtual const ConstitutiveStaticDataMisesPlasticity3D* AsConstitutiveStaticDataMisesPlasticity3D() const;
 
 #ifdef ENABLE_VISUALIZE
     //Visualize for all integration points the fine scale structure

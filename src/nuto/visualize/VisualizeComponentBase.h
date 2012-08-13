@@ -23,6 +23,8 @@ class VisualizeComponentBase
 public:
     VisualizeComponentBase(){};
 
+    virtual ~VisualizeComponentBase(){};
+
     virtual NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const=0;
 
     virtual std::string GetComponentName()const=0;

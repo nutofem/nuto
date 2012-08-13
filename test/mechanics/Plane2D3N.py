@@ -60,7 +60,7 @@ myStructure.ElementsCreate("PLANE2D3N", elementIncidence)
 myStructure.CalculateMaximumIndependentSets();
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.2)
 

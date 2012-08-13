@@ -20,7 +20,7 @@ Section1 = myStructure.SectionCreate("TRUSS")
 myStructure.SectionSetArea(Section1, Area)
 
 # create material law
-Material1 = myStructure.ConstitutiveLawCreate("LinearElastic")
+Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus)
 
 # create nodes

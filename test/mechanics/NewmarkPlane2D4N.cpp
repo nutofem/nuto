@@ -65,7 +65,7 @@ try
         	NuTo::FullMatrix<double> coordinates(2,1);
         	coordinates(0,0) = countX*deltaX;
         	coordinates(1,0) = countY*deltaY;
-        	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS VELOCITIES ACCELERATIONS"),coordinates);
+        	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS"),coordinates,2);
         	nodeNum++;
         }
     }
@@ -93,7 +93,7 @@ try
     myStructure.ElementTotalSetSection(mySection);
 
 	//constitutive
-    int myMatLattice = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int myMatLattice = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLattice,30000);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLattice,0.0);
     myStructure.ConstitutiveLawSetDensity(myMatLattice,density);

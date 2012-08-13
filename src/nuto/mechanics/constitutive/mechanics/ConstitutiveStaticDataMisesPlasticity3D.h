@@ -10,7 +10,7 @@
 //! @date December 2009
 namespace NuTo
 {
-class ConstitutiveMisesPlasticity;
+class MisesPlasticityEngineeringStress;
 class IpDataStaticDataBase;
 
 class ConstitutiveStaticDataMisesPlasticity3D : virtual public ConstitutiveStaticDataBase
@@ -18,7 +18,7 @@ class ConstitutiveStaticDataMisesPlasticity3D : virtual public ConstitutiveStati
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ConstitutiveMisesPlasticity;
+    friend class MisesPlasticityEngineeringStress;
 public:
 	//! @brief constructor
 	ConstitutiveStaticDataMisesPlasticity3D();
@@ -40,6 +40,18 @@ public:
 
     //! @brief assignment operator
     ConstitutiveStaticDataMisesPlasticity3D& operator= (ConstitutiveStaticDataMisesPlasticity3D const& rOther);
+
+    //!@ brief reinterpret
+    NuTo::ConstitutiveStaticDataMisesPlasticity3D* AsConstitutiveStaticDataMisesPlasticity3D()override
+    {
+    	return this;
+    }
+
+    //!@ brief reinterpret
+    const NuTo::ConstitutiveStaticDataMisesPlasticity3D* AsConstitutiveStaticDataMisesPlasticity3D()const override
+    {
+    	return this;
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

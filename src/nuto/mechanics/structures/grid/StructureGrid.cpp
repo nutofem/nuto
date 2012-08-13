@@ -19,7 +19,6 @@
 
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
-#include "nuto/mechanics/elements/Voxel8N.h"
 #include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
 
 NuTo::StructureGrid::StructureGrid(int rDimension)

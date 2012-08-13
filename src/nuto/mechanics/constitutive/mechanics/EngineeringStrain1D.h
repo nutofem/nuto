@@ -8,26 +8,34 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+
 namespace NuTo
 {
 class DeformationGradient1D;
+class DeformationGradient2D;
+class DeformationGradient3D;
 class LinearElastic;
 class ConstitutiveMisesPlasticity;
 
 //! @brief ... three-dimensional deformation gradient
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class EngineeringStrain1D
+class EngineeringStrain1D: public ConstitutiveOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
+    friend class LinearElasticEngineeringStress;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
     friend class NonlocalDamagePlasticity;
     friend class Multiscale;
-public:
+    friend class DeformationGradient1D;
+    friend class DeformationGradient2D;
+    friend class DeformationGradient3D;
+    public:
     //! @brief ... constructor
     //! @param pStructure ... structure
     //! @param pElement ... element

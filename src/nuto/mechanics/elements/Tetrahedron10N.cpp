@@ -10,8 +10,6 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal6x6.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
 

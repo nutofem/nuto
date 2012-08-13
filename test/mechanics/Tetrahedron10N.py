@@ -44,17 +44,23 @@ myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(0,0,
 myNode9 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(0.5,0,0.5)))
 myNode10 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(0,0.5,0.5)))
 
+#create section
+mySection = myStructure.SectionCreate("Volume")
+
 #create element
 myElement1 = myStructure.ElementCreate("Tetrahedron10N",nuto.IntFullMatrix(10,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8,myNode9,myNode10)))
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
 #assign constitutive law 
 #myStructure.ElementSetIntegrationType(myElement1,"3D4NGauss4Ip")
+
+
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
+myStructure.ElementSetSection(myElement1,mySection)
 
 #set displacements of right node
 myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(3,1,(0.5,0.,0.)))
@@ -66,11 +72,11 @@ myStructure.NodeSetDisplacements(myNode9,nuto.DoubleFullMatrix(3,1,(0.026560,0.,
 Ke = nuto.DoubleFullMatrix(0,0)
 rowIndex = nuto.IntFullMatrix(0,0)
 colIndex = nuto.IntFullMatrix(0,0)
+
 myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
 if (printResult):
     print "Ke"
     Ke.Info()
-
 
 #correct stiffness matrix
 if createResult:

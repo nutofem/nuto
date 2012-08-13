@@ -28,11 +28,11 @@ try
 	myStructure.SetShowTime(true);
 #endif //SHOW_TIME
     NuTo::FullMatrix<int> createdGroupIds;
-    myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh",0,"displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
     myStructure.Info();
 
     //create constitutive law nonlocal damage
-    int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity");
+    int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");
     double YoungsModulusDamage(20000);
     myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,YoungsModulusDamage);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.2);
@@ -44,7 +44,7 @@ try
     myStructure.ConstitutiveLawSetFractureEnergy(myMatDamage,.1);
 
     //create constitutive law linear elastic (finally not used, since the elements are deleted)
-    int myMatLinear = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int myMatLinear = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     double YoungsModulusLE(1);
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLinear,YoungsModulusLE);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLinear,0.2);

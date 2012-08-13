@@ -3,14 +3,14 @@
 #define NodeGridDisplacements_2d_H
 
 #include "nuto/mechanics/nodes/NodeGrid2D.h"
-#include "nuto/mechanics/nodes/NodeDisplacements2D.h"
+#include "nuto/mechanics/nodes/NodeDof_Def.h"
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for grid nodes with displacements
-class NodeGridDisplacements2D : public NodeGrid2D, public NodeDisplacements2D
+class NodeGridDisplacements2D : public NodeGrid2D, public NodeDof<0,2,0,0>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -19,7 +19,7 @@ class NodeGridDisplacements2D : public NodeGrid2D, public NodeDisplacements2D
 public:
 
     //! @brief constructor
-    NodeGridDisplacements2D(int rNodeId) : NodeGrid2D (rNodeId), NodeDisplacements2D()
+    NodeGridDisplacements2D(int rNodeId) : NodeGrid2D (rNodeId), NodeDof<0,2,0,0>()
     {}
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
@@ -36,7 +36,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeGrid2D)
-           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeDisplacements2D);
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(BOOST_IDENTITY_TYPE((NodeDof<0,2,0,0>)));
     }
 #endif  // ENABLE_SERIALIZATION
 
@@ -44,70 +44,30 @@ public:
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)
     {
-        NodeGrid2D::SetGlobalDofs(rDOF);
-        NodeDisplacements2D::SetGlobalDofs(rDOF);
+    	NodeDof<0,2,0,0>::SetGlobalDofs(rDOF);
     }
 
     //! @brief write dof values to the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+    virtual void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
     {
-        NodeGrid2D::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
-        NodeDisplacements2D::SetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        NodeDof<0,2,0,0>::SetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+    virtual void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
     {
-        NodeGrid2D::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
-        NodeDisplacements2D::GetGlobalDofValues(rActiveDofValues, rDependentDofValues);
+        NodeDof<0,2,0,0>::GetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
 
-    //! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
-    {
-    	NodeGrid2D::SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-        NodeDisplacements2D::SetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-
-    //! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
-    {
-    	NodeGrid2D::GetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-        NodeDisplacements2D::GetGlobalDofFirstTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-
-    //! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
-    {
-    	NodeGrid2D::SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-        NodeDisplacements2D::SetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-
-    //! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
-    {
-    	NodeGrid2D::GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-        NodeDisplacements2D::GetGlobalDofSecondTimeDerivativeValues(rActiveDofValues, rDependentDofValues);
-    }
-
-    //! @brief renumber the global dofs according to predefined ordering
+     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     {
-        NodeGrid2D::RenumberGlobalDofs(rMappingInitialToNewOrdering);
-        NodeDisplacements2D::RenumberGlobalDofs(rMappingInitialToNewOrdering);
+    	NodeDof<0,2,0,0>::RenumberGlobalDofs(rMappingInitialToNewOrdering);
     }
 
     //! @brief returns the type of the node

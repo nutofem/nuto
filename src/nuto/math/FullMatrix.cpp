@@ -561,6 +561,7 @@ void FullMatrix<T>::Restore ( const std::string &filename,  std::string rType)
     }
 }
 
+
 template void FullMatrix<int>::Save (const std::string&, std::string) const;
 template void FullMatrix<int>::Restore (const std::string&, std::string);
 template void FullMatrix<double>::Save (const std::string&, std::string) const;

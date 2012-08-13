@@ -132,7 +132,7 @@ try
 
     //import mesh
     NuTo::FullMatrix<int> createdGroupIds;
-    myStructure.ImportFromGmsh(mshFile.string(),"displacements velocities accelerations", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
+    myStructure.ImportFromGmsh(mshFile.string(),2,"displacements", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
 
 	//section
 	double thickness(1);
@@ -146,11 +146,11 @@ try
     int myMat(0);
     if (isElastic)
     {
-		myMat = myStructure.ConstitutiveLawCreate("LinearElastic");
+		myMat = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     }
     else
     {
-		myMat = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity");
+		myMat = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");
 	    double fct(3e6);
 		myStructure.ConstitutiveLawSetTensileStrength(myMat,fct);
 	    myStructure.ConstitutiveLawSetCompressiveStrength(myMat,10*fct);

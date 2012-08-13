@@ -42,7 +42,7 @@ myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(-1,+
 myElement1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode1,myNode2,myNode3,myNode4)))
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
@@ -182,7 +182,7 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile(testName+".vtk")
+myStructure.ExportVtkDataFileElements(testName+".vtk")
 
 if (error):
     sys.exit(-1)

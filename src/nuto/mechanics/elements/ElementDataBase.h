@@ -60,24 +60,6 @@ public:
     //! @brief returns true, if the constitutive law has been assigned
     virtual bool HasConstitutiveLawAssigned(int rIp)const;
 
-    //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    virtual void SetFineScaleParameter(int rIp, const std::string& rName, double rParameter);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    virtual void SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter);
-
-#ifdef ENABLE_VISUALIZE
-    //Visualize for all integration points the fine scale structure
-    virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
-#endif
     //! @brief returns the number of integration points
     //! @return number of integration points
     virtual int GetNumIntegrationPoints()const;

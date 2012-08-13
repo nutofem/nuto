@@ -8,10 +8,13 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+
 namespace NuTo
 {
 class LinearElastic;
-class ConstitutiveMisesPlasticity;
+class LinearElasticEngineeringStress;
+class MisesPlasticityEngineeringStress;
 class ConstitutiveEngineeringStressStrain;
 
 //! @brief ... three-dimensional Engineering stress
@@ -38,15 +41,16 @@ class ConstitutiveEngineeringStressStrain;
  */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class EngineeringStress3D
+class EngineeringStress3D: public ConstitutiveOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class LinearElastic;
-    friend class ConstitutiveMisesPlasticity;
+    friend class LinearElasticEngineeringStress;
+    friend class MisesPlasticityEngineeringStress;
     friend class ConstitutiveEngineeringStressStrain;
-    friend class NonlocalDamagePlasticity;
+    friend class NonlocalDamagePlasticityEngineeringStress;
     friend class Multiscale;
 public:
     //! @brief ... constructor
@@ -60,6 +64,11 @@ public:
     //! @return ... components of the Engineering stress tensor (stored in an array)
     //! @sa mEngineeringStress
     const double* GetData() const;
+
+    EngineeringStress3D& GetEngineeringStress3D()override
+    {
+    	return *this;
+    }
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

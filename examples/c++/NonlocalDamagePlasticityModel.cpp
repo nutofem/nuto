@@ -1,10 +1,6 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
-//just for test
-#include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticity.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include <eigen3/Eigen/Core>
 

@@ -11,7 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -39,7 +39,7 @@ myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(1,1,(6,))
 myElement1 = myStructure.ElementCreate("Truss1D2N",nuto.IntFullMatrix(2,1,(myNode1,myNode2)))
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 myStructure.ConstitutiveLawSetDensity(myMatLin,0.3)
@@ -183,16 +183,17 @@ myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA")
 Me = nuto.DoubleFullMatrix(0,0)
 rowIndex = nuto.IntFullMatrix(0,0)
 colIndex = nuto.IntFullMatrix(0,0)
-myStructure.ElementCoefficientMatrix_2(myElement1,Me,rowIndex,colIndex)
+timeDerivative = 2 #mass matrix
+myStructure.ElementCoefficientMatrix(myElement1,timeDerivative,Me,rowIndex,colIndex)
 
 #correct stiffness matrix
 MeCorrect = nuto.DoubleFullMatrix(2,2,(5e-3,2.5e-3,2.5e-3,5e-3))
 
 if (printResult):
     print "MeCorrect"
-    MeCorrect.Info()
+    MeCorrect.Info(6,5)
     print "Me"
-    Me.Info()
+    Me.Info(6,5)
     
 if ((Me-MeCorrect).Abs().Max()[0]>1e-8):
     print '[' + system,sys.argv[0] + '] : mass is not correct.'

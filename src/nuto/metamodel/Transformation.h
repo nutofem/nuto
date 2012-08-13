@@ -27,6 +27,7 @@ class Transformation
 #endif  // ENABLE_SERIALIZATION
 
 public:
+	virtual ~Transformation(){};
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

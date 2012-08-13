@@ -80,6 +80,18 @@ const NuTo::ConstitutiveStaticDataLatticeConcrete2D* NuTo::ConstitutiveStaticDat
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataLatticeConcrete2D] Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
 }
 
+//!@ brief reinterpret
+NuTo::ConstitutiveStaticDataMisesPlasticity3D* NuTo::ConstitutiveStaticDataBase::AsConstitutiveStaticDataMisesPlasticity3D()
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMisesPlasticity3D] Static data is not of type ConstitutiveStaticDataMisesPlasticity3D.");
+}
+
+//!@ brief reinterpret
+const NuTo::ConstitutiveStaticDataMisesPlasticity3D* NuTo::ConstitutiveStaticDataBase::AsConstitutiveStaticDataMisesPlasticity3D()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMisesPlasticity3D] Static data is not of type ConstitutiveStaticDataMisesPlasticity3D.");
+}
+
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");

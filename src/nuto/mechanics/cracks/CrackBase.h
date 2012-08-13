@@ -27,7 +27,7 @@ public:
 	CrackBase(const std::string);
 
 	//! @brief destructor
-	~CrackBase();
+	virtual ~CrackBase();
 
 	//! @brief gives the crack information
 	virtual void Info(int rVerboseLevel)const=0;

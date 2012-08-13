@@ -46,7 +46,7 @@ try
     myStructure.ElementCreate("PLANE2D4N",Incidence);
 
     //create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.);
 

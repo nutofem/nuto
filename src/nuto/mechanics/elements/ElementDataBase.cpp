@@ -41,37 +41,6 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int 
 	throw MechanicsException("[NuTo::ElementDataBase::SetConstitutiveLaw] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
-//! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementDataBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName)
-{
-    throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleModel] Not implemented for the ElementDataClass - check the allocated element data type..");
-}
-
-//! @brief sets the fine scale parameter for all ips
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::ElementDataBase::SetFineScaleParameter(int rIp, const std::string& rName, double rParameter)
-{
-    throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleParameter] Not implemented for the ElementDataClass - check the allocated element data type..");
-}
-
-//! @brief sets the fine scale parameter for all ips
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::ElementDataBase::SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter)
-{
-    throw MechanicsException("[NuTo::ElementDataBase::SetFineScaleParameter] Not implemented for the ElementDataClass - check the allocated element data type..");
-}
-
-#ifdef ENABLE_VISUALIZE
-//Visualize for all integration points the fine scale structure
-void NuTo::ElementDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
-{
-	// no fine scale structure - do nothing
-}
-#endif
-
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data

@@ -12,14 +12,14 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 
-NuTo::EngineeringStrain1D::EngineeringStrain1D()
+NuTo::EngineeringStrain1D::EngineeringStrain1D() : ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
 	mEngineeringStrain = 0.0;
 }
 
 NuTo::EngineeringStrain1D::EngineeringStrain1D(const DeformationGradient1D& rDeformationGradient)
 {
-    mEngineeringStrain = rDeformationGradient.GetDeformationGradient1D()[0] -1;
+    mEngineeringStrain = rDeformationGradient.mDeformationGradient -1.;
 }
 
 //! @brief ... get number of strain components
@@ -52,7 +52,8 @@ void NuTo::EngineeringStrain1D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStrain1D" << std::endl;
 #endif
-   ar & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
+       & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStrain1D" << std::endl;
 #endif

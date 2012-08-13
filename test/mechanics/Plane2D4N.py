@@ -11,7 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -41,7 +41,7 @@ myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(-1,+
 myElement1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode1,myNode2,myNode3,myNode4)))
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
@@ -63,6 +63,7 @@ myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
 Ke = nuto.DoubleFullMatrix(0,0)
 rowIndex = nuto.IntFullMatrix(0,0)
 colIndex = nuto.IntFullMatrix(0,0)
+print "calculate element stiffness in Plane2D4N"
 myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
 if (printResult):
     print "Ke"
@@ -180,7 +181,7 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile("Plane2D4N.vtk")
+myStructure.ExportVtkDataFileElements("Plane2D4N.vtk")
 
 if (error):
     sys.exit(-1)

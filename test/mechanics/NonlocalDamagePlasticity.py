@@ -53,7 +53,7 @@ element4 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node5,n
 myStructure.ElementSetIntegrationType(element4,"2D4NGauss4Ip","StaticDataNonlocal")
 
 #create constitutive law
-myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticity")
+myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.25)
 myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,0.7)
@@ -62,8 +62,8 @@ myStructure.ConstitutiveLawSetCompressiveStrength(myMatDamage,20)
 myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,25)
 myStructure.ConstitutiveLawSetFractureEnergy(myMatDamage,0.2)
 
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
-myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
+myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
+myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,9)
 myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
 #create section
@@ -73,6 +73,7 @@ myStructure.SectionSetThickness(mySection,0.5)
 ##assign constitutive law 
 myStructure.ElementTotalSetSection(mySection)
 myStructure.ElementTotalSetConstitutiveLaw(myMatDamage)
+#myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 
 #Build nonlocal elements
 myStructure.BuildNonlocalData(myMatDamage)
@@ -109,7 +110,7 @@ intForce2	  = nuto.DoubleFullMatrix(0,0)
 #loadstep 0 : uniform plastic loading
 #loadstep 1 : unloading to zero
 #loadstep 2 : nonuniform loading, some elements unloading
-for theLoadStep in range(0,3):
+for theLoadStep in range(0,1):
     #apply displacements
     if theLoadStep==0:
         rightDisp = 0.5
@@ -177,6 +178,8 @@ for theLoadStep in range(0,3):
         displacements.AddValue(count2,0,-delta)
 
     if printResult:
+        print "fullStiffnessMatrix"
+        fullStiffnessMatrix.Info()
         print "stiffness CD"
         stiffnessMatrixCD.Info()
     maxerror=(fullStiffnessMatrix-stiffnessMatrixCD).Abs().Max()
@@ -217,7 +220,7 @@ myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
 myStructure.AddVisualizationComponentDamage()
 myStructure.AddVisualizationComponentEngineeringPlasticStrain()
-myStructure.ExportVtkDataFile("NonlocalDamagePlasticityModel.vtk")
+myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticityModel.vtk")
 
 if (error):
     sys.exit(-1)

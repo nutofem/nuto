@@ -96,7 +96,7 @@ int NuTo::ConstraintEquationTerm::GetDof() const
     break;
     case Node::TEMPERATURES:
     {
-    	return mNode->GetDofTemperature(this->mDofComponent);
+    	return mNode->GetDofTemperature();
     }
     break;
     default:

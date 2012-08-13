@@ -958,6 +958,44 @@ public:
         return FullMatrix<T> ( mEigenMatrix.array().inverse() );
     }
 
+    //! @brief ... sorts the rows of a matrix based on the entries in column rCol
+    FullMatrix<T> SortRow(int rCol)
+    {
+    	if (rCol<0 || rCol>=this->GetNumColumns())
+    		throw MathException("[FullMatrix<T>::SortRow] incorrect row");
+
+    	struct mySortClassRow {
+    	    const FullMatrix<T> *mat;
+    	    int colnum;
+    	    mySortClassRow(const FullMatrix<T> &m, int keycol)  : mat(&m), colnum(keycol){};
+    	    bool operator()(const int &lhs, const int &rhs) const
+    	    {
+    	    	return (*mat)(lhs,colnum) < (*mat)(rhs,colnum);
+    	    }
+    	};
+
+    	std::vector<unsigned int> rows(this->GetNumRows());
+    	for (unsigned int count=0; count<rows.size(); count++)
+    	{
+    		rows[count]=count;
+    	}
+
+    	//sort the index vector according to the entries in the matrix
+    	std::sort(rows.begin(),rows.end(),mySortClassRow(*this,rCol));
+
+        //rearrange the full matrix rows
+    	//for simplicity, just copy the matrix
+    	NuTo::FullMatrix<T> myOrigData(*this);
+    	for (unsigned int count=0; count<rows.size(); count++)
+    	{
+    		for ( int count2=0; count2<this->GetNumColumns(); count2++)
+    		{
+    			mEigenMatrix(count,count2) = myOrigData(rows[count],count2);
+    		}
+    	}
+    	return *this;
+    }
+
 #ifndef SWIG
     Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> mEigenMatrix; //!< matrix data are stored as eigen matrix
 #endif
