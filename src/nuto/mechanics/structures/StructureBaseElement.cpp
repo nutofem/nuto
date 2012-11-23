@@ -36,7 +36,7 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 	{
 		ElementCoefficientMatrix(rElementId, 0, rResult, rGlobalDofsRow, rGlobalDofsColumn);
 	}
-	catch(NuTo::MechanicsException &e)
+	catch(NuTo::MechanicsException e)
 	{
 		std::stringstream ss;
 		ss << rElementId;
@@ -106,7 +106,7 @@ int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, Nu
         		rDifference = tmpDifference;
         	}
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
@@ -170,7 +170,7 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
     	std::cout << "rDifference "<< "\n" << rDifference <<"\n" << "\n";
         maxError =  rDifference.Abs().Max();
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -554,11 +554,11 @@ void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
 		globalDofsRow = elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt();
 		globalDofsColumn = elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt();
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
-    	e.AddMessage("[NuTo::StructureBase::ElementCoefficientMatrix_0] Error building element matrix for element "
+    	e.AddMessage("[NuTo::StructureBase::ElementCoefficientMatrix] Error building element matrix for element "
         	+ ss.str() + ".");
         throw e;
     }
@@ -567,7 +567,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
         std::stringstream ss;
         ss << rElementId;
     	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementCoefficientMatrix_0] Error building element matrix for element " + ss.str() + ".");
+    	   ("[NuTo::StructureBase::ElementCoefficientMatrix] Error building element matrix for element " + ss.str() + ".");
     }
 
     //cast to FullMatrixInt
@@ -618,7 +618,7 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 	    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
 	    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -660,7 +660,7 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
     {
     	ElementSetConstitutiveLaw(elementPtr,itConstitutive->second);
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -709,7 +709,7 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
         {
         	ElementSetConstitutiveLaw(itElement->second,itConstitutive->second);
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
@@ -756,7 +756,7 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
         	if (elementVector[countElement]->GetNumNonlocalElements()>0)
         	    elementVector[countElement]->DeleteNonlocalElements();
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
@@ -808,7 +808,7 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
     {
     	ElementSetSection(elementPtr,itSection->second);
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -857,7 +857,7 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
         {
         	ElementSetSection(itElement->second,itSection->second);
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
@@ -902,7 +902,7 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
         {
         	ElementSetSection(elementVector[countElement],itSection->second);
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
@@ -981,7 +981,7 @@ void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
     {
     	ElementSetIntegrationType(elementPtr,GetPtrIntegrationType(rIntegrationTypeIdent), ElementGetEnumIntegrationType(rIpDataTypeStr));
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -1028,7 +1028,7 @@ void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
         {
         	ElementSetIntegrationType(itElement->second,GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
@@ -1071,7 +1071,7 @@ void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rInt
         {
         	ElementSetIntegrationType(elementVector[countElement],GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[countElement]);
@@ -1130,7 +1130,7 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 
     	rEngineeringStrain = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -1179,7 +1179,7 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
 
     	rEngineeringPlasticStrain = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -1228,7 +1228,7 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
 
     	rEngineeringStress = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -1278,7 +1278,7 @@ void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& r
 
     	rDamage = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
      }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
@@ -1331,7 +1331,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
 			if (damage.Max()>maxDamage)
 				maxDamage = damage.Max();
 		}
-		catch(NuTo::MechanicsException e)
+		catch(NuTo::MechanicsException &e)
 		{
 			std::stringstream ss;
 			ss << ElementGetId(elementVector[countElement]);
@@ -1556,7 +1556,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
             elementVector[elementCount]->GetIntegratedStress(elementEngineeringStress);
             rEngineeringStress+=elementEngineeringStress;
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
@@ -1619,7 +1619,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
         	itElement->second->GetIntegratedStress(elementEngineeringStress);
             rEngineeringStress+=elementEngineeringStress;
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
@@ -1674,7 +1674,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
             elementVector[elementCount]->GetIntegratedStrain(elementEngineeringStrain);
             rEngineeringStrain+=elementEngineeringStrain;
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
@@ -1728,7 +1728,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
         	itElement->second->GetIntegratedStrain(elementEngineeringStrain);
             rEngineeringStrain+=elementEngineeringStrain;
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
@@ -1778,7 +1778,7 @@ double NuTo::StructureBase::ElementTotalGetInternalEnergy()
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
             }
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
@@ -1832,7 +1832,7 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)
                 totalEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
             }
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);
@@ -1882,7 +1882,7 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
                 elasticEnergy+=ipEnergy(0,theIP)*ipEnergy(1,theIP);
             }
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);

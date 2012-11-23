@@ -55,11 +55,25 @@ public:
 	    throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
 	}
 
+	virtual void Gradient(std::vector<double>& rValues,std::vector<double>& rGradient)const
+	{
+	    //printf("[CallbackHandler::Gradient]\n");
+	    throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
+	}
+
+
 	virtual void Hessian(NuTo::FullMatrix<double>& rHessian)const
 	{
 	    //printf("[CallbackHandler::Hessian]\n");
 	    throw OptimizeException("[CallbackHandler::Hessian] Hessian function not implemented in CallbackHandler object.");
 	}
+
+	virtual void Hessian(std::vector<double>&  rDiagHessian)const
+	{
+	    //printf("[CallbackHandler::Hessian]\n");
+	    throw OptimizeException("[CallbackHandler::Hessian] Hessian function not implemented in CallbackHandler object.");
+	}
+
 
 	virtual void Info()const=0;
 #ifdef ENABLE_SERIALIZATION

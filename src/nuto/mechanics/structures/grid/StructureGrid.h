@@ -1,7 +1,8 @@
 // $Id$
 #ifndef STRUCTUREGRID_H
 #define STRUCTUREGRID_H
-#include "nuto/base/NuToObject.h"
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include <boost/dynamic_bitset.hpp>
@@ -10,14 +11,14 @@ namespace NuTo
 {
 
 //! @brief forward declaration to speed up compilation time
-class NodeGrid3D;
-class NodeGridDisplacements3D;
-class Voxel8N;
+//class NodeGrid3D;
+//class NodeGridDisplacements3D;
+//class Voxel8N;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... regular structure e.g. from pixel/voxel data
-class StructureGrid: public NuToObject
+class StructureGrid: public StructureBase, public virtual CallbackHandlerGrid
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -27,6 +28,9 @@ public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
     StructureGrid(int rDimension);
+
+    StructureGrid(){}
+
 
     ~StructureGrid();
 
@@ -49,14 +53,14 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief import routine for basic grid data without StructureGrid data space
-    void ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t &rNumVoxel);
+    void ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel);
 
     //! @brief import routine for basic grid data with StructureGrid data space
     void ImportFromVtkASCIIFileHeader(const char* rFileName);
 
 	//! @brief ... imports Data from a Vtk ASCII File
 	//! @param fileName ... file name
-	void ImportFromVtkASCIIFile(const char* fileName,std::vector<int> &rData);
+	void ImportFromVtkASCIIFile(const std::string fileName,std::vector<int> &rData);
 
    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
@@ -72,50 +76,191 @@ public:
 
     //! @brief returns  VoxelSpacing
     //! @return VoxelSpacing
-    const double* GetVoxelSpacing() const;
+    const std::vector<double> GetVoxelSpacing() const;
 
     //! @brief returns GridOrigin
     //! @return GridOrigin
-    const double* GetGridOrigin() const;
+    const std::vector<double> GetGridOrigin() const;
 
      //! @brief returns GridDimension
      //! @return GridDimension
-    const int* GetGridDimension() const;
+    const std::vector<size_t> GetGridDimension() const;
+
+    //! @brief returns GridDimension
+     //! @return GridDimension
+    void  SetGridDimension(std::vector<size_t> &rGridDimension);
 
      //! @brief Get NumMaterials
      //! @return NumMaterial
      const int GetNumMaterials() const;
 
+     //! @brief Get NumBasisMaterials
+     //! @return NumBasisMaterial
+     const int GetNumBasisMaterials() const;
+
+     //! @brief Set NumBasisMaterials
+     void SetNumBasisMaterials(int rNumBasisMaterials);
+
+     //! @brief get id of node from grid node number
+     //! @param grid node number
+     //! @return node id
+     size_t GetNodeId(size_t rEdgeNumber)
+     {
+    	 return mNodeId[rEdgeNumber];
+     }
+
+	//! @brief Get CurrentGridNumber
+	//! @return rCurrentGridNumber
+	const int GetCurrentGridNumber() const;
+
+	//! @brief Set CurrentGridNumber
+	void SetCurrentGridNumber(int rCurrentGridNumber);
+
+     //! @brief Get number of Constraints
+     //! @return NumConstraints
+     const size_t GetNumConstraints() const;
+
+     void SetMatrixFreeMethod(bool rMatrixFreeMethod);
+
+     //! @brief set basis element stiffness
+     //! @param rPoissonsRatio
+     //! @param rMaterialNum ... number of material with different Poisson Ratio
+     void SetBasisElementStiffnessMatrix(double rPoissonsRation,int rMaterialNum);
+
     //! @brief Get LocalCoefficientMatrix0
     //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-    FullMatrix<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0);
+    const std::vector<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const;
 
-    //! @brief Get VoxeLNumAndLocMatrix
-    //! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
-    FullMatrix<int>* GetVoxelNumAndLocMatrix();
+    //! @brief set basis edge stiffnesses
+    //! @param rBasisMaterialNum ... number of material,
+    void SetBasisEdgeStiffnessMatrices(int rBasisMaterialNum);
 
-    //! @brief Calculate ElementVoxelLocMatrix
-    void CalculateVoxelLocations();
+    //! @brief set general neighbor nodes for node-edge based routines
+    //! @brief in function of grid dimension
+    void SetNeighborNodesNE();
 
-    //! @brief Get voxels corner numbers from bottom to top counter-clockwise
-    //! @return array of number of corners with corner numbers
-    void GetCornersOfVoxel(int rElementNumber,int *rVoxLoc,int *corners);
+    //! @brief ..calculate node numbers at one element
+    //! @param elementNumber ... number of the element
+    //! @param nodeNumbers ... nodes at element
+    void CalculateNodesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers)const;
 
-    //! @brief Set NodeIds for all nodes at all elements
-    void SetAllNodeIds();
+    //! @brief set material number at edges for node-edge based routines
+    void SetMaterialNumberForEdges();
 
-    //! @brief Set NodeIds for all nodes at all nodes
-    void SetAllNodeIdsAtNode();
+    //! @brief get DisplacementConstaints
+    //! @return dynamic_bitset of constraints
+    const boost::dynamic_bitset<>* GetDisplacementConstaints() const;
 
-    //! @brief Set ElementIds for the elements at each nodes
-    void SetAllElementIds();
+    //! @brief all nodes at one plane perpendicular to direction are constrained
+    //! @param rDirection ... 0 = x,1 = y,2 = z
+    //! @param rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
+    //! @param rValue ... value of boundary displacement
+    //! @param rDisplVector ... output initial displacement vector
+    void SetDisplacementConstraints(size_t rDirection,size_t *rGridLocation,double rValue,std::vector<double> &rDisplVector);
 
-    //! @brief GetConstraintSwitch
-    //! @return switch field for constraint
-    bool* GetConstraintSwitch();
+    //! @brief create grid data
+    //! @param rThresholdMaterialValue ... threshold between material one and two
+    //! @param fileName ... file containing image data
+    //! @param rColorToMaterialData ... vector of material data (Young's Modulus) mapped to color points
+   void CreateGrid(int rThresholdMaterialValue,std::string fileName, std::vector<double>& rColorToMaterialData);
 
-    //! @brief create node data without StructureGrid
-    void CreateGrid(int rThresholdMaterialValue, std::vector<int> &imageValues ,const std::vector<double>& rColorToMaterialData,int* rGridDimension,boost::dynamic_bitset<> &rNodeExist,boost::dynamic_bitset<> &rElemExist,std::vector<double>& youngsModulus,std::vector<int>& materialOfElem);
+   //! @brief ... calculate matrix-vector-product in element-by-element way
+   //! @brief ... with local vectors
+   //! @param ... u - parameters input, r - gradient output
+   void CalculateMatrixVectorProductEBE(std::vector<double>& u,std::vector<double>& r)const;
+
+   //! @brief ... calculate matrix-vector-product in node-by-node way
+   //! @brief ... with local vectors
+   //! @param ... u - prarmeters input, r - gradient output
+   void CalculateMatrixVectorProductNBN(std::vector<double> &u,std::vector<double> &r)const;
+
+	//! @brief ... calculate reaction forces in element-by-element way
+	//! @param ... u - prarmeters input, f - forces output
+	void CalculateReactionForcesEBE(std::vector<double> &u,std::vector<double> &f)
+	{
+	       throw MechanicsException ( "[NuTo::StructureGrid::CalculateReactionForcesEBE] Routine is not implemented." );
+	}
+
+	//! @brief MultiGrid routines
+	//! @brief initialize on coarser grid
+	//! @param StructureGrid reference
+	void SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid);
+
+	//! @brief MultiGrid routines
+	//! @brief get pointer to coarser grid
+	NuTo::StructureGrid& GetCoarseGridPtr()
+	{
+		return mpCoarseGrid[0];
+	}
+
+	//! @brief MultiGrid routines
+	//! @brief Get pointer to finer grid
+	NuTo::StructureGrid& GetFineGridPtr()
+	{
+		return mpFineGrid[0];
+	}
+
+
+	//! @brief MultiGrid routines
+	//! @brief set pointer to coarser grid
+	void SetCoarseGridPtr(NuTo::StructureGrid* rCoarseGrid);
+	//! @brief MultiGrid routines
+	//! @brief set pointer to finer grid
+	void SetFineGridPtr(NuTo::StructureGrid* rFineGrid);
+
+	double GetElementYoungsModulus(size_t rElementNumber)
+	{
+		return mMGYoungsModulus.at(rElementNumber);
+//		return mMGYoungsModulus[rElementNumber];
+	}
+
+
+	//! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::BuildGlobalCoefficientSubMatricesGeneral] Routine is not implemented." );
+    }
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::BuildGlobalCoefficientSubMatricesGeneral] Routine is not implemented." );
+    }
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::BuildGlobalCoefficientSubMatricesSymmetric] Routine is not implemented." );
+    }
+
+    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
+    //! @param rType   ... matrix type (stiffness damping mass)
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::BuildGlobalCoefficientSubMatricesSymmetric] Routine is not implemented." );
+    }
+
+    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
+    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
+    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
+    Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::BuildGlobalGradientInternalPotentialSubVectors] Routine is not implemented." );
+    }
 
 
  //*************************************************
@@ -127,21 +272,10 @@ public:
     int GetNumNodes() const;
 
 #ifndef SWIG
-
-   //! @brief returns a reference to a node
-    //! @param identifier
-    //! @return reference to a node
-    NodeGrid3D* NodeGridGetNodePtr(int rIdent);
-
-    //! @brief returns a reference to a node
-    //! @param identifier
-    //! @return reference to a node
-    const NodeGrid3D* NodeGridGetNodePtr(int rIdent)const;
-
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
-    int NodeGetId(const NodeGrid3D* rNode)const;
+    int NodeGetId(const NodeBase* rNode)const;
 
     //! @brief gets the displacements of a node
      //! @param rNode node identifier
@@ -153,51 +287,96 @@ public:
      //! @param rDisplacements matrix (one column) with the displacements
      void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double>& rDisplacements);
 
+     //! @brief a reference to a node
+     //! @param identifier
+     //! @return reference to a node
+     NodeBase* NodeGetNodePtr(int rIdent);
+
+
+     //! @brief a reference to a node
+     //! @param identifier
+     //! @return reference to a node
+     const NodeBase* NodeGetNodePtr(int rIdent)const;
 
 #endif //SWIG
     //! @param rNodeNumber ... node number
     void NodeDelete(const int rNodeNumber);
 
     //! @brief info about the nodes in the Structure
-    virtual void NodeInfo(int mVerboseLevel) const;
+    void NodeInfo(int mVerboseLevel) const;
 
-    void NodeCreate(bool flag, int rNodeID, std::string rDOFs);
+    void NodeCreate(int rNodeID, std::string rDOFs);
 
-    void CreateNodeGrid(std::string rDOFs,int rThresholdMaterialValue);
+    void CreateNodeGrid(std::string rDOFs,int rThresholdMaterialValue)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::CreateNodeGrid] Routine is not implemented." );
+    }
 
     int* GetCoincidenceVoxelIDs(int rNodeID);
-
-    //! @brief NodeSetConstraintSwitch
-    //! @param rGridNodeNum, rDirection, rConstraint
-    void NodeSetConstraintSwitch(int rGridNodeNum, int rDirection, bool rConstraint);
 
     //! @brief NodeGetConstraintSwitch
     //! @param rGlobalDof
     //! @return switch for constraint
     bool NodeGetConstraintSwitch(int rGlobalDof);
 
-    //! @brief Set partCoefficientmatrix for all nodes
-    void SetAllPartCoefficientMatrix0();
-
-/*
     //! @brief numbers the dofs in the structure
-    void NodeBuildGlobalDofs();
+    void NodeBuildGlobalDofs()
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::NodeBuildGlobalDofs] Routine is not implemented." );
+    }
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const;
+    void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::NodeExtractDofValues] Routine is not implemented." );
+    }
 
     //! @brief merge dof values
-    void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues);
+    void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::NodeMergeActiveDofValues] Routine is not implemented." );
+    }
     //! @brief get internal forces
-    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const;
+    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::NodeGetInternalForce] Routine is not implemented." );
+    }
 
     //! @brief calculates the internal force vector for a given node
     //! @param rNodeId node id
     //! @param rNodeForce return value
-    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const;
-*/
+    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::NodeGetInternalForce] Routine is not implemented." );
+    }
+
+    //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
+    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
+    void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::NodeExtractDofValues] Routine is not implemented." );
+    }
+
+    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
+     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+     void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)
+     {
+         throw MechanicsException ( "[NuTo::StructureGrid::NodeMergeDofValues] Routine is not implemented." );
+     }
+
+     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
+     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
+     void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues)
+     {
+         throw MechanicsException ( "[NuTo::StructureGrid::NodeMergeActiveDofValues] Routine is not implemented." );
+     }
 
 //*************************************************
 //************ Element routines     ***************
@@ -207,39 +386,21 @@ public:
     //! @return number of elements
     int GetNumElements() const;
 
-#ifndef SWIG
-     //! @brief returns a reference to an element
-    //! @param identifier
-    //! @return reference to an element
-    Voxel8N* ElementGetPtr(int rIdent);
-
-    //! @brief returns a reference to an element
-    //! @param identifier
-    //! @return reference to an element
-    const Voxel8N* ElementGetPtr(int rIdent) const;
-
-    //! @brief gives the identifier of an element
-    //! @param reference to an element
-    //! @return identifier
-    int ElementGetId(Voxel8N* rElement);
-#endif //SWIG
-
     //! @brief info about the elements in the Structure
-    virtual void ElementInfo(int mVerboseLevel) const;
+    void ElementInfo(int mVerboseLevel) const;
 
     void CreateElementGrid(NuTo::FullMatrix<double>& rBaseCoefficientMatrix0,
             const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
 
-    //! @brief Creates an element
-    //! @param number of local coefficient matrix
-    //! @param rElementID identifier for the element
-     void ElementCreate (bool flag, int rNumCoefficientMatrix0, int rElementID);
+     //! @brief Creates an element
+     //! @param number of material
+     //! @return rElementID ... identifier for the element
+      int ElementCreate ( int rMaterialNumber);
 
     //! @brief Creates an element
-     //! @param number of local coefficient matrix
-    //! @param rElementID identifier for the element
-    //! @param rElementType element type
-    void ElementCreate (bool flag, int rNumCoefficientMatrix0,int rElementID,const std::string& rElementType);
+    //! @param rElementID ... identifier for the element
+    //! @param rMaterialNumber ... number of material
+     void ElementCreate (int rElementID, int rMaterialNumber);
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
@@ -248,24 +409,180 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
 
+#ifndef SWIG
+    //! @brief returns a reference to an element
+    //! @param identifier
+    //! @return reference to an element
+    ElementBase* ElementGetElementPtr(int rIdent);
+
+    //! @brief returns a reference to an element
+    //! @param identifier
+    //! @return reference to an element
+    const ElementBase* ElementGetElementPtr(int rIdent)const;
+
+    //! @brief gives the identifier of an element
+    //! @param pointer to an element
+    //! @return identifier
+    int ElementGetId(const ElementBase* rElement)const;
+
+   //! @brief info about one single element
+    //! @param rElement (Input) ... pointer to the element
+    //! @param rVerboseLevel (Input) ... level of verbosity
+    void ElementInfo(const ElementBase* rElement, int rVerboseLevel)const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::ElementInfo] Routine is not implemented." );
+    }
+
+
+#endif //SWIG
+
+    //*************************************************
+    //************    Crack routines    ***************
+    //*************************************************
+	//! @brief returns the number of cracks
+	//! @return number of cracks
+	unsigned int GetNumCracks()const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetNumCracks] Routine is not implemented." );
+    }
+
+#ifndef SWIG
+	//! @brief a reference to a crack
+	//! @param identifier
+	//! @return reference to a cracks
+	CrackBase* CrackGetCrackPtr(int rIdent)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::CrackGetCrackPtr] Routine is not implemented." );
+    }
+
+	//! @brief a reference to a crack
+	//! @param identifier
+	//! @return reference to a crack
+	const CrackBase* CrackGetCrackPtr(int rIdent)const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::CrackGetCrackPtr] Routine is not implemented." );
+    }
+
+	//! @brief gives the identifier of a crack
+	//! @param reference to a crack
+	//! @return identifier
+	int CrackGetId(const CrackBase* rCrack)const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::CrackGetId] Routine is not implemented." );
+    }
+#endif //SWIG
+
+	// provide functions for iterative solution process
+	void Gradient(std::vector<double>& rValues,std::vector<double>& rGradient)const;
+    void Hessian(std::vector<double>&  rDiagHessian)const;
+    void HessianDiag(std::vector<double>&  rDiagHessian)const;
+
+    std::vector<double>&  GetParameters();
+    std::vector<double>&  GetResidual();
+    void SetParameters(std::vector<double>& rParameters);
+    void SetResidual(std::vector<double>& rResidual);
+    void CalculateMultiGridCorrolations(std::string restrictionType,std::vector<double>& rRestriction,std::vector<double>& rProlongation);
+    void Restriction(std::vector<double> &rRestrictionFactor);
+    void Prolongation(std::vector<double> &rProlongationFactor);
+    void AnsysInput(std::vector<double >&rDisplVector) const;
 
 protected:
+
+#ifndef SWIG
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<const ElementBase*>& rElements) const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetElementsTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<std::pair<int,const ElementBase*> >& rElements) const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetElementsTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<ElementBase*>& rElements)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetElementsTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all elements of a structure in a vector
+    //! @param rElements ... vector of element pointer
+    void GetElementsTotal(std::vector<std::pair<int,ElementBase*> >&  rElements)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetElementsTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetNodesTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodes) const
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetNodesTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<NodeBase*>& rNodes)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetNodesTotal] Routine is not implemented." );
+    }
+
+    //! @brief ... store all nodes of a structure in a vector
+    //! @param rNodes ... vector of element pointer
+    void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes)
+    {
+        throw MechanicsException ( "[NuTo::StructureGrid::GetNodesTotal] Routine is not implemented." );
+    }
+
+
+#endif
+
     int mDimension;
-    int mNumVoxel;  //number of voxels
-    //! @todo length of list in function of real dimension
-    double mVoxelSpacing[3]; //spacing between center of neighbor voxels / dimension of each voxel
-    int mGridDimension[3]; //dimension of the voxel model
-    double mGridOrigin[3];// origin of the model , in the center of the first voxel
-    std::vector<NodeGrid3D*> mNodeVec;
-    std::vector<Voxel8N*> mElementVec;
-    //boost::ptr_vector<ElementBase> mElementVec;
-    const char* mImageDataFile;
+    size_t mNumVoxel;  //number of voxels
+    std::vector<double> mVoxelSpacing; //spacing between center of neighbor voxels / dimension of each voxel
+    std::vector<size_t> mGridDimension; //dimension of the voxel model
+    std::vector<double> mGridOrigin;// origin of the model , in the center of the first voxel
+//    boost::ptr_map<int,NodeBase> mNodeMap;
+//    boost::ptr_map<int,ElementBase> mElementMap;
+    std::string mImageDataFile;
     int mNumMaterials;
-    typedef NuTo::FullMatrix<double> FullMat;
-    std::vector<FullMat > mLocalCoefficientMatrix0;
-    NuTo::FullMatrix<int>* mVoxelLocation;
-    bool* mDofIsNotConstraint; //field of bool for all dofs, length 3xnumGridNodes, constraint dof = 0 = false
-    bool mCalcVoxelLocation; //true != 0 when already calculated
+    int mNumBasisMaterials;
+	size_t mNumConstraintDofs;
+    std::vector<std::vector<double> > mLocalCoefficientMatrix0;
+    std::vector<std::vector<double> > mBasisEdgeCoefficientMatrix0;
+    std::vector<std::vector<double> > mLocalDerivativeShapeFunctions;
+    std::vector<int> mNeighborNodesNE;
+	std::vector<size_t> mEdgeId;		//saves the id of the edge of this fe node
+	std::vector<size_t> mNodeId;		//saves the id of the fe node of this edge
+	std::vector<size_t> mVoxelId;		//saves the id of the voxel of this element
+	std::vector<int> mMaterialOfElem;
+	boost::dynamic_bitset<> mDofIsConstraint; //0 = false, all 0 here
+	std::vector<double> mDisplacements;
+    std::vector<double> mResidual;
+	std::vector<double> mLinearElasticEngineeringStrains;
+	std::vector<double> mLinearElasticEngineeringStresses;
+	std::vector<double> mYoungsModulus;
+	bool mMatrixFreeMethod;
+
+	//MultiGrid
+	size_t mCurrentGridNumber;
+	std::vector<size_t> mFineEdgeId;
+	StructureGrid* mpFineGrid;
+	StructureGrid*  mpCoarseGrid;
+    std::vector<double> mMGYoungsModulus;
+
+
 };
 } //namespace NuTo
 #endif // STRUCTUREGRID_H

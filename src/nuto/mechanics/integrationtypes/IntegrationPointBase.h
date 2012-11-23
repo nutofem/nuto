@@ -7,6 +7,8 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
+#else
+#include <vector>
 #endif //ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE

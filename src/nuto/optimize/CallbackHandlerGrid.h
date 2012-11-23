@@ -2,22 +2,35 @@
 #ifndef CALLBACKHANDLERGRID_H
 #define CALLBACKHANDLERGRID_H
 
-#include "nuto/optimize/CallbackHandler.h"
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif // ENABLE_SERIALIZATION
+
+#include "nuto/base/NuToObject.h"
 #include "nuto/optimize/OptimizeException.h"
+#include <iostream>
+#include <vector>
 
 namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
 //! @brief ... abstract class to handle callback routines
-class CallbackHandlerGrid : public CallbackHandler
+class CallbackHandlerGrid : public virtual NuToObject
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    CallbackHandlerGrid();
+    CallbackHandlerGrid(): NuToObject()
+    {
+    	mCallbackSetParameters = 0;
+    	mCallbackGradient = 0;
+    	mCallbackHessian = 0;
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -26,29 +39,56 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-    	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CallbackHandler)
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize CallbackHandler" << std::endl;
+#endif
+    	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
     	& BOOST_SERIALIZATION_NVP(mCallbackSetParameters)
-    	& BOOST_SERIALIZATION_NVP(mCallbackObjective)
     	& BOOST_SERIALIZATION_NVP(mCallbackGradient)
     	& BOOST_SERIALIZATION_NVP(mCallbackHessian);
     	mCallbackSetParameters = 0;
-    	mCallbackObjective = 0;
     	mCallbackGradient = 0;
     	mCallbackHessian = 0;
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize CallbackHandler" << std::endl;
+#endif
 
 	}
 #endif // ENABLE_SERIALIZATION
 
-	void SetParameters(const NuTo::FullMatrix<double>& rParameters);
-	void SetParameters(NuTo::FullMatrix<double>& rParameters);
+    virtual std::vector<double>&  GetParameters()
+    {
+		throw OptimizeException("[CallbackHandler::SetParameters] SetParameters function not implemented in CallbackHandler object.");
+    }
 
-	double Objective()const;
+    virtual std::vector<double>&  GetResidual()
+    {
+		throw OptimizeException("[CallbackHandler::SetParameters] GetResidual function not implemented in CallbackHandler object.");
+    }
+    virtual void SetParameters(std::vector<double>& rParameters)
+    {
+		throw OptimizeException("[CallbackHandler::SetParameters] SetParameters function not implemented in CallbackHandler object.");
+    }
 
-	void Gradient (NuTo::FullMatrix<double>& rGradient)const;
+    virtual void SetResidual(std::vector<double>& rResidual)
+    {
+		throw OptimizeException("[CallbackHandler::SetParameters] SetResidual function not implemented in CallbackHandler object.");
+    }
 
-    void Hessian(NuTo::FullMatrix<double>& rHessian)const;
+    virtual void Gradient (std::vector<double>& rValue,std::vector<double>& rGradient)const
+	{
+		throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
+	}
 
-	void Info()const;
+	virtual void Hessian (std::vector<double>& rHessian)const
+	{
+		throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
+	}
+
+	void Info()const
+	{
+		std::cout << "CallbackHandlerGrid" << std::endl;
+	}
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... restore the object from a file
@@ -75,10 +115,9 @@ public:
     }
 
 private:
-    FullMatrix<double> *mCallbackSetParameters;
-    double *mCallbackObjective;
-    FullMatrix<double> *mCallbackGradient;
-    FullMatrix<double> *mCallbackHessian;
+    const std::vector<double> *mCallbackSetParameters;
+    std::vector<double> *mCallbackGradient;
+    std::vector<double> *mCallbackHessian;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

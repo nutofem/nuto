@@ -1,4 +1,3 @@
-// $Id$
 #ifdef ENABLE_SERIALIZATION
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 #else
@@ -20,8 +19,8 @@
 
 int main()
 {
-//	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
-	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
+	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
+//	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
 
 	std::fstream outputTime;
 	std::string filename = "timeOutput";
@@ -120,9 +119,6 @@ int main()
 	// apply nodes
 
 	size_t numDofs=myGrid.GetNumNodes()*3;
-	size_t numNodes=myGrid.GetNumNodes();
-	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
-
 	outputTime<<numDofs<<"   ";
 #ifdef SHOW_TIME
 end=clock();
@@ -133,15 +129,16 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	std::cout<<"[NuTo::Grid3D] number of dofs "<<numDofs<<" free: "<<numDofs-myGrid.GetNumConstraints()<<" constraint: "<<myGrid.GetNumConstraints()<<"\n";
 	// start analysis
 //	std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
-	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
-	myOptimizer.SetVerboseLevel(4);
+	myGrid.StructureBase::SetVerboseLevel(0);
+	size_t numNodes=myGrid.GetNumNodes();
+	NuTo::MultiGrid myMultiGridSolver;
+	myMultiGridSolver.SetVerboseLevel(0);
+	myMultiGridSolver.SetStructure(&myGrid);
+	myMultiGridSolver.Initialize();
+	myMultiGridSolver.Optimize();
+	std::cout<<" [MultiGrid3D] test. \n";
 
-	myOptimizer.SetCallback( (&myGrid));
-	std::cout<<"[NuTo::Grid3D] Parameters set, Anzahl = "<<myOptimizer.GetNumParameters()<<std::endl;
-	//
 	outputTime.close();
-
-	myOptimizer.Optimize();
 	rDisplVector=myGrid.GetParameters();
 
 	std::ofstream file;
@@ -155,9 +152,11 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 	file.close();
 
 	file.open("displVTK.txt");
- 	for(size_t i=0;i<numGridNodes;++i)
+	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
+	for(size_t i=0;i<numGridNodes;++i)
 	{
-		if (myGrid.GetNodeId(i)==numNodes)
+		size_t nodeId=myGrid.GetNodeId(i);
+		if (nodeId==(size_t) myGrid.GetNumNodes())
 		{
 			file<<0.0<<"\n";
 			file<<0.0<<"\n";
@@ -165,14 +164,13 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 		}
 		else
 		{
-			file<<rDisplVector[3*myGrid.GetNodeId(i)]<<"\n";
-			file<<rDisplVector[3*myGrid.GetNodeId(i)+1]<<"\n";
-			file<<rDisplVector[3*myGrid.GetNodeId(i)+2]<<"\n";
+			file<<rDisplVector[3*nodeId]<<"\n";
+			file<<rDisplVector[3*nodeId+1]<<"\n";
+			file<<rDisplVector[3*nodeId+2]<<"\n";
 		}
 	}
 	file.close();
 
-	//
 	std::vector<double> dispRef;
 	std::ifstream input;
 	double help=0;
@@ -194,18 +192,13 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 		{
 			double squareDiffNorm=0;
 			double squareRefNorm=0;
-// output of diff and ref only for VTK
-//			std::ofstream diffFile;
-//			diffFile.open("displDiffVTK.txt");
-//			file.open("displRefVTK.txt");
+			std::ofstream diffFile;
+			diffFile.open("displDiff.txt");
 			for(size_t i=0;i<numNodes;++i)
 			{
-//					diffFile<<displVector[3*i]-dispRef[3*i]<<"\n";
-//					diffFile<<displVector[3*i+1]-dispRef[3*i+1]<<"\n";
-//					diffFile<<displVector[3*i+2]-dispRef[3*i+2]<<"\n";
-//					file<<dispRef[3*i]<<"\n";
-//					file<<dispRef[3*i+1]<<"\n";
-//					file<<dispRef[3*i+2]<<"\n";
+					diffFile<<rDisplVector[3*i]-dispRef[3*i]<<"\n";
+					diffFile<<rDisplVector[3*i+1]-dispRef[3*i+1]<<"\n";
+					diffFile<<rDisplVector[3*i+2]-dispRef[3*i+2]<<"\n";
 				squareDiffNorm+=(rDisplVector[3*i]-dispRef[3*i])*(rDisplVector[3*i]-dispRef[3*i]);
 				squareDiffNorm+=(rDisplVector[3*i+1]-dispRef[3*i+1])*(rDisplVector[3*i+1]-dispRef[3*i+1]);
 				squareDiffNorm+=(rDisplVector[3*i+2]-dispRef[3*i+2])*(rDisplVector[3*i+2]-dispRef[3*i+2]);

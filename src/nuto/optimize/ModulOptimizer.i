@@ -5,15 +5,13 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/optimize/Optimizer.h"
 #include "nuto/optimize/ConjugateGradientGrid.h"
-#include "nuto/optimize/ConjugateGradientGridRed.h"
 #include "nuto/optimize/ConjugateGradientNonLinear.h"
 #include "nuto/optimize/CallbackHandler.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/CallbackHandlerPython.h"
+#include "nuto/optimize/MultiGrid.h"
 #include "nuto/optimize/OptimizeException.h"
 %}
-//#include "nuto/optimize/ConjugateGradientStructureGrid.h"
-
 
 // convert python string to std::string
 %include "std_string.i"
@@ -28,6 +26,5 @@
 %include "nuto/optimize/CallbackHandlerPython.h"
 %include "nuto/optimize/Optimizer.h"
 %include "nuto/optimize/ConjugateGradientGrid.h"
-%include "nuto/optimize/ConjugateGradientGridRed.h"
 %include "nuto/optimize/ConjugateGradientNonLinear.h"
-//%include "nuto/optimize/ConjugateGradientStructureGrid.h"
+%include "nuto/optimize/MultiGrid.h"

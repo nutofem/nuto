@@ -17,7 +17,7 @@
 #include <string>
 #include "nuto/base/Logger.h"
 #include "nuto/base/NuToObject.h"
-#include "nuto/math/SparseMatrixCSRGeneral_Def.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/groups/GroupBase.h"
@@ -41,6 +41,7 @@ class ElementBase;
 template <class T> class FullMatrix;
 class NodeBase;
 template<class T> class SparseMatrixCSRSymmetric;
+template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRVector2General;
 template<class T> class SparseMatrixCSRVector2Symmetric;
 class EngineeringStrain2D;

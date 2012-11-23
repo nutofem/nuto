@@ -147,7 +147,7 @@ void NuTo::Structure::Save (const std::string &filename, std::string rType )cons
         // close file
         ofs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception &e )
     {
         std::string s ( std::string ( "[NuTo::Structure::Save]File save exception in boost - " ) + std::string ( e.what() ) );
         throw MechanicsException ( s );
@@ -227,7 +227,7 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
         // close file
         ifs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception &e )
     {
         std::string s ( std::string ( "[NuTo::Structure::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
         throw MechanicsException ( s );
@@ -1237,7 +1237,7 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
     {
     	BuildNonlocalData(itConstitutive->second);
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         e.AddMessage("[NuTo::Structure::BuildNonlocalData] Error calculating nonlocal data.");
         throw e;
@@ -1444,7 +1444,7 @@ void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
     	std::set<int> groupIds;
     	ImportFromGmshAux(rFileName, rNumTimeDerivatives, rDOFs, rElementData, rIPData, false, groupIds);
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         e.AddMessage("[NuTo::Structure::ImportFromGmsh] Error importing from Gmsh.");
         throw e;
@@ -1478,7 +1478,7 @@ void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
     		rElementGroupIds(count,0) = *it;
     	}
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         e.AddMessage("[NuTo::Structure::ImportFromGmsh] Error importing from Gmsh.");
         throw e;
@@ -1933,7 +1933,7 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double>& rOffset)
 		std::map<ElementBase*, ElementBase* > old2NewElementPointer;
 		CopyAndTranslate(rOffset,old2NewNodePointer,old2NewElementPointer);
     }
-    catch(NuTo::MechanicsException e)
+    catch(NuTo::MechanicsException &e)
     {
         e.AddMessage("[NuTo::Structure::CopyAndTranslate] Error translating and copying structure.");
         throw e;

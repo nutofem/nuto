@@ -7,6 +7,7 @@
 #include "nuto/base/NuToObject.h"
 #include "nuto/optimize/OptimizeException.h"
 #include "nuto/optimize/CallbackHandler.h"
+#include "nuto/optimize/CallbackHandlerGrid.h"
 #include <cfloat>
 #include <limits.h>
 namespace NuTo
@@ -52,6 +53,7 @@ public:
     {    
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
            & BOOST_SERIALIZATION_NVP(mpCallbackHandler)
+           & BOOST_SERIALIZATION_NVP(mpCallbackHandlerGrid)
            & BOOST_SERIALIZATION_NVP(objective)
 //           & BOOST_SERIALIZATION_NVP(mvParameters)
            & BOOST_SERIALIZATION_NVP(mvEqualConstraints)
@@ -67,6 +69,10 @@ public:
 	    mpCallbackHandler = rpCallbackHandler;
 	}
 
+    void SetCallback(NuTo::CallbackHandlerGrid* rpCallbackHandler)
+	{
+	    mpCallbackHandlerGrid = rpCallbackHandler;
+	}
 	
 	virtual int Optimize()=0;
 	
@@ -122,6 +128,7 @@ public:
 	
 protected:
     CallbackHandler *mpCallbackHandler;
+    CallbackHandlerGrid *mpCallbackHandlerGrid;
     double objective;
     FullMatrix<double> mvParameters;
     std::vector<double> mvEqualConstraints;

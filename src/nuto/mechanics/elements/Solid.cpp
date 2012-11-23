@@ -41,9 +41,9 @@ NuTo::Solid::Solid(const StructureBase* rStructure, ElementData::eElementDataTyp
     mSection = 0;
 }
 
-//! @brief calculates output data fo the elmement
+//! @brief calculates output data of the element
 //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-//!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+//! @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
 NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput)
 {
     if (mStructure->GetHessianConstant(1)==false)

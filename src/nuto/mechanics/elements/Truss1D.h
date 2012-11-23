@@ -3,6 +3,7 @@
 #define Truss1D_H
 
 #include "nuto/mechanics/elements/Truss.h"
+#include <iostream>
 namespace NuTo
 {
 class NodeBase;

@@ -433,7 +433,7 @@ void NuTo::Structure::ElementGroupDelete (int rGroupNumber, bool deleteNodes)
         	}
         	ElementDeleteInternal(itElement->second->ElementGetId());
         }
-        catch(NuTo::MechanicsException e)
+        catch(NuTo::MechanicsException &e)
         {
             std::stringstream ss;
             assert(ElementGetId(itElement->second)==itElement->first);

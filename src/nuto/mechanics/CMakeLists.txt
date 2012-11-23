@@ -184,11 +184,10 @@ structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
 structures/unstructured/StructureMesh.cpp
 structures/unstructured/StructureNode.cpp
+structures/grid/StructureGrid.cpp
+structures/grid/StructureGridNode.cpp
+structures/grid/StructureGridElement.cpp
 )
-#structures/grid/StructureGrid.cpp
-#structures/grid/StructureGridNode.cpp
-#structures/grid/StructureGridElement.cpp
-
 SET(NuToMechanicsTimeIntegration_SOURCES
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
@@ -216,6 +215,9 @@ TARGET_LINK_LIBRARIES(NuToMechanics NuToBase NuToMath ${ANN_LIBRARIES} ${MERSENN
 IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(NuToMechanics NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)
+IF (ENABLE_OPTIMIZE)
+  TARGET_LINK_LIBRARIES(NuToMechanics NuToOptimize)
+ENDIF (ENABLE_OPTIMIZE)
 IF (ENABLE_SHOW_TIME)
 #add library for clock_gettime routines
   TARGET_LINK_LIBRARIES(NuToMechanics rt)

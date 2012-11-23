@@ -7,6 +7,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif //ENABLE_SERIALIZATION
 
 #ifdef SHOW_TIME
@@ -19,36 +20,56 @@
 
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
-#include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/elements/Brick8N.h"
+#include "nuto/math/FullMatrix.h"
 
-NuTo::StructureGrid::StructureGrid(int rDimension)
+#include <algorithm>
+
+
+NuTo::StructureGrid::StructureGrid(int rDimension):  CallbackHandlerGrid (),StructureBase ( rDimension )
 {
    if (rDimension!=3)
 	{
 		throw MechanicsException("[StructureGrid::StructureGrid] The dimension of the grid structure is either so far 3.");
 	}
     mDimension = rDimension;
- 	mVoxelLocation = 0;
-	mDofIsNotConstraint = 0;
-	mCalcVoxelLocation = 0;
+    mNumVoxel=0;  //number of voxels
+    mGridDimension.resize(rDimension);
+    mVoxelSpacing.resize(rDimension);	//spacing between center of neighbor voxels / dimension of each voxel
+    mGridOrigin.resize(rDimension);		// origin of the model , in the center of the first voxel
+    mMatrixFreeMethod=0;
+    mImageDataFile="InputFile";
+    mNumMaterials=0;
+    mNumBasisMaterials=1;
+    mNumConstraintDofs=0;
+    mCurrentGridNumber=0;
+    mpFineGrid=0;
+    mpCoarseGrid=0;
 }
 
 NuTo::StructureGrid::~StructureGrid()
-{
-	if(mVoxelLocation)
-		delete mVoxelLocation;
-	mVoxelLocation = 0;
-//	if(mDofIsNotConstraint) //not needed
-		delete [] mDofIsNotConstraint;
-	mDofIsNotConstraint = 0;
+{	// coarse and fine grid pointer have not to be deleted, will be deleted in MultiGrid
 }
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::StructureGrid::Info()const
 {
-   std::cout << "dimension : " << mDimension << "\n";
-
-   std::cout  << "num dofs : " << (mGridDimension[0]+1)*(mGridDimension[1]+1)* (mGridDimension[2]+1)<< "\n";
+	std::cout << "StructureGrid Info \n";
+	std::cout << "Dimension             : " << mDimension << "\n";
+	std::cout << "GridNumber            : " <<mCurrentGridNumber <<"\n";
+	std::cout << "GridDimension         : " <<mGridDimension[0]<<" "<<mGridDimension[1]<<" "<<mGridDimension[2]<<"\n";
+	std::cout << "Number of voxels      : " <<mNumVoxel <<"\n";
+	std::cout << "Number of grid edges  : " << (mGridDimension[0]+1)*(mGridDimension[1]+1)* (mGridDimension[2]+1)<< "\n";
+	std::cout << "Number of elements    : "<<mVoxelId.size()<<"\n";
+	std::cout << "Number of nodes       : "<<mEdgeId.size()<<"\n";
+	std::cout << "Number of constraints : "<<mNumConstraintDofs<<"\n";
+	std::cout << "Dof is constraint : \n";
+	for(size_t i=0;i<mEdgeId.size()*3;++i)
+	{
+		std::cout <<mDofIsConstraint[i] <<" ";
+	}
+	std::cout<<"\n";
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -61,19 +82,41 @@ template void NuTo::StructureGrid::serialize(boost::archive::text_iarchive & ar,
 template<class Archive>
 void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
 {
+#ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of grid structure" << std::endl;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-       & BOOST_SERIALIZATION_NVP (mDimension)
-       & BOOST_SERIALIZATION_NVP (mElementVec)
-       & BOOST_SERIALIZATION_NVP (mNodeVec)
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
        & BOOST_SERIALIZATION_NVP (mDimension)
        & BOOST_SERIALIZATION_NVP (mNumVoxel)
-       & BOOST_SERIALIZATION_NVP (mVoxelSpacing)
        & BOOST_SERIALIZATION_NVP (mGridDimension)
+       & BOOST_SERIALIZATION_NVP (mVoxelSpacing)
+       & BOOST_SERIALIZATION_NVP (mGridOrigin)
+       & BOOST_SERIALIZATION_NVP (mImageDataFile)
        & BOOST_SERIALIZATION_NVP (mNumMaterials)
+       & BOOST_SERIALIZATION_NVP (mNumBasisMaterials)
+       & BOOST_SERIALIZATION_NVP (mNumConstraintDofs)
        & BOOST_SERIALIZATION_NVP (mLocalCoefficientMatrix0)
-       & BOOST_SERIALIZATION_NVP (mVoxelLocation);
+       & BOOST_SERIALIZATION_NVP (mBasisEdgeCoefficientMatrix0)
+       & BOOST_SERIALIZATION_NVP (mLocalDerivativeShapeFunctions)
+       & BOOST_SERIALIZATION_NVP (mNeighborNodesNE)
+       & BOOST_SERIALIZATION_NVP (mEdgeId)
+       & BOOST_SERIALIZATION_NVP (mNodeId)
+       & BOOST_SERIALIZATION_NVP (mVoxelId)
+       & BOOST_SERIALIZATION_NVP (mMaterialOfElem)
+//	serialization does not work
+//       & BOOST_SERIALIZATION_NVP (mDofIsConstraint)
+       & BOOST_SERIALIZATION_NVP (mDisplacements)
+       & BOOST_SERIALIZATION_NVP (mLinearElasticEngineeringStrains)
+       & BOOST_SERIALIZATION_NVP (mLinearElasticEngineeringStresses)
+       & BOOST_SERIALIZATION_NVP (mYoungsModulus)
+       & BOOST_SERIALIZATION_NVP (mMatrixFreeMethod)
+       & BOOST_SERIALIZATION_NVP (mFineEdgeId)
+       & BOOST_SERIALIZATION_NVP (mpFineGrid)
+       & BOOST_SERIALIZATION_NVP (mpCoarseGrid)
+       & BOOST_SERIALIZATION_NVP (mMGYoungsModulus);
+#ifdef DEBUG_SERIALIZATION
      std::cout << "finish serialization of grid structure" << std::endl;
+#endif
 }
 
 //! @brief ... save the object to a file
@@ -122,7 +165,7 @@ void NuTo::StructureGrid::Save (const std::string &filename, std::string rType )
         // close file
         ofs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception &e )
     {
         std::string s ( std::string ( "[NuTo::StructureGrid::Save]File save exception in boost - " ) + std::string ( e.what() ) );
         throw MechanicsException ( s );
@@ -192,7 +235,7 @@ void NuTo::StructureGrid::Restore (const std::string &filename, std::string rTyp
         // close file
         ifs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception &e )
     {
         std::string s ( std::string ( "[NuTo::StructureGrid::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
         throw MechanicsException ( s );
@@ -209,7 +252,7 @@ void NuTo::StructureGrid::Restore (const std::string &filename, std::string rTyp
 #endif // ENABLE_SERIALIZATION
 
 //! @brief import routine for basic grid data without StructureGrid data space
-void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t &rNumVoxel)
+void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel)
 {
     std::cout<<__FILE__<<" "<<__LINE__<<" in ImportFromVtkASCIIFileHeader without StructureGrid data \n ";
     try
@@ -271,7 +314,7 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,siz
        {
            throw MechanicsException("[StructureGrid::importFromVtkASCIIFileReadHeader] error dimension is negative or zero.");
        }
-   }
+    }
     catch (MechanicsException &e)
     {
         throw e;
@@ -363,7 +406,7 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
     }
 }
 
-void NuTo::StructureGrid::ImportFromVtkASCIIFile(const char* rFileName,std::vector<int> &rData)
+void NuTo::StructureGrid::ImportFromVtkASCIIFile(const std::string rFileName,std::vector<int> &rData)
 {
     using namespace boost::spirit::classic;
 
@@ -417,449 +460,1241 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFile(const char* rFileName,std::vect
 //! @return number of Voxels
 int NuTo::StructureGrid::GetNumVoxels() const
 {
-    return mNumVoxel;
+    	return mNumVoxel;
 }
 
 //! @brief returns  VoxelSpacing
 //! @return VoxelSpacing
-const double* NuTo::StructureGrid::GetVoxelSpacing() const
+const std::vector<double> NuTo::StructureGrid::GetVoxelSpacing() const
 {
     return mVoxelSpacing;
 }
 
 //! @brief returns GridOrigin
  //! @return GridOrigin
-const double* NuTo::StructureGrid::GetGridOrigin() const
+const std::vector<double> NuTo::StructureGrid::GetGridOrigin() const
 {
      return mGridOrigin;
 }
 
  //! @brief returns GridDimension
  //! @return GridDimension
-const int* NuTo::StructureGrid::GetGridDimension() const
+const std::vector<size_t> NuTo::StructureGrid::GetGridDimension() const
 {
      return mGridDimension;
 }
+//! @brief returns GridDimension
+ //! @return GridDimension
+void  NuTo::StructureGrid::SetGridDimension(std::vector<size_t> &rGridDimension)
+{
+	mGridDimension=rGridDimension;
+}
+
 //! @brief Get NumMaterials
 //! @return NumMaterial
 const int NuTo::StructureGrid::GetNumMaterials() const
 {
     return mNumMaterials;
 }
-
-
-
-//! @brief create node data without StructureGrid
-//! @brief set bool for node
-void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::vector<int>& imageValues ,const std::vector<double>& rColorToMaterialData,int* rGridDimension,boost::dynamic_bitset<> &rNodeExist,boost::dynamic_bitset<> &rElemExist,std::vector<double>& youngsModulus,std::vector<int>& materialOfElem)
+//! @brief Get NumBasisMaterials
+//! @return NumBasisMaterial
+const int NuTo::StructureGrid::GetNumBasisMaterials() const
 {
-    int numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
-    //int numMatNodes=0;//all existing nodes (with material)
-    int * coincidentVoxels=new int[8];
-    bool flag=false;
-    for (int countNodes =0; countNodes<numGridNodes;++countNodes)//countNodes correspond to nodeID
-    {
-         //get coincident voxels for each node, check if one voxel has material, then create node
-         coincidentVoxels=GetCoincidenceVoxelIDs(countNodes);
-         flag=false;
-         for (int count =0; count<8; count++)
-         {
-        	 // voxel exist (for boundary nodes)
-             if (coincidentVoxels[count]>-1)
-             {
-                 // voxel has material
-            	 // color value 0 is material, 255 is air
-            	 // material value smaller than thresholdvalue
-				 std::cout<<"  "<<countNodes<<" voxel "<<coincidentVoxels[count]<<" image "<< imageValues[coincidentVoxels[count]];
-                 if(imageValues[coincidentVoxels[count]]<rThresholdMaterialValue)
-                 {
-                     flag=true; //node exists
-                     count=8;
-                    rNodeExist.set(countNodes,true);
-					 //numMatNodes++;
-                 }
-             }
-         }
-    }
-	std::cout<<__FILE__<<" nodeExist " <<rNodeExist<<"\n";
+    return mNumBasisMaterials;
+}
 
-    int numCoeffMat =0;
-    bool matExistsAlready= false; //material exists
-    //std::bitset<numVoxel> rElementExist; //0 = false, all 0 here
-    int numVoxel=rGridDimension[0]*rGridDimension[1]*rGridDimension[2];//all nodes of the grid
-  	for(int countVoxels =0; countVoxels<numVoxel;++countVoxels)//countVoxels correspond to VoxelID
- 	{
- 		if (rColorToMaterialData[imageValues[countVoxels]]>0) //if Modul is> zero
- 		{
- 			rElemExist.flip(countVoxels); //set to 1 = true, element exists
+//! @brief Set NumBasisMaterials
+void NuTo::StructureGrid::SetNumBasisMaterials(int rNumBasisMaterials)
+{
+	mNumBasisMaterials=rNumBasisMaterials;
+}
+//! @brief Get CurrentGridNumber
+//! @return rCurrentGridNumber
+const int NuTo::StructureGrid::GetCurrentGridNumber() const
+{
+	return mCurrentGridNumber;
+}
 
- 			for(int countMat=0;countMat<numCoeffMat;countMat++)
+//! @brief Set CurrentGridNumber
+void NuTo::StructureGrid::SetCurrentGridNumber(int rCurrentGridNumber)
+{
+	mCurrentGridNumber=rCurrentGridNumber;
+}
+
+//! @brief Get number of Constraints
+ //! @return NumConstraints
+const size_t NuTo::StructureGrid::GetNumConstraints() const
+{
+	 return mNumConstraintDofs;
+}
+
+void NuTo::StructureGrid::SetMatrixFreeMethod(bool rMatrixFreeMethod)
+{
+	mMatrixFreeMethod=rMatrixFreeMethod;
+	if(NuTo::CallbackHandlerGrid::GetVerboseLevel()>5)
+	{
+		std::cout<<"MatrixFreeMethod is ";
+		if (mMatrixFreeMethod)
+			std::cout<<" NBN \n";
+		else
+			std::cout<<" EBE \n";
+	}
+}
+//! @brief set basis element stiffness
+//! @param rVoxelSpacing ... element length,
+//! @param rPoissonsRatio
+//! @return stiffnesMatrix ... basis element stiffness matrix
+void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,int rBasisMaterialNum)
+{
+	try
+	{
+		if (mDimension!=3)
+		   throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Only 3D is implemented.");
+		if(rBasisMaterialNum>=mNumBasisMaterials)
+			   throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Basis Material number too large.");
+
+		if(rBasisMaterialNum<(int) mLocalCoefficientMatrix0.size())
+		   std::cout<<"[StructureGrid::SetBasisElementStiffnessMatrix] This basis element stiffness matrix for material "<<rBasisMaterialNum<<" will be replaces.\n";
+
+		NuTo::Structure myHelpStruc(3);
+
+		myHelpStruc.SetVerboseLevel(5);
+		// create material law
+		int myMat=myHelpStruc.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
+		myHelpStruc.ConstitutiveLawSetPoissonsRatio(myMat, rPoissonsRatio);
+		myHelpStruc.ConstitutiveLawSetYoungsModulus(myMat, 1.0);
+
+		// create nodes
+		NuTo::FullMatrix<double> nodeCoordinates(3, 1);
+		NuTo::FullMatrix<int> elementIncidence(8,1);
+
+		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(0,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(1,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(2,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(3,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(4,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(5,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(6,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(7,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+
+		// first element create
+
+	   // elementIncidence.Info();
+		int myHelpElement=myHelpStruc.ElementCreate("Brick8N", elementIncidence);
+		myHelpStruc.ElementSetConstitutiveLaw(myHelpElement,myMat);
+		int mySection1 = myHelpStruc.SectionCreate("VOLUME");
+		myHelpStruc.ElementSetSection(myHelpElement,mySection1);
+
+		// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
+		NuTo::FullMatrix<int> rows;
+		NuTo::FullMatrix<int> coluums;
+		NuTo::FullMatrix<double> stiffnessMatrix;
+		myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
+		if(NuTo::StructureBase::GetVerboseLevel()>3)
+			stiffnessMatrix.WriteToFile("stiffness"," ");
+		if((int) mLocalCoefficientMatrix0.size()==rBasisMaterialNum)
+		{
+			std::vector<double> stiffness(24*24);
+			for (int i=0;i<24;++i)
 			{
-				if (rColorToMaterialData[imageValues[countVoxels]]==youngsModulus.at(countMat)) //same modulus already used
+				for (int j=0;j<24;++j)
 				{
-					materialOfElem[countVoxels]=countMat;
+					stiffness[(24*i)+j]=stiffnessMatrix(i,j); //row based saved
+				}
+			}
+
+			mLocalCoefficientMatrix0.push_back(stiffness);
+
+			//calculate shape derivative functions
+			const double rLocalCoordinates[3]={0,0,0};
+			std::vector<double> rDerivativeShapeFunctions(24);
+			NuTo::Brick8N* myElementPointer;
+			myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
+			myElementPointer->CalculateDerivativeShapeFunctionsLocal( rLocalCoordinates, rDerivativeShapeFunctions);
+			mLocalDerivativeShapeFunctions.push_back(rDerivativeShapeFunctions);
+			NuTo::FullMatrix<double>localStresses;
+//			myElementPointer->GetIntegratedStress(localStresses);
+		}
+		else
+			throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Basis material number is wrong.");
+		// for strain and stress computations
+		// get shape function derivatives for element center
+	}
+	catch( ... )
+	{
+		throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Error.");
+	}
+
+
+}
+
+//! @brief set basis edge stiffnesses
+//! @param rBasisMaterialNum ... number of material,
+void NuTo::StructureGrid::SetBasisEdgeStiffnessMatrices(int rBasisMaterialNum)
+{
+	const std::vector<double> *baseStiffness=GetLocalCoefficientMatrix0(rBasisMaterialNum);
+	if(baseStiffness->size()==0)
+        throw MechanicsException("[StructureGrid::SetBasisEdgeStiffnessMatrices] Calculate basis element stiffness matrix first.");
+	if((int) mBasisEdgeCoefficientMatrix0.size()>rBasisMaterialNum)
+        throw MechanicsException("[StructureGrid::SetBasisEdgeStiffnessMatrices] Material exist already.");
+	else if ((int) mBasisEdgeCoefficientMatrix0.size()<rBasisMaterialNum)
+        throw MechanicsException("[StructureGrid::SetBasisEdgeStiffnessMatrices] Material number to high.");
+
+	std::vector<double> edgeStiffness(9*64);
+	// init edgeStiffness in order,
+	// description: node nbr, elem nbr, row nbr (nodes), col nbr (nodes) of base
+	int count=0;
+	for(int row=0;row<3;++row)
+	{
+		for(int col=0;col<3;++col)
+		{
+			count=-1;
+			// 0 - 0 - 6  0
+			edgeStiffness[(++count)*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+0*3+col];
+			// 1 - 0 - 6  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+1*3+col];
+			// 1 - 1 - 7  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+0*3+col];
+			// 2 - 1 - 7  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+1*3+col];
+			// 3 - 0 - 6  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+3*3+col];
+			// 3 - 2 - 5  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+0*3+col];
+			// 4 - 0 - 6  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+2*3+col];
+			// 4 - 1 - 7  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+3*3+col];
+			// 4 - 2 - 5  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+1*3+col];
+			// 4 - 3 - 4  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+0*3+col];
+			// 5 - 1 - 7  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+2*3+col];
+			// 5 - 3 - 4  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+1*3+col];
+			// 6 - 2 - 5  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+3*3+col];
+			// 7 - 2 - 5  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+2*3+col];
+			// 7 - 3 - 4  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+3*3+col];
+			// 8 - 3 - 4  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+2*3+col];
+			// 9 - 0 - 6  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+4*3+col];
+			// 9 - 4 - 2  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+0*3+col];
+			//10- 0 - 6  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+5*3+col];
+			//10 - 1 - 7  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+4*3+col];
+			//10 - 4 - 2  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+1*3+col];
+			//10 - 5 - 3  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+0*3+col];
+			//11 - 1 - 7  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+5*3+col];
+			//11 - 5 - 3  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+1*3+col];
+			//12 - 0 - 6  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+7*3+col];
+			//12 - 2 - 5  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+4*3+col];
+			//12 - 4 - 2  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+3*3+col];
+			//12 - 6 - 1  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+0*3+col];
+			//13 - 0 - 6  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(6*3+row)*24+6*3+col];
+			//13 - 1 - 7  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+7*3+col];
+			//13 - 2 - 5  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+5*3+col];
+			//13 - 3 - 4  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+4*3+col];
+			//13 - 4 - 2  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+2*3+col];
+			//13 - 5 - 3  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+3*3+col];
+			//13 - 6 - 1  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+1*3+col];
+			//13 - 7 - 0  0
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+0*3+col];
+			//14 - 1 - 7  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(7*3+row)*24+6*3+col];
+			//14 - 3 - 4  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+5*3+col];
+			//14 - 5 - 3  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+2*3+col];
+			//14 - 7 - 0  1
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+1*3+col];
+			//15 - 2 - 5  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+7*3+col];
+			//15 - 6 - 1  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+3*3+col];
+			//16 - 2 - 5  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(5*3+row)*24+6*3+col];
+			//16 - 3 - 4  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+7*3+col];
+			//16 - 6 - 1  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+2*3+col];
+			//16 - 7 - 0  3
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+3*3+col];
+			//17 - 3 - 4  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(4*3+row)*24+6*3+col];
+			//17 - 7 - 0  2
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+2*3+col];
+			//18 - 4 - 2  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+4*3+col];
+			//19 - 4 - 2  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+5*3+col];
+			//19 - 5 - 3  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+4*3+col];
+			//20 - 5 - 3  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+5*3+col];
+			//21 - 4 - 2  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+7*3+col];
+			//21 - 6 - 1  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+4*3+col];
+			//22 - 4 - 2  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(2*3+row)*24+6*3+col];
+			//22 - 5 - 3  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+7*3+col];
+			//22 - 6 - 1  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+5*3+col];
+			//22 - 7 - 0  4
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+4*3+col];
+			//23 - 5 - 3  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(3*3+row)*24+6*3+col];
+			//23 - 7 - 0  5
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+5*3+col];
+			//24 - 6 - 1  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+7*3+col];
+			//25 - 6 - 1  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(1*3+row)*24+6*3+col];
+			//25 - 7 - 0  7
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+7*3+col];
+			//26 - 7 - 0  6
+			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+6*3+col];
+
+		}
+	mBasisEdgeCoefficientMatrix0.push_back(edgeStiffness);
+	}
+}
+
+//! @brief set general neighbor nodes for node-edge based routines
+//! @brief in function of grid dimension
+void NuTo::StructureGrid::SetNeighborNodesNE()
+{
+	mNeighborNodesNE.resize(27);
+	mNeighborNodesNE[0]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)-(mGridDimension[0]+1)-1;
+	mNeighborNodesNE[1]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)-(mGridDimension[0]+1);
+	mNeighborNodesNE[2]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)-(mGridDimension[0]+1)+1;
+	mNeighborNodesNE[3]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)-1;
+	mNeighborNodesNE[4]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1);
+	mNeighborNodesNE[5]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)+1;
+	mNeighborNodesNE[6]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)+(mGridDimension[0]+1)-1;
+	mNeighborNodesNE[7]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)+(mGridDimension[0]+1);
+	mNeighborNodesNE[8]=(int) -(mGridDimension[0]+1)*(mGridDimension[1]+1)+(mGridDimension[0]+1)+1;
+	mNeighborNodesNE[9]=(int) -(mGridDimension[0]+1)-1;
+	mNeighborNodesNE[10]=(int) -(mGridDimension[0]+1);
+	mNeighborNodesNE[11]=(int) -(mGridDimension[0]+1)+1;
+	mNeighborNodesNE[12]=(int) -1;
+	mNeighborNodesNE[13]=(int) 0;
+	mNeighborNodesNE[14]=(int) +1;
+	mNeighborNodesNE[15]=(int) +(mGridDimension[0]+1)-1;
+	mNeighborNodesNE[16]=(int) +(mGridDimension[0]+1);
+	mNeighborNodesNE[17]=(int) +(mGridDimension[0]+1)+1;
+	mNeighborNodesNE[18]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)-(mGridDimension[0]+1)-1;
+	mNeighborNodesNE[19]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)-(mGridDimension[0]+1);
+	mNeighborNodesNE[20]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)-(mGridDimension[0]+1)+1;
+	mNeighborNodesNE[21]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)-1;
+	mNeighborNodesNE[22]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1);
+	mNeighborNodesNE[23]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)+1;
+	mNeighborNodesNE[24]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)+(mGridDimension[0]+1)-1;
+	mNeighborNodesNE[25]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)+(mGridDimension[0]+1);
+	mNeighborNodesNE[26]=(int) +(mGridDimension[0]+1)*(mGridDimension[1]+1)+(mGridDimension[0]+1)+1;
+}
+
+//! @brief ..calculate node numbers at one element
+//! @param elementNumber ... number of the element
+//! @param nodeNumbers ... nodes at element
+void NuTo::StructureGrid::CalculateNodesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers)const
+{
+	size_t rVoxelLocation[3];
+	size_t residual1=mVoxelId[elementNumber]%((mGridDimension[0])*(mGridDimension[1]));
+	rVoxelLocation[0]=residual1%(mGridDimension[0]);
+	rVoxelLocation[1]=residual1/(mGridDimension[0]);
+	rVoxelLocation[2]=mVoxelId[elementNumber]/((mGridDimension[0])*(mGridDimension[1]));
+
+	nodeNumbers[0] = mNodeId[rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]* (mGridDimension[0]+1) + rVoxelLocation[0]];
+	nodeNumbers[1] = mNodeId[rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]* (mGridDimension[0]+1) + rVoxelLocation[0]+1];
+	nodeNumbers[2] = mNodeId[rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[0]+1) + rVoxelLocation[0]+1];
+	nodeNumbers[3] = mNodeId[rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[0]+1) + rVoxelLocation[0]];
+	nodeNumbers[4] = mNodeId[(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]     * (mGridDimension[0]+1) + rVoxelLocation[0]];
+	nodeNumbers[5] = mNodeId[(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]     * (mGridDimension[0]+1) + rVoxelLocation[0]+1];
+	nodeNumbers[6] = mNodeId[(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[0]+1) + rVoxelLocation[0]+1];
+	nodeNumbers[7] = mNodeId[(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[0]+1) + rVoxelLocation[0]];
+
+//	std::cout<<" nodesAtElem "<<elementNumber<<": "<<nodeNumbers[0]<<" "<<nodeNumbers[1]<<" "<<nodeNumbers[2]<<" "<<nodeNumbers[3]<<" "<<nodeNumbers[4]<<" "<<nodeNumbers[5]<<" "<<nodeNumbers[6]<<" "<<nodeNumbers[7]<<"\n";
+}
+
+//! @brief set material number at edges for node-edge based routines
+void NuTo::StructureGrid::SetMaterialNumberForEdges()
+{
+	std::vector<int> matOfEdge(0);
+	matOfEdge.resize(64*(int) mEdgeId.size(),0);
+	int orderEdgesForElem[8][8]={
+		{35,39,47,45,57,59,63,62},// 7.
+		{27,34,44,41,53,56,61,60},// 6.
+		{17,20,32,26,48,49,54,52},// 4.
+		{21,23,38,33,50,51,58,55},//5.
+		{9,11,15,14,31,37,46,43},//3.
+		{5,8,13,12,25,30,42,40}, //2.
+		{0,1,6,4,16,18,28,24},//0. elem
+		{2,3,10,7,19,22,36,29},//1. elem
+	};
+	std::vector<int> numElemPerNeigh={1,2,1,2,4,2,1,2,1,2,4,2,4,8,4,2,4,2,1,2,1,2,4,2,1,2,1};
+	std::vector<int> edgesNumOfNeigh={0,1,3,4,6,10,12,13,15,17,21,23,27,35,39,41,45,47,48,50,51,53,57,59,60,62,63};
+	std::vector<size_t> nodeNumbers(8);
+	for(size_t element=0;element<mVoxelId.size();++element)
+	{
+		CalculateNodesAtElement(element,nodeNumbers);
+		//std::cout<<" mat "<<mMaterialOfElem[element];
+		// over local 8 nodes to get correct neighbor element
+		for(int locNode=0;locNode<8;++locNode)
+		{
+			// save edge matrix at all edges of element
+			for(int node=0;node<8;++node)
+			{
+				matOfEdge.at(64*nodeNumbers[locNode]+orderEdgesForElem[locNode][node])=mMaterialOfElem[element];
+
+			}
+		}
+	}
+}
+
+//! @brief create grid data
+//! @param rThresholdMaterialValue ... threshold between material one and two
+//! @param imageValues ... vector of image data
+//! @param rColorToMaterialData ... vector of material data (Young's Modulus) mapped to color points
+void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fileName,
+		 std::vector<double>& rColorToMaterialData)
+{
+	std::vector<int> imageValues (mNumVoxel);
+	NuTo::StructureGrid::ImportFromVtkASCIIFile( fileName,imageValues);
+	size_t numElems=0;
+	size_t numNodes=0;
+	size_t numGridNodes=(mGridDimension[0]+1)*(mGridDimension[1]+1)*(mGridDimension[2]+1);//all nodes of the grid
+	boost::dynamic_bitset<> nodeExist(numGridNodes); //0 = false, all 0 here
+	mNodeId.resize(numGridNodes);		//saves the id of the edges of this node
+
+	std::vector<int> allEdgesAtVoxel(mNumVoxel*8);
+	for (size_t element=0;element<mNumVoxel;++element)
+	{
+			size_t numDimxy=element/((mGridDimension[0])*(mGridDimension[1]));
+			size_t numDimx=0;
+			size_t residual1=element%((mGridDimension[0])*(mGridDimension[1]));
+			size_t residual2=0;
+			numDimx=residual1/(mGridDimension[0]);
+			residual2=residual1%(mGridDimension[0]);
+			size_t rVoxelLocation[3];
+			rVoxelLocation[0]=residual2;
+			rVoxelLocation[1]=numDimx;
+			rVoxelLocation[2]=numDimxy;
+			//! @brief for grid creation calculate and save temporaly all nodes at all voxels
+			allEdgesAtVoxel[8*element+0] = (int) rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]     * (mGridDimension[1]+1) + rVoxelLocation[0];
+			allEdgesAtVoxel[8*element+1] =  (int)rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]     * (mGridDimension[1]+1) + rVoxelLocation[0]+1;
+			allEdgesAtVoxel[8*element+2] = (int) rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[1]+1) + rVoxelLocation[0] +1;
+			allEdgesAtVoxel[8*element+3] = (int) rVoxelLocation[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[1]+1) + rVoxelLocation[0];
+
+			allEdgesAtVoxel[8*element+4] = (int) (rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]     * (mGridDimension[1]+1) + rVoxelLocation[0];
+			allEdgesAtVoxel[8*element+5] =  (int)(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxelLocation[1]     * (mGridDimension[1]+1) + rVoxelLocation[0]+1;
+			allEdgesAtVoxel[8*element+6] = (int) (rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[1]+1) + rVoxelLocation[0]+1;
+			allEdgesAtVoxel[8*element+7] =  (int)(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[1]+1) + rVoxelLocation[0];
+	}
+
+	int numCoeffMat=1;		// set material 0 with E=0
+	mYoungsModulus.push_back(0.);
+
+	bool matExistsAlready=false;
+	for (size_t countVoxels=0;countVoxels<mNumVoxel;++countVoxels)
+	{
+		if (imageValues[countVoxels]<rThresholdMaterialValue)
+		{
+			mVoxelId.push_back(countVoxels);
+//			std::cout<<" voxel "<<countVoxels<<" elem "<<numElems;
+			++numElems;
+			for (int node=0;node<8;++node)
+			{
+				nodeExist.set(allEdgesAtVoxel[8*countVoxels+node],true);
+//				std::cout<<" nodeExist "<<allEdgesAtVoxel[8*countVoxels+node];
+			}
+
+			// nodes are no more set here but not yet elsewhere
+			for(int countMat=1;countMat<numCoeffMat;countMat++)
+			{
+				if (rColorToMaterialData[imageValues[countVoxels]]==mYoungsModulus.at(countMat)) //same modulus already used
+				{
+					mMaterialOfElem.push_back(countMat);
 					countMat=numCoeffMat+1;
 					matExistsAlready=true;
 				}
 				else
 					matExistsAlready=false;
 			}
- 			if (!matExistsAlready)
- 	 		{
- 	 			//set youngsModulus and add on material on counter
- 	 			youngsModulus.push_back(rColorToMaterialData[imageValues[countVoxels]]);
- 	  			numCoeffMat++;
- 	 			matExistsAlready=true; //matrix already added
- 	 		}
+				if (!matExistsAlready)
+				{
+					mMaterialOfElem.push_back(numCoeffMat);
+					//set mYoungsModulus and add on material on counter
+					mYoungsModulus.push_back(rColorToMaterialData[imageValues[countVoxels]]);
+					numCoeffMat++;
+					matExistsAlready=true; //matrix already added
+				}
   		}
- 		else
-  			materialOfElem[countVoxels]=-1;
+	}
+ 	for (size_t node=0;node<numGridNodes;++node)
+	{
+		if (nodeExist[node])
+		{
+			mEdgeId.push_back(node);
+			mNodeId[node]=numNodes++;
+		}
+		else
+		{
+			mNodeId[node]=numGridNodes;
+		}
+	}
+ 	for (size_t node=0;node<numGridNodes;++node)
+ 	{
+		if (mNodeId[node]==numGridNodes)
+		{
+			mNodeId[node]=mEdgeId.size();
+		}
+
  	}
-}
+	mResidual.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
 
-//! @brief Get voxel number and location for all elements
-//! @return FullMatrix columns elements, rows voxel number and number in x, y,z direction
-NuTo::FullMatrix<int>* NuTo::StructureGrid::GetVoxelNumAndLocMatrix()
-{
-// EXIST matrix ?
-// yes: return pointer
-// no: allocate matrix, calculate matrix and return pointer
-	if (mVoxelLocation)
-		return mVoxelLocation;
-	else
+ 	if(StructureBase::mVerboseLevel>1)
 	{
-		CalculateVoxelLocations();
-		return mVoxelLocation;
+		std::cout<<"[NuTo::StructureGrid] numElems = "<<numElems<<"\n";
+		std::cout<<"[NuTo::StructureGrid] numNodes = "<<mEdgeId.size()<<"\n";
+		std::cout<<"[NuTo::StructureGrid] numNodes = "<<numNodes<<"\n";
+		std::cout<<"[NuTo::StructureGrid] Young's Modulus 0= "<<mYoungsModulus[0]<<"\n";
+		std::cout<<"[NuTo::StructureGrid] Young's Modulus 1= "<<mYoungsModulus[1]<<"\n";
 	}
-}
 
-//! @brief Calculate VoxelLocations for all elements
-//! @param int[3] number in x, y,z direction
-void NuTo::StructureGrid::CalculateVoxelLocations()
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-	if(mVerboseLevel>3)
-   std::cout<<__FILE__<<" "<<__LINE__<<"in  StructureGrid::CalculateVoxelLocations()"<< std::endl;
-    int numElems= GetNumElements();
-	mVoxelLocation = new NuTo::FullMatrix<int>(GetNumElements(),3);
-	Voxel8N* thisElement=0;
-    for (int element=0;element<numElems;++element)
-    {
-        thisElement= ElementGetPtr(element);
-        if (thisElement)
-        {
-			int numDimxy=element/((mGridDimension[0])*(mGridDimension[1]));
-			int numDimx=0;
-			int residual1=element%((mGridDimension[0])*(mGridDimension[1]));
-			int residual2=0;
-			numDimx=residual1/(mGridDimension[0]);
-			residual2=residual1%(mGridDimension[0]);
-			int rVoxelLocation[3]={0};
-			rVoxelLocation[0]=residual2;
-			rVoxelLocation[1]=numDimx;
-			rVoxelLocation[2]=numDimxy;
-			thisElement->SetVoxelLocation(rVoxelLocation);
-			//also for global vector
-			(*mVoxelLocation)(element,0)=rVoxelLocation[0];
-			(*mVoxelLocation)(element,1)=rVoxelLocation[1];
-			(*mVoxelLocation)(element,2)=rVoxelLocation[2];
-			if(mVerboseLevel>4)
-				std::cout<<__FILE__<<" "<<__LINE__<<"loc "<<rVoxelLocation[0]<<", "<<rVoxelLocation[1]<<", "<<rVoxelLocation[2]<<std::endl;
-
-        }
-    }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-    	std::cout<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-    	std::cout<<"[NuTo::StructureGrid::CalculateVoxelLocations] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-}
-
-//! @brief Get voxels corner numbers from bottom to top counter-clockwise
-//! @return array of number of corners with corner numbers
-void NuTo::StructureGrid::GetCornersOfVoxel(int rElementNumber,int *rVoxLoc, int *corners)
-{
-	if (mDimension != 3)
-        throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
- //   int corners[8];
-	if (mVerboseLevel>4)
-		std::cout<<__FILE__<<" "<<__LINE__<<"  " <<" voxel location x: "<<  rVoxLoc[0]<<" y: "  <<rVoxLoc[1]<<" z: "<<rVoxLoc[2]<<std::endl;
-
-	corners[0] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0];
-	corners[1] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0]+1;
-	corners[2] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0] +1;
-	corners[3] = rVoxLoc[2]*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0];
-
-	corners[4] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0];
-	corners[5] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + rVoxLoc[1]     * (mGridDimension[1]+1) + rVoxLoc[0]+1;
-	corners[6] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0]+1;
-	corners[7] = (rVoxLoc[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxLoc[1]+1) * (mGridDimension[1]+1) + rVoxLoc[0];
-	if (mVerboseLevel>4)
+	if(StructureBase::mVerboseLevel>5)
 	{
-	    std::cout<<__FILE__<<" "<<__LINE__<<" Ecken des "<<rElementNumber<< ". Elements: "<< corners[0]<<"  "<<corners[1]<<"  "<<corners[2]<<"  "<<corners[3]<<"  "<<std::endl;
-	    std::cout<<__FILE__<<" "<<__LINE__<<"  "<< corners[4]<<"  "<<corners[5]<<"  "<<corners[6]<<"  "<<corners[7]<<"  "<<std::endl;
+		std::cout<<"\n[NuTo::StructureGrid] : voxelId ";
+		for(size_t i=0;i<numElems;++i)
+			std::cout<<mVoxelId[i]<<" ";
+		std::cout<<"\n";
+
+		std::cout<<"[NuTo::StructureGrid] : nodeId ";
+		for(size_t i=0;i<numGridNodes;++i)
+			std::cout<<mNodeId[i]<<" ";
+		std::cout<<"\n";
+
+		std::cout<<"[NuTo::StructureGrid] : edgeId ";
+		for(size_t i=0;i<numNodes;++i)
+			std::cout<<mEdgeId[i]<<" ";
+		std::cout<<"\n";
 	}
-}
-//! @brief NodeGetConstraintSwitch
-//! @param rGlobalDof
-//! @return switch for constraint
-bool* NuTo::StructureGrid::GetConstraintSwitch()
-{
-	return mDofIsNotConstraint;
-}
 
 
-//! @brief Set NodeIds for all nodes at all elements
-void NuTo::StructureGrid::SetAllNodeIds()
+}
+
+//! @brief set displacement boundary conditions
+//! @brief all nodes at one plane perpendicular to direction are constrained
+//! @param rDirection ... 0 = x,1 = y,2 = z
+//! @param rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
+//! @param rValue ... value of boundary displacement
+//! @param rDisplVector ... output initial displacement vector
+void NuTo::StructureGrid::SetDisplacementConstraints(size_t rDirection,size_t *rGridLocation,double rValue,std::vector<double> &rDisplVector)
 {
-#ifdef SHOW_TIME
-    //std::clock_t start,end;
-    //start=clock();
-	timespec startn,endn,diffn,diffsum;
-	diffsum.tv_sec=0.;
-	diffsum.tv_nsec=0.;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-	if (mDimension != 3)
-        throw MechanicsException("[StructureGrid::GetCornerOfVoxel] error dimension must be 3.");
-	Voxel8N* thisElement;
-	int nodeIds[8];
-	for (int element=0;element<GetNumElements();++element)
+	// rGridLocation is with considering frame nodes
+	if(mDofIsConstraint.size()==0)
 	{
-		thisElement= ElementGetPtr(element);
-		if (thisElement)
+		mDofIsConstraint.resize(3*mEdgeId.size(),false); //0 = false, all 0 here
+		mDisplacements.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
+		mNumConstraintDofs=0;
+	}
+	size_t gridNode=0;
+	if (StructureBase::mVerboseLevel>3)
+	{
+		std::cout<<"[StructureGrid::SetDisplacementConstraints] constraint regions x: "<<rGridLocation[0]<<" - "<<rGridLocation[1];
+		std::cout<<" y: "<<rGridLocation[2]<<" - "<<rGridLocation[3];
+		std::cout<<" z: "<<rGridLocation[4]<<" - "<<rGridLocation[5];
+	}
+	for(size_t dim2=rGridLocation[4];dim2<=rGridLocation[5];++dim2)
+	{
+		for(size_t dim1=rGridLocation[2];dim1<=rGridLocation[3];++dim1)
 		{
-			int * locVoxLoc=thisElement->GetVoxelLocation();
-			//get grid corners of the voxel
-			GetCornersOfVoxel(element, locVoxLoc, nodeIds);
-			//std::cout<<"SetNodeIds : element "<<element<<"nodes "<<		nodeIds[0] <<" ,"<<	nodeIds[1]<<" ,"<<	nodeIds[2]<<" ,"<<	nodeIds[3] <<" ,"<<			nodeIds[4] <<" ,"<<		nodeIds[5]<<" ,"<<			nodeIds[6] <<" ,"<<		nodeIds[7]<<" ,"<<	std::endl;
-			thisElement->SetNodeIds(nodeIds);
-		}
-	}
-#ifdef SHOW_TIME
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-	diffn=diff(startn,endn);
-	diffsum.tv_sec+=diffn.tv_sec;
-	diffsum.tv_nsec+=diffn.tv_nsec;
-	//end=clock();
-	if (mShowTime)
-        //std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-        std::cout<<"[NuTo::StructureGrid::SetAllNodeIds] " << diffsum.tv_sec <<" sec: "<<diffsum.tv_nsec/1000000.<<" msec" << std::endl;
-#endif
-}
-
-//! @brief Set NodeIds for all nodes at all nodes
-void NuTo::StructureGrid::SetAllNodeIdsAtNode()
-{
-#ifdef SHOW_TIME
-    //std::clock_t start,end;
-    //start=clock();
-	timespec startn,endn,diffn;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-	if (mDimension != 3)
-        throw MechanicsException("[StructureGrid::SetAllNodeIdsAtNode] error dimension must be 3.");
-	NodeGrid3D* thisNode;
-	Voxel8N* thisElement;
-	int* localNodeIds=0;
-	//local node ids sorted after element and node of element
-	int orderNode[8][8]={
-		{0,1,4,3,9,10,13,12},
-		{1,2,5,4,10,11,14,13},
-		{4,5,8,7,13,14,17,16},
-		{3,4,7,6,12,13,16,15},
-		{9,10,13,12,18,19,22,21},
-		{10,11,14,13,19,20,23,22},
-		{13,14,17,16,22,23,26,25},
-		{12,13,16,15,21,22,25,24},
-	};
-	//field of 27 nodes which contain element and node of element
-	std::vector<FullMatrix<double>*> partMatrix;
-	if (mVerboseLevel>2)
-		std::cout<<__FILE__<<" "<<__LINE__<<" in SetAllNodeIdsAtNode() "<<std::endl;
-
-	for (int nodeNumber=0;nodeNumber<GetNumNodes();++nodeNumber)
-	{
-		thisNode=NodeGridGetNodePtr(nodeNumber);
-		if (thisNode)
-		{
-			int nodeIds[27];
-			for (int i=0;i<27;++i)
-				nodeIds[i]=-1;
-			int* elementIds=thisNode->GetElementIds();
-			for (int element=0;element<8;++element)
+			gridNode= (dim2)*(mGridDimension[0]+1)*(mGridDimension[1]+1)
+					 +(dim1)*(mGridDimension[0]+1)
+					 +     rGridLocation[0]  ;
+			for(size_t dim0=rGridLocation[0];dim0<=rGridLocation[1];++dim0)
 			{
-				if(elementIds[element]>-1)
+				if (mNodeId[gridNode]<mEdgeId.size()) //check if node exist and increment counter
 				{
-					thisElement= ElementGetPtr(elementIds[element]);
-					if(thisElement)
-					{
-						localNodeIds=thisElement->GetNodeIds();
-						for(int node=0;node<8;++node)
-						{
-							nodeIds[orderNode[element][node]]=localNodeIds[node];// overhead,set id 4 times, but slower with if clause
-						}
-					}
+
+					mDofIsConstraint.set(mNodeId[gridNode]*3+rDirection,true);
+					mDisplacements[mNodeId[gridNode]*3+rDirection]=rValue;
+					++mNumConstraintDofs;
 				}
-			}
-			thisNode->SetNodeIds(nodeIds);
-		}
-	}
-#ifdef SHOW_TIME
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-    diffn=diff(startn,endn);
-    //end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllNodeIdsAtNodes] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" <<std::endl;
-#endif
-}
-
-//! @brief Set partCoefficientmatrix for all nodes
-void NuTo::StructureGrid::SetAllPartCoefficientMatrix0()
-{
-#ifdef SHOW_TIME
-    //std::clock_t start,end;
-    //start=clock();
-	timespec startn,endn,diffn;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-	if (mDimension != 3)
-        throw MechanicsException("[StructureGrid::SetAllPartCoefficientMatrix0] error dimension must be 3.");
-	if (mVerboseLevel>2)
-		std::cout<<__FILE__<<" "<<__LINE__<<" in SetAllPartCoefficientMatrix0 "<<std::endl;
-	// first field of 8 local nodes of one element
-	// second field of 8 local nodes of one element
-	// contains NBN ordering local node id
-	int orderNode[8][8]={
-		{13,14,17,16,22,23,26,25},
-		{12,13,16,15,21,22,25,24},
-		{9,10,13,12,18,19,22,21},
-		{10,11,14,13,19,20,23,22},
-		{4,5,8,7,13,14,17,16},
-		{3,4,7,6,12,13,16,15},
-		{0,1,4,3,9,10,13,12},
-		{1,2,5,4,10,11,14,13},
-	};
-
-	for (int element=0;element<GetNumElements();++element)
-	{
-		Voxel8N* thisElement;
-		thisElement= ElementGetPtr(element);
-		if (thisElement)
-		{
-			int numLocalStiffness =thisElement->GetNumLocalStiffnessMatrix();
-			FullMatrix<double>* matrix= GetLocalCoefficientMatrix0(numLocalStiffness);
-
-			int* nodeIds=thisElement->GetNodeIds();
-			NodeGrid3D* thisNodeI;
-			NodeGrid3D* thisNodeJ;
-			int k=0;
-			for (int i=0;i<8;++i)
-			{
-				thisNodeI=NodeGridGetNodePtr(nodeIds[i]);
-				if (!thisNodeI)
-					std::cout<<" StrGrid  test  nod ptr print if 0"<<std::endl;
-				for(int j=k;j<8;++j)
-				{
-					thisNodeJ=NodeGridGetNodePtr(nodeIds[j]);
-					if (!thisNodeJ)
-						std::cout<<" StrGrid  test  nod ptr print if 0"<<std::endl;
-					//How does this work without copying a 3x3 matrix?
-					//Adress of a part of the matrix not possible
-					FullMatrix<double> partMatrix(3,3);
-					partMatrix=(matrix->GetBlock(i*3,j*3,3,3));
-					//thisNodeI->SetPartCoefficientMatrix0(orderNode[i][j],partMatrix);
-					thisNodeI->SetPartCoefficient0(orderNode[i][j],partMatrix);
-					if (i!=j)
-					{
-						partMatrix=(matrix->GetBlock(j*3,i*3,3,3));
-						//thisNodeJ->SetPartCoefficientMatrix0(orderNode[j][i],partMatrix);
-						thisNodeJ->SetPartCoefficient0(orderNode[j][i],partMatrix);
-					}
-				}
-				++k;
+					++gridNode;
 			}
 		}
 	}
-
-#ifdef SHOW_TIME
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-	diffn=diff(startn,endn);
-	//end=clock();
-	if (mShowTime)
-	    std::cout<<"[NuTo::StructureGrid::SetAllPartCoefficientMatrix0] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
-        //std::cout<<"[NuTo::StructureGrid::SetAllPartCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-
+	if(StructureBase::mVerboseLevel>3)
+		std::cout<<" numConstraints "<<mNumConstraintDofs<<"\n";
+	rDisplVector=mDisplacements;
 }
 
-//! @brief Set ElementIds for the elements at each nodes
-void NuTo::StructureGrid::SetAllElementIds()
+//! @brief get DisplacementConstaints
+//! @return dynamic_bitset of constraints
+const boost::dynamic_bitset<>* NuTo::StructureGrid::GetDisplacementConstaints() const
 {
-#ifdef SHOW_TIME
-    //std::clock_t start,end;
-	//start=clock();
-	timespec startn,endn,diffn,diffsum;
-    diffsum.tv_sec=0.;
-    diffsum.tv_nsec=0.;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-	if (mDimension != 3)
-        throw MechanicsException("[StructureGrid::SetAllElementIds] error dimension must be 3.");
-	NodeGrid3D* thisNode;
-	if (mVerboseLevel>2)
-		std::cout<<__FILE__<<" "<<__LINE__<<"in SetAllElementIds() "<<std::endl;
-	int *elementIds=0;
-	for (int node=0;node<GetNumNodes();++node)
-	{
-       thisNode=NodeGridGetNodePtr(node);
-       if (thisNode)
-       {
-    	   elementIds=GetCoincidenceVoxelIDs(node);
-    	   thisNode->SetElementIds(elementIds);
-       }
-	}
-/*
-#ifdef SHOW_TIME
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-    diffn=diff(startn,endn);
-    diffsum.tv_sec+=diffn.tv_sec;
-    diffsum.tv_nsec+=diffn.tv_nsec;
-     if (mShowTime)
-        std::cout<<"[NuTo::StructureGrid::SetAllElementIds: before element get id] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&startn);
-#endif
-*/
-#ifdef SHOW_TIME
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&endn);
-	diffn=diff(startn,endn);
-    diffsum.tv_sec=diffn.tv_sec;
-    diffsum.tv_nsec=diffn.tv_nsec;
-	//end=clock();
-	if (mShowTime)
-		//std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-//		std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << diffn.tv_sec <<" sec: "<<diffn.tv_nsec/1000000.<<" msec" << std::endl;
-		std::cout<<"[NuTo::StructureGrid::SetAllElementIds] " << diffsum.tv_sec <<" sec: "<<diffsum.tv_nsec/1000000.<<" msec" << std::endl;
-#endif
+	return &mDofIsConstraint;
 }
+
 
 //! @brief Get LocalCoefficientMatrix0
 //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
-NuTo::FullMatrix<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0)
+const std::vector<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const
 {
  	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
 }
+//! @brief calculate gradient
+
+void NuTo::StructureGrid::Gradient (std::vector<double>& rValues,std::vector<double>& rGradient)const
+{
+	if(!mMatrixFreeMethod)
+		CalculateMatrixVectorProductEBE(rValues,rGradient);
+	else
+		CalculateMatrixVectorProductNBN(rValues,rGradient);
+
+}
+//! @brief ... calculate matrix-vector-product in element-by-element way
+//! @brief ... with local vectors
+//! @param ... u - parameters input, r - gradient output
+void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,std::vector<double>& r)const
+{
+	size_t numElems=mVoxelId.size();
+	int dofsElem=24;
+	// global external force vector (active dofs)
+    //	std::vector<double>  force(mNumParameters,1);
+
+	std::vector<double> residual (24);
+	std::vector<double> displacement(24);
+	std::vector<size_t> nodeNumbers(8);
+
+	//loop over all elements
+	for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
+	{
+		//calculate local return vector with all dofs: r=Ku
+#ifndef NODESATELEM
+		CalculateNodesAtElement(elementNumber,nodeNumbers);
+#endif
+		double youngsModulus=0;
+		if(mCurrentGridNumber==0)
+			youngsModulus=mYoungsModulus[mMaterialOfElem[elementNumber]];
+		else
+			youngsModulus=mMGYoungsModulus[elementNumber];
+
+		for(int node=0;node<8;++node)
+		{
+#ifdef NODESATELEM
+			nodeNumbers[node]=mNodesAtElem[8*elementNumber+node];
+#endif
+//			displacement[3*node]=u.at(3*nodeNumbers[node]);
+			displacement[3*node]=u[3*nodeNumbers[node]];
+			displacement[3*node+1]=u[3*nodeNumbers[node]+1];
+			displacement[3*node+2]=u[3*nodeNumbers[node]+2];
+		}
+		for(int i=0;i<dofsElem;++i)
+		{
+			residual[i]=0;
+			for(int j=0;j<dofsElem;++j)
+				residual[i]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*i+j]*displacement[j];
+		}
+		for(int node=0;node<8;++node)
+		{
+			if (!mDofIsConstraint[3*nodeNumbers[node]])
+				r[3*nodeNumbers[node]]+=residual[3*node];
+			if (!mDofIsConstraint[3*nodeNumbers[node]+1])
+				r[3*nodeNumbers[node]+1]+=residual[3*node+1];
+			if (!mDofIsConstraint[3*nodeNumbers[node]+2])
+				r[3*nodeNumbers[node]+2]+=residual[3*node+2];
+//				r.at(3*nodeNumbers[node]+2)+=residual[3*node+2];
+		}
+	}
+}
+
+//! @brief ... calculate matrix-vector-product in node-by-node way
+//! @brief ... with local vectors
+//! @param ... u - prarmeters input, r - gradient output
+void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u,std::vector<double> &r)const
+{
+//#ifdef SHOW_TIME
+//    std::clock_t start,end;
+//    start=clock();
+//#endif //SHOW_TIME
+//	std::cout<<"[StructureGrid::CalculateMatrixVectorProductNBN]\n";
+	size_t numNodes=mEdgeId.size();
+//	int  nodeNumbers[64];
+	const int nodeNbrOfEdge[64]={0,1,1,2,3,3,4,4,4,4,5,5,6,7,7,8,9,9,10,10,10,10,11,11,12,12,12,12,13,13,13,13,13,13,13,13,14,14,14,14,15,15,16,16,16,16,17,17,18,19,19,20,21,21,22,22,22,22,23,23,24,25,25,26};
+//	const int nbrOfEdges[27]={1,2,1,2,4,2,1,2,1,2,4,2,4,8,4,2,4,2,1,2,1,2,4,2,1,2,1};
+	//loop over all elements
+//	std::cout<<" NBN : numNodes "<<numNodes<<"\n";
+	for (size_t node=0;node<numNodes;++node)
+    {
+//		double* youngsModulus=&mYoungsModulus[mMaterialOfElem[64*node]];
+
+		size_t neighbors[64] ;
+		double youngsModulus[64];
+		for (size_t i=0;i<64;++i)
+		{
+			neighbors[i]=mNodeId[mEdgeId[node]+mNeighborNodesNE[nodeNbrOfEdge[i]]];
+			youngsModulus[i] = mYoungsModulus[mMaterialOfElem[64*node+i]];
+		}
+
+
+//		std::cout<<" NBN : grid "<<nodeNumber<<" nodeid "<<node<<" grid neigh: ";
+		r[3*node+0]=0;
+		r[3*node+1]=0;
+		r[3*node+2]=0;
+		//27 neighbor nodes
+		//calculate local return vector: r=Ku
+		for(int i=0;i<64;++i)
+		{
+					r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i]*u[3*neighbors[i]];
+					r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+1]*u[3*neighbors[i]+1];
+					r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+2]*u[3*neighbors[i]+2];
+
+					r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+3]*u[3*neighbors[i]];
+					r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+4]*u[3*neighbors[i]+1];
+					r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+5]*u[3*neighbors[i]+2];
+
+					r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+6]*u[3*neighbors[i]];
+					r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+7]*u[3*neighbors[i]+1];
+					r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+8]*u[3*neighbors[i]+2];
+		}
+		r[3*node+0]*=!mDofIsConstraint[3*node];
+		r[3*node+1]*=!mDofIsConstraint[3*node+1];
+		r[3*node+2]*=!mDofIsConstraint[3*node+2];
+
+//		std::cout<<"\n";
+	}
+
+
+//#ifdef SHOW_TIME
+//    end=clock();
+//    if (mShowTime)
+//        std::cout<<"[NuTo::StructureGrid::CalculateMatrixVectorProductNBN] " << difftime(end,start)/CLOCKS_PER_SEC << "sec \n ";
+//#endif
+}
+
+void NuTo::StructureGrid::Hessian(std::vector<double>&  rDiagHessian)const
+{
+//	std::cout<<"[StructureGrid::Hessian] "<<std::endl;
+	//only diagonal preconditioner so fas
+	HessianDiag(rDiagHessian);
+}
+void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
+{
+//#ifdef SHOW_TIME
+//    std::clock_t start,end;
+//    start=clock();
+//#endif
+	if (NuTo::CallbackHandlerGrid::GetVerboseLevel()>3)
+		std::cout<<"[StructureGrid::HessianDiag] "<<std::endl;
+
+	if (!mMatrixFreeMethod)
+	{
+		size_t numElems=mVoxelId.size();
+//		std::cout<<"[StructureGrid::HessianDiag] EBE"<<std::endl;
+		std::vector<size_t> nodeNumbers(8);
+
+		for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
+		{
+			double elemStiff=0;
+			if(mCurrentGridNumber==0)
+				elemStiff=mYoungsModulus[mMaterialOfElem[elementNumber]]*mLocalCoefficientMatrix0[0][0];
+			else
+			{
+				elemStiff=mMGYoungsModulus.at(elementNumber)*mLocalCoefficientMatrix0[0][0];
+			}
+#ifdef NODESATELEM
+			nodeNumbers[node]=mNodesAtElem[8*elementNumber+node];
+#else
+			CalculateNodesAtElement(elementNumber,nodeNumbers);
+#endif
+			for(int node=0;node<8;++node)
+			{
+				rHessianDiag[3*nodeNumbers[node]]+=elemStiff;
+				rHessianDiag[3*nodeNumbers[node]+1]+=elemStiff;
+				rHessianDiag[3*nodeNumbers[node]+2]+=elemStiff;
+			}
+		}
+	}
+	else
+	{
+//		std::cout<<"[StructureGrid::HessianDiag] NBN"<<std::endl;
+		size_t numNodes=mEdgeId.size();
+		for (size_t nodeNumber=0;nodeNumber<numNodes;++nodeNumber)
+		{
+			double elemStiff[3]={0,0,0};
+			for (size_t edge=28;edge<36;++edge)
+			{
+					elemStiff[0]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge];
+					elemStiff[1]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge+4];
+					elemStiff[2]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge+8];
+//					std::cout<<"elem Stiff of "<<nodeNumber <<" : "<<elemStiff[0]<<" "<<elemStiff[1]<<" "<<elemStiff[2]<<" \n";
+			}
+			rHessianDiag[3*nodeNumber]=elemStiff[0];
+			rHessianDiag[3*nodeNumber+1]=elemStiff[1];
+			rHessianDiag[3*nodeNumber+2]=elemStiff[2];
+		}
+
+	}
+	size_t numDOFs=mEdgeId.size()*3;
+	for (size_t i=0;i<numDOFs;++i)
+	{
+		if (rHessianDiag[i]!=0)
+		{
+					rHessianDiag[i]=1./rHessianDiag[i];
+		}
+	}
+}
+std::vector<double>&  NuTo::StructureGrid::GetParameters()
+{
+	return mDisplacements;
+}
+std::vector<double>&  NuTo::StructureGrid::GetResidual()
+{
+	return mResidual;
+}
+
+void NuTo::StructureGrid::SetParameters(std::vector<double>& rParameters)
+{
+	mDisplacements=rParameters;
+}
+
+void NuTo::StructureGrid::SetResidual(std::vector<double>& rResidual)
+{
+	mResidual=rResidual;
+}
+
+//! @brief MultiGrid routines
+//! @brief initialize on coarser grid
+//! @param StructureGrid reference
+void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
+{
+	std::vector<size_t> rGridDimension=GetGridDimension();
+	std::vector<size_t> rOrigDimension=GetGridDimension();
+
+	size_t numElems=GetNumElements();
+	std::vector<size_t> rElemId(GetNumVoxels(),numElems);
+
+	for(size_t elementNumber=0;elementNumber<numElems;++elementNumber)
+		rElemId[mVoxelId[elementNumber]]=elementNumber;
+
+
+	if(!mCurrentGridNumber)
+		mResidual.resize((GetNumNodes()+1)*3,0.);
+
+	size_t voxel=0;
+	size_t edge=0;
+
+	std::vector<size_t> neighborVoxel{0,1,rGridDimension[0],rGridDimension[0]+1,
+		(rGridDimension[0])*(rGridDimension[1]),(rGridDimension[0])*(rGridDimension[1])+1,
+		(rGridDimension[0])*(rGridDimension[1])+rGridDimension[0],
+		(rGridDimension[0])*(rGridDimension[1])+rGridDimension[0]+1};
+	rGridDimension[0]*=0.5;
+	rGridDimension[1]*=0.5;
+	rGridDimension[2]*=0.5;
+
+	// add "right" frame element
+	rGridDimension[0]+=1;
+	rGridDimension[1]+=1;
+	rGridDimension[2]+=1;
+	// new structure settings
+	rCoarseGrid->SetGridDimension(rGridDimension);
+	rCoarseGrid->mNumVoxel=rGridDimension[0]*rGridDimension[1]*rGridDimension[2];
+	rCoarseGrid->SetNumBasisMaterials(GetNumBasisMaterials());
+	rCoarseGrid->SetCurrentGridNumber(GetCurrentGridNumber()+1);
+	rCoarseGrid->SetFineGridPtr(this);
+	SetCoarseGridPtr(rCoarseGrid);
+
+	// same matrix for simplicity copy to this grid
+	rCoarseGrid->mLocalCoefficientMatrix0=mLocalCoefficientMatrix0;
+
+	size_t coarseGridNumElements=0;
+	size_t numGridNodes=(rGridDimension[0]+1)*(rGridDimension[1]+1)*(rGridDimension[2]+1);//all nodes of the grid
+	boost::dynamic_bitset<> nodeExist(numGridNodes); //0 = false, all 0 here
+
+	if (!mNumBasisMaterials)
+		  throw MechanicsException("[StructureGrid::SetMultiGridStructure] only one Poisson ration possible.");
+
+	for(size_t dim2=1;dim2<rGridDimension[2]-1;++dim2)
+	{
+		for(size_t dim1=1;dim1<rGridDimension[1]-1;++dim1)
+		{
+			for(size_t dim0=1;dim0<rGridDimension[0]-1;++dim0)
+			{
+				voxel= (2*dim2-1)*(rOrigDimension[0])*(rOrigDimension[1])
+					 +(2*dim1-1)*(rOrigDimension[0]) + 2*dim0-1  ; // frame +1, fine grid voxel number 2*
+				double rYoungsModulus=0.;
+				for (size_t i=0;i<8;++i)
+				{
+					if(rElemId[voxel+neighborVoxel[i]]<numElems) //element exist in fine grid
+					{
+						//create coarse element
+						if(mCurrentGridNumber)
+							rYoungsModulus+=GetElementYoungsModulus(rElemId[voxel+neighborVoxel[i]]); // coarse grid material
+						else
+							rYoungsModulus+=mYoungsModulus[mMaterialOfElem[rElemId[voxel+neighborVoxel[i]]]]; // coarse grid material
+					}
+				}
+				rCoarseGrid->mMGYoungsModulus.push_back(rYoungsModulus*0.125*2); // average and length considered
+				++coarseGridNumElements; // one more already
+				rCoarseGrid->mVoxelId.push_back((dim2)*(rGridDimension[0])*(rGridDimension[1])
+						 +(dim1)*(rGridDimension[0]) + dim0);
+
+
+				edge=(dim2)*(rGridDimension[0]+1)*(rGridDimension[1]+1)
+					 +(dim1)*(rGridDimension[0]+1) + dim0  ;
+
+				nodeExist.set(edge,true);
+				nodeExist.set(edge+1,true);
+				nodeExist.set(edge+(rGridDimension[0]+1),true);
+				nodeExist.set(edge+(rGridDimension[0]+1)+1,true);
+				nodeExist.set(edge+(rGridDimension[0]+1)*(rGridDimension[1]+1),true);
+				nodeExist.set(edge+(rGridDimension[0]+1)*(rGridDimension[1]+1)+1,true);
+				nodeExist.set(edge+(rGridDimension[0]+1)*(rGridDimension[1]+1)+(rGridDimension[0]+1),true);
+				nodeExist.set(edge+(rGridDimension[0]+1)*(rGridDimension[1]+1)+(rGridDimension[0]+1)+1,true);
+				//nodes later
+
+
+			}
+		}
+	}
+	//create nodes
+	size_t numNodes=0;
+//		mNodeId. neue größe
+	for (size_t edge=0;edge<numGridNodes;++edge)
+	{
+		if (nodeExist[edge])
+		{
+			rCoarseGrid->mEdgeId.push_back(edge);
+			rCoarseGrid->mNodeId.push_back(numNodes++);
+		}
+		else
+			rCoarseGrid->mNodeId.push_back(numGridNodes);
+	}
+	for (size_t edge=0;edge<numGridNodes;++edge)
+	{
+		if (rCoarseGrid->mNodeId[edge]==numGridNodes)
+			rCoarseGrid->mNodeId[edge]=mEdgeId.size();
+	}
+	size_t fineEdge=0;
+	rCoarseGrid->mDofIsConstraint.resize(numNodes*3,false);
+	rCoarseGrid->mDisplacements.resize((numNodes+1)*3,0.);
+	rCoarseGrid->mResidual.resize((numNodes+1)*3,0.);
+	rCoarseGrid->mFineEdgeId.resize(numNodes);
+	rCoarseGrid->mpFineGrid=this;
+	for(size_t dim2=1;dim2<rGridDimension[2];++dim2)
+	{
+		for(size_t dim1=1;dim1<rGridDimension[1];++dim1)
+		{
+			for(size_t dim0=1;dim0<rGridDimension[0];++dim0)
+			{
+
+				fineEdge= (2*dim2-1)*(rOrigDimension[0]+1)*(rOrigDimension[1]+1)
+					 +(2*dim1-1)*(rOrigDimension[0]+1) + 2*dim0-1  ; // frame +1, fine grid voxel number 2*
+				edge=(dim2)*(rGridDimension[0]+1)*(rGridDimension[1]+1)
+							 +(dim1)*(rGridDimension[0]+1) + dim0  ;
+				if(rCoarseGrid->mNodeId[edge]<numNodes)
+				{
+					rCoarseGrid->mFineEdgeId[rCoarseGrid->mNodeId[edge]]=fineEdge;
+					rCoarseGrid->mDofIsConstraint.set(3*rCoarseGrid->mNodeId[edge],mDofIsConstraint[3*mNodeId[fineEdge]]);
+					rCoarseGrid->mDofIsConstraint.set(3*rCoarseGrid->mNodeId[edge]+1,mDofIsConstraint[3*mNodeId[fineEdge]+1]);
+					rCoarseGrid->mDofIsConstraint.set(3*rCoarseGrid->mNodeId[edge]+2,mDofIsConstraint[3*mNodeId[fineEdge]+2]);
+					if(rCoarseGrid->mDofIsConstraint[3*rCoarseGrid->mNodeId[edge]])
+					{
+//						rCoarseGrid->mDisplacements[3*rCoarseGrid->mNodeId[edge]]=mDisplacements[3*mNodeId[fineEdge]];
+						rCoarseGrid->mNumConstraintDofs++;
+					}
+					if(rCoarseGrid->mDofIsConstraint[3*rCoarseGrid->mNodeId[edge]+1])
+					{
+//						rCoarseGrid->mDisplacements[3*rCoarseGrid->mNodeId[edge]+1]=mDisplacements[3*mNodeId[fineEdge]+1];
+						rCoarseGrid->mNumConstraintDofs++;
+					}
+					if(rCoarseGrid->mDofIsConstraint[3*rCoarseGrid->mNodeId[edge]+2])
+					{
+//						rCoarseGrid->mDisplacements[3*rCoarseGrid->mNodeId[edge]+2]=mDisplacements[3*mNodeId[fineEdge]+2];
+						rCoarseGrid->mNumConstraintDofs++;
+					}
+				}
+			}
+		}
+	}
+	rCoarseGrid->Info();
+	mpCoarseGrid=rCoarseGrid;
+}
+
+
+//! @brief MultiGrid routines
+//! @brief set pointer to coarser grid
+void NuTo::StructureGrid::SetCoarseGridPtr(NuTo::StructureGrid* rCoarseGrid)
+{
+		mpCoarseGrid=rCoarseGrid;
+}
+
+//! @brief MultiGrid routines
+//! @brief set pointer to finer grid
+void NuTo::StructureGrid::SetFineGridPtr(NuTo::StructureGrid* rFineGrid)
+{
+		mpFineGrid=rFineGrid;
+}
+
+
+
+void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restrictionType,std::vector<double>& rRestriction,std::vector<double>& rProlongation)
+{
+	if (restrictionType=="TWENTYSEVENPOINTS")
+	{
+		// considered neighbor nodes:
+		// 7pt: -dim0*dim1   -dim0  -1 0 -1 dim0  dim0*dim1
+		// 27pt all neighbors
+		const int neighbors=27;
+		const std::vector<double> helpRestriction={1,2,1,2,4,2,1,2,1, 2,4,2,4,8,4,2,4,2, 1,2,1,2,4,2,1,2,1};
+
+		rRestriction.resize(neighbors);
+		rProlongation.resize(neighbors);
+		for (int i=0;i<neighbors;++i)
+		{
+			rRestriction[i]=helpRestriction[i];
+			rProlongation[i]=helpRestriction[i];
+		}
+	}
+	else
+	{
+		throw 	OptimizeException(std::string("[MultiGrid] Wrong restriction type."));
+	}
+
+}
+void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
+{
+	std::cout<<"[StructureGrid::Restriction] \n";
+	std::vector<size_t> rCoarseDimension=mpCoarseGrid->GetGridDimension();
+	std::vector<size_t> rFineDimension=GetGridDimension();
+
+	// 27 neighbor nodes
+	if (mNeighborNodesNE.empty())
+		SetNeighborNodesNE();
+
+	int fineGridEdge=0;
+	for (int node = 0; node < mpCoarseGrid->GetNumNodes(); ++node)
+	{
+		mpCoarseGrid->mDisplacements[3*node+0]=0;
+		mpCoarseGrid->mDisplacements[3*node+1]=0;
+		mpCoarseGrid->mDisplacements[3*node+2]=0;
+
+		std::vector<double> help={0,0,0};
+		//corresponding fine grid node
+		fineGridEdge=(int) mpCoarseGrid->mFineEdgeId.at(node);
+		double sum=0.;
+		if(!mpCoarseGrid->mDofIsConstraint[3*node])
+		{
+			for (int i = 0; i < 27; ++i)
+			{
+				if((int) mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+				{
+					help[0]+=mResidual[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])]*rRestrictionFactor[i];
+					sum+=rRestrictionFactor[i];
+				}
+			}
+			if(sum)
+				mpCoarseGrid->mResidual[3*node]=-help[0]/sum;
+			else
+				mpCoarseGrid->mResidual[3*node]=-help[0];
+		}
+
+		if(!mpCoarseGrid->mDofIsConstraint[3*node+1])
+		{
+			for (int i = 0; i < 27; ++i)
+			{
+				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[1]+=mResidual[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+1]*rRestrictionFactor[i];
+			}
+			if(sum)
+				mpCoarseGrid->mResidual[3*node+1]=-help[1]/sum;
+			else
+				mpCoarseGrid->mResidual[3*node+1]=-help[1];
+
+		}
+		if(!mpCoarseGrid->mDofIsConstraint[3*node+2])
+		{
+			for (int i = 0; i < 27; ++i)
+			{
+				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[2]+=mResidual[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+2]*rRestrictionFactor[i];
+			}
+			if(sum)
+				mpCoarseGrid->mResidual[3*node+2]=-help[2]/sum;
+			else
+				mpCoarseGrid->mResidual[3*node+2]=-help[2];
+		}
+	}
+}
+
+void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor)
+{
+	std::cout<<"[StructureGrid::Prolongation] \n";
+	std::vector<size_t> rCoarseDimension=GetGridDimension();
+	std::vector<size_t> rFineDimension=mpFineGrid->GetGridDimension();
+
+	// 27 neighbor nodes
+	if (mpFineGrid->mNeighborNodesNE.empty())
+		SetNeighborNodesNE();
+	size_t numNeighbors=mpFineGrid->mNeighborNodesNE.size();
+	size_t fineGridEdge=0;
+
+//	std::cout<<__FILE__<<" "<<__LINE__<<"numNodes "<<GetNumNodes()<<"\n";
+	for (int node = 0; node < GetNumNodes(); ++node)
+	{
+		//corresponding fine grid node
+		fineGridEdge=mFineEdgeId[node];
+		for (size_t i = 0; i < numNeighbors; ++i)
+		{
+			int nodeId=mpFineGrid->mNodeId[fineGridEdge+mpFineGrid->mNeighborNodesNE[i]];
+//			std::cout<<"[StructureGrid::Prolongation] "<<__LINE__<<" node "<<node<<" fine node "<<nodeId<<" \n";
+			if (nodeId<mpFineGrid->GetNumNodes())
+			{
+				if(!mpFineGrid->mDofIsConstraint[3*nodeId])
+				{
+//					std::cout<<mDisplacements[3*node]*rProlongationFactor[i]<<" ";
+					mpFineGrid->mDisplacements[3*nodeId]+=mDisplacements[3*node]*rProlongationFactor[i];
+				}
+				if(!mpFineGrid->mDofIsConstraint[3*nodeId+1])
+					mpFineGrid->mDisplacements[3*nodeId+1]+=mDisplacements[3*node+1]*rProlongationFactor[i];
+				if(!mpFineGrid->mDofIsConstraint[3*nodeId+2])
+					mpFineGrid->mDisplacements[3*nodeId+2]+=mDisplacements[3*node+2]*rProlongationFactor[i];
+			}
+		}
+	}
+	for (int dof=0;dof < 3*(mpFineGrid->GetNumNodes()+1);++dof)
+		mpFineGrid->mResidual[dof]=0;
+}
+
+void  NuTo::StructureGrid::AnsysInput(std::vector<double> &rDisplVector) const
+{
+	// open file
+	std::ofstream file;
+    file.open("ansysInput");
+    file<<"!Ansys Input File: \n DIM: "<<mGridDimension[0]<<" DOFS: "<<mEdgeId.size()*3<<"\n";
+    file<<"/prep7 \net,1,solid185 \nkeyopt,1,2,3 \n";
+
+    int countMat=mNumMaterials;
+    for(int i=1;i<countMat;++i)
+    {
+        file<<"mp,ex,"<<i<<","<<mYoungsModulus[i]<<" \n";
+        file<<"mp,prxy,"<<i<<",.2 \n";
+
+    }
+    int node=0;
+    for (size_t z=0;z<mGridDimension[2]+1;++z)
+    {
+    	for (size_t y=0;y<mGridDimension[1]+1;++y)
+    	{
+    		for (size_t x=0;x<mGridDimension[0]+1;++x)
+			{
+    			if(mNodeId[node]<mEdgeId.size())
+    			{
+    				file<<"n,"<<mNodeId[node]+1<<","<<x*mVoxelSpacing[0]<<","<<y*mVoxelSpacing[1]<<","<<z*mVoxelSpacing[2]<<"\n";
+   				if (mDofIsConstraint[3*mNodeId[node]])
+    				{
+    					file<<"nsel,s,node,,"<<mNodeId[node]+1<<"\n";
+    				   	file<<"d,all,ux,"<<rDisplVector[3*mNodeId[node]]<<"\n";
+     				}
+   				if (mDofIsConstraint[3*mNodeId[node]+1])
+    				{
+    					file<<"nsel,s,node,,"<<mNodeId[node]+1<<"\n";
+    				   	file<<"d,all,uy,"<<rDisplVector[3*mNodeId[node]+1]<<"\n";
+     				}
+   				if (mDofIsConstraint[3*mNodeId[node]+2])
+    				{
+    					file<<"nsel,s,node,,"<<mNodeId[node]+1<<"\n";
+    				   	file<<"d,all,uz,"<<rDisplVector[3*mNodeId[node]+2]<<"\n";
+     				}
+   			}
+    			node++;
+			}
+    	}
+    }
+    file<<"alls\n";
+    int mat=1;
+    file<<"type,1 \n mat,"<<mat<<" \n";
+    int numElems=(int) mMaterialOfElem.size();
+    std::vector<size_t> nodes(8);
+    // attention for more materials
+    for (int i=0;i<numElems;++i)
+    {
+		if(mMaterialOfElem[i]!=mat)
+		{
+			mat=mMaterialOfElem[i]+1;
+			file<<"mat,"<<mat<<"\n";
+		}
+		CalculateNodesAtElement(i,nodes);
+ 		file << "en," << i + 1 << "," << nodes[0] + 1
+				<< "," << mNodeId[nodes[1]] + 1 << ","
+				<< nodes[2] + 1 << ","
+				<< nodes[3] + 1 << ","
+				<< nodes[4] + 1 << ","
+				<< nodes[5] + 1 << ","
+				<< nodes[6] + 1 << ","
+				<< nodes[7] + 1 << "\n";
+
+    }
+    file.close();
+}
+
+
+

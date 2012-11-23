@@ -12,6 +12,9 @@
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/CellBase.h"
 #endif // ENABLE_VISUALIZE
+
+#include  <vector>
+#include <iostream>
 namespace NuTo
 {
 class IntegrationPointBase;

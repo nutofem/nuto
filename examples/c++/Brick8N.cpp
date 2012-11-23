@@ -223,13 +223,13 @@ try
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
-        myStructure.ExportVtkDataFileElements("Plane2D4N.vtk");
+        myStructure.ExportVtkDataFileElements("Brick8N.vtk");
 #endif // ENABLE_VISUALIZE
     }
 }
 catch (NuTo::Exception& e)
 {
-	std::cout << "Error executing ConcurrentMultiscale "<< std::endl;
+	std::cout << "Error executing Brick8N "<< std::endl;
 	std::cout << e.ErrorMessage() << std::endl;
 	return(-1);
 }

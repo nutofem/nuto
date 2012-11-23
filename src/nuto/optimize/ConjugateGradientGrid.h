@@ -26,18 +26,13 @@ namespace NuTo
 	class StructureGrid;
 #endif // ENABLE_MECHANICS
 
-class ConjugateGradientGrid : public Optimizer
+class ConjugateGradientGrid : public virtual Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-#ifdef ENABLE_EIGEN
-typedef Eigen::VectorXd myType;
-#else
-typedef std::vector<double> myType;
-#endif
     ConjugateGradientGrid(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
     {
         mAccuracyGradient = 1e-6;
@@ -47,7 +42,7 @@ typedef std::vector<double> myType;
         mMaxIterations = INT_MAX;
         mShowSteps = 100;
        	mUseDiagHessian =true;
-       	mUseMultiGrid= false;
+       	mNumParameters=rNumParameters;
 	}
 
 #ifdef ENABLE_SERIALIZATION
@@ -66,30 +61,11 @@ typedef std::vector<double> myType;
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
            & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-           & BOOST_SERIALIZATION_NVP(mUseMultiGrid);
+           & BOOST_SERIALIZATION_NVP(mNumParameters);
     }
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-    void Initialize(size_t rNumParameters,size_t* rGridDimension,bool matrixFreeMethod,boost::dynamic_bitset<>& elemExist,boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,std::vector<double>&  baseStiffness,std::vector<double>&  edgeStiffness,std::vector<int>& materialOfElem,std::vector<size_t>& allNodesAtVoxel,std::vector<int>& neighborNodes,std::vector<double>& parameters,std::vector<double>& extForces)
-    {
-    	mNumParameters=rNumParameters;
-    	mGridDimension=rGridDimension;
-    	mMatrixFreeMethod=matrixFreeMethod;
-        mElemExist=elemExist;
-       	mNodeExist=nodeExist;
-       	mDofIsConstraint=rDofIsConstraint;
-       	mYoungsModulus=youngsModulus;
-       	mBaseStiffness=baseStiffness;
-       	mEdgeStiffness=edgeStiffness;
-       	mMaterialOfElem=materialOfElem;
-        mNodeIds=allNodesAtVoxel;
-        mNeighborNodes=neighborNodes;
-        mParameters=parameters;
-        mForces=extForces;
-    }
-
-    void AnsysInput(size_t rNumParameters,boost::dynamic_bitset<>& elemExist, boost::dynamic_bitset<>& nodeExist,boost::dynamic_bitset<> &rDofIsConstraint,std::vector<double>& youngsModulus,size_t* rGridDimension,double* rVoxelSpacing,std::vector<int>& materialOfElem,std::vector<size_t>& allNodesAtVoxel,std::vector<double>& parameters);
 
     int Optimize();
 
@@ -123,35 +99,6 @@ typedef std::vector<double> myType;
         mShowSteps = rShowSteps;
     }
 
-    inline void SetUseMultiGrid(bool rUseMultiGrid)
-    {
-    	mUseMultiGrid = rUseMultiGrid;
-    }
-
-    void GetParameters(std::vector<double>& rParameters)
-    {
-		rParameters.assign(mParameters.begin(),mParameters.end());
-    }
-
-#ifdef ENABLE_EIGEN
-    void GetParameters(myType& rParameters)
-    {
-    	rParameters.Map(mParameters.data(),mNumParameters);
-    }
-
-    void SetParameters(myType& rParameters)
-    {
-    	mParameters.assign(mNumParameters,rParameters.coeffRef(0));
-    }
-#endif
-
-    void SetParameters(std::vector<double>& rParameters)
-    {
-    	mParameters.assign(rParameters.begin(),rParameters.end());
-    }
-
-    void HessianDiag(myType&  rHessianDiag)const;
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
     //! @param filename ... filename
@@ -175,22 +122,7 @@ typedef std::vector<double> myType;
 
 
 protected:
-	void CalcScalingFactors(int& numHessianCalls, myType &p);
-
-	//! @brief ... calculate start gradient in element-by-element way
-	//! @param ... u - prarmeters input, r - gradient output
-	void CalculateMatrixVectorProductEBE(myType &u,myType &r);
-
-	//! @brief ... calculate reaction forces in element-by-element way
-	//! @param ... u - prarmeters input, f - forces output
-	void CalculateReactionForcesEBE(myType &u,myType &f);
-
-	//! @brief ... calculate start gradient in node-by-node way
-	//! @param ... u - prarmeters input, r - gradient output
-	void CalculateMatrixVectorProductNBN(myType &u,myType &r);
-
-	//! @brief ... calculate start gradient in node-by-node way
-	void CalculateStartGradientNodeByNode(myType &r);
+	void CalcScalingFactors(int& numHessianCalls, std::vector<double> &p);
 
 	double mAccuracyGradient;
 	double mMinDeltaObjBetweenRestarts;
@@ -199,22 +131,8 @@ protected:
 	int    mMaxIterations;
 	int    mShowSteps;
     bool   mUseDiagHessian;
-    bool   mUseMultiGrid;
 
    	size_t mNumParameters;
-   	size_t* mGridDimension;
-   	bool mMatrixFreeMethod;
-   	boost::dynamic_bitset<> mElemExist;
-   	boost::dynamic_bitset<> mNodeExist;
-   	boost::dynamic_bitset<> mDofIsConstraint;
-   	std::vector<double> mYoungsModulus;
-   	std::vector<double> mBaseStiffness;
-   	std::vector<double> mEdgeStiffness;
-   	std::vector<int> mMaterialOfElem;
-    std::vector<size_t> mNodeIds;
-    std::vector<int> mNeighborNodes;
-    std::vector<double> mParameters;
-    std::vector<double> mForces;
 };
 } // namespace NuTo
 #endif // CONJUGATE_GRADIENT_GRID_H
