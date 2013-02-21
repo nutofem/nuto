@@ -196,6 +196,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
         if (residual_mod.Norm()>mToleranceForce)
         	throw MechanicsException("[NuTo::NewmarkDirect::Solve] Initial configuration is not in (dynamic) equilibrium.");
+        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
 
         double timeStep = mMaxTimeStep;
         while (curTime < rTimeDelta)
@@ -246,19 +247,15 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             residual_k = prevIntForce_k;
 
             //increase time step by half and calculate the constraint matrix (used to approximate the velocity and acceleration of the rhs)
-        	RHSConstraint = ConstraintsCalculateRHS(curTime-0.5*timeStep);
-    		rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
-        	rStructure.ConstraintGetRHSAfterGaussElimination(bRHShalf);
+        	//RHSConstraint = ConstraintsCalculateRHS(curTime-0.5*timeStep);
+    		//rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
+        	//rStructure.ConstraintGetRHSAfterGaussElimination(bRHShalf);
 
             //apply constraints for the new time step (modified bRHS)
             RHSConstraint = ConstraintsCalculateRHS(curTime);
     		rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
         	rStructure.ConstraintGetRHSAfterGaussElimination(bRHSend);
         	FullMatrix<double> deltaBRHS(bRHSend-bRHSprev);
-
-        	//calculate approximations to the time derivates of the rhs of the constraint matrix
-        	bRHSdot = (bRHSprev*5.-bRHShalf*8.+bRHSend*3.)*(-1./(timeStep));
-        	bRHSddot = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep));
 
         	//std::cout << "bRHSprev " << bRHSprev.Trans() << "\n";
        	    //std::cout << "bRHShalf " << bRHShalf.Trans() << "\n";
@@ -268,7 +265,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
             if (this->IsDynamic())
             {
-				//calculate new accelerations and velocities of independent dofs
+            	//calculate approximations to the time derivates of the rhs of the constraint matrix
+            	bRHSdot = (bRHSprev*5.-bRHShalf*8.+bRHSend*3.)*(-1./(timeStep));
+            	bRHSddot = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep));
+
+            	//calculate new accelerations and velocities of independent dofs
             	acc_j = (lastConverged_vel_j+lastConverged_acc_j*(timeStep*(0.5-mBeta)))*(-1./(timeStep*mBeta));
 				vel_j = lastConverged_vel_j+lastConverged_acc_j*((1.-mGamma)*timeStep)+acc_j*(mGamma*timeStep);
 
@@ -334,6 +335,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             //solve for trial state
             NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
             hessianModSolver.SetOneBasedIndexing();
+            std::cout << NuTo::FullMatrix<double>(stiffMatrix_jj) << std::endl;
             mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
             delta_disp_j*=-1;
 
@@ -350,6 +352,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             }
 
             //apply displacements
+            //std::cout << "norm of delta disp " << delta_disp_j.Norm() << std::endl;
             rStructure.NodeMergeActiveDofValues(0,disp_j);
             rStructure.ElementTotalUpdateTmpStaticData();
 
@@ -387,6 +390,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
             //calculate norm of initial residual (first time step)
             double normResidual(residual_mod.Norm());
+            //std::cout << "max Residual " << residual_mod.Max() << std::endl;
 
             int iteration(0);
             while(normResidual>mToleranceForce && iteration<mMaxNumIterations)
@@ -428,6 +432,10 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 hessianModSolver.SetOneBasedIndexing();
                 mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
                 delta_disp_j*=-1;
+
+                //std::cout << "norm of delta disp " << delta_disp_j.Norm() <<  std::endl;
+                //std::cout << "delta disp " << std::endl;
+                //std::cout << delta_disp_j.Trans() << std::endl;
 
                 //perform a line search
                 double alpha(1);
@@ -534,14 +542,17 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 mInternalEnergy+= 0.5*(delta_disp_j.Dot(intForce_j+prevIntForce_j)+
                 		               delta_disp_k.Dot(intForce_k+prevIntForce_k));
 
-                //double kineticEnergyExact = 0.5*(vel_j.Dot(massMatrix_jj*vel_j+massMatrix_jk*vel_k)+vel_k.Dot(massMatrix_kj*vel_j+massMatrix_kk*vel_k));
-                mKineticEnergy+= 0.5*(delta_disp_j.Dot(massMatrix_jj*(acc_j+lastConverged_acc_j)+massMatrix_jk*(acc_k+lastConverged_acc_k))+
-                		          delta_disp_k.Dot(massMatrix_kj*(acc_j+lastConverged_acc_j)+massMatrix_kk*(acc_k+lastConverged_acc_k)));
-
-                if (mMuDampingMass>0)
+                if (this->IsDynamic())
                 {
-					mDampedEnergy+=mMuDampingMass*0.5*(delta_disp_j.Dot(massMatrix_jj*(vel_j+lastConverged_vel_j)+massMatrix_jk*(vel_k+lastConverged_vel_k))+
-													   delta_disp_k.Dot(massMatrix_kj*(vel_j+lastConverged_vel_j)+massMatrix_kk*(vel_k +lastConverged_vel_k)));
+					//double kineticEnergyExact = 0.5*(vel_j.Dot(massMatrix_jj*vel_j+massMatrix_jk*vel_k)+vel_k.Dot(massMatrix_kj*vel_j+massMatrix_kk*vel_k));
+					mKineticEnergy+= 0.5*(delta_disp_j.Dot(massMatrix_jj*(acc_j+lastConverged_acc_j)+massMatrix_jk*(acc_k+lastConverged_acc_k))+
+									  delta_disp_k.Dot(massMatrix_kj*(acc_j+lastConverged_acc_j)+massMatrix_kk*(acc_k+lastConverged_acc_k)));
+
+					if (mMuDampingMass>0)
+					{
+						mDampedEnergy+=mMuDampingMass*0.5*(delta_disp_j.Dot(massMatrix_jj*(vel_j+lastConverged_vel_j)+massMatrix_jk*(vel_k+lastConverged_vel_k))+
+														   delta_disp_k.Dot(massMatrix_kj*(vel_j+lastConverged_vel_j)+massMatrix_kk*(vel_k +lastConverged_vel_k)));
+					}
                 }
 
                 mExternalEnergy += 0.5*(delta_disp_j.Dot(extForce_j+prevExtForce_j) + delta_disp_k.Dot(extForce_k+prevExtForce_k)+

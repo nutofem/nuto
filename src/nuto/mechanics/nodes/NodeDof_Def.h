@@ -28,7 +28,7 @@ template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures>
+template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumDamage>
 class NodeDof: public virtual NodeBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -235,6 +235,33 @@ public:
     //! @return global DOF
     int GetDofTemperature()const override;
 
+    //! @brief returns the number of Damage dofs of the node
+    //! @return number of Damages
+    int GetNumDamage()const;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    void GetDamage(double* rDamage)const override;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    void GetDamage(int rTimeDerivative, double* rDamage)const override;
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    void SetDamage(const double* rDamage) override;
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    void SetDamage(int rTimeDerivative, const double* rDamage) override;
+
+    //! @brief gives the global DOF of a Damage component
+    //! @param rComponent component
+    //! @return global DOF
+    int GetDofDamage()const override;
+
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
     std::string GetNodeTypeStr()const override;
@@ -259,6 +286,9 @@ protected:
 
     boost::array<boost::array<double, TNumTemperatures>,TNumTimeDerivatives+1> mTemperatures;
     boost::array<int, TNumTemperatures> mDofTemperatures;
+
+    boost::array<boost::array<double, TNumDamage>,TNumTimeDerivatives+1> mDamage;
+    boost::array<int, TNumDamage> mDofDamage;
 
 };
 

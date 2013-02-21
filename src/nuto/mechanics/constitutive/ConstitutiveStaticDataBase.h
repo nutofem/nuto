@@ -22,6 +22,7 @@
 namespace NuTo
 {
 class ConstitutiveStaticDataLatticeConcrete2D;
+class ConstitutiveStaticDataGradientDamagePlasticity1D;
 class ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain;
 class ConstitutiveStaticDataMisesPlasticity3D;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
@@ -66,6 +67,12 @@ public:
 
     //!@ brief reinterpret as nonlocal damage2d static data
     virtual const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* AsNonlocalDamagePlasticity2DPlaneStrain()const;
+
+    //!@ brief reinterpret as gradient damage 1d static data
+    virtual ConstitutiveStaticDataGradientDamagePlasticity1D* AsGradientDamagePlasticity1D();
+
+    //!@ brief reinterpret as gradient damage1d static data
+    virtual const ConstitutiveStaticDataGradientDamagePlasticity1D* AsGradientDamagePlasticity1D()const;
 
     //!@ brief reinterpret as lattice concrete 2D static data
     virtual NuTo::ConstitutiveStaticDataLatticeConcrete2D* AsConstitutiveStaticDataLatticeConcrete2D();

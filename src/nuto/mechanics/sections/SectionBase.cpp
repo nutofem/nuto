@@ -18,9 +18,11 @@ NuTo::SectionBase::SectionBase()
 {
 	mInputConstitutiveIsTemperature = false;
 	mInputConstitutiveIsTemperatureGradient = false;
+	mInputConstitutiveIsDamage = false;
 	mInputConstitutiveIsDeformationGradient = true;
     mDisplacementDof = true;
     mTemperatureDof = false;
+    mDamageDof = false;
 }
 
 int NuTo::SectionBase::GetNumInputConstitutive()const
@@ -38,6 +40,20 @@ int NuTo::SectionBase::GetNumDofs()const
 bool NuTo::SectionBase::GetIsTemperatureDof()const
 {
 	return mTemperatureDof;
+}
+
+//! @brief... set if damage are dofs
+//! @param rFlag ... true, if damage are dofs
+void NuTo::SectionBase::SetIsDamageDof(bool rFlag)
+{
+	mDamageDof = rFlag;
+}
+
+//! @brief... get if damage are dof
+//! @return ... true, if damage are dofs
+bool NuTo::SectionBase::GetIsDamageDof()const
+{
+	return mDamageDof;
 }
 
 //! @brief... set if temperatures are dofs
@@ -59,6 +75,20 @@ void NuTo::SectionBase::SetInputConstitutiveIsTemperature(bool rFlag)
 {
 	mInputConstitutiveIsTemperature = rFlag;
 }
+
+//! @brief... get if damage is to be used as input to the constitutive model
+//! @return ... true, if damage is to be used as input to the constitutive model
+bool NuTo::SectionBase::GetInputConstitutiveIsDamage()const
+{
+	return mInputConstitutiveIsDamage;
+}
+//! @brief... set if damage is to be used as input to the constitutive model
+//! @param rFlag ... true, if damage is to be used as input to the constitutive model
+void NuTo::SectionBase::SetInputConstitutiveIsDamage(bool rFlag)
+{
+	mInputConstitutiveIsDamage = rFlag;
+}
+
 //! @brief... get if temperature gradients are to be used as input to the constitutive model
 //! @return ... true, if temperature gradients are to be used as input to the constitutive model
 bool NuTo::SectionBase::GetInputConstitutiveIsTemperatureGradient()const
@@ -153,9 +183,11 @@ void NuTo::SectionBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize SectionBase" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperature)
+    ar & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsDamage)
+       & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperature)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperatureGradient)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsDeformationGradient)
+       & BOOST_SERIALIZATION_NVP(mDamageDof)
        & BOOST_SERIALIZATION_NVP(mDisplacementDof)
        & BOOST_SERIALIZATION_NVP(mTemperatureDof);
 #ifdef DEBUG_SERIALIZATION

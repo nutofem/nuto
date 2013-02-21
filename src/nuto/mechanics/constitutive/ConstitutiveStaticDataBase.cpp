@@ -56,6 +56,18 @@ const NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::C
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsNonlocalDamagePlasticity2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
+//!@ brief reinterpret as gradient damage1d static data
+NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsGradientDamagePlasticity1D()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamagePlasticity1D] Static data is not of type GradientDamagePlasticity1D.");
+}
+
+//!@ brief reinterpret as nonlocal damage2d static data
+const NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsGradientDamagePlasticity1D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamagePlasticity1D] Static data is not of type GradientDamagePlasticity1D.");
+}
+
 //!@ brief reinterpret as multiscale2d static data
 NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveStaticDataBase::AsMultiscale2DPlaneStrain()
 {

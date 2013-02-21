@@ -17,7 +17,8 @@ enum eConstitutiveType
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,//!< nonlocal damage model with plasticity in the effective stress space
     MULTISCALE,                //!< multiscale model, where the average stress is calculated from a full fine scale model
     LATTICE_CONCRETE,          //!< material law for lattice model
-    LINEAR_HEAT_FLUX           //!< material law for lattice model
+    LINEAR_HEAT_FLUX,           //!< material law for lattice model
+    GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS //!< gradient damage plasticity model
 };
 
 enum eNonlocalDamageYieldSurface
@@ -45,6 +46,7 @@ enum eInput
 	TEMPERATURE_GRADIENT_1D,           //!<
 	TEMPERATURE_GRADIENT_2D,           //!<
 	TEMPERATURE_GRADIENT_3D,           //!<
+	NONLOCAL_DAMAGE                   //!<
 };
 
 static inline std::string InputToString ( const eInput& e )
@@ -56,8 +58,9 @@ static inline std::string InputToString ( const eInput& e )
                               (TEMPERATURE,"TEMPERATURE")
                               (TEMPERATURE_GRADIENT_1D,"TEMPERATURE_GRADIENT_1D")
                               (TEMPERATURE_GRADIENT_2D,"TEMPERATURE_GRADIENT_2D")
-                              (TEMPERATURE_GRADIENT_3D,"TEMPERATURE_GRADIENT_3D");
-  std::map< eInput, std::string >::const_iterator it = lut.find( e );
+                              (TEMPERATURE_GRADIENT_3D,"TEMPERATURE_GRADIENT_3D")
+                              (NONLOCAL_DAMAGE,"NONLOCAL_DAMAGE");
+ std::map< eInput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;
 
@@ -77,6 +80,7 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,
+	D_ENGINEERING_STRESS_D_NONLOCAL_DAMAGE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
@@ -90,6 +94,7 @@ enum eOutput
 	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D,
 	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,
 	DAMAGE,
+	D_NONLOCAL_DAMAGE_D_STRAIN_1D,
 	UPDATE_STATIC_DATA,
 	UPDATE_TMP_STATIC_DATA
 };

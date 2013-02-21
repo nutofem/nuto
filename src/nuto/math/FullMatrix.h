@@ -170,6 +170,14 @@ public:
         return FullMatrix<T> ( mEigenMatrix*other.mEigenMatrix );
     }
 
+    //! @brief ... multiply this matrix by a vector (which is stored in a vector
+    //! @param other ... scalar factor
+    //! @return reference to this matrix
+    FullMatrix<T> operator* ( const std::vector<T> &other ) const
+    {
+        return FullMatrix<T> ( mEigenMatrix*Eigen::Map<Eigen::VectorXd>((double*)&(other[0]),other.size()));
+    }
+
     //! @brief ... multiply this matrix by a scalar factor and return the result matrix
     //! @param other ... scalar factor
     //! @return resultMatrix = scalarFactor * thisMatrix
@@ -217,6 +225,7 @@ public:
         mEigenMatrix.array()+=1;
         return *this;
     }
+
 
     //! @brief ... access operator
     //! @param i ... row
@@ -811,6 +820,23 @@ public:
         if ( rJ<0 )
             throw MathException ( "FullMatrix::SetBlock - column should not be negative." );
         mEigenMatrix.block ( rI,rJ,rBlock.mEigenMatrix.rows(),rBlock.mEigenMatrix.cols() ) = rBlock.mEigenMatrix;
+    }
+
+    //! @brief ... add a block (submatrix) in this Matrix
+    //! @param rI ... start row
+    //! @param rJ ... start column
+    //! @param rBlock ... submatrix
+    void  AddBlock ( int rI, int rJ, const FullMatrix<T>& rBlock )
+    {
+        if ( rI+rBlock.mEigenMatrix.rows() >mEigenMatrix.rows() )
+            throw MathException ( "FullMatrix::SetBlock - rows out of Dimension." );
+        if ( rJ+rBlock.mEigenMatrix.cols() >mEigenMatrix.cols() )
+            throw MathException ( "FullMatrix::SetBlock - columns out of Dimension." );
+        if ( rI<0 )
+            throw MathException ( "FullMatrix::SetBlock - row should not be negative." );
+        if ( rJ<0 )
+            throw MathException ( "FullMatrix::SetBlock - column should not be negative." );
+        mEigenMatrix.block ( rI,rJ,rBlock.mEigenMatrix.rows(),rBlock.mEigenMatrix.cols() ) += rBlock.mEigenMatrix;
     }
 
     //! @brief ... extract a row from the matrix

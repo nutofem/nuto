@@ -49,7 +49,7 @@ mySection1 = myStructure.SectionCreate("TRUSS")
 myStructure.SectionSetArea(mySection1,0.01)
 
 #assign constitutive law and section to elements
-#myStructure.ElementSetIntegrationType("myElement1","1D2NGauss2Ip")
+#myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA")
 #variable integration type, for the 2-node truss element it makes no sense, 
 #but it demonstrates the idea
 myStructure.ElementSetIntegrationType(myElement1,"1D2NConst3Ip","NOIPDATA")

@@ -35,6 +35,7 @@ class EngineeringStrain2D: public ConstitutiveOutputBase
     friend class ConstraintNonlinearGlobalCrackAngle2D;
     friend class ConstitutiveStaticDataMultiscale2DPlaneStrain;
     friend class ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain;
+    friend class GradientDamagePlasticityEngineeringStress;
     friend class LinearElastic;
     friend class LinearElasticEngineeringStress;
     friend class Multiscale;

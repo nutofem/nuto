@@ -50,6 +50,11 @@ const NuTo::TemperatureGradient3D& NuTo::ConstitutiveInputBase::GetTemperatureGr
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetTemperatureGradient3D] not implemented for this input object.");
 }
 
+double NuTo::ConstitutiveInputBase::GetDamage()const
+{
+	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetDamage] not implemented for this input object.");
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

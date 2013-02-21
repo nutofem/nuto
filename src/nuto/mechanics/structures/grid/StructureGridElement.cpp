@@ -6,7 +6,7 @@
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/Voxel8N.h"
+//#include "nuto/mechanics/elements/Voxel8N.h"
 #include <sstream>
 
 //! @brief returns the number of nodes

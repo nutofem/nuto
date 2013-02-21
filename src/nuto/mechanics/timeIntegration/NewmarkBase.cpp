@@ -41,7 +41,7 @@ NuTo::NewmarkBase::NewmarkBase ()  : TimeIntegrationBase ()
 	mKineticEnergy = 0.;
 	mDampedEnergy = 0.;
 
-	mIsDynamic = true;
+	mIsDynamic = false;
 }
 
 bool NuTo::NewmarkBase::IsDynamic()const

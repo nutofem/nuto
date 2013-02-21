@@ -14,40 +14,15 @@
 //! @brief constructor
 NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::ConstitutiveStaticDataPrevEngineeringStressStrain3D() : ConstitutiveStaticDataBase()
 {
-    mPrevSigma[0] = 0.;
-    mPrevSigma[1] = 0.;
-    mPrevSigma[2] = 0.;
-    mPrevSigma[3] = 0.;
-    mPrevSigma[4] = 0.;
-    mPrevSigma[5] = 0.;
-
-    mPrevStrain[0] = 0.;
-    mPrevStrain[1] = 0.;
-    mPrevStrain[2] = 0.;
-    mPrevStrain[3] = 0.;
-    mPrevStrain[4] = 0.;
-    mPrevStrain[5] = 0.;
-
     mPrevTotalEnergy = 0.;
-
     mPrevElasticEnergy = 0.;
 }
 
 NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D& NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::operator= (NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D const& rOther)
 {
     NuTo::ConstitutiveStaticDataBase::operator= (rOther);
-    mPrevSigma[0] = rOther.mPrevSigma[0];
-    mPrevSigma[1] = rOther.mPrevSigma[1];
-    mPrevSigma[2] = rOther.mPrevSigma[2];
-    mPrevSigma[3] = rOther.mPrevSigma[3];
-    mPrevSigma[4] = rOther.mPrevSigma[4];
-    mPrevSigma[5] = rOther.mPrevSigma[5];
-    mPrevStrain[0] = rOther.mPrevStrain[0];
-    mPrevStrain[1] = rOther.mPrevStrain[1];
-    mPrevStrain[2] = rOther.mPrevStrain[2];
-    mPrevStrain[3] = rOther.mPrevStrain[3];
-    mPrevStrain[4] = rOther.mPrevStrain[4];
-    mPrevStrain[5] = rOther.mPrevStrain[5];
+    mPrevSigma = rOther.mPrevSigma;
+    mPrevStrain = rOther.mPrevStrain;
     mPrevTotalEnergy = rOther.mPrevTotalEnergy;
     mPrevElasticEnergy = rOther.mPrevElasticEnergy;
     return *this;
@@ -82,25 +57,15 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstitutiveStaticDataPrevEngineeringStressSt
 #endif // ENABLE_SERIALIZATION
 
 //! brief set the previous stress
-void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::SetPrevStress(const double rPrevSigma[6])
+void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::SetPrevStress(const EngineeringStress3D& rPrevSigma)
 {
-	mPrevSigma[0] = rPrevSigma[0];
-	mPrevSigma[1] = rPrevSigma[1];
-	mPrevSigma[2] = rPrevSigma[2];
-	mPrevSigma[3] = rPrevSigma[3];
-	mPrevSigma[4] = rPrevSigma[4];
-	mPrevSigma[5] = rPrevSigma[5];
+	mPrevSigma = rPrevSigma;
 }
 
 //! brief set the previous stress
-void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::SetPrevStrain(const double rPrevStrain[6])
+void NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::SetPrevStrain(const EngineeringStrain3D& rPrevStrain)
 {
-	mPrevStrain[0] = rPrevStrain[0];
-	mPrevStrain[1] = rPrevStrain[1];
-	mPrevStrain[2] = rPrevStrain[2];
-	mPrevStrain[3] = rPrevStrain[3];
-	mPrevStrain[4] = rPrevStrain[4];
-	mPrevStrain[5] = rPrevStrain[5];
+	mPrevStrain = rPrevStrain;
 }
 
 

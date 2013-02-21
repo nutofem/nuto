@@ -249,6 +249,10 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
             {
             	SectionPtr->SetIsTemperatureDof(true);
             }
+            else if (*beg=="NONLOCALDAMAGE")
+            {
+            	SectionPtr->SetIsDamageDof(true);
+            }
             else
             {
         		throw MechanicsException("[NuTo::Structure::SectionSetDOF] invalid dof type: " + *beg +".");
@@ -306,6 +310,10 @@ void NuTo::StructureBase::SectionSetInputConstitutive(int rId, const std::string
             else if (*beg=="DEFORMATIONGRADIENT")
             {
             	SectionPtr->SetInputConstitutiveIsDeformationGradient(true);
+            }
+            else if (*beg=="NONLOCALDAMAGE")
+            {
+            	SectionPtr->SetInputConstitutiveIsDamage(true);
             }
             else
             {

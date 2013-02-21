@@ -31,10 +31,11 @@ class EngineeringStress1D: public ConstitutiveOutputBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class LinearElastic;
-    friend class LinearElasticEngineeringStress;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
+    friend class GradientDamagePlasticityEngineeringStress;
+    friend class LinearElastic;
+    friend class LinearElasticEngineeringStress;
     friend class NonlocalDamagePlasticity;
 public:
     //! @brief ... constructor

@@ -1,29 +1,29 @@
-// $Id: ConstitutiveStaticPrevEngineeringStressStrain3D.h 87 2009-11-06 10:35:39Z unger3 $
+// $Id: ConstitutiveStaticPrevEngineeringStressStrain1D.h 87 2009-11-06 10:35:39Z unger3 $
 
-#ifndef CONSTITUTIVESTATICDATAPrevEngineeringStressStrain3D_H
-#define CONSTITUTIVESTATICDATAPrevEngineeringStressStrain3D_H
+#ifndef CONSTITUTIVESTATICDATAPrevEngineeringStressStrain1D_H
+#define CONSTITUTIVESTATICDATAPrevEngineeringStressStrain1D_H
 
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 
-//! @brief ... class, storing the static data for the Mises plasticity3D including energy updates
+//! @brief ... class, storing the static data for 1D including energy updates
 //! this is only required, if the energy should be calculated, otherwise the base class ConstitutiveStaticDataMisesPlasticity3D
 //! is sufficient
 //! @author Jörg F. Unger, ISM
 //! @date December 2009
 namespace NuTo
 {
-class ConstitutiveStaticDataPrevEngineeringStressStrain3D : virtual public ConstitutiveStaticDataBase
+class ConstitutiveStaticDataPrevEngineeringStressStrain1D : virtual public ConstitutiveStaticDataBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
 	//! @brief constructor
-    ConstitutiveStaticDataPrevEngineeringStressStrain3D();
+    ConstitutiveStaticDataPrevEngineeringStressStrain1D();
 
-    NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D& operator= (NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D const& rOther);
+    NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain1D& operator= (NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain1D const& rOther);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -34,19 +34,19 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! brief set the previous stress
-    void SetPrevStress(const EngineeringStress3D& rPrevSigma);
+    void SetPrevStress(const EngineeringStress1D& rPrevSigma);
 
     //! brief returns the previous stress
-    inline const EngineeringStress3D& GetPrevStress()const
+    inline const EngineeringStress1D& GetPrevStress()const
     {
         return mPrevSigma;
     }
 
     //! brief set the previous stress
-    void SetPrevStrain(const EngineeringStrain3D& rPrevStrain);
+    void SetPrevStrain(const EngineeringStrain1D& rPrevStrain);
 
     //! brief returns the previous stress
-    inline const EngineeringStrain3D& GetPrevStrain()const
+    inline const EngineeringStrain1D& GetPrevStrain()const
     {
         return  mPrevStrain;
     }
@@ -77,10 +77,10 @@ public:
 
 protected:
     //! @brief previous stress
-    EngineeringStress3D mPrevSigma;
+    EngineeringStress1D mPrevSigma;
 
     //! @brief previous strain
-    EngineeringStrain3D mPrevStrain;
+    EngineeringStrain1D mPrevStrain;
 
     //! @brief previous total energy
     double mPrevTotalEnergy;
@@ -91,7 +91,7 @@ protected:
 
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D)
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain1D)
 #endif // ENABLE_SERIALIZATION
 
-#endif // CONSTITUTIVESTATICDATAPrevEngineeringStressStrain3D_H
+#endif // CONSTITUTIVESTATICDATAPrevEngineeringStressStrain1D_H

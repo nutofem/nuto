@@ -47,6 +47,14 @@ public:
     //! @param rFlag ... true, if temperatures are dofs
     void SetIsTemperatureDof(bool rFlag);
 
+    //! @brief... get if damage are dof
+    //! @return ... true, if damage are dofs
+    bool GetIsDamageDof()const;
+
+    //! @brief... set if damage are dofs
+    //! @param rFlag ... true, if damage are dofs
+    void SetIsDamageDof(bool rFlag);
+
     //! @brief... get if temperatures are to be used as input to the constitutive model
     //! @return ... true, if temperatures are to be used as input to the constitutive model
     bool GetInputConstitutiveIsTemperature()const;
@@ -54,6 +62,14 @@ public:
     //! @brief... set if temperatures are to be used as input to the constitutive model
     //! @param rFlag ... true, if temperatures are to be used as input to the constitutive model
     void SetInputConstitutiveIsTemperature(bool rFlag);
+
+    //! @brief... get if damage is to be used as input to the constitutive model (gradient damage formulation)
+    //! @return ... true, if damage is to be used as input to the constitutive model
+    bool GetInputConstitutiveIsDamage()const;
+
+    //! @brief... set if damage is to be used as input to the constitutive model (gradient damage formulation)
+    //! @param rFlag ... true, if damage is to be used as input to the constitutive model
+    void SetInputConstitutiveIsDamage(bool rFlag);
 
     //! @brief... get if temperature gradients are to be used as input to the constitutive model
     //! @return ... true, if temperature gradients are to be used as input to the constitutive model
@@ -117,11 +133,13 @@ public:
 #endif // ENABLE_SERIALIZATION
 private:
     bool mInputConstitutiveIsTemperature;
+    bool mInputConstitutiveIsDamage;
     bool mInputConstitutiveIsTemperatureGradient;
     bool mInputConstitutiveIsDeformationGradient;
 
     bool mDisplacementDof;
     bool mTemperatureDof;
+    bool mDamageDof;
 };
 
 }

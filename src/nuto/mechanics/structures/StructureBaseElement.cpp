@@ -1462,7 +1462,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 
     Error::eError errorGlobal (Error::SUCCESSFUL);
 
-    std::cout << "do we really have tmp static data " << mHaveTmpStaticData << std::endl;
+    //std::cout << "do we really have tmp static data " << mHaveTmpStaticData << std::endl;
     if (mHaveTmpStaticData)
 	{
 		std::vector<ElementBase*> elementVector;

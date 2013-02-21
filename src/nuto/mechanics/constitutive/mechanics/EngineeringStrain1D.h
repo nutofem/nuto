@@ -30,6 +30,7 @@ class EngineeringStrain1D: public ConstitutiveOutputBase
     friend class LinearElasticEngineeringStress;
     friend class ConstitutiveMisesPlasticity;
     friend class ConstitutiveEngineeringStressStrain;
+    friend class GradientDamagePlasticityEngineeringStress;
     friend class NonlocalDamagePlasticity;
     friend class Multiscale;
     friend class DeformationGradient1D;

@@ -1,14 +1,14 @@
 // $Id$
 
-#ifndef DAMAGE_H
-#define DAMAGE_H
+#ifndef NONLOCALDAMAGE_H
+#define NONLOCALDAMAGE_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
 
 namespace NuTo
 {
@@ -18,7 +18,7 @@ class ConstitutiveMisesPlasticity;
 //! @brief ... isotropic damage variable
 //! @author Jörg F. Unger, BAM
 //! @date July 2012
-class Damage: public ConstitutiveOutputBase
+class NonlocalDamage: public ConstitutiveInputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -32,30 +32,25 @@ class Damage: public ConstitutiveOutputBase
     //! @param pStructure ... structure
     //! @param pElement ... element
     //! @param pIntegrationPoint ... integration point
-    Damage();
+    NonlocalDamage();
 
     //! @brief copy constructor
-    Damage(const Damage& rDamage);
+    NonlocalDamage(const NonlocalDamage& rNonlocalDamage);
 
     //! @brief return output object
-    Damage& GetDamage()
+    NonlocalDamage& GetNonlocalDamage()
     {
     	return *this;
     }
 
     //! @brief return damage value
-    double GetDamageValue()const
+    double GetNonlocalDamageValue()
     {
-    	return mDamage;
+    	return mNonlocalDamage;
     }
 
-    //! @brief ... get Damage
-    //! @return ... Engineering Strain (exx)
-    //! @sa mDeformationGradient
-    const double* GetData() const;
-
     //! @brief ... set damage value
-    void SetDamage(double rDamage);
+    void SetNonlocalDamage(double rDamage);
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -66,9 +61,9 @@ class Damage: public ConstitutiveOutputBase
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 private:
-    double mDamage;
+    double mNonlocalDamage;
 };
 
 }
 
-#endif // DAMAGE_H
+#endif // NONLOCALDAMAGE_H

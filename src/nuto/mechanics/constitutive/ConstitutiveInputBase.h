@@ -57,6 +57,7 @@ public:
     virtual const DeformationGradient3D& GetDeformationGradient3D()const;
     virtual double GetTemperature()const;
     virtual const TemperatureGradient3D& GetTemperatureGradient3D()const;
+    virtual double GetDamage()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

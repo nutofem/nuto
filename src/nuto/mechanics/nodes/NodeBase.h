@@ -230,18 +230,6 @@ public:
     //! @return Rotation
     virtual double GetRotation(short rIndex)const;
 
-    //! @brief returns the number of radii
-    //! @return number of radii
-    virtual int GetNumRadius()const;
-
-    //! @brief returns the radius of the node
-    //! @param rRadius ... radius
-    virtual void GetRadius(double rRadius[1])const;
-
-    //! @brief set the radius
-    //! @param rRadius  given radius
-    virtual void SetRadius(const double rRadius[1]);
-
     //! @brief returns the number of temperatures of the node
     //! @return number of temperatures
     virtual int GetNumTemperatures()const;
@@ -268,6 +256,33 @@ public:
     //! @param rComponent component
     //! @return global DOF
     virtual int GetDofTemperature()const;
+
+    //! @brief returns the number of Damage dofs of the node
+    //! @return number of Damages
+    virtual int GetNumDamage()const;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    virtual void GetDamage(double* rDamage)const;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    virtual void GetDamage(int rTimeDerivative, double* rDamage)const;
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    virtual void SetDamage(const double* rDamage);
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    virtual void SetDamage(int rTimeDerivative, const double* rDamage);
+
+    //! @brief gives the global DOF of a Damage component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofDamage()const;
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string

@@ -537,11 +537,9 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		}
     }
 
-    std::cout << "Evaluate output " << std::endl;
     //calculate the element solution
     Evaluate(elementOutput);
 
-    std::cout << "Assign outputs " << std::endl;
     //assign the outputs
     NuTo::FullMatrix<double>* damage(0);
     NuTo::FullMatrix<double>* engineeringStrain(0);
@@ -572,7 +570,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         }
     }
 
-    std::cout << "Store data " << std::endl;
     // store data
     for (auto WhatIter = rWhat.begin();WhatIter != rWhat.end(); WhatIter++)
     {

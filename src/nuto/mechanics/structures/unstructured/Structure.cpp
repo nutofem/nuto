@@ -322,8 +322,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 		    			std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 		    			std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
 
-						std::cout << "elementMatrix.GetNumRows() " << elementMatrix.GetNumRows() << std::endl;
-						std::cout << "elementVectorGlobalDofsRow.size() " << elementVectorGlobalDofsRow.size() << std::endl;
+						//std::cout << "elementMatrix.GetNumRows() " << elementMatrix.GetNumRows() << std::endl;
+						//std::cout << "elementVectorGlobalDofsRow.size() " << elementVectorGlobalDofsRow.size() << std::endl;
 		    			assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
 						assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
 

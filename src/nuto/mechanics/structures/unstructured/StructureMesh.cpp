@@ -11,7 +11,7 @@
 //! @parameters rTriangles (triangles connecting the circle centers)
 void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rCircles, NuTo::FullMatrix<double>& rTriangles)
 {
-    if (mDimension!=2)
+/*    if (mDimension!=2)
     	throw MechanicsException("[NuTo::Structure::MeshCreateLattice2D] structure is not 2D.");
 
     //create nodes
@@ -52,6 +52,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
 		}
 //		ElementCreate(NuTo::Element::LATTICE2D, nodeVector, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATAWEIGHTCOORDINATES2D);
 	}
+*/
 }
 
 //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
@@ -59,7 +60,8 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
 //! @parameters rSpheres (coordinates x,y,z and radius)
 void NuTo::Structure::MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rSpheres, NuTo::FullMatrix<double>& rTetraeders)
 {
-    if (mDimension!=3)
+/*
+	if (mDimension!=3)
     	throw MechanicsException("[NuTo::Structure::MeshCreateLattice3D] structure is not 3D.");
 	std::string dofs("COORDINATES DISPLACEMENTS RADIUS");
 	for (int count=0; count<rSpheres.GetNumRows(); count++)
@@ -72,4 +74,5 @@ void NuTo::Structure::MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double
 		NodeBase* nodePtr = NodeGetNodePtr(theNode);
 		nodePtr->SetRadius(&(rSpheres(count,3)));
 	}
+	*/
 }

@@ -335,28 +335,6 @@ double NuTo::NodeBase::GetRotation(short rIndex)const
 	throw MechanicsException("[NuTo::NodeBase::GetRotation] Node of type " + GetNodeTypeStr() + " has no rotations.");
 }
 
-
-//! @brief returns the number of radii
-//! @return number of radii
-int NuTo::NodeBase::GetNumRadius()const
-{
-	return 0;
-}
-
-//! @brief returns the radius of the node
-//! @param rRadius ... radius
-void NuTo::NodeBase::GetRadius(double rRadius[1])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetRadius] Node of type " + GetNodeTypeStr() + " has no radius.");
-}
-
-//! @brief set the radius
-//! @param rRadius  given radius
-void NuTo::NodeBase::SetRadius(const double rRadius[1])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetRadius] Node of type " + GetNodeTypeStr() + " has no radius.");
-}
-
 //! @brief returns the number of temperatures of the node
 //! @return number of temperatures
 int NuTo::NodeBase::GetNumTemperatures()const
@@ -398,6 +376,49 @@ void NuTo::NodeBase::GetTemperature(int rTimeDerivative, double rTemperature[1])
 int NuTo::NodeBase::GetDofTemperature()const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
+}
+
+//! @brief returns the number of Damage of the node
+//! @return number of Damage
+int NuTo::NodeBase::GetNumDamage()const
+{
+	return 0;
+}
+
+//! @brief returns the Damage of the node
+//! @return Damage
+void NuTo::NodeBase::SetDamage(const double rDamage[1])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+}
+
+//! @brief returns the Damage of the node
+//! @return Damage
+void NuTo::NodeBase::SetDamage(int rTimeDerivative, const double rDamage[1])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+}
+
+//! @brief returns the Damage of the node
+//! @return Damage
+void NuTo::NodeBase::GetDamage(double rDamage[1])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+}
+
+//! @brief returns the Damage of the node
+//! @return Damage
+void NuTo::NodeBase::GetDamage(int rTimeDerivative, double rDamage[1])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+}
+
+//! @brief gives the global DOF of a Damage component
+//! @param rComponent component
+//! @return global DOF
+int NuTo::NodeBase::GetDofDamage()const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDofDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
 }
 
 
@@ -536,13 +557,6 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular accelerations in 2D or 3D.");
 				}
 					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularAccelerations);
-			}
-				break;
-			case NuTo::VisualizeBase::PARTICLE_RADIUS:
-			{
-				double radius;
-				GetRadius(&radius);
-				rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), radius);
 			}
 				break;
 			default:

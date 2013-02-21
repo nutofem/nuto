@@ -50,6 +50,7 @@ class EngineeringStress3D: public ConstitutiveOutputBase
     friend class LinearElasticEngineeringStress;
     friend class MisesPlasticityEngineeringStress;
     friend class ConstitutiveEngineeringStressStrain;
+    friend class GradientDamagePlasticityEngineeringStress;
     friend class NonlocalDamagePlasticityEngineeringStress;
     friend class Multiscale;
 public:

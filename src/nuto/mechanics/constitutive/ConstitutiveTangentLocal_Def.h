@@ -36,6 +36,7 @@ class ConstitutiveTangentLocal: public NuTo::ConstitutiveTangentBase
     friend class MisesPlasticityEngineeringStress;
     friend class NonlocalDamagePlasticityEngineeringStress;
     friend class LinearHeatFlux;
+    friend class GradientDamagePlasticityEngineeringStress;
 
 public:
     //! @brief ... constructor
