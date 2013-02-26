@@ -567,7 +567,7 @@ GetTemperature(int rTimeDerivative, double* rTemperatures)const
 {
 	assert(TNumTemperatures==1);
 	assert(rTimeDerivative>=0);
-	assert(rTimeDerivative<TNumTimeDerivatives);
+	assert(rTimeDerivative<=TNumTimeDerivatives);
 	rTemperatures[0] = mTemperatures[rTimeDerivative][0];
 }
 
@@ -589,7 +589,7 @@ SetTemperature(int rTimeDerivative, const double* rTemperatures)
 {
 	assert(TNumTemperatures==1);
 	assert(rTimeDerivative>=0);
-	assert(rTimeDerivative<TNumTimeDerivatives);
+	assert(rTimeDerivative<=TNumTimeDerivatives);
 	mTemperatures[rTimeDerivative][0] = rTemperatures[0];
 }
 
@@ -632,7 +632,7 @@ GetDamage(int rTimeDerivative, double* rDamage)const
 {
 	assert(TNumDamage==1);
 	assert(rTimeDerivative>=0);
-	assert(rTimeDerivative<TNumTimeDerivatives);
+	assert(rTimeDerivative<=TNumTimeDerivatives);
 	rDamage[0] = mDamage[rTimeDerivative][0];
 }
 
@@ -654,7 +654,7 @@ SetDamage(int rTimeDerivative, const double* rDamage)
 {
 	assert(TNumDamage==1);
 	assert(rTimeDerivative>=0);
-	assert(rTimeDerivative<TNumTimeDerivatives);
+	assert(rTimeDerivative<=TNumTimeDerivatives);
 	mDamage[rTimeDerivative][0] = rDamage[0];
 }
 

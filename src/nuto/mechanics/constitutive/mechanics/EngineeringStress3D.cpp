@@ -33,6 +33,17 @@ const double* NuTo::EngineeringStress3D::GetData() const
     return this->mEngineeringStress;
 }
 
+//! @brief ... sets the components of the Engineering stress tensor
+//! @param ... components of the Engineering stress tensor (stored in an array)
+//! @sa mEngineeringStress
+void NuTo::EngineeringStress3D::SetData(double rData[6])
+{
+    for (unsigned int count = 0; count < 6; count++)
+    {
+        this->mEngineeringStress[count] = rData[count];
+    }
+}
+
 
 // info routine
 void NuTo::EngineeringStress3D::Info(unsigned short rVerboseLevel) const

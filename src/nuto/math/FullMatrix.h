@@ -173,10 +173,7 @@ public:
     //! @brief ... multiply this matrix by a vector (which is stored in a vector
     //! @param other ... scalar factor
     //! @return reference to this matrix
-    FullMatrix<T> operator* ( const std::vector<T> &other ) const
-    {
-        return FullMatrix<T> ( mEigenMatrix*Eigen::Map<Eigen::VectorXd>((double*)&(other[0]),other.size()));
-    }
+    FullMatrix<T> operator* ( const std::vector<T> &other ) const;
 
     //! @brief ... multiply this matrix by a scalar factor and return the result matrix
     //! @param other ... scalar factor

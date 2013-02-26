@@ -73,6 +73,24 @@ FullMatrix<int> FullMatrix<int>::Convert2int()
     return Copy();
 }
 
+//! @brief ... multiply this matrix by a vector (which is stored in a vector
+//! @param other ... scalar factor
+//! @return reference to this matrix
+template<>
+FullMatrix<double> FullMatrix<double>::operator* ( const std::vector<double> &other ) const
+{
+    return FullMatrix<double> ( mEigenMatrix*Eigen::Map<Eigen::VectorXd>((double*)&(other[0]),other.size()));
+}
+
+//! @brief ... multiply this matrix by a vector (which is stored in a vector
+//! @param other ... scalar factor
+//! @return reference to this matrix
+template<>
+FullMatrix<int> FullMatrix<int>::operator* ( const std::vector<int> &other ) const
+{
+    return FullMatrix<int> ( mEigenMatrix*Eigen::Map<Eigen::VectorXi>((int*)&(other[0]),other.size()));
+}
+
 // import SLang matrix or vector
 template<>
 void FullMatrix<double>::ImportFromSLangText(const char* fileName)

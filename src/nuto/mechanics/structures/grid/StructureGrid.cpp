@@ -1516,7 +1516,7 @@ void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restriction
 	}
 	else
 	{
-		throw 	OptimizeException(std::string("[MultiGrid] Wrong restriction type."));
+		throw 	MechanicsException(std::string("[MultiGrid] Wrong restriction type."));
 	}
 
 }

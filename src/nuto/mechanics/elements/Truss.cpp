@@ -92,7 +92,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		}
 		if (numDamageDofs>0 || section->GetInputConstitutiveIsDamage())
 		{
-			localNodeDisp.resize(numDamage);
+			nodeDamage.resize(numDamage);
 			CalculateNodalDamage(0,nodeDamage);
 		}
 

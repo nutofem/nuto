@@ -22,6 +22,7 @@ NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D::ConstitutiveStaticDataGr
     mKappa = 0.;
     mEpsilonTotRadial = 0.;
 	mEpsilonP[0] = 0.;
+	mEpsilonP[1] = 0.;
 }
 
 NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D& NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D::operator= (NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D const& rOther)

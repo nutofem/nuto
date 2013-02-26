@@ -37,7 +37,7 @@
 
 #define sqrt3 1.732050808
 #define MAX_OMEGA 0.999
-//#define ENABLE_DEBUG
+#define ENABLE_DEBUG
 
 NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEngineeringStress() : ConstitutiveBase()
 {
@@ -133,6 +133,11 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         engineeringStrain3D.mEngineeringStrain[3] =  0.;
         engineeringStrain3D.mEngineeringStrain[4] =  0.;
         engineeringStrain3D.mEngineeringStrain[5] =  0.;
+
+        std::cout << "[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] this is just for test purposes." << std::endl;
+        engineeringStrain3D.mEngineeringStrain[0] = 1.5*mCompressiveStrength/mE;
+        engineeringStrain3D.mEngineeringStrain[1] = 0.0001; //just use the previous total radial strain plus poisson*delta strain in axial direction
+        engineeringStrain3D.mEngineeringStrain[2] = 0.0001;
 
         EngineeringStrain3D prevEngineeringStrain3D;
         prevEngineeringStrain3D.mEngineeringStrain[0] = oldStaticData->mPrevStrain.mEngineeringStrain;
@@ -1980,10 +1985,16 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 	deltaStrain(3) = rStrain.mEngineeringStrain[3]-rPrevTotalStrain.mEngineeringStrain[4];
 	deltaStrain(4) = rStrain.mEngineeringStrain[4]-rPrevTotalStrain.mEngineeringStrain[5];
 	deltaStrain(5) = rStrain.mEngineeringStrain[5]-rPrevTotalStrain.mEngineeringStrain[6];
+#ifdef ENABLE_DEBUG
+	rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
+#endif
 
 	// initialize last plastic strain and last converged stress
 	lastPlastStrain << rPrevPlasticStrain[0], rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,
 			           rPrevPlasticStrain[3], rPrevPlasticStrain[4] ,rPrevPlasticStrain[5];
+#ifdef ENABLE_DEBUG
+		rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
+#endif
 	rDeltaEqPlasticStrain = 0;
 	// *****************************************************************
 	//                   elastic matrix generation                     *
@@ -2037,12 +2048,14 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 		curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
 		curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[1]+cutbackFactorExternal*deltaStrain(1);
 		curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[2]+cutbackFactorExternal*deltaStrain(2);
-		curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[3]+cutbackFactorExternal*deltaStrain(3);
-		curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[4]+cutbackFactorExternal*deltaStrain(4);
-		curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[5]+cutbackFactorExternal*deltaStrain(5);
+		curTotalStrain(3) = rPrevTotalStrain.mEngineeringStrain[3]+cutbackFactorExternal*deltaStrain(3);
+		curTotalStrain(4) = rPrevTotalStrain.mEngineeringStrain[4]+cutbackFactorExternal*deltaStrain(4);
+		curTotalStrain(5) = rPrevTotalStrain.mEngineeringStrain[5]+cutbackFactorExternal*deltaStrain(5);
 
 #ifdef ENABLE_DEBUG
-		rLogger << "\n" << "curTotalStrain" << curTotalStrain.transpose() << "\n" << "\n";
+		rLogger << "\n" << "curTotalStrain " << curTotalStrain.transpose() << "\n";
+//		rLogger << "\n" << "rPrevTotalStrain" << rPrevTotalStrain << "\n";
+		rLogger << "\n" << "cutbackFactorExternal " << cutbackFactorExternal << "\n";
 #endif
 
 		// checks the convergence of the Newton iteration for a prescribed current strain
@@ -2057,7 +2070,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 			elasticStrain = curTotalStrain - lastPlastStrain;
 
 			//TODO just use the upper part for new EigenVersion 3.0
-			//trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
+			trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
 			initTrialStress = dElast*elasticStrain;
 #ifdef ENABLE_DEBUG
 			rLogger << "initTrialStress " << "\n" << initTrialStress.transpose() << "\n" << "\n";
@@ -2203,7 +2216,58 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						YieldSurfaceRankine3DRounded(trialStress,f_ct, &(dF_dsigma[1]),&(d2F_d2Sigma[1]));
 #ifdef ENABLE_DEBUG
 						rLogger << "dF_dsigma[1] (Rankine)" <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
-						//check second derivative
+						//check the calculation
+						double delta(1e-8);
+						//if (rd2F_d2Sigma!=0)
+						{
+						//rLogger << "\n" << "check yield surface and derivatives" << "\n";
+							//rLogger << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
+							Eigen::Matrix<double,6,1>stress(trialStress);
+							Eigen::Matrix<double,6,1> dF_dSigma1, dF_dSigma2,dF_dSigmaCDF;
+							Eigen::Matrix<double,6,6> d2F_d2SigmaExact,d2F_d2SigmaCDF;
+							double f1 = YieldSurfaceRankine3DRounded(rStress,f_ct,&dF_dSigma1,&d2F_d2SigmaExact);
+							for (int count=0; count<6; count++)
+							{
+								stress(count)+= delta;
+								double f2 = YieldSurfaceRankine3DRounded(stress,f_ct,&dF_dSigma2,0);
+								dF_dSigmaCDF(count) = (f2-f1)/delta;
+
+								d2F_d2SigmaCDF.row(count) = (dF_dSigma2-dF_dSigma1)/delta;
+
+								stress(count)-=delta;
+							}
+
+							if ((dF_dSigmaCDF-dF_dSigma1).array().abs().maxCoeff()>1e-1)
+							{
+								//std::cout << "sigmas principal" << principal[0]<< " " << principal[1] <<  " " << principal[2] << "\n";
+								std::cout << "sigmas " << stress(0) << " " << stress(1) <<  " " << stress(2) <<  " " <<stress(3) << "\n";
+								std::cout << "error first derivative " << (dF_dSigmaCDF-dF_dSigma1).array().abs().maxCoeff() << "\n";
+
+								std::cout<< "rdF_dSigma " << "\n" << dF_dSigma1 << "\n"<< "\n";
+								std::cout<< "rdF_dSigmaCDF " << "\n" << dF_dSigmaCDF << "\n"<< "\n";
+								//throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
+							}
+
+							// fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
+							//if (fabs(principal[0])>delta && fabs(principal[1])>delta && fabs(principal[2])>delta)
+							{
+								if ((d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff()>1e-1)
+								{
+									//std::cout << "sigmas principal" << principal[0]<< " " << principal[1] <<  " " << principal[2] << "\n";
+									//std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " "<< rStress(3) <<  " "<< rStress(4) <<  " "<< rStress(5) << "\n";
+									std::cout << "error second derivatives " << (d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff() << "\n";
+
+									std::cout<< "rd2F_d2SigmaCDF " << "\n" << d2F_d2SigmaCDF << "\n"<< "\n";
+									std::cout<< "rd2F_d2SigmaExact " << "\n" << d2F_d2SigmaExact << "\n"<< "\n";
+									//throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating second derivative of yield function.");
+								}
+							}
+							/*else
+							{
+								std::cout << "at least one principal stress close to zero, stiffness matrix is not reliable" << "\n";
+							}
+							*/
+						}
 #endif
 					}
 
@@ -2381,7 +2445,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						rLogger << "rdEpsilonPdEpsilon " << "\n" << rdEpsilonPdEpsilon <<"\n"<< "\n";
 						rLogger << "dElastInv " << "\n" << dElastInv <<"\n"<< "\n";
 						rLogger << "dElast " << "\n" << dElast <<"\n"<< "\n";
-						rLogger << "tmpStiffness " << "\n" << tmpStiffness <<"\n"<< "\n";
+						rLogger << "rdSigmadEpsilon " << "\n" << rdSigmadEpsilon <<"\n"<< "\n";
 #endif
 
 							rStress = trialStress;
@@ -3533,7 +3597,7 @@ bool NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrager2
 }
 
 #define tolerance_D 1e-10
-#define tolerance_p 1e-5
+#define tolerance_q sqrt(tolerance_D)
 //! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
 //! @param rStress current stress
 //! @param rFct return tensile strength
@@ -3576,19 +3640,19 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
     sin_beta,
     sin_beta_add,
     sin_beta_sub,
-    da_ds[6],
-    db_ds[6],
-    dc_ds[6],
-    dp_ds[6],
-    dq_ds[6],
-    dP_ds[6],
+    da_ds[6]={0},
+    db_ds[6]={0},
+    dc_ds[6]={0},
+    dp_ds[6]={0},
+    dq_ds[6]={0},
+    dP_ds[6]={0},
     dbeta_ds[6],
-    db_ds2[36],
-    dc_ds2[36],
-    dp_ds2[36],
-    dq_ds2[36],
-    dP_ds2[36],
-    dbeta_ds2[36];
+    db_ds2[36]={0},
+    dc_ds2[36]={0},
+    dp_ds2[36]={0},
+    dq_ds2[36]={0},
+    dP_ds2[36]={0},
+    dbeta_ds2[36]={0};
 
     int num_pos; //number of positive eigenvalues
 
@@ -3624,32 +3688,30 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
     D = p*p*p+q2;
 
     // complex eigenvalues found, but eigenvalues of a symmetric matrix are always real
+    //std::cout << "D=" << D << std::endl;
+//    std::cout << "stress : " << rStress.transpose() << std::endl ;
     assert(D<tolerance_D);
 
-    if (D>-tolerance_D)
-    {
-        if (p>-tolerance_p)
-        {
-            // discrimante is almost zero and q is almost zero
-            principal[0] = -a/3.;
-            principal[1] = principal[0];
-            principal[2] = principal[0];
-        }
-        else
-        {
-            // discrimante is almost zero and q is nonzero
-    		double sqrt_minus_3p = sqrt(-3.*p);
-    		principal[0] = -sqrt_minus_3p-a/3.;
-    		principal[1] = -a/3.;
-    		principal[2] = sqrt_minus_3p-a/3.;
-        }
-    }
+	if (fabs(q)<tolerance_q)
+	{
+		//three identical eigenvalues
+	    assert(D>-tolerance_D);
+		principal[0] = -a/3.;
+		principal[1] = principal[0];
+		principal[2] = principal[0];
+	}
     else
     {
-        // three real roots
-        sqrt_minus_p = sqrt(-p);
+        // either three different real roots or two real roots (one is twice)
+    	sqrt_minus_p = sqrt(-p);
         P = q<0 ? -sqrt_minus_p : sqrt_minus_p;
-        beta = acos(q/(P*P*P))/3.;
+        double qdiffP3 = q/(P*P*P);
+        if (qdiffP3>1.)
+        {
+        	assert(qdiffP3-1<tolerance_D);
+        	qdiffP3=1;
+        }
+        beta = acos(qdiffP3)/3.;
         cos_beta = cos(beta);
         cos_beta_add = cos(beta+M_PI/3.);
         cos_beta_sub = cos(beta-M_PI/3.);
@@ -3658,81 +3720,83 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
         principal[2] = 2.*P*cos_beta_sub-a/3.;
     }
 
-    num_pos = (principal[0]>0 ? 1 : 0) + (principal[1]>0 ? 1 : 0) + (principal[2]>0 ? 1 : 0);
+    //std::cout << "principal stresses=" <<  principal[0] << " " << principal[1] << " " << principal[2] << std::endl;
+	num_pos = (principal[0]>0 ? 1 : 0) + (principal[1]>0 ? 1 : 0) + (principal[2]>0 ? 1 : 0);
 
-    switch (num_pos)
-    {
-    case 0:
-        F = -rFct;
-        if (rdF_dSigma!=0)
-        {
-            (*rdF_dSigma).setZero(6,1);
-        }
-        if (rd2F_d2Sigma!=0)
-        {
-            (*rd2F_d2Sigma).setZero(36,1);
-        }
-        break;
-    case 1:
-    case 2:
-        if (rdF_dSigma!=0)
-        {
-            // a
-            da_ds[0] = -1.;
-            da_ds[1] = -1.;
-            da_ds[2] = -1.;
-            da_ds[3] =  0.;
-            da_ds[4] =  0.;
-            da_ds[5] =  0.;
+	switch (num_pos)
+	{
+	case 0:
+		F = -rFct;
+		if (rdF_dSigma!=0)
+		{
+			(*rdF_dSigma).setZero(6,1);
+		}
+		if (rd2F_d2Sigma!=0)
+		{
+			(*rd2F_d2Sigma).setZero(36,1);
+		}
+		return F;
+		break;
+	case 1:
+	case 2:
+		if (rdF_dSigma!=0)
+		{
+			// a
+			da_ds[0] = -1.;
+			da_ds[1] = -1.;
+			da_ds[2] = -1.;
+			da_ds[3] =  0.;
+			da_ds[4] =  0.;
+			da_ds[5] =  0.;
 
-            // b
-            db_ds[0] = rStress(1)+rStress(2);
-            db_ds[1] = rStress(0)+rStress(2);
-            db_ds[2] = rStress(0)+rStress(1);
-            db_ds[3] = -2.*rStress(3);
-            db_ds[4] = -2.*rStress(4);
-            db_ds[5] = -2.*rStress(5);
+			// b
+			db_ds[0] = rStress(1)+rStress(2);
+			db_ds[1] = rStress(0)+rStress(2);
+			db_ds[2] = rStress(0)+rStress(1);
+			db_ds[3] = -2.*rStress(3);
+			db_ds[4] = -2.*rStress(4);
+			db_ds[5] = -2.*rStress(5);
 
-            db_ds2[1]  = 1.;
-            db_ds2[2]  = 1.;
-            db_ds2[8]  = 1.;
-            db_ds2[21]  = -2.;
-            db_ds2[28] = -2.;
-            db_ds2[35] = -2.;
+			db_ds2[1]  = 1.;
+			db_ds2[2]  = 1.;
+			db_ds2[8]  = 1.;
+			db_ds2[21]  = -2.;
+			db_ds2[28] = -2.;
+			db_ds2[35] = -2.;
 
-            // c
-            dc_ds[0] = rStress(4)*rStress(4)-rStress(1)*rStress(2);
-            dc_ds[1] = rStress(5)*rStress(5)-rStress(0)*rStress(2);
-            dc_ds[2] = rStress(3)*rStress(3)-rStress(0)*rStress(1);
-            dc_ds[3] = 2.*(rStress(2)*rStress(3)-rStress(4)*rStress(5));
-            dc_ds[4] = 2.*(rStress(0)*rStress(4)-rStress(3)*rStress(5));
-            dc_ds[5] = 2.*(rStress(1)*rStress(5)-rStress(3)*rStress(4));
+			// c
+			dc_ds[0] = rStress(4)*rStress(4)-rStress(1)*rStress(2);
+			dc_ds[1] = rStress(5)*rStress(5)-rStress(0)*rStress(2);
+			dc_ds[2] = rStress(3)*rStress(3)-rStress(0)*rStress(1);
+			dc_ds[3] = 2.*(rStress(2)*rStress(3)-rStress(4)*rStress(5));
+			dc_ds[4] = 2.*(rStress(0)*rStress(4)-rStress(3)*rStress(5));
+			dc_ds[5] = 2.*(rStress(1)*rStress(5)-rStress(3)*rStress(4));
 
-            dc_ds2[1]  = -rStress(2);
-            dc_ds2[2]  = -rStress(1);
-            dc_ds2[4]  = 2.*rStress(4);
-            dc_ds2[8]  = -rStress(0);
-            dc_ds2[11] = 2.*rStress(5);
-            dc_ds2[15] = 2.*rStress(3);
-            dc_ds2[21] = 2.*rStress(2);
-            dc_ds2[22] = -2.*rStress(5);
-            dc_ds2[23] = -2.*rStress(4);
-            dc_ds2[28] = 2.*rStress(0);
-            dc_ds2[29] = -2.*rStress(3);
-            dc_ds2[35] = 2.*rStress(1);
+			dc_ds2[1]  = -rStress(2);
+			dc_ds2[2]  = -rStress(1);
+			dc_ds2[4]  = 2.*rStress(4);
+			dc_ds2[8]  = -rStress(0);
+			dc_ds2[11] = 2.*rStress(5);
+			dc_ds2[15] = 2.*rStress(3);
+			dc_ds2[21] = 2.*rStress(2);
+			dc_ds2[22] = -2.*rStress(5);
+			dc_ds2[23] = -2.*rStress(4);
+			dc_ds2[28] = 2.*rStress(0);
+			dc_ds2[29] = -2.*rStress(3);
+			dc_ds2[35] = 2.*rStress(1);
 
-            // p
-            factor3 = -2./9.;
-            factor1 = factor3*a;factor2 = 1./3.;
-            dp_ds[0] = factor1*da_ds[0]+factor2*db_ds[0];
-            dp_ds[1] = factor1*da_ds[1]+factor2*db_ds[1];
-            dp_ds[2] = factor1*da_ds[2]+factor2*db_ds[2];
-            dp_ds[3] = factor1*da_ds[3]+factor2*db_ds[3];
-            dp_ds[4] = factor1*da_ds[4]+factor2*db_ds[4];
-            dp_ds[5] = factor1*da_ds[5]+factor2*db_ds[5];
+			// p
+			factor3 = -2./9.;
+			factor1 = factor3*a;factor2 = 1./3.;
+			dp_ds[0] = factor1*da_ds[0]+factor2*db_ds[0];
+			dp_ds[1] = factor1*da_ds[1]+factor2*db_ds[1];
+			dp_ds[2] = factor1*da_ds[2]+factor2*db_ds[2];
+			dp_ds[3] = factor1*da_ds[3]+factor2*db_ds[3];
+			dp_ds[4] = factor1*da_ds[4]+factor2*db_ds[4];
+			dp_ds[5] = factor1*da_ds[5]+factor2*db_ds[5];
 
-            if (rd2F_d2Sigma!=0)
-            {
+			if (rd2F_d2Sigma!=0)
+			{
 				for (int j=0; j<6;j++)
 				{
 					for (int i=j; i<6;i++)
@@ -3740,19 +3804,19 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 						dp_ds2[6*j+i] = factor3*da_ds[i]*da_ds[j]+factor2*db_ds2[6*j+i];
 					}
 				}
-            }
+			}
 
-            // q
-            factor1 = a2/9.-b/6.;factor2 = a/(-6.);
-            dq_ds[0] = factor1*da_ds[0]+factor2*db_ds[0]+0.5*dc_ds[0];
-            dq_ds[1] = factor1*da_ds[1]+factor2*db_ds[1]+0.5*dc_ds[1];
-            dq_ds[2] = factor1*da_ds[2]+factor2*db_ds[2]+0.5*dc_ds[2];
-            dq_ds[3] = factor1*da_ds[3]+factor2*db_ds[3]+0.5*dc_ds[3];
-            dq_ds[4] = factor1*da_ds[4]+factor2*db_ds[4]+0.5*dc_ds[4];
-            dq_ds[5] = factor1*da_ds[5]+factor2*db_ds[5]+0.5*dc_ds[5];
+			// q
+			factor1 = a2/9.-b/6.;factor2 = a/(-6.);
+			dq_ds[0] = factor1*da_ds[0]+factor2*db_ds[0]+0.5*dc_ds[0];
+			dq_ds[1] = factor1*da_ds[1]+factor2*db_ds[1]+0.5*dc_ds[1];
+			dq_ds[2] = factor1*da_ds[2]+factor2*db_ds[2]+0.5*dc_ds[2];
+			dq_ds[3] = factor1*da_ds[3]+factor2*db_ds[3]+0.5*dc_ds[3];
+			dq_ds[4] = factor1*da_ds[4]+factor2*db_ds[4]+0.5*dc_ds[4];
+			dq_ds[5] = factor1*da_ds[5]+factor2*db_ds[5]+0.5*dc_ds[5];
 
-            if (rd2F_d2Sigma!=0)
-            {
+			if (rd2F_d2Sigma!=0)
+			{
 				factor3 = 2./9.*a;factor4 = -1./6.;
 				for (int j=0; j<6;j++)
 				{
@@ -3764,21 +3828,21 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 										+0.5*dc_ds2[6*j+i];
 					}
 				}
-            }
+			}
+			if (fabs(q)>=tolerance_q)
+			{
+				assert(fabs(p)>tolerance_D);
+				// P
+				factor1 = q<0 ? 1./(2.*sqrt_minus_p) : -1./(2.*sqrt_minus_p);
+				dP_ds[0] = factor1*dp_ds[0];
+				dP_ds[1] = factor1*dp_ds[1];
+				dP_ds[2] = factor1*dp_ds[2];
+				dP_ds[3] = factor1*dp_ds[3];
+				dP_ds[4] = factor1*dp_ds[4];
+				dP_ds[5] = factor1*dp_ds[5];
 
-            if (p<=-tolerance_p)
-            {
-                // P
-                factor1 = q<0 ? 1./(2.*sqrt_minus_p) : -1./(2.*sqrt_minus_p);
-                dP_ds[0] = factor1*dp_ds[0];
-                dP_ds[1] = factor1*dp_ds[1];
-                dP_ds[2] = factor1*dp_ds[2];
-                dP_ds[3] = factor1*dp_ds[3];
-                dP_ds[4] = factor1*dp_ds[4];
-                dP_ds[5] = factor1*dp_ds[5];
-
-                if (rd2F_d2Sigma!=0)
-                {
+				if (rd2F_d2Sigma!=0)
+				{
 					factor2 = q<0 ? 1./(4.*sqrt_minus_p*(-p)) : -1./(4.*sqrt_minus_p*(-p));
 					for (int j=0; j<6;j++)
 					{
@@ -3787,34 +3851,34 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 							dP_ds2[6*j+i] = factor2*dp_ds[j] * dp_ds[i]+factor1*dp_ds2[6*j+i];
 						}
 					}
-                }
-            }
+				}
+		    }
 
-            if (D<=-tolerance_D)
-            {
-                // beta
-                P2 = P*P;
-                P3 = P2*P;
-                P6 = P3*P3;
-                help_scalar = q/(P3);
-                sqrt_1_minus_q2_div_P6 = sqrt(1.-help_scalar*help_scalar);
-                factor1 = -1./(3*P3*sqrt_1_minus_q2_div_P6);
-                factor2 = q/(P2*P2*sqrt_1_minus_q2_div_P6);
-                factor3 = P2/((P6-q2)*sqrt_1_minus_q2_div_P6);
-                factor4 = -q*(4.*P6-q2)/((P6-q2)*P2*P3*sqrt_1_minus_q2_div_P6);
+			if (D<=-tolerance_D)
+			{
+				// beta
+				P2 = P*P;
+				P3 = P2*P;
+				P6 = P3*P3;
+				help_scalar = q/(P3);
+				sqrt_1_minus_q2_div_P6 = sqrt(1.-help_scalar*help_scalar);
+				factor1 = -1./(3*P3*sqrt_1_minus_q2_div_P6);
+				factor2 = q/(P2*P2*sqrt_1_minus_q2_div_P6);
+				factor3 = P2/((P6-q2)*sqrt_1_minus_q2_div_P6);
+				factor4 = -q*(4.*P6-q2)/((P6-q2)*P2*P3*sqrt_1_minus_q2_div_P6);
 
-                help_scalar = P3*sqrt_1_minus_q2_div_P6;
-                factor5 = -q/(3*(help_scalar*help_scalar*help_scalar));
+				help_scalar = P3*sqrt_1_minus_q2_div_P6;
+				factor5 = -q/(3*(help_scalar*help_scalar*help_scalar));
 
-                dbeta_ds[0] = factor1*dq_ds[0]+factor2*dP_ds[0];
-                dbeta_ds[1] = factor1*dq_ds[1]+factor2*dP_ds[1];
-                dbeta_ds[2] = factor1*dq_ds[2]+factor2*dP_ds[2];
-                dbeta_ds[3] = factor1*dq_ds[3]+factor2*dP_ds[3];
-                dbeta_ds[4] = factor1*dq_ds[4]+factor2*dP_ds[4];
-                dbeta_ds[5] = factor1*dq_ds[5]+factor2*dP_ds[5];
+				dbeta_ds[0] = factor1*dq_ds[0]+factor2*dP_ds[0];
+				dbeta_ds[1] = factor1*dq_ds[1]+factor2*dP_ds[1];
+				dbeta_ds[2] = factor1*dq_ds[2]+factor2*dP_ds[2];
+				dbeta_ds[3] = factor1*dq_ds[3]+factor2*dP_ds[3];
+				dbeta_ds[4] = factor1*dq_ds[4]+factor2*dP_ds[4];
+				dbeta_ds[5] = factor1*dq_ds[5]+factor2*dP_ds[5];
 
-                if (rd2F_d2Sigma!=0)
-                {
+				if (rd2F_d2Sigma!=0)
+				{
 					for (int j=0; j<6;j++)
 					{
 						for (int i=j; i<6;i++)
@@ -3823,37 +3887,37 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 											   +(factor4*dP_ds[j]+factor3*dq_ds[j]) * dP_ds[i] + factor2*dP_ds2[6*j+i];
 						}
 					}
-                }
-            } // if (D<=-tolerance_D)
-        }// if(calc_derivatives)
+				}
+			} // if (D<=-tolerance_D)
+		}// if(calc_derivatives)
 
+		if (num_pos==1)
+		{
+			if (D<=-tolerance_D)
+			{
+				//all solutions are real and different
+				if (principal[0]>0)
+				{
 
-        if (num_pos==1)
-        {
-            if (D<=-tolerance_D)
-            {
-                if (principal[0]>0)
-                {
+					F = principal[0]-rFct;
+					if (rdF_dSigma!=0)
+					{
+						// calculate derivatives
+						sin_beta = sin(beta);
+						factor4 = 2.*sin_beta;
+						factor1 = P*factor4;
+						factor2 = -2.*cos_beta;
+						factor3 = -1./3.;
+						factor5 = -P*factor2;
+						dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+						dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+						dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+						dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+						dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+						dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-                    F = principal[0]-rFct;
-                    if (rdF_dSigma!=0)
-                    {
-                        // calculate derivatives
-                        sin_beta = sin(beta);
-                        factor4 = 2.*sin_beta;
-                        factor1 = P*factor4;
-                        factor2 = -2.*cos_beta;
-                        factor3 = -1./3.;
-                        factor5 = -P*factor2;
-                        dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-                        dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-                        dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-                        dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-                        dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-                        dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
-
-                        if (rd2F_d2Sigma!=0)
-                        {
+						if (rd2F_d2Sigma!=0)
+						{
 							for (int j=0; j<6;j++)
 							{
 								for (int i=j; i<6;i++)
@@ -3867,31 +3931,31 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 									}
 								}
 							}
-                        }
-                    }
-                    return F;
-                }
-                if (principal[1]>0)
-                {
+						}
+					}
+					return F;
+				}
+				if (principal[1]>0)
+				{
 
-                    F = principal[1]-rFct;
-                    if (rdF_dSigma!=0)
-                    {
-                        sin_beta_add = sin(beta+M_PI/3.);
-                        factor4 = -2.*sin_beta_add;
-                        factor1 = P*factor4;
-                        factor2 = 2.*cos_beta_add;
-                        factor3 = -1./3.;
-                        factor5 = -P*factor2;
-                        dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-                        dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-                        dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-                        dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-                        dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-                        dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+					F = principal[1]-rFct;
+					if (rdF_dSigma!=0)
+					{
+						sin_beta_add = sin(beta+M_PI/3.);
+						factor4 = -2.*sin_beta_add;
+						factor1 = P*factor4;
+						factor2 = 2.*cos_beta_add;
+						factor3 = -1./3.;
+						factor5 = -P*factor2;
+						dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+						dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+						dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+						dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+						dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+						dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-                        if (rd2F_d2Sigma!=0)
-                        {
+						if (rd2F_d2Sigma!=0)
+						{
 							for (int j=0; j<6;j++)
 							{
 								for (int i=j; i<6;i++)
@@ -3905,30 +3969,30 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 									}
 								}
 							}
-                        }
-                    }
-                    return F;
-                }
-                if (principal[2]>0)
-                {
-                    F = principal[2]-rFct;
-                    if (rdF_dSigma!=0)
-                    {
-                        sin_beta_sub = sin(beta-M_PI/3.);
-                        factor4 = -2.*sin_beta_sub;
-                        factor1 = P*factor4;
-                        factor2 = 2.*cos_beta_sub;
-                        factor3 = -1./3.;
-                        factor5 = -P*factor2;
-                        dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-                        dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-                        dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-                        dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-                        dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-                        dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+						}
+					}
+					return F;
+				}
+				if (principal[2]>0)
+				{
+					F = principal[2]-rFct;
+					if (rdF_dSigma!=0)
+					{
+						sin_beta_sub = sin(beta-M_PI/3.);
+						factor4 = -2.*sin_beta_sub;
+						factor1 = P*factor4;
+						factor2 = 2.*cos_beta_sub;
+						factor3 = -1./3.;
+						factor5 = -P*factor2;
+						dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+						dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+						dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+						dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+						dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+						dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-                        if (rd2F_d2Sigma!=0)
-                        {
+						if (rd2F_d2Sigma!=0)
+						{
 							for (int j=0; j<6;j++)
 							{
 								for (int i=j; i<6;i++)
@@ -3942,45 +4006,45 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 									}
 								}
 							}
-                        }
-                    }
-                    return F;
-                }
-            }// D<=-tolerance_D
-            else
-            {
-            	// two identical solutions with principal[1] and principal[2], since only one is positive, the solution is principal[0]
-                F = principal[0]-rFct;
-                if (rdF_dSigma!=0)
-                {
-                    double df_dq,
-                    df_da,
-                    df_dP,
-                    df_dq2,
-                    df_dP2,
-                    df_dqdP,
+						}
+					}
+					return F;
+				}
+			}// D<=-tolerance_D
+			else
+			{
+				// two identical solutions with principal[1] and principal[2], since only one is positive, the solution is principal[0]
+				F = principal[0]-rFct;
+				if (rdF_dSigma!=0)
+				{
+					double df_dq,
+					df_da,
+					df_dP,
+					df_dq2,
+					df_dP2,
+					df_dqdP,
 
 
-                    P2 = P*P;
-                    P3 = P2*P;
+					P2 = P*P;
+					P3 = P2*P;
 
-                    df_dq  = -2./(9.*P2);
-                    df_dP  = -4./3.;
-                    df_da  = -1./3.;
+					df_dq  = -2./(9.*P2);
+					df_dP  = -4./3.;
+					df_da  = -1./3.;
 
-                    df_dq2  = 16./(243*P2*P3);
-                    df_dqdP = 20./(81*P3);;
-                    df_dP2  = -20./(27.*P);
+					df_dq2  = 16./(243*P2*P3);
+					df_dqdP = 20./(81*P3);;
+					df_dP2  = -20./(27.*P);
 
-                    dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
-                    dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
-                    dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
-                    dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
-                    dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
-                    dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
+					dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
+					dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
+					dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
+					dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
+					dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
+					dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
 
-                    if (rd2F_d2Sigma!=0)
-                    {
+					if (rd2F_d2Sigma!=0)
+					{
 						for (int j=0; j<6;j++)
 						{
 							for (int i=j; i<6;i++)
@@ -3994,41 +4058,39 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 								}
 							}
 						}
-                    }
-                }
-                return F;
+					}
+				}
+				return F;
+			}//else D<=-tolerance_D
+		}// num_pos==1
+		else
+		{
+			assert(num_pos==2);
+			if (D<=-tolerance_D)
+			{
+				double dprinc_dsigma[3][6],d2princ_d2sigma[3][36];
+				F = 0;
+				if (principal[0]>0)
+				{
+					F += principal[0]*principal[0];
+					if (rdF_dSigma!=0)
+					{
+						// calculate derivatives
+						sin_beta = sin(beta);
+						factor4 = 2.*sin_beta;
+						factor1 = P*factor4;
+						factor2 = -2.*cos_beta;
+						factor3 = -1./3.;
+						factor5 = -P*factor2;
+						dprinc_dsigma[0][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+						dprinc_dsigma[0][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+						dprinc_dsigma[0][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+						dprinc_dsigma[0][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+						dprinc_dsigma[0][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+						dprinc_dsigma[0][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-
-            }
-        }// num_pos==1
-        else
-        {
-            // num_pos==2
-            if (D<=-tolerance_D)
-            {
-                double dprinc_dsigma[3][6],d2princ_d2sigma[3][36];
-                F = 0;
-                if (principal[0]>0)
-                {
-                    F += principal[0]*principal[0];
-                    if (rdF_dSigma!=0)
-                    {
-                        // calculate derivatives
-                        sin_beta = sin(beta);
-                        factor4 = 2.*sin_beta;
-                        factor1 = P*factor4;
-                        factor2 = -2.*cos_beta;
-                        factor3 = -1./3.;
-                        factor5 = -P*factor2;
-                        dprinc_dsigma[0][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-                        dprinc_dsigma[0][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-                        dprinc_dsigma[0][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-                        dprinc_dsigma[0][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-                        dprinc_dsigma[0][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-                        dprinc_dsigma[0][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
-
-                        if (rd2F_d2Sigma!=0)
-                        {
+						if (rd2F_d2Sigma!=0)
+						{
 							for (int j=0; j<6;j++)
 							{
 								for (int i=j; i<6;i++)
@@ -4042,29 +4104,29 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 									}
 								}
 							}
-                        }
-                    }
-                }
-                if (principal[1]>0)
-                {
-                    F += principal[1]*principal[1];
-                    if (rdF_dSigma!=0)
-                    {
-                        sin_beta_add = sin(beta+M_PI/3.);
-                        factor4 = -2.*sin_beta_add;
-                        factor1 = P*factor4;
-                        factor2 = 2.*cos_beta_add;
-                        factor3 = -1./3.;
-                        factor5 = -P*factor2;
-                        dprinc_dsigma[1][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-                        dprinc_dsigma[1][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-                        dprinc_dsigma[1][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-                        dprinc_dsigma[1][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-                        dprinc_dsigma[1][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-                        dprinc_dsigma[1][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+						}
+					}
+				}
+				if (principal[1]>0)
+				{
+					F += principal[1]*principal[1];
+					if (rdF_dSigma!=0)
+					{
+						sin_beta_add = sin(beta+M_PI/3.);
+						factor4 = -2.*sin_beta_add;
+						factor1 = P*factor4;
+						factor2 = 2.*cos_beta_add;
+						factor3 = -1./3.;
+						factor5 = -P*factor2;
+						dprinc_dsigma[1][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+						dprinc_dsigma[1][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+						dprinc_dsigma[1][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+						dprinc_dsigma[1][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+						dprinc_dsigma[1][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+						dprinc_dsigma[1][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-                        if (rd2F_d2Sigma!=0)
-                        {
+						if (rd2F_d2Sigma!=0)
+						{
 							for (int j=0; j<6;j++)
 							{
 								for (int i=j; i<6;i++)
@@ -4078,29 +4140,29 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 									}
 								}
 							}
-                        }
-                    }
-                }
-                if (principal[2]>0)
-                {
-                    F += principal[2]*principal[2];
-                    if (rdF_dSigma!=0)
-                    {
-                        sin_beta_sub = sin(beta-M_PI/3.);
-                        factor4 = -2.*sin_beta_sub;
-                        factor1 = P*factor4;
-                        factor2 = 2.*cos_beta_sub;
-                        factor3 = -1./3.;
-                        factor5 = -P*factor2;
-                        dprinc_dsigma[2][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-                        dprinc_dsigma[2][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-                        dprinc_dsigma[2][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-                        dprinc_dsigma[2][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-                        dprinc_dsigma[2][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-                        dprinc_dsigma[2][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+						}
+					}
+				}
+				if (principal[2]>0)
+				{
+					F += principal[2]*principal[2];
+					if (rdF_dSigma!=0)
+					{
+						sin_beta_sub = sin(beta-M_PI/3.);
+						factor4 = -2.*sin_beta_sub;
+						factor1 = P*factor4;
+						factor2 = 2.*cos_beta_sub;
+						factor3 = -1./3.;
+						factor5 = -P*factor2;
+						dprinc_dsigma[2][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+						dprinc_dsigma[2][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+						dprinc_dsigma[2][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+						dprinc_dsigma[2][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+						dprinc_dsigma[2][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+						dprinc_dsigma[2][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-                        if (rd2F_d2Sigma!=0)
-                        {
+						if (rd2F_d2Sigma!=0)
+						{
 							for (int j=0; j<6;j++)
 							{
 								for (int i=j; i<6;i++)
@@ -4114,45 +4176,45 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 									}
 								}
 							}
-                        }
-                    }
-                }
-                int s1,s2;
-                double f;
-                // calculate yield function
-                f = sqrt(F);
-                F = f-rFct;
-                if (rdF_dSigma!=0)
-                {
-                    if (principal[0]>0)
-                    {
-                        s1 = 0;
-                        if (principal[0]>0)
-                        {
-                            s2 = 1;
-                        }
-                        else
-                        {
-                            s2 = 2;
-                        }
-                    }
-                    else
-                    {
-                        s1 = 1;
-                        s2 = 2;
-                    }
+						}
+					}
+				}
+				int s1,s2;
+				double f;
+				// calculate yield function
+				f = sqrt(F);
+				F = f-rFct;
+				if (rdF_dSigma!=0)
+				{
+					if (principal[0]>0)
+					{
+						s1 = 0;
+						if (principal[0]>0)
+						{
+							s2 = 1;
+						}
+						else
+						{
+							s2 = 2;
+						}
+					}
+					else
+					{
+						s1 = 1;
+						s2 = 2;
+					}
 
-                    // calculate gradient and Hessian
-                    factor1 = 1./f;
-                    dF_dsigma[0] = factor1*(dprinc_dsigma[s1][0]*principal[s1] + dprinc_dsigma[s2][0]*principal[s2]);
-                    dF_dsigma[1] = factor1*(dprinc_dsigma[s1][1]*principal[s1] + dprinc_dsigma[s2][1]*principal[s2]);
-                    dF_dsigma[2] = factor1*(dprinc_dsigma[s1][2]*principal[s1] + dprinc_dsigma[s2][2]*principal[s2]);
-                    dF_dsigma[3] = factor1*(dprinc_dsigma[s1][3]*principal[s1] + dprinc_dsigma[s2][3]*principal[s2]);
-                    dF_dsigma[4] = factor1*(dprinc_dsigma[s1][4]*principal[s1] + dprinc_dsigma[s2][4]*principal[s2]);
-                    dF_dsigma[5] = factor1*(dprinc_dsigma[s1][5]*principal[s1] + dprinc_dsigma[s2][5]*principal[s2]);
+					// calculate gradient and Hessian
+					factor1 = 1./f;
+					dF_dsigma[0] = factor1*(dprinc_dsigma[s1][0]*principal[s1] + dprinc_dsigma[s2][0]*principal[s2]);
+					dF_dsigma[1] = factor1*(dprinc_dsigma[s1][1]*principal[s1] + dprinc_dsigma[s2][1]*principal[s2]);
+					dF_dsigma[2] = factor1*(dprinc_dsigma[s1][2]*principal[s1] + dprinc_dsigma[s2][2]*principal[s2]);
+					dF_dsigma[3] = factor1*(dprinc_dsigma[s1][3]*principal[s1] + dprinc_dsigma[s2][3]*principal[s2]);
+					dF_dsigma[4] = factor1*(dprinc_dsigma[s1][4]*principal[s1] + dprinc_dsigma[s2][4]*principal[s2]);
+					dF_dsigma[5] = factor1*(dprinc_dsigma[s1][5]*principal[s1] + dprinc_dsigma[s2][5]*principal[s2]);
 
-                    if (rd2F_d2Sigma!=0)
-                    {
+					if (rd2F_d2Sigma!=0)
+					{
 						factor2 = factor1*factor1*factor1;
 						factor3 = (f*f);
 
@@ -4176,59 +4238,60 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 								}
 							}
 						}
-                    }
-                }
-                return F;
+					}
+				}
+				return F;
 
-            }// D<=-tolerance_D
-            else
-            {
-                // two identical solutions with principal[1] and principal[2]
-                F = sqrt(2)*(principal[1])-rFct;
+			}// D<=-tolerance_D
+			else
+			{
+				// two identical solutions with principal[1] and principal[2]
+				//F = sqrt(2.)*(principal[1])-rFct; this is not 100% correct, since they are only equal up to a certain accuracy
+				F = sqrt(principal[1]*principal[1]+principal[2]*principal[2])-rFct;
 
-                if (rdF_dSigma!=0)
-                {
-                    double df_dq,
-                    df_da,
-                    df_dP,
-                    df_dq2,
-                    df_dP2,
-                    df_dqdP,
-                    df_dqda,
-                    df_dPda,
-                    mul_3P_sub_a,
-                    sign_3P_sub_a,
-                    mul_3P_sub_a_pow_2,
-                    mul_3P_sub_a_pow_3;
+				if (rdF_dSigma!=0)
+				{
+					double df_dq,
+					df_da,
+					df_dP,
+					df_dq2,
+					df_dP2,
+					df_dqdP,
+					df_dqda,
+					df_dPda,
+					mul_3P_sub_a,
+					sign_3P_sub_a,
+					mul_3P_sub_a_pow_2,
+					mul_3P_sub_a_pow_3;
 
-                    mul_3P_sub_a = 3.*P-a;
-                    mul_3P_sub_a_pow_2 = mul_3P_sub_a*mul_3P_sub_a;
-                    mul_3P_sub_a_pow_3 = mul_3P_sub_a_pow_2*mul_3P_sub_a;
-                    sign_3P_sub_a = mul_3P_sub_a<0 ? -1 : 1;
+					mul_3P_sub_a = 3.*P-a;
+					mul_3P_sub_a_pow_2 = mul_3P_sub_a*mul_3P_sub_a;
+					mul_3P_sub_a_pow_3 = mul_3P_sub_a_pow_2*mul_3P_sub_a;
+					sign_3P_sub_a = mul_3P_sub_a<0 ? -1 : 1;
 
-                    P2 = P*P;
-                    P3 = P2*P;
-                    P6 = P3*P3;
+					P2 = P*P;
+					P3 = P2*P;
+					P6 = P3*P3;
 
-                    df_dq  = -sqrt(2)*(6.*P+a)*sign_3P_sub_a/(9.*P2*mul_3P_sub_a);
-                    df_dP  = sqrt(2)*(15.*P-2.*a)*sign_3P_sub_a/(3.*mul_3P_sub_a);
-                    df_da  = -sqrt(2)/(3.)*sign_3P_sub_a;
+					df_dq  = -sqrt(2)*(6.*P+a)*sign_3P_sub_a/(9.*P2*mul_3P_sub_a);
+					df_dP  = sqrt(2)*(15.*P-2.*a)*sign_3P_sub_a/(3.*mul_3P_sub_a);
+					df_da  = -sqrt(2)/(3.)*sign_3P_sub_a;
 
-                    df_dq2  = -sqrt(2)*(54.*P3+216.*P2*a+27.*a2*P-8.*a3)*sign_3P_sub_a/(243.*P2*P3*mul_3P_sub_a_pow_3);
-                    df_dqdP = sqrt(2)*(1026.*P3-27.*P2*a-54.*a2*P+10.*a3)*sign_3P_sub_a/(81.*P3*mul_3P_sub_a_pow_3);
-                    df_dqda = -sqrt(2)*sign_3P_sub_a/(mul_3P_sub_a_pow_2*P);
-                    df_dP2  = -sqrt(2)*(1026.*P3+216.*P2*a-135.*a2*P+10.*a3)*sign_3P_sub_a/(27.*P*mul_3P_sub_a_pow_3);
-                    df_dPda = sqrt(2)*(3.*P)*sign_3P_sub_a/(mul_3P_sub_a_pow_2);
+					df_dq2  = -sqrt(2)*(54.*P3+216.*P2*a+27.*a2*P-8.*a3)*sign_3P_sub_a/(243.*P2*P3*mul_3P_sub_a_pow_3);
+					df_dqdP = sqrt(2)*(1026.*P3-27.*P2*a-54.*a2*P+10.*a3)*sign_3P_sub_a/(81.*P3*mul_3P_sub_a_pow_3);
+					df_dqda = -sqrt(2)*sign_3P_sub_a/(mul_3P_sub_a_pow_2*P);
+					df_dP2  = -sqrt(2)*(1026.*P3+216.*P2*a-135.*a2*P+10.*a3)*sign_3P_sub_a/(27.*P*mul_3P_sub_a_pow_3);
+					df_dPda = sqrt(2)*(3.*P)*sign_3P_sub_a/(mul_3P_sub_a_pow_2);
 
-                    dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
-                    dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
-                    dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
-                    dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
-                    dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
-                    dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
+					dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
+					dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
+					dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
+					dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
+					dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
+					dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
 
-                    if (rd2F_d2Sigma!=0)
-                    {
+					if (rd2F_d2Sigma!=0)
+					{
 						for (int j=0; j<6;j++)
 						{
 							for (int i=j; i<6;i++)
@@ -4244,62 +4307,62 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 								}
 							}
 						}
-                    }
-                }
-                return F;
-            }
-        }// num_pos==2
-        break; //num_pos==1,2
-    case 3:
-    {
-        double f = sqrt(principal[0]*principal[0]+principal[1]*principal[1]+principal[2]*principal[2]);
-        F = f-rFct;
-        if (rdF_dSigma!=0)
-        {
-            // a
-            da_ds[0] = -1.;
-            da_ds[1] = -1.;
-            da_ds[2] = -1.;
-            da_ds[3] =  0.;
-            da_ds[4] =  0.;
-            da_ds[5] =  0.;
+					}
+				}
+				return F;
+			}
+		}// num_pos==2
+		break; //num_pos==1,2
+	case 3:
+	{
+		double f = sqrt(principal[0]*principal[0]+principal[1]*principal[1]+principal[2]*principal[2]);
+		F = f-rFct;
+		if (rdF_dSigma!=0)
+		{
+			// a
+			da_ds[0] = -1.;
+			da_ds[1] = -1.;
+			da_ds[2] = -1.;
+			da_ds[3] =  0.;
+			da_ds[4] =  0.;
+			da_ds[5] =  0.;
 
-            // b
-            db_ds[0] = rStress(1)+rStress(2);
-            db_ds[1] = rStress(0)+rStress(2);
-            db_ds[2] = rStress(0)+rStress(1);
-            db_ds[3] = -2.*rStress(3);
-            db_ds[4] = -2.*rStress(4);
-            db_ds[5] = -2.*rStress(5);
+			// b
+			db_ds[0] = rStress(1)+rStress(2);
+			db_ds[1] = rStress(0)+rStress(2);
+			db_ds[2] = rStress(0)+rStress(1);
+			db_ds[3] = -2.*rStress(3);
+			db_ds[4] = -2.*rStress(4);
+			db_ds[5] = -2.*rStress(5);
 
-            db_ds2[1]  = 1.;
-            db_ds2[2]  = 1.;
-            db_ds2[8]  = 1.;
-            db_ds2[21]  = -2.;
-            db_ds2[28] = -2.;
-            db_ds2[35] = -2.;
+			db_ds2[1]  = 1.;
+			db_ds2[2]  = 1.;
+			db_ds2[8]  = 1.;
+			db_ds2[21]  = -2.;
+			db_ds2[28] = -2.;
+			db_ds2[35] = -2.;
 
-            double df_da,df_db,df_da2,df_db2,df_dadb;
+			double df_da,df_db,df_da2,df_db2,df_dadb;
 
-            factor1 = 1./f;
-            factor3 = factor1/(f*f);
+			factor1 = 1./f;
+			factor3 = factor1/(f*f);
 
-            df_da = a*factor1;
-            df_db = -factor1;
+			df_da = a*factor1;
+			df_db = -factor1;
 
-            df_da2 = -2.*b*factor3;
-            df_dadb = a*factor3;
-            df_db2 = -factor3;
+			df_da2 = -2.*b*factor3;
+			df_dadb = a*factor3;
+			df_db2 = -factor3;
 
-            dF_dsigma[0] = df_da*da_ds[0]+df_db*db_ds[0];
-            dF_dsigma[1] = df_da*da_ds[1]+df_db*db_ds[1];
-            dF_dsigma[2] = df_da*da_ds[2]+df_db*db_ds[2];
-            dF_dsigma[3] = df_da*da_ds[3]+df_db*db_ds[3];
-            dF_dsigma[4] = df_da*da_ds[4]+df_db*db_ds[4];
-            dF_dsigma[5] = df_da*da_ds[5]+df_db*db_ds[5];
+			dF_dsigma[0] = df_da*da_ds[0]+df_db*db_ds[0];
+			dF_dsigma[1] = df_da*da_ds[1]+df_db*db_ds[1];
+			dF_dsigma[2] = df_da*da_ds[2]+df_db*db_ds[2];
+			dF_dsigma[3] = df_da*da_ds[3]+df_db*db_ds[3];
+			dF_dsigma[4] = df_da*da_ds[4]+df_db*db_ds[4];
+			dF_dsigma[5] = df_da*da_ds[5]+df_db*db_ds[5];
 
-            if (rd2F_d2Sigma!=0)
-            {
+			if (rd2F_d2Sigma!=0)
+			{
 				for (int j=0; j<6;j++)
 				{
 					for (int i=j; i<6;i++)
@@ -4313,71 +4376,14 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 						}
 					}
 				}
-            }
-        }
-        return F;
-    }
-    break;
-    default:
-    	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error.");
-    }
-
-
-#ifdef ENABLE_DEBUG
-    //check the calculation
-    double delta(1e-8);
-    if (rd2F_d2Sigma!=0 && rStress(0)>1.96)
-    {
-        //rLogger << "\n" << "check yield surface and derivatives" << "\n";
-        //rLogger << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-        Eigen::Matrix<double,4,1> rdF_dSigma1, rdF_dSigma2,rdF_dSigmaCDF;
-        Eigen::Matrix<double,4,4> rd2F_d2SigmaCDF;
-        double fct(0.);
-        double f1 = YieldSurfaceRankine2DRounded(rStress, fct);
-        YieldSurfaceRankine2DRoundedDerivatives(rdF_dSigma1, 0, rStress);
-        for (int count=0; count<4; count++)
-        {
-            rStress(count)+= delta;
-            double f2 = YieldSurfaceRankine2DRounded(rStress, fct);
-            rdF_dSigmaCDF(count) = (f2-f1)/delta;
-
-            YieldSurfaceRankine2DRoundedDerivatives(rdF_dSigma2, 0, rStress);
-            rd2F_d2SigmaCDF.row(count) = (rdF_dSigma2-rdF_dSigma1)/delta;
-
-            rStress(count)-=delta;
-        }
-
-        if ((rdF_dSigmaCDF-rdF_dSigma).array().abs().maxCoeff()>1e-1)
-        {
-            std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-            std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-            std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).array().abs().maxCoeff() << "\n";
-
-            std::cout<< "rdF_dSigma " << "\n" << rdF_dSigma << "\n"<< "\n";
-            std::cout<< "rdF_dSigmaCDF " << "\n" << rdF_dSigmaCDF << "\n"<< "\n";
-            throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
-        }
-
-        // fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
-        if (fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
-        {
-            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
-            {
-                std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-                std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-                std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff() << "\n";
-
-                std::cout<< "rd2F_d2SigmaCDF " << "\n" << rd2F_d2SigmaCDF << "\n"<< "\n";
-                std::cout<< "rd2F_d2Sigma " << "\n" << (*rd2F_d2Sigma) << "\n"<< "\n";
-                throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating second derivative of yield function.");
-            }
-        }
-        else
-        {
-            std::cout << "at least one principal stress close to zero, stiffness matrix is not reliable" << "\n";
-        }
-    }
-#endif
+			}
+		}
+		return F;
+	}
+	break;
+	default:
+		throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error.");
+	}
 	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error (end of routine).");
 }
 
@@ -4572,7 +4578,7 @@ double NuTo::GradientDamagePlasticityEngineeringStress::CalculateKappaD()const
 //! @return ... see brief explanation
 bool NuTo::GradientDamagePlasticityEngineeringStress::HaveTmpStaticData() const
 {
-    return true;
+    return false;
 }
 
 //! @brief ... returns true, if a material model has is nonlocal (stiffness is of dynamic size, nonlocal averaging)

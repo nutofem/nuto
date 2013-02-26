@@ -66,6 +66,11 @@ public:
     //! @sa mEngineeringStress
     const double* GetData() const;
 
+    //! @brief ... sets the components of the Engineering stress tensor
+    //! @param ... components of the Engineering stress tensor (stored in an array)
+    //! @sa mEngineeringStress
+    void SetData(double rData[6]);
+
     EngineeringStress3D& GetEngineeringStress3D()override
     {
     	return *this;
