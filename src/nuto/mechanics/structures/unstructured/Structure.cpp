@@ -426,8 +426,6 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 	{
 		ElementBase* elementPtr = elementIter->second;
 		// calculate element contribution
-		bool symmetryFlag = false;
-
 		Error::eError error;
 		error = elementPtr->Evaluate(elementOutput);
 
@@ -713,7 +711,9 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 		}
 		else
 		{
-        	NuTo::FullMatrix<double>&  elementMatrix(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+        	NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+        								elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
+        								elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 			std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 			std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
 
@@ -822,7 +822,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 				ElementBase* elementPtr = *elementIter;
 #else
 			// loop over all elements
-			for (boost::ptr_map<int,ElementBase>::const_iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
+			for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
 			{
 				ElementBase* elementPtr = elementIter->second;
 #endif
@@ -1191,8 +1191,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 		}
 		else
 		{
-        	NuTo::FullMatrix<double>&  elementVector(elementOutputVector.GetFullMatrixDouble());
-			std::vector<int>& elementVectorGlobalDofs(elementOutputVectorGlobalDofs.GetVectorInt());
+        	NuTo::FullMatrix<double>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
 			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
 			assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
