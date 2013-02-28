@@ -212,6 +212,7 @@ try
 	NuTo::NewmarkDirect myIntegrationScheme;
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.05);
+	myIntegrationScheme.SetDynamic(true);
 
 	//set a sinusoidal load in xy-direction(diagonal) on the lower left node
 	double simulationTime(10.);

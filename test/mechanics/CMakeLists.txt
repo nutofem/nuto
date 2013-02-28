@@ -56,6 +56,20 @@ IF(ENABLE_C++_TESTS)
   ENDIF(MINGW)
   ADD_TEST(mechanics::ConstraintsLagrange2D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange2D)
 
+  # GradientDamagePlasticity
+  ADD_EXECUTABLE(GradientDamagePlasticity GradientDamagePlasticity.cpp)
+  TARGET_LINK_LIBRARIES(GradientDamagePlasticity NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(GradientDamagePlasticity NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(GradientDamagePlasticity ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(GradientDamagePlasticity PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  ADD_TEST(mechanics::GradientDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/GradientDamagePlasticity)
+
   # test Newmark time integration
   ADD_EXECUTABLE(NewmarkPlane2D4N NewmarkPlane2D4N.cpp)
   TARGET_LINK_LIBRARIES(NewmarkPlane2D4N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})

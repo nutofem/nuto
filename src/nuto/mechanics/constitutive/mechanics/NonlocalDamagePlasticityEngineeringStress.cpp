@@ -410,7 +410,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
 			if (error!=Error::SUCCESSFUL)
 				return error;
 
-			std::cout << "new plastic strain " << rNewEpsilonP << std::endl;
+			//std::cout << "new plastic strain " << rNewEpsilonP << std::endl;
 
 			// update the temporary parts of the static data
 			Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;

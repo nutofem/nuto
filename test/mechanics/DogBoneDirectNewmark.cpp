@@ -274,6 +274,7 @@ try
 	NuTo::NewmarkDirect myIntegrationScheme;
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.0);
+	myIntegrationScheme.SetDynamic(true);
 
 	double simulationTime(0.002);
 	double finalDisplacement(0.00004*D);

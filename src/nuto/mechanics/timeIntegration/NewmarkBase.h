@@ -77,6 +77,11 @@ public:
 
     bool IsDynamic()const;
 
+    void SetDynamic(bool rIsDynamic)
+    {
+    	mIsDynamic = rIsDynamic;
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
