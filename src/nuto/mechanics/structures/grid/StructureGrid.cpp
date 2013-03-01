@@ -23,6 +23,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
 
 #include <algorithm>
 
@@ -43,7 +44,9 @@ NuTo::StructureGrid::StructureGrid(int rDimension):  CallbackHandlerGrid (),Stru
     mNumMaterials=0;
     mNumBasisMaterials=1;
     mNumConstraintDofs=0;
+    mC11=0,mC12=0,mC44=0;
     mCurrentGridNumber=0;
+    mWeightingFactor=0.0;
     mpFineGrid=0;
     mpCoarseGrid=0;
 }
@@ -111,6 +114,7 @@ void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP (mYoungsModulus)
        & BOOST_SERIALIZATION_NVP (mMatrixFreeMethod)
        & BOOST_SERIALIZATION_NVP (mFineEdgeId)
+       & BOOST_SERIALIZATION_NVP (mWeightingFactor)
        & BOOST_SERIALIZATION_NVP (mpFineGrid)
        & BOOST_SERIALIZATION_NVP (mpCoarseGrid)
        & BOOST_SERIALIZATION_NVP (mMGYoungsModulus);
@@ -638,13 +642,14 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 
 			//calculate shape derivative functions
 			const double rLocalCoordinates[3]={0,0,0};
-			std::vector<double> rDerivativeShapeFunctions(24);
+			mLocalDerivativeShapeFunctions.resize(24);
 			NuTo::Brick8N* myElementPointer;
 			myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
-			myElementPointer->CalculateDerivativeShapeFunctionsLocal( rLocalCoordinates, rDerivativeShapeFunctions);
-			mLocalDerivativeShapeFunctions.push_back(rDerivativeShapeFunctions);
-			NuTo::FullMatrix<double>localStresses;
-//			myElementPointer->GetIntegratedStress(localStresses);
+			myElementPointer->CalculateDerivativeShapeFunctionsLocal( rLocalCoordinates, mLocalDerivativeShapeFunctions);
+			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
+
+			static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients3D(mC11,mC12,mC44);
+			std::cout<<"[StructureGrid] (line "<<__LINE__<<" stiffnessTensorCoefficients "<<mC11<<" "<<mC12<<" "<<" "<<mC44<<"\n";
 		}
 		else
 			throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Basis material number is wrong.");
@@ -810,8 +815,8 @@ void NuTo::StructureGrid::SetBasisEdgeStiffnessMatrices(int rBasisMaterialNum)
 			edgeStiffness[++count*9+(3*row+col)]=(*baseStiffness)[(0*3+row)*24+6*3+col];
 
 		}
-	mBasisEdgeCoefficientMatrix0.push_back(edgeStiffness);
 	}
+	mBasisEdgeCoefficientMatrix0.push_back(edgeStiffness);
 }
 
 //! @brief set general neighbor nodes for node-edge based routines
@@ -904,6 +909,10 @@ void NuTo::StructureGrid::SetMaterialNumberForEdges()
 			}
 		}
 	}
+	std::cout<<" matofelem size orig "<<mMaterialOfElem.size();
+	mMaterialOfElem.assign(matOfEdge.begin(),matOfEdge.end());
+	std::cout<<" matofelem size new "<<mMaterialOfElem.size();
+
 }
 
 //! @brief create grid data
@@ -985,6 +994,8 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 				}
   		}
 	}
+	mNumBasisMaterials=1;
+	mNumMaterials=numCoeffMat;
  	for (size_t node=0;node<numGridNodes;++node)
 	{
 		if (nodeExist[node])
@@ -1086,9 +1097,9 @@ void NuTo::StructureGrid::SetDisplacementConstraints(size_t rDirection,size_t *r
 
 //! @brief get DisplacementConstaints
 //! @return dynamic_bitset of constraints
-const boost::dynamic_bitset<>* NuTo::StructureGrid::GetDisplacementConstaints() const
+const boost::dynamic_bitset<> NuTo::StructureGrid::GetDisplacementConstaints() const
 {
-	return &mDofIsConstraint;
+	return mDofIsConstraint;
 }
 
 
@@ -1096,7 +1107,7 @@ const boost::dynamic_bitset<>* NuTo::StructureGrid::GetDisplacementConstaints() 
 //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
 const std::vector<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const
 {
- 	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumMaterials())
+ 	if (rNumLocalCoefficientMatrix0<0 || rNumLocalCoefficientMatrix0>=GetNumBasisMaterials())
         throw MechanicsException("[NuTo::StructureGrid::GetLocalCoefficientMatrix0] No valid material number.");
     return &mLocalCoefficientMatrix0[rNumLocalCoefficientMatrix0];
 }
@@ -1108,13 +1119,16 @@ void NuTo::StructureGrid::Gradient (std::vector<double>& rValues,std::vector<dou
 		CalculateMatrixVectorProductEBE(rValues,rGradient);
 	else
 		CalculateMatrixVectorProductNBN(rValues,rGradient);
-
 }
 //! @brief ... calculate matrix-vector-product in element-by-element way
 //! @brief ... with local vectors
 //! @param ... u - parameters input, r - gradient output
 void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,std::vector<double>& r)const
 {
+	// make sure residual vector is reset with zero //
+	for(size_t i=0;i<r.size();++i)
+		r[i]=0;
+	//----------------------------------------------//
 	size_t numElems=mVoxelId.size();
 	int dofsElem=24;
 	// global external force vector (active dofs)
@@ -1155,13 +1169,14 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u
 		}
 		for(int node=0;node<8;++node)
 		{
-			if (!mDofIsConstraint[3*nodeNumbers[node]])
+			if(!mDofIsConstraint[3*nodeNumbers[node]])
 				r[3*nodeNumbers[node]]+=residual[3*node];
 			if (!mDofIsConstraint[3*nodeNumbers[node]+1])
 				r[3*nodeNumbers[node]+1]+=residual[3*node+1];
 			if (!mDofIsConstraint[3*nodeNumbers[node]+2])
-				r[3*nodeNumbers[node]+2]+=residual[3*node+2];
+			      r[3*nodeNumbers[node]+2]+=residual[3*node+2];
 //				r.at(3*nodeNumbers[node]+2)+=residual[3*node+2];
+
 		}
 	}
 }
@@ -1176,12 +1191,21 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 //    start=clock();
 //#endif //SHOW_TIME
 //	std::cout<<"[StructureGrid::CalculateMatrixVectorProductNBN]\n";
+
+	// make sure residual vector is reset with zero //
+	for(size_t i=0;i<r.size();++i)
+		r[i]=0;
+	//----------------------------------------------//
+
 	size_t numNodes=mEdgeId.size();
 //	int  nodeNumbers[64];
 	const int nodeNbrOfEdge[64]={0,1,1,2,3,3,4,4,4,4,5,5,6,7,7,8,9,9,10,10,10,10,11,11,12,12,12,12,13,13,13,13,13,13,13,13,14,14,14,14,15,15,16,16,16,16,17,17,18,19,19,20,21,21,22,22,22,22,23,23,24,25,25,26};
 //	const int nbrOfEdges[27]={1,2,1,2,4,2,1,2,1,2,4,2,4,8,4,2,4,2,1,2,1,2,4,2,1,2,1};
 	//loop over all elements
-//	std::cout<<" NBN : numNodes "<<numNodes<<"\n";
+//	std::cout<<" NBN : numNodes "<<numNodes<<" numGridPoints "<<mNodeId.size()<<"\n";
+//	for(size_t i=0;i<mNodeId.size();++i)
+//		std::cout<<" point "<<i<<" gridPointId "<<mNodeId.at(i)<<"\n";
+
 	for (size_t node=0;node<numNodes;++node)
     {
 //		double* youngsModulus=&mYoungsModulus[mMaterialOfElem[64*node]];
@@ -1203,17 +1227,19 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 		//calculate local return vector: r=Ku
 		for(int i=0;i<64;++i)
 		{
-					r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i]*u[3*neighbors[i]];
-					r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+1]*u[3*neighbors[i]+1];
-					r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+2]*u[3*neighbors[i]+2];
+//			std::cout<<" dof "<<3*neighbors[i]<<" node "<<node<<" i "<<i<<" edge neigh "<<mEdgeId[node]+mNeighborNodesNE[nodeNbrOfEdge[i]]<<"="<<mEdgeId[node]<<"+"<<mNeighborNodesNE[nodeNbrOfEdge[i]]<<" nodeId " <<mNodeId[mEdgeId[node]+mNeighborNodesNE[nodeNbrOfEdge[i]]]<<"\n";
+			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i]*u.at(3*neighbors[i]);
+			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+1]*u[3*neighbors[i]+1];
+			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+2]*u[3*neighbors[i]+2];
 
-					r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+3]*u[3*neighbors[i]];
-					r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+4]*u[3*neighbors[i]+1];
-					r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+5]*u[3*neighbors[i]+2];
+			r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+3]*u[3*neighbors[i]];
+			r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+4]*u[3*neighbors[i]+1];
+			r[3*node+1]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+5]*u[3*neighbors[i]+2];
 
-					r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+6]*u[3*neighbors[i]];
-					r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+7]*u[3*neighbors[i]+1];
-					r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+8]*u[3*neighbors[i]+2];
+			r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+6]*u[3*neighbors[i]];
+
+			r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+7]*u[3*neighbors[i]+1];
+			r[3*node+2]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+8]*u[3*neighbors[i]+2];
 		}
 		r[3*node+0]*=!mDofIsConstraint[3*node];
 		r[3*node+1]*=!mDofIsConstraint[3*node+1];
@@ -1228,6 +1254,20 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 //    if (mShowTime)
 //        std::cout<<"[NuTo::StructureGrid::CalculateMatrixVectorProductNBN] " << difftime(end,start)/CLOCKS_PER_SEC << "sec \n ";
 //#endif
+}
+
+//! @brief get weighting factor for preconditioner
+//! @return rWeight ... weighting factor
+double  NuTo::StructureGrid::GetWeightingFactor()
+{
+	return mWeightingFactor;
+}
+
+//! @brief set weighting factor for preconditioner
+//! @param rWeight ... weighting factor
+void  NuTo::StructureGrid::SetWeightingFactor(double rWeight)
+{
+	mWeightingFactor=rWeight;
 }
 
 void NuTo::StructureGrid::Hessian(std::vector<double>&  rDiagHessian)const
@@ -1282,9 +1322,19 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
 			double elemStiff[3]={0,0,0};
 			for (size_t edge=28;edge<36;++edge)
 			{
+				if(mCurrentGridNumber==0)
+				{
 					elemStiff[0]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge];
 					elemStiff[1]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge+4];
 					elemStiff[2]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge+8];
+				}
+				else
+				{
+					elemStiff[0]+=mMGYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge];
+					elemStiff[1]+=mMGYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge+4];
+					elemStiff[2]+=mMGYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge+8];
+
+				}
 //					std::cout<<"elem Stiff of "<<nodeNumber <<" : "<<elemStiff[0]<<" "<<elemStiff[1]<<" "<<elemStiff[2]<<" \n";
 			}
 			rHessianDiag[3*nodeNumber]=elemStiff[0];
@@ -1302,6 +1352,168 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
 		}
 	}
 }
+
+void NuTo::StructureGrid::GetEngineeringStrain(const std::vector<double> &rDisplacements, std::vector<double> &rEngineeringStrain)const
+{
+	size_t rNodesPerElement=8;
+	std::vector<size_t> nodes(rNodesPerElement);
+	rEngineeringStrain.resize(mVoxelId.size()*6);
+	for(size_t element=0;element<mVoxelId.size();++element)
+	{
+		CalculateNodesAtElement(element,nodes);
+		for(size_t i=0;i<rNodesPerElement;++i)
+		{
+			// e_ii=B u
+			rEngineeringStrain[6*element+0]+=mLocalDerivativeShapeFunctions[3*i+0] *rDisplacements[3*nodes[i]+0];
+			rEngineeringStrain[6*element+1]+=mLocalDerivativeShapeFunctions[3*i+1] *rDisplacements[3*nodes[i]+1];
+			rEngineeringStrain[6*element+2]+=mLocalDerivativeShapeFunctions[3*i+2] *rDisplacements[3*nodes[i]+2];
+			//e_yz
+			rEngineeringStrain[6*element+3]+=mLocalDerivativeShapeFunctions[3*i+2] *rDisplacements[3*nodes[i]+1]
+			                                +mLocalDerivativeShapeFunctions[3*i+1] *rDisplacements[3*nodes[i]+2];
+			//e_xz
+			rEngineeringStrain[6*element+4]+=mLocalDerivativeShapeFunctions[3*i+2] *rDisplacements[3*nodes[i]+0]
+			                                +mLocalDerivativeShapeFunctions[3*i+0] *rDisplacements[3*nodes[i]+2];
+			//e_xy
+			rEngineeringStrain[6*element+5]+=mLocalDerivativeShapeFunctions[3*i+1] *rDisplacements[3*nodes[i]+0]
+			                                +mLocalDerivativeShapeFunctions[3*i+0] *rDisplacements[3*nodes[i]+1];
+		}
+	}
+}
+void NuTo::StructureGrid::GetEngineeringStress( std::vector<double>& rEngineeringStrain, std::vector<double>& rEngineeringStress)const
+{
+	//! @ToDo check strain caluclated
+	size_t rNodesPerElement=8;
+	std::vector<int> nodes(rNodesPerElement);
+	rEngineeringStress.resize(mVoxelId.size()*6);
+	for(size_t element=0;element<mVoxelId.size();++element)
+	{
+			rEngineeringStress[6*element+0]=mYoungsModulus[mMaterialOfElem[element]]
+			                              *(mC11 * rEngineeringStrain[6*element+0]
+			                               +mC12 * rEngineeringStrain[6*element+1]
+			                               +mC12 * rEngineeringStrain[6*element+2]);
+			rEngineeringStress[6*element+1]=mYoungsModulus[mMaterialOfElem[element]]
+			                              *(mC12 * rEngineeringStrain[6*element+0]
+			                               +mC11 * rEngineeringStrain[6*element+1]
+			                               +mC12 * rEngineeringStrain[6*element+2]);
+			rEngineeringStress[6*element+2]=mYoungsModulus[mMaterialOfElem[element]]
+			                              *(mC12 * rEngineeringStrain[6*element+0]
+			                               +mC12 * rEngineeringStrain[6*element+1]
+			                               +mC11 * rEngineeringStrain[6*element+2]);
+			rEngineeringStress[6*element+3]=mC44*rEngineeringStrain[6*element+3];
+			rEngineeringStress[6*element+4]=mC44*rEngineeringStrain[6*element+4];
+			rEngineeringStress[6*element+5]=mC44*rEngineeringStrain[6*element+5];
+	}
+}
+// export to Vtk Datafile
+void NuTo::StructureGrid::ExportVTKStructuredDataFile(const std::string& rFilename) const
+{
+	std::ofstream file(rFilename.c_str());
+    if (!file.is_open())
+    	throw MechanicsException(std::string("[NuTo::StructureGrid::ExportVTKStructuredDataFile] Error opening file ")+rFilename.c_str());
+
+    // header /////////////////////////////////////////////////////////////////
+    file << "# vtk DataFile Version 3.0" << std::endl;
+    file << "Data file was generated by NuTo" << std::endl;
+    file << "ASCII" << std::endl;
+    file << "DATASET STRUCTURED_POINTS" << std::endl;
+    ///////////////////////////////////////////////////////////////////////////
+    file << "DIMENSIONS "<<mGridDimension[0]+1<<" "<<mGridDimension[1]+1<<" "<<mGridDimension[2]+1<<"\n";
+    file << "SPACING "<<mVoxelSpacing[0]<<" "<<mVoxelSpacing[1]<<" "<<mVoxelSpacing[2]<<"\n";
+    file << "ORIGIN "<<mGridOrigin[0]<<" "<<mGridOrigin[1]<<" "<<mGridOrigin[2]<<"\n";
+    file << "CELL_DATA "<<mNumVoxel<<"\n";
+    file << "SCALARS scalars int 1\n";
+    file << "LOOKUP_TABLE default\n";
+
+    using namespace boost::spirit::classic;
+   std::ifstream input(mImageDataFile, std::ios::in);
+    if (input.is_open() == false)
+        throw MechanicsException("[StructureGrid::ExportVTKStructuredDataFile] error opening input file.");
+    std::string line;
+    for (int count=0;count<10;count++)
+        getline (input, line);
+
+    int value;
+    size_t count=0;
+
+    while(getline(input,line))
+    {
+    	std::istringstream iss(line);
+    	while(iss >> value && count<mNumVoxel)
+    	{
+    		file << value<<" \n" ;
+    		++count;
+    	}
+    }
+     // close file
+	input.close();
+
+	std::vector<double> rStrainVector(0);
+	GetEngineeringStrain(mDisplacements,rStrainVector);
+//	for(size_t i=0;i<rStrainVector.size();++i)
+//	{
+//		if(rStrainVector[i]!=0.)
+//			std::cout<<" strain["<<i<<"]="<<rStrainVector[i]<<"\n";
+//	}
+	std::vector<double> rStressVector(0);
+	GetEngineeringStress(rStrainVector,rStressVector);
+
+//	for (size_t i=0;i<rStrainVector.size();++i)
+//	{
+//		if(abs(rStrainVector[i])<minDigit)
+//			rStrainVector[i]=0.0;
+//		if(abs(rStressVector[i])<minDigit)
+//			rStressVector[i]=0.0;
+//	}
+	size_t numNodes=mEdgeId.size();
+	assert(3*(numNodes+1)==mDisplacements.size());
+	file << "POINT_DATA "<<mNodeId.size()<<"\n";
+	file << "VECTORS displacements double \n";
+//			   std::cout<<" VTK mDisplacements "<<mDisplacements.size()<<"\n";
+	size_t countNodes=0;
+	for (size_t i=0;i<mNodeId.size();++i) // loop over grid points
+	{
+		if(mNodeId[i]<numNodes)
+		{
+			file<<mDisplacements[3*mNodeId[i]]<<" " <<mDisplacements[3*mNodeId[i]+1]<<" "<<mDisplacements[3*mNodeId[i]+2]<<"\n";
+			++countNodes;
+		}
+		else
+			file<<"0.0 0.0 0.0\n";
+	}
+	assert(countNodes==numNodes);
+    file << "CELL_DATA "<<mNumVoxel<<"\n";
+	file << "TENSORS strains double \n";
+	size_t j=0;
+	for (size_t i=0;i<mNumVoxel;++i)
+	{
+		if(mVoxelId[j]==i)
+		{
+			file<<rStrainVector[6*j]<<" "<<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+4]<<"\n"
+			  <<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+1]<<" "<<rStrainVector[6*j+3]<<"\n"
+			  <<rStrainVector[6*j+4]<<" "<<rStrainVector[6*j+3]<<" "<<rStrainVector[6*j+2]<<"\n";
+			++j;
+		}
+		else
+			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
+	}
+
+	file << "TENSORS stress double \n";
+	j=0;
+	for (size_t i=0;i<mNumVoxel;++i)
+	{
+		if(mVoxelId[j]==i)
+		{
+			file<<rStressVector[6*j]<<" "<<rStressVector[6*j+5]<<" "<<rStressVector[6*j+4]<<"\n"
+			  <<rStressVector[6*j+5]<<" "<<rStressVector[6*j+1]<<" "<<rStressVector[6*j+3]<<"\n"
+			  <<rStressVector[6*j+4]<<" "<<rStressVector[6*j+3]<<" "<<rStressVector[6*j+2]<<"\n";
+			++j;
+		}
+		else
+			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
+	}
+    file.close();
+}
+
 std::vector<double>&  NuTo::StructureGrid::GetParameters()
 {
 	return mDisplacements;
@@ -1508,10 +1720,11 @@ void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restriction
 
 		rRestriction.resize(neighbors);
 		rProlongation.resize(neighbors);
+		double unitFactor=1/64.;
 		for (int i=0;i<neighbors;++i)
 		{
-			rRestriction[i]=helpRestriction[i];
-			rProlongation[i]=helpRestriction[i];
+			rRestriction[i]=helpRestriction[i]*unitFactor;
+			rProlongation[i]=helpRestriction[i]*unitFactor;
 		}
 	}
 	else
@@ -1585,6 +1798,87 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 	}
 }
 
+void NuTo::StructureGrid::StartRestriction(std::vector<double> &rRestrictionFactor)
+{
+	std::cout<<"[StructureGrid::StartRestriction] \n";
+	std::vector<size_t> rCoarseDimension=mpCoarseGrid->GetGridDimension();
+	std::vector<size_t> rFineDimension=GetGridDimension();
+
+	// 27 neighbor nodes
+	if (mNeighborNodesNE.empty())
+		SetNeighborNodesNE();
+
+	int fineGridEdge=0;
+	for (int node = 0; node < mpCoarseGrid->GetNumNodes(); ++node)
+	{
+		mpCoarseGrid->mDisplacements[3*node+0]=0;
+		mpCoarseGrid->mDisplacements[3*node+1]=0;
+		mpCoarseGrid->mDisplacements[3*node+2]=0;
+
+		mpCoarseGrid->mResidual[3*node+0]=0;
+		mpCoarseGrid->mResidual[3*node+1]=0;
+		mpCoarseGrid->mResidual[3*node+2]=0;
+
+		std::vector<double> help={0,0,0};
+		//corresponding fine grid node
+		fineGridEdge=(int) mpCoarseGrid->mFineEdgeId.at(node);
+		double sum=0.;
+		if(!mpCoarseGrid->mDofIsConstraint[3*node])
+		{
+			for (int i = 0; i < 27; ++i)
+			{
+				if((int) mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+				{
+					help[0]+=mDisplacements[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])]*rRestrictionFactor[i];
+					sum+=rRestrictionFactor[i];
+				}
+			}
+			if(sum)
+				mpCoarseGrid->mDisplacements[3*node]=-help[0]/sum;
+			else
+				mpCoarseGrid->mDisplacements[3*node]=-help[0];
+		}
+		else if (mDofIsConstraint[3*mNodeId.at(fineGridEdge)])
+		{
+			mpCoarseGrid->mDisplacements[3*node]=mDisplacements[3*mNodeId.at(fineGridEdge)];
+		}
+		if(!mpCoarseGrid->mDofIsConstraint[3*node+1])
+		{
+			for (int i = 0; i < 27; ++i)
+			{
+				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[1]+=mDisplacements[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+1]*rRestrictionFactor[i];
+			}
+			if(sum)
+				mpCoarseGrid->mDisplacements[3*node+1]=-help[1]/sum;
+			else
+				mpCoarseGrid->mDisplacements[3*node+1]=-help[1];
+
+		}
+		else if (mDofIsConstraint[3*mNodeId.at(fineGridEdge)+1])
+		{
+			mpCoarseGrid->mDisplacements[3*node+1]=mDisplacements[3*mNodeId.at(fineGridEdge)+1];
+		}
+
+		if(!mpCoarseGrid->mDofIsConstraint[3*node+2])
+		{
+			for (int i = 0; i < 27; ++i)
+			{
+				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[2]+=mDisplacements[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+2]*rRestrictionFactor[i];
+			}
+			if(sum)
+				mpCoarseGrid->mDisplacements[3*node+2]=-help[2]/sum;
+			else
+				mpCoarseGrid->mDisplacements[3*node+2]=-help[2];
+		}
+		else if (mDofIsConstraint[3*mNodeId.at(fineGridEdge)+2])
+		{
+			mpCoarseGrid->mDisplacements[3*node+2]=mDisplacements[3*mNodeId.at(fineGridEdge)+2];
+		}
+	}
+}
+
 void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor)
 {
 	std::cout<<"[StructureGrid::Prolongation] \n";
@@ -1629,14 +1923,16 @@ void  NuTo::StructureGrid::AnsysInput(std::vector<double> &rDisplVector) const
 	// open file
 	std::ofstream file;
     file.open("ansysInput");
-    file<<"!Ansys Input File: \n DIM: "<<mGridDimension[0]<<" DOFS: "<<mEdgeId.size()*3<<"\n";
+    file<<"!Ansys Input File: \n !DIM: "<<mGridDimension[0]<<" DOFS: "<<mEdgeId.size()*3<<"\n";
     file<<"/prep7 \net,1,solid185 \nkeyopt,1,2,3 \n";
 
+    assert(mNumMaterials);
+    assert((int) mYoungsModulus.size()==mNumMaterials);
     int countMat=mNumMaterials;
-    for(int i=1;i<countMat;++i)
+    for(int i=0;i<countMat;++i)
     {
-        file<<"mp,ex,"<<i<<","<<mYoungsModulus[i]<<" \n";
-        file<<"mp,prxy,"<<i<<",.2 \n";
+        file<<"mp,ex,"<<i+1<<","<<mYoungsModulus[i]<<" \n";
+        file<<"mp,prxy,"<<i+1<<",.2 \n";
 
     }
     int node=0;
@@ -1677,14 +1973,14 @@ void  NuTo::StructureGrid::AnsysInput(std::vector<double> &rDisplVector) const
     // attention for more materials
     for (int i=0;i<numElems;++i)
     {
-		if(mMaterialOfElem[i]!=mat)
+		if(mMaterialOfElem[i]+1!=mat)
 		{
 			mat=mMaterialOfElem[i]+1;
 			file<<"mat,"<<mat<<"\n";
 		}
 		CalculateNodesAtElement(i,nodes);
  		file << "en," << i + 1 << "," << nodes[0] + 1
-				<< "," << mNodeId[nodes[1]] + 1 << ","
+				<< "," <<nodes[1] + 1 << ","
 				<< nodes[2] + 1 << ","
 				<< nodes[3] + 1 << ","
 				<< nodes[4] + 1 << ","

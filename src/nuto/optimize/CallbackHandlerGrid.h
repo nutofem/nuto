@@ -8,6 +8,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/base/NuToObject.h"
+#include <boost/dynamic_bitset.hpp>
 #include "nuto/optimize/OptimizeException.h"
 #include <iostream>
 #include <vector>
@@ -40,7 +41,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize CallbackHandler" << std::endl;
+    std::cout << "start serialize CallbackHandlerGrid" << std::endl;
 #endif
     	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
     	& BOOST_SERIALIZATION_NVP(mCallbackSetParameters)
@@ -50,7 +51,7 @@ public:
     	mCallbackGradient = 0;
     	mCallbackHessian = 0;
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize CallbackHandler" << std::endl;
+    std::cout << "finish serialize CallbackHandlerGrid" << std::endl;
 #endif
 
 	}
@@ -58,33 +59,53 @@ public:
 
     virtual std::vector<double>&  GetParameters()
     {
-		throw OptimizeException("[CallbackHandler::SetParameters] SetParameters function not implemented in CallbackHandler object.");
+		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in CallbackHandlerGrid object.");
     }
 
     virtual std::vector<double>&  GetResidual()
     {
-		throw OptimizeException("[CallbackHandler::SetParameters] GetResidual function not implemented in CallbackHandler object.");
+		throw OptimizeException("[CallbackHandlerGrid::SetParameters] GetResidual function not implemented in CallbackHandlerGrid object.");
     }
     virtual void SetParameters(std::vector<double>& rParameters)
     {
-		throw OptimizeException("[CallbackHandler::SetParameters] SetParameters function not implemented in CallbackHandler object.");
+		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in CallbackHandlerGrid object.");
     }
 
     virtual void SetResidual(std::vector<double>& rResidual)
     {
-		throw OptimizeException("[CallbackHandler::SetParameters] SetResidual function not implemented in CallbackHandler object.");
+		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetResidual function not implemented in CallbackHandlerGrid object.");
     }
 
     virtual void Gradient (std::vector<double>& rValue,std::vector<double>& rGradient)const
 	{
-		throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
+		throw OptimizeException("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
 	}
 
 	virtual void Hessian (std::vector<double>& rHessian)const
 	{
-		throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
+		throw OptimizeException("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
 	}
 
+	//! @brief get DisplacementConstaints
+	//! @return dynamic_bitset of constraints
+	virtual const boost::dynamic_bitset<> GetDisplacementConstaints() const
+	{
+		throw OptimizeException("[CallbackHandlerGrid::GetDisplacementConstaints] GetDisplacementConstaints function not implemented in CallbackHandlerGrid object.");
+	}
+
+	virtual void SetMisesWielandt (bool rMisesWielandt)
+	{
+		throw OptimizeException("[CallbackHandlerGrid::SetMisesWielandt] SetMisesWielandt function not implemented in CallbackHandlerGrid object.");
+	}
+	virtual double GetWeightingFactor()
+	{
+		throw OptimizeException("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
+	}
+	virtual void SetWeightingFactor(double rWeight)
+	{
+		throw OptimizeException("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
+
+	}
 	void Info()const
 	{
 		std::cout << "CallbackHandlerGrid" << std::endl;

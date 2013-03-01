@@ -55,7 +55,8 @@ public:
            & BOOST_SERIALIZATION_NVP(mpCallbackHandler)
            & BOOST_SERIALIZATION_NVP(mpCallbackHandlerGrid)
            & BOOST_SERIALIZATION_NVP(objective)
-//           & BOOST_SERIALIZATION_NVP(mvParameters)
+           & BOOST_SERIALIZATION_NVP(mvParameters)
+           & BOOST_SERIALIZATION_NVP(mParameters)
            & BOOST_SERIALIZATION_NVP(mvEqualConstraints)
            & BOOST_SERIALIZATION_NVP(mvInEqualConstraints)
            & BOOST_SERIALIZATION_NVP(isBuild)
@@ -87,9 +88,27 @@ public:
         return mvParameters;    
     }
 
+    void SetParameters(std::vector<double>& rParameters)
+    {
+		assert(mParameters.size()==rParameters.size());
+		for(size_t i=0;i<mParameters.size();++i)
+			mParameters[i]=rParameters[i];
+        isBuild = false;
+    }
+
+	void GetParameters(std::vector<double>& rParameters)const
+	{
+		assert(mParameters.size()==rParameters.size());
+		for(size_t i=0;i<mParameters.size();++i)
+			rParameters[i]=mParameters[i];
+	}
+
     inline int GetNumParameters()
     {
-        return mvParameters.GetNumRows();
+        if(mvParameters.GetNumRows())
+        	return mvParameters.GetNumRows();
+        else
+        	return mParameters.size();
     }
 
     inline void SetMaxFunctionCalls(int rMaxFunctionCalls)
@@ -131,6 +150,7 @@ protected:
     CallbackHandlerGrid *mpCallbackHandlerGrid;
     double objective;
     FullMatrix<double> mvParameters;
+    std::vector<double> mParameters;
     std::vector<double> mvEqualConstraints;
     std::vector<double> mvInEqualConstraints;
     

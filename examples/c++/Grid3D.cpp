@@ -16,12 +16,12 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/ConjugateGradientGrid.h"
-#include "nuto/optimize/MultiGrid.h"
+#include "nuto/optimize/MisesWielandt.h"
 
 int main()
 {
-//	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
-	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
+	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
+//	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
 
 	std::fstream outputTime;
 	std::string filename = "timeOutput";
@@ -39,8 +39,8 @@ int main()
 		outputTime<<" EBE  ";
 	}
 
-    double PoissonsRatio = 0.25;
-
+    double PoissonsRatio = 0.2;
+    std::cout<<"[NuTo::Grid3D] PoissonsRatio = "<<PoissonsRatio<<"\n";
     // create structure
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -48,17 +48,13 @@ int main()
 #endif
 	// read entries
 	NuTo::StructureGrid myGrid(3); // also creates CallbackHandler
-	myGrid.StructureBase::SetVerboseLevel(5);
+	myGrid.StructureBase::SetVerboseLevel(0);
+	myGrid.CallbackHandlerGrid::SetVerboseLevel(0);
 	myGrid.ImportFromVtkASCIIFileHeader("InputTest");
 
- 	//RB
-//	bool EnableDisplacementControl = false;
-	double BoundaryDisplacement = -1.0;
-//	double BoundaryDisplacement = -(rGridDimension[2]*rVoxelSpacing[2]*microTomm)/20.0;
-	std::cout<<"[NuTo::Grid3D]  Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
 	//calculate one element stiffness matrix with E=1
 
-	std::cout<<"[NuTo::Grid3D]  One material example - only one PoissonsRatio.\n";
+	std::cout<<"[NuTo::Grid3D] One material example - only one PoissonsRatio.\n";
 
 	myGrid.SetMatrixFreeMethod(matrixFreeMethod);
 	myGrid.SetBasisElementStiffnessMatrix(PoissonsRatio,0);
@@ -72,9 +68,10 @@ int main()
 	std::vector<double> myMapColorModul(256);
 
 	//set Modul for each color
+	double MaterialYoungsModulus=100000.;
 	for(int count=0;count<thresholdMaterialValue;count++)
 //		myMapColorModul[count]=1.;
-		myMapColorModul[count]=100000.;
+		myMapColorModul[count]=MaterialYoungsModulus;
 	for(int count=thresholdMaterialValue;count<255;count++)
 		myMapColorModul[count]=0.;
 
@@ -91,60 +88,116 @@ int main()
 	// Boundary condition: all nodes with z=0
 	// Boundary condition: set x,y,z direction zero
 	//----------------------------------------------------------------------------------------//
-	//for z=0,x,y -all ux=0
-	const std::vector<size_t> rGridDimension=myGrid.GetGridDimension();
-	size_t direction=0;
-	// Attention: consider frame nodes
-	size_t rGridLocation[6]={1,rGridDimension[0]-1,1,rGridDimension[1]-1,1,1};
-	double rValue=0;
-	// diplacement vector plus one dof for calculation with non existing neighbor dofs
-	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
-	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-
-	//for z=0,x,y -all uy=0
-	direction=1;
-	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-
-	//for z=0,x,y -all uz=0
-	direction=2;
-	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-
-	//for z=zmax,x,y -all uz=-1
-	direction=2;
-	rGridLocation[4]=rGridDimension[2]-1;
-	rGridLocation[5]=rGridDimension[2]-1;
-	rValue=BoundaryDisplacement;
-	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+////	bool EnableDisplacementControl = false;
+//	double BoundaryDisplacement = -1.0;
+////	double BoundaryDisplacement = -(myGrid.GetGridDimension()[2]*myGrid.GetVoxelSpacing()[2])/20.0;
+//	std::cout<<"[NuTo::Grid3D]  Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
+////	for z=0,x,y -all ux=0
+//	const std::vector<size_t> rGridDimension=myGrid.GetGridDimension();
+//	size_t direction=0;
+//	// Attention: consider frame nodes
+//	size_t rGridLocation[6]={1,rGridDimension[0]-1,1,rGridDimension[1]-1,1,1};
+//	double rValue=0;
+//	// diplacement vector plus one dof for calculation with non existing neighbor dofs
+//	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+//
+//	//for z=0,x,y -all uy=0
+//	direction=1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+//
+//	//for z=0,x,y -all uz=0
+//	direction=2;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+//
+//	//for z=zmax,x,y -all uz=-1
+//	direction=2;
+//	rGridLocation[4]=rGridDimension[2]-1;
+//	rGridLocation[5]=rGridDimension[2]-1;
+//	rValue=BoundaryDisplacement;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+//
+	// end //
 
 	//----------------------------------------------------------------------------------------//
-	// apply nodes
+	// Boundary condition: x=0, ux=0; y=0, uy=0; z=0,uz=0;z0max,uz=-1
+	//----------------------------------------------------------------------------------------//
+
+	//	bool EnableDisplacementControl = false;
+	double BoundaryDisplacement = -1.0;
+//	double BoundaryDisplacement = -(myGrid.GetGridDimension()[2]*myGrid.GetVoxelSpacing()[2])/20.0;
+	std::cout<<"[NuTo::Grid3D] Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
+	// diplacement vector plus one dof for calculation with non existing neighbor dofs
+	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
+	//for z=0,x,y -all ux=0
+	const std::vector<size_t> rGridDimension=myGrid.GetGridDimension();
+	// Attention: consider frame nodes
+	double rValue=0.;
+	// rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
+	//x=0, ux=0
+	size_t direction=0;
+	size_t rGridLocation[6]={1,1,1,rGridDimension[1],1,rGridDimension[2]};
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//y=0; uy=0
+	direction=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[3]=1;
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	// z=0; uz=0;
+	direction=2;
+	rGridLocation[3]=rGridDimension[1];
+	rGridLocation[5]=1;
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//z=zmax, uz=-1
+	rValue=BoundaryDisplacement;
+	rGridLocation[4]=rGridDimension[2]-1;
+	rGridLocation[5]=rGridDimension[2]-1;
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+
+	myGrid.AnsysInput(rDisplVector);
 
 	size_t numDofs=myGrid.GetNumNodes()*3;
 	size_t numNodes=myGrid.GetNumNodes();
 	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
 
-	outputTime<<numDofs<<"   ";
+	outputTime<<MaterialYoungsModulus<<"   "<<PoissonsRatio<<"  ";
+	outputTime<<myGrid.GetNumVoxels()<<" "<<numDofs<<"   ";
 #ifdef SHOW_TIME
 end=clock();
 std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 	outputTime<<difftime(end,start)/CLOCKS_PER_SEC<<"   ";
 #endif
+	double mem=sizeof(myGrid);
 
+	outputTime<<mem<<"  ";
+	std::cout<<"[NuTo::Grid3D] memory "<<mem/1000.<<" MB \n";
 	std::cout<<"[NuTo::Grid3D] number of dofs "<<numDofs<<" free: "<<numDofs-myGrid.GetNumConstraints()<<" constraint: "<<myGrid.GetNumConstraints()<<"\n";
 	// start analysis
-//	std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
-	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
-	myOptimizer.SetVerboseLevel(4);
 
+	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
+	myOptimizer.SetVerboseLevel(0);
 	myOptimizer.SetCallback( (&myGrid));
+	myOptimizer.SetMisesWielandt(true);
 	std::cout<<"[NuTo::Grid3D] Parameters set, Anzahl = "<<myOptimizer.GetNumParameters()<<std::endl;
-	//
+
 	outputTime.close();
 
 	myOptimizer.Optimize();
+
 	rDisplVector=myGrid.GetParameters();
+	myGrid.ExportVTKStructuredDataFile("./outputFile.vtk");
+//	outputFile.close();
+
+//	std::vector<double> rStrainVector=myGrid.GetEngineeringStrain();
+//	std::vector<double> rStressVector=myGrid.GetEngineeringStress();
 
 	std::ofstream file;
+//	int precision = 15;
+//	std::cout.precision(precision);
     file.open("displacements.txt");
 	for(size_t i=0;i<numNodes;++i)
 	{

@@ -1,1 +1,1 @@
-__all__ = ["CallbackHandler","Optimizer","ConjugateGradientGrid","ConjugateGradientNonLinear","MultiGrid"]
+__all__ = ["CallbackHandler","Optimizer","ConjugateGradientGrid","ConjugateGradientNonLinear","Jacobi","MultiGrid"]

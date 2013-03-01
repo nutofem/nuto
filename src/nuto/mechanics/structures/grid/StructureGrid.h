@@ -23,7 +23,7 @@ class StructureGrid: public StructureBase, public virtual CallbackHandlerGrid
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
-
+//friend class MultiGrid;
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -149,7 +149,7 @@ public:
 
     //! @brief get DisplacementConstaints
     //! @return dynamic_bitset of constraints
-    const boost::dynamic_bitset<>* GetDisplacementConstaints() const;
+    const boost::dynamic_bitset<> GetDisplacementConstaints() const;
 
     //! @brief all nodes at one plane perpendicular to direction are constrained
     //! @param rDirection ... 0 = x,1 = y,2 = z
@@ -163,6 +163,14 @@ public:
     //! @param fileName ... file containing image data
     //! @param rColorToMaterialData ... vector of material data (Young's Modulus) mapped to color points
    void CreateGrid(int rThresholdMaterialValue,std::string fileName, std::vector<double>& rColorToMaterialData);
+
+   //! @brief get weighting factor for preconditioner
+   //! @return rWeight ... weighting factor
+   double GetWeightingFactor();
+
+   //! @brief set weighting factor for preconditioner
+   //! @param rWeight ... weighting factor
+   void  SetWeightingFactor(double rWeight);
 
    //! @brief ... calculate matrix-vector-product in element-by-element way
    //! @brief ... with local vectors
@@ -180,6 +188,14 @@ public:
 	{
 	       throw MechanicsException ( "[NuTo::StructureGrid::CalculateReactionForcesEBE] Routine is not implemented." );
 	}
+
+	void GetEngineeringStrain(const std::vector<double>& rDisplacements, std::vector<double>& rEngineeringStrain)const;
+
+	void GetEngineeringStress( std::vector<double>& rEngineeringStrain, std::vector<double>& rEngineeringStress)const;
+
+    //! @brief ... export to Vtk datafile
+    //! @param rFilename ... filename
+    void ExportVTKStructuredDataFile(const std::string& rFilename) const;
 
 	//! @brief MultiGrid routines
 	//! @brief initialize on coarser grid
@@ -200,7 +216,6 @@ public:
 		return mpFineGrid[0];
 	}
 
-
 	//! @brief MultiGrid routines
 	//! @brief set pointer to coarser grid
 	void SetCoarseGridPtr(NuTo::StructureGrid* rCoarseGrid);
@@ -213,7 +228,6 @@ public:
 		return mMGYoungsModulus.at(rElementNumber);
 //		return mMGYoungsModulus[rElementNumber];
 	}
-
 
 	//! @brief ... based on the global dofs build submatrices of the global coefficent matrix
     //! @param rType   ... matrix type (stiffness damping mass)
@@ -483,6 +497,7 @@ public:
     void SetResidual(std::vector<double>& rResidual);
     void CalculateMultiGridCorrolations(std::string restrictionType,std::vector<double>& rRestriction,std::vector<double>& rProlongation);
     void Restriction(std::vector<double> &rRestrictionFactor);
+    void StartRestriction(std::vector<double> &rRestrictionFactor);
     void Prolongation(std::vector<double> &rProlongationFactor);
     void AnsysInput(std::vector<double >&rDisplVector) const;
 
@@ -561,7 +576,8 @@ protected:
 	size_t mNumConstraintDofs;
     std::vector<std::vector<double> > mLocalCoefficientMatrix0;
     std::vector<std::vector<double> > mBasisEdgeCoefficientMatrix0;
-    std::vector<std::vector<double> > mLocalDerivativeShapeFunctions;
+    std::vector<double> mLocalDerivativeShapeFunctions;
+    double mC11,mC12,mC44; //stiffness tensor coefficients with E=1
     std::vector<int> mNeighborNodesNE;
 	std::vector<size_t> mEdgeId;		//saves the id of the edge of this fe node
 	std::vector<size_t> mNodeId;		//saves the id of the fe node of this edge
@@ -577,12 +593,11 @@ protected:
 
 	//MultiGrid
 	size_t mCurrentGridNumber;
+	double mWeightingFactor;
 	std::vector<size_t> mFineEdgeId;
 	StructureGrid* mpFineGrid;
 	StructureGrid*  mpCoarseGrid;
     std::vector<double> mMGYoungsModulus;
-
-
 };
 } //namespace NuTo
 #endif // STRUCTUREGRID_H

@@ -1,12 +1,6 @@
 // $Id $
-#ifndef CONJUGATE_GRADIENT_GRID_H
-#define CONJUGATE_GRADIENT_GRID_H
-
-#ifdef ENABLE_EIGEN
-//#include <eigen2/Eigen/Core>
-//#include <eigen3/Eigen/Dense>
-#endif
-
+#ifndef JACOBI_H
+#define JACOBI_H
 
 #include <vector>
 #include <boost/dynamic_bitset.hpp>
@@ -21,29 +15,28 @@ namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
-//! @brief ... standard class for element-by-element based conjugate gradient method
+//! @brief ... standard class for jacobi method
 #ifdef ENABLE_MECHANICS
 	class StructureGrid;
 #endif // ENABLE_MECHANICS
 
-class ConjugateGradientGrid : public virtual Optimizer
+class Jacobi : public virtual Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    ConjugateGradientGrid(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
+    Jacobi(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
     {
         mAccuracyGradient = 1e-6;
         mMinDeltaObjBetweenRestarts = 1e-6;
+        mOmega = 2./3.;
         mMaxGradientCalls = INT_MAX,
         mMaxHessianCalls = INT_MAX,
         mMaxIterations = INT_MAX;
         mShowSteps = 100;
-       	mUseDiagHessian =true;
-       	mUseMisesWielandt =true;
-       	mNumParameters=rNumParameters;
+      	mNumParameters=rNumParameters;
 
 	}
 
@@ -58,12 +51,11 @@ public:
     	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
     	   & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
            & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+           & BOOST_SERIALIZATION_NVP(mOmega)
            & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
            & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
-           & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-           & BOOST_SERIALIZATION_NVP(mUseMisesWielandt)
            & BOOST_SERIALIZATION_NVP(mNumParameters);
     }
 #endif // SWIG
@@ -97,17 +89,14 @@ public:
         mMinDeltaObjBetweenRestarts = rMinDeltaObjBetweenRestarts;
     }
 
+    inline void SetScalingFactorOmega(double rOmega)
+    {
+    	mOmega = rOmega;
+    }
+
     inline void SetShowSteps(int rShowSteps)
     {
         mShowSteps = rShowSteps;
-    }
-    void SetUseDiagHessian (bool rUseDiagHessian)
-    {
-    	mUseDiagHessian=rUseDiagHessian;
-    }
-    void SetMisesWielandt (bool rMisesWielandt)
-    {
-    	mUseMisesWielandt=rMisesWielandt;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -133,18 +122,15 @@ public:
 
 
 protected:
-	void CalcScalingFactors(int& numHessianCalls, std::vector<double> &p);
 
 	double mAccuracyGradient;
 	double mMinDeltaObjBetweenRestarts;
+	double mOmega; //scaling factor
 	int    mMaxGradientCalls;
 	int    mMaxHessianCalls;
 	int    mMaxIterations;
 	int    mShowSteps;
-    bool   mUseDiagHessian;
-    bool   mUseMisesWielandt;
-
    	size_t mNumParameters;
 };
 } // namespace NuTo
-#endif // CONJUGATE_GRADIENT_GRID_H
+#endif // JACOBI_H

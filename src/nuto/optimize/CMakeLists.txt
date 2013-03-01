@@ -4,7 +4,9 @@ SET(NuToOptimize_SOURCES
   CallbackHandler.cpp
   CallbackHandlerPython.cpp
   CallbackHandlerGrid.cpp
+  Jacobi.cpp
   OptimizeException.cpp
+  MisesWielandt.cpp
   MultiGrid.cpp
 )
 

@@ -10,6 +10,7 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "nuto/optimize/ConjugateGradientGrid.h"
+#include "nuto/optimize/Jacobi.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 
 //#include "nuto/optimize/OptimizeException.h"
@@ -57,7 +58,6 @@ public:
  	int Optimize();
 
 
-
    #ifdef ENABLE_SERIALIZATION
     void Save (const std::string &filename, std::string rType )const{}
     void Restore (const std::string &filename, std::string rType ){}
@@ -78,12 +78,14 @@ public:
     //! @return number of relaxation iterations
     int GetNumRelaxIterations();
 
+    void SetParameters(std::vector<double>& u );
+
+    std::vector<double>&  GetParameters();
+
 protected:
     //! @brief set number of relaxation iterations - smoothing on fine grid
     //! @param numIterations ... number of relaxation iterations
     void SetNumRelaxIterations(int numIterations);
-
-    //! @brief set number of relaxation iterations - smoothing on fine grid
 
 
 private:
@@ -102,6 +104,7 @@ private:
     int mCurrentGridNumber;
     std::vector<double> mRestriction; // is only for one direction
     std::vector<double> mProlongation; // is only for one direction
+    std::vector<int> mCycle; // save gridnumber, and 1 for restriction and -1 for prolongation
 
 };
 } //namespace NuTo

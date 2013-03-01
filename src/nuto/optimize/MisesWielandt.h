@@ -1,31 +1,33 @@
 // $Id $
-#ifndef CONJUGATE_GRADIENT_STRUCTUREGRID_H
-#define CONJUGATE_GRADIENT_STRUCTUREGRID_H
+#ifndef MISES_WIELANDT_H
+#define MISES_WIELANDT_H
 
 #include <vector>
-#include "nuto/math/FullMatrix.h"
+#include <boost/dynamic_bitset.hpp>
+#include <memory>
 
 #include "nuto/optimize/Optimizer.h"
 #include "nuto/optimize/OptimizeException.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 
+
 namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
-//! @brief ... standard class for element-by-element based conjugate gradient method
+//! @brief ... standard class for vonMises-Wielandt method
 #ifdef ENABLE_MECHANICS
 	class StructureGrid;
 #endif // ENABLE_MECHANICS
 
-class ConjugateGradientStructureGrid : public Optimizer
+class MisesWielandt : public virtual Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    ConjugateGradientStructureGrid(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
+    MisesWielandt(unsigned int rNumParameters) : Optimizer(rNumParameters,(unsigned int)0,(unsigned int) 0)
     {
         mAccuracyGradient = 1e-6;
         mMinDeltaObjBetweenRestarts = 1e-6;
@@ -34,7 +36,7 @@ public:
         mMaxIterations = INT_MAX;
         mShowSteps = 100;
        	mUseDiagHessian =true;
-       	mUseMultiGrid= false;
+       	mNumParameters=rNumParameters;
 	}
 
 #ifdef ENABLE_SERIALIZATION
@@ -53,12 +55,13 @@ public:
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
            & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-           & BOOST_SERIALIZATION_NVP(mUseMultiGrid);
+           & BOOST_SERIALIZATION_NVP(mNumParameters);
     }
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-	int Optimize();
+
+    int Optimize();
 
     inline void SetMaxGradientCalls(int rMaxGradientCalls)
     {
@@ -90,26 +93,6 @@ public:
         mShowSteps = rShowSteps;
     }
 
-    inline void SetUseMultiGrid(bool rUseMultiGrid)
-    {
-    	mUseMultiGrid = rUseMultiGrid;
-    }
-
-#ifdef ENABLE_MECHANICS
-    inline void SetGridStructure(NuTo::StructureGrid* rpGrid)
-    {
-			mpGrid = rpGrid;
-    }
-#else
-    inline void SetGridStructure()
-    {
-		throw OptimizeException ( "[ConjugateGradientGrid::SetGridStructure] Modul Mechanics is not loaded." );
-    }
-#endif // ENABLE_MECHANICS
-
-    void Hessian(NuTo::FullMatrix<double>&  rHessian)const;
-    void HessianDiag(NuTo::FullMatrix<double>&  rHessian)const;
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
     //! @param filename ... filename
@@ -133,32 +116,6 @@ public:
 
 
 protected:
-	void CalcScalingFactors(int& numHessianCalls, Eigen::VectorXd& scaleFactorsInv);
-
-	//! @brief ... calculate start gradient in element-by-element way
-	void CalculateStartGradient(NuTo::FullMatrix<double> &gradientOrig);
-
-	//! @brief ... calculate start gradient in element-by-element way
-	void CalculateStartGradientNodeByNode(NuTo::FullMatrix<double> &gradientOrig);
-
-	//! @brief ... calculate start gradient in element-by-element way
-	//! @brief ... variante II: with 3x3 matrix at node
-	void CalculateStartGradientNodeByNodeII(NuTo::FullMatrix<double> &gradientOrig);
-
-	//! @brief ... calculate scaled search direction multiplied with stiffness matrix in element-by-element way for each step
-	void CalculateScaledSearchDirection(Eigen::VectorXd& searchDirectionScaled);
-
-	//! @brief ... calculate search direction in node-by-node way
-	void CalculateScaledSearchDirectionNodeByNode(Eigen::VectorXd& searchDirectionScaled);
-
-	//! @brief ... calculate search direction in node-by-node way second way
-	void CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled);
-
-	//! @brief ... calculate search direction in node-by-node way second way
-	void CalculateScaledSearchDirectionNodeByNodeII(Eigen::VectorXd& searchDirectionScaled,int numNodes,int* globNodeIds,double* globArray,bool* constraint);
-	#ifdef ENABLE_MECHANICS
-		StructureGrid *mpGrid;
-	#endif // ENABLE_MECHANICS
 
 	double mAccuracyGradient;
 	double mMinDeltaObjBetweenRestarts;
@@ -167,8 +124,8 @@ protected:
 	int    mMaxIterations;
 	int    mShowSteps;
     bool   mUseDiagHessian;
-    bool   mUseMultiGrid;
 
+   	size_t mNumParameters;
 };
 } // namespace NuTo
-#endif // CONJUGATE_GRADIENT_GRID_H
+#endif // MISES_WIELANDT_H
