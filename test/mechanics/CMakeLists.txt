@@ -86,7 +86,7 @@ IF(ENABLE_C++_TESTS)
 
 
   # test Newmark time integration with a dogbone specimen
-  ADD_EXECUTABLE(DogBoneDirectNewmark DogBoneDirectNewmark)
+  ADD_EXECUTABLE(DogBoneDirectNewmark DogBoneDirectNewmark.cpp)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.geo ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.geo  COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.msh ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.msh  COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/results/Linuxx86_64/DogboneDirectNewmarkresultAllLoadStepsRef.dat ${CMAKE_CURRENT_BINARY_DIR}/DogboneDirectNewmarkresultAllLoadStepsRef.dat  COPYONLY)

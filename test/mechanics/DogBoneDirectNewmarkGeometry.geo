@@ -2,9 +2,9 @@
 Mesh.ChacoSeed = 1;
 Mesh.SubdivisionAlgorithm=3;
 //D for the dog bone specimen
-D = 0.5;
+D = 0.05;
 //mesh size
-lc = 0.005;
+lc = 0.01;
 //angle for control points
 phi=0.01;
 

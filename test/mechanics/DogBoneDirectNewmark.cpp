@@ -123,7 +123,7 @@ try
     std::cout<< "in the test file, the gmsh command is not executed. If you want to use it, uncomment the next line and make sure, ./gmsh is added to the path." << "\n";
     boost::filesystem::path mshFile(resultDir);
     mshFile /= std::string("DogBoneDirectNewmarkGeometry.msh");
-    if (system(gmshCommand.c_str())!=0)
+    //if (system(gmshCommand.c_str())!=0)
     {
         boost::filesystem::path srcFileMsh(resultFile.parent_path().parent_path());
         srcFileMsh/= std::string("DogBoneDirectNewmarkGeometry.msh");
