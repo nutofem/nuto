@@ -147,9 +147,11 @@ public:
     //! @brief set material number at edges for node-edge based routines
     void SetMaterialNumberForEdges();
 
+#ifndef SWIG
     //! @brief get DisplacementConstaints
     //! @return dynamic_bitset of constraints
     const boost::dynamic_bitset<> GetDisplacementConstaints() const;
+#endif
 
     //! @brief all nodes at one plane perpendicular to direction are constrained
     //! @param rDirection ... 0 = x,1 = y,2 = z

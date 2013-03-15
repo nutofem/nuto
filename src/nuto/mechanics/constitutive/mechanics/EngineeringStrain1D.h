@@ -55,6 +55,11 @@ class EngineeringStrain1D: public ConstitutiveOutputBase
     //! @sa mDeformationGradient
     const double* GetData() const;
 
+    //! @brief ... set Engineering Strain
+    //! @return ... Engineering Strain (exx)
+    //! @sa mDeformationGradient
+    void SetData(const double rData[1]);
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

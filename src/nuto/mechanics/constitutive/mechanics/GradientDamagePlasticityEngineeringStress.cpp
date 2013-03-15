@@ -94,7 +94,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
         std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    	// get section information determining which input on the constitutive level should be used
+        // get section information determining which input on the constitutive level should be used
         const SectionBase* section(rElement->GetSection());
 
         // check if parameters are valid
@@ -105,7 +105,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         }
 
         if (section->GetType()!=Section::TRUSS)
-        	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] only truss sections are implemented.");
+            throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] only truss sections are implemented.");
 
         EngineeringStrain1D engineeringStrain1D;
         // calculate engineering strain
@@ -117,35 +117,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         //Get previous ip_data
         ConstitutiveStaticDataGradientDamagePlasticity1D *oldStaticData = (rElement->GetStaticData(rIp))->AsGradientDamagePlasticity1D();
 
-        //total trial strain in 3D to use the full 3D return mapping
-		double prevEpsilonP[6];
-		prevEpsilonP[0] = oldStaticData->mEpsilonP[0];
-		prevEpsilonP[1] = oldStaticData->mEpsilonP[1];
-		prevEpsilonP[2] = oldStaticData->mEpsilonP[1];
-		prevEpsilonP[3] = 0.;
-		prevEpsilonP[4] = 0.;
-		prevEpsilonP[5] = 0.;
-
-        EngineeringStrain3D engineeringStrain3D;
-        engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain1D.mEngineeringStrain;
-        engineeringStrain3D.mEngineeringStrain[1] = oldStaticData->mEpsilonTotRadial + mNu*(engineeringStrain1D.mEngineeringStrain-oldStaticData->mPrevStrain.mEngineeringStrain); //just use the previous total radial strain plus poisson*delta strain in axial direction
-        engineeringStrain3D.mEngineeringStrain[2] = engineeringStrain3D.mEngineeringStrain[1];
-        engineeringStrain3D.mEngineeringStrain[3] =  0.;
-        engineeringStrain3D.mEngineeringStrain[4] =  0.;
-        engineeringStrain3D.mEngineeringStrain[5] =  0.;
-
-        std::cout << "[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] this is just for test purposes." << std::endl;
-        engineeringStrain3D.mEngineeringStrain[0] = 1.5*mCompressiveStrength/mE;
-        engineeringStrain3D.mEngineeringStrain[1] = 0.0001; //just use the previous total radial strain plus poisson*delta strain in axial direction
-        engineeringStrain3D.mEngineeringStrain[2] = 0.0001;
-
-        EngineeringStrain3D prevEngineeringStrain3D;
-        prevEngineeringStrain3D.mEngineeringStrain[0] = oldStaticData->mPrevStrain.mEngineeringStrain;
-        prevEngineeringStrain3D.mEngineeringStrain[1] = oldStaticData->mEpsilonTotRadial;
-        prevEngineeringStrain3D.mEngineeringStrain[2] = oldStaticData->mEpsilonTotRadial;
-        prevEngineeringStrain3D.mEngineeringStrain[3] =  0.;
-        prevEngineeringStrain3D.mEngineeringStrain[4] =  0.;
-        prevEngineeringStrain3D.mEngineeringStrain[5] =  0.;
+        //trial strain in radial direction
+        //use the previous total radial strain plus poisson*delta strain in axial direction
+        double trialEpsilonTotRadial = oldStaticData->mEpsilonTotRadial + mNu*(engineeringStrain1D.mEngineeringStrain-oldStaticData->mPrevStrain.mEngineeringStrain);
 
         // subtract thermal strain
         if (section->GetInputConstitutiveIsTemperature())
@@ -155,9 +129,8 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D] temperature needed to evaluate thermal engineering strain2d.");
             double temperature(itInput->second->GetTemperature());
             double deltaStrain(mThermalExpansionCoefficient * temperature);
-            engineeringStrain3D.mEngineeringStrain[0] -= deltaStrain;
-            engineeringStrain3D.mEngineeringStrain[1] -= deltaStrain;
-            engineeringStrain3D.mEngineeringStrain[2] -= deltaStrain;
+            engineeringStrain1D.mEngineeringStrain -= deltaStrain;
+            trialEpsilonTotRadial = -deltaStrain;
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] add temperature history.");
 /*            double prevTemperature(oldStaticData->mPrevTemperature);
             double deltaStrain(mThermalExpansionCoefficient * prevTemperature);
@@ -166,55 +139,44 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             prevEngineeringStrain3D.mEngineeringStrain[2] -= deltaStrain;
 */
         }
+        Eigen::Matrix<double,1,1> newStress;
+        Eigen::Matrix<double,2,1> newEpsilonP;
+        double deltaEqPlasticStrain;
+        Eigen::Matrix<double,1,1> dSigmadEpsilon;
+        Eigen::Matrix<double,1,1> dEpsilonPdEpsilon;
+        double newEpsilonTotRadial(0);
 
-		double deltaEqPlasticStrain;
-		Eigen::Matrix<double,6,6> dSigmadEpsilon;
-		Eigen::Matrix<double,6,6> dEpsilonPdEpsilon;
-		Eigen::Matrix<double,6,1> newEpsilonP;
-		Eigen::Matrix<double,6,1> newStress;
+        NuTo::Error::eError error =  this->ReturnMapping1D(
+        		//total axial strain
+        		engineeringStrain1D,
+        		//trial strain in radial direction
+        		trialEpsilonTotRadial,
+        		//prev plastic strain (axial and radial)
+        		oldStaticData->mEpsilonP,
+        		//prev total strain in axial direction
+        		oldStaticData->mPrevStrain,
+        		//prev total strain in radial direction
+        		oldStaticData->mEpsilonTotRadial,
+                newStress,
+                newEpsilonP,
+                newEpsilonTotRadial,
+                deltaEqPlasticStrain,
+                &dSigmadEpsilon,
+                &dEpsilonPdEpsilon,
+                rElement->GetStructure()->GetLogger());
+        if (error!=Error::SUCCESSFUL)
+        	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] error calling return mapping in 1D.");
 
-		bool uniaxialStressCondition(false);
+        std::cout << "new plastic strain " << newEpsilonP << std::endl;
 
-		Eigen::Matrix<double,1,1> rdSigmadEpsilonRed; //reduced consistent tangent for the 1D problem
-		while (uniaxialStressCondition==false)
-		{
-			// perform return mapping for the plasticity model
-			NuTo::Error::eError error = this->ReturnMapping3D(
-					engineeringStrain3D,
-					prevEpsilonP,
-					prevEngineeringStrain3D,
-					newStress,
-					newEpsilonP,
-					deltaEqPlasticStrain,
-					dSigmadEpsilon,
-					dEpsilonPdEpsilon,
-					rElement->GetStructure()->GetLogger());
-			if (error!=Error::SUCCESSFUL)
-				return error;
-
-			//check, of uniaxial stress condition is reached
-			double normStress(newStress.block<5,1>(1,0).norm());
-			if (normStress<1e-10)
-				uniaxialStressCondition=true;
-			else
-			{
-				Eigen::Matrix<double,5,1>::Map(&(engineeringStrain3D.mEngineeringStrain[1]),5,1) +=
-						dSigmadEpsilon.block<5,5>(1,1).inverse()*
-						(newStress.block<5,1>(1,0)-
-								dSigmadEpsilon.block<5,1>(1,0)*
-								Eigen::Matrix<double,1,1>::Map(engineeringStrain3D.mEngineeringStrain,1,1));
-			}
-		}
-
-		std::cout << "new plastic strain " << newEpsilonP << std::endl;
-
-        //nonlocal damage
-		if(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)==rConstitutiveInput.end())
+        //global damage
+        if(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)==rConstitutiveInput.end())
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] nonlocal damage needed to evaluate engineering strain1d.");
-        double nonlocalDamage(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)->second->GetDamage());
+        double globalDamage(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)->second->GetDamage());
 
         //new equivalent plastic strain
         double kappa = oldStaticData->mKappa+deltaEqPlasticStrain;
+
         //local damage
         double localDamage(1-exp(-kappa/mEpsilonF));
 
@@ -231,7 +193,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 //calculate engineering stress
                 EngineeringStress1D engineeringStress1D(itOutput->second->GetEngineeringStress1D());
 
-                engineeringStress1D.mEngineeringStress = (1.-nonlocalDamage)*newStress(0);
+                engineeringStress1D.mEngineeringStress = (1.-globalDamage)*newStress(0);
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D:
@@ -239,7 +201,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 //this is for the visualize routines
                 EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
 
-                engineeringStress3D.mEngineeringStress[0] = (1.-nonlocalDamage)*newStress(0);
+                engineeringStress3D.mEngineeringStress[0] = (1.-globalDamage)*newStress(0);
                 engineeringStress3D.mEngineeringStress[1] = 0.;
                 engineeringStress3D.mEngineeringStress[2] = 0.;
                 engineeringStress3D.mEngineeringStress[3] = 0.;
@@ -249,51 +211,51 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             break;
             case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
             {
-        		Eigen::Matrix<double,1,1> dSigmadEpsilonRedInv
-				 = dSigmadEpsilon.block<1,1>(0,0) +
-				 dSigmadEpsilon.block<1,5>(0,1) * dSigmadEpsilon.block<5,5>(1,1).inverse() * dSigmadEpsilon.block<5,1>(1,0);
-				ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
-				tangent.SetSymmetry(true);
-				double *localStiffData(tangent.mTangent);
-				localStiffData[0] = (1.-nonlocalDamage) * dSigmadEpsilonRedInv(0,0);
+                Eigen::Matrix<double,1,1> dSigmadEpsilonRedInv
+                 = dSigmadEpsilon.block<1,1>(0,0) +
+                 dSigmadEpsilon.block<1,5>(0,1) * dSigmadEpsilon.block<5,5>(1,1).inverse() * dSigmadEpsilon.block<5,1>(1,0);
+                ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+                tangent.SetSymmetry(true);
+                double *localStiffData(tangent.mTangent);
+                localStiffData[0] = (1.-globalDamage) * dSigmadEpsilonRedInv(0,0);
             }
             break;
             case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_DAMAGE_1D:
             {
-				ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
-				tangent.SetSymmetry(true);
-				double *localStiffData(tangent.mTangent);
-				localStiffData[0] = -nonlocalDamage*newStress(0);
+                ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+                tangent.SetSymmetry(true);
+                double *localStiffData(tangent.mTangent);
+                localStiffData[0] = -globalDamage*newStress(0);
             }
             break;
             case NuTo::Constitutive::eOutput::D_NONLOCAL_DAMAGE_D_STRAIN_1D:
             {
-				ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
-				tangent.SetSymmetry(true);
-				double *localStiffData(tangent.mTangent);
-				localStiffData[0] = -nonlocalDamage*newStress(0);
+                ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+                tangent.SetSymmetry(true);
+                double *localStiffData(tangent.mTangent);
+                localStiffData[0] = -globalDamage*newStress(0);
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
             {
                 EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-    			engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain3D.mEngineeringStrain[0];
-    			engineeringStrain3D.mEngineeringStrain[1] = engineeringStrain3D.mEngineeringStrain[1];
-    			engineeringStrain3D.mEngineeringStrain[2] = engineeringStrain3D.mEngineeringStrain[2];
-    			engineeringStrain3D.mEngineeringStrain[3] = engineeringStrain3D.mEngineeringStrain[3];
-    			engineeringStrain3D.mEngineeringStrain[4] = engineeringStrain3D.mEngineeringStrain[4];
-    			engineeringStrain3D.mEngineeringStrain[5] = engineeringStrain3D.mEngineeringStrain[5];
+                engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain1D.mEngineeringStrain;
+                engineeringStrain3D.mEngineeringStrain[1] = newEpsilonTotRadial;
+                engineeringStrain3D.mEngineeringStrain[2] = newEpsilonTotRadial;
+                engineeringStrain3D.mEngineeringStrain[3] = 0.;
+                engineeringStrain3D.mEngineeringStrain[4] = 0.;
+                engineeringStrain3D.mEngineeringStrain[5] = 0.;
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
             {
-            	EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-            	engineeringPlasticStrain.mEngineeringStrain[0] = newEpsilonP(0);
-            	engineeringPlasticStrain.mEngineeringStrain[1] = newEpsilonP(1);
-            	engineeringPlasticStrain.mEngineeringStrain[2] = newEpsilonP(2);
-            	engineeringPlasticStrain.mEngineeringStrain[3] = newEpsilonP(3);
-            	engineeringPlasticStrain.mEngineeringStrain[4] = newEpsilonP(4);
-            	engineeringPlasticStrain.mEngineeringStrain[5] = newEpsilonP(5);
+                EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
+                engineeringPlasticStrain.mEngineeringStrain[0] = newEpsilonP(0);
+                engineeringPlasticStrain.mEngineeringStrain[1] = newEpsilonP(1);
+                engineeringPlasticStrain.mEngineeringStrain[2] = newEpsilonP(2);
+                engineeringPlasticStrain.mEngineeringStrain[3] = newEpsilonP(3);
+                engineeringPlasticStrain.mEngineeringStrain[4] = newEpsilonP(4);
+                engineeringPlasticStrain.mEngineeringStrain[5] = newEpsilonP(5);
             }
             break;
             case NuTo::Constitutive::eOutput::DAMAGE:
@@ -303,12 +265,12 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             break;
             case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             {
-           		throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
+                   throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
             }
-    		break;
+            break;
             case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             {
-            	performUpdateAtEnd = true;
+                performUpdateAtEnd = true;
             }
             break;
             default:
@@ -326,13 +288,13 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             const EngineeringStress1D& prevStress(oldStaticData->GetPrevStress());
             const EngineeringStrain1D prevStrain(oldStaticData->GetPrevStrain());
             energy+=0.5*(
-                (newStress(0)+prevStress.mEngineeringStress)*(engineeringStrain3D.mEngineeringStrain[0]-prevStrain.mEngineeringStrain));
+                (newStress(0)+prevStress.mEngineeringStress)*(engineeringStrain1D.mEngineeringStrain-prevStrain.mEngineeringStrain));
             oldStaticData->mPrevStrain = engineeringStrain1D;
             oldStaticData->mPrevSigma.mEngineeringStress = newStress(0);
             oldStaticData->SetPrevTotalEnergy(energy);
 
             //! @brief previous (after update) total strain component in radial direction (e22=e33)
-            oldStaticData->mEpsilonTotRadial = engineeringStrain3D.mEngineeringStrain[1];
+            oldStaticData->mEpsilonTotRadial = newEpsilonTotRadial;
 
             //! @brief plastic strain (e11 and the radial component of the plastic strain e22=e33)
             oldStaticData->mEpsilonP[0] = newEpsilonP(0);
@@ -354,7 +316,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
         std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 /*
-	// get section information determining which input on the constitutive level should be used
+    // get section information determining which input on the constitutive level should be used
     const SectionBase* section(rElement->GetSection());
 
     // check if parameters are valid
@@ -365,7 +327,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
     }
 
     if (section->GetType()!=Section::PLANE_STRAIN)
-    	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] only plane strain is implemented.");
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] only plane strain is implemented.");
 
     EngineeringStrain2D engineeringStrain;
     // calculate engineering strain
@@ -424,9 +386,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
     }
     else
     {
-    	engineeringStress.mEngineeringrStress(0) = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-    	engineeringStress.mEngineeringrStress(1) = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-    	engineeringStress.mEngineeringrStress(2) = (C33*elastStrain[2]);
+        engineeringStress.mEngineeringrStress(0) = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+        engineeringStress.mEngineeringrStress(1) = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+        engineeringStress.mEngineeringrStress(2) = (C33*elastStrain[2]);
     }
 
     //set this to true, if update is in the map, perform the update after all other outputs have been calculated
@@ -469,9 +431,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
                 //rLogger << "omega " << 1.-oneMinusOmega << "\n";
                 if (unloading)
                 {
-                	ConstitutiveOutputBase* outputBase(itOutput->second);
-                	outputBase->SetLocalSolution(true);
-                	ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
+                    ConstitutiveOutputBase* outputBase(itOutput->second);
+                    outputBase->SetLocalSolution(true);
+                    ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
                     //rLogger << "unloading local stiffness " << C11 << " "<< C12 << " " << C33 << " omega " << 1.-oneMinusOmega << "\n";
                     tangent.SetSymmetry(true);
                     double *localStiffData(tangent.mTangent);
@@ -490,10 +452,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
                 else
                 {
                     //rLogger << "nonlocal stiffness, omega " << 1.-oneMinusOmega << "\n";
-                	ConstitutiveOutputBase* outputBase(itOutput->second);
-                	outputBase->SetLocalSolution(false);
+                    ConstitutiveOutputBase* outputBase(itOutput->second);
+                    outputBase->SetLocalSolution(false);
 
-                	//get nonlocal elements
+                    //get nonlocal elements
                     const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
 
                     //calculate nonlocal plastic strain for the direction of the equivalent length
@@ -584,9 +546,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
             }
             else
             {
-            	ConstitutiveOutputBase* outputBase(itOutput->second);
-            	outputBase->SetLocalSolution(true);
-            	ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
+                ConstitutiveOutputBase* outputBase(itOutput->second);
+                outputBase->SetLocalSolution(true);
+                ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
                 tangent.SetSymmetry(true);
                 double *localStiffData(tangent.mTangent);
 
@@ -606,23 +568,23 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
         {
             EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-			engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
-			engineeringStrain3D.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
-			engineeringStrain3D.mEngineeringStrain[2] = 0;
-			engineeringStrain3D.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
-			engineeringStrain3D.mEngineeringStrain[4] = 0.;
-			engineeringStrain3D.mEngineeringStrain[5] = 0.;
+            engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
+            engineeringStrain3D.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
+            engineeringStrain3D.mEngineeringStrain[2] = 0;
+            engineeringStrain3D.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
+            engineeringStrain3D.mEngineeringStrain[4] = 0.;
+            engineeringStrain3D.mEngineeringStrain[5] = 0.;
         }
         break;
         case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
         {
-        	EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-        	engineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
-        	engineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
-        	engineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
-        	engineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
-        	engineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-        	engineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+            EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
+            engineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
+            engineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
+            engineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
+            engineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
+            engineeringPlasticStrain.mEngineeringStrain[4] = 0.;
+            engineeringPlasticStrain.mEngineeringStrain[5] = 0.;
         }
         break;
         case NuTo::Constitutive::eOutput::DAMAGE:
@@ -631,57 +593,57 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
         break;
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-        	if (rConstitutiveOutput.size()!=1)
-        		throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
+            if (rConstitutiveOutput.size()!=1)
+                throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
 
-			double rDeltaEqPlasticStrain;
-			Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon;
-			Eigen::Matrix<double,4,1> rNewEpsilonP;
-			Eigen::Matrix<double,4,1> rNewStress;
+            double rDeltaEqPlasticStrain;
+            Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon;
+            Eigen::Matrix<double,4,1> rNewEpsilonP;
+            Eigen::Matrix<double,4,1> rNewStress;
 
-			// perform return mapping for the plasticity model
-			NuTo::Error::eError error = this->ReturnMapping2D(
-					engineeringStrain,
-					oldStaticData->mEpsilonP,
-					oldStaticData->mPrevStrain,
-					rNewStress,
-					rNewEpsilonP,
-					rDeltaEqPlasticStrain,
-					rdEpsilonPdEpsilon,
-					rElement->GetStructure()->GetLogger());
+            // perform return mapping for the plasticity model
+            NuTo::Error::eError error = this->ReturnMapping2D(
+                    engineeringStrain,
+                    oldStaticData->mEpsilonP,
+                    oldStaticData->mPrevStrain,
+                    rNewStress,
+                    rNewEpsilonP,
+                    rDeltaEqPlasticStrain,
+                    rdEpsilonPdEpsilon,
+                    rElement->GetStructure()->GetLogger());
 
-			if (error!=Error::SUCCESSFUL)
-				return error;
+            if (error!=Error::SUCCESSFUL)
+                return error;
 
-			std::cout << "new plastic strain " << rNewEpsilonP << std::endl;
+            std::cout << "new plastic strain " << rNewEpsilonP << std::endl;
 
-			// update the temporary parts of the static data
-			Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;
+            // update the temporary parts of the static data
+            Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;
 
-			//determine equivalente length in zz and plane direction
-			//using the local elastic stress
-			Eigen::Matrix<double,4,1> dLdSigma;
-			oldStaticData->mTmpLeq = CalculateDerivativeEquivalentLength2D(rElement,rNewStress,dLdSigma);
+            //determine equivalente length in zz and plane direction
+            //using the local elastic stress
+            Eigen::Matrix<double,4,1> dLdSigma;
+            oldStaticData->mTmpLeq = CalculateDerivativeEquivalentLength2D(rElement,rNewStress,dLdSigma);
 
-			oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain*oldStaticData->mTmpLeq;
+            oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain*oldStaticData->mTmpLeq;
 
-			//rLogger << "tmpKappa " << oldStaticData->mTmpKappa << "\n";
-			Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4) = rdEpsilonPdEpsilon;
+            //rLogger << "tmpKappa " << oldStaticData->mTmpKappa << "\n";
+            Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4) = rdEpsilonPdEpsilon;
 
-			// calculate coefficients of the linear elastic material matrix
-			Eigen::Matrix<double,4,4> ElasticStiffness;
-			ElasticStiffness << C11, C12, 0.,  C12,
-								C12, C11, 0.,  C12,
-								 0.,  0., C33, 0.,
-								C12, C12, 0.,  C11;
+            // calculate coefficients of the linear elastic material matrix
+            Eigen::Matrix<double,4,4> ElasticStiffness;
+            ElasticStiffness << C11, C12, 0.,  C12,
+                                C12, C11, 0.,  C12,
+                                 0.,  0., C33, 0.,
+                                C12, C12, 0.,  C11;
 
-			// calculate derivative of eq length with respect to local strain
-			Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,4>::Identity() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
+            // calculate derivative of eq length with respect to local strain
+            Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,4>::Identity() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
         }
-		break;
+        break;
         case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
-        	performUpdateAtEnd = true;
+            performUpdateAtEnd = true;
         }
         break;
         default:
@@ -713,7 +675,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D(
 //        Eigen::Matrix<double,4,1>::Map(oldStaticData->mEpsilonP,4,1) = Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4,1);;
     }
 */
-	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D] not implemented for 2D.");
+    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D] not implemented for 2D.");
     return Error::SUCCESSFUL;
 }
 
@@ -734,7 +696,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate3D(
 NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamagePlasticityEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain1D(
         const ElementBase* rElement) const
 {
-	return new ConstitutiveStaticDataGradientDamagePlasticity1D();
+    return new ConstitutiveStaticDataGradientDamagePlasticity1D();
 }
 
 
@@ -1056,6 +1018,7 @@ void NuTo::GradientDamagePlasticityEngineeringStress::CheckThermalExpansionCoeff
 #define toleranceResidual 1e-7      //tolerance to decide whether the Newton iteration has converged
 #define toleranceYieldSurface 1e-9  //tolerance whether a point is on the yield surface or not (multiplied by the tensile strength)
 #define toleranceDeterminant 1e-50  //tolerance to decide if a matrix is not invertible (only required in the debugging version, be careful here with the units)
+#define tolerancekappa 1e-8         //tolerance to decide if the equivalent plastic strain is almost zero
 #define maxSteps 25                 //maximum number of Newton iterations, until it is decided that there is no convergence and a cutback is performed
 #define minCutbackFactor 1e-3       //minimum cutback factor for the application of the total strain in steps
 #define minCutbackFactorLS 2e-3     //minimum cutback factor used for the linesearch in the Newton iteration
@@ -1071,16 +1034,994 @@ void NuTo::GradientDamagePlasticityEngineeringStress::CheckThermalExpansionCoeff
 //! @param rdEpsilonPdEpsilon   ... new derivative of current plastic strain with respect to the total strain
 NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D(
         const EngineeringStrain1D& rStrain,
+        double rTrialStrainEpsilonTotRadial,
         const double rPrevPlasticStrain[2],
         const EngineeringStrain1D& rPrevTotalStrain,
+        double rPrevTotalStrainRadial,
         Eigen::Matrix<double,1,1>& rStress,
         Eigen::Matrix<double,2,1>& rEpsilonP,
+        double rNewEpsilonTotRadial,
         double& rDeltaEqPlasticStrain,
-        Eigen::Matrix<double,1,1>& rdEpsilonPdEpsilon,
+        Eigen::Matrix<double,1,1>* rdSigmadEpsilon,
+        Eigen::Matrix<double,1,1>* rdEpsilonPdEpsilon,
         NuTo::Logger& rLogger)const
 {
+	//total trial strain in 3D to use the full 3D return mapping
+    double prevEpsilonP3D[6];
+    prevEpsilonP3D[0] = rPrevPlasticStrain[0];
+    prevEpsilonP3D[1] = rPrevPlasticStrain[1];
+    prevEpsilonP3D[2] = rPrevPlasticStrain[1];
+    prevEpsilonP3D[3] = 0.;
+    prevEpsilonP3D[4] = 0.;
+    prevEpsilonP3D[5] = 0.;
+
+    EngineeringStrain3D engineeringStrain3D;
+    engineeringStrain3D.mEngineeringStrain[0] = rStrain.mEngineeringStrain;
+    engineeringStrain3D.mEngineeringStrain[1] = rTrialStrainEpsilonTotRadial;
+    engineeringStrain3D.mEngineeringStrain[2] = rTrialStrainEpsilonTotRadial;
+    engineeringStrain3D.mEngineeringStrain[3] =  0.;
+    engineeringStrain3D.mEngineeringStrain[4] =  0.;
+    engineeringStrain3D.mEngineeringStrain[5] =  0.;
+
+    EngineeringStrain3D prevEngineeringStrain3D;
+    prevEngineeringStrain3D.mEngineeringStrain[0] = rPrevTotalStrain.mEngineeringStrain;
+    prevEngineeringStrain3D.mEngineeringStrain[1] = rPrevTotalStrainRadial;
+    prevEngineeringStrain3D.mEngineeringStrain[2] = rPrevTotalStrainRadial;
+    prevEngineeringStrain3D.mEngineeringStrain[3] =  0.;
+    prevEngineeringStrain3D.mEngineeringStrain[4] =  0.;
+    prevEngineeringStrain3D.mEngineeringStrain[5] =  0.;
+
+    Eigen::Matrix<double,6,6> dSigmadEpsilon3D;
+    //Eigen::Matrix<double,6,6> dEpsilonPdEpsilon3D;
+    Eigen::Matrix<double,6,1> newEpsilonP3D;
+    Eigen::Matrix<double,6,1> newStress3D;
+
+    bool uniaxialStressCondition(false);
+
+    while (uniaxialStressCondition==false)
+    {
+        // perform return mapping for the plasticity model
+        NuTo::Error::eError error = this->ReturnMapping3D(
+                engineeringStrain3D,
+                prevEpsilonP3D,
+                prevEngineeringStrain3D,
+                newStress3D,
+                newEpsilonP3D,
+                rDeltaEqPlasticStrain,
+                &dSigmadEpsilon3D,
+                0,
+                rLogger);
+        if (error!=Error::SUCCESSFUL)
+            return error;
+
+        //check, of uniaxial stress condition is reached
+        double normStress(newStress3D.block<5,1>(1,0).norm());
+        if (normStress<1e-10)
+            uniaxialStressCondition=true;
+        else
+        {
+            //std::cout << "trial total strain\n" << Eigen::Matrix<double,6,1>::Map(&(engineeringStrain3D.mEngineeringStrain[0]),6,1) << std::endl<< std::endl;
+            //std::cout << "newStress3D\n" << newStress3D << std::endl<< std::endl;
+            //std::cout << "new plastic strain\n" << newEpsilonP3D << std::endl<< std::endl;
+            //std::cout << "dSigmadEpsilon3D\n" << dSigmadEpsilon3D << std::endl<< std::endl;
+            //std::cout << "deltaStrain\n" << dSigmadEpsilon3D.block<5,5>(1,1).inverse()*(newStress3D.block<5,1>(1,0)) << std::endl<< std::endl;
+            Eigen::Matrix<double,5,1>::Map(&(engineeringStrain3D.mEngineeringStrain[1]),5,1) -=
+                    dSigmadEpsilon3D.block<5,5>(1,1).inverse()*(newStress3D.block<5,1>(1,0));
+            //std::cout << "new trial elastic strain\n" << Eigen::Matrix<double,6,1>::Map(&(engineeringStrain3D.mEngineeringStrain[0]),6,1) << std::endl<< std::endl;
+        }
+    }
+    rStress(0,0) = newStress3D(0,0);
+    rEpsilonP[0] = newEpsilonP3D(0,0);
+    rEpsilonP[1] = newEpsilonP3D(1,0);
+    rNewEpsilonTotRadial = newStress3D(1,0);
+
+    if (rdSigmadEpsilon!=0)
+    {
+    	std::cout << "full stiffness\n" << dSigmadEpsilon3D << std::endl << std::endl;
+    	std::cout << "d22\n" << dSigmadEpsilon3D.block<5,5>(0,1) << std::endl << std::endl;
+    	std::cout << "d22 inv\n" << dSigmadEpsilon3D.block<5,5>(1,1).inverse() << std::endl << std::endl;
+    	std::cout << "second part d12D22invd21\n" << (dSigmadEpsilon3D.block<1,5>(0,1) * (dSigmadEpsilon3D.block<5,5>(1,1).inverse())) * dSigmadEpsilon3D.block<5,1>(1,0)<< std::endl << std::endl;
+    	*rdSigmadEpsilon = dSigmadEpsilon3D.block<1,1>(0,0)-(dSigmadEpsilon3D.block<1,5>(0,1) * (dSigmadEpsilon3D.block<5,5>(1,1).inverse())) * dSigmadEpsilon3D.block<5,1>(1,0);
+    	std::cout << "*rdSigmadEpsilon\n" << *rdSigmadEpsilon<< std::endl << std::endl;
+    }
+    if (rdEpsilonPdEpsilon!=0)
+    {
+    	//rdSigmadEpsilon = dSigmadEpsilon3D.block<1,1>(0,0)+dSigmadEpsilon3D.block<1,5>(0,1) * dSigmadEpsilon3D.block<5,5>(0,1).inverse() * dSigmadEpsilon3D.block<5,1>(1,0);
+    }
     return Error::SUCCESSFUL;
 }
+
+
+//! @brief ... performs the return mapping procedure for the plasticity model
+//! @param rStrain              ... current total strain
+//! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
+//! @param rPrevTotalStrain     ... previous total strain (history variable)
+//! @param rPrevStress          ... previous stress
+//! @param rStress              ... new stress
+//! @param rPlasticStrain       ... new plastic strain after return mapping
+//! @param rYieldConditionFlag  ... yield condition flag, true for active, false for inactive, 0 is Drucker-Prager, 1 is Rankine
+//! @param rDeltaKappa          ... delta equivalent plastic strain for Drucker Prager (0) and Rankine yield surface(1)
+//! @param rdSigmadEpsilon      ... new derivative of current stress with respect to the total strain
+//! @param rdKappadEpsilon1     ... new derivative of equivalent plastic strain (Drucker-Prager 0 Rankine 1) with respect to the total strain
+NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1DNew(
+        const EngineeringStrain1D& rStrain,
+        const EngineeringStrain1D& rPrevPlasticStrain,
+        const EngineeringStrain1D& rPrevTotalStrain,
+        Eigen::Matrix<double,1,1>& rPrevStress,
+        Eigen::Matrix<double,1,1>& rStress,
+        Eigen::Matrix<double,1,1>& rPlasticStrain,
+        boost::array<bool,2> rYieldConditionFlag,
+        Eigen::Matrix<double,2,1>& rDeltaKappa,
+        Eigen::Matrix<double,1,1>* rdSigma1dEpsilon1,
+        Eigen::Matrix<double,2,1>* rdKappadEpsilon1,
+        NuTo::Logger& rLogger)const
+{
+/*
+    double e_mod = mE; //modify that one in the case of random fields
+    double   nu  = mNu;
+    double f_ct  = mTensileStrength;
+    double f_c1  = mCompressiveStrength;
+    double f_c2  = mBiaxialCompressiveStrength;
+
+    assert(f_c2>f_c1);
+    assert(f_c1>0);
+    assert(f_c2>0);
+    assert(e_mod>0);
+
+    if (rdSigma1dEpsilon1==0 && rdKappadEpsilon1!=0)
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] if \
+                rdKappadEpsilon1 is to be calculated, you must calculate rdSigma1dEpsilon1 as well.");
+
+    // ******************************************************************
+    // *    F_BETA:    required by DRUCKER-PRAGER yield surface               *
+    // ******************************************************************
+    double BETA = sqrt3*(f_c2-f_c1) / (2*f_c2-f_c1);
+    double H_P  = f_c2*f_c1 / (sqrt3*(2*f_c2-f_c1));
+
+    //! @brief strain currently solved for the plastic strains, in general equal to  rStrain, but if applied in steps, it's smaller
+    Eigen::Matrix<double,1,1> curTotalStrain;
+    //! @brief previous plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
+    Eigen::Matrix<double,1,1> lastPlastStrain;
+    //! @brief previous stress, either from previous equilibrium (static data) or if applied in steps, previous converged state
+    Eigen::Matrix<double,1,1> lastStress;
+    //! @brief plastic strain in the line search
+    Eigen::Matrix<double,1,1> epsilonPLS;
+    //! @brief previous eq plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
+    double lastDeltaEqPlasticStrain;
+    //! @brief residual in the return mapping procedure
+    Eigen::Matrix<double,1,1> residual;
+    //! @brief residual in the return mapping procedure within linesearch
+    Eigen::Matrix<double,1,1> residualLS;
+    //! @brief full stress increment within one iteration of the return mapping, might be applied in steps in the succeeding line search
+    Eigen::Matrix<double,1,1> deltaStress;
+    //! @brief total strain increment between strain from previous static data and new total strain
+    Eigen::Matrix<double,1,1> deltaStrain;
+    //! @brief plastic strain increment within the linesearch
+    Eigen::Matrix<double,1,1> deltaPlasticStrainLS;
+    //! @brief plastic strain increment between to load steps (internal load splitting)
+    Eigen::Matrix<double,1,1> deltaPlasticStrain;
+    //! @brief trial stress of the first iteration
+    Eigen::Matrix<double,1,1> initTrialStress;
+    //! @brief trial stress in the line search
+    Eigen::Matrix<double,1,1> stressLS;
+    //! @brief trial stress
+    Eigen::Matrix<double,1,1> trialStress;
+    //! @brief elastic strain
+    Eigen::Matrix<double,1,1> elasticStrain;
+    //! @brief elastic strain in line search
+    Eigen::Matrix<double,1,1> elasticStrainLS;
+    //! @brief plastic multiplier
+    Eigen::Matrix<double,2,1> deltaGamma;
+    //! @brief plastic multiplier
+    Eigen::Matrix<double,2,1> deltaGammaLS;
+    //! @brief increment of plastic multiplier in return mapping procedure
+    Eigen::Matrix<double,2,1> delta2Gamma;
+    //! @brief yield condition
+    Eigen::Matrix<double,2,1> yieldCondition;
+    //! @brief yield condition in line search
+    Eigen::Matrix<double,2,1> yieldConditionLS(0,0);
+    //! @brief yield condition at the first iteration
+    Eigen::Matrix<double,2,1> initYieldCondition;
+    //! @brief (dF/dsigma)T * Hessian * dF/dsigma
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
+    //! @brief ((dF/dsigma)T * Hessian * dF/dsigma )^-1
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
+    //! @brief algorithmic modulus DElastInv+delta_gamm*d2F/d2Sigma
+    Eigen::Matrix<double,1,1> hessian;
+    //! @brief first derivatives of the yield functions
+    Eigen::Matrix<double,1,1> dF_dsigma1[2];
+    Eigen::Matrix<double,1,1> dF_dsigma2[2];
+    //! @brief second derivatives of the yield functions
+    Eigen::Matrix<double,1,1> d2F_d2Sigma1[2];
+    Eigen::Matrix<double,1,1> d2F_dSigma1dSigma2[2];
+    //! @brief algorithmic modulus * dF_dsigma
+    std::vector<Eigen::Matrix<double,1,1> > vectorN;
+    //! @brief number of active yield functions
+    int numActiveYieldFunctions;
+
+    // for the application of strains in steps, calculate the total strain increment to be applied
+    deltaStrain(0) = rStrain.mEngineeringStrain-rPrevTotalStrain.mEngineeringStrain;
+#ifdef ENABLE_DEBUG
+    rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
+#endif
+
+    // initialize last plastic strain and last converged stress
+    lastPlastStrain << rPrevPlasticStrain.mEngineeringStrain;
+    lastStress << rPrevStress;
+#ifdef ENABLE_DEBUG
+        rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
+#endif
+    rDeltaKappa(0) = 0.;
+    rDeltaKappa(1) = 0.;
+    // *****************************************************************
+    //                   elastic matrix generation                     *
+    // *****************************************************************
+    //! @brief elastic stiffness
+    Eigen::Matrix<double,1,1> dD;
+    //! @brief inverse elastic stiffness
+    Eigen::Matrix<double,1,1> dDInv;
+
+    {
+        Eigen::Matrix<double,6,6> dElast;
+        double factor = e_mod/((1.+nu)*(1.-2.*nu));
+        double oneminusnufactor = (1-nu)*factor;
+        double nufactor = nu*factor;
+
+        dElast <<  oneminusnufactor , nufactor         , nufactor , 0.             , 0.              , 0.         ,
+                   nufactor         , oneminusnufactor , nufactor , 0.             , 0.              , 0.         ,
+                   nufactor         , nufactor , oneminusnufactor , 0.             , 0.              , 0.         ,
+                   0.               , 0.               , 0.       ,(0.5-nu)*factor , 0.              , 0.         ,
+                   0.               , 0.               , 0.       , 0.             , (0.5-nu)*factor , 0.,
+                   0.               , 0.               , 0.       , 0.             , 0.              , (0.5-nu)*factor;
+
+        // this can be accelerated by directly calculating the matrices as a function of e and nu
+        dD = dElast.block<1,1>(0,0)+ dElast.block<1,5>(0,1)*dElast.block<5,5>(1,1).inverse()*dElast.block<5,1>(1,0);
+        dDInv = dD.inverse();
+    }
+    //! @brief delta load factor for the previous iteration
+    double deltaCutbackFactorExternal(1.);
+
+    //! @brief current load factor (between 0 and 1) to apply the total strain increment in steps
+    double cutbackFactorExternal(deltaCutbackFactorExternal);
+
+    //! @brief flag to determine if the iteration is finished (converged at  cutbackFactorExternal=1)
+    bool convergedExternal(false);
+
+    int numberOfExternalCutbacks(0);
+    int numberOfInternalIterations(0);
+#ifdef ENABLE_DEBUG
+    int prevNumberOfInternalIterations(0);
+#endif
+    lastDeltaEqPlasticStrain = 0.;
+    while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
+    {
+        numberOfExternalCutbacks++;
+
+        //curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
+
+#ifdef ENABLE_DEBUG
+        rLogger << "\n" << "curTotalStrain " << curTotalStrain.transpose() << "\n";
+//        rLogger << "\n" << "rPrevTotalStrain" << rPrevTotalStrain << "\n";
+        rLogger << "\n" << "cutbackFactorExternal " << cutbackFactorExternal << "\n";
+#endif
+
+        // checks the convergence of the Newton iteration for a prescribed current strain
+        bool convergedInternal(false);
+        try
+        {
+            //resize yield condition vector
+            yieldCondition.setZero();
+
+            //TODO just use the upper part for new EigenVersion 3.0
+            initTrialStress = lastStress + deltaCutbackFactorExternal*dD*deltaStrain;
+#ifdef ENABLE_DEBUG
+            rLogger << "trialStress " << "\n" << trialStress.transpose() << "\n" << "\n";
+#endif
+
+            //calculate yield condition
+            //Drucker Prager
+            bool errorDerivative(false);
+            initYieldCondition(0) = YieldSurfaceDruckerPrager1D(initTrialStress, BETA, H_P, 0 ,0, errorDerivative);
+
+            //rounded Rankine (0,0 no first and second derivative
+            initYieldCondition(1) = YieldSurfaceRankine1DRounded(initTrialStress, f_ct, 0, 0);
+
+#ifdef ENABLE_DEBUG
+            rLogger << "initYieldCondition " << "\n" << initYieldCondition(0) << " " << initYieldCondition(1) << "\n";
+#endif
+
+
+            if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+            {
+                // *************************************************
+                // *  thus we have elastic -------------> elastic  *
+                // *************************************************
+#ifdef ENABLE_DEBUG
+                rLogger << "linear elastic (sub-)step" << "\n" << "\n";
+#endif
+                convergedInternal = true;
+                lastStress = trialStress;
+                //no need to update plastic strains and equivalent plastic strains since they do not change for an elatic step
+                if (cutbackFactorExternal==1)
+                {
+                    rStress = initTrialStress;
+                    rPlasticStrain = lastPlasticStrain;
+                    //rDeltaEqPlasticStrainDP = 0.; This is already set at the beginning (at not modified due to the elastic steps
+                    //rDeltaEqPlasticStrainRK = 0.;
+                    if (rdSigmadEpsilon!=0)
+                    	*rdSigmadEpsilon = dD;
+                    if (rdEpsilonPDPdEpsilon!=0)
+                    	rdEpsilonPDPdEpsilon->setZero(1,1);
+                    if (rdEpsilonPRKdEpsilon!=0)
+                    	rdEpsilonPRKdEpsilon->setZero(1,1);
+                    return Error::SUCCESSFUL;
+                }
+            }
+            else
+            {
+#ifdef ENABLE_DEBUG
+                rLogger << "plastic step" << "\n" << "\n";
+#endif
+				// initialize plastic multiplier and perform return mapping
+				deltaGamma.setZero();
+				delta2Gamma.setZero();
+				rYieldConditionFlag.setZero();
+
+				//try different combinations of yield surfaces {RK, DP and RK, DP}
+				for (int fixedYieldConditions=0; fixedYieldConditions<3 && convergedInternal==false; fixedYieldConditions++)
+				{
+					switch(fixedYieldConditions)
+					{
+					case 0:
+#ifdef ENABLE_DEBUG
+						rLogger<< "pure Rankine" << "\n";
+#endif
+						if (initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+							continue; //next combination of yield surfaces
+						deltaGamma(1) = 0;
+						rYieldConditionFlag(0) = INACTIVE;
+						rYieldConditionFlag(1) = ACTIVE;
+						numActiveYieldFunctions = 1;
+						break;
+					case 1:
+#ifdef ENABLE_DEBUG
+						rLogger<< "combined" << "\n";
+#endif
+						if (initYieldCondition(0)<-toleranceYieldSurface*f_ct || initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+							continue; //next combination of yield surfaces
+						rYieldConditionFlag(0) = ACTIVE;
+						rYieldConditionFlag(1) = ACTIVE;
+						deltaGamma(0) = 0;
+						deltaGamma(1) = 0;
+						numActiveYieldFunctions = 2;
+						break;
+					case 2:
+#ifdef ENABLE_DEBUG
+						rLogger<< "pure DP" << "\n";
+#endif
+						if (initYieldCondition(0)<-toleranceYieldSurface*f_ct)
+							continue; //next combination of yield surfaces
+						rYieldConditionFlag(0) = ACTIVE;
+						rYieldConditionFlag(1) = INACTIVE;
+						deltaGamma(0) = 0;
+						numActiveYieldFunctions = 1;
+						break;
+					default:
+						throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] programming error - should not happen.");
+					}
+
+					for (int iteration = 0; iteration < maxSteps && convergedInternal==false; iteration++)
+					{
+						numberOfInternalIterations++;
+						if (iteration==0)
+						{
+							rEpsilonP = lastPlastStrain;
+							rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
+							yieldCondition= initYieldCondition;
+							trialStress = initTrialStress;
+						}
+						else
+						{
+							//trial stress is the last stress state from the previous line search
+							if (rYieldConditionFlag(0)==ACTIVE)
+								yieldCondition(0) = yieldConditionLS(0);
+							else
+								yieldCondition(0) = YieldSurfaceDruckerPrager3D(trialStress, BETA, H_P, 0, 0, errorDerivative);
+
+							if (rYieldConditionFlag(1)==ACTIVE)
+								yieldCondition(1) = yieldConditionLS(1);
+							else
+								yieldCondition(1) = YieldSurfaceRankine3DRounded(trialStress, f_ct, 0, 0);
+
+						}
+#ifdef ENABLE_DEBUG
+						rLogger << "trialStress " <<  "\n" << trialStress.transpose() << "\n" << "\n";
+						rLogger << "yieldCondition " <<  "\n" << yieldCondition.transpose() << "\n" << "\n";
+#endif
+
+						// DP
+						if (rYieldConditionFlag(0)==ACTIVE)
+						{
+							YieldSurfaceDruckerPrager1D(trialStress, BETA, H_P,&(dF_dsigma[0]),&(d2F_d2Sigma[0]), errorDerivative);
+							if (errorDerivative)
+							{
+								//no convergence, decrease line search step
+								iteration = maxSteps;
+								continue;
+							}
+#ifdef ENABLE_DEBUG
+							rLogger << "dF_dsigma[0] (DP) " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+#endif
+						}
+
+						// Rounded Rankine
+						if (rYieldConditionFlag(1)==ACTIVE)
+						{
+							YieldSurfaceRankine1DRounded(trialStress,f_ct, &(dF_dsigma[1]),&(d2F_d2Sigma[1]));
+						}
+
+
+						// ************************************************************************
+						//  residual
+						// ************************************************************************
+						residual = lastPlastStrain-rEpsilonP;
+
+						for (int count=0; count<numYieldSurfaces; count++)
+						{
+							if (rYieldConditionFlag[count] == ACTIVE)
+							{
+								residual += deltaGamma(count)*dF_dsigma[count];
+							}
+						}
+
+#ifdef ENABLE_DEBUG
+						rLogger << "residual " <<  "\n" << residual.transpose() << "\n" << "\n";
+#endif
+
+						//this is just for scaling with a relative norm
+						double absResidual = residual.norm()/f_ct*e_mod;
+
+#ifdef ENABLE_DEBUG
+						rLogger << iteration <<" residual " << absResidual << " yield condition " << yieldCondition.transpose() << "\n" << "\n";
+#endif
+
+						// in case of PERFECT PLASTICITY [A] = hessian
+						hessian = dDInv;
+
+						for (int count=0; count<numYieldSurfaces; count++)
+						{
+							if (rYieldConditionFlag(count)==ACTIVE)
+							{
+#ifdef ENABLE_DEBUG
+						rLogger << iteration <<" d2F_d2Sigma[" << count << "] "<< "\n" << d2F_d2Sigma[count] << "\n" << "\n";
+#endif
+								hessian+=deltaGamma(count)*d2F_d2Sigma[count].block<1,1>(0,0);
+							}
+						}
+#ifdef ENABLE_DEBUG
+						rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
+
+						if (fabs(hessian.determinant())<toleranceDeterminant)
+						{
+							rLogger << "hessian"<< "\n" << hessian << "\n";
+							rLogger << "trialStress"<< "\n" << trialStress << "\n";
+							rLogger << "rYieldConditionFlag " <<  "\n" << rYieldConditionFlag.transpose() << "\n" << "\n";
+						}
+#endif
+						assert(fabs(hessian.determinant())>toleranceDeterminant);
+
+						hessian = hessian.inverse().eval();
+#ifdef ENABLE_DEBUG
+						rLogger << "determinant of hessian" << hessian.determinant() << "\n";
+#endif
+
+						// check abs_residual and yieldCondition for active yield surfaces
+						bool convergenceFlagYieldCondition(true);
+						if (absResidual > toleranceResidual)
+							convergenceFlagYieldCondition = false;
+						else
+						{
+							for (int count=0; count<numYieldSurfaces; count++)
+							{
+								if (rYieldConditionFlag(count) == INACTIVE)
+									continue;
+								if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+								{
+									convergenceFlagYieldCondition = false;
+									break;
+								}
+							}
+						}
+
+						if (convergenceFlagYieldCondition==true)
+						{
+							// convergence is achieved - now check if the deltaGamma is nonnegative and all other yield surfaces are valid
+							for (int count=0; count<numYieldSurfaces; count++)
+							{
+								if (rYieldConditionFlag(count) == INACTIVE)
+								{
+									if (yieldCondition(count) > toleranceYieldSurface*f_ct)
+									{
+										convergenceFlagYieldCondition = false;
+										iteration=maxSteps;
+										break;
+									}
+								}
+								else
+								{
+									if (deltaGamma(count)<0)
+									{
+										convergenceFlagYieldCondition = false;
+										iteration=maxSteps;
+										break;
+									}
+								}
+							}
+
+							if (convergenceFlagYieldCondition)
+							{
+								convergedInternal = true;
+#ifdef ENABLE_DEBUG
+								rLogger << "convergence after " << iteration << " iterations" << "\n" << "\n";
+#endif
+							}
+						}
+						if (convergedInternal)
+						{
+							if (cutbackFactorExternal==1)
+							{
+								// compute elasto_plastic matrix
+								if (rdSigmadEpsilon!=0)
+								{
+									// compute elasto plastic d_matrix
+									// compute G_matrix
+									int curYieldFunction = 0;
+									matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+									vectorN.resize(numYieldSurfaces);
+									for (int count=0; count<numYieldSurfaces; count++)
+									{
+										if (rYieldConditionFlag(count)==INACTIVE)
+											continue;
+										int curYieldFunction2 = 0;
+										for (int count2=0; count2<=count; count2++)
+										{
+											if (rYieldConditionFlag(count2)==INACTIVE)
+												continue;
+
+											matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2])(0);
+											// copy symmetric part
+											if (count!=count2)
+												matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+
+											curYieldFunction2++;
+										}
+
+										// N
+										vectorN[count] = hessian * dF_dsigma[count];
+#ifdef ENABLE_DEBUG
+										rLogger << "vectorN[ " << count <<"]" << "\n" << vectorN[count] <<"\n"<< "\n";
+#endif
+										curYieldFunction++;
+									}
+
+									// solve linearized system of equations for G_inv
+									assert(fabs(matG.determinant())>toleranceDeterminant);
+									matGInv = matG.inverse();
+
+#ifdef ENABLE_DEBUG
+									rLogger << "matG " << "\n" << matG <<"\n"<< "\n";
+									rLogger << "matGInv " << "\n" << matGInv <<"\n"<< "\n";
+									rLogger << "hessian " << "\n" << hessian <<"\n"<< "\n";
+#endif
+									*rdSigmadEpsilon = hessian;
+									curYieldFunction = 0;
+									for (int count=0; count<numYieldSurfaces; count++)
+									{
+										if (rYieldConditionFlag(count)==INACTIVE)
+											continue;
+										int curYieldFunction2 = 0;
+										for (int count2=0; count2<numYieldSurfaces; count2++)
+										{
+											if (rYieldConditionFlag(count2)==INACTIVE)
+												continue;
+											*rdSigmadEpsilon-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
+											curYieldFunction2++;
+										}
+										curYieldFunction++;
+									}
+#ifdef ENABLE_DEBUG
+									rLogger << "rdSigmadEpsilon " << "\n" << rdSigmadEpsilon <<"\n"<< "\n";
+#endif
+								}
+
+								//calculate delta epsilonp and the increment of the equivalent plastic strain
+								curYieldFunction = 0;
+								Eigen::Matrix<double,6,2> deltaEpsilonP;
+								for (int count=0; count<numYieldSurfaces; count++)
+								{
+									if (rYieldConditionFlag[count]==ACTIVE)
+									{
+										deltaEpsilonP.block<1,1>(0,count) = deltaGamma(count)*dF_dsigma1[count];
+										deltaEpsilonP.block<5,1>(0,count) = deltaGamma(count)*dF_dsigma2[count];
+
+										//remember we store gamma, not epsilon
+										deltaKappa(count,0) = sqrt(deltaEpsilonP(0,count)*deltaEpsilonP(0,count)+deltaEpsilonP(1,count)*deltaEpsilonP(1,count)+deltaEpsilonP(2,count)*deltaEpsilonP(2,count)+
+													 0.5*(deltaEpsilonP(3,count)*deltaEpsilonP(3,count)+deltaEpsilonP(4,count)*deltaEpsilonP(4,count)+deltaEpsilonP(5,count)*deltaEpsilonP(5,count)));
+									}
+									else
+									{
+										deltaKappa(count,0)=0.;
+									}
+								}
+
+
+								//update depsilonp depsilon
+								if (rdKappadEpsilon!=0)
+								{
+									if (rdSigmadEpsilon==0)
+							               throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] rdKappaDPdEpsilon can only be calculated together with dsigmadepsilon.");
+
+									//! @brief G_inv*dfdsigmaT*Sigma
+								    Eigen::Matrix<double,Eigen::Dynamic,1> tmpMatrix; //dimension is numYieldsurfaces*sigma_1
+								    tmpMatrix.setZero(numActiveYieldFunctions,1);
+
+									curYieldFunction = 0;
+									for (int count=0; count<numYieldSurfaces; count++)
+									{
+										if (rYieldConditionFlag(count)==INACTIVE)
+											continue;
+										int curYieldFunction2 = 0;
+										for (int count2=0; count2<numYieldSurfaces; count2++)
+										{
+											if (rYieldConditionFlag(count2)==INACTIVE)
+												continue;
+											tmpMatrix.row(curYieldFunction)+=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count2].transpose();
+											curYieldFunction2++;
+										}
+										curYieldFunction++;
+									}
+
+									//! @brief first derivatives of the yield functions
+								    Eigen::Matrix<double,1,1> dF_dsigma2[2];
+
+								    //! @brief second derivatives of the yield functions
+								    Eigen::Matrix<double,5,1> d2F_dSigma2dSigma1[2];
+
+								    //calculate the derivatives
+								    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] Calculate the derivatives.");
+
+									curYieldFunction = 0;
+									for (int count=0; count<numYieldSurfaces; count++)
+									{
+										if (rYieldConditionFlag[count]==ACTIVE)
+										{
+
+											if (rdKappadEpsilon1!=0)
+											{
+												Eigen::Matrix<double,1,1> depsilonPdepsilon1;
+												depsilonPdepsilon1  = dF_dsigma[count]*tmpMatrix.row(curYieldFunction);
+												depsilonPdepsilon1.block<1,1>(0,0) += deltaGamma(count0)*d2F_d2Sigma[count]*(*rdSigmadEpsilon);
+												depsilonPdepsilon1.block<5,1>(1,0) += deltaGamma(count0)*d2F_dSigma2dSigma1[count]*(*rdSigma1dEpsilon1);
+
+												if (deltaKappa(count,0)>tolerancekappa)
+												{
+													(*rdKappadEpsilon1)[count] = deltaEpsilonP*depsilonPDPdepsilon1*(1./deltaKappa);
+												}
+												else
+												{
+													(*rdKappadEpsilon1)[count] = 0;
+													for (int count2=0; count2<6; count2++)
+													   (*rdKappadEpsilon1)[count] += depsilonPDPdepsilon1(count2,count);
+												}
+											}
+
+											curYieldFunction++;
+										}
+									}
+								}
+
+								rStress = trialStress;
+
+#ifdef ENABLE_DEBUG
+								rLogger << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<"\n";
+								rLogger << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<"\n";
+#endif
+							}
+							else //cutbackFactorExternal!=1
+							{
+								//do nothing and just increase the strain
+							}
+						}
+						else //convergedInternal==false
+						{
+							if (iteration<maxSteps)
+							{
+								//compute delta gamma
+								int curYieldFunction = 0;
+								matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+								for (int count=0; count<numYieldSurfaces; count++)
+								{
+									if (rYieldConditionFlag(count)==INACTIVE)
+										continue;
+									int curYieldFunction2 = 0;
+									for (int count2=0; count2<=count; count2++)
+									{
+										if (rYieldConditionFlag(count2)==INACTIVE)
+											continue;
+
+										matG(curYieldFunction,curYieldFunction2) = (dF_dsigma1[count].transpose()*hessian*dF_dsigma1[count2])(0);
+										// copy symmetric part
+										if (count!=count2)
+										{
+											matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+										}
+
+										curYieldFunction2++;
+									}
+
+									curYieldFunction++;
+								}
+								assert(curYieldFunction==numActiveYieldFunctions);
+
+								// solve linearized system of equations for G_inv
+								assert(fabs(matG.determinant())>toleranceDeterminant);
+#ifdef ENABLE_DEBUG
+								rLogger << "G and determinant" << matG.determinant() << "\n";
+								rLogger << matG << "\n";
+#endif
+
+								matGInv = matG.inverse();
+
+								// compute deltaGamma
+								Eigen::Matrix<double,1,1> helpVector = hessian * residual;
+								Eigen::Matrix<double,1,1> helpVector2; helpVector2.Zero();
+								for (int count=0; count<numYieldSurfaces; count++)
+								{
+									if (rYieldConditionFlag(count)==INACTIVE)
+										continue;
+
+									helpVector2(count) = yieldCondition(count) - dF_dsigma1[count].dot(helpVector);
+								}
+
+								curYieldFunction = 0;
+								for (int count=0; count<numYieldSurfaces; count++)
+								{
+									if (rYieldConditionFlag(count)==INACTIVE)
+										continue;
+									delta2Gamma(count) = 0.;
+									int curYieldFunction2 = 0;
+									for (int count2=0; count2<numYieldSurfaces; count2++)
+									{
+										if (rYieldConditionFlag(count2)==INACTIVE)
+											continue;
+
+										delta2Gamma(count) += matGInv(curYieldFunction,curYieldFunction2)*helpVector2(count2);
+
+										curYieldFunction2++;
+									}
+									curYieldFunction++;
+								}
+
+#ifdef ENABLE_DEBUG
+								rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
+#endif
+								// ******************************************************************
+								//  compute increments for stress
+								// ******************************************************************
+								helpVector = residual;
+
+								for (int count=0; count<numYieldSurfaces; count++)
+								{
+									if (rYieldConditionFlag(count)==INACTIVE)
+										continue;
+#ifdef ENABLE_DEBUG
+									rLogger<<"dfdsigma1 " << dF_dsigma1[count].transpose()<<"\n"<< "\n";
+#endif
+									helpVector += delta2Gamma(count)*dF_dsigma1[count];
+								}
+
+								deltaStress =  hessian * helpVector;
+#ifdef ENABLE_DEBUG
+								rLogger<<"deltaStress " << deltaStress.transpose()<<"\n"<< "\n";
+#endif
+								//internal line search convergedExternal
+								double deltaCutbackFactor(1.);
+								double cutbackFactorLS(deltaCutbackFactor);
+								bool convergedLS(false);
+
+								//norm of the residual in the local Newton iteration, used as convergence indicator
+								// in the local iteration, the unknowns are deltaSigma and delta2Gamma
+								// whereas the residuals are the difference between (total -elastic) and (plastic strain)
+								// and the yield conditions
+								double normInit = residual.squaredNorm();
+								for (int count=0; count<numYieldSurfaces; count++)
+								{
+									if (rYieldConditionFlag(count)==INACTIVE)
+										continue;
+									normInit +=yieldCondition(count)*yieldCondition(count);
+								}
+								int numberOfLinesearchSteps(0);
+								while (!convergedLS)
+								{
+									numberOfLinesearchSteps++;
+									convergedLS = true;
+
+									//the minus sign is due to the negative sign of deltaStress not considered in the previous calculation
+									deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
+									stressLS = trialStress - cutbackFactorLS*deltaStress;
+									deltaPlasticStrainLS = dDInv*deltaStress*(-cutbackFactorLS);
+									epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
+
+
+#ifdef ENABLE_DEBUG
+									rLogger << "deltaGammaLS " << deltaGammaLS.transpose() << "\n"<< "\n";
+									rLogger << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << "\n"<< "\n";
+									rLogger << "epsilonPLS " << epsilonPLS.transpose() << "\n"<< "\n";
+									rLogger << "stressLS " << stressLS.transpose() << "\n"<< "\n";
+#endif
+
+									// calculate yield condition and yield condition flag (active or not)
+									// Drucker Prager
+									if (rYieldConditionFlag(0)==ACTIVE)
+									{
+										yieldConditionLS(0) = YieldSurfaceDruckerPrager1D(stressLS, BETA, H_P,&(dF_dsigma1[0]),0,errorDerivative);
+										if (errorDerivative)
+										{
+											//no convergence, decrease line search step
+											convergedLS =false;
+										}
+#ifdef ENABLE_DEBUG
+										rLogger << "dF_dsigma[0] " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+#endif
+									}
+
+									// Rounded Rankine
+									if (rYieldConditionFlag(1)==ACTIVE)
+									{
+										yieldConditionLS(1) = YieldSurfaceRankine1DRounded(stressLS, f_ct,&(dF_dsigma1[1]),0);
+#ifdef ENABLE_DEBUG
+										rLogger << "dF_dsigma[1] " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+#endif
+									}
+
+									// residual in line search
+									residualLS = lastPlastStrain-epsilonPLS;
+
+									for (int count=0; count<numYieldSurfaces; count++)
+									{
+										if (rYieldConditionFlag[count] == ACTIVE)
+										{
+											residualLS += deltaGammaLS(count)*dF_dsigma1[count];
+										}
+									}
+
+#ifdef ENABLE_DEBUG
+									rLogger << "residual linesearch" <<  "\n" << residualLS.transpose() << "\n" << "\n";
+#endif
+									double normCurr = residualLS.squaredNorm();
+									for (int count=0; count<numYieldSurfaces; count++)
+									{
+										if (rYieldConditionFlag(count)==INACTIVE)
+											continue;
+										normCurr +=yieldConditionLS(count)*yieldConditionLS(count);
+									}
+#ifdef ENABLE_DEBUG
+									rLogger << "normInit " << normInit << "normCurr " << normCurr<<"\n"<< "\n";
+#endif
+
+									// check of relative norm of residual is sufficiently decreasing or if it is almost zero
+									if ((normCurr/normInit)*(normCurr/normInit)>1-0.5*cutbackFactorLS && normCurr>toleranceResidual*toleranceResidual)
+										convergedLS = false;
+									if (cutbackFactorLS<=minCutbackFactorLS)
+										convergedLS = true;
+
+									if (!convergedLS)
+									{
+										deltaCutbackFactor*=0.5;
+										cutbackFactorLS-=deltaCutbackFactor;
+									}
+								}
+								trialStress = stressLS;
+								deltaGamma = deltaGammaLS;
+								rEpsilonP = epsilonPLS;
+
+#ifdef ENABLE_DEBUG
+								if (rYieldConditionFlag(0)==ACTIVE)
+									rLogger << "dF_dsigma[0] at end of line search " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+								if (rYieldConditionFlag(1)==ACTIVE)
+									rLogger << "dF_dsigma[1] at end of line search " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+								rLogger << "numberOfLinesearchSteps " << numberOfLinesearchSteps << "\n";
+#endif
+							}//if (iteration<maxSteps)
+						}//if convergedInternal
+					} // end of loop
+#ifdef ENABLE_DEBUG
+				}
+                if (convergedInternal==false)
+                {
+                    rLogger << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << "\n";
+                    for (int count=0; count<2; count++)
+                    {
+                        if (rYieldConditionFlag(count)==ACTIVE)
+                        {
+                            rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << " ("<<toleranceYieldSurface*f_ct << ")"<<"\n";
+                            rLogger << "     deltaGamma "<< count+1 << " " << deltaGamma(count) << "\n";
+                        }
+                        else
+                            rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << "\n";
+
+                    }
+                }
+#endif
+            }
+        }
+        catch (NuTo::MechanicsException& e)
+        {
+            e.AddMessage("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] Error performing return mapping procedure.");
+            throw e;
+        }
+        catch (...)
+        {
+               throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] Error performing return mapping procedure.");
+        }
+
+        if (convergedInternal)
+        {
+#ifdef ENABLE_DEBUG
+            rLogger << "numberOfInternalIterations " << numberOfInternalIterations -  prevNumberOfInternalIterations<< "(" << numberOfInternalIterations << ")" << "\n";
+            rLogger << "convergence for external cutback factor" << "\n";
+            prevNumberOfInternalIterations = numberOfInternalIterations;
+#endif
+
+            //update equivalente plastic strain
+            deltaPlasticStrain = rEpsilonP - lastPlastStrain;
+            rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
+                            0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
+
+//            double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
+//            rLogger << "\n" << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << "\n"<< "\n";
+//            rLogger << "\n" << "rEpsilonP " << rEpsilonP << "Norm of epsilonp " << "\n";
+
+            if (cutbackFactorExternal==1.)
+            {
+                convergedExternal=true;
+            }
+            else
+            {
+                lastPlastStrain = rEpsilonP;
+                lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
+
+                if (numberOfInternalIterations<10)
+                    deltaCutbackFactorExternal*=1.5;
+                cutbackFactorExternal +=deltaCutbackFactorExternal;
+                if (cutbackFactorExternal>1)
+                {
+                    deltaCutbackFactorExternal -= cutbackFactorExternal -1.;
+                    cutbackFactorExternal = 1.;
+                }
+            }
+        }
+        else
+        {
+            // no convergence in return mapping
+            deltaCutbackFactorExternal*=0.5;
+            cutbackFactorExternal-=deltaCutbackFactorExternal;
+            //#ifdef ENABLE_DEBUG
+                        rLogger << "decrease external cutback factor to " << deltaCutbackFactorExternal << "\n";
+            //#endif
+        }
+
+    }
+    if (cutbackFactorExternal<=minCutbackFactor)
+    {
+        rLogger << "[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] No convergence can be obtained in the return mapping procedure." << "n";
+        return Error::NO_CONVERGENCE;
+    }
+*/
+    return Error::SUCCESSFUL;
+}
+
+
 
 //! @brief ... performs the return mapping procedure for the plasticity model
 //! @param rStrain              ... current total strain
@@ -1101,7 +2042,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         NuTo::Logger& rLogger)const
 {
 /*
-	double e_mod = mE; //modify that one in the case of random fields
+    double e_mod = mE; //modify that one in the case of random fields
     double   nu  = mNu;
     double f_ct  = mTensileStrength;
     double f_c1  = mCompressiveStrength;
@@ -1897,1235 +2838,922 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         Eigen::Matrix<double,6,1>& rStress,
         Eigen::Matrix<double,6,1>& rEpsilonP,
         double& rDeltaEqPlasticStrain,
-        Eigen::Matrix<double,6,6>& rdSigmadEpsilon,
-        Eigen::Matrix<double,6,6>& rdEpsilonPdEpsilon,
+        Eigen::Matrix<double,6,6>* rdSigmadEpsilon,
+        Eigen::Matrix<double,6,6>* rdEpsilonPdEpsilon,
         NuTo::Logger& rLogger)const
 {
 
-	double e_mod = mE; //modify that one in the case of random fields
-	double   nu  = mNu;
-	double f_ct  = mTensileStrength;
-	double f_c1  = mCompressiveStrength;
-	double f_c2  = mBiaxialCompressiveStrength;
+    double e_mod = mE; //modify that one in the case of random fields
+    double   nu  = mNu;
+    double f_ct  = mTensileStrength;
+    double f_c1  = mCompressiveStrength;
+    double f_c2  = mBiaxialCompressiveStrength;
 
-	assert(f_c2>f_c1);
-	assert(f_c1>0);
-	assert(f_c2>0);
-	assert(e_mod>0);
+    assert(f_c2>f_c1);
+    assert(f_c1>0);
+    assert(f_c2>0);
+    assert(e_mod>0);
 
-	// ******************************************************************
-	// *    F_BETA:    required by DRUCKER-PRAGER yield surface               *
-	// ******************************************************************
-	double BETA = sqrt3*(f_c2-f_c1) / (2*f_c2-f_c1);
-	double H_P  = f_c2*f_c1 / (sqrt3*(2*f_c2-f_c1));
+    if (rdSigmadEpsilon==0 && rdEpsilonPdEpsilon!=0)
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping3D] if \
+                rdEpsilonPdEpsilon is to be calculated, you must calculate rdSigmadEpsilon as well.");
 
-	//! @brief strain currently solved for the plastic strains, in general equal to  rStrain, but if applied in steps, it's smaller
-	Eigen::Matrix<double,6,1> curTotalStrain;
-	//! @brief previous plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
-	Eigen::Matrix<double,6,1> lastPlastStrain;
-	//! @brief plastic strain in the line search
-	Eigen::Matrix<double,6,1> epsilonPLS;
-	//! @brief previous eq plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
-	double lastDeltaEqPlasticStrain;
-	//! @brief residual in the return mapping procedure
-	Eigen::Matrix<double,6,1> residual;
-	//! @brief residual in the return mapping procedure within linesearch
-	Eigen::Matrix<double,6,1> residualLS;
-	//! @brief full stress increment within one iteration of the return mapping, might be applied in steps in the succeeding line search
-	Eigen::Matrix<double,6,1> deltaStress;
-	//! @brief total strain increment between strain from previous static data and new total strain
-	Eigen::Matrix<double,6,1> deltaStrain;
-	//! @brief plastic strain increment within the linesearch
-	Eigen::Matrix<double,6,1> deltaPlasticStrainLS;
-	//! @brief plastic strain increment between to load steps (internal load splitting)
-	Eigen::Matrix<double,6,1> deltaPlasticStrain;
-	//! @brief trial stress of the first iteration
-	Eigen::Matrix<double,6,1> initTrialStress;
-	//! @brief trial stress in the line search
-	Eigen::Matrix<double,6,1> stressLS;
-	//! @brief trial stress
-	Eigen::Matrix<double,6,1> trialStress;
-	//! @brief elastic strain
-	Eigen::Matrix<double,6,1> elasticStrain;
-	//! @brief elastic strain in line search
-	Eigen::Matrix<double,6,1> elasticStrainLS;
-	//! @brief plastic multiplier
-	Eigen::Matrix<double,2,1> deltaGamma;
-	//! @brief plastic multiplier
-	Eigen::Matrix<double,2,1> deltaGammaLS;
-	//! @brief increment of plastic multiplier in return mapping procedure
-	Eigen::Matrix<double,2,1> delta2Gamma;
-	//! @brief yield condition
-	Eigen::Matrix<double,2,1> yieldCondition;
-	//! @brief yield condition in line search
-	Eigen::Matrix<double,2,1> yieldConditionLS(0,0);
-	//! @brief yield condition at the first iteration
-	Eigen::Matrix<double,2,1> initYieldCondition;
-	//! @brief flag that indicates if a yield function is active or not
-	Eigen::Matrix<bool,2,1> yieldConditionFlag;
-	//! @brief (dF/dsigma)T * Hessian * dF/dsigma
-	Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
-	//! @brief ((dF/dsigma)T * Hessian * dF/dsigma )^-1
-	Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
-	//! @brief algorithmic modulus DElastInv+delta_gamm*d2F/d2Sigma
-	Eigen::Matrix<double,6,6> hessian;
-	//! @brief first derivatives of the yield functions
-	std::vector<Eigen::Matrix<double,6,1> > dF_dsigma;
-	//! @brief second derivatives of the yield functions
-	std::vector<Eigen::Matrix<double,6,6> > d2F_d2Sigma;
-	//! @brief algorithmic modulus * dF_dsigma
-	std::vector<Eigen::Matrix<double,6,1> > vectorN;
-	//! @brief number of active yield functions
-	int numActiveYieldFunctions;
+    // ******************************************************************
+    // *    F_BETA:    required by DRUCKER-PRAGER yield surface               *
+    // ******************************************************************
+    double BETA = sqrt3*(f_c2-f_c1) / (2*f_c2-f_c1);
+    double H_P  = f_c2*f_c1 / (sqrt3*(2*f_c2-f_c1));
 
-	// for the application of strains in steps, calculate the total strain increment to be applied
-	deltaStrain(0) = rStrain.mEngineeringStrain[0]-rPrevTotalStrain.mEngineeringStrain[0];
-	deltaStrain(1) = rStrain.mEngineeringStrain[1]-rPrevTotalStrain.mEngineeringStrain[1];
-	deltaStrain(2) = rStrain.mEngineeringStrain[2]-rPrevTotalStrain.mEngineeringStrain[2];
-	deltaStrain(3) = rStrain.mEngineeringStrain[3]-rPrevTotalStrain.mEngineeringStrain[4];
-	deltaStrain(4) = rStrain.mEngineeringStrain[4]-rPrevTotalStrain.mEngineeringStrain[5];
-	deltaStrain(5) = rStrain.mEngineeringStrain[5]-rPrevTotalStrain.mEngineeringStrain[6];
+    //! @brief strain currently solved for the plastic strains, in general equal to  rStrain, but if applied in steps, it's smaller
+    Eigen::Matrix<double,6,1> curTotalStrain;
+    //! @brief previous plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
+    Eigen::Matrix<double,6,1> lastPlastStrain;
+    //! @brief plastic strain in the line search
+    Eigen::Matrix<double,6,1> epsilonPLS;
+    //! @brief previous eq plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
+    double lastDeltaEqPlasticStrain;
+    //! @brief residual in the return mapping procedure
+    Eigen::Matrix<double,6,1> residual;
+    //! @brief residual in the return mapping procedure within linesearch
+    Eigen::Matrix<double,6,1> residualLS;
+    //! @brief full stress increment within one iteration of the return mapping, might be applied in steps in the succeeding line search
+    Eigen::Matrix<double,6,1> deltaStress;
+    //! @brief total strain increment between strain from previous static data and new total strain
+    Eigen::Matrix<double,6,1> deltaStrain;
+    //! @brief plastic strain increment within the linesearch
+    Eigen::Matrix<double,6,1> deltaPlasticStrainLS;
+    //! @brief plastic strain increment between to load steps (internal load splitting)
+    Eigen::Matrix<double,6,1> deltaPlasticStrain;
+    //! @brief trial stress of the first iteration
+    Eigen::Matrix<double,6,1> initTrialStress;
+    //! @brief trial stress in the line search
+    Eigen::Matrix<double,6,1> stressLS;
+    //! @brief trial stress
+    Eigen::Matrix<double,6,1> trialStress;
+    //! @brief elastic strain
+    Eigen::Matrix<double,6,1> elasticStrain;
+    //! @brief elastic strain in line search
+    Eigen::Matrix<double,6,1> elasticStrainLS;
+    //! @brief plastic multiplier
+    Eigen::Matrix<double,2,1> deltaGamma;
+    //! @brief plastic multiplier
+    Eigen::Matrix<double,2,1> deltaGammaLS;
+    //! @brief increment of plastic multiplier in return mapping procedure
+    Eigen::Matrix<double,2,1> delta2Gamma;
+    //! @brief yield condition
+    Eigen::Matrix<double,2,1> yieldCondition;
+    //! @brief yield condition in line search
+    Eigen::Matrix<double,2,1> yieldConditionLS(0,0);
+    //! @brief yield condition at the first iteration
+    Eigen::Matrix<double,2,1> initYieldCondition;
+    //! @brief flag that indicates if a yield function is active or not
+    Eigen::Matrix<bool,2,1> yieldConditionFlag;
+    //! @brief (dF/dsigma)T * Hessian * dF/dsigma
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
+    //! @brief ((dF/dsigma)T * Hessian * dF/dsigma )^-1
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
+    //! @brief algorithmic modulus DElastInv+delta_gamm*d2F/d2Sigma
+    Eigen::Matrix<double,6,6> hessian;
+    //! @brief first derivatives of the yield functions
+    std::vector<Eigen::Matrix<double,6,1> > dF_dsigma;
+    //! @brief second derivatives of the yield functions
+    std::vector<Eigen::Matrix<double,6,6> > d2F_d2Sigma;
+    //! @brief algorithmic modulus * dF_dsigma
+    std::vector<Eigen::Matrix<double,6,1> > vectorN;
+    //! @brief number of active yield functions
+    int numActiveYieldFunctions;
+
+    // for the application of strains in steps, calculate the total strain increment to be applied
+    deltaStrain(0) = rStrain.mEngineeringStrain[0]-rPrevTotalStrain.mEngineeringStrain[0];
+    deltaStrain(1) = rStrain.mEngineeringStrain[1]-rPrevTotalStrain.mEngineeringStrain[1];
+    deltaStrain(2) = rStrain.mEngineeringStrain[2]-rPrevTotalStrain.mEngineeringStrain[2];
+    deltaStrain(3) = rStrain.mEngineeringStrain[3]-rPrevTotalStrain.mEngineeringStrain[3];
+    deltaStrain(4) = rStrain.mEngineeringStrain[4]-rPrevTotalStrain.mEngineeringStrain[4];
+    deltaStrain(5) = rStrain.mEngineeringStrain[5]-rPrevTotalStrain.mEngineeringStrain[5];
 #ifdef ENABLE_DEBUG
-	rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
+    rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
 #endif
 
-	// initialize last plastic strain and last converged stress
-	lastPlastStrain << rPrevPlasticStrain[0], rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,
-			           rPrevPlasticStrain[3], rPrevPlasticStrain[4] ,rPrevPlasticStrain[5];
+    // initialize last plastic strain and last converged stress
+    lastPlastStrain << rPrevPlasticStrain[0], rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,
+                       rPrevPlasticStrain[3], rPrevPlasticStrain[4] ,rPrevPlasticStrain[5];
 #ifdef ENABLE_DEBUG
-		rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
+        rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
 #endif
-	rDeltaEqPlasticStrain = 0;
-	// *****************************************************************
-	//                   elastic matrix generation                     *
-	// *****************************************************************
-	//! @brief elastic stiffness
-	Eigen::Matrix<double,6,6> dElast;
-	//! @brief inverse elastic stiffness
-	Eigen::Matrix<double,6,6> dElastInv;
+    rDeltaEqPlasticStrain = 0;
+    // *****************************************************************
+    //                   elastic matrix generation                     *
+    // *****************************************************************
+    //! @brief elastic stiffness
+    Eigen::Matrix<double,6,6> dElast;
+    //! @brief inverse elastic stiffness
+    Eigen::Matrix<double,6,6> dElastInv;
 
-	{
-		double factor = e_mod/((1.+nu)*(1.-2.*nu));
-		double oneminusnufactor = (1-nu)*factor;
-		double nufactor = nu*factor;
+    {
+        double factor = e_mod/((1.+nu)*(1.-2.*nu));
+        double oneminusnufactor = (1-nu)*factor;
+        double nufactor = nu*factor;
 
-		dElast <<  oneminusnufactor , nufactor         , nufactor , 0.             , 0.              , 0.         ,
-				   nufactor         , oneminusnufactor , nufactor , 0.             , 0.              , 0.         ,
-				   nufactor         , nufactor , oneminusnufactor , 0.             , 0.              , 0.         ,
-				   0.               , 0.               , 0.       ,(0.5-nu)*factor , 0.              , 0.         ,
-				   0.               , 0.               , 0.       , 0.             , (0.5-nu)*factor , 0.,
-				   0.               , 0.               , 0.       , 0.             , 0.              , (0.5-nu)*factor;
+        dElast <<  oneminusnufactor , nufactor         , nufactor , 0.             , 0.              , 0.         ,
+                   nufactor         , oneminusnufactor , nufactor , 0.             , 0.              , 0.         ,
+                   nufactor         , nufactor , oneminusnufactor , 0.             , 0.              , 0.         ,
+                   0.               , 0.               , 0.       ,(0.5-nu)*factor , 0.              , 0.         ,
+                   0.               , 0.               , 0.       , 0.             , (0.5-nu)*factor , 0.,
+                   0.               , 0.               , 0.       , 0.             , 0.              , (0.5-nu)*factor;
 
-		factor = 1./e_mod;
-		double minusnufactor = -nu*factor;
-		dElastInv   << factor        , minusnufactor , minusnufactor,0.                , 0.               , 0.              ,
-					   minusnufactor , factor        , minusnufactor,0.                , 0.               , 0.              ,
-					   minusnufactor , minusnufactor , factor       ,0.                , 0.               , 0.              ,
-					   0.            , 0.            , 0.           , 2.*factor*(1.+nu), 0.               , 0.              ,
-					   0.            , 0.            , 0.           , 0.               , 2.*factor*(1.+nu), 0.              ,
-					   0.            , 0.            , 0.           , 0.               , 0.               ,2.*factor*(1.+nu);
+        factor = 1./e_mod;
+        double minusnufactor = -nu*factor;
+        dElastInv   << factor        , minusnufactor , minusnufactor,0.                , 0.               , 0.              ,
+                       minusnufactor , factor        , minusnufactor,0.                , 0.               , 0.              ,
+                       minusnufactor , minusnufactor , factor       ,0.                , 0.               , 0.              ,
+                       0.            , 0.            , 0.           , 2.*factor*(1.+nu), 0.               , 0.              ,
+                       0.            , 0.            , 0.           , 0.               , 2.*factor*(1.+nu), 0.              ,
+                       0.            , 0.            , 0.           , 0.               , 0.               ,2.*factor*(1.+nu);
 
-	}
-	//! @brief delta load factor for the previous iteration
-	double deltaCutbackFactorExternal(1.);
+    }
+    //! @brief delta load factor for the previous iteration
+    double deltaCutbackFactorExternal(1.);
 
-	//! @brief current load factor (between 0 and 1) to apply the total strain increment in steps
-	double cutbackFactorExternal(deltaCutbackFactorExternal);
+    //! @brief current load factor (between 0 and 1) to apply the total strain increment in steps
+    double cutbackFactorExternal(deltaCutbackFactorExternal);
 
-	//! @brief flag to determine if the iteration is finished (converged at  cutbackFactorExternal=1)
-	bool convergedExternal(false);
+    //! @brief flag to determine if the iteration is finished (converged at  cutbackFactorExternal=1)
+    bool convergedExternal(false);
 
-	int numberOfExternalCutbacks(0);
-	int numberOfInternalIterations(0);
+    int numberOfExternalCutbacks(0);
+    int numberOfInternalIterations(0);
 #ifdef ENABLE_DEBUG
-	int prevNumberOfInternalIterations(0);
+    int prevNumberOfInternalIterations(0);
 #endif
-	lastDeltaEqPlasticStrain = 0.;
-	while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
-	{
-		numberOfExternalCutbacks++;
+    lastDeltaEqPlasticStrain = 0.;
+    while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
+    {
+        numberOfExternalCutbacks++;
 
-		curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
-		curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[1]+cutbackFactorExternal*deltaStrain(1);
-		curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[2]+cutbackFactorExternal*deltaStrain(2);
-		curTotalStrain(3) = rPrevTotalStrain.mEngineeringStrain[3]+cutbackFactorExternal*deltaStrain(3);
-		curTotalStrain(4) = rPrevTotalStrain.mEngineeringStrain[4]+cutbackFactorExternal*deltaStrain(4);
-		curTotalStrain(5) = rPrevTotalStrain.mEngineeringStrain[5]+cutbackFactorExternal*deltaStrain(5);
-
-#ifdef ENABLE_DEBUG
-		rLogger << "\n" << "curTotalStrain " << curTotalStrain.transpose() << "\n";
-//		rLogger << "\n" << "rPrevTotalStrain" << rPrevTotalStrain << "\n";
-		rLogger << "\n" << "cutbackFactorExternal " << cutbackFactorExternal << "\n";
-#endif
-
-		// checks the convergence of the Newton iteration for a prescribed current strain
-		bool convergedInternal(false);
-		try
-		{
-			//resize yield condition vector
-			int numYieldSurfaces=2;
-			yieldCondition.setZero(numYieldSurfaces);
-
-			//elastic strain, stress and d_matrix
-			elasticStrain = curTotalStrain - lastPlastStrain;
-
-			//TODO just use the upper part for new EigenVersion 3.0
-			trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
-			initTrialStress = dElast*elasticStrain;
-#ifdef ENABLE_DEBUG
-			rLogger << "initTrialStress " << "\n" << initTrialStress.transpose() << "\n" << "\n";
-#endif
-
-			//calculate yield condition
-			//Drucker Prager
-			bool errorDerivative(false);
-			initYieldCondition(0) = YieldSurfaceDruckerPrager3D(initTrialStress, BETA, H_P, 0 ,0, errorDerivative);
-
-			//rounded Rankine (0,0 no first and second derivative
-			initYieldCondition(1) = YieldSurfaceRankine3DRounded(initTrialStress, f_ct, 0, 0);
+        curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
+        curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[1]+cutbackFactorExternal*deltaStrain(1);
+        curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[2]+cutbackFactorExternal*deltaStrain(2);
+        curTotalStrain(3) = rPrevTotalStrain.mEngineeringStrain[3]+cutbackFactorExternal*deltaStrain(3);
+        curTotalStrain(4) = rPrevTotalStrain.mEngineeringStrain[4]+cutbackFactorExternal*deltaStrain(4);
+        curTotalStrain(5) = rPrevTotalStrain.mEngineeringStrain[5]+cutbackFactorExternal*deltaStrain(5);
 
 #ifdef ENABLE_DEBUG
-			rLogger << "initYieldCondition " << "\n" << initYieldCondition(0) << " " << initYieldCondition(1) << "\n";
+        rLogger << "\n" << "curTotalStrain " << curTotalStrain.transpose() << "\n";
+//        rLogger << "\n" << "rPrevTotalStrain" << rPrevTotalStrain << "\n";
+        rLogger << "\n" << "cutbackFactorExternal " << cutbackFactorExternal << "\n";
 #endif
 
+        // checks the convergence of the Newton iteration for a prescribed current strain
+        bool convergedInternal(false);
+        try
+        {
+            //resize yield condition vector
+            int numYieldSurfaces=2;
+            yieldCondition.setZero(numYieldSurfaces);
 
-			if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
-			{
-				// *************************************************
-				// *  thus we have elastic -------------> elastic  *
-				// *************************************************
+            //elastic strain, stress and d_matrix
+            elasticStrain = curTotalStrain - lastPlastStrain;
+
+            //TODO just use the upper part for new EigenVersion 3.0
+            trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
+            initTrialStress = dElast*elasticStrain;
 #ifdef ENABLE_DEBUG
-				rLogger << "linear elastic step" << "\n" << "\n";
+            rLogger << "initTrialStress " << "\n" << initTrialStress.transpose() << "\n" << "\n";
 #endif
-				convergedInternal = true;
-				rEpsilonP =  lastPlastStrain;
-				rDeltaEqPlasticStrain = 0;
-				trialStress = initTrialStress;
-				if (cutbackFactorExternal==1)
-				{
-					rdEpsilonPdEpsilon.setZero(6,6);
-					rStress = trialStress;
-					return Error::SUCCESSFUL;
-				}
-			}
-			else
-			{
+
+            //calculate yield condition
+            //Drucker Prager
+            bool errorDerivative(false);
+            initYieldCondition(0) = YieldSurfaceDruckerPrager3D(initTrialStress, BETA, H_P, 0 ,0, errorDerivative);
+
+            //rounded Rankine (0,0 no first and second derivative
+            initYieldCondition(1) = YieldSurfaceRoundedRankine3D(initTrialStress, f_ct, 0, 0);
+
 #ifdef ENABLE_DEBUG
-				rLogger << "plastic step" << "\n" << "\n";
+            rLogger << "initYieldCondition " << "\n" << initYieldCondition(0) << " " << initYieldCondition(1) << "\n";
 #endif
-			}
 
-			// perform return mapping
-			dF_dsigma.resize(numYieldSurfaces);
-			d2F_d2Sigma.resize(numYieldSurfaces);
 
-			// initialize plastic multiplier
-			deltaGamma.setZero(numYieldSurfaces);
-			delta2Gamma.setZero(numYieldSurfaces);
-			yieldConditionFlag.setZero(numYieldSurfaces);
-
-			for (int fixedYieldConditions=0; fixedYieldConditions<3 && convergedInternal==false; fixedYieldConditions++)
-			{
-				switch(fixedYieldConditions)
-				{
-				case 0:
+            if (initYieldCondition(0)<-toleranceYieldSurface*f_ct && initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+            {
+                // *************************************************
+                // *  thus we have elastic -------------> elastic  *
+                // *************************************************
 #ifdef ENABLE_DEBUG
-					rLogger<< "pure Rankine" << "\n";
+                rLogger << "linear elastic step" << "\n" << "\n";
 #endif
-					deltaGamma(1) = 0;
-					if (initYieldCondition(1)<-toleranceYieldSurface*f_ct)
-						continue;
-					yieldConditionFlag(0) = INACTIVE;
-					yieldConditionFlag(1) = ACTIVE;
-					numActiveYieldFunctions = 1;
-					break;
-				case 1:
+                convergedInternal = true;
+                rEpsilonP =  lastPlastStrain;
+                rDeltaEqPlasticStrain = 0;
+                trialStress = initTrialStress;
+                if (cutbackFactorExternal==1)
+                {
+                    rStress = trialStress;
+                    if (rdEpsilonPdEpsilon!=0)
+                        rdEpsilonPdEpsilon->setZero(6,6);
+                    if (rdSigmadEpsilon!=0)
+                    	*rdSigmadEpsilon = dElast;
+                    return Error::SUCCESSFUL;
+                }
+            }
+            else
+            {
 #ifdef ENABLE_DEBUG
-					rLogger<< "combined" << "\n";
+                rLogger << "plastic step" << "\n" << "\n";
 #endif
-					if (initYieldCondition(0)<-toleranceYieldSurface*f_ct || initYieldCondition(1)<-toleranceYieldSurface*f_ct)
-						continue;
-					yieldConditionFlag(0) = ACTIVE;
-					yieldConditionFlag(1) = ACTIVE;
-					deltaGamma(0) = 0;
-					deltaGamma(1) = 0;
-					numActiveYieldFunctions = 2;
-					break;
-				case 2:
+            }
+
+            // perform return mapping
+            dF_dsigma.resize(numYieldSurfaces);
+            d2F_d2Sigma.resize(numYieldSurfaces);
+
+            // initialize plastic multiplier
+            deltaGamma.setZero(numYieldSurfaces);
+            delta2Gamma.setZero(numYieldSurfaces);
+            yieldConditionFlag.setZero(numYieldSurfaces);
+
+            for (int fixedYieldConditions=0; fixedYieldConditions<3 && convergedInternal==false; fixedYieldConditions++)
+            {
+                switch(fixedYieldConditions)
+                {
+                case 0:
 #ifdef ENABLE_DEBUG
-					rLogger<< "pure DP" << "\n";
+                    rLogger<< "pure Rankine" << "\n";
 #endif
-					if (initYieldCondition(0)<-toleranceYieldSurface*f_ct)
-						continue;
-					yieldConditionFlag(0) = ACTIVE;
-					yieldConditionFlag(1) = INACTIVE;
-					deltaGamma(0) = 0;
-					numActiveYieldFunctions = 1;
-					break;
-				default:
-					throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] programming error - should not happen.");
-				}
-
-				for (int iteration = 0; iteration < maxSteps && convergedInternal==false; iteration++)
-				{
-					numberOfInternalIterations++;
-					if (iteration==0)
-					{
-						rEpsilonP = lastPlastStrain;
-						rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
-						yieldCondition= initYieldCondition;
-						trialStress = initTrialStress;
-					}
-					else
-					{
-						//trial stress is the last stress state from the previous line search
-						if (yieldConditionFlag(0)==ACTIVE)
-							yieldCondition(0) = yieldConditionLS(0);
-						else
-							yieldCondition(0) = YieldSurfaceDruckerPrager3D(trialStress, BETA, H_P, 0, 0, errorDerivative);
-
-						if (yieldConditionFlag(1)==ACTIVE)
-							yieldCondition(1) = yieldConditionLS(1);
-						else
-							yieldCondition(1) = YieldSurfaceRankine3DRounded(trialStress, f_ct, 0, 0);
-
-					}
+                    deltaGamma(1) = 0;
+                    if (initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+                        continue;
+                    yieldConditionFlag(0) = INACTIVE;
+                    yieldConditionFlag(1) = ACTIVE;
+                    numActiveYieldFunctions = 1;
+                    break;
+                case 1:
 #ifdef ENABLE_DEBUG
-					rLogger << "trialStress " <<  "\n" << trialStress.transpose() << "\n" << "\n";
-					rLogger << "yieldCondition " <<  "\n" << yieldCondition.transpose() << "\n" << "\n";
+                    rLogger<< "combined" << "\n";
+#endif
+                    if (initYieldCondition(0)<-toleranceYieldSurface*f_ct || initYieldCondition(1)<-toleranceYieldSurface*f_ct)
+                        continue;
+                    yieldConditionFlag(0) = ACTIVE;
+                    yieldConditionFlag(1) = ACTIVE;
+                    deltaGamma(0) = 0;
+                    deltaGamma(1) = 0;
+                    numActiveYieldFunctions = 2;
+                    break;
+                case 2:
+#ifdef ENABLE_DEBUG
+                    rLogger<< "pure DP" << "\n";
+#endif
+                    if (initYieldCondition(0)<-toleranceYieldSurface*f_ct)
+                        continue;
+                    yieldConditionFlag(0) = ACTIVE;
+                    yieldConditionFlag(1) = INACTIVE;
+                    deltaGamma(0) = 0;
+                    numActiveYieldFunctions = 1;
+                    break;
+                default:
+                    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] programming error - should not happen.");
+                }
+
+                for (int iteration = 0; iteration < maxSteps && convergedInternal==false; iteration++)
+                {
+                    numberOfInternalIterations++;
+                    if (iteration==0)
+                    {
+                        rEpsilonP = lastPlastStrain;
+                        rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
+                        yieldCondition= initYieldCondition;
+                        trialStress = initTrialStress;
+                    }
+                    else
+                    {
+                        //trial stress is the last stress state from the previous line search
+                        if (yieldConditionFlag(0)==ACTIVE)
+                            yieldCondition(0) = yieldConditionLS(0);
+                        else
+                            yieldCondition(0) = YieldSurfaceDruckerPrager3D(trialStress, BETA, H_P, 0, 0, errorDerivative);
+
+                        if (yieldConditionFlag(1)==ACTIVE)
+                            yieldCondition(1) = yieldConditionLS(1);
+                        else
+                            yieldCondition(1) = YieldSurfaceRoundedRankine3D(trialStress, f_ct, 0, 0);
+
+                    }
+#ifdef ENABLE_DEBUG
+                    rLogger << "trialStress " <<  "\n" << trialStress.transpose() << "\n" << "\n";
+                    rLogger << "yieldCondition " <<  "\n" << yieldCondition.transpose() << "\n" << "\n";
 #endif
 
-					// DP
-					if (yieldConditionFlag(0)==ACTIVE)
-					{
-						YieldSurfaceDruckerPrager3D(trialStress, BETA, H_P,&(dF_dsigma[0]),&(d2F_d2Sigma[0]), errorDerivative);
+                    // DP
+                    if (yieldConditionFlag(0)==ACTIVE)
+                    {
+                        YieldSurfaceDruckerPrager3D(trialStress, BETA, H_P,&(dF_dsigma[0]),&(d2F_d2Sigma[0]), errorDerivative);
                         if (errorDerivative)
-						{
+                        {
                             //no convergence, decrease line search step
                             iteration = maxSteps;
                             continue;
                         }
 #ifdef ENABLE_DEBUG
-						rLogger << "dF_dsigma[0] (DP) " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+                        rLogger << "dF_dsigma[0] (DP) " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
 #endif
-					}
+                    }
 
-					// Rounded Rankine
-					if (yieldConditionFlag(1)==ACTIVE)
-					{
-						YieldSurfaceRankine3DRounded(trialStress,f_ct, &(dF_dsigma[1]),&(d2F_d2Sigma[1]));
+                    // Rounded Rankine
+                    if (yieldConditionFlag(1)==ACTIVE)
+                    {
+                    	YieldSurfaceRoundedRankine3D(trialStress,f_ct, &(dF_dsigma[1]),&(d2F_d2Sigma[1]));
 #ifdef ENABLE_DEBUG
-						rLogger << "dF_dsigma[1] (Rankine)" <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
-						//check the calculation
-						double delta(1e-8);
-						//if (rd2F_d2Sigma!=0)
-						{
-						//rLogger << "\n" << "check yield surface and derivatives" << "\n";
-							//rLogger << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-							Eigen::Matrix<double,6,1>stress(trialStress);
-							Eigen::Matrix<double,6,1> dF_dSigma1, dF_dSigma2,dF_dSigmaCDF;
-							Eigen::Matrix<double,6,6> d2F_d2SigmaExact,d2F_d2SigmaCDF;
-							double f1 = YieldSurfaceRankine3DRounded(rStress,f_ct,&dF_dSigma1,&d2F_d2SigmaExact);
-							for (int count=0; count<6; count++)
-							{
-								stress(count)+= delta;
-								double f2 = YieldSurfaceRankine3DRounded(stress,f_ct,&dF_dSigma2,0);
-								dF_dSigmaCDF(count) = (f2-f1)/delta;
+/*                        rLogger << "dF_dsigma[1] (Rankine)" <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+                        //check the calculation
+                        double delta(1e-8);
+                        //if (rd2F_d2Sigma!=0)
+                        {
+                        //rLogger << "\n" << "check yield surface and derivatives" << "\n";
+                            //rLogger << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
+                            Eigen::Matrix<double,6,1>stress(trialStress);
+                            Eigen::Matrix<double,6,1> dF_dSigma1, dF_dSigma2,dF_dSigmaCDF;
+                            Eigen::Matrix<double,6,6> d2F_d2SigmaExact,d2F_d2SigmaCDF;
+                            double f1 = YieldSurfaceRankine3DRounded(stress,f_ct,&dF_dSigma1,&d2F_d2SigmaExact);
+                            if (f1>=0)
+                            {
+								for (int count=0; count<6; count++)
+								{
+									stress(count)+= delta;
+									double f2 = YieldSurfaceRankine3DRounded(stress,f_ct,&dF_dSigma2,0);
+									dF_dSigmaCDF(count) = (f2-f1)/delta;
 
-								d2F_d2SigmaCDF.row(count) = (dF_dSigma2-dF_dSigma1)/delta;
+									d2F_d2SigmaCDF.row(count) = (dF_dSigma2-dF_dSigma1)/delta;
 
-								stress(count)-=delta;
-							}
+									stress(count)-=delta;
+								}
 
-							if ((dF_dSigmaCDF-dF_dSigma1).array().abs().maxCoeff()>1e-1)
-							{
-								//std::cout << "sigmas principal" << principal[0]<< " " << principal[1] <<  " " << principal[2] << "\n";
-								std::cout << "sigmas " << stress(0) << " " << stress(1) <<  " " << stress(2) <<  " " <<stress(3) << "\n";
-								std::cout << "error first derivative " << (dF_dSigmaCDF-dF_dSigma1).array().abs().maxCoeff() << "\n";
-
-								std::cout<< "rdF_dSigma " << "\n" << dF_dSigma1 << "\n"<< "\n";
-								std::cout<< "rdF_dSigmaCDF " << "\n" << dF_dSigmaCDF << "\n"<< "\n";
-								//throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
-							}
-
-							// fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
-							//if (fabs(principal[0])>delta && fabs(principal[1])>delta && fabs(principal[2])>delta)
-							{
-								if ((d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff()>1e-1)
+								if ((dF_dSigmaCDF-dF_dSigma1).array().abs().maxCoeff()>1e-1)
 								{
 									//std::cout << "sigmas principal" << principal[0]<< " " << principal[1] <<  " " << principal[2] << "\n";
-									//std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " "<< rStress(3) <<  " "<< rStress(4) <<  " "<< rStress(5) << "\n";
-									std::cout << "error second derivatives " << (d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff() << "\n";
+									std::cout << "sigmas " << stress(0) << " " << stress(1) <<  " " << stress(2) <<  " " <<stress(3) << "\n";
+									std::cout << "error first derivative " << (dF_dSigmaCDF-dF_dSigma1).array().abs().maxCoeff() << "\n";
 
-									std::cout<< "rd2F_d2SigmaCDF " << "\n" << d2F_d2SigmaCDF << "\n"<< "\n";
-									std::cout<< "rd2F_d2SigmaExact " << "\n" << d2F_d2SigmaExact << "\n"<< "\n";
-									//throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating second derivative of yield function.");
-								}
-							}
-							/*else
-							{
-								std::cout << "at least one principal stress close to zero, stiffness matrix is not reliable" << "\n";
-							}
-							*/
-						}
-#endif
-					}
-
-
-					// ************************************************************************
-					//  residual
-					// ************************************************************************
-					residual = lastPlastStrain-rEpsilonP;
-
-					for (int count=0; count<numYieldSurfaces; count++)
-					{
-						if (yieldConditionFlag[count] == ACTIVE)
-						{
-							residual += deltaGamma(count)*dF_dsigma[count];
-						}
-					}
-
-#ifdef ENABLE_DEBUG
-					rLogger << "residual " <<  "\n" << residual.transpose() << "\n" << "\n";
-#endif
-
-					//this is just for scaling with a relative norm
-					double absResidual = residual.norm()/f_ct*e_mod;
-
-#ifdef ENABLE_DEBUG
-					rLogger << iteration <<" residual " << absResidual << " yield condition " << yieldCondition.transpose() << "\n" << "\n";
-#endif
-
-					// in case of PERFECT PLASTICITY [A] = hessian
-					hessian = dElastInv;
-
-					for (int count=0; count<numYieldSurfaces; count++)
-					{
-						if (yieldConditionFlag(count)==ACTIVE)
-						{
-#ifdef ENABLE_DEBUG
-					rLogger << iteration <<" d2F_d2Sigma[" << count << "] "<< "\n" << d2F_d2Sigma[count] << "\n" << "\n";
-#endif
-							hessian+=deltaGamma(count)*d2F_d2Sigma[count];
-						}
-					}
-#ifdef ENABLE_DEBUG
-					rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
-
-					if (fabs(hessian.determinant())<toleranceDeterminant)
-					{
-						rLogger << "hessian"<< "\n" << hessian << "\n";
-						rLogger << "trialStress"<< "\n" << trialStress << "\n";
-						rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
-					}
-#endif
-					assert(fabs(hessian.determinant())>toleranceDeterminant);
-
-					hessian = hessian.inverse().eval();
-#ifdef ENABLE_DEBUG
-					rLogger << "determinant of hessian" << hessian.determinant() << "\n";
-#endif
-
-					// check abs_residual and yieldCondition for active yield surfaces
-					bool convergenceFlagYieldCondition(true);
-					if (absResidual > toleranceResidual)
-						convergenceFlagYieldCondition = false;
-					else
-					{
-						for (int count=0; count<numYieldSurfaces; count++)
-						{
-							if (yieldConditionFlag(count) == INACTIVE)
-								continue;
-							if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
-							{
-								convergenceFlagYieldCondition = false;
-								break;
-							}
-						}
-					}
-
-					if (convergenceFlagYieldCondition==true)
-					{
-						// convergence is achieved - now check of the deltaGamma is nonnegative and all other yield surfaces are valid
-						for (int count=0; count<numYieldSurfaces; count++)
-						{
-							if (yieldConditionFlag(count) == INACTIVE)
-							{
-								if (yieldCondition(count) > toleranceYieldSurface*f_ct)
-								{
-									convergenceFlagYieldCondition = false;
-									iteration=maxSteps;
-									break;
-								}
-							}
-							else
-							{
-								if (deltaGamma(count)<0)
-								{
-									convergenceFlagYieldCondition = false;
-									iteration=maxSteps;
-									break;
-								}
-							}
-						}
-
-						if (convergenceFlagYieldCondition)
-						{
-							convergedInternal = true;
-#ifdef ENABLE_DEBUG
-							rLogger << "convergence after " << iteration << " iterations" << "\n" << "\n";
-#endif
-						}
-					}
-					if (convergedInternal)
-					{
-						if (cutbackFactorExternal==1)
-						{
-							// compute elasto plastic d_matrix
-							// compute G_matrix
-							int curYieldFunction = 0;
-							matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-							vectorN.resize(numYieldSurfaces);
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<=count; count2++)
-								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-
-									matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2])(0);
-									// copy symmetric part
-									if (count!=count2)
-										matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
-
-									curYieldFunction2++;
+									std::cout<< "rdF_dSigma " << "\n" << dF_dSigma1 << "\n"<< "\n";
+									std::cout<< "rdF_dSigmaCDF " << "\n" << dF_dSigmaCDF << "\n"<< "\n";
+									//throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
 								}
 
-								// N
-								vectorN[count] = hessian * dF_dsigma[count];
-#ifdef ENABLE_DEBUG
-								rLogger << "vectorN[ " << count <<"]" << "\n" << vectorN[count] <<"\n"<< "\n";
-#endif
-								curYieldFunction++;
-							}
-
-							// solve linearized system of equations for G_inv
-							assert(fabs(matG.determinant())>toleranceDeterminant);
-							matGInv = matG.inverse();
-
-#ifdef ENABLE_DEBUG
-						rLogger << "matG " << "\n" << matG <<"\n"<< "\n";
-						rLogger << "matGInv " << "\n" << matGInv <<"\n"<< "\n";
-						rLogger << "hessian " << "\n" << hessian <<"\n"<< "\n";
-#endif
-							// compute elasto_plastic matrix
-						    rdSigmadEpsilon = hessian;
-							curYieldFunction = 0;
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<numYieldSurfaces; count2++)
+								// fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
+								//if (fabs(principal[0])>delta && fabs(principal[1])>delta && fabs(principal[2])>delta)
 								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-									rdSigmadEpsilon-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
-									curYieldFunction2++;
-								}
-								curYieldFunction++;
-							}
-
-							//update new history variables
-							rdEpsilonPdEpsilon = dElastInv * (dElast - rdSigmadEpsilon);
-#ifdef ENABLE_DEBUG
-						rLogger << "rdEpsilonPdEpsilon " << "\n" << rdEpsilonPdEpsilon <<"\n"<< "\n";
-						rLogger << "dElastInv " << "\n" << dElastInv <<"\n"<< "\n";
-						rLogger << "dElast " << "\n" << dElast <<"\n"<< "\n";
-						rLogger << "rdSigmadEpsilon " << "\n" << rdSigmadEpsilon <<"\n"<< "\n";
-#endif
-
-							rStress = trialStress;
-
-	#ifdef ENABLE_DEBUG
-							rLogger << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<"\n";
-							rLogger << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<"\n";
-	#endif
-						}
-						else
-						{
-							//do nothing and just increase the strain
-						}
-					}
-					else
-					{
-						//no convergence convergedInternal==false
-						if (iteration<maxSteps)
-						{
-							//compute delta gamma
-							int curYieldFunction = 0;
-							matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<=count; count2++)
-								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-
-									matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose()*hessian*dF_dsigma[count2])(0);
-									// copy symmetric part
-									if (count!=count2)
+									if ((d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff()>1e-1)
 									{
-										matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
-									}
+										//std::cout << "sigmas principal" << principal[0]<< " " << principal[1] <<  " " << principal[2] << "\n";
+										//std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " "<< rStress(3) <<  " "<< rStress(4) <<  " "<< rStress(5) << "\n";
+										std::cout << "error second derivatives " << (d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff() << "\n";
 
-									curYieldFunction2++;
-								}
-
-								curYieldFunction++;
-							}
-							assert(curYieldFunction==numActiveYieldFunctions);
-
-							// solve linearized system of equations for G_inv
-							assert(fabs(matG.determinant())>toleranceDeterminant);
-#ifdef ENABLE_DEBUG
-							rLogger << "G and determinant" << matG.determinant() << "\n";
-							rLogger << matG << "\n";
-#endif
-
-							matGInv = matG.inverse();
-
-							// compute deltaGamma
-							Eigen::Matrix<double,6,1> helpVector = hessian * residual;
-							Eigen::Matrix<double,6,1> helpVector2; helpVector2.Zero();
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-
-								helpVector2(count) = yieldCondition(count) - dF_dsigma[count].dot(helpVector);
-							}
-
-							curYieldFunction = 0;
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								delta2Gamma(count) = 0.;
-								int curYieldFunction2 = 0;
-								for (int count2=0; count2<numYieldSurfaces; count2++)
-								{
-									if (yieldConditionFlag(count2)==INACTIVE)
-										continue;
-
-									delta2Gamma(count) += matGInv(curYieldFunction,curYieldFunction2)*helpVector2(count2);
-
-									curYieldFunction2++;
-								}
-								curYieldFunction++;
-							}
-
-#ifdef ENABLE_DEBUG
-							rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
-#endif
-							// ******************************************************************
-							//  compute increments for stress
-							// ******************************************************************
-							helpVector = residual;
-
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-#ifdef ENABLE_DEBUG
-								rLogger<<"dfdsigma " << dF_dsigma[count].transpose()<<"\n"<< "\n";
-#endif
-								helpVector += delta2Gamma(count)*dF_dsigma[count];
-							}
-
-							deltaStress =  hessian * helpVector;
-#ifdef ENABLE_DEBUG
-							rLogger<<"deltaStress " << deltaStress.transpose()<<"\n"<< "\n";
-#endif
-							//internal line search convergedExternal
-							double deltaCutbackFactor(1.);
-							double cutbackFactorLS(deltaCutbackFactor);
-							bool convergedLS(false);
-
-							//norm of the residual in the local Newton iteration, used as convergence indicator
-							// in the local iteration, the unknowns are deltaSigma and delta2Gamma
-							// whereas the residuals are the difference between (total -elastic) and (plastic strain)
-							// and the yield conditions
-							double normInit = residual.squaredNorm();
-							for (int count=0; count<numYieldSurfaces; count++)
-							{
-								if (yieldConditionFlag(count)==INACTIVE)
-									continue;
-								normInit +=yieldCondition(count)*yieldCondition(count);
-							}
-							int numberOfLinesearchSteps(0);
-							while (!convergedLS)
-							{
-								numberOfLinesearchSteps++;
-								convergedLS = true;
-
-								deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
-								deltaPlasticStrainLS = cutbackFactorLS * (dElastInv * deltaStress);
-								epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
-								stressLS = trialStress - cutbackFactorLS*deltaStress;
-
-#ifdef ENABLE_DEBUG
-								rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
-								rLogger << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << "\n"<< "\n";
-								rLogger << "epsilonPLS " << epsilonPLS.transpose() << "\n"<< "\n";
-								rLogger << "stressLS " << stressLS.transpose() << "\n"<< "\n";
-#endif
-
-
-								// calculate yield condition and yield condition flag (active or not)
-								// Drucker Prager
-								if (yieldConditionFlag(0)==ACTIVE)
-								{
-									yieldConditionLS(0) = YieldSurfaceDruckerPrager3D(stressLS, BETA, H_P,&(dF_dsigma[0]),0,errorDerivative);
-									if (errorDerivative)
-									{
-										//no convergence, decrease line search step
-										convergedLS =false;
-									}
-#ifdef ENABLE_DEBUG
-									rLogger << "dF_dsigma[0] " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
-#endif
-								}
-
-								// Rounded Rankine
-								if (yieldConditionFlag(1)==ACTIVE)
-								{
-									yieldConditionLS(1) = YieldSurfaceRankine3DRounded(stressLS, f_ct,&(dF_dsigma[1]),0);
-#ifdef ENABLE_DEBUG
-									rLogger << "dF_dsigma[1] " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
-#endif
-								}
-
-								// residual in line search
-								residualLS = lastPlastStrain-epsilonPLS;
-
-								for (int count=0; count<numYieldSurfaces; count++)
-								{
-									if (yieldConditionFlag[count] == ACTIVE)
-									{
-										residualLS += deltaGammaLS(count)*dF_dsigma[count];
+										std::cout<< "rd2F_d2SigmaCDF " << "\n" << d2F_d2SigmaCDF << "\n"<< "\n";
+										std::cout<< "rd2F_d2SigmaExact " << "\n" << d2F_d2SigmaExact << "\n"<< "\n";
+										//throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating second derivative of yield function.");
 									}
 								}
+								//else
+								//{
+								//	std::cout << "at least one principal stress close to zero, stiffness matrix is not reliable" << "\n";
+								//}
+							}
+                        }
+                */
+#endif
+                    }
+
+
+                    // ************************************************************************
+                    //  residual
+                    // ************************************************************************
+                    residual = lastPlastStrain-rEpsilonP;
+
+                    for (int count=0; count<numYieldSurfaces; count++)
+                    {
+                        if (yieldConditionFlag[count] == ACTIVE)
+                        {
+                            residual += deltaGamma(count)*dF_dsigma[count];
+                        }
+                    }
 
 #ifdef ENABLE_DEBUG
-								rLogger << "residual linesearch" <<  "\n" << residualLS.transpose() << "\n" << "\n";
+                    rLogger << "residual " <<  "\n" << residual.transpose() << "\n" << "\n";
 #endif
-								double normCurr = residualLS.squaredNorm();
+
+                    //this is just for scaling with a relative norm
+                    double absResidual = residual.norm()/f_ct*e_mod;
+
+#ifdef ENABLE_DEBUG
+                    rLogger << iteration <<" residual " << absResidual << " yield condition " << yieldCondition.transpose() << "\n" << "\n";
+#endif
+
+                    // in case of PERFECT PLASTICITY [A] = hessian
+                    hessian = dElastInv;
+
+                    for (int count=0; count<numYieldSurfaces; count++)
+                    {
+                        if (yieldConditionFlag(count)==ACTIVE)
+                        {
+#ifdef ENABLE_DEBUG
+                    rLogger << iteration <<" d2F_d2Sigma[" << count << "] "<< "\n" << d2F_d2Sigma[count] << "\n" << "\n";
+#endif
+                            hessian+=deltaGamma(count)*d2F_d2Sigma[count];
+                        }
+                    }
+#ifdef ENABLE_DEBUG
+                    rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
+
+                    if (fabs(hessian.determinant())<toleranceDeterminant)
+                    {
+                        rLogger << "hessian"<< "\n" << hessian << "\n";
+                        rLogger << "trialStress"<< "\n" << trialStress << "\n";
+                        rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
+                    }
+#endif
+                    assert(fabs(hessian.determinant())>toleranceDeterminant);
+
+                    hessian = hessian.inverse().eval();
+#ifdef ENABLE_DEBUG
+                    rLogger << "determinant of hessian" << hessian.determinant() << "\n";
+#endif
+
+                    // check abs_residual and yieldCondition for active yield surfaces
+                    bool convergenceFlagYieldCondition(true);
+                    if (absResidual > toleranceResidual)
+                        convergenceFlagYieldCondition = false;
+                    else
+                    {
+                        for (int count=0; count<numYieldSurfaces; count++)
+                        {
+                            if (yieldConditionFlag(count) == INACTIVE)
+                                continue;
+                            if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+                            {
+                                convergenceFlagYieldCondition = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (convergenceFlagYieldCondition==true)
+                    {
+                        // convergence is achieved - now check of the deltaGamma is nonnegative and all other yield surfaces are valid
+                        for (int count=0; count<numYieldSurfaces; count++)
+                        {
+                            if (yieldConditionFlag(count) == INACTIVE)
+                            {
+                                if (yieldCondition(count) > toleranceYieldSurface*f_ct)
+                                {
+                                    convergenceFlagYieldCondition = false;
+                                    iteration=maxSteps;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (deltaGamma(count)<0)
+                                {
+                                    convergenceFlagYieldCondition = false;
+                                    iteration=maxSteps;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (convergenceFlagYieldCondition)
+                        {
+                            convergedInternal = true;
+#ifdef ENABLE_DEBUG
+                            rLogger << "convergence after " << iteration << " iterations" << "\n" << "\n";
+#endif
+                        }
+                    }
+                    if (convergedInternal)
+                    {
+                        if (cutbackFactorExternal==1)
+                        {
+                            // compute elasto plastic d_matrix
+                            // compute G_matrix
+                            int curYieldFunction = 0;
+                            matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+                            vectorN.resize(numYieldSurfaces);
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<=count; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
+
+                                    matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2])(0);
+                                    // copy symmetric part
+                                    if (count!=count2)
+                                        matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+
+                                    curYieldFunction2++;
+                                }
+
+                                // N
+                                vectorN[count] = hessian * dF_dsigma[count];
+#ifdef ENABLE_DEBUG
+                                rLogger << "vectorN[ " << count <<"]" << "\n" << vectorN[count] <<"\n"<< "\n";
+#endif
+                                curYieldFunction++;
+                            }
+
+                            // solve linearized system of equations for G_inv
+                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            matGInv = matG.inverse();
+
+#ifdef ENABLE_DEBUG
+							rLogger << "matG " << "\n" << matG <<"\n"<< "\n";
+							rLogger << "matGInv " << "\n" << matGInv <<"\n"<< "\n";
+							rLogger << "hessian " << "\n" << hessian <<"\n"<< "\n";
+#endif
+                            // compute elasto_plastic matrix
+                            if (rdSigmadEpsilon!=0)
+                            {
+								*rdSigmadEpsilon = hessian;
+								curYieldFunction = 0;
 								for (int count=0; count<numYieldSurfaces; count++)
 								{
 									if (yieldConditionFlag(count)==INACTIVE)
 										continue;
-									normCurr +=yieldConditionLS(count)*yieldConditionLS(count);
+									int curYieldFunction2 = 0;
+									for (int count2=0; count2<numYieldSurfaces; count2++)
+									{
+										if (yieldConditionFlag(count2)==INACTIVE)
+											continue;
+										*rdSigmadEpsilon-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
+										curYieldFunction2++;
+									}
+									curYieldFunction++;
 								}
 #ifdef ENABLE_DEBUG
-								rLogger << "normInit " << normInit << "normCurr " << normCurr<<"\n"<< "\n";
+		                        rLogger << "rdSigmadEpsilon " << "\n" << rdSigmadEpsilon <<"\n"<< "\n";
+#endif
+                            }
+
+                            //update depsilonp depsilon
+                            if (rdEpsilonPdEpsilon!=0)
+                            {
+                                *rdEpsilonPdEpsilon = dElastInv * (dElast - *rdSigmadEpsilon);
+#ifdef ENABLE_DEBUG
+                                rLogger << "rdEpsilonPdEpsilon " << "\n" << *rdEpsilonPdEpsilon <<"\n"<< "\n";
+#endif
+                            }
+#ifdef ENABLE_DEBUG
+							rLogger << "dElastInv " << "\n" << dElastInv <<"\n"<< "\n";
+							rLogger << "dElast " << "\n" << dElast <<"\n"<< "\n";
 #endif
 
-								// check of relative norm of residual is sufficiently decreasing or if it is almost zero
-								if ((normCurr/normInit)*(normCurr/normInit)>1-0.5*cutbackFactorLS && normCurr>toleranceResidual*toleranceResidual)
-									convergedLS = false;
-								if (cutbackFactorLS<=minCutbackFactorLS)
-									convergedLS = true;
+                            rStress = trialStress;
 
-								if (!convergedLS)
-								{
-									deltaCutbackFactor*=0.5;
-									cutbackFactorLS-=deltaCutbackFactor;
-								}
-							}
-							trialStress = stressLS;
-							deltaGamma = deltaGammaLS;
-							rEpsilonP = epsilonPLS;
+    #ifdef ENABLE_DEBUG
+                            rLogger << "numberOfExternalSteps (totalCurstrainincreases) " << numberOfExternalCutbacks <<"\n";
+                            rLogger << "numberOfInternalIterations (Newton iterations to find delta2Gamma and deltaStress) " << numberOfInternalIterations <<"\n";
+    #endif
+                        }
+                        else
+                        {
+                            //do nothing and just increase the strain
+                        }
+                    }
+                    else
+                    {
+                        //no convergence convergedInternal==false
+                        if (iteration<maxSteps)
+                        {
+                            //compute delta gamma
+                            int curYieldFunction = 0;
+                            matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<=count; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
+
+                                    matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose()*hessian*dF_dsigma[count2])(0);
+                                    // copy symmetric part
+                                    if (count!=count2)
+                                    {
+                                        matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
+                                    }
+
+                                    curYieldFunction2++;
+                                }
+
+                                curYieldFunction++;
+                            }
+                            assert(curYieldFunction==numActiveYieldFunctions);
+
+                            // solve linearized system of equations for G_inv
+                            assert(fabs(matG.determinant())>toleranceDeterminant);
+#ifdef ENABLE_DEBUG
+                            rLogger << "G and determinant" << matG.determinant() << "\n";
+                            rLogger << matG << "\n";
+#endif
+
+                            matGInv = matG.inverse();
+
+                            // compute deltaGamma
+                            Eigen::Matrix<double,6,1> helpVector = hessian * residual;
+                            Eigen::Matrix<double,6,1> helpVector2; helpVector2.Zero();
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+
+                                helpVector2(count) = yieldCondition(count) - dF_dsigma[count].dot(helpVector);
+                            }
+
+                            curYieldFunction = 0;
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                delta2Gamma(count) = 0.;
+                                int curYieldFunction2 = 0;
+                                for (int count2=0; count2<numYieldSurfaces; count2++)
+                                {
+                                    if (yieldConditionFlag(count2)==INACTIVE)
+                                        continue;
+
+                                    delta2Gamma(count) += matGInv(curYieldFunction,curYieldFunction2)*helpVector2(count2);
+
+                                    curYieldFunction2++;
+                                }
+                                curYieldFunction++;
+                            }
 
 #ifdef ENABLE_DEBUG
-							if (yieldConditionFlag(0)==ACTIVE)
-								rLogger << "dF_dsigma[0] at end of line search " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
-							if (yieldConditionFlag(1)==ACTIVE)
-								rLogger << "dF_dsigma[1] at end of line search " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
-							rLogger << "numberOfLinesearchSteps " << numberOfLinesearchSteps << "\n";
+                            rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
 #endif
-						}
-					}
-				} // end of loop
+                            // ******************************************************************
+                            //  compute increments for stress
+                            // ******************************************************************
+                            helpVector = residual;
+
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
 #ifdef ENABLE_DEBUG
-				if (convergedInternal==false)
-				{
-					rLogger << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << "\n";
-					for (int count=0; count<2; count++)
-					{
-						if (yieldConditionFlag(count)==ACTIVE)
-						{
-							rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << " ("<<toleranceYieldSurface*f_ct << ")"<<"\n";
-							rLogger << "     deltaGamma "<< count+1 << " " << deltaGamma(count) << "\n";
-						}
-						else
-							rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << "\n";
-
-					}
-				}
+                                rLogger<<"dfdsigma " << dF_dsigma[count].transpose()<<"\n"<< "\n";
 #endif
-			}
-		}
-		catch (NuTo::MechanicsException& e)
-		{
-			e.AddMessage("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
-			throw e;
-		}
-		catch (...)
-		{
-			   throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
-		}
+                                helpVector += delta2Gamma(count)*dF_dsigma[count];
+                            }
 
-		if (convergedInternal)
-		{
+                            deltaStress =  hessian * helpVector;
 #ifdef ENABLE_DEBUG
-			rLogger << "numberOfInternalIterations " << numberOfInternalIterations -  prevNumberOfInternalIterations<< "(" << numberOfInternalIterations << ")" << "\n";
-			rLogger << "convergence for external cutback factor" << "\n";
-			prevNumberOfInternalIterations = numberOfInternalIterations;
+                            rLogger<<"deltaStress " << deltaStress.transpose()<<"\n"<< "\n";
+#endif
+                            //internal line search convergedExternal
+                            double deltaCutbackFactor(1.);
+                            double cutbackFactorLS(deltaCutbackFactor);
+                            bool convergedLS(false);
+
+                            //norm of the residual in the local Newton iteration, used as convergence indicator
+                            // in the local iteration, the unknowns are deltaSigma and delta2Gamma
+                            // whereas the residuals are the difference between (total -elastic) and (plastic strain)
+                            // and the yield conditions
+                            double normInit = residual.squaredNorm();
+                            for (int count=0; count<numYieldSurfaces; count++)
+                            {
+                                if (yieldConditionFlag(count)==INACTIVE)
+                                    continue;
+                                normInit +=yieldCondition(count)*yieldCondition(count);
+                            }
+                            int numberOfLinesearchSteps(0);
+                            while (!convergedLS)
+                            {
+                                numberOfLinesearchSteps++;
+                                convergedLS = true;
+
+                                deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
+                                deltaPlasticStrainLS = cutbackFactorLS * (dElastInv * deltaStress);
+                                epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
+                                stressLS = trialStress - cutbackFactorLS*deltaStress;
+
+#ifdef ENABLE_DEBUG
+                                rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
+                                rLogger << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << "\n"<< "\n";
+                                rLogger << "epsilonPLS " << epsilonPLS.transpose() << "\n"<< "\n";
+                                rLogger << "stressLS " << stressLS.transpose() << "\n"<< "\n";
 #endif
 
-			//update equivalente plastic strain
-			deltaPlasticStrain = rEpsilonP - lastPlastStrain;
-			rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
-							0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
+
+                                // calculate yield condition and yield condition flag (active or not)
+                                // Drucker Prager
+                                if (yieldConditionFlag(0)==ACTIVE)
+                                {
+                                    yieldConditionLS(0) = YieldSurfaceDruckerPrager3D(stressLS, BETA, H_P,&(dF_dsigma[0]),0,errorDerivative);
+                                    if (errorDerivative)
+                                    {
+                                        //no convergence, decrease line search step
+                                        convergedLS =false;
+                                    }
+#ifdef ENABLE_DEBUG
+                                    rLogger << "dF_dsigma[0] " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+#endif
+                                }
+
+                                // Rounded Rankine
+                                if (yieldConditionFlag(1)==ACTIVE)
+                                {
+                                    yieldConditionLS(1) = YieldSurfaceRoundedRankine3D(stressLS, f_ct,&(dF_dsigma[1]),0);
+#ifdef ENABLE_DEBUG
+                                    rLogger << "dF_dsigma[1] " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+#endif
+                                }
+
+                                // residual in line search
+                                residualLS = lastPlastStrain-epsilonPLS;
+
+                                for (int count=0; count<numYieldSurfaces; count++)
+                                {
+                                    if (yieldConditionFlag[count] == ACTIVE)
+                                    {
+                                        residualLS += deltaGammaLS(count)*dF_dsigma[count];
+                                    }
+                                }
+
+#ifdef ENABLE_DEBUG
+                                rLogger << "residual linesearch" <<  "\n" << residualLS.transpose() << "\n" << "\n";
+#endif
+                                double normCurr = residualLS.squaredNorm();
+                                for (int count=0; count<numYieldSurfaces; count++)
+                                {
+                                    if (yieldConditionFlag(count)==INACTIVE)
+                                        continue;
+                                    normCurr +=yieldConditionLS(count)*yieldConditionLS(count);
+                                }
+#ifdef ENABLE_DEBUG
+                                rLogger << "normInit " << normInit << "normCurr " << normCurr<<"\n"<< "\n";
+#endif
+
+                                // check of relative norm of residual is sufficiently decreasing or if it is almost zero
+                                if ((normCurr/normInit)*(normCurr/normInit)>1-0.5*cutbackFactorLS && normCurr>toleranceResidual*toleranceResidual)
+                                    convergedLS = false;
+                                if (cutbackFactorLS<=minCutbackFactorLS)
+                                    convergedLS = true;
+
+                                if (!convergedLS)
+                                {
+                                    deltaCutbackFactor*=0.5;
+                                    cutbackFactorLS-=deltaCutbackFactor;
+                                }
+                            }
+                            trialStress = stressLS;
+                            deltaGamma = deltaGammaLS;
+                            rEpsilonP = epsilonPLS;
+
+#ifdef ENABLE_DEBUG
+                            if (yieldConditionFlag(0)==ACTIVE)
+                                rLogger << "dF_dsigma[0] at end of line search " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+                            if (yieldConditionFlag(1)==ACTIVE)
+                                rLogger << "dF_dsigma[1] at end of line search " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+                            rLogger << "numberOfLinesearchSteps " << numberOfLinesearchSteps << "\n";
+#endif
+                        }
+                    }
+                } // end of loop
+#ifdef ENABLE_DEBUG
+                if (convergedInternal==false)
+                {
+                    rLogger << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << "\n";
+                    for (int count=0; count<2; count++)
+                    {
+                        if (yieldConditionFlag(count)==ACTIVE)
+                        {
+                            rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << " ("<<toleranceYieldSurface*f_ct << ")"<<"\n";
+                            rLogger << "     deltaGamma "<< count+1 << " " << deltaGamma(count) << "\n";
+                        }
+                        else
+                            rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << "\n";
+
+                    }
+                }
+#endif
+            }
+        }
+        catch (NuTo::MechanicsException& e)
+        {
+            e.AddMessage("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
+            throw e;
+        }
+        catch (...)
+        {
+               throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
+        }
+
+        if (convergedInternal)
+        {
+#ifdef ENABLE_DEBUG
+            rLogger << "numberOfInternalIterations " << numberOfInternalIterations -  prevNumberOfInternalIterations<< "(" << numberOfInternalIterations << ")" << "\n";
+            rLogger << "convergence for external cutback factor" << "\n";
+            prevNumberOfInternalIterations = numberOfInternalIterations;
+#endif
+
+            //update equivalente plastic strain
+            deltaPlasticStrain = rEpsilonP - lastPlastStrain;
+            rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
+                            0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
 
 //            double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
 //            rLogger << "\n" << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << "\n"<< "\n";
 //            rLogger << "\n" << "rEpsilonP " << rEpsilonP << "Norm of epsilonp " << "\n";
 
-			if (cutbackFactorExternal==1.)
-			{
-				convergedExternal=true;
-			}
-			else
-			{
-				lastPlastStrain = rEpsilonP;
-				lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
+            if (cutbackFactorExternal==1.)
+            {
+                convergedExternal=true;
+            }
+            else
+            {
+                lastPlastStrain = rEpsilonP;
+                lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
 
-				if (numberOfInternalIterations<10)
-					deltaCutbackFactorExternal*=1.5;
-				cutbackFactorExternal +=deltaCutbackFactorExternal;
-				if (cutbackFactorExternal>1)
-				{
-					deltaCutbackFactorExternal -= cutbackFactorExternal -1.;
-					cutbackFactorExternal = 1.;
-				}
-			}
-		}
-		else
-		{
-			// no convergence in return mapping
-			deltaCutbackFactorExternal*=0.5;
-			cutbackFactorExternal-=deltaCutbackFactorExternal;
-			//#ifdef ENABLE_DEBUG
-						rLogger << "decrease external cutback factor to " << deltaCutbackFactorExternal << "\n";
-			//#endif
-		}
+                if (numberOfInternalIterations<10)
+                    deltaCutbackFactorExternal*=1.5;
+                cutbackFactorExternal +=deltaCutbackFactorExternal;
+                if (cutbackFactorExternal>1)
+                {
+                    deltaCutbackFactorExternal -= cutbackFactorExternal -1.;
+                    cutbackFactorExternal = 1.;
+                }
+            }
+        }
+        else
+        {
+            // no convergence in return mapping
+            deltaCutbackFactorExternal*=0.5;
+            cutbackFactorExternal-=deltaCutbackFactorExternal;
+            //#ifdef ENABLE_DEBUG
+                        rLogger << "decrease external cutback factor to " << deltaCutbackFactorExternal << "\n";
+            //#endif
+        }
 
-	}
-	if (cutbackFactorExternal<=minCutbackFactor)
-	{
-		rLogger << "[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] No convergence can be obtained in the return mapping procedure." << "n";
-		return Error::NO_CONVERGENCE;
-	}
+    }
+    if (cutbackFactorExternal<=minCutbackFactor)
+    {
+        rLogger << "[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] No convergence can be obtained in the return mapping procedure." << "n";
+        return Error::NO_CONVERGENCE;
+    }
 
     return Error::SUCCESSFUL;
 }
-//! @brief calculates the first and second derivative of the second Rankine yield surface with respect to the stress
+//! @brief calculates the rankine yield surface and the derivatives with respect to the stress
 //! @param rStress current stress
-//! @param rSigma_1 first principal stress
-//! @param rSigma_2 second principal stress
-//! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm 0.5*value_sqrt$
-//! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm 0.5*value_sqrt$
-//! @return yield condition
-double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine1DRounded(Eigen::Matrix<double,1,1>& rStress, double rFct)const
-{
-/*    double value_sum  = 0.5*(rStress(0)+rStress(1));
-    double help_scalar = (rStress(0)-rStress(1));
-    double value_sqrt = sqrt(help_scalar*help_scalar+4.*rStress(2)*rStress(2));
-    double sigma_1(value_sum+0.5*value_sqrt);
-    double sigma_2(value_sum-0.5*value_sqrt);
-    // (rounded) Rankine
-#ifdef ENABLE_DEBUG
-    std::cout << "p1 " << sigma_1 << " p2 " << sigma_2 << " p3 " << rStress(3) << "\n" << "\n";
-#endif
-    if (rStress(3)<0)
-    {
-        //sigma_3 is negative
-        if (sigma_1<0)
-        {
-            // sigma_1 is negative and as a consequence sigma_2 is also negative
-            if (rStress(3)>sigma_1)
-            {
-#ifdef ENABLE_DEBUG
-                std::cout << "\n" << " all negative f1" << "\n";
-#endif
-                return rStress(3)-rFct;
-            }
-            else
-            {
-#ifdef ENABLE_DEBUG
-                std::cout << "\n" << " all negative f3" << "\n";
-#endif
-                return sigma_1-rFct;
-            }
-        }
-        else
-        {
-            //sigma_1 is positive
-            if (sigma_2<0)
-            {
-                //sigma_2 is negative
-#ifdef ENABLE_DEBUG
-                std::cout << "\n" << " f1" << "\n";
-#endif
-                return sigma_1 - rFct;
-            }
-            else
-            {
-                //sigma_2 is positive
-#ifdef ENABLE_DEBUG
-                std::cout << "\n" << " f1,f2" << "\n";
-#endif
-                return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2)-rFct;
-            }
-        }
-    }
-    else
-    {
-        //sigma_3 is positive
-        if (sigma_1<0)
-        {
-            // sigma_1 is negative and as a consequence sigma_2 is also negative
-#ifdef ENABLE_DEBUG
-            std::cout << "\n" << " f3" << "\n";
-#endif
-            return rStress(3)-rFct;
-        }
-        else
-        {
-            //sigma_1 is positive
-            if (sigma_2<0)
-            {
-                //sigma_2 is negative
-#ifdef ENABLE_DEBUG
-                std::cout << "\n" << " f1,f3" << "\n";
-#endif
-                return sqrt(sigma_1*sigma_1 + rStress(3) * rStress(3)) - rFct;
-            }
-            else
-            {
-                //sigma_2 is positive
-#ifdef ENABLE_DEBUG
-                std::cout << "\n" << " f1,f2,f3" << "\n";
-#endif
-                return sqrt(sigma_1*sigma_1 + sigma_2*sigma_2 + rStress(3) * rStress(3))-rFct;
-            }
-        }
-    }
-    */
-	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine1DRounded] not implemented.");
-	return 1000;
-}
-
-//! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
+//! @param rFct tensile strength
 //! @param rdF_dSigma return value (first derivative)
 //! @param rd2F_d2Sigma return value (second derivative)
-//! @param rStress current stress
-//! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm 0.5*value_sqrt$
-void NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine1DRoundedDerivatives(Eigen::Matrix<double,1,1>& rdF_dSigma,Eigen::Matrix<double,1,1>* rd2F_d2Sigma,
-        Eigen::Matrix<double,1,1>& rStress)const
+//! @return yield function
+double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRoundedRankine1D(Eigen::Matrix<double,1,1>& rStress, double rFct,
+        Eigen::Matrix<double,1,1>* rdF_dSigma1,Eigen::Matrix<double,5,1>* rdF_dSigma2,
+        Eigen::Matrix<double,1,1>* rd2F_d2Sigma1, Eigen::Matrix<double,5,1>* rd2F_dSigma2dSigma1)const
 {
-/*    double value_sum  = 0.5*(rStress(0)+rStress(1));
-    double help_diff = (rStress(0)-rStress(1));
-    double value_sqrt = sqrt(help_diff*help_diff+4.*rStress(2)*rStress(2));
-    double sigma_1(value_sum+0.5*value_sqrt);
-    double sigma_2(value_sum-0.5*value_sqrt);
 
-    double factor;
-    if (rStress(3)<0)
-    {
-        //sigma_3 is negative
-        if (sigma_1<0)
-        {
-            // sigma_1 is negative and as a consequence sigma_2 is also negative
-            if (rStress(3)>sigma_1)
-            {
-                rdF_dSigma(0) = 0.;
-                rdF_dSigma(1) = 0.;
-                rdF_dSigma(2) = 0.;
-                rdF_dSigma(3) = 1.;
-                //second derivatives are not required
-            }
-            else
-            {
-                // f = f(sigma_1)
-                if (value_sqrt<1e-12)
-                    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine2DRounded] value_sqrt<1e-12 should not happen, since sigma_1>0 and sigma_2<0");
+	if (rdF_dSigma1!=0)
+	{
+		double *dF_dsigma =  (*rdF_dSigma1).data();
 
-                double yield = sqrt(sigma_1*sigma_1 + rStress(3)*rStress(3));
-                factor = 1./yield;
-                double dsigma1_dx = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
-                double dsigma1_dy = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
-                double dsigma1_dxy = 2.*rStress(2)/value_sqrt;
+		// gradient
+		dF_dsigma[0] = 1.;
+	}
+	if (rdF_dSigma2!=0)
+	{
+		double *dF_dsigma =  (*rdF_dSigma2).data();
 
-                rdF_dSigma(0) = factor*sigma_1*dsigma1_dx;
-                rdF_dSigma(1) = factor*sigma_1*dsigma1_dy;
-                rdF_dSigma(2) = factor*sigma_1*dsigma1_dxy;
-                rdF_dSigma(3) = factor*rStress(3);
-                //second derivatives are not required
-            }
-        }
-        else
-        {
-            //sigma_1 is positive
-            if (sigma_2<0)
-            {
-                // f = f(sigma_1)
-                if (value_sqrt<1e-12)
-                    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine2DRounded] value_sqrt<1e-12 should not happen, since sigma_1>0 and sigma_2<0");
+		dF_dsigma[0] = 0.;
+		dF_dsigma[1] = 0.;
+		dF_dsigma[2] = 0.;
+		dF_dsigma[3] = 0.;
+		dF_dsigma[4] = 0.;
+	}
 
-                rdF_dSigma(0) = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
-                rdF_dSigma(1) = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
-                rdF_dSigma(2) = 2*rStress(2)/value_sqrt;
-                rdF_dSigma(3) = 0.;
+	if (rd2F_d2Sigma1!=0)
+	{
+		(*rd2F_d2Sigma1)(0,0) = 0.;
+	}
+	if (rd2F_dSigma2dSigma1!=0)
+	{
+		double *d2F_d2sigma =  (*rd2F_dSigma2dSigma1).data();
+		//hessian
+		d2F_d2sigma[0] = 0.;
+		d2F_d2sigma[1] = 0.;
 
-                // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-                if (rd2F_d2Sigma!=0)
-                {
-                    double factor = 1./(value_sqrt*value_sqrt*value_sqrt);
-                    (*rd2F_d2Sigma)(0,0) = factor*2.*rStress(2)*rStress(2);
-                    (*rd2F_d2Sigma)(0,1) = factor*(-2.)*rStress(2)*rStress(2);
-                    (*rd2F_d2Sigma)(0,2) = factor*(2.)*(rStress(1)-rStress(0))*rStress(2);
-                    (*rd2F_d2Sigma)(0,3) = 0;
-                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-                    (*rd2F_d2Sigma)(1,1) = factor*2.*rStress(2)*rStress(2);
-                    (*rd2F_d2Sigma)(1,2) = factor*(2.)*(rStress(0)-rStress(1))*rStress(2);
-                    (*rd2F_d2Sigma)(1,3) = 0;
-                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-                    (*rd2F_d2Sigma)(2,2) = factor*(2.)*(rStress(0)-rStress(1))*(rStress(0)-rStress(1));
-                    (*rd2F_d2Sigma)(2,3) = 0.;
-                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-                    (*rd2F_d2Sigma)(3,3) = 0.;
-                }
-            }
-            else
-            {
-                // f = f(sigma_1, sigma_2)
-                //sigma_2 is positive
-                factor = 1./sqrt(rStress(0)*rStress(0)+rStress(1)*rStress(1)+
-                                 2*rStress(2)*rStress(2));
-                rdF_dSigma(0) = rStress(0)*factor;
-                rdF_dSigma(1) = rStress(1)*factor;
-                rdF_dSigma(2) = 2.*rStress(2)*factor;
-                rdF_dSigma(3) = 0.;
+		d2F_d2sigma[2] = 0.;
+		d2F_d2sigma[3] = 0.;
+		d2F_d2sigma[4] = 0.;
+	}
+    return rStress(0)-rFct;
 
-                if (rd2F_d2Sigma!=0)
-                {
-                    // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-                    factor = sqrt(rStress(0)*rStress(0)+rStress(1)*rStress(1)+2*rStress(2)*rStress(2));
-                    factor = 1./(factor*factor*factor);
-
-                    (*rd2F_d2Sigma)(0,0) = factor*(rStress(1)*rStress(1)+2.*rStress(2)*rStress(2));
-                    (*rd2F_d2Sigma)(0,1) = -factor*rStress(0)*rStress(1);
-                    (*rd2F_d2Sigma)(0,2) = (-2.)*factor*(rStress(0)*rStress(2));
-                    (*rd2F_d2Sigma)(0,3) = 0;
-                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-                    (*rd2F_d2Sigma)(1,1) = factor*(rStress(0)*rStress(0)+2.*rStress(2)*rStress(2));
-                    (*rd2F_d2Sigma)(1,2) = (-2.)*factor*(rStress(1)*rStress(2));
-                    (*rd2F_d2Sigma)(1,3) = 0;
-                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-                    (*rd2F_d2Sigma)(2,2) = (2.)*factor*(rStress(0)*rStress(0)+rStress(1)*rStress(1));
-                    (*rd2F_d2Sigma)(2,3) = 0.;
-                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-                    (*rd2F_d2Sigma)(3,3) = 0.;
-                }
-            }
-        }
-    }
-    else
-    {
-        //sigma_3 is positive
-        if (sigma_1<0)
-        {
-            // sigma_1 is negative and as a consequence sigma_2 is also negative
-            // f = f(sigma_3)
-            rdF_dSigma(0) = 0.;
-            rdF_dSigma(1) = 0.;
-            rdF_dSigma(2) = 0.;
-            rdF_dSigma(3) = 1.;
-
-            if (rd2F_d2Sigma!=0)
-            {
-                (*rd2F_d2Sigma).setZero(4,4);
-            }
-        }
-        else
-        {
-            //sigma_1 is positive
-            if (sigma_2<0)
-            {
-                //sigma_2 is negative
-                //f = f( sigma_1,sigma_3)
-
-                double yield = sqrt(sigma_1*sigma_1 + rStress(3)*rStress(3));
-                factor = 1./yield;
-                double dsigma1_dx = (value_sqrt+rStress(0)-rStress(1))/(2.*value_sqrt);
-                double dsigma1_dy = (value_sqrt-rStress(0)+rStress(1))/(2.*value_sqrt);
-                double dsigma1_dxy = 2.*rStress(2)/value_sqrt;
-
-                rdF_dSigma(0) = factor*sigma_1*dsigma1_dx;
-                rdF_dSigma(1) = factor*sigma_1*dsigma1_dy;
-                rdF_dSigma(2) = factor*sigma_1*dsigma1_dxy;
-                rdF_dSigma(3) = factor*rStress(3);
-
-                if (rd2F_d2Sigma!=0)
-                {
-                    double factor2 = 1./(value_sqrt*value_sqrt*value_sqrt);
-                    double dsigma1_dx2    = 2.*rStress(2)*rStress(2)*factor2;
-                    double dsigma1_dxdy   = -dsigma1_dx2;
-                    double dsigma1_dxdxy  = 2.*rStress(2)*(rStress(1)-rStress(0))*factor2;
-                    double dsigma1_dy2    = dsigma1_dx2;
-                    double dsigma1_dydxy  = 2.*rStress(2)*(rStress(0)-rStress(1))*factor2;
-                    double dsigma1_dxy2   = 2.*help_diff*help_diff*factor2;
-
-//                    rLogger << "d2_sigma_1 d2sigma_i " << dsigma1_dx2 << " " << dsigma1_dxdy << " " << dsigma1_dxdxy << " " << dsigma1_dy2 << " " << dsigma1_dydxy << " " << dsigma1_dxy2 << "\n";
-
-                    factor *= factor;
-                    // store upper part for new eigen version 3.0 rd2F_d2Sigma.selfadjointView<Upper>()
-                    (*rd2F_d2Sigma)(0,0) = factor*((dsigma1_dx*dsigma1_dx +sigma_1*dsigma1_dx2  )*yield-sigma_1*dsigma1_dx*rdF_dSigma(0));
-                    (*rd2F_d2Sigma)(0,1) = factor*((dsigma1_dx*dsigma1_dy +sigma_1*dsigma1_dxdy )*yield-sigma_1*dsigma1_dx*rdF_dSigma(1));
-                    (*rd2F_d2Sigma)(0,2) = factor*((dsigma1_dx*dsigma1_dxy+sigma_1*dsigma1_dxdxy)*yield-sigma_1*dsigma1_dx*rdF_dSigma(2));
-                    (*rd2F_d2Sigma)(0,3) = -factor*rStress(3)*rdF_dSigma(0);
-                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-                    (*rd2F_d2Sigma)(1,1) = factor*((dsigma1_dy*dsigma1_dy +sigma_1*dsigma1_dy2  )*yield-sigma_1*dsigma1_dy*rdF_dSigma(1));
-                    (*rd2F_d2Sigma)(1,2) = factor*((dsigma1_dy*dsigma1_dxy+sigma_1*dsigma1_dydxy)*yield-sigma_1*dsigma1_dy*rdF_dSigma(2));
-                    (*rd2F_d2Sigma)(1,3) = -factor*rStress(3)*rdF_dSigma(1);
-                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-                    (*rd2F_d2Sigma)(2,2) = factor*((dsigma1_dxy*dsigma1_dxy +sigma_1*dsigma1_dxy2  )*yield-sigma_1*dsigma1_dxy*rdF_dSigma(2));
-                    (*rd2F_d2Sigma)(2,3) = -factor*rStress(3)*rdF_dSigma(2);
-                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-                    (*rd2F_d2Sigma)(3,3) = factor*(yield-rStress(3)*rdF_dSigma(3));
-
-//                    rLogger << "rd2F_d2Sigma " << "\n" << *rd2F_d2Sigma << dsigma1_dxy2 << "\n";
-                }
-            }
-            else
-            {
-                //sigma_2 is positive
-                //f = f( sigma_1,sigma_2, sigma_3)
-                factor = 1./sqrt(rStress(0)*rStress(0) + rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
-                rdF_dSigma(0) = factor*rStress(0);
-                rdF_dSigma(1) = factor*rStress(1);
-                rdF_dSigma(2) = factor*2.*rStress(2);
-                rdF_dSigma(3) = factor*rStress(3);
-
-                if (rd2F_d2Sigma!=0)
-                {
-
-                    factor*=factor*factor;
-                    (*rd2F_d2Sigma)(0,0) = factor * (rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
-                    (*rd2F_d2Sigma)(0,1) = -factor * rStress(1) * rStress(0);
-                    (*rd2F_d2Sigma)(0,2) = -2.*factor * rStress(2) * rStress(0);
-                    (*rd2F_d2Sigma)(0,3) = -factor * rStress(3) * rStress(0);
-                    (*rd2F_d2Sigma)(1,0) = (*rd2F_d2Sigma)(0,1);
-                    (*rd2F_d2Sigma)(1,1) = factor * (rStress(0)*rStress(0) + 2.*rStress(2)*rStress(2) + rStress(3)*rStress(3));
-                    (*rd2F_d2Sigma)(1,2) = -2.*factor * rStress(2) * rStress(1);
-                    (*rd2F_d2Sigma)(1,3) = -factor * rStress(3) * rStress(1);
-                    (*rd2F_d2Sigma)(2,0) = (*rd2F_d2Sigma)(0,2);
-                    (*rd2F_d2Sigma)(2,1) = (*rd2F_d2Sigma)(1,2);
-                    (*rd2F_d2Sigma)(2,2) = 2.*factor*(rStress(0)*rStress(0) + rStress(1)*rStress(1) + rStress(3)*rStress(3));
-                    (*rd2F_d2Sigma)(2,3) = -2.*factor * rStress(3) * rStress(2);
-                    (*rd2F_d2Sigma)(3,0) = (*rd2F_d2Sigma)(0,3);
-                    (*rd2F_d2Sigma)(3,1) = (*rd2F_d2Sigma)(1,3);
-                    (*rd2F_d2Sigma)(3,2) = (*rd2F_d2Sigma)(2,3);
-                    (*rd2F_d2Sigma)(3,3) = factor * (rStress(0)*rStress(0) + rStress(1)*rStress(1) + 2.*rStress(2)*rStress(2));
-                }
-            }
-        }
-    }
-
-#ifdef ENABLE_DEBUG
-    //check the calculation
-    double delta(1e-8);
-    if (rd2F_d2Sigma!=0 && rStress(0)>1.96)
-    {
-        //rLogger << "\n" << "check yield surface and derivatives" << "\n";
-        //rLogger << "sigmas " << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-        Eigen::Matrix<double,4,1> rdF_dSigma1, rdF_dSigma2,rdF_dSigmaCDF;
-        Eigen::Matrix<double,4,4> rd2F_d2SigmaCDF;
-        double fct(0.);
-        double f1 = YieldSurfaceRankine2DRounded(rStress, fct);
-        YieldSurfaceRankine2DRoundedDerivatives(rdF_dSigma1, 0, rStress);
-        for (int count=0; count<4; count++)
-        {
-            rStress(count)+= delta;
-            double f2 = YieldSurfaceRankine2DRounded(rStress, fct);
-            rdF_dSigmaCDF(count) = (f2-f1)/delta;
-
-            YieldSurfaceRankine2DRoundedDerivatives(rdF_dSigma2, 0, rStress);
-            rd2F_d2SigmaCDF.row(count) = (rdF_dSigma2-rdF_dSigma1)/delta;
-
-            rStress(count)-=delta;
-        }
-
-        if ((rdF_dSigmaCDF-rdF_dSigma).array().abs().maxCoeff()>1e-1)
-        {
-            std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-            std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-            std::cout << "error first derivative " << (rdF_dSigmaCDF-rdF_dSigma).array().abs().maxCoeff() << "\n";
-
-            std::cout<< "rdF_dSigma " << "\n" << rdF_dSigma << "\n"<< "\n";
-            std::cout<< "rdF_dSigmaCDF " << "\n" << rdF_dSigmaCDF << "\n"<< "\n";
-            throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
-        }
-
-        // fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
-        if (fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
-        {
-            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
-            {
-                std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
-                std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
-                std::cout << "error second derivatives " << (rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff() << "\n";
-
-                std::cout<< "rd2F_d2SigmaCDF " << "\n" << rd2F_d2SigmaCDF << "\n"<< "\n";
-                std::cout<< "rd2F_d2Sigma " << "\n" << (*rd2F_d2Sigma) << "\n"<< "\n";
-                throw MechanicsException("[NuTo::Mechanics::GradientDamagePlasticityEngineeringStress] Error calculating second derivative of yield function.");
-            }
-        }
-        else
-        {
-            std::cout << "at least one principal stress close to zero, stiffness matrix is not reliable" << "\n";
-        }
-    }
-#endif
-*/
 }
 
 
@@ -3596,19 +4224,18 @@ bool NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrager2
     return true;
 }
 
-#define tolerance_D 1e-10
-#define tolerance_q sqrt(tolerance_D)
+#define tolerance_abs 1e-10
 //! @brief calculates the first and second derivative of the Rankine yield surface with respect to the stress
 //! @param rStress current stress
 //! @param rFct return tensile strength
 //! @param rdF_dSigma return value (first derivative)
 //! @param rd2F_d2Sigma return value (second derivative)
 //! @return yield function
-double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded(
-		const Eigen::Matrix<double,6,1>& rStress,
-		double rFct,
-		Eigen::Matrix<double,6,1>* rdF_dSigma,
-		Eigen::Matrix<double,6,6>* rd2F_d2Sigma)const
+double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRoundedRankine3D(
+        const Eigen::Matrix<double,6,1>& rStress,
+        double rFct,
+        Eigen::Matrix<double,6,1>* rdF_dSigma,
+        Eigen::Matrix<double,6,6>* rd2F_d2Sigma)const
 {
     double F,
     a,
@@ -3657,14 +4284,14 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
     int num_pos; //number of positive eigenvalues
 
     if (rd2F_d2Sigma!=0 && rdF_dSigma==0)
-    	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] second derivative can only be calculated with the first derivative.");
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] second derivative can only be calculated with the first derivative.");
     double *dF_dsigma(0),*d2F_d2Sigma(0);
     if (rdF_dSigma!=0)
-    	dF_dsigma =  (*rdF_dSigma).data();
+        dF_dsigma =  (*rdF_dSigma).data();
     if (rd2F_d2Sigma!=0)
-    	d2F_d2Sigma =  (*rd2F_d2Sigma).data();
+        d2F_d2Sigma =  (*rd2F_d2Sigma).data();
     // ***************************
-    // 	calculate eigenvalues    *
+    //     calculate eigenvalues    *
     // ***************************
     a = -rStress(0)-rStress(1)-rStress(2);
     b =  rStress(0)*rStress(2)
@@ -3687,29 +4314,36 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
     q2 = q*q;
     D = p*p*p+q2;
 
+
+    double fct3 = rFct*rFct*rFct;
+    double fct6 = fct3*fct3;
+
+    double tolerance_D = tolerance_abs*fct6;
+    double tolerance_q = tolerance_abs*fct3;
+
     // complex eigenvalues found, but eigenvalues of a symmetric matrix are always real
     //std::cout << "D=" << D << std::endl;
-//    std::cout << "stress : " << rStress.transpose() << std::endl ;
+    //std::cout << "stress : " << rStress.transpose() << std::endl ;
     assert(D<tolerance_D);
 
-	if (fabs(q)<tolerance_q)
-	{
-		//three identical eigenvalues
-	    assert(D>-tolerance_D);
-		principal[0] = -a/3.;
-		principal[1] = principal[0];
-		principal[2] = principal[0];
-	}
+    if (fabs(q)<tolerance_q)
+    {
+        //three identical eigenvalues
+        assert(D>-tolerance_D);
+        principal[0] = -a/3.;
+        principal[1] = principal[0];
+        principal[2] = principal[0];
+    }
     else
     {
         // either three different real roots or two real roots (one is twice)
-    	sqrt_minus_p = sqrt(-p);
+        sqrt_minus_p = sqrt(-p);
         P = q<0 ? -sqrt_minus_p : sqrt_minus_p;
         double qdiffP3 = q/(P*P*P);
         if (qdiffP3>1.)
         {
-        	assert(qdiffP3-1<tolerance_D);
-        	qdiffP3=1;
+            assert(qdiffP3-1<tolerance_D);
+            qdiffP3=1;
         }
         beta = acos(qdiffP3)/3.;
         cos_beta = cos(beta);
@@ -3720,671 +4354,672 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
         principal[2] = 2.*P*cos_beta_sub-a/3.;
     }
 
+    //std::cout << "D=" <<  D  << std::endl;
     //std::cout << "principal stresses=" <<  principal[0] << " " << principal[1] << " " << principal[2] << std::endl;
-	num_pos = (principal[0]>0 ? 1 : 0) + (principal[1]>0 ? 1 : 0) + (principal[2]>0 ? 1 : 0);
+    num_pos = (principal[0]>0 ? 1 : 0) + (principal[1]>0 ? 1 : 0) + (principal[2]>0 ? 1 : 0);
 
-	switch (num_pos)
-	{
-	case 0:
-		F = -rFct;
-		if (rdF_dSigma!=0)
-		{
-			(*rdF_dSigma).setZero(6,1);
-		}
-		if (rd2F_d2Sigma!=0)
-		{
-			(*rd2F_d2Sigma).setZero(36,1);
-		}
-		return F;
-		break;
-	case 1:
-	case 2:
-		if (rdF_dSigma!=0)
-		{
-			// a
-			da_ds[0] = -1.;
-			da_ds[1] = -1.;
-			da_ds[2] = -1.;
-			da_ds[3] =  0.;
-			da_ds[4] =  0.;
-			da_ds[5] =  0.;
+    switch (num_pos)
+    {
+    case 0:
+        F = -rFct;
+        if (rdF_dSigma!=0)
+        {
+            (*rdF_dSigma).setZero(6,1);
+        }
+        if (rd2F_d2Sigma!=0)
+        {
+            (*rd2F_d2Sigma).setZero(36,1);
+        }
+        return F;
+        break;
+    case 1:
+    case 2:
+        if (rdF_dSigma!=0)
+        {
+            // a
+            da_ds[0] = -1.;
+            da_ds[1] = -1.;
+            da_ds[2] = -1.;
+            da_ds[3] =  0.;
+            da_ds[4] =  0.;
+            da_ds[5] =  0.;
 
-			// b
-			db_ds[0] = rStress(1)+rStress(2);
-			db_ds[1] = rStress(0)+rStress(2);
-			db_ds[2] = rStress(0)+rStress(1);
-			db_ds[3] = -2.*rStress(3);
-			db_ds[4] = -2.*rStress(4);
-			db_ds[5] = -2.*rStress(5);
+            // b
+            db_ds[0] = rStress(1)+rStress(2);
+            db_ds[1] = rStress(0)+rStress(2);
+            db_ds[2] = rStress(0)+rStress(1);
+            db_ds[3] = -2.*rStress(3);
+            db_ds[4] = -2.*rStress(4);
+            db_ds[5] = -2.*rStress(5);
 
-			db_ds2[1]  = 1.;
-			db_ds2[2]  = 1.;
-			db_ds2[8]  = 1.;
-			db_ds2[21]  = -2.;
-			db_ds2[28] = -2.;
-			db_ds2[35] = -2.;
+            db_ds2[1]  = 1.;
+            db_ds2[2]  = 1.;
+            db_ds2[8]  = 1.;
+            db_ds2[21]  = -2.;
+            db_ds2[28] = -2.;
+            db_ds2[35] = -2.;
 
-			// c
-			dc_ds[0] = rStress(4)*rStress(4)-rStress(1)*rStress(2);
-			dc_ds[1] = rStress(5)*rStress(5)-rStress(0)*rStress(2);
-			dc_ds[2] = rStress(3)*rStress(3)-rStress(0)*rStress(1);
-			dc_ds[3] = 2.*(rStress(2)*rStress(3)-rStress(4)*rStress(5));
-			dc_ds[4] = 2.*(rStress(0)*rStress(4)-rStress(3)*rStress(5));
-			dc_ds[5] = 2.*(rStress(1)*rStress(5)-rStress(3)*rStress(4));
+            // c
+            dc_ds[0] = rStress(4)*rStress(4)-rStress(1)*rStress(2);
+            dc_ds[1] = rStress(5)*rStress(5)-rStress(0)*rStress(2);
+            dc_ds[2] = rStress(3)*rStress(3)-rStress(0)*rStress(1);
+            dc_ds[3] = 2.*(rStress(2)*rStress(3)-rStress(4)*rStress(5));
+            dc_ds[4] = 2.*(rStress(0)*rStress(4)-rStress(3)*rStress(5));
+            dc_ds[5] = 2.*(rStress(1)*rStress(5)-rStress(3)*rStress(4));
 
-			dc_ds2[1]  = -rStress(2);
-			dc_ds2[2]  = -rStress(1);
-			dc_ds2[4]  = 2.*rStress(4);
-			dc_ds2[8]  = -rStress(0);
-			dc_ds2[11] = 2.*rStress(5);
-			dc_ds2[15] = 2.*rStress(3);
-			dc_ds2[21] = 2.*rStress(2);
-			dc_ds2[22] = -2.*rStress(5);
-			dc_ds2[23] = -2.*rStress(4);
-			dc_ds2[28] = 2.*rStress(0);
-			dc_ds2[29] = -2.*rStress(3);
-			dc_ds2[35] = 2.*rStress(1);
+            dc_ds2[1]  = -rStress(2);
+            dc_ds2[2]  = -rStress(1);
+            dc_ds2[4]  = 2.*rStress(4);
+            dc_ds2[8]  = -rStress(0);
+            dc_ds2[11] = 2.*rStress(5);
+            dc_ds2[15] = 2.*rStress(3);
+            dc_ds2[21] = 2.*rStress(2);
+            dc_ds2[22] = -2.*rStress(5);
+            dc_ds2[23] = -2.*rStress(4);
+            dc_ds2[28] = 2.*rStress(0);
+            dc_ds2[29] = -2.*rStress(3);
+            dc_ds2[35] = 2.*rStress(1);
 
-			// p
-			factor3 = -2./9.;
-			factor1 = factor3*a;factor2 = 1./3.;
-			dp_ds[0] = factor1*da_ds[0]+factor2*db_ds[0];
-			dp_ds[1] = factor1*da_ds[1]+factor2*db_ds[1];
-			dp_ds[2] = factor1*da_ds[2]+factor2*db_ds[2];
-			dp_ds[3] = factor1*da_ds[3]+factor2*db_ds[3];
-			dp_ds[4] = factor1*da_ds[4]+factor2*db_ds[4];
-			dp_ds[5] = factor1*da_ds[5]+factor2*db_ds[5];
+            // p
+            factor3 = -2./9.;
+            factor1 = factor3*a;factor2 = 1./3.;
+            dp_ds[0] = factor1*da_ds[0]+factor2*db_ds[0];
+            dp_ds[1] = factor1*da_ds[1]+factor2*db_ds[1];
+            dp_ds[2] = factor1*da_ds[2]+factor2*db_ds[2];
+            dp_ds[3] = factor1*da_ds[3]+factor2*db_ds[3];
+            dp_ds[4] = factor1*da_ds[4]+factor2*db_ds[4];
+            dp_ds[5] = factor1*da_ds[5]+factor2*db_ds[5];
 
-			if (rd2F_d2Sigma!=0)
-			{
-				for (int j=0; j<6;j++)
-				{
-					for (int i=j; i<6;i++)
-					{
-						dp_ds2[6*j+i] = factor3*da_ds[i]*da_ds[j]+factor2*db_ds2[6*j+i];
-					}
-				}
-			}
+            if (rd2F_d2Sigma!=0)
+            {
+                for (int j=0; j<6;j++)
+                {
+                    for (int i=j; i<6;i++)
+                    {
+                        dp_ds2[6*j+i] = factor3*da_ds[i]*da_ds[j]+factor2*db_ds2[6*j+i];
+                    }
+                }
+            }
 
-			// q
-			factor1 = a2/9.-b/6.;factor2 = a/(-6.);
-			dq_ds[0] = factor1*da_ds[0]+factor2*db_ds[0]+0.5*dc_ds[0];
-			dq_ds[1] = factor1*da_ds[1]+factor2*db_ds[1]+0.5*dc_ds[1];
-			dq_ds[2] = factor1*da_ds[2]+factor2*db_ds[2]+0.5*dc_ds[2];
-			dq_ds[3] = factor1*da_ds[3]+factor2*db_ds[3]+0.5*dc_ds[3];
-			dq_ds[4] = factor1*da_ds[4]+factor2*db_ds[4]+0.5*dc_ds[4];
-			dq_ds[5] = factor1*da_ds[5]+factor2*db_ds[5]+0.5*dc_ds[5];
+            // q
+            factor1 = a2/9.-b/6.;factor2 = a/(-6.);
+            dq_ds[0] = factor1*da_ds[0]+factor2*db_ds[0]+0.5*dc_ds[0];
+            dq_ds[1] = factor1*da_ds[1]+factor2*db_ds[1]+0.5*dc_ds[1];
+            dq_ds[2] = factor1*da_ds[2]+factor2*db_ds[2]+0.5*dc_ds[2];
+            dq_ds[3] = factor1*da_ds[3]+factor2*db_ds[3]+0.5*dc_ds[3];
+            dq_ds[4] = factor1*da_ds[4]+factor2*db_ds[4]+0.5*dc_ds[4];
+            dq_ds[5] = factor1*da_ds[5]+factor2*db_ds[5]+0.5*dc_ds[5];
 
-			if (rd2F_d2Sigma!=0)
-			{
-				factor3 = 2./9.*a;factor4 = -1./6.;
-				for (int j=0; j<6;j++)
-				{
-					for (int i=j; i<6;i++)
-					{
-						dq_ds2[6*j+i] = (factor3*da_ds[j]+factor4*db_ds[j]) * da_ds[i]
-										+factor4*da_ds[j]*db_ds[i]
-										+factor2*db_ds2[6*j+i]+
-										+0.5*dc_ds2[6*j+i];
-					}
-				}
-			}
-			if (fabs(q)>=tolerance_q)
-			{
-				assert(fabs(p)>tolerance_D);
-				// P
-				factor1 = q<0 ? 1./(2.*sqrt_minus_p) : -1./(2.*sqrt_minus_p);
-				dP_ds[0] = factor1*dp_ds[0];
-				dP_ds[1] = factor1*dp_ds[1];
-				dP_ds[2] = factor1*dp_ds[2];
-				dP_ds[3] = factor1*dp_ds[3];
-				dP_ds[4] = factor1*dp_ds[4];
-				dP_ds[5] = factor1*dp_ds[5];
+            if (rd2F_d2Sigma!=0)
+            {
+                factor3 = 2./9.*a;factor4 = -1./6.;
+                for (int j=0; j<6;j++)
+                {
+                    for (int i=j; i<6;i++)
+                    {
+                        dq_ds2[6*j+i] = (factor3*da_ds[j]+factor4*db_ds[j]) * da_ds[i]
+                                        +factor4*da_ds[j]*db_ds[i]
+                                        +factor2*db_ds2[6*j+i]+
+                                        +0.5*dc_ds2[6*j+i];
+                    }
+                }
+            }
+            if (fabs(q)>=tolerance_q)
+            {
+                assert(fabs(p)>tolerance_D);
+                // P
+                factor1 = q<0 ? 1./(2.*sqrt_minus_p) : -1./(2.*sqrt_minus_p);
+                dP_ds[0] = factor1*dp_ds[0];
+                dP_ds[1] = factor1*dp_ds[1];
+                dP_ds[2] = factor1*dp_ds[2];
+                dP_ds[3] = factor1*dp_ds[3];
+                dP_ds[4] = factor1*dp_ds[4];
+                dP_ds[5] = factor1*dp_ds[5];
 
-				if (rd2F_d2Sigma!=0)
-				{
-					factor2 = q<0 ? 1./(4.*sqrt_minus_p*(-p)) : -1./(4.*sqrt_minus_p*(-p));
-					for (int j=0; j<6;j++)
-					{
-						for (int i=j; i<6;i++)
-						{
-							dP_ds2[6*j+i] = factor2*dp_ds[j] * dp_ds[i]+factor1*dp_ds2[6*j+i];
-						}
-					}
-				}
-		    }
+                if (rd2F_d2Sigma!=0)
+                {
+                    factor2 = q<0 ? 1./(4.*sqrt_minus_p*(-p)) : -1./(4.*sqrt_minus_p*(-p));
+                    for (int j=0; j<6;j++)
+                    {
+                        for (int i=j; i<6;i++)
+                        {
+                            dP_ds2[6*j+i] = factor2*dp_ds[j] * dp_ds[i]+factor1*dp_ds2[6*j+i];
+                        }
+                    }
+                }
+            }
 
-			if (D<=-tolerance_D)
-			{
-				// beta
-				P2 = P*P;
-				P3 = P2*P;
-				P6 = P3*P3;
-				help_scalar = q/(P3);
-				sqrt_1_minus_q2_div_P6 = sqrt(1.-help_scalar*help_scalar);
-				factor1 = -1./(3*P3*sqrt_1_minus_q2_div_P6);
-				factor2 = q/(P2*P2*sqrt_1_minus_q2_div_P6);
-				factor3 = P2/((P6-q2)*sqrt_1_minus_q2_div_P6);
-				factor4 = -q*(4.*P6-q2)/((P6-q2)*P2*P3*sqrt_1_minus_q2_div_P6);
+            if (D<=-tolerance_D)
+            {
+                // beta
+                P2 = P*P;
+                P3 = P2*P;
+                P6 = P3*P3;
+                help_scalar = q/(P3);
+                sqrt_1_minus_q2_div_P6 = sqrt(1.-help_scalar*help_scalar);
+                factor1 = -1./(3*P3*sqrt_1_minus_q2_div_P6);
+                factor2 = q/(P2*P2*sqrt_1_minus_q2_div_P6);
+                factor3 = P2/((P6-q2)*sqrt_1_minus_q2_div_P6);
+                factor4 = -q*(4.*P6-q2)/((P6-q2)*P2*P3*sqrt_1_minus_q2_div_P6);
 
-				help_scalar = P3*sqrt_1_minus_q2_div_P6;
-				factor5 = -q/(3*(help_scalar*help_scalar*help_scalar));
+                help_scalar = P3*sqrt_1_minus_q2_div_P6;
+                factor5 = -q/(3*(help_scalar*help_scalar*help_scalar));
 
-				dbeta_ds[0] = factor1*dq_ds[0]+factor2*dP_ds[0];
-				dbeta_ds[1] = factor1*dq_ds[1]+factor2*dP_ds[1];
-				dbeta_ds[2] = factor1*dq_ds[2]+factor2*dP_ds[2];
-				dbeta_ds[3] = factor1*dq_ds[3]+factor2*dP_ds[3];
-				dbeta_ds[4] = factor1*dq_ds[4]+factor2*dP_ds[4];
-				dbeta_ds[5] = factor1*dq_ds[5]+factor2*dP_ds[5];
+                dbeta_ds[0] = factor1*dq_ds[0]+factor2*dP_ds[0];
+                dbeta_ds[1] = factor1*dq_ds[1]+factor2*dP_ds[1];
+                dbeta_ds[2] = factor1*dq_ds[2]+factor2*dP_ds[2];
+                dbeta_ds[3] = factor1*dq_ds[3]+factor2*dP_ds[3];
+                dbeta_ds[4] = factor1*dq_ds[4]+factor2*dP_ds[4];
+                dbeta_ds[5] = factor1*dq_ds[5]+factor2*dP_ds[5];
 
-				if (rd2F_d2Sigma!=0)
-				{
-					for (int j=0; j<6;j++)
-					{
-						for (int i=j; i<6;i++)
-						{
-							dbeta_ds2[6*j+i] = (factor5*dq_ds[j]+factor3*dP_ds[j]) * dq_ds[i] + factor1*dq_ds2[6*j+i]
-											   +(factor4*dP_ds[j]+factor3*dq_ds[j]) * dP_ds[i] + factor2*dP_ds2[6*j+i];
-						}
-					}
-				}
-			} // if (D<=-tolerance_D)
-		}// if(calc_derivatives)
+                if (rd2F_d2Sigma!=0)
+                {
+                    for (int j=0; j<6;j++)
+                    {
+                        for (int i=j; i<6;i++)
+                        {
+                            dbeta_ds2[6*j+i] = (factor5*dq_ds[j]+factor3*dP_ds[j]) * dq_ds[i] + factor1*dq_ds2[6*j+i]
+                                               +(factor4*dP_ds[j]+factor3*dq_ds[j]) * dP_ds[i] + factor2*dP_ds2[6*j+i];
+                        }
+                    }
+                }
+            } // if (D<=-tolerance_D)
+        }// if(calc_derivatives)
 
-		if (num_pos==1)
-		{
-			if (D<=-tolerance_D)
-			{
-				//all solutions are real and different
-				if (principal[0]>0)
-				{
+        if (num_pos==1)
+        {
+            if (D<=-tolerance_D)
+            {
+                //all solutions are real and different
+                if (principal[0]>0)
+                {
 
-					F = principal[0]-rFct;
-					if (rdF_dSigma!=0)
-					{
-						// calculate derivatives
-						sin_beta = sin(beta);
-						factor4 = 2.*sin_beta;
-						factor1 = P*factor4;
-						factor2 = -2.*cos_beta;
-						factor3 = -1./3.;
-						factor5 = -P*factor2;
-						dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-						dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-						dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-						dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-						dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-						dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+                    F = principal[0]-rFct;
+                    if (rdF_dSigma!=0)
+                    {
+                        // calculate derivatives
+                        sin_beta = sin(beta);
+                        factor4 = 2.*sin_beta;
+                        factor1 = P*factor4;
+                        factor2 = -2.*cos_beta;
+                        factor3 = -1./3.;
+                        factor5 = -P*factor2;
+                        dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+                        dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+                        dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+                        dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+                        dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+                        dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-						if (rd2F_d2Sigma!=0)
-						{
-							for (int j=0; j<6;j++)
-							{
-								for (int i=j; i<6;i++)
-								{
-									double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
-														 +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
-									d2F_d2Sigma[6*j+i] = tmp;
-									if (i!=j)
-									{
-										d2F_d2Sigma[6*i+j] = tmp;
-									}
-								}
-							}
-						}
-					}
-					return F;
-				}
-				if (principal[1]>0)
-				{
+                        if (rd2F_d2Sigma!=0)
+                        {
+                            for (int j=0; j<6;j++)
+                            {
+                                for (int i=j; i<6;i++)
+                                {
+                                    double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
+                                                         +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
+                                    d2F_d2Sigma[6*j+i] = tmp;
+                                    if (i!=j)
+                                    {
+                                        d2F_d2Sigma[6*i+j] = tmp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return F;
+                }
+                if (principal[1]>0)
+                {
 
-					F = principal[1]-rFct;
-					if (rdF_dSigma!=0)
-					{
-						sin_beta_add = sin(beta+M_PI/3.);
-						factor4 = -2.*sin_beta_add;
-						factor1 = P*factor4;
-						factor2 = 2.*cos_beta_add;
-						factor3 = -1./3.;
-						factor5 = -P*factor2;
-						dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-						dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-						dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-						dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-						dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-						dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+                    F = principal[1]-rFct;
+                    if (rdF_dSigma!=0)
+                    {
+                        sin_beta_add = sin(beta+M_PI/3.);
+                        factor4 = -2.*sin_beta_add;
+                        factor1 = P*factor4;
+                        factor2 = 2.*cos_beta_add;
+                        factor3 = -1./3.;
+                        factor5 = -P*factor2;
+                        dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+                        dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+                        dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+                        dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+                        dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+                        dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-						if (rd2F_d2Sigma!=0)
-						{
-							for (int j=0; j<6;j++)
-							{
-								for (int i=j; i<6;i++)
-								{
-									double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
-														 +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
-									d2F_d2Sigma[6*j+i] = tmp;
-									if (i!=j)
-									{
-										d2F_d2Sigma[6*i+j] = tmp;
-									}
-								}
-							}
-						}
-					}
-					return F;
-				}
-				if (principal[2]>0)
-				{
-					F = principal[2]-rFct;
-					if (rdF_dSigma!=0)
-					{
-						sin_beta_sub = sin(beta-M_PI/3.);
-						factor4 = -2.*sin_beta_sub;
-						factor1 = P*factor4;
-						factor2 = 2.*cos_beta_sub;
-						factor3 = -1./3.;
-						factor5 = -P*factor2;
-						dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-						dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-						dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-						dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-						dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-						dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+                        if (rd2F_d2Sigma!=0)
+                        {
+                            for (int j=0; j<6;j++)
+                            {
+                                for (int i=j; i<6;i++)
+                                {
+                                    double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
+                                                         +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
+                                    d2F_d2Sigma[6*j+i] = tmp;
+                                    if (i!=j)
+                                    {
+                                        d2F_d2Sigma[6*i+j] = tmp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return F;
+                }
+                if (principal[2]>0)
+                {
+                    F = principal[2]-rFct;
+                    if (rdF_dSigma!=0)
+                    {
+                        sin_beta_sub = sin(beta-M_PI/3.);
+                        factor4 = -2.*sin_beta_sub;
+                        factor1 = P*factor4;
+                        factor2 = 2.*cos_beta_sub;
+                        factor3 = -1./3.;
+                        factor5 = -P*factor2;
+                        dF_dsigma[0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+                        dF_dsigma[1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+                        dF_dsigma[2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+                        dF_dsigma[3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+                        dF_dsigma[4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+                        dF_dsigma[5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-						if (rd2F_d2Sigma!=0)
-						{
-							for (int j=0; j<6;j++)
-							{
-								for (int i=j; i<6;i++)
-								{
-									double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
-												  +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
-									d2F_d2Sigma[6*j+i] = tmp;
-									if (i!=j)
-									{
-										d2F_d2Sigma[6*i+j] = tmp;
-									}
-								}
-							}
-						}
-					}
-					return F;
-				}
-			}// D<=-tolerance_D
-			else
-			{
-				// two identical solutions with principal[1] and principal[2], since only one is positive, the solution is principal[0]
-				F = principal[0]-rFct;
-				if (rdF_dSigma!=0)
-				{
-					double df_dq,
-					df_da,
-					df_dP,
-					df_dq2,
-					df_dP2,
-					df_dqdP,
+                        if (rd2F_d2Sigma!=0)
+                        {
+                            for (int j=0; j<6;j++)
+                            {
+                                for (int i=j; i<6;i++)
+                                {
+                                    double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
+                                                  +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
+                                    d2F_d2Sigma[6*j+i] = tmp;
+                                    if (i!=j)
+                                    {
+                                        d2F_d2Sigma[6*i+j] = tmp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return F;
+                }
+            }// D<=-tolerance_D
+            else
+            {
+                // two identical solutions with principal[1] and principal[2], since only one is positive, the solution is principal[0]
+                F = principal[0]-rFct;
+                if (rdF_dSigma!=0)
+                {
+                    double df_dq,
+                    df_da,
+                    df_dP,
+                    df_dq2,
+                    df_dP2,
+                    df_dqdP,
 
 
-					P2 = P*P;
-					P3 = P2*P;
+                    P2 = P*P;
+                    P3 = P2*P;
 
-					df_dq  = -2./(9.*P2);
-					df_dP  = -4./3.;
-					df_da  = -1./3.;
+                    df_dq  = -2./(9.*P2);
+                    df_dP  = -4./3.;
+                    df_da  = -1./3.;
 
-					df_dq2  = 16./(243*P2*P3);
-					df_dqdP = 20./(81*P3);;
-					df_dP2  = -20./(27.*P);
+                    df_dq2  = 16./(243*P2*P3);
+                    df_dqdP = 20./(81*P3);;
+                    df_dP2  = -20./(27.*P);
 
-					dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
-					dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
-					dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
-					dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
-					dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
-					dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
+                    dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
+                    dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
+                    dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
+                    dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
+                    dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
+                    dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
 
-					if (rd2F_d2Sigma!=0)
-					{
-						for (int j=0; j<6;j++)
-						{
-							for (int i=j; i<6;i++)
-							{
-								double tmp = (df_dq2*dq_ds[j]+df_dqdP*dP_ds[j])*dq_ds[i]+df_dq*dq_ds2[6*j+i]
-													 +(df_dqdP*dq_ds[j]+df_dP2*dP_ds[j])*dP_ds[i]+df_dP*dP_ds2[6*j+i];
-								d2F_d2Sigma[6*j+i] = tmp;
-								if (i!=j)
-								{
-									d2F_d2Sigma[6*i+j] = tmp;
-								}
-							}
-						}
-					}
-				}
-				return F;
-			}//else D<=-tolerance_D
-		}// num_pos==1
-		else
-		{
-			assert(num_pos==2);
-			if (D<=-tolerance_D)
-			{
-				double dprinc_dsigma[3][6],d2princ_d2sigma[3][36];
-				F = 0;
-				if (principal[0]>0)
-				{
-					F += principal[0]*principal[0];
-					if (rdF_dSigma!=0)
-					{
-						// calculate derivatives
-						sin_beta = sin(beta);
-						factor4 = 2.*sin_beta;
-						factor1 = P*factor4;
-						factor2 = -2.*cos_beta;
-						factor3 = -1./3.;
-						factor5 = -P*factor2;
-						dprinc_dsigma[0][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-						dprinc_dsigma[0][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-						dprinc_dsigma[0][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-						dprinc_dsigma[0][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-						dprinc_dsigma[0][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-						dprinc_dsigma[0][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+                    if (rd2F_d2Sigma!=0)
+                    {
+                        for (int j=0; j<6;j++)
+                        {
+                            for (int i=j; i<6;i++)
+                            {
+                                double tmp = (df_dq2*dq_ds[j]+df_dqdP*dP_ds[j])*dq_ds[i]+df_dq*dq_ds2[6*j+i]
+                                                     +(df_dqdP*dq_ds[j]+df_dP2*dP_ds[j])*dP_ds[i]+df_dP*dP_ds2[6*j+i];
+                                d2F_d2Sigma[6*j+i] = tmp;
+                                if (i!=j)
+                                {
+                                    d2F_d2Sigma[6*i+j] = tmp;
+                                }
+                            }
+                        }
+                    }
+                }
+                return F;
+            }//else D<=-tolerance_D
+        }// num_pos==1
+        else
+        {
+            assert(num_pos==2);
+            if (D<=-tolerance_D)
+            {
+                double dprinc_dsigma[3][6],d2princ_d2sigma[3][36];
+                F = 0;
+                if (principal[0]>0)
+                {
+                    F += principal[0]*principal[0];
+                    if (rdF_dSigma!=0)
+                    {
+                        // calculate derivatives
+                        sin_beta = sin(beta);
+                        factor4 = 2.*sin_beta;
+                        factor1 = P*factor4;
+                        factor2 = -2.*cos_beta;
+                        factor3 = -1./3.;
+                        factor5 = -P*factor2;
+                        dprinc_dsigma[0][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+                        dprinc_dsigma[0][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+                        dprinc_dsigma[0][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+                        dprinc_dsigma[0][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+                        dprinc_dsigma[0][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+                        dprinc_dsigma[0][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-						if (rd2F_d2Sigma!=0)
-						{
-							for (int j=0; j<6;j++)
-							{
-								for (int i=j; i<6;i++)
-								{
-									double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
-																+factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
-									d2princ_d2sigma[0][6*j+i] = tmp;
-									if (i!=j)
-									{
-										d2princ_d2sigma[0][6*i+j] = tmp;
-									}
-								}
-							}
-						}
-					}
-				}
-				if (principal[1]>0)
-				{
-					F += principal[1]*principal[1];
-					if (rdF_dSigma!=0)
-					{
-						sin_beta_add = sin(beta+M_PI/3.);
-						factor4 = -2.*sin_beta_add;
-						factor1 = P*factor4;
-						factor2 = 2.*cos_beta_add;
-						factor3 = -1./3.;
-						factor5 = -P*factor2;
-						dprinc_dsigma[1][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-						dprinc_dsigma[1][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-						dprinc_dsigma[1][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-						dprinc_dsigma[1][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-						dprinc_dsigma[1][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-						dprinc_dsigma[1][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+                        if (rd2F_d2Sigma!=0)
+                        {
+                            for (int j=0; j<6;j++)
+                            {
+                                for (int i=j; i<6;i++)
+                                {
+                                    double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
+                                                                +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
+                                    d2princ_d2sigma[0][6*j+i] = tmp;
+                                    if (i!=j)
+                                    {
+                                        d2princ_d2sigma[0][6*i+j] = tmp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (principal[1]>0)
+                {
+                    F += principal[1]*principal[1];
+                    if (rdF_dSigma!=0)
+                    {
+                        sin_beta_add = sin(beta+M_PI/3.);
+                        factor4 = -2.*sin_beta_add;
+                        factor1 = P*factor4;
+                        factor2 = 2.*cos_beta_add;
+                        factor3 = -1./3.;
+                        factor5 = -P*factor2;
+                        dprinc_dsigma[1][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+                        dprinc_dsigma[1][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+                        dprinc_dsigma[1][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+                        dprinc_dsigma[1][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+                        dprinc_dsigma[1][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+                        dprinc_dsigma[1][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-						if (rd2F_d2Sigma!=0)
-						{
-							for (int j=0; j<6;j++)
-							{
-								for (int i=j; i<6;i++)
-								{
-									double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
-																+factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
-									d2princ_d2sigma[1][6*j+i] = tmp;
-									if (i!=j)
-									{
-										d2princ_d2sigma[1][6*i+j] = tmp;
-									}
-								}
-							}
-						}
-					}
-				}
-				if (principal[2]>0)
-				{
-					F += principal[2]*principal[2];
-					if (rdF_dSigma!=0)
-					{
-						sin_beta_sub = sin(beta-M_PI/3.);
-						factor4 = -2.*sin_beta_sub;
-						factor1 = P*factor4;
-						factor2 = 2.*cos_beta_sub;
-						factor3 = -1./3.;
-						factor5 = -P*factor2;
-						dprinc_dsigma[2][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
-						dprinc_dsigma[2][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
-						dprinc_dsigma[2][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
-						dprinc_dsigma[2][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
-						dprinc_dsigma[2][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
-						dprinc_dsigma[2][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
+                        if (rd2F_d2Sigma!=0)
+                        {
+                            for (int j=0; j<6;j++)
+                            {
+                                for (int i=j; i<6;i++)
+                                {
+                                    double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
+                                                                +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
+                                    d2princ_d2sigma[1][6*j+i] = tmp;
+                                    if (i!=j)
+                                    {
+                                        d2princ_d2sigma[1][6*i+j] = tmp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (principal[2]>0)
+                {
+                    F += principal[2]*principal[2];
+                    if (rdF_dSigma!=0)
+                    {
+                        sin_beta_sub = sin(beta-M_PI/3.);
+                        factor4 = -2.*sin_beta_sub;
+                        factor1 = P*factor4;
+                        factor2 = 2.*cos_beta_sub;
+                        factor3 = -1./3.;
+                        factor5 = -P*factor2;
+                        dprinc_dsigma[2][0] = factor1*dbeta_ds[0]+factor2*dP_ds[0]+factor3*da_ds[0];
+                        dprinc_dsigma[2][1] = factor1*dbeta_ds[1]+factor2*dP_ds[1]+factor3*da_ds[1];
+                        dprinc_dsigma[2][2] = factor1*dbeta_ds[2]+factor2*dP_ds[2]+factor3*da_ds[2];
+                        dprinc_dsigma[2][3] = factor1*dbeta_ds[3]+factor2*dP_ds[3]+factor3*da_ds[3];
+                        dprinc_dsigma[2][4] = factor1*dbeta_ds[4]+factor2*dP_ds[4]+factor3*da_ds[4];
+                        dprinc_dsigma[2][5] = factor1*dbeta_ds[5]+factor2*dP_ds[5]+factor3*da_ds[5];
 
-						if (rd2F_d2Sigma!=0)
-						{
-							for (int j=0; j<6;j++)
-							{
-								for (int i=j; i<6;i++)
-								{
-									double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
-																+factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
-									d2princ_d2sigma[2][6*j+i] = tmp;
-									if (i!=j)
-									{
-										d2princ_d2sigma[2][6*i+j] = tmp;
-									}
-								}
-							}
-						}
-					}
-				}
-				int s1,s2;
-				double f;
-				// calculate yield function
-				f = sqrt(F);
-				F = f-rFct;
-				if (rdF_dSigma!=0)
-				{
-					if (principal[0]>0)
-					{
-						s1 = 0;
-						if (principal[0]>0)
-						{
-							s2 = 1;
-						}
-						else
-						{
-							s2 = 2;
-						}
-					}
-					else
-					{
-						s1 = 1;
-						s2 = 2;
-					}
+                        if (rd2F_d2Sigma!=0)
+                        {
+                            for (int j=0; j<6;j++)
+                            {
+                                for (int i=j; i<6;i++)
+                                {
+                                    double tmp = (factor5*dbeta_ds[j]+factor4*dP_ds[j]) * dbeta_ds[i] + factor1*dbeta_ds2[6*j+i]
+                                                                +factor4*dbeta_ds[j]*dP_ds[i] + factor2*dP_ds2[6*j+i];
+                                    d2princ_d2sigma[2][6*j+i] = tmp;
+                                    if (i!=j)
+                                    {
+                                        d2princ_d2sigma[2][6*i+j] = tmp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                int s1,s2;
+                double f;
+                // calculate yield function
+                f = sqrt(F);
+                F = f-rFct;
+                if (rdF_dSigma!=0)
+                {
+                    if (principal[0]>0)
+                    {
+                        s1 = 0;
+                        if (principal[0]>0)
+                        {
+                            s2 = 1;
+                        }
+                        else
+                        {
+                            s2 = 2;
+                        }
+                    }
+                    else
+                    {
+                        s1 = 1;
+                        s2 = 2;
+                    }
 
-					// calculate gradient and Hessian
-					factor1 = 1./f;
-					dF_dsigma[0] = factor1*(dprinc_dsigma[s1][0]*principal[s1] + dprinc_dsigma[s2][0]*principal[s2]);
-					dF_dsigma[1] = factor1*(dprinc_dsigma[s1][1]*principal[s1] + dprinc_dsigma[s2][1]*principal[s2]);
-					dF_dsigma[2] = factor1*(dprinc_dsigma[s1][2]*principal[s1] + dprinc_dsigma[s2][2]*principal[s2]);
-					dF_dsigma[3] = factor1*(dprinc_dsigma[s1][3]*principal[s1] + dprinc_dsigma[s2][3]*principal[s2]);
-					dF_dsigma[4] = factor1*(dprinc_dsigma[s1][4]*principal[s1] + dprinc_dsigma[s2][4]*principal[s2]);
-					dF_dsigma[5] = factor1*(dprinc_dsigma[s1][5]*principal[s1] + dprinc_dsigma[s2][5]*principal[s2]);
+                    // calculate gradient and Hessian
+                    factor1 = 1./f;
+                    dF_dsigma[0] = factor1*(dprinc_dsigma[s1][0]*principal[s1] + dprinc_dsigma[s2][0]*principal[s2]);
+                    dF_dsigma[1] = factor1*(dprinc_dsigma[s1][1]*principal[s1] + dprinc_dsigma[s2][1]*principal[s2]);
+                    dF_dsigma[2] = factor1*(dprinc_dsigma[s1][2]*principal[s1] + dprinc_dsigma[s2][2]*principal[s2]);
+                    dF_dsigma[3] = factor1*(dprinc_dsigma[s1][3]*principal[s1] + dprinc_dsigma[s2][3]*principal[s2]);
+                    dF_dsigma[4] = factor1*(dprinc_dsigma[s1][4]*principal[s1] + dprinc_dsigma[s2][4]*principal[s2]);
+                    dF_dsigma[5] = factor1*(dprinc_dsigma[s1][5]*principal[s1] + dprinc_dsigma[s2][5]*principal[s2]);
 
-					if (rd2F_d2Sigma!=0)
-					{
-						factor2 = factor1*factor1*factor1;
-						factor3 = (f*f);
+                    if (rd2F_d2Sigma!=0)
+                    {
+                        factor2 = factor1*factor1*factor1;
+                        factor3 = (f*f);
 
-						factor1 = principal[s1]*principal[s1];
-						factor4 = principal[s2]*principal[s2];
-						factor5 = principal[s1]*principal[s2];
-						for (int j=0; j<6;j++)
-						{
-							for (int i=j; i<6;i++)
-							{
-								double tmp = factor2*(
-														 d2princ_d2sigma[s1][6*j+i]*factor3*principal[s1]
-														 +d2princ_d2sigma[s2][6*j+i]*factor3*principal[s2]
-														 +dprinc_dsigma[s1][i]*(factor4*dprinc_dsigma[s1][j]-factor5*dprinc_dsigma[s2][j])
-														 +dprinc_dsigma[s2][i]*(factor1*dprinc_dsigma[s2][j]-factor5*dprinc_dsigma[s1][j])
-													 );
-								d2F_d2Sigma[6*j+i] = tmp;
-								if (i!=j)
-								{
-									d2F_d2Sigma[6*i+j] = tmp;
-								}
-							}
-						}
-					}
-				}
-				return F;
+                        factor1 = principal[s1]*principal[s1];
+                        factor4 = principal[s2]*principal[s2];
+                        factor5 = principal[s1]*principal[s2];
+                        for (int j=0; j<6;j++)
+                        {
+                            for (int i=j; i<6;i++)
+                            {
+                                double tmp = factor2*(
+                                                         d2princ_d2sigma[s1][6*j+i]*factor3*principal[s1]
+                                                         +d2princ_d2sigma[s2][6*j+i]*factor3*principal[s2]
+                                                         +dprinc_dsigma[s1][i]*(factor4*dprinc_dsigma[s1][j]-factor5*dprinc_dsigma[s2][j])
+                                                         +dprinc_dsigma[s2][i]*(factor1*dprinc_dsigma[s2][j]-factor5*dprinc_dsigma[s1][j])
+                                                     );
+                                d2F_d2Sigma[6*j+i] = tmp;
+                                if (i!=j)
+                                {
+                                    d2F_d2Sigma[6*i+j] = tmp;
+                                }
+                            }
+                        }
+                    }
+                }
+                return F;
 
-			}// D<=-tolerance_D
-			else
-			{
-				// two identical solutions with principal[1] and principal[2]
-				//F = sqrt(2.)*(principal[1])-rFct; this is not 100% correct, since they are only equal up to a certain accuracy
-				F = sqrt(principal[1]*principal[1]+principal[2]*principal[2])-rFct;
+            }// D<=-tolerance_D
+            else
+            {
+                // two identical solutions with principal[1] and principal[2]
+                //F = sqrt(2.)*(principal[1])-rFct; this is not 100% correct, since they are only equal up to a certain accuracy
+                F = sqrt(principal[1]*principal[1]+principal[2]*principal[2])-rFct;
 
-				if (rdF_dSigma!=0)
-				{
-					double df_dq,
-					df_da,
-					df_dP,
-					df_dq2,
-					df_dP2,
-					df_dqdP,
-					df_dqda,
-					df_dPda,
-					mul_3P_sub_a,
-					sign_3P_sub_a,
-					mul_3P_sub_a_pow_2,
-					mul_3P_sub_a_pow_3;
+                if (rdF_dSigma!=0)
+                {
+                    double df_dq,
+                    df_da,
+                    df_dP,
+                    df_dq2,
+                    df_dP2,
+                    df_dqdP,
+                    df_dqda,
+                    df_dPda,
+                    mul_3P_sub_a,
+                    sign_3P_sub_a,
+                    mul_3P_sub_a_pow_2,
+                    mul_3P_sub_a_pow_3;
 
-					mul_3P_sub_a = 3.*P-a;
-					mul_3P_sub_a_pow_2 = mul_3P_sub_a*mul_3P_sub_a;
-					mul_3P_sub_a_pow_3 = mul_3P_sub_a_pow_2*mul_3P_sub_a;
-					sign_3P_sub_a = mul_3P_sub_a<0 ? -1 : 1;
+                    mul_3P_sub_a = 3.*P-a;
+                    mul_3P_sub_a_pow_2 = mul_3P_sub_a*mul_3P_sub_a;
+                    mul_3P_sub_a_pow_3 = mul_3P_sub_a_pow_2*mul_3P_sub_a;
+                    sign_3P_sub_a = mul_3P_sub_a<0 ? -1 : 1;
 
-					P2 = P*P;
-					P3 = P2*P;
-					P6 = P3*P3;
+                    P2 = P*P;
+                    P3 = P2*P;
+                    P6 = P3*P3;
 
-					df_dq  = -sqrt(2)*(6.*P+a)*sign_3P_sub_a/(9.*P2*mul_3P_sub_a);
-					df_dP  = sqrt(2)*(15.*P-2.*a)*sign_3P_sub_a/(3.*mul_3P_sub_a);
-					df_da  = -sqrt(2)/(3.)*sign_3P_sub_a;
+                    df_dq  = -sqrt(2)*(6.*P+a)*sign_3P_sub_a/(9.*P2*mul_3P_sub_a);
+                    df_dP  = sqrt(2)*(15.*P-2.*a)*sign_3P_sub_a/(3.*mul_3P_sub_a);
+                    df_da  = -sqrt(2)/(3.)*sign_3P_sub_a;
 
-					df_dq2  = -sqrt(2)*(54.*P3+216.*P2*a+27.*a2*P-8.*a3)*sign_3P_sub_a/(243.*P2*P3*mul_3P_sub_a_pow_3);
-					df_dqdP = sqrt(2)*(1026.*P3-27.*P2*a-54.*a2*P+10.*a3)*sign_3P_sub_a/(81.*P3*mul_3P_sub_a_pow_3);
-					df_dqda = -sqrt(2)*sign_3P_sub_a/(mul_3P_sub_a_pow_2*P);
-					df_dP2  = -sqrt(2)*(1026.*P3+216.*P2*a-135.*a2*P+10.*a3)*sign_3P_sub_a/(27.*P*mul_3P_sub_a_pow_3);
-					df_dPda = sqrt(2)*(3.*P)*sign_3P_sub_a/(mul_3P_sub_a_pow_2);
+                    df_dq2  = -sqrt(2)*(54.*P3+216.*P2*a+27.*a2*P-8.*a3)*sign_3P_sub_a/(243.*P2*P3*mul_3P_sub_a_pow_3);
+                    df_dqdP = sqrt(2)*(1026.*P3-27.*P2*a-54.*a2*P+10.*a3)*sign_3P_sub_a/(81.*P3*mul_3P_sub_a_pow_3);
+                    df_dqda = -sqrt(2)*sign_3P_sub_a/(mul_3P_sub_a_pow_2*P);
+                    df_dP2  = -sqrt(2)*(1026.*P3+216.*P2*a-135.*a2*P+10.*a3)*sign_3P_sub_a/(27.*P*mul_3P_sub_a_pow_3);
+                    df_dPda = sqrt(2)*(3.*P)*sign_3P_sub_a/(mul_3P_sub_a_pow_2);
 
-					dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
-					dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
-					dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
-					dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
-					dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
-					dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
+                    dF_dsigma[0] = df_dq*dq_ds[0]+df_dP*dP_ds[0]+df_da*da_ds[0];
+                    dF_dsigma[1] = df_dq*dq_ds[1]+df_dP*dP_ds[1]+df_da*da_ds[1];
+                    dF_dsigma[2] = df_dq*dq_ds[2]+df_dP*dP_ds[2]+df_da*da_ds[2];
+                    dF_dsigma[3] = df_dq*dq_ds[3]+df_dP*dP_ds[3]+df_da*da_ds[3];
+                    dF_dsigma[4] = df_dq*dq_ds[4]+df_dP*dP_ds[4]+df_da*da_ds[4];
+                    dF_dsigma[5] = df_dq*dq_ds[5]+df_dP*dP_ds[5]+df_da*da_ds[5];
 
-					if (rd2F_d2Sigma!=0)
-					{
-						for (int j=0; j<6;j++)
-						{
-							for (int i=j; i<6;i++)
-							{
-								double tmp = (df_dq2*dq_ds[j]+df_dqdP*dP_ds[j]+df_dqda*da_ds[j])*dq_ds[i]+df_dq*dq_ds2[6*j+i]
-													 +(df_dqdP*dq_ds[j]+df_dP2*dP_ds[j]+df_dPda*da_ds[j])*dP_ds[i]+df_dP*dP_ds2[6*j+i]
-													 +(df_dqda*dq_ds[j]+df_dPda*dP_ds[j])*da_ds[i];
-								d2F_d2Sigma[6*j+i] = tmp;
-								if (i!=j)
-								{
-									d2F_d2Sigma[6*i+j] = tmp;
+                    if (rd2F_d2Sigma!=0)
+                    {
+                        for (int j=0; j<6;j++)
+                        {
+                            for (int i=j; i<6;i++)
+                            {
+                                double tmp = (df_dq2*dq_ds[j]+df_dqdP*dP_ds[j]+df_dqda*da_ds[j])*dq_ds[i]+df_dq*dq_ds2[6*j+i]
+                                                     +(df_dqdP*dq_ds[j]+df_dP2*dP_ds[j]+df_dPda*da_ds[j])*dP_ds[i]+df_dP*dP_ds2[6*j+i]
+                                                     +(df_dqda*dq_ds[j]+df_dPda*dP_ds[j])*da_ds[i];
+                                d2F_d2Sigma[6*j+i] = tmp;
+                                if (i!=j)
+                                {
+                                    d2F_d2Sigma[6*i+j] = tmp;
 
-								}
-							}
-						}
-					}
-				}
-				return F;
-			}
-		}// num_pos==2
-		break; //num_pos==1,2
-	case 3:
-	{
-		double f = sqrt(principal[0]*principal[0]+principal[1]*principal[1]+principal[2]*principal[2]);
-		F = f-rFct;
-		if (rdF_dSigma!=0)
-		{
-			// a
-			da_ds[0] = -1.;
-			da_ds[1] = -1.;
-			da_ds[2] = -1.;
-			da_ds[3] =  0.;
-			da_ds[4] =  0.;
-			da_ds[5] =  0.;
+                                }
+                            }
+                        }
+                    }
+                }
+                return F;
+            }
+        }// num_pos==2
+        break; //num_pos==1,2
+    case 3:
+    {
+        double f = sqrt(principal[0]*principal[0]+principal[1]*principal[1]+principal[2]*principal[2]);
+        F = f-rFct;
+        if (rdF_dSigma!=0)
+        {
+            // a
+            da_ds[0] = -1.;
+            da_ds[1] = -1.;
+            da_ds[2] = -1.;
+            da_ds[3] =  0.;
+            da_ds[4] =  0.;
+            da_ds[5] =  0.;
 
-			// b
-			db_ds[0] = rStress(1)+rStress(2);
-			db_ds[1] = rStress(0)+rStress(2);
-			db_ds[2] = rStress(0)+rStress(1);
-			db_ds[3] = -2.*rStress(3);
-			db_ds[4] = -2.*rStress(4);
-			db_ds[5] = -2.*rStress(5);
+            // b
+            db_ds[0] = rStress(1)+rStress(2);
+            db_ds[1] = rStress(0)+rStress(2);
+            db_ds[2] = rStress(0)+rStress(1);
+            db_ds[3] = -2.*rStress(3);
+            db_ds[4] = -2.*rStress(4);
+            db_ds[5] = -2.*rStress(5);
 
-			db_ds2[1]  = 1.;
-			db_ds2[2]  = 1.;
-			db_ds2[8]  = 1.;
-			db_ds2[21]  = -2.;
-			db_ds2[28] = -2.;
-			db_ds2[35] = -2.;
+            db_ds2[1]  = 1.;
+            db_ds2[2]  = 1.;
+            db_ds2[8]  = 1.;
+            db_ds2[21]  = -2.;
+            db_ds2[28] = -2.;
+            db_ds2[35] = -2.;
 
-			double df_da,df_db,df_da2,df_db2,df_dadb;
+            double df_da,df_db,df_da2,df_db2,df_dadb;
 
-			factor1 = 1./f;
-			factor3 = factor1/(f*f);
+            factor1 = 1./f;
+            factor3 = factor1/(f*f);
 
-			df_da = a*factor1;
-			df_db = -factor1;
+            df_da = a*factor1;
+            df_db = -factor1;
 
-			df_da2 = -2.*b*factor3;
-			df_dadb = a*factor3;
-			df_db2 = -factor3;
+            df_da2 = -2.*b*factor3;
+            df_dadb = a*factor3;
+            df_db2 = -factor3;
 
-			dF_dsigma[0] = df_da*da_ds[0]+df_db*db_ds[0];
-			dF_dsigma[1] = df_da*da_ds[1]+df_db*db_ds[1];
-			dF_dsigma[2] = df_da*da_ds[2]+df_db*db_ds[2];
-			dF_dsigma[3] = df_da*da_ds[3]+df_db*db_ds[3];
-			dF_dsigma[4] = df_da*da_ds[4]+df_db*db_ds[4];
-			dF_dsigma[5] = df_da*da_ds[5]+df_db*db_ds[5];
+            dF_dsigma[0] = df_da*da_ds[0]+df_db*db_ds[0];
+            dF_dsigma[1] = df_da*da_ds[1]+df_db*db_ds[1];
+            dF_dsigma[2] = df_da*da_ds[2]+df_db*db_ds[2];
+            dF_dsigma[3] = df_da*da_ds[3]+df_db*db_ds[3];
+            dF_dsigma[4] = df_da*da_ds[4]+df_db*db_ds[4];
+            dF_dsigma[5] = df_da*da_ds[5]+df_db*db_ds[5];
 
-			if (rd2F_d2Sigma!=0)
-			{
-				for (int j=0; j<6;j++)
-				{
-					for (int i=j; i<6;i++)
-					{
-						double tmp = (df_da2*da_ds[j]+df_dadb*db_ds[j])*da_ds[i]
-											 +(df_dadb*da_ds[j]+df_db2*db_ds[j])*db_ds[i]+df_db*db_ds2[6*j+i];
-						d2F_d2Sigma[6*j+i] = tmp;
-						if (i!=j)
-						{
-							d2F_d2Sigma[6*i+j] = tmp;
-						}
-					}
-				}
-			}
-		}
-		return F;
-	}
-	break;
-	default:
-		throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error.");
-	}
-	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error (end of routine).");
+            if (rd2F_d2Sigma!=0)
+            {
+                for (int j=0; j<6;j++)
+                {
+                    for (int i=j; i<6;i++)
+                    {
+                        double tmp = (df_da2*da_ds[j]+df_dadb*db_ds[j])*da_ds[i]
+                                             +(df_dadb*da_ds[j]+df_db2*db_ds[j])*db_ds[i]+df_db*db_ds2[6*j+i];
+                        d2F_d2Sigma[6*j+i] = tmp;
+                        if (i!=j)
+                        {
+                            d2F_d2Sigma[6*i+j] = tmp;
+                        }
+                    }
+                }
+            }
+        }
+        return F;
+    }
+    break;
+    default:
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error.");
+    }
+    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRounded] programming error (end of routine).");
 }
 
 //! @brief calculates the Drucker Prager yield surface and the derivatives with respect to the stress
@@ -4396,7 +5031,7 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRankine3DRou
 //! @param rErrorDerivatives true, if derivative can't be calculated (on the hydrostatic axis)
 //! @return yield function
 double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrager3D(Eigen::Matrix<double,6,1>& rStress, double rBeta, double rHP,
-		Eigen::Matrix<double,6,1>* rdF_dSigma,Eigen::Matrix<double,6,6>* rd2F_d2Sigma, bool &rErrorDerivatives
+        Eigen::Matrix<double,6,1>* rdF_dSigma,Eigen::Matrix<double,6,6>* rd2F_d2Sigma, bool &rErrorDerivatives
         )const
 {
     double stress3_pow2 = rStress(3)*rStress(3);
@@ -4404,13 +5039,13 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrage
     double stress5_pow2 = rStress(5)*rStress(5);
 
     // *******************************************************************
-    // 	first invariante							 					 *
+    //     first invariante                                                  *
     // *******************************************************************
     double invariante_1 = rStress(0)+rStress(1)+rStress(2);
 
 
     // *******************************************************************
-    // 	second invariante							 					 *
+    //     second invariante                                                  *
     // *******************************************************************
     double invariante_2 = ((rStress(0)-rStress(1))*(rStress(0)-rStress(1))+
                     (rStress(1)-rStress(2))*(rStress(1)-rStress(2))+
@@ -4420,13 +5055,13 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrage
                    rStress(5)*rStress(5);
 
     // *******************************************************************
-    // 	F_DEV:	term of stress-deviator with/without kinematic hard.     *
+    //     F_DEV:    term of stress-deviator with/without kinematic hard.     *
     // *******************************************************************
     double F_DEV = sqrt( invariante_2 );
 
 
     // *******************************************************************
-    // 	yield value     *
+    //     yield value     *
     // *******************************************************************
     double F_DP  = invariante_1 * rBeta/3. + F_DEV - rHP ;
 
@@ -4436,78 +5071,158 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrage
         {
             if (rdF_dSigma!=0)
             {
-            	double *dF_dsigma =  (*rdF_dSigma).data();
+                double *dF_dsigma =  (*rdF_dSigma).data();
 
-				// gradient
-				double factor = 1./(F_DEV*6.);
-				dF_dsigma[0] = factor * (2.*rStress(0)-rStress(1)-rStress(2))+rBeta/3.;
-				dF_dsigma[1] = factor * (2.*rStress(1)-rStress(0)-rStress(2))+rBeta/3.;
-				dF_dsigma[2] = factor * (2.*rStress(2)-rStress(0)-rStress(1))+rBeta/3.;
-				dF_dsigma[3] = factor * (6.*rStress(3)); /* vector notation from second order tensor */
-				dF_dsigma[4] = factor * (6.*rStress(4)); /* vector notation from second order tensor */
-				dF_dsigma[5] = factor * (6.*rStress(5)); /* vector notation from second order tensor */
+                // gradient
+                double factor = 1./(F_DEV*6.);
+                dF_dsigma[0] = factor * (2.*rStress(0)-rStress(1)-rStress(2))+rBeta/3.;
+                dF_dsigma[1] = factor * (2.*rStress(1)-rStress(0)-rStress(2))+rBeta/3.;
+                dF_dsigma[2] = factor * (2.*rStress(2)-rStress(0)-rStress(1))+rBeta/3.;
+                dF_dsigma[3] = factor * (6.*rStress(3)); /* vector notation from second order tensor */
+                dF_dsigma[4] = factor * (6.*rStress(4)); /* vector notation from second order tensor */
+                dF_dsigma[5] = factor * (6.*rStress(5)); /* vector notation from second order tensor */
             }
 
-			if (rd2F_d2Sigma!=0)
-			{
-				double *d2F_d2sigma =  (*rd2F_d2Sigma).data();
-				//hessian
-				double factor = 1./(invariante_2*F_DEV*12.);
-				double tmp_scalar = rStress(1)-rStress(2);
-				d2F_d2sigma[0] = factor * (tmp_scalar*tmp_scalar+4.*(stress3_pow2+stress4_pow2+stress5_pow2));
-				d2F_d2sigma[1] = factor * (rStress(2)*(rStress(0)+rStress(1)-rStress(2))-rStress(0)*rStress(1)-2.*(stress3_pow2+stress4_pow2+stress5_pow2));
-				d2F_d2sigma[2] = factor * (rStress(1)*(rStress(0)+rStress(2)-rStress(1))-rStress(0)*rStress(2)-2.*(stress3_pow2+stress4_pow2+stress5_pow2));
-				tmp_scalar = -2.*(2*rStress(0)-rStress(1)-rStress(2));
-				d2F_d2sigma[3] = factor * rStress(3)*tmp_scalar;
-				d2F_d2sigma[4] = factor * rStress(4)*tmp_scalar;
-				d2F_d2sigma[5] = factor * rStress(5)*tmp_scalar;
+            if (rd2F_d2Sigma!=0)
+            {
+                double *d2F_d2sigma =  (*rd2F_d2Sigma).data();
+                //hessian
+                double factor = 1./(invariante_2*F_DEV*12.);
+                double tmp_scalar = rStress(1)-rStress(2);
+                d2F_d2sigma[0] = factor * (tmp_scalar*tmp_scalar+4.*(stress3_pow2+stress4_pow2+stress5_pow2));
+                d2F_d2sigma[1] = factor * (rStress(2)*(rStress(0)+rStress(1)-rStress(2))-rStress(0)*rStress(1)-2.*(stress3_pow2+stress4_pow2+stress5_pow2));
+                d2F_d2sigma[2] = factor * (rStress(1)*(rStress(0)+rStress(2)-rStress(1))-rStress(0)*rStress(2)-2.*(stress3_pow2+stress4_pow2+stress5_pow2));
+                tmp_scalar = -2.*(2*rStress(0)-rStress(1)-rStress(2));
+                d2F_d2sigma[3] = factor * rStress(3)*tmp_scalar;
+                d2F_d2sigma[4] = factor * rStress(4)*tmp_scalar;
+                d2F_d2sigma[5] = factor * rStress(5)*tmp_scalar;
 
-				d2F_d2sigma[6] = d2F_d2sigma[1];
-				tmp_scalar = rStress(0)-rStress(2);
-				d2F_d2sigma[7] = factor * (tmp_scalar*tmp_scalar+4.*(stress3_pow2+stress4_pow2+stress5_pow2));
-				d2F_d2sigma[8] = factor * (rStress(0)*(rStress(1)+rStress(2)-rStress(0))-rStress(1)*rStress(2)-2.*(stress3_pow2+stress4_pow2+stress5_pow2));
-				tmp_scalar = 2.*(rStress(0)+rStress(2)-2*rStress(1));
-				d2F_d2sigma[9] = factor * rStress(3)*tmp_scalar;
-				d2F_d2sigma[10] = factor * rStress(4)*tmp_scalar;
-				d2F_d2sigma[11] = factor * rStress(5)*tmp_scalar;
+                d2F_d2sigma[6] = d2F_d2sigma[1];
+                tmp_scalar = rStress(0)-rStress(2);
+                d2F_d2sigma[7] = factor * (tmp_scalar*tmp_scalar+4.*(stress3_pow2+stress4_pow2+stress5_pow2));
+                d2F_d2sigma[8] = factor * (rStress(0)*(rStress(1)+rStress(2)-rStress(0))-rStress(1)*rStress(2)-2.*(stress3_pow2+stress4_pow2+stress5_pow2));
+                tmp_scalar = 2.*(rStress(0)+rStress(2)-2*rStress(1));
+                d2F_d2sigma[9] = factor * rStress(3)*tmp_scalar;
+                d2F_d2sigma[10] = factor * rStress(4)*tmp_scalar;
+                d2F_d2sigma[11] = factor * rStress(5)*tmp_scalar;
 
-				d2F_d2sigma[12] = d2F_d2sigma[2];
-				d2F_d2sigma[13] = d2F_d2sigma[8];
-				tmp_scalar = rStress(0)-rStress(1);
-				d2F_d2sigma[14] = factor * (tmp_scalar*tmp_scalar+4.*(stress3_pow2+stress4_pow2+stress5_pow2));
-				tmp_scalar = 2.*(rStress(0)+rStress(1)-2*rStress(2));
-				d2F_d2sigma[15] = factor * rStress(3)*tmp_scalar;
-				d2F_d2sigma[16] = factor * rStress(4)*tmp_scalar;
-				d2F_d2sigma[17] = factor * rStress(5)*tmp_scalar;
+                d2F_d2sigma[12] = d2F_d2sigma[2];
+                d2F_d2sigma[13] = d2F_d2sigma[8];
+                tmp_scalar = rStress(0)-rStress(1);
+                d2F_d2sigma[14] = factor * (tmp_scalar*tmp_scalar+4.*(stress3_pow2+stress4_pow2+stress5_pow2));
+                tmp_scalar = 2.*(rStress(0)+rStress(1)-2*rStress(2));
+                d2F_d2sigma[15] = factor * rStress(3)*tmp_scalar;
+                d2F_d2sigma[16] = factor * rStress(4)*tmp_scalar;
+                d2F_d2sigma[17] = factor * rStress(5)*tmp_scalar;
 
-				tmp_scalar = 4.*(rStress(0)*rStress(0) + rStress(1)*rStress(1) + rStress(2)*rStress(2)
-								 - rStress(0)*rStress(1) - rStress(0)*rStress(2) - rStress(1)*rStress(2));
-				d2F_d2sigma[18] = d2F_d2sigma[3];
-				d2F_d2sigma[19] = d2F_d2sigma[9];
-				d2F_d2sigma[20] = d2F_d2sigma[15];
-				d2F_d2sigma[21] = factor*(tmp_scalar+12.*(stress4_pow2+stress5_pow2));
-				d2F_d2sigma[22] = factor*(-12.*rStress(3)*rStress(4));
-				d2F_d2sigma[23] = factor*(-12.*rStress(3)*rStress(5));
+                tmp_scalar = 4.*(rStress(0)*rStress(0) + rStress(1)*rStress(1) + rStress(2)*rStress(2)
+                                 - rStress(0)*rStress(1) - rStress(0)*rStress(2) - rStress(1)*rStress(2));
+                d2F_d2sigma[18] = d2F_d2sigma[3];
+                d2F_d2sigma[19] = d2F_d2sigma[9];
+                d2F_d2sigma[20] = d2F_d2sigma[15];
+                d2F_d2sigma[21] = factor*(tmp_scalar+12.*(stress4_pow2+stress5_pow2));
+                d2F_d2sigma[22] = factor*(-12.*rStress(3)*rStress(4));
+                d2F_d2sigma[23] = factor*(-12.*rStress(3)*rStress(5));
 
-				d2F_d2sigma[24] = d2F_d2sigma[4];
-				d2F_d2sigma[25] = d2F_d2sigma[10];
-				d2F_d2sigma[26] = d2F_d2sigma[16];
-				d2F_d2sigma[27] = d2F_d2sigma[22];
-				d2F_d2sigma[28] = factor*(tmp_scalar+12.*(stress3_pow2+stress5_pow2));
-				d2F_d2sigma[29] = factor*(-12.*rStress(4)*rStress(5));
+                d2F_d2sigma[24] = d2F_d2sigma[4];
+                d2F_d2sigma[25] = d2F_d2sigma[10];
+                d2F_d2sigma[26] = d2F_d2sigma[16];
+                d2F_d2sigma[27] = d2F_d2sigma[22];
+                d2F_d2sigma[28] = factor*(tmp_scalar+12.*(stress3_pow2+stress5_pow2));
+                d2F_d2sigma[29] = factor*(-12.*rStress(4)*rStress(5));
 
-				d2F_d2sigma[30] = d2F_d2sigma[5];
-				d2F_d2sigma[31] = d2F_d2sigma[11];
-				d2F_d2sigma[32] = d2F_d2sigma[17];
-				d2F_d2sigma[33] = d2F_d2sigma[23];
-				d2F_d2sigma[34] = d2F_d2sigma[29];
-				d2F_d2sigma[35] = factor*(tmp_scalar+12.*(stress3_pow2+stress4_pow2));
+                d2F_d2sigma[30] = d2F_d2sigma[5];
+                d2F_d2sigma[31] = d2F_d2sigma[11];
+                d2F_d2sigma[32] = d2F_d2sigma[17];
+                d2F_d2sigma[33] = d2F_d2sigma[23];
+                d2F_d2sigma[34] = d2F_d2sigma[29];
+                d2F_d2sigma[35] = factor*(tmp_scalar+12.*(stress3_pow2+stress4_pow2));
             }
         }
         else
         {
             rErrorDerivatives = false;
         }
+    }
+    return F_DP;
+}
+
+
+//! @brief calculates the Drucker Prager yield surface and the derivatives with respect to the stress
+//! @param rStress current stress
+//! @param rBETA parameter of the Drucker Prager yield surface
+//! @param rHP parameter of the Drucker Prager yield surface
+//! @param rdF_dSigma return value (first derivative)
+//! @param rd2F_d2Sigma return value (second derivative)
+//! @param rErrorDerivatives true, if derivative can't be calculated (on the hydrostatic axis)
+//! @return yield function
+double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrager1D(Eigen::Matrix<double,1,1>& rStress, double rBeta, double rHP,
+        Eigen::Matrix<double,1,1>* rdF_dSigma1,Eigen::Matrix<double,5,1>* rdF_dSigma2,
+        Eigen::Matrix<double,1,1>* rd2F_d2Sigma1, Eigen::Matrix<double,5,1>* rd2F_dSigma2dSigma1,
+        bool &rErrorDerivatives
+        )const
+{
+    // *******************************************************************
+    //     first invariante                                                  *
+    // *******************************************************************
+    double invariante_1 = rStress(0);
+
+
+    // *******************************************************************
+    //     second invariante                                                  *
+    // *******************************************************************
+    double invariante_2 = (rStress(0)*rStress(0))/3.;
+
+    // *******************************************************************
+    //     F_DEV:    term of stress-deviator with/without kinematic hard.     *
+    // *******************************************************************
+    double F_DEV = sqrt( invariante_2 );
+
+
+    // *******************************************************************
+    //     yield value     *
+    // *******************************************************************
+    double F_DP  = invariante_1 * rBeta/3. + F_DEV - rHP ;
+
+	if (invariante_2>=1e-10)
+	{
+		if (rdF_dSigma1!=0)
+		{
+			double *dF_dsigma =  (*rdF_dSigma1).data();
+
+			// gradient
+			dF_dsigma[0] = (rStress(0)>0 ? 1 : -1)/sqrt(3.)+rBeta/3.;
+		}
+		if (rdF_dSigma2!=0)
+		{
+			double *dF_dsigma =  (*rdF_dSigma2).data();
+
+			dF_dsigma[0] = (rStress(0)>0 ? -0.5 : 0.5)/sqrt(3.)+rBeta/3.;
+			dF_dsigma[1] = dF_dsigma[0];
+			dF_dsigma[2] = 0.;
+			dF_dsigma[3] = 0.;
+			dF_dsigma[4] = 0.;
+		}
+
+		if (rd2F_d2Sigma1!=0)
+		{
+			(*rd2F_d2Sigma1)(0,0) = 0.;
+		}
+		if (rd2F_dSigma2dSigma1!=0)
+		{
+			double *d2F_d2sigma =  (*rd2F_dSigma2dSigma1).data();
+			//hessian
+			d2F_d2sigma[0] = 0.;
+			d2F_d2sigma[1] = 0.;
+
+			d2F_d2sigma[2] = 0.;
+			d2F_d2sigma[3] = 0.;
+			d2F_d2sigma[4] = 0.;
+		}
+	}
+	else
+	{
+		rErrorDerivatives = false;
     }
     return F_DP;
 }

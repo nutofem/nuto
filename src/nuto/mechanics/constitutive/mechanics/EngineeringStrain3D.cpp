@@ -47,6 +47,19 @@ const double* NuTo::EngineeringStrain3D::GetData() const
     return mEngineeringStrain;
 }
 
+//! @brief ... get Engineering Strain
+//! @return ... Engineering Strain (exx,eyy,ezz,gxy,gyz,gzx)
+//! @sa mDeformationGradient
+void NuTo::EngineeringStrain3D::SetData(const double rData[6])
+{
+	mEngineeringStrain[0] = rData[0];
+	mEngineeringStrain[1] = rData[1];
+	mEngineeringStrain[2] = rData[2];
+	mEngineeringStrain[3] = rData[3];
+	mEngineeringStrain[4] = rData[4];
+	mEngineeringStrain[5] = rData[5];
+}
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive

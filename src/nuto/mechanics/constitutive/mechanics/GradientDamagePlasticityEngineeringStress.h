@@ -180,12 +180,40 @@ public:
     //! @param rdEpsilonPdEpsilon   ... new derivative of current plastic strain with respect to the total strain
     NuTo::Error::eError ReturnMapping1D(
             const EngineeringStrain1D& rStrain,
+            double rTrialStrainEpsilonTotRadial,
             const double rPrevPlasticStrain[2],
             const EngineeringStrain1D& rPrevTotalStrain,
+            double rPrevTotalStrainRadial,
             Eigen::Matrix<double,1,1>& rStress,
             Eigen::Matrix<double,2,1>& rEpsilonP,
+            double rNewEpsilonTotRadial,
             double& rDeltaEqPlasticStrain,
-            Eigen::Matrix<double,1,1>& rdEpsilonPdEpsilon,
+            Eigen::Matrix<double,1,1>* rdSigmadEpsilon,
+            Eigen::Matrix<double,1,1>* rdEpsilonPdEpsilon,
+            NuTo::Logger& rLogger)const;
+
+    //! @brief ... performs the return mapping procedure for the plasticity model
+    //! @param rStrain              ... current total strain
+    //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
+    //! @param rPrevTotalStrain     ... previous total strain (history variable)
+    //! @param rPrevStress          ... previous stress
+    //! @param rStress              ... new stress
+    //! @param rPlasticStrain       ... new plastic strain after return mapping
+    //! @param rYieldConditionFlag  ... yield condition flag, true for active, false for inactive, 0 is Drucker-Prager, 1 is Rankine
+    //! @param rDeltaKappa          ... delta equivalent plastic strain for Drucker Prager (0) and Rankine yield surface(1)
+    //! @param rdSigmadEpsilon      ... new derivative of current stress with respect to the total strain
+    //! @param rdKappadEpsilon1     ... new derivative of equivalent plastic strain (Drucker-Prager 0 Rankine 1) with respect to the total strain
+    NuTo::Error::eError ReturnMapping1DNew(
+            const EngineeringStrain1D& rStrain,
+            const EngineeringStrain1D& rPrevPlasticStrain,
+            const EngineeringStrain1D& rPrevTotalStrain,
+            Eigen::Matrix<double,1,1>& rPrevStress,
+            Eigen::Matrix<double,1,1>& rStress,
+            Eigen::Matrix<double,1,1>& rPlasticStrain,
+            boost::array<bool,2> rYieldConditionFlag,
+            Eigen::Matrix<double,2,1>& rDeltaKappa,
+            Eigen::Matrix<double,1,1>* rdSigma1dEpsilon1,
+            Eigen::Matrix<double,2,1>* rdKappadEpsilon1,
             NuTo::Logger& rLogger)const;
 
     //! @brief ... performs the return mapping procedure for the plasticity model
@@ -222,22 +250,20 @@ public:
             Eigen::Matrix<double,6,1>& rStress,
             Eigen::Matrix<double,6,1>& rEpsilonP,
             double& rDeltaEqPlasticStrain,
-            Eigen::Matrix<double,6,6>& rdSigmadEpsilon,
-            Eigen::Matrix<double,6,6>& rdEpsilonPdEpsilon,
+            Eigen::Matrix<double,6,6>* rdSigmadEpsilon,
+            Eigen::Matrix<double,6,6>* rdEpsilonPdEpsilon,
             NuTo::Logger& rLogger)const;
 
-    //! @brief calculates the rounded rankine yield surface
+
+    //! @brief calculates the rankine yield surface and the derivatives with respect to the stress
     //! @param rStress current stress
     //! @param rFct tensile strength
-    //! @return yield condition
-    double YieldSurfaceRankine1DRounded(Eigen::Matrix<double,1,1>& rStress, double rFct)const;
-
-    //! @brief calculates the first and second derivative of the rounded Rankine yield surface with respect to the stress
-    //! @param dF_dsigma return value (first derivative)
-    //! @param d2F_d2sigma return value (second derivative)
-    //! @param stress vector
-    void YieldSurfaceRankine1DRoundedDerivatives(Eigen::Matrix<double,1,1>& rdF_dSigma,Eigen::Matrix<double,1,1>* rd2F_d2Sigma,
-    		Eigen::Matrix<double,1,1>& rStress)const;
+    //! @param rdF_dSigma return value (first derivative)
+    //! @param rd2F_d2Sigma return value (second derivative)
+    //! @return yield function
+    double YieldSurfaceRoundedRankine1D(Eigen::Matrix<double,1,1>& rStress, double rFct,
+            Eigen::Matrix<double,1,1>* rdF_dSigma1,Eigen::Matrix<double,5,1>* rdF_dSigma2,
+            Eigen::Matrix<double,1,1>* rd2F_d2Sigma1, Eigen::Matrix<double,5,1>* rd2F_dSigma2dSigma1)const;
 
     //! @brief calculates the rounded rankine yield surface
     //! @param rStress current stress
@@ -256,6 +282,20 @@ public:
     //! @param value_sqrt second term for the calculation of the principal stresses in 2D $sigma_{1,2}= \dfrac{s1+s2}{2} \pm value_sqrt$
     void YieldSurfaceRankine2DRoundedDerivatives(Eigen::Matrix<double,4,1>& rdF_dSigma,Eigen::Matrix<double,4,4>* rd2F_d2Sigma,
     		Eigen::Matrix<double,4,1>& rStress)const;
+
+    //! @brief calculates the Drucker Prager yield surface and the derivatives with respect to the stress
+    //! @param rStress current stress
+    //! @param rBETA parameter of the Drucker Prager yield surface
+    //! @param rHP parameter of the Drucker Prager yield surface
+    //! @param rdF_dSigma return value (first derivative)
+    //! @param rd2F_d2Sigma return value (second derivative)
+    //! @param rErrorDerivatives true, if derivative can't be calculated (on the hydrostatic axis)
+    //! @return yield function
+    double YieldSurfaceDruckerPrager1D(Eigen::Matrix<double,1,1>& rStress, double rBeta, double rHP,
+            Eigen::Matrix<double,1,1>* rdF_dSigma1,Eigen::Matrix<double,5,1>* rdF_dSigma2,
+            Eigen::Matrix<double,1,1>* rd2F_d2Sigma1, Eigen::Matrix<double,5,1>* rd2F_dSigma2dSigma12,
+            bool &rErrorDerivatives
+            )const;
 
     //! @brief calculates the drucker prager yield surface
     //! @param rStress current stress
@@ -279,7 +319,7 @@ public:
     //! @param rdF_dSigma return value (first derivative)
     //! @param rd2F_d2Sigma return value (second derivative)
     //! @return yield function
-    double YieldSurfaceRankine3DRounded(
+    double YieldSurfaceRoundedRankine3D(
     		const Eigen::Matrix<double,6,1>& rStress,
     		double rFct,
     		Eigen::Matrix<double,6,1>* rdF_dSigma,

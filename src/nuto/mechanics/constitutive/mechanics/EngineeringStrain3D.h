@@ -57,6 +57,11 @@ public:
     //! @sa mDeformationGradient
     const double* GetData() const;
 
+    //! @brief ... get Engineering Strain
+    //! @return ... Engineering Strain (exx,eyy,ezz,gxy,gyz,gzx)
+    //! @sa mDeformationGradient
+    void SetData(const double rData[6]);
+
     //! @brief ... return engineeringStrain
     EngineeringStrain3D& GetEngineeringStrain3D()
     {
