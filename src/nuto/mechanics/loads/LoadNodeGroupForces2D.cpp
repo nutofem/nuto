@@ -14,7 +14,7 @@ NuTo::LoadNodeGroupForces2D::LoadNodeGroupForces2D(const Group<NodeBase>* rGroup
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
         throw MechanicsException("[NuTo::LoadNodeGroupForces2D::LoadNodeGroupForces2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
-    memcpy(mDirection,rDirection.mEigenMatrix.data(),2*sizeof(double));
+    memcpy(mDirection,rDirection.data(),2*sizeof(double));
     //normalize the direction
     double norm = sqrt(mDirection[0]*mDirection[0]+mDirection[1]*mDirection[1]);
     if (norm < 1e-14)

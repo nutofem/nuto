@@ -23,7 +23,7 @@ NuTo::ConstraintLinearNodeDisplacements3D::ConstraintLinearNodeDisplacements3D(c
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=3)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::ConstraintLinearNodeDisplacements3D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
-    memcpy(mDirection,rDirection.mEigenMatrix.data(),3*sizeof(double));
+    memcpy(mDirection,rDirection.data(),3*sizeof(double));
     //normalize the direction
     double norm = sqrt(mDirection[0]*mDirection[0]+mDirection[1]*mDirection[1]+mDirection[2]*mDirection[2]);
     if (norm < 1e-14)

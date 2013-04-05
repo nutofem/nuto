@@ -290,7 +290,7 @@ void NuTo::SupportPoints::CalculateMeanValues(const FullMatrix<double>& rData, F
 	for(int rowCount = 0; rowCount < numRows; rowCount++)
 	{
 		double mean=0.0;
-	    const double *dataPtr = &rData.mEigenMatrix.data()[rowCount];
+	    const double *dataPtr = &rData.data()[rowCount];
 	    for (int sample=0; sample<numSamples; sample++)
 		{
 	        mean += factor * (*dataPtr);
@@ -330,7 +330,7 @@ void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double>& rData, Ful
 	{
 		double variance=0.0;
 		double mean=meanVector.GetValue(rowCount,0);
-	    const double *dataPtr = &rData.mEigenMatrix.data()[rowCount];
+	    const double *dataPtr = &rData.data()[rowCount];
 	    for (int sample=0; sample<numSamples; sample++)
 		{
 	    	double delta = *dataPtr - mean;
@@ -394,8 +394,8 @@ void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double>& rI
 		{
 			double cov = 0;
 			double meanColumn = inputDataMeanVector.GetValue(column,0);
-			const double *dataRowPtr = &rInputData.mEigenMatrix.data()[row];
-			const double *dataColumnPtr = &rInputData.mEigenMatrix.data()[column];
+			const double *dataRowPtr = &rInputData.data()[row];
+			const double *dataColumnPtr = &rInputData.data()[column];
 			for(int sample = 0; sample < numSamples; sample++)
 			{
 				cov += (*dataRowPtr - meanRow) * (*dataColumnPtr - meanColumn);
@@ -414,8 +414,8 @@ void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double>& rI
 		{
 			double cov = 0;
 			double meanColumn = outputDataMeanVector.GetValue(column - numInputData,0);
-			const double *dataRowPtr = &rInputData.mEigenMatrix.data()[row];
-			const double *dataColumnPtr = &rOutputData.mEigenMatrix.data()[column - numInputData];
+			const double *dataRowPtr = &rInputData.data()[row];
+			const double *dataColumnPtr = &rOutputData.data()[column - numInputData];
 			for(int sample = 0; sample < numSamples; sample++)
 			{
 				cov += (*dataRowPtr - meanRow) * (*dataColumnPtr - meanColumn);
@@ -435,8 +435,8 @@ void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double>& rI
 		{
 			double cov = 0;
 			double meanColumn = outputDataMeanVector.GetValue(column - numInputData,0);
-			const double *dataRowPtr = &rOutputData.mEigenMatrix.data()[row - numInputData];
-			const double *dataColumnPtr = &rOutputData.mEigenMatrix.data()[column - numInputData];
+			const double *dataRowPtr = &rOutputData.data()[row - numInputData];
+			const double *dataColumnPtr = &rOutputData.data()[column - numInputData];
 			for(int sample = 0; sample < numSamples; sample++)
 			{
 				cov += (*dataRowPtr - meanRow) * (*dataColumnPtr - meanColumn);

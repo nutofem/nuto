@@ -572,10 +572,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
 
     //cast to FullMatrixInt
     rGlobalDofsRow.Resize(globalDofsRow.size(),1);
-    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
+    memcpy(rGlobalDofsRow.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
 
     rGlobalDofsColumn.Resize(globalDofsColumn.size(),1);
-    memcpy(rGlobalDofsColumn.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
+    memcpy(rGlobalDofsColumn.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -616,7 +616,7 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
 		std::vector<int>& globalDofsRow = elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt();
 		//cast to FullMatrixInt
 	    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
-	    memcpy(rGlobalDofsRow.mEigenMatrix.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
+	    memcpy(rGlobalDofsRow.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
     }
     catch(NuTo::MechanicsException &e)
     {

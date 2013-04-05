@@ -11,7 +11,6 @@
 namespace NuTo
 {
 template <class T> class SparseMatrixCSRGeneral;
-template <class T> class FullMatrix;
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... class for symmetric sparse matrices which are stored in CSR format

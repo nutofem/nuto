@@ -48,7 +48,7 @@ void NuTo::MinMaxTransformation::Build(const FullMatrix<double>& rCoordinates)
     {
         throw MetamodelException("MinMaxTransformation::build - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
-    const double *theptr = &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    const double *theptr = &rCoordinates.data()[mCoordinate];
 	mMin = *theptr;
 	mMax = *theptr;
     for (int count=1; count<rCoordinates.GetNumColumns(); count++)
@@ -74,7 +74,7 @@ void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double>& rCoordinat
     {
         throw MetamodelException("MinMaxTransformation::TransformForward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
-    double *theptr =  &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    double *theptr =  &rCoordinates.data()[mCoordinate];
     double deltaBound = mUb - mLb;
     double deltaValue = mMax-mMin;
 	
@@ -104,7 +104,7 @@ void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double>& rCoordina
     {
         throw MetamodelException("MinMaxTransformation::TransformBackward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
-    double *theptr =  &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    double *theptr =  &rCoordinates.data()[mCoordinate];
     double deltaBound = mUb - mLb;
     double deltaValue = mMax-mMin;
 	

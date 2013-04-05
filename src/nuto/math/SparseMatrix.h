@@ -17,9 +17,7 @@
 
 namespace NuTo
 {
-// forward devlarations
 template<class T> class FullMatrix;
-
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... abstract base class for sparse matrices

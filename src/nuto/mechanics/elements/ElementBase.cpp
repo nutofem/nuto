@@ -582,7 +582,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), damage->mEigenMatrix.data()[theIp]);
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), damage->data()[theIp]);
             }
         }
         break;
@@ -614,7 +614,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStrainVector = &(engineeringStrain->mEigenMatrix.data()[theIp*6]);
+                const double* EngineeringStrainVector = &(engineeringStrain->data()[theIp*6]);
                 double EngineeringStrainTensor[9];
                 EngineeringStrainTensor[0] = EngineeringStrainVector[0];
                 EngineeringStrainTensor[1] = 0.5 * EngineeringStrainVector[3];
@@ -637,7 +637,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStrainVector = &(engineeringPlasticStrain->mEigenMatrix.data()[theIp*6]);
+                const double* EngineeringStrainVector = &(engineeringPlasticStrain->data()[theIp*6]);
                 double EngineeringStrainTensor[9];
                 EngineeringStrainTensor[0] = EngineeringStrainVector[0];
                 EngineeringStrainTensor[1] = 0.5 * EngineeringStrainVector[3];
@@ -660,7 +660,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStressVector = &(engineeringStress->mEigenMatrix.data()[theIp*6]);
+                const double* EngineeringStressVector = &(engineeringStress->data()[theIp*6]);
                 double EngineeringStressTensor[9];
                 EngineeringStressTensor[0] = EngineeringStressVector[0];
                 EngineeringStressTensor[1] = EngineeringStressVector[3];
@@ -684,7 +684,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStressVector = &(engineeringStress->mEigenMatrix.data()[theIp*6]);
+                const double* EngineeringStressVector = &(engineeringStress->data()[theIp*6]);
                 Eigen::Matrix<double,3,3>  EngineeringStressTensor;
 
                 EngineeringStressTensor(0,0) = EngineeringStressVector[0];
@@ -824,7 +824,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataVector(CellId, WhatIter->GetComponentName(), &(heatFlux->mEigenMatrix.data()[theIp*3]));
+                rVisualize.SetCellDataVector(CellId, WhatIter->GetComponentName(), &(heatFlux->data()[theIp*3]));
             }
         }
         break;
@@ -921,7 +921,7 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)
     rStress.Resize(rIpStress.GetNumRows(),1);
     for (int countIP=0; countIP<rIpStress.GetNumColumns(); countIP++)
     {
-        rStress+=rIpStress.GetColumn(countIP)*(ipVolume[countIP]);
+    	rStress+=(rIpStress.col(countIP)*(ipVolume[countIP]));
     }
 }
 
@@ -946,7 +946,7 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)
     rStrain.Resize(rIpStrain.GetNumRows(),1);
     for (int countIP=0; countIP<rIpStrain.GetNumColumns(); countIP++)
     {
-        rStrain+=rIpStrain.GetColumn(countIP)*(ipVolume[countIP]);
+        rStrain+=rIpStrain.col(countIP)*(ipVolume[countIP]);
     }
 }
 

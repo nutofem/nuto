@@ -193,10 +193,10 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransfo
 		rOutputMax = rOutputMean;
 
 		// calculate interval
-		const double* curInputData = rInput.mEigenMatrix.data();
+		const double* curInputData = rInput.data();
 		for(int sample = 0; sample < rInput.GetNumColumns(); sample++)
 		{
-			const double* curCovarianceData = covarianceMatrix.mEigenMatrix.data();
+			const double* curCovarianceData = covarianceMatrix.data();
 			double sampleInterval = 0.0;
 			for(int col = 0; col < covarianceMatrix.GetNumColumns(); col++)
 			{
@@ -307,10 +307,10 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransform
 		rOutputMax = rOutputMean;
 
 		// calculate interval
-		const double* curInputData = rInput.mEigenMatrix.data();
+		const double* curInputData = rInput.data();
 		for(int sample = 0; sample < rInput.GetNumColumns(); sample++)
 		{
-			const double* curCovarianceData = covarianceMatrix.mEigenMatrix.data();
+			const double* curCovarianceData = covarianceMatrix.data();
 			double sampleInterval = 0.0;
 			for(int col = 0; col < covarianceMatrix.GetNumColumns(); col++)
 			{
@@ -372,7 +372,7 @@ void NuTo::MultipleLinearRegression::BuildDerived()
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numParameters = dimInput + 1;
 		this->mCoefficients.Resize(numParameters,1);
-		this->mCoefficients.mEigenMatrix.setZero(numParameters,1);
+		this->mCoefficients.setZero(numParameters,1);
 
 		// get hessian matrix
 		NuTo::FullMatrix<double> hessianMatrix;
@@ -415,8 +415,8 @@ void NuTo::MultipleLinearRegression::SolveTransformed(const FullMatrix<double>& 
 		rOutputCoordinates.Resize(1, numSamples);
 
 		// calculate output
-		const double* coefficients = this->mCoefficients.mEigenMatrix.data();
-		const double* inputData =  rInputCoordinates.mEigenMatrix.data();
+		const double* coefficients = this->mCoefficients.data();
+		const double* inputData =  rInputCoordinates.data();
 		for(int sample = 0; sample < numSamples; sample++)
 		{
 			double curValue = coefficients[0];
@@ -702,13 +702,13 @@ double NuTo::MultipleLinearRegression::Objective()const
 	{
 		// get support point output
 		assert(this->mSupportPoints.GetDimOutput() == 1);
-		const double* outputData = this->mSupportPoints.GetTransformedSupportPointsOutput().mEigenMatrix.data();
+		const double* outputData = this->mSupportPoints.GetTransformedSupportPointsOutput().data();
 
 		// get support point input
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numCoefficients = dimInput + 1;
 		//assert(this->mCoefficients.size() == numCoefficients);
-		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().mEigenMatrix.data();
+		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().data();
 
 		// get number of samples
 		int numSamples = this->mSupportPoints.GetNumSupportPoints();
@@ -716,7 +716,7 @@ double NuTo::MultipleLinearRegression::Objective()const
 		// calculate objective
 		double objective = 0.0;
 		const double* curInputData = inputData;
-		const double* coefficients = this->mCoefficients.mEigenMatrix.data();
+		const double* coefficients = this->mCoefficients.data();
 		for(int sample = 0; sample < numSamples; sample++)
 		{
 			double term = outputData[sample] - coefficients[0];
@@ -771,13 +771,13 @@ void NuTo::MultipleLinearRegression::Gradient(NuTo::FullMatrix<double>& rGradien
 	{
 		// get support point output
 		assert(this->mSupportPoints.GetDimOutput() == 1);
-		const double* outputData = this->mSupportPoints.GetTransformedSupportPointsOutput().mEigenMatrix.data();
+		const double* outputData = this->mSupportPoints.GetTransformedSupportPointsOutput().data();
 
 		// get support point input
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numCoefficients = dimInput + 1;
 //		assert(this->mCoefficients.size() == numCoefficients);
-		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().mEigenMatrix.data();
+		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().data();
 
 		// get number of samples
 		int numSamples = this->mSupportPoints.GetNumSupportPoints();
@@ -786,7 +786,7 @@ void NuTo::MultipleLinearRegression::Gradient(NuTo::FullMatrix<double>& rGradien
 		rGradient.Resize(numCoefficients, 1);
 
 		// get coefficients
-		const double* coefficients = this->mCoefficients.mEigenMatrix.data();
+		const double* coefficients = this->mCoefficients.data();
 
 		// calculate derivative with respect to beta_0
 		double curDerivative = numSamples * coefficients[0];
@@ -893,7 +893,7 @@ void NuTo::MultipleLinearRegression::Hessian(NuTo::FullMatrix<double>&  rHessian
 		int dimInput = this->mSupportPoints.GetDimInput();
 		int numCoefficients = dimInput + 1;
 //		assert(this->mCoefficients.size() == numCoefficients);
-		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().mEigenMatrix.data();
+		const double* inputData = this->mSupportPoints.GetTransformedSupportPointsInput().data();
 
 		// get number of samples
 		int numSamples = this->mSupportPoints.GetNumSupportPoints();
@@ -975,7 +975,7 @@ double NuTo::MultipleLinearRegression::GetTotalSumOfSquares() const
 		// calculate total sum of squares
 		double sum = 0.0;
 		double sumSquare = 0.0;
-		const double* outputData = this->mSupportPoints.GetOrigSupportPointsOutput().mEigenMatrix.data();
+		const double* outputData = this->mSupportPoints.GetOrigSupportPointsOutput().data();
 		for(int sample = 0; sample < this->mSupportPoints.GetNumSupportPoints(); sample++)
 		{
 			sum += outputData[sample];
@@ -1020,7 +1020,7 @@ double NuTo::MultipleLinearRegression::GetTotalSumOfSquaresTransformed() const
 	{
 		double sum = 0.0;
 		double sumSquare = 0.0;
-		const double* outputData = this->mSupportPoints.GetTransformedSupportPointsOutput().mEigenMatrix.data();
+		const double* outputData = this->mSupportPoints.GetTransformedSupportPointsOutput().data();
 		for(int sample = 0; sample < this->mSupportPoints.GetNumSupportPoints(); sample++)
 		{
 			sum += outputData[sample];
@@ -1065,7 +1065,7 @@ double NuTo::MultipleLinearRegression::GetErrorSumOfSquares() const
 
 		// calculate sum of squares of residuals
 		double sse = 0.0;
-		const double* data = residualVector.mEigenMatrix.data();
+		const double* data = residualVector.data();
 		for(int sample = 0; sample < this->mSupportPoints.GetNumSupportPoints(); sample++)
 		{
 			sse += data[sample] * data[sample];
@@ -1109,7 +1109,7 @@ double NuTo::MultipleLinearRegression::GetErrorSumOfSquaresTransformed() const
 
 		// calculate sum of squares of residuals
 		double sse = 0.0;
-		const double* data = residualVector.mEigenMatrix.data();
+		const double* data = residualVector.data();
 		for(int sample = 0; sample < this->mSupportPoints.GetNumSupportPoints(); sample++)
 		{
 			sse += data[sample] * data[sample];
@@ -1153,10 +1153,10 @@ double NuTo::MultipleLinearRegression::GetRegressionSumOfSquaresTransformed() co
 		// calculate regression for support points
 		NuTo::FullMatrix<double> outputRegression;
 		this->SolveTransformed(this->mSupportPoints.GetTransformedSupportPointsInput(), outputRegression);
-		const double* outputRegressionData = outputRegression.mEigenMatrix.data();
+		const double* outputRegressionData = outputRegression.data();
 
 		// get original support point data
-		const double* outputSupportPointsData = this->mSupportPoints.GetTransformedSupportPointsOutput().mEigenMatrix.data();
+		const double* outputSupportPointsData = this->mSupportPoints.GetTransformedSupportPointsOutput().data();
 
 		// calculate sums
 		double sum1 = 0.0;
@@ -1208,10 +1208,10 @@ double NuTo::MultipleLinearRegression::GetRegressionSumOfSquares() const
 		// calculate regression for support points
 		NuTo::FullMatrix<double> outputRegression;
 		this->Solve(this->mSupportPoints.GetOrigSupportPointsInput(), outputRegression);
-		const double* outputRegressionData = outputRegression.mEigenMatrix.data();
+		const double* outputRegressionData = outputRegression.data();
 
 		// get original support point data
-		const double* outputSupportPointsData = this->mSupportPoints.GetOrigSupportPointsOutput().mEigenMatrix.data();
+		const double* outputSupportPointsData = this->mSupportPoints.GetOrigSupportPointsOutput().data();
 
 		// calculate sums
 		double sum1 = 0.0;
@@ -1677,8 +1677,8 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		if(rTransformedFlag)
 		{
 			// get data
-			const double* reducedModelOutputData = reducedModelOutput.mEigenMatrix.data();
-			const double* supportPointOutputData = this->mSupportPoints.GetTransformedSupportPointsOutput().mEigenMatrix.data();
+			const double* reducedModelOutputData = reducedModelOutput.data();
+			const double* supportPointOutputData = this->mSupportPoints.GetTransformedSupportPointsOutput().data();
 
 			// calculate sums
 			double sum1 = 0.0;
@@ -1695,8 +1695,8 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		else
 		{
 			// get data
-			const double* reducedModelOutputData = reducedModelOutput.mEigenMatrix.data();
-			const double* supportPointOutputData = this->mSupportPoints.GetOrigSupportPointsOutput().mEigenMatrix.data();
+			const double* reducedModelOutputData = reducedModelOutput.data();
+			const double* supportPointOutputData = this->mSupportPoints.GetOrigSupportPointsOutput().data();
 
 			// calculate sums
 			double sum1 = 0.0;

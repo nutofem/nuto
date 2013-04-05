@@ -29,13 +29,13 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 		switch (rDisplacements.GetNumRows())
 		{
 		case 1:
-			nodePtr->SetDisplacements1D(rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements1D(rDisplacements.data());
 		break;
 		case 2:
-			nodePtr->SetDisplacements2D(rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements2D(rDisplacements.data());
 		break;
 		case 3:
-			nodePtr->SetDisplacements3D(rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements3D(rDisplacements.data());
 		break;
 		default:
 			throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
@@ -79,13 +79,13 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
 		switch (rDisplacements.GetNumRows())
 		{
 		case 1:
-			nodePtr->SetDisplacements1D(rTimeDerivative,rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements1D(rTimeDerivative,rDisplacements.data());
 		break;
 		case 2:
-			nodePtr->SetDisplacements2D(rTimeDerivative,rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements2D(rTimeDerivative,rDisplacements.data());
 		break;
 		case 3:
-			nodePtr->SetDisplacements3D(rTimeDerivative,rDisplacements.mEigenMatrix.data());
+			nodePtr->SetDisplacements3D(rTimeDerivative,rDisplacements.data());
 		break;
 		default:
 			throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
@@ -126,10 +126,10 @@ void NuTo::StructureBase::NodeSetRotations(int rNode, const FullMatrix<double>& 
 		switch (rRotations.GetNumRows())
 		{
 		case 1:
-			nodePtr->SetRotations2D(rRotations.mEigenMatrix.data());
+			nodePtr->SetRotations2D(rRotations.data());
 		break;
 		case 3:
-			nodePtr->SetRotations3D(rRotations.mEigenMatrix.data());
+			nodePtr->SetRotations3D(rRotations.data());
 		break;
 		default:
 			throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] The number of rotation components is either 1, 3.");
@@ -179,13 +179,13 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullM
 			switch (rDisplacements.GetNumRows())
 			{
 			case 1:
-				itNode->second->SetDisplacements1D(rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements1D(rDisplacements.data());
 			break;
 			case 2:
-				itNode->second->SetDisplacements2D(rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements2D(rDisplacements.data());
 			break;
 			case 3:
-				itNode->second->SetDisplacements3D(rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements3D(rDisplacements.data());
 			break;
 			default:
 				throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");
@@ -240,13 +240,13 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
 			switch (rDisplacements.GetNumRows())
 			{
 			case 1:
-				itNode->second->SetDisplacements1D(rTimeDerivative, rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements1D(rTimeDerivative, rDisplacements.data());
 			break;
 			case 2:
-				itNode->second->SetDisplacements2D(rTimeDerivative, rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements2D(rTimeDerivative, rDisplacements.data());
 			break;
 			case 3:
-				itNode->second->SetDisplacements3D(rTimeDerivative, rDisplacements.mEigenMatrix.data());
+				itNode->second->SetDisplacements3D(rTimeDerivative, rDisplacements.data());
 			break;
 			default:
 				throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");
@@ -288,15 +288,15 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 		{
 		case 1:
 			rDisplacements.Resize(1,1);
-			nodePtr->GetDisplacements1D(rDisplacements.mEigenMatrix.data());
+			nodePtr->GetDisplacements1D(rDisplacements.data());
 		break;
 		case 2:
 			rDisplacements.Resize(2,1);
-			nodePtr->GetDisplacements2D(rDisplacements.mEigenMatrix.data());
+			nodePtr->GetDisplacements2D(rDisplacements.data());
 		break;
 		case 3:
 			rDisplacements.Resize(3,1);
-			nodePtr->GetDisplacements3D(rDisplacements.mEigenMatrix.data());
+			nodePtr->GetDisplacements3D(rDisplacements.data());
 		break;
 		case 0:
 			throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Node has no displacements.");
@@ -336,11 +336,11 @@ void NuTo::StructureBase::NodeGetRotations(int rNode, FullMatrix<double>& rRotat
 		{
 		case 2:
 			rRotations.Resize(1,1);
-			nodePtr->GetRotations2D(rRotations.mEigenMatrix.data());
+			nodePtr->GetRotations2D(rRotations.data());
 		break;
 		case 3:
 			rRotations.Resize(3,1);
-			nodePtr->GetRotations3D(rRotations.mEigenMatrix.data());
+			nodePtr->GetRotations3D(rRotations.data());
 		break;
 		default:
 			throw MechanicsException("[NuTo::StructureBase::NodeGetRotations] Node has neither 1(2D) or 3(3D) rotations.");
@@ -447,15 +447,15 @@ void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>
 		{
 		case 1:
 			rCoordinates.Resize(1,1);
-			nodePtr->GetCoordinates1D(rCoordinates.mEigenMatrix.data());
+			nodePtr->GetCoordinates1D(rCoordinates.data());
 		break;
 		case 2:
 			rCoordinates.Resize(2,1);
-			nodePtr->GetCoordinates2D(rCoordinates.mEigenMatrix.data());
+			nodePtr->GetCoordinates2D(rCoordinates.data());
 		break;
 		case 3:
 			rCoordinates.Resize(3,1);
-			nodePtr->GetCoordinates3D(rCoordinates.mEigenMatrix.data());
+			nodePtr->GetCoordinates3D(rCoordinates.data());
 		break;
 		case 0:
 			throw MechanicsException("[NuTo::StructureBase::NodeGetCoordinates] Node has no coordinates.");

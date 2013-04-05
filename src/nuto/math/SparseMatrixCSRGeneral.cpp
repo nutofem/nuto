@@ -28,7 +28,7 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double>&
     if (rRelativeTolerance > 1e-14)
     {
         double maxValue = 0;
-        const double* values = rFullMatrix.GetEigenMatrix().data();
+        const double* values = rFullMatrix.data();
         for (int count = 0; count < rFullMatrix.GetNumRows() * rFullMatrix.GetNumColumns(); count++)
         {
             if (fabs(values[count]) > maxValue)

@@ -9,7 +9,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
-
 namespace NuTo
 {
 class LinearElastic;

@@ -34,13 +34,14 @@
 #include "nuto/math/SparseMatrix.h"
 #include <eigen3/Eigen/Core>
 
+
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date July 2009
 //! @brief ... class for full matrices derived from the abstract base class Matrix
 template <class T>
-class FullMatrix : public Matrix<T>
+class FullMatrix : public Matrix<T>, public Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>
 
 {
 #ifdef ENABLE_SERIALIZATION
@@ -51,7 +52,7 @@ public:
     //! @brief ... default constructor
     FullMatrix<T>()
     {
-        mEigenMatrix.resize ( 0,0 );
+        this->resize ( 0,0 );
     }
 
     //! @brief ... constructor
@@ -60,17 +61,17 @@ public:
     FullMatrix<T> ( int rNumRows, int rNumColumns)
     {
         if ( rNumRows*rNumColumns>0 )
-            mEigenMatrix.setZero ( rNumRows,rNumColumns );
+            this->setZero ( rNumRows,rNumColumns );
         else
-            mEigenMatrix.resize ( rNumRows,rNumColumns );
+            this->resize ( rNumRows,rNumColumns );
     }
 
 #ifndef SWIG
     //! @brief ... constructor
     //! @param rEigenMatrix ... other matrix
-    FullMatrix<T> ( const Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> &rEigenMatrix )
+    template<typename OtherDerived>
+    FullMatrix<T> ( const Eigen::MatrixBase<OtherDerived>& rEigenMatrix): Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>(rEigenMatrix)
     {
-        mEigenMatrix = rEigenMatrix;
     }
 #endif
 
@@ -80,11 +81,11 @@ public:
     //! @param entries_ ... vector containing the matrix in column-major orientation
     FullMatrix<T> ( int numRows_, int numColumns_, const std::vector<T>& entries_ )
     {
-        mEigenMatrix.resize ( numRows_,numColumns_ );
+        this->resize ( numRows_,numColumns_ );
         const T *ptr = &entries_[0];
-        for ( int j=0; j<mEigenMatrix.cols(); ++j )              // loop over columns
-            for ( int i=0; i<mEigenMatrix.rows(); ++i, ptr++ )   // loop over rows
-                mEigenMatrix ( i,j ) = *ptr;                     // to access matrix coefficients,
+        for ( int j=0; j<this->cols(); ++j )              // loop over columns
+            for ( int i=0; i<this->rows(); ++i, ptr++ )   // loop over rows
+                (*this)( i,j ) = *ptr;                           // to access matrix coefficients,
     }
 
     //! @brief ... constructor
@@ -92,19 +93,38 @@ public:
     //! @param entries_ ... vector containing the matrix in column-major orientation
     FullMatrix<T> ( const std::vector<T>& entries_ )
     {
-        mEigenMatrix.resize ( entries_.size(),1 );
+        this->resize ( entries_.size(),1 );
         const T *ptr = &entries_[0];
 
-		for ( int i=0; i<mEigenMatrix.rows(); i++, ptr++ )   	// loop over rows
-			mEigenMatrix ( i,0 ) = *ptr;                     	// to access matrix coefficients,
+		for ( int i=0; i<this->rows(); i++, ptr++ )   	// loop over rows
+			(*this)( i,0 ) = *ptr;                     	// to access matrix coefficients,
     }
 
    //! @brief ... copy constructor
     //! @param  rOther ... copied element
-    FullMatrix<T> ( const FullMatrix<T>& rOther )
+    FullMatrix<T> ( const FullMatrix<T>& rOther ): Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>(rOther)
     {
-        mEigenMatrix = rOther.mEigenMatrix;
     }
+
+    //! @brief ... assignment constructor
+	//! @param  rOther ... copied element
+	FullMatrix<T>& operator=( const FullMatrix<T>& rOther )
+	{
+		if (this != &rOther)
+		{
+			this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator=(rOther);
+		}
+		return *this;
+	}
+
+	//! @brief ... assignment constructor
+	//! @param  rOther ... copied element
+    template<typename OtherDerived>
+	FullMatrix<T>& operator=( const Eigen::MatrixBase <OtherDerived>& other)
+	{
+    	this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator=(other);
+    	return *this;
+	}
 
     //! @brief ... resize matrix (everything is deleted)
     //! @param rows ... number of rows
@@ -112,9 +132,9 @@ public:
     void Resize ( int rows, int cols )
     {
     	if ( rows*cols>0 )
-            mEigenMatrix.setZero ( rows, cols );
+    		this->setZero ( rows, cols );
         else
-            mEigenMatrix.resize ( rows,cols );
+        	this->resize ( rows,cols );
     }
 
     //! @brief ... resize matrix (nothing is deleted)
@@ -122,21 +142,21 @@ public:
     //! @param cols ... number of columns
     void ConservativeResize ( int rows, int cols )
     {
-        mEigenMatrix.conservativeResize ( rows,cols );
+        this->conservativeResize ( rows,cols );
     }
 
     //! @brief ... resize matrix (nothing is deleted)
     //! @param rows ... number of rows
     void ConservativeResizeRows (int rows )
     {
-        mEigenMatrix.conservativeResize(rows, Eigen::NoChange_t());
+    	this->conservativeResize(rows, Eigen::NoChange_t());
     }
 
     //! @brief ... resize matrix (nothing is deleted)
     //! @param rows ... number of columns
     void ConservativeResizeCols (int cols )
     {
-        mEigenMatrix.conservativeResize(Eigen::NoChange_t(), cols);
+    	this->conservativeResize(Eigen::NoChange_t(), cols);
     }
 
 
@@ -145,9 +165,9 @@ public:
     //! @return resultMatrix = thisMatrix + otherMatrix
     FullMatrix<T> operator+ ( const FullMatrix<T> &other ) const
     {
-        if ( mEigenMatrix.rows() !=other.mEigenMatrix.rows() || mEigenMatrix.cols() !=other.mEigenMatrix.cols() )
+        if ( this->rows() !=other.rows() || this->cols() !=other.cols() )
             throw MathException ( std::string ( "[FullMatrix::operator+] Row or column number must be identical." ) );
-        return FullMatrix<T> ( mEigenMatrix+other.mEigenMatrix );
+        return this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator+(other);
     }
 
     //! @brief ... subtract another matrix from this matrix and return result matrix
@@ -155,9 +175,9 @@ public:
     //! @return resultMatrix = thisMatrix - otherMatrix
     FullMatrix<T> operator- ( const FullMatrix<T> &other ) const
     {
-        if ( mEigenMatrix.rows() !=other.mEigenMatrix.rows() || mEigenMatrix.cols() !=other.mEigenMatrix.cols() )
-            throw MathException ( std::string ( "[FullMatrix::operator-] Row or column number must be identical." ) );
-        return FullMatrix<T> ( mEigenMatrix-other.mEigenMatrix );
+        if ( this->rows() !=other.rows() || this->cols() !=other.cols() )
+            throw MathException ( std::string ( "[FullMatrix::operator+] Row or column number must be identical." ) );
+        return this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator-(other);
     }
 
     //! @brief ... multiply this matrix by another matrix and return the result matrix
@@ -165,14 +185,14 @@ public:
     //! @return resultMatrix = thisMatrix * otherMatrix
     FullMatrix<T> operator* ( const FullMatrix<T> &other ) const
     {
-        if ( mEigenMatrix.cols() !=other.mEigenMatrix.rows() )
+        if ( this->cols() !=other.rows() )
             throw MathException ( std::string ( "[FullMatrix::operator*] Number of columns of the first matrix must be identical to the number of rows of the second matrix." ) );
-        return FullMatrix<T> ( mEigenMatrix*other.mEigenMatrix );
+        return this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator*(other);
     }
 
     //! @brief ... multiply this matrix by a vector (which is stored in a vector
-    //! @param other ... scalar factor
-    //! @return reference to this matrix
+    //! @param other ... vector
+    //! @return matrix
     FullMatrix<T> operator* ( const std::vector<T> &other ) const;
 
     //! @brief ... multiply this matrix by a scalar factor and return the result matrix
@@ -180,37 +200,36 @@ public:
     //! @return resultMatrix = scalarFactor * thisMatrix
     FullMatrix<T> operator* ( const T &other ) const
     {
-        return FullMatrix<T> ( mEigenMatrix*other );
+    	return this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator*(other);
     }
 
     //! @brief ... add in place another matrix to this matrix and return a reference to this matrix
     //! @param other ... other matrix
     //! @return reference to this matrix
-    FullMatrix<T>& operator+= ( const FullMatrix<T> &other )
+    FullMatrix<T>& operator+= ( const Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> &other )
     {
-        if ( mEigenMatrix.rows() !=other.mEigenMatrix.rows() || mEigenMatrix.cols() !=other.mEigenMatrix.cols() )
+        if ( this->rows() !=other.rows() || this->cols() !=other.cols() )
             throw MathException ( std::string ( "[FullMatrix::operator+=] Row or column number must be identical." ) );
-        mEigenMatrix+=other.mEigenMatrix;
+        this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator+=(other);
         return *this;
     }
 
     //! @brief ... subtract in place another matrix from this matrix and return reference to this matrix
     //! @param other ... other matrix
     //! @return reference to this matrix
-    FullMatrix<T>& operator-= ( const FullMatrix<T> &other )
-    {
-        if ( mEigenMatrix.rows() !=other.mEigenMatrix.rows() || mEigenMatrix.cols() !=other.mEigenMatrix.cols() )
-            throw MathException ( std::string ( "[FullMatrix::operator-=] Row or column number must be identical." ) );
-        mEigenMatrix-=other.mEigenMatrix;
+    FullMatrix<T>& operator-= ( const Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> &other )
+	{
+		if ( this->rows() !=other.rows() || this->cols() !=other.cols() )
+			throw MathException ( std::string ( "[FullMatrix::operator+=] Row or column number must be identical." ) );
+		this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator-=(other);
         return *this;
-    }
-    
+	}
     //! @brief ... scale this matrix in place by a scalar factor and return a reference to this matrix
     //! @param other ... scalar factor
     //! @return reference to this matrix
     FullMatrix<T>& operator*= ( const T &other)
     {
-        mEigenMatrix*=other;
+    	this->Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::operator*=(other);
         return *this;
     }
 
@@ -219,10 +238,10 @@ public:
     //! @return reference to this matrix
     FullMatrix<T>& operator+= ( const T &other)
     {
-        mEigenMatrix.array()+=1;
+        this->array()+=other;
         return *this;
     }
-
+/*
 
     //! @brief ... access operator
     //! @param i ... row
@@ -247,15 +266,15 @@ public:
         return  mEigenMatrix ( i,j );
     }
 #endif
-
+*/
     //! @brief ... calculates the scalar product
     //! @param other ... other matrix
     //! @return reference to this matrix
     T Dot( const FullMatrix<T> &other )
     {
-        if ( mEigenMatrix.rows() !=other.mEigenMatrix.rows() || mEigenMatrix.cols() !=1 || other.mEigenMatrix.cols()!=1 )
+        if ( this->rows() !=other.rows() || this->cols() !=1 || other.cols()!=1 )
             throw MathException ( std::string ( "[FullMatrix::Dot] Dot product requires number of rows to be identical (and only a single column)." ) );
-         return (mEigenMatrix.transpose()*other.mEigenMatrix).eval()(0,0);
+         return (this->transpose()*other).eval()(0,0);
     }
 
     //! @brief ... set the value of the (i,j)-th matrix entry
@@ -268,7 +287,7 @@ public:
         {
             throw MathException ( std::string ( "[FullMatrix::SetValue] Row or column number out of range." ) );
         }
-        mEigenMatrix ( i,j ) =value;
+        (*this)( i,j ) =value;
     }
 
     //! @brief ... get the value of the (i,j)-th matrix entry
@@ -281,7 +300,7 @@ public:
         {
             throw MathException ( std::string ( "[FullMatrix::GetValue] Row or column number out of range." ) );
         }
-        return mEigenMatrix ( i,j );
+        return (*this) ( i,j );
     }
 
     //! @brief ... add a value to the (i,j)-th matrix entry
@@ -292,7 +311,7 @@ public:
     {
         if ( i>=GetNumRows() || i<0 || j>=GetNumColumns() || j<0 )
             throw MathException ( std::string ( "[FullMatrix::AddValue] Row or column number out of range." ) );
-        mEigenMatrix ( i,j ) +=value;
+        (*this) ( i,j ) +=value;
     }
 
     //! @brief ... subtract a value from the (i,j)-th matrix entry
@@ -303,23 +322,24 @@ public:
     {
         if ( i>=GetNumRows() || i<0 || j>=GetNumColumns() || j<0 )
             throw MathException ( std::string ( "[FullMatrix::SetValue] Row or column number out of range." ) );
-        mEigenMatrix ( i,j )-=value;
+        (*this) ( i,j )-=value;
     }
 
     //! @brief ... get number of rows
     //! @return number of rows
     inline int GetNumRows() const
     {
-        return mEigenMatrix.rows();
+        return this->rows();
     }
 
     //! @brief ... get number of columns
     //! @return number of columns
     inline int GetNumColumns() const
     {
-        return mEigenMatrix.cols();
+        return this->cols();
     }
 
+/*
 #ifndef SWIG
     //! @brief get a reference to the eigen matrix
     //! @return reference to eigen matrix
@@ -335,12 +355,12 @@ public:
         return mEigenMatrix;
     }
 #endif
-
+*/
     //! @brief ... convert a sparse matrix into a full matrix of same type
     //! @param sparseMatrix ... sparse matrix
     FullMatrix<T> ( const SparseMatrix<T>& sparseMatrix )
     {
-        mEigenMatrix.setZero ( sparseMatrix.GetNumRows(),sparseMatrix.GetNumColumns() );
+    	this->setZero ( sparseMatrix.GetNumRows(),sparseMatrix.GetNumColumns() );
         sparseMatrix.WriteEntriesToFullMatrix ( *this );
     }
 
@@ -380,7 +400,7 @@ public:
         & BOOST_SERIALIZATION_NVP(numColumns);
 
         Resize(numRows,numColumns);
-        memcpy ( mEigenMatrix.data(),&(dataVec[0]),numRows * numColumns *sizeof ( T ) );
+        memcpy ( this->data(),&(dataVec[0]),numRows * numColumns *sizeof ( T ) );
 #ifdef DEBUG_SERIALIZATION
     	std::cout << "finish serialize FullMatrix (load)" << std::endl;
 #endif
@@ -396,9 +416,9 @@ public:
     	std::cout << "start serialize FullMatrix (save)" << std::endl;
 #endif
         std::vector<T> dataVec ( GetNumRows() *GetNumColumns());
-        memcpy ( & ( dataVec[0] ),mEigenMatrix.data(),GetNumRows() *GetNumColumns() *sizeof ( T ) );
-        int numRows = mEigenMatrix.rows(),
-                      numColumns = mEigenMatrix.cols();
+        memcpy ( & ( dataVec[0] ),this->data(),GetNumRows() *GetNumColumns() *sizeof ( T ) );
+        int numRows = this->rows(),
+                      numColumns = this->cols();
         ar & boost::serialization::make_nvp ("Matrix",boost::serialization::base_object< Matrix<T> > ( *this ) )
         & BOOST_SERIALIZATION_NVP(dataVec)
         & BOOST_SERIALIZATION_NVP(numRows)
@@ -435,7 +455,7 @@ public:
         {
             for ( int count2=0; count2<GetNumColumns(); count2++ )
             {
-                std::cout << this->Convert2String ( mEigenMatrix.data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
+                std::cout << this->Convert2String ( this->data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
             }
             std::cout<<std::endl;
         }
@@ -451,7 +471,7 @@ public:
         {
             for ( int count2=0; count2<GetNumColumns(); count2++ )
             {
-            	rLogger << this->Convert2String ( mEigenMatrix.data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
+            	rLogger << this->Convert2String ( this->data() [count2*GetNumRows() +count], rScientific, rPrecision, rWidth) <<" ";
             }
             rLogger << "\n";
         }
@@ -516,7 +536,7 @@ public:
                 //std::cout << "numColumns_: " << numColumns_ << std::endl;
 
                 // resize matrix
-                mEigenMatrix.resize ( numRows_,numColumns_ );
+                this->resize ( numRows_,numColumns_ );
 
                 // reset stream
                 fileStream.clear();
@@ -542,7 +562,7 @@ public:
                                                   +std::string ( " which is " ) +this->Int2String ( curColumn_ ) +std::string ( " differs from the first line to be read(" )
                                                   +this->Int2String ( numColumns_ ) +std::string ( " columns)." ) );
                         //std::cout << "curRow_: " << curRow_ << " curColumn_: " << curColumn_ << std::endl;
-                        mEigenMatrix ( curRow_,curColumn_ ) =Matrix<T>::ConvertFromString ( *beg );
+                        (*this) ( curRow_,curColumn_ ) =Matrix<T>::ConvertFromString ( *beg );
                         curColumn_++;
                     }
                 }
@@ -714,7 +734,7 @@ public:
     virtual void Map ( const NuTo::MonadicOperator<T>* rMOperator )
     {
         for ( int count=0; count<GetNumColumns() *GetNumRows(); count++ )
-            mEigenMatrix.data() [count] = rMOperator->Evaluate ( mEigenMatrix.data() [count] );
+        	this->data() [count] = rMOperator->Evaluate ( this->data() [count] );
     }
 
     //! @brief performs a dyadic operator on all matrix entries with another given value
@@ -723,7 +743,7 @@ public:
     virtual void Map ( const NuTo::DyadicOperator<T>* rDOperator, const T& rValue )
     {
         for ( int count=0; count<GetNumColumns() *GetNumRows(); count++ )
-            mEigenMatrix.data() [count] = rDOperator->Evaluate ( mEigenMatrix.data() [count],rValue );
+            this->data() [count] = rDOperator->Evaluate ( this->data() [count],rValue );
     }
 
     //! @brief returns the maximum value of the matrix (if several entries have the same maximum value, only the first one is recovered)
@@ -735,7 +755,7 @@ public:
         if ( GetNumColumns() ==0 || GetNumRows() ==0 )
             throw MathException ( "FullMatrix::Max - Maximum for matrix with zero entries cannot be calculated." );
 
-        return mEigenMatrix.maxCoeff ( &rRowOutput,&rColumnOutput );
+        return this->maxCoeff ( &rRowOutput,&rColumnOutput );
     }
 
 #ifndef SWIG
@@ -745,7 +765,7 @@ public:
     {
         if ( GetNumColumns() ==0 || GetNumRows() ==0 )
             throw MathException ( "FullMatrix::Max - Maximum for matrix with zero entries cannot be calculated." );
-        return mEigenMatrix.maxCoeff();
+        return this->maxCoeff();
     }
 #endif
 
@@ -758,7 +778,7 @@ public:
         if ( GetNumColumns() ==0 || GetNumRows() ==0 )
             throw MathException ( "FullMatrix::Min - Minimum for matrix with zero entries cannot be calculated." );
 
-        return mEigenMatrix.minCoeff ( &rRowOutput,&rColumnOutput );
+        return this->minCoeff ( &rRowOutput,&rColumnOutput );
     }
 
 #ifndef SWIG
@@ -769,7 +789,7 @@ public:
         if ( GetNumColumns() ==0 || GetNumRows() ==0 )
             throw MathException ( "FullMatrix::Min - Minimum for matrix with zero entries cannot be calculated." );
 
-        return mEigenMatrix.minCoeff();
+        return this->minCoeff();
     }
 #endif
 
@@ -780,7 +800,7 @@ public:
     //! @return transpose of the matrix
     virtual FullMatrix<T> Trans() const
     {
-        return FullMatrix<T> ( mEigenMatrix.transpose() );
+        return FullMatrix<T> ( this->transpose() );
     }
 
     //! @brief ... extract a block (submatrix) from this matrix
@@ -791,15 +811,15 @@ public:
     //! @return a submatrix with size (rRows,rCols) extracted at (rI,rJ)-entry of this matrix
     FullMatrix<T>  GetBlock ( int rI, int rJ, int rRows, int rCols ) const
     {
-        if ( rI+rRows>mEigenMatrix.rows() )
+        if ( rI+rRows>this->rows() )
             throw MathException ( "FullMatrix::GetBlock - rows out of Dimension." );
-        if ( rJ+rCols>mEigenMatrix.cols() )
+        if ( rJ+rCols>this->cols() )
             throw MathException ( "FullMatrix::GetBlock - columns out of Dimension." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::GetBlock - row should not be negative." );
         if ( rJ<0 )
             throw MathException ( "FullMatrix::GetBlock - column should not be negative." );
-        return FullMatrix<T> ( mEigenMatrix.block ( rI,rJ,rRows,rCols ) );
+        return FullMatrix<T> ( this->block ( rI,rJ,rRows,rCols ) );
     }
 
     //! @brief ... set a block (submatrix) in this Matrix
@@ -808,15 +828,15 @@ public:
     //! @param rBlock ... submatrix
     void  SetBlock ( int rI, int rJ, const FullMatrix<T>& rBlock )
     {
-        if ( rI+rBlock.mEigenMatrix.rows() >mEigenMatrix.rows() )
+        if ( rI+rBlock.rows() >this->rows() )
             throw MathException ( "FullMatrix::SetBlock - rows out of Dimension." );
-        if ( rJ+rBlock.mEigenMatrix.cols() >mEigenMatrix.cols() )
+        if ( rJ+rBlock.cols() >this->cols() )
             throw MathException ( "FullMatrix::SetBlock - columns out of Dimension." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::SetBlock - row should not be negative." );
         if ( rJ<0 )
             throw MathException ( "FullMatrix::SetBlock - column should not be negative." );
-        mEigenMatrix.block ( rI,rJ,rBlock.mEigenMatrix.rows(),rBlock.mEigenMatrix.cols() ) = rBlock.mEigenMatrix;
+        this->block ( rI,rJ,rBlock.rows(),rBlock.cols() ) = rBlock;
     }
 
     //! @brief ... add a block (submatrix) in this Matrix
@@ -825,15 +845,15 @@ public:
     //! @param rBlock ... submatrix
     void  AddBlock ( int rI, int rJ, const FullMatrix<T>& rBlock )
     {
-        if ( rI+rBlock.mEigenMatrix.rows() >mEigenMatrix.rows() )
+        if ( rI+rBlock.rows() >this->rows() )
             throw MathException ( "FullMatrix::SetBlock - rows out of Dimension." );
-        if ( rJ+rBlock.mEigenMatrix.cols() >mEigenMatrix.cols() )
+        if ( rJ+rBlock.cols() >this->cols() )
             throw MathException ( "FullMatrix::SetBlock - columns out of Dimension." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::SetBlock - row should not be negative." );
         if ( rJ<0 )
             throw MathException ( "FullMatrix::SetBlock - column should not be negative." );
-        mEigenMatrix.block ( rI,rJ,rBlock.mEigenMatrix.rows(),rBlock.mEigenMatrix.cols() ) += rBlock.mEigenMatrix;
+        this->block ( rI,rJ,rBlock.rows(),rBlock.cols() ) += rBlock;
     }
 
     //! @brief ... extract a row from the matrix
@@ -841,11 +861,11 @@ public:
     //! @return row as full matrix
     FullMatrix<T>  GetRow ( int rI ) const
     {
-        if ( rI>=mEigenMatrix.rows() )
+        if ( rI>=this->rows() )
             throw MathException ( "FullMatrix::GetRow - row out of Dimension." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::GetRow - row should not be negative." );
-        return FullMatrix<T> ( mEigenMatrix.row ( rI ) );
+        return FullMatrix<T> ( this->row ( rI ) );
     }
 
     //! @brief ... set a row in this FullMatrix
@@ -853,13 +873,13 @@ public:
     //! @param rBlock ... new row intries
     void  SetRow ( int rI, const FullMatrix<T>& rBlock )
     {
-        if ( rBlock.mEigenMatrix.rows() !=1 )
+        if ( rBlock.rows() !=1 )
             throw MathException ( "FullMatrix::SetRow - Expect a Matrix with a single row as Input." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::SetRow - row should not be negative." );
-        if ( rBlock.mEigenMatrix.cols() !=mEigenMatrix.cols() )
+        if ( rBlock.cols() !=this->cols() )
             throw MathException ( "FullMatrix::SetRow - number of columns for both matrices must be identical." );
-        mEigenMatrix.row ( rI ) = rBlock.mEigenMatrix;
+        this->row ( rI ) = rBlock;
     }
 
     //! @brief ... extract a column from this matrix
@@ -867,11 +887,11 @@ public:
     //! @return column entries as full matrix
     FullMatrix<T>  GetColumn ( int rI ) const
     {
-        if ( rI>=mEigenMatrix.cols() )
+        if ( rI>=this->cols() )
             throw MathException ( "FullMatrix::GetColumn - column out of Dimension." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::GetColumn - column should not be negative." );
-        return FullMatrix<T> ( mEigenMatrix.col ( rI ) );
+        return FullMatrix<T> ( this->col ( rI ) );
     }
 
     //! @brief ... set a column in this matrix
@@ -879,37 +899,37 @@ public:
     //! @param rBlock ... new column entries
     void  SetColumn ( int rI, const FullMatrix<T>& rBlock )
     {
-        if ( rBlock.mEigenMatrix.cols() !=1 )
+        if ( rBlock.cols() !=1 )
             throw MathException ( "FullMatrix::SetColumn - Expect a Matrix with a single column as Input." );
         if ( rI<0 )
             throw MathException ( "FullMatrix::SetColumn - column should not be negative." );
-        if ( rBlock.mEigenMatrix.rows() !=mEigenMatrix.rows() )
+        if ( rBlock.rows() !=this->rows() )
             throw MathException ( "FullMatrix::SetColumn - number of rows for both matrices must be identical." );
-        mEigenMatrix.col ( rI ) = rBlock.mEigenMatrix;
+        this->col ( rI ) = rBlock;
     }
 
     //! @brief ... appends columns to this matrix
     //! @param rBlock ... matrix storing the columns
     void  AppendColumns ( FullMatrix<T> rBlock )
     {
-        if ( rBlock.mEigenMatrix.rows() !=mEigenMatrix.rows() )
+        if ( rBlock.rows() !=this->rows() )
             throw MathException ( "FullMatrix::AppendColumns - number of rows for both matrices must be identical." );
-        Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix ( mEigenMatrix.rows(),mEigenMatrix.cols() +rBlock.mEigenMatrix.cols() );
-        tmpMatrix.block ( 0,0,mEigenMatrix.rows(),mEigenMatrix.cols() ) = mEigenMatrix;
-        tmpMatrix.block ( 0,mEigenMatrix.cols(),rBlock.mEigenMatrix.rows(),rBlock.mEigenMatrix.cols() ) = rBlock.mEigenMatrix;
-        mEigenMatrix = tmpMatrix;
+        Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix ( this->rows(),this->cols() +rBlock.cols() );
+        tmpMatrix.block ( 0,0,this->rows(),this->cols() ) = *this;
+        tmpMatrix.block ( 0,this->cols(),rBlock.rows(),rBlock.cols() ) = rBlock;
+        *this = tmpMatrix;
     }
 
     //! @brief ... appends rows to this matrix
     //! @param rBlock ... matrix storing the rows
     void  AppendRows ( FullMatrix<T> rBlock )
     {
-        if ( rBlock.mEigenMatrix.cols() !=mEigenMatrix.cols() )
+        if ( rBlock.cols() !=this->cols() )
             throw MathException ( "FullMatrix::AppendRows - number of columns for both matrices must be identical." );
-        Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix ( mEigenMatrix.rows() +rBlock.mEigenMatrix.rows(),mEigenMatrix.cols() );
-        tmpMatrix.block ( 0,0,mEigenMatrix.rows(),mEigenMatrix.cols() ) = mEigenMatrix;
-        tmpMatrix.block ( mEigenMatrix.rows(),0,rBlock.mEigenMatrix.rows(),rBlock.mEigenMatrix.cols() ) = rBlock.mEigenMatrix;
-        mEigenMatrix = tmpMatrix;
+        Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> tmpMatrix ( this->rows() +rBlock.rows(),this->cols() );
+        tmpMatrix.block ( 0,0,this->rows(),this->cols() ) = (*this);
+        tmpMatrix.block ( this->rows(),0,rBlock.rows(),rBlock.cols() ) = rBlock;
+        *this = tmpMatrix;
     }
 
     //! @brief ... calculates the norm of this matrix, i.e. for vectors the Euclidean norm
@@ -920,42 +940,42 @@ public:
     //! @return sum of the entries for each column
     FullMatrix<T> ColumnwiseSum() const
     {
-        return FullMatrix<T> ( mEigenMatrix.colwise().sum() );
+        return FullMatrix<T> ( this->colwise().sum() );
     }
 
     //! @brief ... calculates the sum of the entries for each row
     //! @return sum of the entries for each row
     FullMatrix<T> RowwiseSum() const
     {
-        return FullMatrix<T> ( mEigenMatrix.rowwise().sum() );
+        return FullMatrix<T> ( this->rowwise().sum() );
     }
 
     //! @brief ... calculates the minimum of the entries for each column
     //! @return the minimum of the entries for each column
     FullMatrix<T> ColumnwiseMinCoeff() const
     {
-        return FullMatrix<T> ( mEigenMatrix.colwise().minCoeff() );
+        return FullMatrix<T> ( this->colwise().minCoeff() );
     }
 
     //! @brief ... calculates the minimum of the entries for each row
     //! @return the minimum of the entries for each row
     FullMatrix<T> RowwiseMinCoeff() const
     {
-        return FullMatrix<T> ( mEigenMatrix.rowwise().minCoeff() );
+        return FullMatrix<T> ( this->rowwise().minCoeff() );
     }
 
     //! @brief ... calculates the maximum of the entries for each column
     //! @return the maximum of the entries for each column
     FullMatrix<T> ColumnwiseMaxCoeff() const
     {
-        return FullMatrix<T> ( mEigenMatrix.colwise().maxCoeff() );
+        return FullMatrix<T> ( this->colwise().maxCoeff() );
     }
 
     //! @brief ... calculates the maximum of the entries for each row
     //! @return the maximum of the entries for each row
     FullMatrix<T> RowwiseMaxCoeff() const
     {
-        return FullMatrix<T> ( mEigenMatrix.rowwise().maxCoeff() );
+        return FullMatrix<T> ( this->rowwise().maxCoeff() );
     }
 
     //! @brief ... coefficient wise multiplication of this matrix with another matrix
@@ -963,7 +983,7 @@ public:
     //! @return a matrix which is obtained by a coefficient wise multiplication of this matrix with another matrix
     FullMatrix<T> ElementwiseMul ( const FullMatrix<T> &other ) const
     {
-        return FullMatrix<T> ( mEigenMatrix.array() *other.mEigenMatrix.array() );
+        return FullMatrix<T> ( (this->array() *other.array()).matrix() );
     }
 
     //! @brief ... coefficient wise division of this matrix by another matrix
@@ -971,14 +991,14 @@ public:
     //! @return a matrix which is obtained by a coefficient wise division of this matrix by another matrix
     FullMatrix<T> ElementwiseDiv ( const FullMatrix<T> &other ) const
     {
-        return FullMatrix<T> ( mEigenMatrix.array() /other.mEigenMatrix.array() );
+        return FullMatrix<T> ( (this->array() /other.array()).matrix() );
     }
 
     //! @brief ... coefficient wise reciprocal
     //! @return a matrix which is obtained by coefficient wise reciprocal of this matrix
     FullMatrix<T> ElementwiseInverse() const
     {
-        return FullMatrix<T> ( mEigenMatrix.array().inverse() );
+        return FullMatrix<T> ( this->array().inverse().matrix());
     }
 
     //! @brief ... sorts the rows of a matrix based on the entries in column rCol
@@ -1013,15 +1033,15 @@ public:
     	{
     		for ( int count2=0; count2<this->GetNumColumns(); count2++)
     		{
-    			mEigenMatrix(count,count2) = myOrigData(rows[count],count2);
+    			(*this)(count,count2) = myOrigData(rows[count],count2);
     		}
     	}
     	return *this;
     }
 
-#ifndef SWIG
-    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> mEigenMatrix; //!< matrix data are stored as eigen matrix
-#endif
+//#ifndef SWIG
+//    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> mEigenMatrix; //!< matrix data are stored as eigen matrix
+//#endif
 
 private:
     //! @brief ... writes a matrix to a file
@@ -1035,7 +1055,7 @@ private:
         {
             for ( int count2=0; count2<GetNumColumns(); count2++ )
             {
-                fileStream    <<     this->Convert2String ( mEigenMatrix.data() [count+count2*GetNumRows() ],true,12,18 );
+                fileStream    <<     this->Convert2String ( this->data() [count+count2*GetNumRows() ],true,12,18 );
                 if ( count2!=GetNumColumns()-1 )
                     fileStream    << delimiter_;
             }
@@ -1050,7 +1070,7 @@ private:
 template<class T>
 std::ostream& operator<<(std::ostream& os, const NuTo::FullMatrix<T>& r)
 {
-    os << r.mEigenMatrix;
+    os << (Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>&) r;
     return os;
 }
 
@@ -1061,5 +1081,16 @@ BOOST_CLASS_EXPORT_KEY(NuTo::FullMatrix<double>)
 BOOST_CLASS_EXPORT_KEY(NuTo::FullMatrix<int>)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
+
+//serilization function for eigen matrices
+template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline void serialize(
+	Archive & ar,
+	Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,
+	const unsigned int file_version
+)
+{
+	ar & boost::serialization::make_array(t.data(), t.size());
+}
 
 #endif // FULL_MATRIX_H

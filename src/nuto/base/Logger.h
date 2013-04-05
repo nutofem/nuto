@@ -21,12 +21,12 @@
 
 namespace NuTo
 {
+template<class T> class FullMatrix;
+
 //! @author Jörg F. Unger, NU
 //! @date July 2011
 //! @brief ... logger class for redirecting output to different locations/files
 class Logger;
-template <class T>
-class FullMatrix;
 class Logger : public NuToObject
 {
 #ifdef ENABLE_SERIALIZATION

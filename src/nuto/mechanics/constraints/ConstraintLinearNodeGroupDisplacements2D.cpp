@@ -24,7 +24,7 @@ NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplac
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
-    memcpy(mDirection,rDirection.mEigenMatrix.data(),2*sizeof(double));
+    memcpy(mDirection,rDirection.data(),2*sizeof(double));
     //normalize the direction
     double norm = sqrt(mDirection[0]*mDirection[0]+mDirection[1]*mDirection[1]);
     if (norm < 1e-14)

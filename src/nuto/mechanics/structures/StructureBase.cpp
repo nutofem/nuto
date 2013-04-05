@@ -809,7 +809,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
             return error;
 
         // build equivalent load vector
-        rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
+        rVector = coefficientMatrixJK * NuTo::FullMatrix<double>(dependentDofValues - this->mConstraintRHS);
     }
     else
     {
@@ -3445,7 +3445,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeO
 		}
 		std::cout << "Volume for class " << gc+1 << " : " <<  Vist[gc]/Vspecimen << "(" << Vsoll[gc]/Vspecimen << ")" << std::endl;
 		//sort only the newly introduced radii
-		std::sort(((double*)&particles.mEigenMatrix.data()[3*particles.GetNumRows()+numParticles-numParticlesPerClass[gc]]),((double*)&particles.mEigenMatrix.data()[3*particles.GetNumRows()+numParticles]), std::greater<double>( ));
+		std::sort(((double*)&particles.data()[3*particles.GetNumRows()+numParticles-numParticlesPerClass[gc]]),((double*)&particles.data()[3*particles.GetNumRows()+numParticles]), std::greater<double>( ));
 
 		//create boxes for the previously inserted particles
 		//width of each box = largest diameter

@@ -100,7 +100,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 returnValue = MAXHESSIANCALLS;
                 break;
             }
-            gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
+            gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig;
 
             normGrad = gradientScaled.norm();
 
@@ -122,7 +122,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         else
         {
             //scale gradient
-            gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
+            gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig;
 
             normProjection = gradientScaled.dot(prevGradientScaled);
             normPrevGradient = prevGradientScaled.dot(prevGradientScaled);
@@ -161,7 +161,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 }
 
                 //scale gradient
-                gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
+                gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig;
 
                 searchDirectionScaled = -gradientScaled;
                 searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
@@ -211,7 +211,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                      }
 
                      //scale gradient
-                     gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig.mEigenMatrix;
+                     gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig;
 
                      searchDirectionScaled = -gradientScaled;
                      searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
@@ -285,12 +285,12 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         prevObjective = objective;
         intermediateAlpha = 0;
         intermediateObjective = objective;
-        prevParameters = mvParameters.mEigenMatrix;
+        prevParameters = mvParameters;
 
         //perform line search
         alpha = initialAlpha/searchDirectionScaled.norm();
 
-        mvParameters.mEigenMatrix=prevParameters+alpha*searchDirectionOrig;
+        mvParameters=prevParameters+alpha*searchDirectionOrig;
 
         //set new parameters in search direction
         mpCallbackHandler->SetParameters(mvParameters);
@@ -320,7 +320,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 intermediateAlpha = alpha;
                 intermediateObjective = objective;
                 alpha += 1.5*(intermediateAlpha-prevAlpha);
-                mvParameters.mEigenMatrix=prevParameters+alpha*searchDirectionOrig;
+                mvParameters=prevParameters+alpha*searchDirectionOrig;
                 mpCallbackHandler->SetParameters(mvParameters);
                 objective = mpCallbackHandler->Objective();
                 numFunctionCalls++;
@@ -345,7 +345,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 alpha = intermediateAlpha;
                 objective = intermediateObjective;
                 intermediateAlpha = 0.25*alpha;
-                mvParameters.mEigenMatrix=prevParameters+intermediateAlpha*searchDirectionOrig;
+                mvParameters=prevParameters+intermediateAlpha*searchDirectionOrig;
                 mpCallbackHandler->SetParameters(mvParameters);
                 intermediateObjective = mpCallbackHandler->Objective();
                 numFunctionCalls++;
@@ -377,7 +377,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         fw = intermediateObjective;
         d = goldenSect*(e=alpha-intermediateAlpha);
         u = intermediateAlpha+d;
-        mvParameters.mEigenMatrix=prevParameters+u*searchDirectionOrig;
+        mvParameters=prevParameters+u*searchDirectionOrig;
         mpCallbackHandler->SetParameters(mvParameters);
         BrentsMethodConverged=false;
         numFunctionCallsBefore = numFunctionCalls;
@@ -432,7 +432,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             {
                 //line search converged
                 objective = intermediateObjective;
-                mvParameters.mEigenMatrix=prevParameters+intermediateAlpha*searchDirectionOrig;
+                mvParameters=prevParameters+intermediateAlpha*searchDirectionOrig;
                 initialAlpha = searchDirectionScaled.norm()*intermediateAlpha;
                 BrentsMethodConverged = true;
                 break;
@@ -472,7 +472,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                     d=golden_sec*(e=(intermediateAlpha >= xm ? prevAlpha - intermediateAlpha : alpha - intermediateAlpha));
                 }
                 u=(fabs(d) >= tol1 ? intermediateAlpha+d : intermediateAlpha+SIGN(tol1,d));
-                mvParameters.mEigenMatrix=prevParameters+u*searchDirectionOrig;
+                mvParameters=prevParameters+u*searchDirectionOrig;
                 mpCallbackHandler->SetParameters(mvParameters);
             }
         }

@@ -472,19 +472,19 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 					case NuTo::IpData::ENGINEERING_STRAIN:
 						//error = constitutivePtr->GetEngineeringStrain(this, theIP, deformationGradient, engineeringStrain);
-						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStrain3D.GetData(),6*sizeof(double));
+						memcpy(&(it->second->GetFullMatrixDouble().data()[theIP*6]),engineeringStrain3D.GetData(),6*sizeof(double));
 					break;
 					case NuTo::IpData::ENGINEERING_STRESS:
 						//error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
-						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringStress3D.GetData(),6*sizeof(double));
+						memcpy(&(it->second->GetFullMatrixDouble().data()[theIP*6]),engineeringStress3D.GetData(),6*sizeof(double));
 					break;
 					case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
 						//error = constitutivePtr->GetEngineeringPlasticStrain(this, theIP, deformationGradient, engineeringStrain);
-						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP*6]),engineeringPlasticStrain3D.GetData(),6*sizeof(double));
+						memcpy(&(it->second->GetFullMatrixDouble().data()[theIP*6]),engineeringPlasticStrain3D.GetData(),6*sizeof(double));
 					break;
 					case NuTo::IpData::DAMAGE:
 						//error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
-						memcpy(&(it->second->GetFullMatrixDouble().mEigenMatrix.data()[theIP]),localDamage.GetData(),sizeof(double));
+						memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]),localDamage.GetData(),sizeof(double));
 					break;
 					default:
 						throw MechanicsException("[NuTo::Truss::Evaluate] Ip data not implemented.");
@@ -1008,7 +1008,7 @@ void NuTo::Truss::CalculateNonlocalDamage(const std::vector<double>& shapeFuncti
 {
     assert(shapeFunctions.size()==rNodeDamage.size());
     double damage(0);
-	for (int count=0; count<shapeFunctions.size(); count++)
+	for (unsigned int count=0; count<shapeFunctions.size(); count++)
 		damage+=shapeFunctions[count]*rNodeDamage[count];
 	nonlocalDamage.SetNonlocalDamage(damage);
 	return;

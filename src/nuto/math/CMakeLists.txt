@@ -2,8 +2,8 @@
 SET(NuToMath_SOURCES
   FullMatrix.cpp
   Matrix.cpp
-  NuToMath.cpp
   MathException.cpp
+  NuToMath.cpp
   SparseMatrix.cpp
   SparseMatrixCSR.cpp
   SparseMatrixCSRGeneral.cpp

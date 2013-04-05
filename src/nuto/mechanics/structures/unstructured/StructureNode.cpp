@@ -471,13 +471,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
         switch (mDimension)
         {
         case 1:
-            nodePtr->SetCoordinates1D(rCoordinates.mEigenMatrix.data());
+            nodePtr->SetCoordinates1D(rCoordinates.data());
             break;
         case 2:
-            nodePtr->SetCoordinates2D(rCoordinates.mEigenMatrix.data());
+            nodePtr->SetCoordinates2D(rCoordinates.data());
             break;
         case 3:
-            nodePtr->SetCoordinates3D(rCoordinates.mEigenMatrix.data());
+            nodePtr->SetCoordinates3D(rCoordinates.data());
             break;
         case 0:
             throw MechanicsException("[NuTo::StructureBase::NodeCreate] Node has no displacements.");

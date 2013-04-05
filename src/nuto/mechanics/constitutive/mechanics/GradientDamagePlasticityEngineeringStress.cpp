@@ -1131,7 +1131,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     return Error::SUCCESSFUL;
 }
 
-
+#define NUMYIELDSURFACES 2
 //! @brief ... performs the return mapping procedure for the plasticity model
 //! @param rStrain              ... current total strain
 //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
@@ -1150,15 +1150,15 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         Eigen::Matrix<double,1,1>& rPrevStress,
         Eigen::Matrix<double,1,1>& rStress,
         Eigen::Matrix<double,1,1>& rPlasticStrain,
-        boost::array<bool,2> rYieldConditionFlag,
+        Eigen::Matrix<int,2,1>& rYieldConditionFlag,
         Eigen::Matrix<double,2,1>& rDeltaKappa,
         Eigen::Matrix<double,1,1>* rdSigma1dEpsilon1,
         Eigen::Matrix<double,2,1>* rdKappadEpsilon1,
         NuTo::Logger& rLogger)const
 {
-/*
+
     double e_mod = mE; //modify that one in the case of random fields
-    double   nu  = mNu;
+    //double   nu  = mNu;
     double f_ct  = mTensileStrength;
     double f_c1  = mCompressiveStrength;
     double f_c2  = mBiaxialCompressiveStrength;
@@ -1184,10 +1184,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     Eigen::Matrix<double,1,1> lastPlastStrain;
     //! @brief previous stress, either from previous equilibrium (static data) or if applied in steps, previous converged state
     Eigen::Matrix<double,1,1> lastStress;
+    //! @brief previous change of equivalent plastic strain, either from previous equilibrium (0) or if applied in steps, previous converged state
+    Eigen::Matrix<double,2,1> lastDeltaKappa;
     //! @brief plastic strain in the line search
     Eigen::Matrix<double,1,1> epsilonPLS;
-    //! @brief previous eq plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
-    double lastDeltaEqPlasticStrain;
     //! @brief residual in the return mapping procedure
     Eigen::Matrix<double,1,1> residual;
     //! @brief residual in the return mapping procedure within linesearch
@@ -1230,10 +1230,8 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     Eigen::Matrix<double,1,1> hessian;
     //! @brief first derivatives of the yield functions
     Eigen::Matrix<double,1,1> dF_dsigma1[2];
-    Eigen::Matrix<double,1,1> dF_dsigma2[2];
     //! @brief second derivatives of the yield functions
     Eigen::Matrix<double,1,1> d2F_d2Sigma1[2];
-    Eigen::Matrix<double,1,1> d2F_dSigma1dSigma2[2];
     //! @brief algorithmic modulus * dF_dsigma
     std::vector<Eigen::Matrix<double,1,1> > vectorN;
     //! @brief number of active yield functions
@@ -1251,8 +1249,6 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #ifdef ENABLE_DEBUG
         rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
 #endif
-    rDeltaKappa(0) = 0.;
-    rDeltaKappa(1) = 0.;
     // *****************************************************************
     //                   elastic matrix generation                     *
     // *****************************************************************
@@ -1262,21 +1258,25 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     Eigen::Matrix<double,1,1> dDInv;
 
     {
-        Eigen::Matrix<double,6,6> dElast;
+/*        Eigen::Matrix<double,6,6> dElast;
         double factor = e_mod/((1.+nu)*(1.-2.*nu));
         double oneminusnufactor = (1-nu)*factor;
         double nufactor = nu*factor;
 
-        dElast <<  oneminusnufactor , nufactor         , nufactor , 0.             , 0.              , 0.         ,
-                   nufactor         , oneminusnufactor , nufactor , 0.             , 0.              , 0.         ,
-                   nufactor         , nufactor , oneminusnufactor , 0.             , 0.              , 0.         ,
-                   0.               , 0.               , 0.       ,(0.5-nu)*factor , 0.              , 0.         ,
-                   0.               , 0.               , 0.       , 0.             , (0.5-nu)*factor , 0.,
-                   0.               , 0.               , 0.       , 0.             , 0.              , (0.5-nu)*factor;
+        dElast <<  oneminusnufactor , nufactor         , nufactor         , 0.             , 0.              , 0.         ,
+                   nufactor         , oneminusnufactor , nufactor         , 0.             , 0.              , 0.         ,
+                   nufactor         , nufactor         , oneminusnufactor , 0.             , 0.              , 0.         ,
+                   0.               , 0.               , 0.               ,(0.5-nu)*factor , 0.              , 0.         ,
+                   0.               , 0.               , 0.               , 0.             , (0.5-nu)*factor , 0.         ,
+                   0.               , 0.               , 0.               , 0.             , 0.              , (0.5-nu)*factor;
 
         // this can be accelerated by directly calculating the matrices as a function of e and nu
-        dD = dElast.block<1,1>(0,0)+ dElast.block<1,5>(0,1)*dElast.block<5,5>(1,1).inverse()*dElast.block<5,1>(1,0);
+        dD = dElast.block<1,1>(0,0)- dElast.block<1,5>(0,1)*dElast.block<5,5>(1,1).inverse()*dElast.block<5,1>(1,0);
+        std::cout << "dD \n" << dD << "\n";
+*/      dD(0,0) = e_mod;
+
         dDInv = dD.inverse();
+        std::cout << "dDInv \n" << dDInv << "\n";
     }
     //! @brief delta load factor for the previous iteration
     double deltaCutbackFactorExternal(1.);
@@ -1292,16 +1292,12 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #ifdef ENABLE_DEBUG
     int prevNumberOfInternalIterations(0);
 #endif
-    lastDeltaEqPlasticStrain = 0.;
+    lastDeltaKappa.setZero();
     while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
     {
         numberOfExternalCutbacks++;
 
-        //curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
-
 #ifdef ENABLE_DEBUG
-        rLogger << "\n" << "curTotalStrain " << curTotalStrain.transpose() << "\n";
-//        rLogger << "\n" << "rPrevTotalStrain" << rPrevTotalStrain << "\n";
         rLogger << "\n" << "cutbackFactorExternal " << cutbackFactorExternal << "\n";
 #endif
 
@@ -1315,16 +1311,21 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             //TODO just use the upper part for new EigenVersion 3.0
             initTrialStress = lastStress + deltaCutbackFactorExternal*dD*deltaStrain;
 #ifdef ENABLE_DEBUG
-            rLogger << "trialStress " << "\n" << trialStress.transpose() << "\n" << "\n";
+            rLogger << "initTrialStress " << "\n" << initTrialStress.transpose() << "\n" << "\n";
+            rLogger << "lastStress " << "\n" << lastStress.transpose() << "\n" << "\n";
+            rLogger << "deltaCutbackFactorExternal " << "\n" << deltaCutbackFactorExternal << "\n" << "\n";
+            rLogger << "deltaStrain " << "\n" << deltaStrain.transpose() << "\n" << "\n";
+            rLogger << "dD*deltaStrain " << "\n" << dD*deltaStrain << "\n" << "\n";
+            rLogger << "deltaCutbackFactorExternal*dD*deltaStrain " << "\n" << deltaCutbackFactorExternal*dD*deltaStrain << "\n" << "\n";
 #endif
 
             //calculate yield condition
             //Drucker Prager
             bool errorDerivative(false);
-            initYieldCondition(0) = YieldSurfaceDruckerPrager1D(initTrialStress, BETA, H_P, 0 ,0, errorDerivative);
+            initYieldCondition(0) = YieldSurfaceDruckerPrager1D(initTrialStress, BETA, H_P, 0 , 0, 0, 0, errorDerivative);
 
             //rounded Rankine (0,0 no first and second derivative
-            initYieldCondition(1) = YieldSurfaceRankine1DRounded(initTrialStress, f_ct, 0, 0);
+            initYieldCondition(1) = YieldSurfaceRoundedRankine1D(initTrialStress, f_ct, 0, 0, 0, 0);
 
 #ifdef ENABLE_DEBUG
             rLogger << "initYieldCondition " << "\n" << initYieldCondition(0) << " " << initYieldCondition(1) << "\n";
@@ -1341,19 +1342,18 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #endif
                 convergedInternal = true;
                 lastStress = trialStress;
-                //no need to update plastic strains and equivalent plastic strains since they do not change for an elatic step
+                //no need to update plastic strains and equivalent plastic strains since they do not change for an elastic step
                 if (cutbackFactorExternal==1)
                 {
                     rStress = initTrialStress;
-                    rPlasticStrain = lastPlasticStrain;
-                    //rDeltaEqPlasticStrainDP = 0.; This is already set at the beginning (at not modified due to the elastic steps
-                    //rDeltaEqPlasticStrainRK = 0.;
-                    if (rdSigmadEpsilon!=0)
-                    	*rdSigmadEpsilon = dD;
-                    if (rdEpsilonPDPdEpsilon!=0)
-                    	rdEpsilonPDPdEpsilon->setZero(1,1);
-                    if (rdEpsilonPRKdEpsilon!=0)
-                    	rdEpsilonPRKdEpsilon->setZero(1,1);
+                    rPlasticStrain = lastPlastStrain;
+                    rDeltaKappa.setZero();
+                    if (rdSigma1dEpsilon1!=0)
+                    	*rdSigma1dEpsilon1 = dD;
+                    if (rdKappadEpsilon1!=0)
+                    {
+                    	rdKappadEpsilon1->setZero();
+                    }
                     return Error::SUCCESSFUL;
                 }
             }
@@ -1365,7 +1365,6 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 				// initialize plastic multiplier and perform return mapping
 				deltaGamma.setZero();
 				delta2Gamma.setZero();
-				rYieldConditionFlag.setZero();
 
 				//try different combinations of yield surfaces {RK, DP and RK, DP}
 				for (int fixedYieldConditions=0; fixedYieldConditions<3 && convergedInternal==false; fixedYieldConditions++)
@@ -1415,8 +1414,8 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						numberOfInternalIterations++;
 						if (iteration==0)
 						{
-							rEpsilonP = lastPlastStrain;
-							rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
+							rPlasticStrain = lastPlastStrain;
+							rDeltaKappa = lastDeltaKappa;
 							yieldCondition= initYieldCondition;
 							trialStress = initTrialStress;
 						}
@@ -1426,12 +1425,12 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 							if (rYieldConditionFlag(0)==ACTIVE)
 								yieldCondition(0) = yieldConditionLS(0);
 							else
-								yieldCondition(0) = YieldSurfaceDruckerPrager3D(trialStress, BETA, H_P, 0, 0, errorDerivative);
+								yieldCondition(0) = YieldSurfaceDruckerPrager1D(trialStress, BETA, H_P, 0, 0, 0, 0, errorDerivative);
 
 							if (rYieldConditionFlag(1)==ACTIVE)
 								yieldCondition(1) = yieldConditionLS(1);
 							else
-								yieldCondition(1) = YieldSurfaceRankine3DRounded(trialStress, f_ct, 0, 0);
+								yieldCondition(1) = YieldSurfaceRoundedRankine1D(trialStress, f_ct, 0, 0, 0, 0);
 
 						}
 #ifdef ENABLE_DEBUG
@@ -1442,7 +1441,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						// DP
 						if (rYieldConditionFlag(0)==ACTIVE)
 						{
-							YieldSurfaceDruckerPrager1D(trialStress, BETA, H_P,&(dF_dsigma[0]),&(d2F_d2Sigma[0]), errorDerivative);
+							YieldSurfaceDruckerPrager1D(trialStress, BETA, H_P,&(dF_dsigma1[0]),0,&(d2F_d2Sigma1[0]), 0, errorDerivative);
 							if (errorDerivative)
 							{
 								//no convergence, decrease line search step
@@ -1450,27 +1449,27 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								continue;
 							}
 #ifdef ENABLE_DEBUG
-							rLogger << "dF_dsigma[0] (DP) " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+							rLogger << "dF_dsigma[0] (DP) " <<  "\n" << dF_dsigma1[0].transpose() << "\n" << "\n";
 #endif
 						}
 
 						// Rounded Rankine
 						if (rYieldConditionFlag(1)==ACTIVE)
 						{
-							YieldSurfaceRankine1DRounded(trialStress,f_ct, &(dF_dsigma[1]),&(d2F_d2Sigma[1]));
+							YieldSurfaceRoundedRankine1D(trialStress,f_ct, &(dF_dsigma1[1]), 0, &(d2F_d2Sigma1[1]), 0);
 						}
 
 
 						// ************************************************************************
 						//  residual
 						// ************************************************************************
-						residual = lastPlastStrain-rEpsilonP;
+						residual = lastPlastStrain-rPlasticStrain;
 
-						for (int count=0; count<numYieldSurfaces; count++)
+						for (int count=0; count<NUMYIELDSURFACES; count++)
 						{
 							if (rYieldConditionFlag[count] == ACTIVE)
 							{
-								residual += deltaGamma(count)*dF_dsigma[count];
+								residual += deltaGamma(count)*dF_dsigma1[count];
 							}
 						}
 
@@ -1488,14 +1487,14 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						// in case of PERFECT PLASTICITY [A] = hessian
 						hessian = dDInv;
 
-						for (int count=0; count<numYieldSurfaces; count++)
+						for (int count=0; count<NUMYIELDSURFACES; count++)
 						{
 							if (rYieldConditionFlag(count)==ACTIVE)
 							{
 #ifdef ENABLE_DEBUG
-						rLogger << iteration <<" d2F_d2Sigma[" << count << "] "<< "\n" << d2F_d2Sigma[count] << "\n" << "\n";
+						rLogger << iteration <<" d2F_d2Sigma[" << count << "] "<< "\n" << d2F_d2Sigma1[count] << "\n" << "\n";
 #endif
-								hessian+=deltaGamma(count)*d2F_d2Sigma[count].block<1,1>(0,0);
+								hessian+=deltaGamma(count)*d2F_d2Sigma1[count].block<1,1>(0,0);
 							}
 						}
 #ifdef ENABLE_DEBUG
@@ -1521,7 +1520,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 							convergenceFlagYieldCondition = false;
 						else
 						{
-							for (int count=0; count<numYieldSurfaces; count++)
+							for (int count=0; count<NUMYIELDSURFACES; count++)
 							{
 								if (rYieldConditionFlag(count) == INACTIVE)
 									continue;
@@ -1536,7 +1535,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						if (convergenceFlagYieldCondition==true)
 						{
 							// convergence is achieved - now check if the deltaGamma is nonnegative and all other yield surfaces are valid
-							for (int count=0; count<numYieldSurfaces; count++)
+							for (int count=0; count<NUMYIELDSURFACES; count++)
 							{
 								if (rYieldConditionFlag(count) == INACTIVE)
 								{
@@ -1571,14 +1570,14 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 							if (cutbackFactorExternal==1)
 							{
 								// compute elasto_plastic matrix
-								if (rdSigmadEpsilon!=0)
+								if (rdSigma1dEpsilon1!=0)
 								{
 									// compute elasto plastic d_matrix
 									// compute G_matrix
 									int curYieldFunction = 0;
 									matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-									vectorN.resize(numYieldSurfaces);
-									for (int count=0; count<numYieldSurfaces; count++)
+									vectorN.resize(NUMYIELDSURFACES);
+									for (int count=0; count<NUMYIELDSURFACES; count++)
 									{
 										if (rYieldConditionFlag(count)==INACTIVE)
 											continue;
@@ -1588,7 +1587,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 											if (rYieldConditionFlag(count2)==INACTIVE)
 												continue;
 
-											matG(curYieldFunction,curYieldFunction2) = (dF_dsigma[count].transpose() * hessian * dF_dsigma[count2])(0);
+											matG(curYieldFunction,curYieldFunction2) = (dF_dsigma1[count].transpose() * hessian * dF_dsigma1[count2]);
 											// copy symmetric part
 											if (count!=count2)
 												matG(curYieldFunction2,curYieldFunction) = matG(curYieldFunction,curYieldFunction2);
@@ -1597,7 +1596,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 										}
 
 										// N
-										vectorN[count] = hessian * dF_dsigma[count];
+										vectorN[count] = hessian * dF_dsigma1[count];
 #ifdef ENABLE_DEBUG
 										rLogger << "vectorN[ " << count <<"]" << "\n" << vectorN[count] <<"\n"<< "\n";
 #endif
@@ -1613,65 +1612,97 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 									rLogger << "matGInv " << "\n" << matGInv <<"\n"<< "\n";
 									rLogger << "hessian " << "\n" << hessian <<"\n"<< "\n";
 #endif
-									*rdSigmadEpsilon = hessian;
+									*rdSigma1dEpsilon1 = hessian;
 									curYieldFunction = 0;
-									for (int count=0; count<numYieldSurfaces; count++)
+									for (int count=0; count<NUMYIELDSURFACES; count++)
 									{
 										if (rYieldConditionFlag(count)==INACTIVE)
 											continue;
 										int curYieldFunction2 = 0;
-										for (int count2=0; count2<numYieldSurfaces; count2++)
+										for (int count2=0; count2<NUMYIELDSURFACES; count2++)
 										{
 											if (rYieldConditionFlag(count2)==INACTIVE)
 												continue;
-											*rdSigmadEpsilon-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
+											*rdSigma1dEpsilon1-=matGInv(curYieldFunction,curYieldFunction2)*vectorN[count]*vectorN[count2].transpose();
 											curYieldFunction2++;
 										}
 										curYieldFunction++;
 									}
 #ifdef ENABLE_DEBUG
-									rLogger << "rdSigmadEpsilon " << "\n" << rdSigmadEpsilon <<"\n"<< "\n";
+									rLogger << "rdSigmadEpsilon " << "\n" << rdSigma1dEpsilon1 <<"\n"<< "\n";
 #endif
 								}
 
 								//calculate delta epsilonp and the increment of the equivalent plastic strain
-								curYieldFunction = 0;
 								Eigen::Matrix<double,6,2> deltaEpsilonP;
-								for (int count=0; count<numYieldSurfaces; count++)
+
+								//! @brief first derivatives of the yield functions
+							    Eigen::Matrix<double,5,1> dF_dsigma2[2];
+
+							    //! @brief second derivatives of the yield functions
+							    Eigen::Matrix<double,5,1> d2F_dSigma2dSigma1[2];
+
+							    //calculate the derivatives
+								if (rYieldConditionFlag(0)==ACTIVE)
+								{
+									//Drucker Prager
+									YieldSurfaceDruckerPrager1D(trialStress, BETA, H_P,0,&(dF_dsigma2[0]), 0,&(d2F_dSigma2dSigma1[0]), errorDerivative);
+									if (errorDerivative)
+									{
+										throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] Drucker Prager derivative can't be calculated.");
+									}
+								}
+
+								// Rounded Rankine
+								if (rYieldConditionFlag(1)==ACTIVE)
+								{
+									YieldSurfaceRoundedRankine1D(trialStress,f_ct, 0, &(dF_dsigma2[0]), 0,&(d2F_dSigma2dSigma1[0]));
+								}
+
+								for (int count=0; count<NUMYIELDSURFACES; count++)
 								{
 									if (rYieldConditionFlag[count]==ACTIVE)
 									{
 										deltaEpsilonP.block<1,1>(0,count) = deltaGamma(count)*dF_dsigma1[count];
-										deltaEpsilonP.block<5,1>(0,count) = deltaGamma(count)*dF_dsigma2[count];
+										deltaEpsilonP.block<5,1>(1,count) = deltaGamma(count)*dF_dsigma2[count];
+#ifdef ENABLE_DEBUG
+								rLogger << "deltaEpsilonP\n" << deltaEpsilonP.col(count).transpose() <<"\n";
+								rLogger << "deltaGamma\n" << deltaGamma.row(count) <<"\n";
+								rLogger << "dF_dsigma1\n" << dF_dsigma1[count].transpose() <<"\n";
+								rLogger << "dF_dsigma2\n" << dF_dsigma2[count].transpose() <<"\n";
+#endif
 
 										//remember we store gamma, not epsilon
-										deltaKappa(count,0) = sqrt(deltaEpsilonP(0,count)*deltaEpsilonP(0,count)+deltaEpsilonP(1,count)*deltaEpsilonP(1,count)+deltaEpsilonP(2,count)*deltaEpsilonP(2,count)+
+										rDeltaKappa(count,0) = sqrt(deltaEpsilonP(0,count)*deltaEpsilonP(0,count)+deltaEpsilonP(1,count)*deltaEpsilonP(1,count)+deltaEpsilonP(2,count)*deltaEpsilonP(2,count)+
 													 0.5*(deltaEpsilonP(3,count)*deltaEpsilonP(3,count)+deltaEpsilonP(4,count)*deltaEpsilonP(4,count)+deltaEpsilonP(5,count)*deltaEpsilonP(5,count)));
+#ifdef ENABLE_DEBUG
+								rLogger << "rDeltaKappa " << rDeltaKappa.transpose() <<"\n";
+#endif
 									}
 									else
 									{
-										deltaKappa(count,0)=0.;
+										rDeltaKappa(count,0)=0.;
 									}
 								}
 
 
 								//update depsilonp depsilon
-								if (rdKappadEpsilon!=0)
+								if (rdKappadEpsilon1!=0)
 								{
-									if (rdSigmadEpsilon==0)
+									if (rdSigma1dEpsilon1==0)
 							               throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] rdKappaDPdEpsilon can only be calculated together with dsigmadepsilon.");
 
 									//! @brief G_inv*dfdsigmaT*Sigma
 								    Eigen::Matrix<double,Eigen::Dynamic,1> tmpMatrix; //dimension is numYieldsurfaces*sigma_1
 								    tmpMatrix.setZero(numActiveYieldFunctions,1);
 
-									curYieldFunction = 0;
-									for (int count=0; count<numYieldSurfaces; count++)
+									int curYieldFunction = 0;
+									for (int count=0; count<NUMYIELDSURFACES; count++)
 									{
 										if (rYieldConditionFlag(count)==INACTIVE)
 											continue;
 										int curYieldFunction2 = 0;
-										for (int count2=0; count2<numYieldSurfaces; count2++)
+										for (int count2=0; count2<NUMYIELDSURFACES; count2++)
 										{
 											if (rYieldConditionFlag(count2)==INACTIVE)
 												continue;
@@ -1681,37 +1712,30 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 										curYieldFunction++;
 									}
 
-									//! @brief first derivatives of the yield functions
-								    Eigen::Matrix<double,1,1> dF_dsigma2[2];
-
-								    //! @brief second derivatives of the yield functions
-								    Eigen::Matrix<double,5,1> d2F_dSigma2dSigma1[2];
-
-								    //calculate the derivatives
-								    throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] Calculate the derivatives.");
-
 									curYieldFunction = 0;
-									for (int count=0; count<numYieldSurfaces; count++)
+									for (int count=0; count<NUMYIELDSURFACES; count++)
 									{
 										if (rYieldConditionFlag[count]==ACTIVE)
 										{
 
 											if (rdKappadEpsilon1!=0)
 											{
-												Eigen::Matrix<double,1,1> depsilonPdepsilon1;
-												depsilonPdepsilon1  = dF_dsigma[count]*tmpMatrix.row(curYieldFunction);
-												depsilonPdepsilon1.block<1,1>(0,0) += deltaGamma(count0)*d2F_d2Sigma[count]*(*rdSigmadEpsilon);
-												depsilonPdepsilon1.block<5,1>(1,0) += deltaGamma(count0)*d2F_dSigma2dSigma1[count]*(*rdSigma1dEpsilon1);
+												Eigen::Matrix<double,6,1> depsilonPdepsilon1;
+												depsilonPdepsilon1.block<1,1>(0,0)  = dF_dsigma1[count]*tmpMatrix.block<1,1>(curYieldFunction,0);
+												depsilonPdepsilon1.block<5,1>(1,0)  = dF_dsigma2[count]*tmpMatrix.block<1,1>(curYieldFunction,0);
 
-												if (deltaKappa(count,0)>tolerancekappa)
+												depsilonPdepsilon1.block<1,1>(0,0) += deltaGamma(count)*d2F_d2Sigma1[count]*(*rdSigma1dEpsilon1);
+												depsilonPdepsilon1.block<5,1>(1,0) += deltaGamma(count)*d2F_dSigma2dSigma1[count]*(*rdSigma1dEpsilon1);
+
+												if (rDeltaKappa(count)>tolerancekappa)
 												{
-													(*rdKappadEpsilon1)[count] = deltaEpsilonP*depsilonPDPdepsilon1*(1./deltaKappa);
+													(*rdKappadEpsilon1).row(count)= (1./rDeltaKappa(count,0))*(deltaEpsilonP.col(count).transpose()*depsilonPdepsilon1);
 												}
 												else
 												{
 													(*rdKappadEpsilon1)[count] = 0;
 													for (int count2=0; count2<6; count2++)
-													   (*rdKappadEpsilon1)[count] += depsilonPDPdepsilon1(count2,count);
+													   (*rdKappadEpsilon1)[count] += depsilonPdepsilon1(count2,count);
 												}
 											}
 
@@ -1739,7 +1763,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								//compute delta gamma
 								int curYieldFunction = 0;
 								matG.setZero(numActiveYieldFunctions,numActiveYieldFunctions);
-								for (int count=0; count<numYieldSurfaces; count++)
+								for (int count=0; count<NUMYIELDSURFACES; count++)
 								{
 									if (rYieldConditionFlag(count)==INACTIVE)
 										continue;
@@ -1774,23 +1798,22 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 
 								// compute deltaGamma
 								Eigen::Matrix<double,1,1> helpVector = hessian * residual;
-								Eigen::Matrix<double,1,1> helpVector2; helpVector2.Zero();
-								for (int count=0; count<numYieldSurfaces; count++)
+								Eigen::Matrix<double,2,1> helpVector2; helpVector2.Zero();
+								for (int count=0; count<NUMYIELDSURFACES; count++)
 								{
 									if (rYieldConditionFlag(count)==INACTIVE)
 										continue;
-
 									helpVector2(count) = yieldCondition(count) - dF_dsigma1[count].dot(helpVector);
 								}
 
 								curYieldFunction = 0;
-								for (int count=0; count<numYieldSurfaces; count++)
+								for (int count=0; count<NUMYIELDSURFACES; count++)
 								{
 									if (rYieldConditionFlag(count)==INACTIVE)
 										continue;
 									delta2Gamma(count) = 0.;
 									int curYieldFunction2 = 0;
-									for (int count2=0; count2<numYieldSurfaces; count2++)
+									for (int count2=0; count2<NUMYIELDSURFACES; count2++)
 									{
 										if (rYieldConditionFlag(count2)==INACTIVE)
 											continue;
@@ -1809,8 +1832,11 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								//  compute increments for stress
 								// ******************************************************************
 								helpVector = residual;
+#ifdef ENABLE_DEBUG
+								rLogger<<"residual " << residual.transpose()<<"\n"<< "\n";
+#endif
 
-								for (int count=0; count<numYieldSurfaces; count++)
+								for (int count=0; count<NUMYIELDSURFACES; count++)
 								{
 									if (rYieldConditionFlag(count)==INACTIVE)
 										continue;
@@ -1819,6 +1845,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #endif
 									helpVector += delta2Gamma(count)*dF_dsigma1[count];
 								}
+#ifdef ENABLE_DEBUG
+								rLogger<<"helpVector " << helpVector.transpose()<<"\n"<< "\n";
+#endif
 
 								deltaStress =  hessian * helpVector;
 #ifdef ENABLE_DEBUG
@@ -1834,7 +1863,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								// whereas the residuals are the difference between (total -elastic) and (plastic strain)
 								// and the yield conditions
 								double normInit = residual.squaredNorm();
-								for (int count=0; count<numYieldSurfaces; count++)
+								for (int count=0; count<NUMYIELDSURFACES; count++)
 								{
 									if (rYieldConditionFlag(count)==INACTIVE)
 										continue;
@@ -1849,8 +1878,8 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 									//the minus sign is due to the negative sign of deltaStress not considered in the previous calculation
 									deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
 									stressLS = trialStress - cutbackFactorLS*deltaStress;
-									deltaPlasticStrainLS = dDInv*deltaStress*(-cutbackFactorLS);
-									epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
+									deltaPlasticStrainLS = dDInv*deltaStress*(cutbackFactorLS);
+									epsilonPLS = rPlasticStrain + deltaPlasticStrainLS;
 
 
 #ifdef ENABLE_DEBUG
@@ -1864,30 +1893,33 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 									// Drucker Prager
 									if (rYieldConditionFlag(0)==ACTIVE)
 									{
-										yieldConditionLS(0) = YieldSurfaceDruckerPrager1D(stressLS, BETA, H_P,&(dF_dsigma1[0]),0,errorDerivative);
+										yieldConditionLS(0) = YieldSurfaceDruckerPrager1D(stressLS, BETA, H_P,&(dF_dsigma1[0]),0,0,0,errorDerivative);
 										if (errorDerivative)
 										{
 											//no convergence, decrease line search step
 											convergedLS =false;
 										}
 #ifdef ENABLE_DEBUG
-										rLogger << "dF_dsigma[0] " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+										rLogger << "dF_dsigma[0] " <<  "\n" << dF_dsigma1[0].transpose() << "\n" << "\n";
 #endif
 									}
 
 									// Rounded Rankine
 									if (rYieldConditionFlag(1)==ACTIVE)
 									{
-										yieldConditionLS(1) = YieldSurfaceRankine1DRounded(stressLS, f_ct,&(dF_dsigma1[1]),0);
+										yieldConditionLS(1) = YieldSurfaceRoundedRankine1D(stressLS, f_ct,&(dF_dsigma1[1]),0,0,0);
 #ifdef ENABLE_DEBUG
-										rLogger << "dF_dsigma[1] " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+										rLogger << "dF_dsigma[1] " <<  "\n" << dF_dsigma1[1].transpose() << "\n" << "\n";
 #endif
 									}
 
 									// residual in line search
 									residualLS = lastPlastStrain-epsilonPLS;
+#ifdef ENABLE_DEBUG
+									rLogger << "residual linesearch" <<  "\n" << residualLS.transpose() << "\n" << "\n";
+#endif
 
-									for (int count=0; count<numYieldSurfaces; count++)
+									for (int count=0; count<NUMYIELDSURFACES; count++)
 									{
 										if (rYieldConditionFlag[count] == ACTIVE)
 										{
@@ -1899,7 +1931,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 									rLogger << "residual linesearch" <<  "\n" << residualLS.transpose() << "\n" << "\n";
 #endif
 									double normCurr = residualLS.squaredNorm();
-									for (int count=0; count<numYieldSurfaces; count++)
+									for (int count=0; count<NUMYIELDSURFACES; count++)
 									{
 										if (rYieldConditionFlag(count)==INACTIVE)
 											continue;
@@ -1923,13 +1955,13 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								}
 								trialStress = stressLS;
 								deltaGamma = deltaGammaLS;
-								rEpsilonP = epsilonPLS;
+								rPlasticStrain = epsilonPLS;
 
 #ifdef ENABLE_DEBUG
 								if (rYieldConditionFlag(0)==ACTIVE)
-									rLogger << "dF_dsigma[0] at end of line search " <<  "\n" << dF_dsigma[0].transpose() << "\n" << "\n";
+									rLogger << "dF_dsigma[0] at end of line search " <<  "\n" << dF_dsigma1[0].transpose() << "\n" << "\n";
 								if (rYieldConditionFlag(1)==ACTIVE)
-									rLogger << "dF_dsigma[1] at end of line search " <<  "\n" << dF_dsigma[1].transpose() << "\n" << "\n";
+									rLogger << "dF_dsigma[1] at end of line search " <<  "\n" << dF_dsigma1[1].transpose() << "\n" << "\n";
 								rLogger << "numberOfLinesearchSteps " << numberOfLinesearchSteps << "\n";
 #endif
 							}//if (iteration<maxSteps)
@@ -1940,7 +1972,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                 if (convergedInternal==false)
                 {
                     rLogger << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << "\n";
-                    for (int count=0; count<2; count++)
+                    for (int count=0; count<NUMYIELDSURFACES; count++)
                     {
                         if (rYieldConditionFlag(count)==ACTIVE)
                         {
@@ -1973,23 +2005,14 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             prevNumberOfInternalIterations = numberOfInternalIterations;
 #endif
 
-            //update equivalente plastic strain
-            deltaPlasticStrain = rEpsilonP - lastPlastStrain;
-            rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
-                            0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
-
-//            double tmp(sqrt(rEpsilonP(0)*rEpsilonP(0) + rEpsilonP(1)*rEpsilonP(1)+ 0.5*rEpsilonP(2)*rEpsilonP(2)+ rEpsilonP(3)*rEpsilonP(3)));
-//            rLogger << "\n" << "rDeltaEqPlasticStrain " << rDeltaEqPlasticStrain << "Norm of epsilonp " << tmp << "delta between " << rDeltaEqPlasticStrain - tmp << "\n"<< "\n";
-//            rLogger << "\n" << "rEpsilonP " << rEpsilonP << "Norm of epsilonp " << "\n";
-
             if (cutbackFactorExternal==1.)
             {
                 convergedExternal=true;
             }
             else
             {
-                lastPlastStrain = rEpsilonP;
-                lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
+                lastPlastStrain = rPlasticStrain;
+                lastDeltaKappa = rDeltaKappa;
 
                 if (numberOfInternalIterations<10)
                     deltaCutbackFactorExternal*=1.5;
@@ -2017,7 +2040,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         rLogger << "[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] No convergence can be obtained in the return mapping procedure." << "n";
         return Error::NO_CONVERGENCE;
     }
-*/
+
     return Error::SUCCESSFUL;
 }
 

@@ -13,6 +13,7 @@
 
 namespace NuTo
 {
+
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
 //!            in case of restoring from a file with the wrong object type, the file id is printed
 //! @return    class name FullMatrixDouble
@@ -39,7 +40,7 @@ FullMatrix<double> FullMatrix<int>::Convert2double()
     FullMatrix<double> doubleMatrix(GetNumRows(),GetNumColumns());
     for (int count=0; count<GetNumColumns(); count++)
         for (int count2=0; count2<GetNumRows(); count2++)
-            doubleMatrix(count2,count) = (double)mEigenMatrix(count2,count);
+            doubleMatrix(count2,count) = (double)(*this)(count2,count);
 
     return doubleMatrix;
 }
@@ -60,7 +61,7 @@ FullMatrix<int> FullMatrix<double>::Convert2int()
     FullMatrix<int> intMatrix(GetNumRows(),GetNumColumns());
     for (int count=0; count<GetNumColumns(); count++)
         for (int count2=0; count2<GetNumRows(); count2++)
-            intMatrix(count2,count) = (int)mEigenMatrix(count2,count);
+            intMatrix(count2,count) = (int)(*this)(count2,count);
 
     return intMatrix;
 }
@@ -74,21 +75,21 @@ FullMatrix<int> FullMatrix<int>::Convert2int()
 }
 
 //! @brief ... multiply this matrix by a vector (which is stored in a vector
-//! @param other ... scalar factor
-//! @return reference to this matrix
+//! @param other ... vector
+//! @return matrix
 template<>
 FullMatrix<double> FullMatrix<double>::operator* ( const std::vector<double> &other ) const
 {
-    return FullMatrix<double> ( mEigenMatrix*Eigen::Map<Eigen::VectorXd>((double*)&(other[0]),other.size()));
+    return FullMatrix<double> (((Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>)(*this))*Eigen::Map<Eigen::VectorXd>((double*)&(other[0]),other.size()));
 }
 
 //! @brief ... multiply this matrix by a vector (which is stored in a vector
-//! @param other ... scalar factor
-//! @return reference to this matrix
+//! @param other ... vector
+//! @return  matrix
 template<>
 FullMatrix<int> FullMatrix<int>::operator* ( const std::vector<int> &other ) const
 {
-    return FullMatrix<int> ( mEigenMatrix*Eigen::Map<Eigen::VectorXi>((int*)&(other[0]),other.size()));
+    return FullMatrix<int> ( ((Eigen::Matrix<int,Eigen::Dynamic,Eigen::Dynamic>)(*this))*Eigen::Map<Eigen::VectorXi>((int*)&(other[0]),other.size()));
 }
 
 // import SLang matrix or vector
@@ -141,7 +142,7 @@ void FullMatrix<double>::ImportFromSLangText(const char* fileName)
         }
         for (unsigned int colCount = 0; colCount < objectNumColumns; colCount++)
         {
-            this->mEigenMatrix(rowCount, colCount) = rowValues[colCount];
+            (*this)(rowCount, colCount) = rowValues[colCount];
         }
     }
 
@@ -203,7 +204,7 @@ void FullMatrix<int>::ImportFromVtkASCIIFile(const char* rFileName)
     }
     for (int count = 0; count<numEntries; count++)
     {
-        this->mEigenMatrix(count, 0) = imageValues[count];
+        (*this)(count, 0) = imageValues[count];
     }
     // close file
    file.close();
@@ -218,13 +219,13 @@ void FullMatrix<double>::ImportFromVtkASCIIFile(const char* rfileName)
 template<>
 FullMatrix<int> FullMatrix<int>::Abs() const
 {
-	return FullMatrix<int> ( mEigenMatrix.array().abs() );
+	return FullMatrix<int>(this->array().abs().matrix());
 }
 
 template<>
  FullMatrix<double> FullMatrix<double>::Abs() const
 {
-	return FullMatrix<double> ( mEigenMatrix.array().abs() );
+	return FullMatrix<double> ( this->array().abs().matrix());
 }
 template<>
 void FullMatrix<int>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
@@ -256,7 +257,7 @@ void FullMatrix<double>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, Ful
 	}
 
 	// copy coefficient matrix and perform cholesky factorization
-	FullMatrix<double> choleskyMatrix(this->mEigenMatrix);
+	FullMatrix<double> choleskyMatrix(*this);
 	int dimCholeskyMatrix = choleskyMatrix.GetNumColumns();
 	char uplo('L');
 	int info(0);
@@ -322,7 +323,7 @@ void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) con
 	int dimMatrix = rInverse.GetNumColumns();
 	char uplo('L');
 	int info(0);
-	dpotrf_(&uplo, &dimMatrix, rInverse.mEigenMatrix.data(), &dimMatrix, &info);
+	dpotrf_(&uplo, &dimMatrix, rInverse.data(), &dimMatrix, &info);
 	if(info != 0)
 	{
 		std::string errorMessage("[NuTo::FullMatrix::InverseCholeskyLapack] Error calculating Cholesky factorization.");
@@ -364,7 +365,7 @@ void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) con
 	}
 
 	// copy values from lower triangle to upper triangle
-	double* data = rInverse.mEigenMatrix.data();
+	double* data = rInverse.data();
 	for(int col = 1; col < dimMatrix; col++)
 	{
 		for(int row = 0; row < col; row++)
@@ -390,7 +391,7 @@ FullMatrix<int> FullMatrix<int>::Inverse() const
 template<>
 FullMatrix<double> FullMatrix<double>::Inverse() const
 {
-    return FullMatrix<double>(mEigenMatrix.inverse());
+    return FullMatrix<double>(this->inverse().eval());
 }
 
 
@@ -407,7 +408,7 @@ double FullMatrix<int>::Norm() const
 template<>
 double FullMatrix<double>::Norm() const
 {
-    return mEigenMatrix.norm();
+    return this->norm();
 }
 
 
@@ -425,7 +426,7 @@ void FullMatrix<int>::EigenValuesSymmetric(FullMatrix<double>& rEigenValues) con
 template<>
 void FullMatrix<double>::EigenValuesSymmetric(FullMatrix<double>& rEigenValues) const
 {
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver(mEigenMatrix,false);
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver((*this),false);
     rEigenValues = FullMatrix<double>(mySolver.eigenvalues());
 }
 
@@ -442,7 +443,7 @@ void FullMatrix<int>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) c
 template<>
 void FullMatrix<double>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) const
 {
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver(mEigenMatrix);
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver((*this));
     rEigenVectors = FullMatrix<double>(mySolver.eigenvectors());
 }
 
@@ -587,4 +588,4 @@ template void FullMatrix<double>::Restore (const std::string&, std::string);
 
 #endif // ENABLE_SERIALIZATION
 
-}
+} //NAMESPACE NUTO

@@ -73,7 +73,7 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
 
     // prepare rSolution rMatrix (copy rMatrix of right hand side vectors)
     rSolution = rRhs;
-    const double *solutionValues = rSolution.GetEigenMatrix().data();
+    const double *solutionValues = rSolution.data();
 
     // initialize solver data
     DMUMPS_STRUC_C solver;
@@ -260,8 +260,8 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     solver.a   = const_cast<double*>(&matrixValues[0]); // values
     solver.rhs = 0;
     solver.size_schur = rSchurIndices.GetNumRows();
-    solver.listvar_schur = const_cast<int*>(rSchurIndices.GetEigenMatrix().data()); //variables of the schur matrix (the 1..size_schur)
-    solver.schur = rSchurComplementTranspose.GetEigenMatrix().data();
+    solver.listvar_schur = const_cast<int*>(rSchurIndices.data()); //variables of the schur matrix (the 1..size_schur)
+    solver.schur = rSchurComplementTranspose.data();
 
     // define solver specific parameters
     solver.icntl[0] = 0; // output stream for error messages

@@ -54,6 +54,7 @@ void NuTo::EngineeringStress3D::Info(unsigned short rVerboseLevel) const
 }
 
 #ifdef ENABLE_SERIALIZATION
+
 //! @brief serializes the class
 //! @param ar         archive
 //! @param version    version
@@ -69,7 +70,7 @@ void NuTo::EngineeringStress3D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStress3D" << std::endl;
 #endif
-   ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
       & BOOST_SERIALIZATION_NVP(mEngineeringStress);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStress3D" << std::endl;

@@ -44,7 +44,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double>& r
     
     // calculate mean
     this->mMean = 0.0;
-    const double *dataPtr = &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    const double *dataPtr = &rCoordinates.data()[mCoordinate];
     for (int count=0; count<rCoordinates.GetNumColumns(); count++)
 	{
         this->mMean += *dataPtr;
@@ -54,7 +54,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double>& r
     
     // calculate variance
     double variance = 0.0;
-    dataPtr = &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    dataPtr = &rCoordinates.data()[mCoordinate];
     for (int count=0; count<rCoordinates.GetNumColumns(); count++)
 	{
         double delta = *dataPtr - this->mMean;
@@ -83,7 +83,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<doubl
     }
 
     // transform coordinates
-    double *dataPtr =  &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    double *dataPtr =  &rCoordinates.data()[mCoordinate];
     for (int count=0; count<rCoordinates.GetNumColumns(); count++)
 	{
 	    *dataPtr = (*dataPtr - this->mMean)/this->mStandardDeviation;
@@ -105,7 +105,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(FullMatrix<doub
     }
 
     // transform coordinates
-    double *dataPtr =  &rCoordinates.mEigenMatrix.data()[mCoordinate];
+    double *dataPtr =  &rCoordinates.data()[mCoordinate];
     for (int count=0; count<rCoordinates.GetNumColumns(); count++)
 	{
 	    *dataPtr = *dataPtr * this->mStandardDeviation + this->mMean;

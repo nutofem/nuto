@@ -331,8 +331,8 @@ FullMatrix<double> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix
 
     for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
     {
-        const double* matrixValues = rMatrix.GetEigenMatrix().data() + matrixCol * rMatrix.GetNumRows();
-        double* resultValues = result.GetEigenMatrix().data() + matrixCol * rMatrix.GetNumRows();
+        const double* matrixValues = rMatrix.data() + matrixCol * rMatrix.GetNumRows();
+        double* resultValues = result.data() + matrixCol * rMatrix.GetNumRows();
         for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
         {
             for (int thisPos = this->mRowIndex[thisRow]; thisPos < this->mRowIndex[thisRow + 1]; thisPos++)

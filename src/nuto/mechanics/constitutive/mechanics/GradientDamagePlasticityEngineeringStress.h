@@ -210,7 +210,7 @@ public:
             Eigen::Matrix<double,1,1>& rPrevStress,
             Eigen::Matrix<double,1,1>& rStress,
             Eigen::Matrix<double,1,1>& rPlasticStrain,
-            boost::array<bool,2> rYieldConditionFlag,
+            Eigen::Matrix<int,2,1>& rYieldConditionFlag,
             Eigen::Matrix<double,2,1>& rDeltaKappa,
             Eigen::Matrix<double,1,1>* rdSigma1dEpsilon1,
             Eigen::Matrix<double,2,1>* rdKappadEpsilon1,
@@ -293,7 +293,7 @@ public:
     //! @return yield function
     double YieldSurfaceDruckerPrager1D(Eigen::Matrix<double,1,1>& rStress, double rBeta, double rHP,
             Eigen::Matrix<double,1,1>* rdF_dSigma1,Eigen::Matrix<double,5,1>* rdF_dSigma2,
-            Eigen::Matrix<double,1,1>* rd2F_d2Sigma1, Eigen::Matrix<double,5,1>* rd2F_dSigma2dSigma12,
+            Eigen::Matrix<double,1,1>* rd2F_d2Sigma1, Eigen::Matrix<double,5,1>* rd2F_dSigma2dSigma1,
             bool &rErrorDerivatives
             )const;
 

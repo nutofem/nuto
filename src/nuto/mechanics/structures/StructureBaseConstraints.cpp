@@ -778,7 +778,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
             throw MechanicsException("[NuTo::ConstraintNodeDisplacementsPeriodic2D::ConstraintNodeDisplacementsPeriodic2D] the strain is matrix (3,1) with (e_xx, e_yy, gamma_xy)");
 
         EngineeringStrain2D engineeringStrain;
-        engineeringStrain.SetData(rStrain.mEigenMatrix.data());
+        engineeringStrain.SetData(rStrain.data());
         ConstraintBase* constraintPtr = new NuTo::ConstraintLinearDisplacementsPeriodic2D(this, rAngle, engineeringStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
                    nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
 
