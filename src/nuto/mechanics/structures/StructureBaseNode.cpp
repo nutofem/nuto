@@ -13,7 +13,7 @@
 //! @brief sets the displacements of a node
 //! @param rIdent node identifier
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<double>& rDisplacements)
+void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -61,7 +61,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullMatrix<doubl
 //! @param rIdent node identifier
 //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, const FullMatrix<double>& rDisplacements)
+void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -110,7 +110,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
 //! @brief sets the rotations of a node
 //! @param rIdent node identifier
 //! @param rRotations matrix (one column) with the rotations
-void NuTo::StructureBase::NodeSetRotations(int rNode, const FullMatrix<double>& rRotations)
+void NuTo::StructureBase::NodeSetRotations(int rNode, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRotations)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -154,7 +154,7 @@ void NuTo::StructureBase::NodeSetRotations(int rNode, const FullMatrix<double>& 
 //! @brief sets the displacements of a group of nodes
 //! @param rIdent node group identifier
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullMatrix<double>& rDisplacements)
+void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -212,7 +212,7 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullM
 //! @param rIdent node group identifier
 //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDerivative, const FullMatrix<double>& rDisplacements)
+void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -274,7 +274,7 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
 //! @brief gets the displacements of a node
 //! @param rIdent node identifier
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rDisplacements)const
+void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -322,7 +322,7 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 //! @brief gets the rotations of a node
 //! @param rIdent node identifier
 //! @param rRotation matrix (one column) with the rotations
-void NuTo::StructureBase::NodeGetRotations(int rNode, FullMatrix<double>& rRotations)const
+void NuTo::StructureBase::NodeGetRotations(int rNode, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRotations)const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -365,7 +365,7 @@ void NuTo::StructureBase::NodeGetRotations(int rNode, FullMatrix<double>& rRotat
 //! @brief gets the displacements of a group of nodes
 //! @param rNodeGroup node group identifier
 //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
-void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<double>& rDisplacements)
+void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -433,7 +433,7 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<
 //! @brief gets the coordinates of a node
 //! @param rNode node identifier
 //! @param rCoordinates matrix (one column) with the coordinates
-void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>& rCoordinates)const
+void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -481,7 +481,7 @@ void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullMatrix<double>
 //! @brief gets the coordinates of a group of nodes
 //! @param rNodeGroup node group identifier
 //! @param rCoordinates matrix (rows/nodes columns/rCoordinates)
-void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<double>& rCoordinates)
+void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -549,7 +549,7 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<do
 //! @brief calculate the internal force vector for a node
 //! @param rId ... node id
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& rNodeForce)
+void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -579,7 +579,7 @@ void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullMatrix<double>& r
 //! @brief calculate the internal force vector for a node group of nodes
 //! @param rGroupIdent ... group identifier
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatrix<double>& rNodeForce)
+void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -593,7 +593,7 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatr
     const Group<NodeBase> *nodeGroup = dynamic_cast<const Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
 
-	NuTo::FullMatrix<double>nodeForceLocal;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>nodeForceLocal;
 
 	if (nodeGroup->GetNumMembers()==0)
 		throw MechanicsException("[NuTo::StructureBase::NodeGroupForce] Node group is empty.");
@@ -628,7 +628,7 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullMatr
 //! @brief calculate the internal force vector for a node
 //! @param rNodePtr  node for which this has to be calculated
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double>& rNodeForce)
+void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce)
 {
 	try
 	{
@@ -651,7 +651,7 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::Full
 				{
 					elementPtr->Evaluate(elementOutput);
 
-					NuTo::FullMatrix<double>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
 	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
 	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
@@ -687,7 +687,7 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::Full
 //! @brief ... store all element ids connected to this node in a vector
 //! @param rNode (Input) 			... node id
 //! @param rElementNumbers (Output) ... vector of element ids
-void NuTo::StructureBase::NodeGetElements(const int rNodeId, NuTo::FullMatrix<int>& rElementNumbers)
+void NuTo::StructureBase::NodeGetElements(const int rNodeId, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementNumbers)
 {
     throw MechanicsException("[NuTo::StructureBase::NodeGetElements] Not available for this structure type.");
 }

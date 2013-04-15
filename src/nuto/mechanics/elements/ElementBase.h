@@ -15,6 +15,7 @@
 #include <map>
 
 #include "nuto/base/ErrorEnum.h"
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -39,8 +40,6 @@ class Lattice2D;
 class SectionBase;
 template<class T>
 class SparseMatrix;
-template<class T>
-class FullMatrix;
 class Solid;
 class Structure;
 class StructureBase;
@@ -189,11 +188,11 @@ public:
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
-    void GetIntegratedStress(FullMatrix<double>& rStress);
+    void GetIntegratedStress(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStress);
 
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
-    void GetIntegratedStrain(FullMatrix<double>& rStress);
+    void GetIntegratedStrain(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStress);
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object

@@ -30,7 +30,7 @@ NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation(con
 
 
 // build transformation
-void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double>& rCoordinates)
+void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)
 {
     // check input
     if (rCoordinates.GetNumColumns() < 2)
@@ -70,7 +70,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double>& r
 }
 
 // transformation
-void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<double>& rCoordinates)const
+void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     // check input
     if (rCoordinates.GetNumColumns() == 0)
@@ -92,7 +92,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<doubl
 }
 
 // back transformation
-void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(FullMatrix<double>& rCoordinates)  const
+void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)  const
 {
     // check input
     if (rCoordinates.GetNumColumns() == 0)

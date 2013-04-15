@@ -28,7 +28,7 @@ NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirec
 }
 
 #ifdef HAVE_MKL_PARDISO
-void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
+void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;

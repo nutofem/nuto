@@ -17,7 +17,7 @@ int main()
 
 	//3x3 nodes 2x2 element grid
 	//create nodes
-    NuTo::FullMatrix<double> Coordinates(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(2,1);
 	Coordinates(0,0) = 0.0;
 	Coordinates(1,0) = 0.0;
 	int node1 = myStructure.NodeCreate("displacements",Coordinates);
@@ -55,7 +55,7 @@ int main()
 	int node9 = myStructure.NodeCreate("displacements",Coordinates);
 
 	//create elements
-        NuTo::FullMatrix<int> Incidence(4,1);
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(4,1);
 	Incidence(0,0) = node1;
 	Incidence(1,0) = node2;
 	Incidence(2,0) = node5;
@@ -123,7 +123,7 @@ int main()
 
 	//apply displacements
 	double rightDisp(1);
-	NuTo::FullMatrix<double>matrixRightDisp(2,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixRightDisp(2,1);
 	matrixRightDisp.SetValue(0,0,rightDisp);
 	matrixRightDisp.SetValue(1,0,0.);
 
@@ -131,7 +131,7 @@ int main()
 	myStructure.NodeSetDisplacements(node6,matrixRightDisp);
 	myStructure.NodeSetDisplacements(node9,matrixRightDisp);
 
-	NuTo::FullMatrix<double>matrixCenterDisp(2,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixCenterDisp(2,1);
 	matrixCenterDisp.SetValue(0,0,0.5*rightDisp);
 	matrixCenterDisp.SetValue(1,0,0.);
 
@@ -139,7 +139,7 @@ int main()
 	myStructure.NodeSetDisplacements(node5,matrixCenterDisp);
 	myStructure.NodeSetDisplacements(node8,matrixCenterDisp);
 
-	NuTo::FullMatrix<double>matrixLeftDisp(2,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixLeftDisp(2,1);
 	matrixLeftDisp.SetValue(0,0,0.0);
 	matrixLeftDisp.SetValue(1,0,0.);
 
@@ -151,9 +151,9 @@ int main()
 	myStructure.ElementTotalUpdateTmpStaticData();
 
 	//calculate the stiffness matrix
-	NuTo::FullMatrix<double> Ke;
-        NuTo::FullMatrix<int> rowIndex;
-    	NuTo::FullMatrix<int> colIndex;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Ke;
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rowIndex;
+    	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> colIndex;
     	myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
 
     }

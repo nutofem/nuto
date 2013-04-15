@@ -25,7 +25,7 @@ int main()
 		myStructure.SetShowTime(true);
 #endif //SHOW_TIME
 		// create nodes
-		NuTo::FullMatrix<double> nodeCoordinates(2,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> nodeCoordinates(2,1);
 		size_t node = 0;
 		for(size_t yCount = 0; yCount < NumElementsY + 1; yCount++)
 		{
@@ -40,7 +40,7 @@ int main()
 		}
 
 		// create elements
-		NuTo::FullMatrix<int> elementIncidence(4,1);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> elementIncidence(4,1);
 		size_t element = 0;
 		for(size_t yCount = 0; yCount < NumElementsY; yCount++)
 		{
@@ -57,21 +57,21 @@ int main()
 				element ++;
 			}
 		}
-		//~ NuTo::FullMatrix<double> InitCrackCoords(2,4, std::vector< double >{
+		//~ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> InitCrackCoords(2,4, std::vector< double >{
 																 //~ 1.6, 5 ,
 																 //~ 2.5, 5 ,
 																 //~ 2.6, 7.5 ,
 																 //~ 3.4, 7.5 });
-		//~ NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
+		//~ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> InitCrackCoords(2,2, std::vector< double >{
 																 //~ 1.6, 5 ,
 																 //~ 3.4, 5 });
-		NuTo::FullMatrix<double> InitCrackCoords(2,2, std::vector< double >{
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> InitCrackCoords(2,2, std::vector< double >{
 																 1.6, 5 ,
 																 6, 5 });
 		DBG_POSITION_INFO("InitCrackCoords Matrix")
 		InitCrackCoords.Info();
 
-		NuTo::FullMatrix<int> CrackNodes = myStructure.NodesCreate("coordinates", InitCrackCoords);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> CrackNodes = myStructure.NodesCreate("coordinates", InitCrackCoords);
 		DBG_POSITION_INFO("CrackNodes")
 		CrackNodes.Info(5);
 
@@ -129,7 +129,7 @@ int main()
 
         // boundary conditions
         // x-direction
-        NuTo::FullMatrix<double> direction(2,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(2,1);
         direction(0,0)= 1;
         direction(1,0)= 0;
         myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
@@ -157,26 +157,26 @@ int main()
         myStructure.NodeBuildGlobalDofs();
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
         NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
-        NuTo::FullMatrix<double> dispForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
         myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
         stiffnessMatrix.RemoveZeroEntries(0,1e-14);
         
-        //~ NuTo::FullMatrix<double> stiffnessFullMatrix;
+        //~ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessFullMatrix;
         //~ stiffnessMatrix.WriteEntriesToFullMatrix(stiffnessFullMatrix);
         //~ stiffnessFullMatrix.WriteToFile("stiffnessMatrix.txt"," ");
 
         // build global external load vector
-        NuTo::FullMatrix<double> extForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
         myStructure.BuildGlobalExternalLoadVector(extForceVector);
         //extForceVector.Info();
 
         // calculate right hand side
-        NuTo::FullMatrix<double> rhsVector = dispForceVector + extForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
         rhsVector.WriteToFile("rhsVector.txt"," ");
 
         // solve
         NuTo::SparseDirectSolverMUMPS mySolver;
-        NuTo::FullMatrix<double> displacementVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementVector;
         stiffnessMatrix.SetOneBasedIndexing();
         mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
         displacementVector.WriteToFile("displacementVector.txt"," ");
@@ -185,9 +185,9 @@ int main()
         myStructure.NodeMergeActiveDofValues(displacementVector);
 
         // calculate residual
-        NuTo::FullMatrix<double> intForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
         myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-        NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> residualVector = extForceVector - intForceVector;
         std::cout << "residual: " << residualVector.Norm() << std::endl;
 
 #ifdef ENABLE_VISUALIZE

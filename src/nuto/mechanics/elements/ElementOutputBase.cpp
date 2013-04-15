@@ -24,14 +24,14 @@ NuTo::ElementOutputBase::ElementOutputBase()
 NuTo::ElementOutputBase::~ElementOutputBase()
 {}
 
-NuTo::FullMatrix<double>& NuTo::ElementOutputBase::GetFullMatrixDouble()
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixDouble()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double>");
+	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
 }
 
-NuTo::FullMatrix<int>& NuTo::ElementOutputBase::GetFullMatrixInt()
+NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixInt()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double>");
+	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
 }
 
 std::vector<int>& NuTo::ElementOutputBase::GetVectorInt()

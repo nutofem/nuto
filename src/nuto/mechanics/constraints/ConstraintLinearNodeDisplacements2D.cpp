@@ -17,7 +17,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
-NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
         ConstraintNode(rNode), ConstraintLinear()
 {
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
@@ -70,7 +70,7 @@ void NuTo::ConstraintLinearNodeDisplacements2D::AddToConstraintMatrix(int& curCo
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+void NuTo::ConstraintLinearNodeDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const
 {
     if (mNode->GetNumDisplacements()!=2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements2D::ConstraintBase] Node does not have displacements or has more than one displacement component.");

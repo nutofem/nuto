@@ -17,7 +17,7 @@ NuTo::EngineeringStress3D::EngineeringStress3D(): ConstitutiveOutputBase::Consti
 {
     for (unsigned int count = 0; count < 6; count++)
     {
-        this->mEngineeringStress[count] = 0.0;
+        (*this)[count] = 0.0;
     }
 }
 
@@ -30,7 +30,7 @@ unsigned int NuTo::EngineeringStress3D::GetNumberOfComponents() const
 // get Engineering stress
 const double* NuTo::EngineeringStress3D::GetData() const
 {
-    return this->mEngineeringStress;
+    return data();
 }
 
 //! @brief ... sets the components of the Engineering stress tensor
@@ -40,7 +40,7 @@ void NuTo::EngineeringStress3D::SetData(double rData[6])
 {
     for (unsigned int count = 0; count < 6; count++)
     {
-        this->mEngineeringStress[count] = rData[count];
+    	(*this)[count] = rData[count];
     }
 }
 
@@ -49,8 +49,8 @@ void NuTo::EngineeringStress3D::SetData(double rData[6])
 void NuTo::EngineeringStress3D::Info(unsigned short rVerboseLevel) const
 {
     std::cout << "    components of Engineering stress tensor (vector notation): "
-              << this->mEngineeringStress[0] << ", " << this->mEngineeringStress[1] << ", " << this->mEngineeringStress[2] << ", "
-              << this->mEngineeringStress[3] << ", " << this->mEngineeringStress[4] << ", " << this->mEngineeringStress[5] << std::endl;
+              << (*this)[0] << ", " << (*this)[1] << ", " << (*this)[2] << ", "
+              << (*this)[3] << ", " << (*this)[4] << ", " << (*this)[5] << std::endl;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -70,8 +70,8 @@ void NuTo::EngineeringStress3D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStress3D" << std::endl;
 #endif
-    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
-      & BOOST_SERIALIZATION_NVP(mEngineeringStress);
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
+    ar & boost::serialization::make_nvp ("EngineeringStrain3DEigen",boost::serialization::base_object< FullVectorFixed<double,6> > ( *this ));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStress3D" << std::endl;
 #endif

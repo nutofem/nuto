@@ -72,7 +72,7 @@ void NuTo::NodeGrid2D::SetGlobalDofs(int& rDOF)
 //! @brief write dof values to the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeGrid2D::SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::NodeGrid2D::SetGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
 	//empty since coordinates are no DOFs
 }
@@ -80,7 +80,7 @@ void NuTo::NodeGrid2D::SetGlobalDofValues(const FullMatrix<double>& rActiveDofVa
 //! @brief extract dof values from the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeGrid2D::GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::NodeGrid2D::GetGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
 	//empty since coordinates are no DOFs
 }
@@ -88,7 +88,7 @@ void NuTo::NodeGrid2D::GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, 
 //! @brief write first time derivative of the dof values (e.g. velocities) to the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeGrid2D::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::NodeGrid2D::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
 	//empty since coordinates are no DOFs
 }
@@ -96,7 +96,7 @@ void NuTo::NodeGrid2D::SetGlobalDofFirstTimeDerivativeValues(const FullMatrix<do
 //! @brief extract first time derivative of the dof values (e.g. velocities) from the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeGrid2D::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::NodeGrid2D::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
 	//empty since coordinates are no DOFs
 }
@@ -104,7 +104,7 @@ void NuTo::NodeGrid2D::GetGlobalDofFirstTimeDerivativeValues(FullMatrix<double>&
 //! @brief write second time derivative of the dof values (e.g. accelerations) to the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeGrid2D::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::NodeGrid2D::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
 	//empty since coordinates are no DOFs
 }
@@ -112,7 +112,7 @@ void NuTo::NodeGrid2D::SetGlobalDofSecondTimeDerivativeValues(const FullMatrix<d
 //! @brief extract second time derivative of the dof values (e.g. accelerations) from the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeGrid2D::GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::NodeGrid2D::GetGlobalDofSecondTimeDerivativeValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
 	//empty since coordinates are no DOFs
 }

@@ -29,7 +29,7 @@ int main()
 	myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
 
 	// create nodes
-	NuTo::FullMatrix<double> nodeCoordinates(1,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> nodeCoordinates(1,1);
 	for(int node = 0; node < NumElements + 1; node++)
 	{
 		std::cout << "create node: " << node << " coordinates: " << node * Length/NumElements << std::endl;
@@ -38,7 +38,7 @@ int main()
 	}
 
 	// create elements
-	NuTo::FullMatrix<int> elementIncidence(2,1);
+	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> elementIncidence(2,1);
 	for(int element = 0; element < NumElements; element++)
 	{
 		std::cout <<  "create element: " << element << " nodes: " << element << "," << element+1 << std::endl;
@@ -50,7 +50,7 @@ int main()
 	}
 
 	// set boundary conditions and loads
-	NuTo::FullMatrix<double> direction(1,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(1,1);
 	direction(0,0) = 1;
 	myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
 	if(EnableDisplacementControl)
@@ -70,19 +70,19 @@ int main()
 
 	// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 	NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
-	NuTo::FullMatrix<double> dispForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
 	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
 
 	// build global external load vector
-	NuTo::FullMatrix<double> extForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
 	myStructure.BuildGlobalExternalLoadVector(extForceVector);
 
 	// calculate right hand side
-	NuTo::FullMatrix<double> rhsVector = dispForceVector + extForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
 	// solve
 	NuTo::SparseDirectSolverMUMPS mySolver;
-	NuTo::FullMatrix<double> displacementVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementVector;
 	stiffnessMatrix.SetOneBasedIndexing();
 #ifdef HAVE_MUMPS
 	mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
@@ -91,9 +91,9 @@ int main()
 	myStructure.NodeMergeActiveDofValues(displacementVector);
 
 	// calculate residual
-	NuTo::FullMatrix<double> intForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
 	myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-	NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> residualVector = extForceVector - intForceVector;
 	std::cout << "residual: " << residualVector.Norm() << std::endl;
 
 #ifdef ENABLE_VISUALIZE

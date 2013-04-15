@@ -32,13 +32,13 @@ public:
     	return new ElementOutputFullMatrixInt(*this);
     }
 
-    FullMatrix<int>& GetFullMatrixInt()
+    FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt()
 	{
         return mMatrix;
 	}
 
 private:
-    FullMatrix<int> mMatrix;
+    FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
 };
 }
 #ifdef ENABLE_SERIALIZATION

@@ -12,6 +12,7 @@
 #include <boost/array.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
@@ -24,7 +25,6 @@
 
 namespace NuTo
 {
-template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
@@ -75,14 +75,14 @@ public:
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues) override;
+    void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) override;
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const override;
+    void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const override;
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering

@@ -314,20 +314,20 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(cons
 
 // multiply sparse matrix with full matrix
 template<>
-FullMatrix<int> SparseMatrixCSRSymmetric<int>::operator* (const FullMatrix<int>& rMatrix) const
+FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<int>::operator* (const FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
     throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with full matrix
 template<>
-FullMatrix<double> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix<double>& rMatrix) const
+FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
     if (this->GetNumColumns() != rMatrix.GetNumRows())
     {
         throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] invalid number of rows in input matrix.");
     }
-    FullMatrix<double> result(this->GetNumRows(),rMatrix.GetNumColumns());
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
 
     for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
     {

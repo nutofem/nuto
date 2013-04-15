@@ -37,7 +37,7 @@
 
 #define sqrt3 1.732050808
 #define MAX_OMEGA 0.999
-#define ENABLE_DEBUG
+//#define ENABLE_DEBUG
 
 NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEngineeringStress() : ConstitutiveBase()
 {
@@ -119,7 +119,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
 
         //trial strain in radial direction
         //use the previous total radial strain plus poisson*delta strain in axial direction
-        double trialEpsilonTotRadial = oldStaticData->mEpsilonTotRadial + mNu*(engineeringStrain1D.mEngineeringStrain-oldStaticData->mPrevStrain.mEngineeringStrain);
+        double trialEpsilonTotRadial = oldStaticData->mEpsilonTotRadial + mNu*(engineeringStrain1D[0]-oldStaticData->mPrevStrain[0]);
 
         // subtract thermal strain
         if (section->GetInputConstitutiveIsTemperature())
@@ -129,7 +129,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D] temperature needed to evaluate thermal engineering strain2d.");
             double temperature(itInput->second->GetTemperature());
             double deltaStrain(mThermalExpansionCoefficient * temperature);
-            engineeringStrain1D.mEngineeringStrain -= deltaStrain;
+            engineeringStrain1D[0] -= deltaStrain;
             trialEpsilonTotRadial = -deltaStrain;
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] add temperature history.");
 /*            double prevTemperature(oldStaticData->mPrevTemperature);
@@ -193,7 +193,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 //calculate engineering stress
                 EngineeringStress1D engineeringStress1D(itOutput->second->GetEngineeringStress1D());
 
-                engineeringStress1D.mEngineeringStress = (1.-globalDamage)*newStress(0);
+                engineeringStress1D[0] = (1.-globalDamage)*newStress(0);
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D:
@@ -201,12 +201,12 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 //this is for the visualize routines
                 EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
 
-                engineeringStress3D.mEngineeringStress[0] = (1.-globalDamage)*newStress(0);
-                engineeringStress3D.mEngineeringStress[1] = 0.;
-                engineeringStress3D.mEngineeringStress[2] = 0.;
-                engineeringStress3D.mEngineeringStress[3] = 0.;
-                engineeringStress3D.mEngineeringStress[4] = 0.;
-                engineeringStress3D.mEngineeringStress[5] = 0.;
+                engineeringStress3D[0] = (1.-globalDamage)*newStress(0);
+                engineeringStress3D[1] = 0.;
+                engineeringStress3D[2] = 0.;
+                engineeringStress3D[3] = 0.;
+                engineeringStress3D[4] = 0.;
+                engineeringStress3D[5] = 0.;
             }
             break;
             case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
@@ -239,23 +239,23 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
             {
                 EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-                engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain1D.mEngineeringStrain;
-                engineeringStrain3D.mEngineeringStrain[1] = newEpsilonTotRadial;
-                engineeringStrain3D.mEngineeringStrain[2] = newEpsilonTotRadial;
-                engineeringStrain3D.mEngineeringStrain[3] = 0.;
-                engineeringStrain3D.mEngineeringStrain[4] = 0.;
-                engineeringStrain3D.mEngineeringStrain[5] = 0.;
+                engineeringStrain3D[0] = engineeringStrain1D[0];
+                engineeringStrain3D[1] = newEpsilonTotRadial;
+                engineeringStrain3D[2] = newEpsilonTotRadial;
+                engineeringStrain3D[3] = 0.;
+                engineeringStrain3D[4] = 0.;
+                engineeringStrain3D[5] = 0.;
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
             {
                 EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-                engineeringPlasticStrain.mEngineeringStrain[0] = newEpsilonP(0);
-                engineeringPlasticStrain.mEngineeringStrain[1] = newEpsilonP(1);
-                engineeringPlasticStrain.mEngineeringStrain[2] = newEpsilonP(2);
-                engineeringPlasticStrain.mEngineeringStrain[3] = newEpsilonP(3);
-                engineeringPlasticStrain.mEngineeringStrain[4] = newEpsilonP(4);
-                engineeringPlasticStrain.mEngineeringStrain[5] = newEpsilonP(5);
+                engineeringPlasticStrain[0] = newEpsilonP(0);
+                engineeringPlasticStrain[1] = newEpsilonP(1);
+                engineeringPlasticStrain[2] = newEpsilonP(2);
+                engineeringPlasticStrain[3] = newEpsilonP(3);
+                engineeringPlasticStrain[4] = newEpsilonP(4);
+                engineeringPlasticStrain[5] = newEpsilonP(5);
             }
             break;
             case NuTo::Constitutive::eOutput::DAMAGE:
@@ -288,9 +288,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             const EngineeringStress1D& prevStress(oldStaticData->GetPrevStress());
             const EngineeringStrain1D prevStrain(oldStaticData->GetPrevStrain());
             energy+=0.5*(
-                (newStress(0)+prevStress.mEngineeringStress)*(engineeringStrain1D.mEngineeringStrain-prevStrain.mEngineeringStrain));
+                (newStress(0)+prevStress[0])*(engineeringStrain1D[0]-prevStrain[0]));
             oldStaticData->mPrevStrain = engineeringStrain1D;
-            oldStaticData->mPrevSigma.mEngineeringStress = newStress(0);
+            oldStaticData->mPrevSigma[0] = newStress(0);
             oldStaticData->SetPrevTotalEnergy(energy);
 
             //! @brief previous (after update) total strain component in radial direction (e22=e33)
@@ -1056,20 +1056,20 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     prevEpsilonP3D[5] = 0.;
 
     EngineeringStrain3D engineeringStrain3D;
-    engineeringStrain3D.mEngineeringStrain[0] = rStrain.mEngineeringStrain;
-    engineeringStrain3D.mEngineeringStrain[1] = rTrialStrainEpsilonTotRadial;
-    engineeringStrain3D.mEngineeringStrain[2] = rTrialStrainEpsilonTotRadial;
-    engineeringStrain3D.mEngineeringStrain[3] =  0.;
-    engineeringStrain3D.mEngineeringStrain[4] =  0.;
-    engineeringStrain3D.mEngineeringStrain[5] =  0.;
+    engineeringStrain3D[0] = rStrain[0];
+    engineeringStrain3D[1] = rTrialStrainEpsilonTotRadial;
+    engineeringStrain3D[2] = rTrialStrainEpsilonTotRadial;
+    engineeringStrain3D[3] =  0.;
+    engineeringStrain3D[4] =  0.;
+    engineeringStrain3D[5] =  0.;
 
     EngineeringStrain3D prevEngineeringStrain3D;
-    prevEngineeringStrain3D.mEngineeringStrain[0] = rPrevTotalStrain.mEngineeringStrain;
-    prevEngineeringStrain3D.mEngineeringStrain[1] = rPrevTotalStrainRadial;
-    prevEngineeringStrain3D.mEngineeringStrain[2] = rPrevTotalStrainRadial;
-    prevEngineeringStrain3D.mEngineeringStrain[3] =  0.;
-    prevEngineeringStrain3D.mEngineeringStrain[4] =  0.;
-    prevEngineeringStrain3D.mEngineeringStrain[5] =  0.;
+    prevEngineeringStrain3D[0] = rPrevTotalStrain[0];
+    prevEngineeringStrain3D[1] = rPrevTotalStrainRadial;
+    prevEngineeringStrain3D[2] = rPrevTotalStrainRadial;
+    prevEngineeringStrain3D[3] =  0.;
+    prevEngineeringStrain3D[4] =  0.;
+    prevEngineeringStrain3D[5] =  0.;
 
     Eigen::Matrix<double,6,6> dSigmadEpsilon3D;
     //Eigen::Matrix<double,6,6> dEpsilonPdEpsilon3D;
@@ -1105,7 +1105,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             //std::cout << "new plastic strain\n" << newEpsilonP3D << std::endl<< std::endl;
             //std::cout << "dSigmadEpsilon3D\n" << dSigmadEpsilon3D << std::endl<< std::endl;
             //std::cout << "deltaStrain\n" << dSigmadEpsilon3D.block<5,5>(1,1).inverse()*(newStress3D.block<5,1>(1,0)) << std::endl<< std::endl;
-            Eigen::Matrix<double,5,1>::Map(&(engineeringStrain3D.mEngineeringStrain[1]),5,1) -=
+            Eigen::Matrix<double,5,1>::Map(&(engineeringStrain3D[1]),5,1) -=
                     dSigmadEpsilon3D.block<5,5>(1,1).inverse()*(newStress3D.block<5,1>(1,0));
             //std::cout << "new trial elastic strain\n" << Eigen::Matrix<double,6,1>::Map(&(engineeringStrain3D.mEngineeringStrain[0]),6,1) << std::endl<< std::endl;
         }
@@ -1147,7 +1147,6 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         const EngineeringStrain1D& rStrain,
         const EngineeringStrain1D& rPrevPlasticStrain,
         const EngineeringStrain1D& rPrevTotalStrain,
-        Eigen::Matrix<double,1,1>& rPrevStress,
         Eigen::Matrix<double,1,1>& rStress,
         Eigen::Matrix<double,1,1>& rPlasticStrain,
         Eigen::Matrix<int,2,1>& rYieldConditionFlag,
@@ -1238,14 +1237,11 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     int numActiveYieldFunctions;
 
     // for the application of strains in steps, calculate the total strain increment to be applied
-    deltaStrain(0) = rStrain.mEngineeringStrain-rPrevTotalStrain.mEngineeringStrain;
+    deltaStrain = rStrain-rPrevTotalStrain;
 #ifdef ENABLE_DEBUG
     rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
 #endif
 
-    // initialize last plastic strain and last converged stress
-    lastPlastStrain << rPrevPlasticStrain.mEngineeringStrain;
-    lastStress << rPrevStress;
 #ifdef ENABLE_DEBUG
         rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
 #endif
@@ -1278,6 +1274,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         dDInv = dD.inverse();
         std::cout << "dDInv \n" << dDInv << "\n";
     }
+    // initialize last plastic strain and last converged stress
+    lastPlastStrain = rPrevPlasticStrain;
+    lastStress = dD*(rStrain-rPrevPlasticStrain);
+
     //! @brief delta load factor for the previous iteration
     double deltaCutbackFactorExternal(1.);
 
@@ -1967,10 +1967,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 							}//if (iteration<maxSteps)
 						}//if convergedInternal
 					} // end of loop
-#ifdef ENABLE_DEBUG
 				}
                 if (convergedInternal==false)
                 {
+#ifdef ENABLE_DEBUG
                     rLogger << "state with fixed yield conditions did not converge. norm Residual " << residual.squaredNorm() << "\n";
                     for (int count=0; count<NUMYIELDSURFACES; count++)
                     {
@@ -1983,8 +1983,8 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                             rLogger << "     yield condition "<< count+1 << " " << yieldCondition(count) << "\n";
 
                     }
-                }
 #endif
+                }
             }
         }
         catch (NuTo::MechanicsException& e)
@@ -2947,12 +2947,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     int numActiveYieldFunctions;
 
     // for the application of strains in steps, calculate the total strain increment to be applied
-    deltaStrain(0) = rStrain.mEngineeringStrain[0]-rPrevTotalStrain.mEngineeringStrain[0];
-    deltaStrain(1) = rStrain.mEngineeringStrain[1]-rPrevTotalStrain.mEngineeringStrain[1];
-    deltaStrain(2) = rStrain.mEngineeringStrain[2]-rPrevTotalStrain.mEngineeringStrain[2];
-    deltaStrain(3) = rStrain.mEngineeringStrain[3]-rPrevTotalStrain.mEngineeringStrain[3];
-    deltaStrain(4) = rStrain.mEngineeringStrain[4]-rPrevTotalStrain.mEngineeringStrain[4];
-    deltaStrain(5) = rStrain.mEngineeringStrain[5]-rPrevTotalStrain.mEngineeringStrain[5];
+    deltaStrain = rStrain - rPrevTotalStrain;
 #ifdef ENABLE_DEBUG
     rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
 #endif
@@ -3012,13 +3007,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     while (cutbackFactorExternal>minCutbackFactor && !convergedExternal)
     {
         numberOfExternalCutbacks++;
-
-        curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
-        curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[1]+cutbackFactorExternal*deltaStrain(1);
-        curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[2]+cutbackFactorExternal*deltaStrain(2);
-        curTotalStrain(3) = rPrevTotalStrain.mEngineeringStrain[3]+cutbackFactorExternal*deltaStrain(3);
-        curTotalStrain(4) = rPrevTotalStrain.mEngineeringStrain[4]+cutbackFactorExternal*deltaStrain(4);
-        curTotalStrain(5) = rPrevTotalStrain.mEngineeringStrain[5]+cutbackFactorExternal*deltaStrain(5);
+        curTotalStrain = rPrevTotalStrain + cutbackFactorExternal*deltaStrain;
 
 #ifdef ENABLE_DEBUG
         rLogger << "\n" << "curTotalStrain " << curTotalStrain.transpose() << "\n";
@@ -4345,27 +4334,34 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRoundedRanki
     double tolerance_q = tolerance_abs*fct3;
 
     // complex eigenvalues found, but eigenvalues of a symmetric matrix are always real
-    //std::cout << "D=" << D << std::endl;
-    //std::cout << "stress : " << rStress.transpose() << std::endl ;
+#ifdef ENABLE_DEBUG
+    std::cout << "p=" << p << std::endl;
+    std::cout << "q=" << q << std::endl;
+    std::cout << "D=" << D << std::endl;
+    std::cout << "stress : " << rStress.transpose() << std::endl ;
+#endif
     assert(D<tolerance_D);
 
-    if (fabs(q)<tolerance_q)
+    if (fabs(q)<tolerance_q && D>-tolerance_D)
     {
         //three identical eigenvalues
-        assert(D>-tolerance_D);
+    	assert(D>-tolerance_D);
         principal[0] = -a/3.;
         principal[1] = principal[0];
         principal[2] = principal[0];
     }
     else
     {
+#ifdef ENABLE_DEBUG
+        std::cout << "check the case for only one shear component being nonzero -> q=0, D<0" << std::endl;
+#endif
         // either three different real roots or two real roots (one is twice)
         sqrt_minus_p = sqrt(-p);
         P = q<0 ? -sqrt_minus_p : sqrt_minus_p;
         double qdiffP3 = q/(P*P*P);
         if (qdiffP3>1.)
         {
-            assert(qdiffP3-1<tolerance_D);
+            assert(qdiffP3-1.<tolerance_D);
             qdiffP3=1;
         }
         beta = acos(qdiffP3)/3.;
@@ -4380,6 +4376,29 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRoundedRanki
     //std::cout << "D=" <<  D  << std::endl;
     //std::cout << "principal stresses=" <<  principal[0] << " " << principal[1] << " " << principal[2] << std::endl;
     num_pos = (principal[0]>0 ? 1 : 0) + (principal[1]>0 ? 1 : 0) + (principal[2]>0 ? 1 : 0);
+
+    if (D>-tolerance_D)
+    {
+    	//at least two identical solutions, which are p1 and p2, (p0 might be different)
+    	if (num_pos==1)
+    	{
+    		//in theory, the only stress>0 is p0 (since p1 and p2 are equal, and only one is positive), but it can also be e.g. p0=-1,p2=-tol,p2=+tol
+    		//this has to be avoided (check, of p0 is not negative)
+    		if (principal[0]<=0)
+    		{
+    			num_pos = 2; //assume p1 and p2 two to be positive
+    		}
+    	}
+    	if (num_pos==2)
+    	{
+    		//in theory, the only stresses>0 are p1 and p2 (since p1 and p2 are equal, and exactly two are positive), but it can also be e.g. p0=1,p2=-tol,p2=+tol
+    		//this has to be avoided (check, of p0 is positive)
+    		if (principal[0]>0)
+    		{
+    			num_pos = 3; //assume all to be positive
+    		}
+    	}
+    }
 
     switch (num_pos)
     {
@@ -4903,9 +4922,10 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRoundedRanki
             }// D<=-tolerance_D
             else
             {
-                // two identical solutions with principal[1] and principal[2]
-                //F = sqrt(2.)*(principal[1])-rFct; this is not 100% correct, since they are only equal up to a certain accuracy
-                F = sqrt(principal[1]*principal[1]+principal[2]*principal[2])-rFct;
+                // two identical solutions with principal[1] = principal[2], however, one might be positive (very small) and the other one negative (- very small)
+            	//as a consequence, the combinations of positive principal stresses is not restricted to (p1,p2), but could be (p0,p1) or (p0,p2)
+            	//this has to be manually modified after the stresses have been calculated
+            	F = sqrt(principal[1]*principal[1]+principal[2]*principal[2])-rFct;
 
                 if (rdF_dSigma!=0)
                 {
@@ -4969,7 +4989,7 @@ double NuTo::GradientDamagePlasticityEngineeringStress::YieldSurfaceRoundedRanki
                 }
                 return F;
             }
-        }// num_pos==2
+        }// num_pos==1,2
         break; //num_pos==1,2
     case 3:
     {

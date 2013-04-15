@@ -27,7 +27,7 @@ try
 #ifdef SHOW_TIME
 	myStructure.SetShowTime(true);
 #endif //SHOW_TIME
-    NuTo::FullMatrix<int> createdGroupIds;
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> createdGroupIds;
     myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh",0,"displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
     myStructure.Info();
 
@@ -96,11 +96,11 @@ try
 
 
 	//fix left support
-	NuTo::FullMatrix<double> DirectionX(2,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
 	DirectionX.SetValue(0,0,1.0);
 	DirectionX.SetValue(1,0,0.0);
 
-	NuTo::FullMatrix<double>DirectionY(2,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>DirectionY(2,1);
 	DirectionY.SetValue(0,0,0.0);
 	DirectionY.SetValue(1,0,1.0);
 
@@ -123,7 +123,7 @@ try
 #endif
 
     // init some result data
-    NuTo::FullMatrix<double> PlotData(1,6);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> PlotData(1,6);
     double externalEnergy(0.);
 
     // start analysis
@@ -142,10 +142,10 @@ try
 
 	//init some auxiliary variables
 	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-	NuTo::FullMatrix<double> dispForceVector;
-	NuTo::FullMatrix<double> intForceVector;
-	NuTo::FullMatrix<double> extForceVector;
-	NuTo::FullMatrix<double> rhsVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector;
 
 	//allocate solver
 	NuTo::SparseDirectSolverMUMPS mySolver;
@@ -174,8 +174,8 @@ try
 
 	//update displacements of all nodes according to the new conre mat
 	{
-	    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-	    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+	    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+	    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
 	    myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
 	    myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 	    myStructure.ElementTotalUpdateTmpStaticData();
@@ -221,10 +221,10 @@ try
 			}*/
 
 			// solve
-			NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
-			NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
-			NuTo::FullMatrix<double> displacementsActiveDOFs;
-			NuTo::FullMatrix<double> displacementsDependentDOFs;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> oldDisplacementsActiveDOFs;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFs;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFs;
 			NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
 			stiffnessMatrixCSR.SetOneBasedIndexing();
 			mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
@@ -280,9 +280,9 @@ try
 			myStructure.ElementTotalUpdateStaticData();
 
 			//store result/plot data
-			NuTo::FullMatrix<double> SupportingForce;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SupportingForce;
 			myStructure.NodeGroupInternalForce(GrpNodes_RightBoundary,SupportingForce);
-			NuTo::FullMatrix<double> SinglePlotData(1,6);
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SinglePlotData(1,6);
 			SinglePlotData(0,0) = curDisp;
 			SinglePlotData(0,1) = SupportingForce(0,0)/(thickness*lY);
 			SinglePlotData(0,2) = SupportingForce(0,0);
@@ -325,8 +325,8 @@ try
 			myStructure.NodeBuildGlobalDofs();
 
 			//set previous converged displacements
-			NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-			NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
 			myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
 			myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 			myStructure.ElementTotalUpdateTmpStaticData();
@@ -362,8 +362,8 @@ try
 		rhsVector = dispForceVector + extForceVector - intForceVector;
 
         //update displacements of all nodes according to the new conre mat
-		NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-		NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
 		myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
 		myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 		myStructure.ElementTotalUpdateTmpStaticData();
@@ -372,7 +372,7 @@ try
 	{
         std::cout<< "numerical fracture energy "<< externalEnergy/(thickness*lY) << std::endl;
         //Get Average Stress
-        NuTo::FullMatrix<double> averageStress;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> averageStress;
         myStructure.ElementTotalGetAverageStress(lX*lY,averageStress);
         std::cout << "average stress " << std::endl << averageStress << std::endl;
 	}
@@ -389,7 +389,7 @@ return 0;
 			if (numNewtonIterations==-1)
 			{
 			    double delta(1e-9);
-			    NuTo::FullMatrix<double> difference;
+			    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> difference;
 				int maxElement = myStructure.ElementTotalCoefficientMatrix_0_Check(delta,difference);
 				double maxError = difference.Abs().Max();
 				std::cout << "maximum error " << maxError << " in element " << maxElement << std::endl;
@@ -397,9 +397,9 @@ return 0;
 				if (maxError>5e-1)
 				{
 					myStructure.SetVerboseLevel(10);
-					NuTo::FullMatrix<double> analyticStiffness;
-					NuTo::FullMatrix<double> finiteDifferencesStiffness;
-					NuTo::FullMatrix<int> dofsRow, dofsCol;
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> analyticStiffness;
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> finiteDifferencesStiffness;
+					NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> dofsRow, dofsCol;
 					myStructure.ElementCoefficientMatrix_0(maxElement,analyticStiffness,dofsRow,dofsCol);
 					std::cout << "analytic solution " << std::endl << analyticStiffness << std::endl << std::endl;
 					finiteDifferencesStiffness.Resize(analyticStiffness.GetNumRows(), analyticStiffness.GetNumColumns());
@@ -457,15 +457,15 @@ return 0;
 				bool oldShowTime(myStructure.GetShowTime());
 				myStructure.SetShowTime(false);
 				//check stiffness matrix
-				NuTo::FullMatrix<double> KeFull(stiffnessMatrixCSRVector2);
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> KeFull(stiffnessMatrixCSRVector2);
 				double delta=1e-10;
-				NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-				NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
 				myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-				NuTo::FullMatrix<double> intForceVector1;
-				NuTo::FullMatrix<double> intForceVector2;
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector1;
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector2;
 				myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector1);
-				NuTo::FullMatrix<double> KeApprox(stiffnessMatrixCSRVector2.GetNumRows(),stiffnessMatrixCSRVector2.GetNumColumns());
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> KeApprox(stiffnessMatrixCSRVector2.GetNumRows(),stiffnessMatrixCSRVector2.GetNumColumns());
 				for (int theDof=0;  theDof<displacementsActiveDOFsCheck.GetNumRows(); theDof++)
 				{
 					displacementsActiveDOFsCheck(theDof,0) +=delta;
@@ -477,7 +477,7 @@ return 0;
 					myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 					myStructure.ElementTotalUpdateTmpStaticData();
 				}
-				NuTo::FullMatrix<double> errorMatrix((KeApprox-KeFull).Abs());
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> errorMatrix((KeApprox-KeFull).Abs());
 				for (int theRow=0; theRow<errorMatrix.GetNumRows(); theRow++)
 				{
 					for (int theColumn=0; theColumn<errorMatrix.GetNumColumns(); theColumn++)

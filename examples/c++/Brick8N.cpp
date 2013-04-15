@@ -15,13 +15,13 @@ try
     int readFlag = false;
     if(readFlag)
     {
-    NuTo::FullMatrix<double> a;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> a;
     a.ReadFromFile("stiffnessMatrix.txt");
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2(a);
-    NuTo::FullMatrix<double> rhsVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector;
     rhsVector.ReadFromFile("rhsVector.txt");
     NuTo::SparseDirectSolverMUMPS mySolver;
-    NuTo::FullMatrix<double> displacementVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementVector;
     //stiffnessMatrix.SetOneBasedIndexing();
     NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
     mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
@@ -55,7 +55,7 @@ try
         int mySection1 = myStructure.SectionCreate("VOLUME");
 
         // create nodes
-        NuTo::FullMatrix<double> nodeCoordinates(3,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> nodeCoordinates(3,1);
         int node = 0;
         for(int zCount = 0; zCount < NumElementsZ + 1; zCount++)
         {
@@ -74,7 +74,7 @@ try
         }
 
         // create elements
-        NuTo::FullMatrix<int> elementIncidence(8,1);
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> elementIncidence(8,1);
         int element = 0;
         for(int zCount = 0; zCount < NumElementsZ; zCount++)
         {
@@ -102,7 +102,7 @@ try
         }
 
         // boundary conditions
-        NuTo::FullMatrix<double> direction(3,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(3,1);
         direction(0,0)= 1;
         direction(1,0)= 0;
         direction(2,0)= 0;
@@ -183,27 +183,27 @@ try
 
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
         NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2;
-        NuTo::FullMatrix<double> dispForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
         myStructure.CalculateMaximumIndependentSets();
         myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVector2, dispForceVector);
         stiffnessMatrixVector2.RemoveZeroEntries(0,1e-14);
-        //NuTo::FullMatrix<double> A(stiffnessMatrix);
+        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A(stiffnessMatrix);
         //A.WriteToFile("stiffnessMatrix.txt"," ");
         //stiffnessMatrix.Info();
         //dispForceVector.Info();
 
         // build global external load vector
-        NuTo::FullMatrix<double> extForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
         myStructure.BuildGlobalExternalLoadVector(extForceVector);
         //extForceVector.Info();
 
         // calculate right hand side
-        NuTo::FullMatrix<double> rhsVector = dispForceVector + extForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
         rhsVector.WriteToFile("rhsVector.txt"," ");
 
         // solve
         NuTo::SparseDirectSolverMUMPS mySolver;
-        NuTo::FullMatrix<double> displacementVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementVector;
         NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
         stiffnessMatrix.SetOneBasedIndexing();
         mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
@@ -213,9 +213,9 @@ try
         myStructure.NodeMergeActiveDofValues(displacementVector);
 
         // calculate residual
-        NuTo::FullMatrix<double> intForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
         myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-        NuTo::FullMatrix<double> residualVector = extForceVector - intForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> residualVector = extForceVector - intForceVector;
         std::cout << "residual: " << residualVector.Norm() << std::endl;
 
 #ifdef ENABLE_VISUALIZE

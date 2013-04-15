@@ -52,13 +52,13 @@ public:
 
     void  SetCallbackFunctions(PyObject *args_parameters, PyObject *args_objective, PyObject *args_gradient, PyObject *args_hessian);
 
-	void SetParameters(const NuTo::FullMatrix<double>& rParameters);
+	void SetParameters(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParameters);
 	
 	double Objective()const;
 
-	void Gradient (NuTo::FullMatrix<double>& rGradient)const;
+	void Gradient (NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const;
 	
-    void Hessian(NuTo::FullMatrix<double>& rHessian)const;
+    void Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rHessian)const;
 
     void Info()const;
 

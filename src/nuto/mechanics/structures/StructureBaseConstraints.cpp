@@ -26,7 +26,7 @@
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 //! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(int rGroupId, const NuTo::FullMatrix<double>& rDirection, const std::string& rEquationSign, double rValue)
+int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(int rGroupId, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, const std::string& rEquationSign, double rValue)
 {
     this->mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
@@ -65,7 +65,7 @@ int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(int rGroupId
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 //! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue)
+int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue)
 {
     this->mNodeNumberingRequired = true;
     //find unused integer id
@@ -100,7 +100,7 @@ int NuTo::StructureBase::ConstraintLagrangeSetDisplacementNodeGroup(Group<NodeBa
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 //! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
 	//find unused integer id
@@ -166,7 +166,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double
 //! @param rNode identifier for node
 //! @param rComponent e.g. the first (count from zero) displacement component
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     NodeBase* nodePtr;
@@ -216,7 +216,7 @@ int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rVa
 //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 //! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     //find unused integer id
@@ -284,7 +284,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* r
 //! @param rAttribute displacements, rotations, temperatures
 //! @param rComponent e.g. the first (count from zero) displacement component
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
@@ -419,7 +419,7 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination(Nu
 //! @brief returns the constraint vector after gauss elimination
 //! rConstraintMatrix*DOFS = RHS
 //! @param rConstraintMatrix constraint matrix
-void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double>& rRHS)
+void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)
 {
     if (mNodeNumberingRequired)
     {
@@ -431,7 +431,7 @@ void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix
 //! @brief returns the constraint vector after gauss elimination
 //! rConstraintMatrix*DOFS = RHS
 //! @param rConstraintMatrix constraint matrix
-void NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatrix<double>& rhsBeforeGaussElimination)
+void NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rhsBeforeGaussElimination)
 {
     if (mNodeNumberingRequired)
     {
@@ -480,7 +480,7 @@ void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
         throw MechanicsException("[NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination] build global numbering first");
     }
 
-    FullMatrix<double> rhsBeforeGaussElimination;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsBeforeGaussElimination;
     ConstraintGetRHSBeforeGaussElimination(rhsBeforeGaussElimination);
 
     if (mConstraintMappingRHS.GetNumColumns()!=rhsBeforeGaussElimination.GetNumRows())
@@ -717,8 +717,8 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
 //! @param  rNodeGrouplower... all nodes on the lower boundary
 //! @param  rNodeGroupLeft... all nodes on the left boundary
 //! @param  rNodeGroupRight...  all nodes on the right boundary
-int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double> rStrain,
-        NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rStrain,
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         int rNodeGroupUpperId, int rNodeGroupLowerId, int rNodeGroupLeftId, int rNodeGroupRightId)
 {
 #ifdef SHOW_TIME
@@ -832,7 +832,7 @@ void NuTo::StructureBase::ConstraintRenumberGlobalDofs(const std::vector<int>& m
 //! @brief extract dof values from the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues)const
+void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)const
 {
     for(boost::ptr_map<int,ConstraintBase>::const_iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
     {
@@ -847,7 +847,7 @@ void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullMatrix<double>& r
 //! @brief write dof values to the Lagrange multipliers (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::StructureBase::ConstraintMergeGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& dependentDofValues)
+void NuTo::StructureBase::ConstraintMergeGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& dependentDofValues)
 {
     for(boost::ptr_map<int,ConstraintBase>::iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
     {
@@ -1174,10 +1174,10 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
 //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
 //! @param rActiveDofGradientVector ... gradient of active dofs
 //! @param rDependentDofGradientVector ... gradient of dependent dofs
-void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector) const
+void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector) const
 {
     // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double> constraintVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> constraintVector;
     std::vector<int> constraintVectorGlobalDofs;
 
     // loop over all constraints
@@ -1232,7 +1232,7 @@ double NuTo::StructureBase::ConstraintTotalGetTotalEnergy()const
 //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
 //! @param ConstraintId constraint id
 //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
-void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double>& rMultiplier)const
+void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMultiplier)const
 {
     // get iterator
     boost::ptr_map<int,ConstraintBase>::const_iterator it = this->mConstraintMap.find(ConstraintId);

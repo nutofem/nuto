@@ -111,7 +111,7 @@ public:
     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding yield strength
-    NuTo::FullMatrix<double> GetYieldStrength() const;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetYieldStrength() const;
 
     //! @brief ... add yield strength
     //! @param rEpsilon ...  equivalent plastic strain
@@ -129,7 +129,7 @@ public:
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
-    NuTo::FullMatrix<double> GetHardeningModulus() const;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetHardeningModulus() const;
 
     //! @brief ... add hardening modulus
     //! @param rEpsilon ...  equivalent plastic strain

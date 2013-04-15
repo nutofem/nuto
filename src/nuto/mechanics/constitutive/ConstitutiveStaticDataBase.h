@@ -4,6 +4,7 @@
 #define CONSTITUTIVESTATICDATABASE_H_
 
 #include <string>
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 
@@ -29,7 +30,6 @@ class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
-template<class T> class  FullMatrix;
 
 class ConstitutiveStaticDataBase
 {

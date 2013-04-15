@@ -569,8 +569,8 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		myHelpStruc.ConstitutiveLawSetYoungsModulus(myMat, 1.0);
 
 		// create nodes
-		NuTo::FullMatrix<double> nodeCoordinates(3, 1);
-		NuTo::FullMatrix<int> elementIncidence(8,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> nodeCoordinates(3, 1);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> elementIncidence(8,1);
 
 		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
@@ -621,9 +621,9 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		myHelpStruc.ElementSetSection(myHelpElement,mySection1);
 
 		// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-		NuTo::FullMatrix<int> rows;
-		NuTo::FullMatrix<int> coluums;
-		NuTo::FullMatrix<double> stiffnessMatrix;
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rows;
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> coluums;
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrix;
 		myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
 		if(NuTo::StructureBase::GetVerboseLevel()>3)
 			stiffnessMatrix.WriteToFile("stiffness"," ");

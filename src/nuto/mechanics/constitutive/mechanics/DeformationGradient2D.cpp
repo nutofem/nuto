@@ -83,9 +83,9 @@ void NuTo::DeformationGradient2D::SetDeformationGradient2D(const double* rDeform
 // calculate engineering strain
 void NuTo::DeformationGradient2D::GetEngineeringStrain(NuTo::EngineeringStrain2D& rEngineeringStrain) const
 {
-	rEngineeringStrain.mEngineeringStrain[0] = mDeformationGradient[0] -1;
-	rEngineeringStrain.mEngineeringStrain[1] = mDeformationGradient[3] -1;
-	rEngineeringStrain.mEngineeringStrain[2] = mDeformationGradient[1]+mDeformationGradient[2];
+	rEngineeringStrain[0] = mDeformationGradient[0] -1;
+	rEngineeringStrain[1] = mDeformationGradient[3] -1;
+	rEngineeringStrain[2] = mDeformationGradient[1]+mDeformationGradient[2];
 }
 
 void NuTo::DeformationGradient2D::GetEngineeringStrain(NuTo::EngineeringStrain3D& rEngineeringStrain) const

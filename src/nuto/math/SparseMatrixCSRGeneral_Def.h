@@ -31,13 +31,13 @@ public:
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRGeneral(const FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
+    SparseMatrixCSRGeneral(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
 
     //! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a predefined tolerance)
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRGeneral(const SparseMatrixCSRVector2General<T>& rCSR2Matrix);
+    SparseMatrixCSRGeneral(const NuTo::SparseMatrixCSRVector2General<T>& rCSR2Matrix);
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
@@ -72,34 +72,34 @@ public:
 
     //! @brief ... write nonzero matrix entries into a full matrix
     //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const;
+    void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const;
 
 
     //! @brief ... add two matrices
     //! @param rOther ... general sparse matrix stored in the CSR format
     //! @return general sparse matrix stored in the CSR format
-    SparseMatrixCSRGeneral<T> operator+ ( const SparseMatrixCSRGeneral<T> &rOther ) const;
+    SparseMatrixCSRGeneral<T> operator+ ( const NuTo::SparseMatrixCSRGeneral<T> &rOther ) const;
 
     //! @brief ... subtract two matrices
     //! @param rOther ... general sparse matrix stored in the CSR format
     //! @return general sparse matrix stored in the CSR format
-    SparseMatrixCSRGeneral<T> operator- ( const SparseMatrixCSRGeneral<T> &rOther ) const;
+    SparseMatrixCSRGeneral<T> operator- ( const NuTo::SparseMatrixCSRGeneral<T> &rOther ) const;
 
     //! @brief ... subtract two matrices
     //! @param rOther ... general sparse matrix stored in the CSR format
     //! @return reference to this matrix
-    SparseMatrixCSRGeneral<T>& operator-=  ( const SparseMatrixCSRGeneral<T> &rOther );
+    SparseMatrixCSRGeneral<T>& operator-=  ( const NuTo::SparseMatrixCSRGeneral<T> &rOther );
 
 
     //! @brief ... add two matrices
     //! @param rOther ... general sparse matrix stored in the CSR format
     //! @return reference to this matrix
-    SparseMatrixCSRGeneral<T>& operator+=  ( const SparseMatrixCSRGeneral<T> &rOther );
+    SparseMatrixCSRGeneral<T>& operator+=  ( const NuTo::SparseMatrixCSRGeneral<T> &rOther );
 
     //! @brief ... matrix - matrix multiplication
     //! @param rOther ... general sparse matrix stored in the CSR format
     //! @return general sparse matrix stored in the CSR format
-    SparseMatrixCSRGeneral<T> operator* ( const SparseMatrixCSRGeneral<T> &rOther ) const;
+    SparseMatrixCSRGeneral<T> operator* ( const NuTo::SparseMatrixCSRGeneral<T> &rOther ) const;
 
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value
@@ -109,9 +109,9 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    FullMatrix<T> operator* (const FullMatrix<T> &rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const;
 
-    FullMatrix<T> TransMult(const FullMatrix<T>& rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
 
     //! @brief ... calculate the transpose of the matrix (transpose row and columns)
     //! @return ... transpose of this matrix (sparse csr storage)
@@ -131,14 +131,14 @@ public:
     //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(FullMatrix<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+    void Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
     //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
     //! @param rRhs ... right-hand side matrix (input and output object, kind of multiple rhs)
     //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(SparseMatrixCSRGeneral<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+    void Gauss(NuTo::SparseMatrixCSRGeneral<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering

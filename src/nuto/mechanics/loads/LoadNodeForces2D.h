@@ -16,8 +16,6 @@
 
 namespace NuTo
 {
-template <class T>
-class FullMatrix;
 //! @author Daniel Arnold, ISM
 //! @date June 2010
 //! @brief ... abstract class for all forces applied to a single node
@@ -31,12 +29,12 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the force
     //! @param rValue ... value of the force
-    LoadNodeForces2D(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    LoadNodeForces2D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double>& rActiceDofsLoadVector, NuTo::FullMatrix<double>& rDependentDofsLoadVector)const;
+    void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

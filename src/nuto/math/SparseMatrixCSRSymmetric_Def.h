@@ -50,7 +50,7 @@ public:
 
     //! @brief ... write nonzero matrix entries into a full matrix
     //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const;
+    void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const;
 
     //! @brief ... adds \f$(\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{A})\f$ to the matrix
     //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
@@ -65,7 +65,7 @@ public:
     //! @brief ... multiply sparse matrix with full matrix
     //! @param rMatrix ... full matrix
     //! @return ... result matrix (full storage)
-    FullMatrix<T> operator* (const FullMatrix<T>& rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
     
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value

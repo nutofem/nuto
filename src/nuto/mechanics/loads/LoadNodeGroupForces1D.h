@@ -36,7 +36,7 @@ public:
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double>& rActiceDofsLoadVector, NuTo::FullMatrix<double>& rDependentDofsLoadVector)const;
+    void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -62,7 +62,7 @@ try
     {
         for (int countX=0; countX<numNodesX; countX++)
         {
-        	NuTo::FullMatrix<double> coordinates(2,1);
+        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(2,1);
         	coordinates(0,0) = countX*deltaX;
         	coordinates(1,0) = countY*deltaY;
         	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS"),coordinates,2);
@@ -77,7 +77,7 @@ try
     {
         for (int countX=0; countX<numElementsX; countX++)
         {
-        	NuTo::FullMatrix<int> nodes(4,1);
+        	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> nodes(4,1);
         	nodes(0,0) = countX  +  countY   *numNodesX;
         	nodes(1,0) = countX+1+  countY   *numNodesX;
         	nodes(2,0) = countX+1+ (countY+1)*numNodesX;
@@ -181,11 +181,11 @@ try
 
     //set constraints
 	//directionX
-    NuTo::FullMatrix<double> DirectionX(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
     DirectionX.SetValue(0,0,1.0);
-    NuTo::FullMatrix<double> DirectionY(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionY(2,1);
     DirectionY.SetValue(1,0,1.0);
-    NuTo::FullMatrix<double> DirectionXY(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionXY(2,1);
     DirectionXY.SetValue(0,0,1.0);
     DirectionXY.SetValue(1,0,1.0);
 
@@ -200,7 +200,7 @@ try
 
 	myStructure.Info();
 
-	//NuTo::FullMatrix<double> velocity(2,1);
+	//NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> velocity(2,1);
 	//velocity(0,0) = 0.1;
 	//velocity(1,0) = 0.0;
 	//myStructure.NodeGroupSetVelocities(grpNodes_All,velocity);
@@ -219,7 +219,7 @@ try
     //step wise loading
 /*    double maxAmplitude(0.0);
     double period(20);
-    NuTo::FullMatrix<double> loadRHSFactor(simulationTime/period*10+1,2);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> loadRHSFactor(simulationTime/period*10+1,2);
     for (int count=0; count<loadRHSFactor.GetNumRows(); count++)
     {
     	double t = count*simulationTime/(loadRHSFactor.GetNumRows()-1);
@@ -232,7 +232,7 @@ try
 */
 	//set a sinusoidal quarter wave
     double period(5);
-    NuTo::FullMatrix<double> dispRHS(51,2);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispRHS(51,2);
     for (int count=0; count<dispRHS.GetNumRows()-1; count++)
     {
     	double t = ((double)count)/((double)dispRHS.GetNumRows()-2.)*0.25*period ;
@@ -257,7 +257,7 @@ try
     myStructure.SetNumProcessors(8);
 
     //set output to be calculated at the left and right nodes
-    NuTo::FullMatrix<int> mGroupNodesReactionForces(2,1);
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mGroupNodesReactionForces(2,1);
     mGroupNodesReactionForces(0,0) = grpNodes_Left;
     mGroupNodesReactionForces(1,0) = grpNodes_Right;
     myIntegrationScheme.SetGroupNodesReactionForces(mGroupNodesReactionForces);
@@ -273,11 +273,11 @@ try
 	resultFile = resultDir;
 	resultFile /= std::string("resultAllLoadSteps.dat");
 
-	NuTo::FullMatrix<double> result;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result;
     result.ReadFromFile(resultFile.string());
     result.Info(15,12,true);
 
-	NuTo::FullMatrix<double> resultRef(1,11);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef(1,11);
 	resultRef(0,0) = 0;
 	resultRef(0,1) = 0.1;
 	resultRef(0,2) = 1.500009228786e+01;
@@ -290,9 +290,9 @@ try
 	resultRef(0,9) = 3.016324269061e+02;
 	resultRef(0,10) = 0.;
 
-    if ((resultRef-result).Abs().Max()>1e-4)
+    if ((resultRef-result).cwiseAbs().maxCoeff()>1e-4)
     {
-    	std::cout << "difference " << (resultRef-result).Abs().Max() << "\n";
+    	std::cout << "difference " << (resultRef-result).cwiseAbs().maxCoeff() << "\n";
     	result.Info();
         std::cout<< "reference results" << std::endl;
         resultRef.Info();

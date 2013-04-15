@@ -50,7 +50,7 @@ public:
     //! @brief write dof values to the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+    virtual void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
     {
     	NodeDof<0,1,0,0,0>::SetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
@@ -58,7 +58,7 @@ public:
     //! @brief extract dof values from the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+    virtual void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
     {
     	NodeDof<0,1,0,0,0>::GetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }

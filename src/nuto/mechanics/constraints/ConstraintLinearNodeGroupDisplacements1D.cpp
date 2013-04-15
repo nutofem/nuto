@@ -72,7 +72,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const
 {
     // loop over nodes
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)

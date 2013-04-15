@@ -11,6 +11,7 @@
 #include <string>
 
 #include "nuto/base/ErrorEnum.h"
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
@@ -30,8 +31,6 @@ class EngineeringStress2D;
 class EngineeringStress3D;
 class Temperature;
 class TemperatureGradient3D;
-template<class T>
-class FullMatrix;
 class Logger;
 class SecondPiolaKirchhoffStress3D;
 class StructureBase;

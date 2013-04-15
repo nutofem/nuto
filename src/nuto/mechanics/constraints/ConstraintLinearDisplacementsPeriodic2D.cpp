@@ -30,7 +30,7 @@ int NuTo::ConstraintLinearDisplacementsPeriodic2D::GetNumLinearConstraints()cons
 
  //! @brief constructor
 NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle,
-        const EngineeringStrain2D& rStrain,NuTo::FullMatrix<double> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+        const EngineeringStrain2D& rStrain,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
         const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintLinear()
 {
@@ -149,7 +149,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetAngle(double rAngle)
 
 //!@brief sets/modifies the average strain applied to the boundary
 //!@param rAngle angle in deg
-void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCrackOpening)
 {
     if (rCrackOpening.GetNumRows()!=2 || rCrackOpening.GetNumColumns()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening] crack opening should be a (2,1) matrix.");
@@ -366,8 +366,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
             //calculate weighting function for each master node
             double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
 
-            //deltaDisp[0] = length*mStrain.mEngineeringStrain[0] + mCrackOpening[0];
-            //deltaDisp[1] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[1];
+            //deltaDisp[0] = length*mStrain[0] + mCrackOpening[0];
+            //deltaDisp[1] = length*0.5*mStrain[2] + mCrackOpening[1];
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -422,16 +422,16 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
             if (coordinatesSlaveonMasterSideX<0)
             {
                 coordinatesSlaveonMasterSideX+=length;
-                deltaRHS[0] = mStrain.mEngineeringStrain[0]*length+mCrackOpening[0];
-                deltaRHS[1] = 0.5 * mStrain.mEngineeringStrain[2]*length+mCrackOpening[1];
+                deltaRHS[0] = mStrain[0]*length+mCrackOpening[0];
+                deltaRHS[1] = 0.5 * mStrain[2]*length+mCrackOpening[1];
             }
             else
             {
                 if (coordinatesSlaveonMasterSideX>length)
                 {
                     coordinatesSlaveonMasterSideX-=length;
-                    deltaRHS[0] = -mStrain.mEngineeringStrain[0]*length-mCrackOpening[0];
-                    deltaRHS[1] = -0.5 * mStrain.mEngineeringStrain[2]*length-mCrackOpening[1];
+                    deltaRHS[0] = -mStrain[0]*length-mCrackOpening[0];
+                    deltaRHS[1] = -0.5 * mStrain[2]*length-mCrackOpening[1];
                 }
                 else
                 {
@@ -483,8 +483,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
                 deltaRHS[1]+=mCrackOpening[1];
             }
 
-            //deltaDisp[0] = crackShift*mStrain.mEngineeringStrain[0] + length *0.5* mStrain.mEngineeringStrain[2] - deltaRHS[0];
-            //deltaDisp[1] = crackShift*0.5*mStrain.mEngineeringStrain[2] + length*mStrain.mEngineeringStrain[1] - deltaRHS[1];
+            //deltaDisp[0] = crackShift*mStrain[0] + length *0.5* mStrain[2] - deltaRHS[0];
+            //deltaDisp[1] = crackShift*0.5*mStrain[2] + length*mStrain[1] - deltaRHS[1];
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -558,8 +558,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
             //calculate weighting function for each master node
             double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
 
-            //deltaDisp[0] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[0];;
-            //deltaDisp[1] = length*mStrain.mEngineeringStrain[1] + mCrackOpening[1];;
+            //deltaDisp[0] = length*0.5*mStrain[2] + mCrackOpening[0];;
+            //deltaDisp[1] = length*mStrain[1] + mCrackOpening[1];;
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -614,16 +614,16 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
             if (coordinatesSlaveonMasterSideY<0)
             {
                 coordinatesSlaveonMasterSideY+=length;
-                deltaRHS[0] = 0.5 * mStrain.mEngineeringStrain[2]*length+mCrackOpening[0];
-                deltaRHS[1] = mStrain.mEngineeringStrain[1]*length+mCrackOpening[1];
+                deltaRHS[0] = 0.5 * mStrain[2]*length+mCrackOpening[0];
+                deltaRHS[1] = mStrain[1]*length+mCrackOpening[1];
             }
             else
             {
                 if (coordinatesSlaveonMasterSideY>length)
                 {
                     coordinatesSlaveonMasterSideY-=length;
-                    deltaRHS[0] = -0.5 * mStrain.mEngineeringStrain[2]*length-mCrackOpening[0];;
-                    deltaRHS[1] = -mStrain.mEngineeringStrain[1]*length-mCrackOpening[1];;
+                    deltaRHS[0] = -0.5 * mStrain[2]*length-mCrackOpening[0];;
+                    deltaRHS[1] = -mStrain[1]*length-mCrackOpening[1];;
                 }
                 else
                 {
@@ -675,8 +675,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
                 deltaRHS[1]+=mCrackOpening[1];
             }
 
-            //deltaDisp[0] = crackShift*0.5*mStrain.mEngineeringStrain[2] + length*mStrain.mEngineeringStrain[0] - deltaRHS[0];
-            //deltaDisp[1] = crackShift*mStrain.mEngineeringStrain[1] + length *0.5* mStrain.mEngineeringStrain[2] - deltaRHS[1];
+            //deltaDisp[0] = crackShift*0.5*mStrain[2] + length*mStrain[0] - deltaRHS[0];
+            //deltaDisp[1] = crackShift*mStrain[1] + length *0.5* mStrain[2] - deltaRHS[1];
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -710,7 +710,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const
 {
 	double LeftUpperCoordinates[2], LeftLowerCoordinates[2];
     mLeftUpperCorner->GetCoordinates2D(LeftUpperCoordinates);
@@ -764,8 +764,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             //calculate weighting function for each master node
             //double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
 
-            deltaDisp[0] = length*mStrain.mEngineeringStrain[0] + mCrackOpening[0];
-            deltaDisp[1] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[1];
+            deltaDisp[0] = length*mStrain[0] + mCrackOpening[0];
+            deltaDisp[1] = length*0.5*mStrain[2] + mCrackOpening[1];
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -820,16 +820,16 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             if (coordinatesSlaveonMasterSideX<0)
             {
                 coordinatesSlaveonMasterSideX+=length;
-                deltaRHS[0] = mStrain.mEngineeringStrain[0]*length+mCrackOpening[0];
-                deltaRHS[1] = 0.5 * mStrain.mEngineeringStrain[2]*length+mCrackOpening[1];
+                deltaRHS[0] = mStrain[0]*length+mCrackOpening[0];
+                deltaRHS[1] = 0.5 * mStrain[2]*length+mCrackOpening[1];
             }
             else
             {
                 if (coordinatesSlaveonMasterSideX>length)
                 {
                     coordinatesSlaveonMasterSideX-=length;
-                    deltaRHS[0] = -mStrain.mEngineeringStrain[0]*length-mCrackOpening[0];
-                    deltaRHS[1] = -0.5 * mStrain.mEngineeringStrain[2]*length-mCrackOpening[1];
+                    deltaRHS[0] = -mStrain[0]*length-mCrackOpening[0];
+                    deltaRHS[1] = -0.5 * mStrain[2]*length-mCrackOpening[1];
                 }
                 else
                 {
@@ -881,8 +881,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
                 deltaRHS[1]+=mCrackOpening[1];
             }
 
-            deltaDisp[0] = crackShift*mStrain.mEngineeringStrain[0] + length *0.5* mStrain.mEngineeringStrain[2] - deltaRHS[0];
-            deltaDisp[1] = crackShift*0.5*mStrain.mEngineeringStrain[2] + length*mStrain.mEngineeringStrain[1] - deltaRHS[1];
+            deltaDisp[0] = crackShift*mStrain[0] + length *0.5* mStrain[2] - deltaRHS[0];
+            deltaDisp[1] = crackShift*0.5*mStrain[2] + length*mStrain[1] - deltaRHS[1];
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -956,8 +956,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             //calculate weighting function for each master node
             //double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
 
-            deltaDisp[0] = length*0.5*mStrain.mEngineeringStrain[2] + mCrackOpening[0];;
-            deltaDisp[1] = length*mStrain.mEngineeringStrain[1] + mCrackOpening[1];;
+            deltaDisp[0] = length*0.5*mStrain[2] + mCrackOpening[0];;
+            deltaDisp[1] = length*mStrain[1] + mCrackOpening[1];;
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -1012,16 +1012,16 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             if (coordinatesSlaveonMasterSideY<0)
             {
                 coordinatesSlaveonMasterSideY+=length;
-                deltaRHS[0] = 0.5 * mStrain.mEngineeringStrain[2]*length+mCrackOpening[0];
-                deltaRHS[1] = mStrain.mEngineeringStrain[1]*length+mCrackOpening[1];
+                deltaRHS[0] = 0.5 * mStrain[2]*length+mCrackOpening[0];
+                deltaRHS[1] = mStrain[1]*length+mCrackOpening[1];
             }
             else
             {
                 if (coordinatesSlaveonMasterSideY>length)
                 {
                     coordinatesSlaveonMasterSideY-=length;
-                    deltaRHS[0] = -0.5 * mStrain.mEngineeringStrain[2]*length-mCrackOpening[0];;
-                    deltaRHS[1] = -mStrain.mEngineeringStrain[1]*length-mCrackOpening[1];;
+                    deltaRHS[0] = -0.5 * mStrain[2]*length-mCrackOpening[0];;
+                    deltaRHS[1] = -mStrain[1]*length-mCrackOpening[1];;
                 }
                 else
                 {
@@ -1073,8 +1073,8 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
                 deltaRHS[1]+=mCrackOpening[1];
             }
 
-            deltaDisp[0] = crackShift*0.5*mStrain.mEngineeringStrain[2] + length*mStrain.mEngineeringStrain[0] - deltaRHS[0];
-            deltaDisp[1] = crackShift*mStrain.mEngineeringStrain[1] + length *0.5* mStrain.mEngineeringStrain[2] - deltaRHS[1];
+            deltaDisp[0] = crackShift*0.5*mStrain[2] + length*mStrain[0] - deltaRHS[0];
+            deltaDisp[1] = crackShift*mStrain[1] + length *0.5* mStrain[2] - deltaRHS[1];
 
 /*            std::cout << "constraint equation " << curConstraintEquation
                     << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
@@ -1114,8 +1114,8 @@ double NuTo::ConstraintLinearDisplacementsPeriodic2D::CalculateWeightFunction(do
 //calculate delta displacement in x and y direction from the applied strain and the nodal position
 void NuTo::ConstraintLinearDisplacementsPeriodic2D::CalculateDeltaDisp(double rCoordinates[2], double rDeltaDisp[2])const
 {
-    rDeltaDisp[0] = mStrain.mEngineeringStrain[0]*rCoordinates[0] + mStrain.mEngineeringStrain[2]*rCoordinates[1];
-    rDeltaDisp[1] = mStrain.mEngineeringStrain[1]*rCoordinates[1] + mStrain.mEngineeringStrain[2]*rCoordinates[0];
+    rDeltaDisp[0] = mStrain[0]*rCoordinates[0] + mStrain[2]*rCoordinates[1];
+    rDeltaDisp[1] = mStrain[1]*rCoordinates[1] + mStrain[2]*rCoordinates[0];
 }
 
 //!@brief calculates all the nodes on the boundary

@@ -140,9 +140,9 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
 		double temperature(itInput->second->GetTemperature());
 		double deltaStrain(mThermalExpansionCoefficient * temperature);
 		EngineeringStrain3D elasticEngineeringStrain;
-		elasticEngineeringStrain.mEngineeringStrain[0] -= deltaStrain;
-		elasticEngineeringStrain.mEngineeringStrain[1] -= deltaStrain;
-		elasticEngineeringStrain.mEngineeringStrain[2] -= deltaStrain;
+		elasticEngineeringStrain[0] -= deltaStrain;
+		elasticEngineeringStrain[1] -= deltaStrain;
+		elasticEngineeringStrain[2] -= deltaStrain;
 	}
 
 	EngineeringStress3D engineeringStress;
@@ -200,12 +200,12 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
     	case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
     	{
     		EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-    		engineeringPlasticStrain.mEngineeringStrain[0] = newStaticData.mEpsilonP[0] ;
-    		engineeringPlasticStrain.mEngineeringStrain[1] = newStaticData.mEpsilonP[1] ;
-    		engineeringPlasticStrain.mEngineeringStrain[2] = newStaticData.mEpsilonP[2] ;
-    		engineeringPlasticStrain.mEngineeringStrain[3] = newStaticData.mEpsilonP[3] ;
-    		engineeringPlasticStrain.mEngineeringStrain[4] = newStaticData.mEpsilonP[4] ;
-    		engineeringPlasticStrain.mEngineeringStrain[5] = newStaticData.mEpsilonP[5] ;
+    		engineeringPlasticStrain[0] = newStaticData.mEpsilonP[0] ;
+    		engineeringPlasticStrain[1] = newStaticData.mEpsilonP[1] ;
+    		engineeringPlasticStrain[2] = newStaticData.mEpsilonP[2] ;
+    		engineeringPlasticStrain[3] = newStaticData.mEpsilonP[3] ;
+    		engineeringPlasticStrain[4] = newStaticData.mEpsilonP[4] ;
+    		engineeringPlasticStrain[5] = newStaticData.mEpsilonP[5] ;
     		break;
     	}
     	case NuTo::Constitutive::eOutput::DAMAGE:
@@ -316,7 +316,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(cons
     bulk_modulus = modE/(3.-6.*modNu);
 
     // set strain data ptr
-    const double *total_strain(&(rEngineeringStrain.mEngineeringStrain[0]));
+    const double *total_strain(&(rEngineeringStrain[0]));
 
     //get old static data
     const ConstitutiveStaticDataMisesPlasticity3D* rOldStaticData = rElement->GetStaticData(rIp)->AsConstitutiveStaticDataMisesPlasticity3D();
@@ -361,12 +361,12 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(cons
     	factor = bulk_modulus*trace_epsilon;
         if (rNewStress!=0)
         {
-        	rNewStress->mEngineeringStress[0] = factor+sigma_trial[0];
-        	rNewStress->mEngineeringStress[1] = factor+sigma_trial[1];
-        	rNewStress->mEngineeringStress[2] = factor+sigma_trial[2];
-        	rNewStress->mEngineeringStress[3] = 	   sigma_trial[3];
-        	rNewStress->mEngineeringStress[4] = 	   sigma_trial[4];
-        	rNewStress->mEngineeringStress[5] = 	   sigma_trial[5];
+        	(*rNewStress)[0] = factor+sigma_trial[0];
+        	(*rNewStress)[1] = factor+sigma_trial[1];
+        	(*rNewStress)[2] = factor+sigma_trial[2];
+        	(*rNewStress)[3] = 	   sigma_trial[3];
+        	(*rNewStress)[4] = 	   sigma_trial[4];
+        	(*rNewStress)[5] = 	   sigma_trial[5];
         }
         if (rNewTangent!=0)
         {
@@ -496,12 +496,12 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(cons
     {
 		factor  = 2.*mu*delta_gamma;
 		factor2 = bulk_modulus*trace_epsilon;
-		rNewStress->mEngineeringStress[0] = factor2+sigma_trial[0]-factor*df_dsigma[0];
-		rNewStress->mEngineeringStress[1] = factor2+sigma_trial[1]-factor*df_dsigma[1];
-		rNewStress->mEngineeringStress[2] = factor2+sigma_trial[2]-factor*df_dsigma[2];
-		rNewStress->mEngineeringStress[3] =         sigma_trial[3]-factor*df_dsigma[3];
-		rNewStress->mEngineeringStress[4] =         sigma_trial[4]-factor*df_dsigma[4];
-		rNewStress->mEngineeringStress[5] =         sigma_trial[5]-factor*df_dsigma[5];
+		(*rNewStress)[0] = factor2+sigma_trial[0]-factor*df_dsigma[0];
+		(*rNewStress)[1] = factor2+sigma_trial[1]-factor*df_dsigma[1];
+		(*rNewStress)[2] = factor2+sigma_trial[2]-factor*df_dsigma[2];
+		(*rNewStress)[3] =         sigma_trial[3]-factor*df_dsigma[3];
+		(*rNewStress)[4] =         sigma_trial[4]-factor*df_dsigma[4];
+		(*rNewStress)[5] =         sigma_trial[5]-factor*df_dsigma[5];
     }
 
     //update stiffness
@@ -684,9 +684,9 @@ void NuTo::MisesPlasticityEngineeringStress::SetInitialYieldStrength(double rSig
 //! @brief ... get yield strength for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding yield strength
-NuTo::FullMatrix<double> NuTo::MisesPlasticityEngineeringStress::GetYieldStrength() const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::MisesPlasticityEngineeringStress::GetYieldStrength() const
 {
-	NuTo::FullMatrix<double> returnMatrix(mSigma.size(),2);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> returnMatrix(mSigma.size(),2);
 	for (unsigned int count=0; count<mSigma.size(); count++)
 	{
 		returnMatrix(count,0) = mSigma[count].first;
@@ -745,9 +745,9 @@ void NuTo::MisesPlasticityEngineeringStress::SetInitialHardeningModulus(double r
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding hardening modulus
-NuTo::FullMatrix<double> NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus() const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus() const
 {
-	NuTo::FullMatrix<double> returnMatrix(mH.size(),2);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> returnMatrix(mH.size(),2);
 	for (unsigned int count=0; count<mH.size(); count++)
 	{
 		returnMatrix(count,0) = mH[count].first;

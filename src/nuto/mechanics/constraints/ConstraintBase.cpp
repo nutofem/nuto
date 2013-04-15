@@ -129,7 +129,7 @@ const NuTo::EngineeringStrain2D& NuTo::ConstraintBase::GetStrain()const
 
 //!@brief set the crack opening of the periodic boundary conditions
 //!@param rCrackOpening (x,y)
-void NuTo::ConstraintBase::SetCrackOpening(const NuTo::FullMatrix<double>& rCrackOpening)
+void NuTo::ConstraintBase::SetCrackOpening(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCrackOpening)
 {
     throw MechanicsException("[NuTo::ConstraintBase] Set crack opening for this type of constraints not implemented.");
 }

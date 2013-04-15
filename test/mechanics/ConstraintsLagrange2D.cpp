@@ -20,7 +20,7 @@ try
 
     //2x2 nodes 1x1 element grid
     //create nodes
-    NuTo::FullMatrix<double> Coordinates(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(2,1);
     Coordinates(0,0) = 0.0;
     Coordinates(1,0) = 0.0;
     int node1 = myStructure.NodeCreate("displacements",Coordinates);
@@ -38,7 +38,7 @@ try
     int node4 = myStructure.NodeCreate("displacements",Coordinates);
 
     //create elements
-        NuTo::FullMatrix<int> Incidence(4,1);
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(4,1);
     Incidence(0,0) = node1;
     Incidence(1,0) = node2;
     Incidence(2,0) = node4;
@@ -84,11 +84,11 @@ try
     int GrpNodesBottomLeftNodeBoundary = myStructure.GroupIntersection(GrpNodesBottomBoundary,GrpNodesLeftBoundary);
 
     //fix bottom left corner node
-    NuTo::FullMatrix<double> DirectionX(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
     DirectionX.SetValue(0,0,1.0);
     DirectionX.SetValue(1,0,0.0);
 
-    NuTo::FullMatrix<double>DirectionY(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>DirectionY(2,1);
     DirectionY.SetValue(0,0,0.0);
     DirectionY.SetValue(1,0,1.0);
 
@@ -113,7 +113,7 @@ try
 #endif
 
     // init some result data
-    NuTo::FullMatrix<double> PlotData(1,7);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> PlotData(1,7);
 
     // start analysis
     double maxDisp(1);
@@ -129,10 +129,10 @@ try
 
     //init some auxiliary variables
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-    NuTo::FullMatrix<double> dispForceVector;
-    NuTo::FullMatrix<double> intForceVector;
-    NuTo::FullMatrix<double> extForceVector;
-    NuTo::FullMatrix<double> rhsVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector;
 
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
@@ -147,15 +147,15 @@ try
     //check stiffness
 /*    {
         NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2_1, stiffnessMatrixCSRVector2_2;
-        NuTo::FullMatrix<double> dispForceVector_1, intForceVector_1, intForceVector_2;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector_1, intForceVector_1, intForceVector_2;
         myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2_1, dispForceVector_1);
-        NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
-        NuTo::FullMatrix<double> stiffnessMatrixCDFull(stiffnessMatrixCSRVector2);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCDFull(stiffnessMatrixCSRVector2);
         std::cout << "analytic solution " << std::endl;
         stiffnessMatrixFull.Info(10,13);
         myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector_1);
-        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
         myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
         double delta=1e-5;
         for (int theDOF=0; theDOF<stiffnessMatrixFull.GetNumRows(); theDOF++)
@@ -183,8 +183,8 @@ try
 
     //update displacements of all nodes according to the new conre mat
     {
-        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
         myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
         myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
         myStructure.ElementTotalUpdateTmpStaticData();
@@ -214,7 +214,7 @@ try
     //repeat until max displacement is reached
     bool convergenceStatusLoadSteps(false);
     int loadstep(1);
-    NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
     myStructure.NodeExtractDofValues(displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
     while (!convergenceStatusLoadSteps)
     {
@@ -245,13 +245,13 @@ try
             normRHS = rhsVector.Norm();
 
             // solve
-            NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
-            NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
-            NuTo::FullMatrix<double> displacementsActiveDOFs;
-            NuTo::FullMatrix<double> displacementsDependentDOFs;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> oldDisplacementsActiveDOFs;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFs;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFs;
             if (PRINTRESULT)
             {
-                NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
                 stiffnessMatrixCSRVector2Full.Info(20,10);
             }
 
@@ -319,14 +319,14 @@ try
 /*            //check stiffness
             {
                 NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2_1, stiffnessMatrixCSRVector2_2;
-                NuTo::FullMatrix<double> dispForceVector_1, intForceVector_1, intForceVector_2;
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector_1, intForceVector_1, intForceVector_2;
                 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2_1, dispForceVector_1);
-                NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
-                NuTo::FullMatrix<double> stiffnessMatrixCDFull(stiffnessMatrixCSRVector2);
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCDFull(stiffnessMatrixCSRVector2);
                 stiffnessMatrixFull.Info(10,13);
                 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector_1);
-                NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-                NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
                 myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
                 double delta=1e-5;
                 for (int theDOF=0; theDOF<stiffnessMatrixFull.GetNumRows(); theDOF++)
@@ -359,24 +359,24 @@ try
             myStructure.ExportVtkDataFile(ss.str());
 #endif
              //store result/plot data
-            NuTo::FullMatrix<double> SinglePlotData(1,7);
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SinglePlotData(1,7);
 
             //displacements
-            NuTo::FullMatrix<double> dispNode;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispNode;
             myStructure.NodeGetDisplacements(node1,dispNode);
             SinglePlotData(0,0) = dispNode(0,0);
             myStructure.NodeGetDisplacements(node2,dispNode);
             SinglePlotData(0,1) = dispNode(0,0);
 
             //boundary force
-            NuTo::FullMatrix<double> SupportingForce;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SupportingForce;
             myStructure.NodeGroupInternalForce(GrpNodesLeftBoundary,SupportingForce);
             SinglePlotData(0,2) = SupportingForce(0,0);
             myStructure.NodeGroupInternalForce(GrpNodesRightBoundary,SupportingForce);
             SinglePlotData(0,3) = SupportingForce(0,0);
 
             //lagrange multiplier
-            NuTo::FullMatrix<double> lagrangeMultiplier;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> lagrangeMultiplier;
             myStructure.ConstraintLagrangeGetMultiplier(constraintLHS,lagrangeMultiplier);
             SinglePlotData(0,4) = lagrangeMultiplier(0,0);
             myStructure.ConstraintLagrangeGetMultiplier(constraintRHS,lagrangeMultiplier);
@@ -473,8 +473,8 @@ try
                 std::cout << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << std::endl;
 
             //update displacements of all nodes according to the new conre mat
-            NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-            NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
             myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
             myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
             myStructure.ElementTotalUpdateTmpStaticData();
@@ -487,7 +487,7 @@ try
 
         }
     }
-    NuTo::FullMatrix<double> PlotDataRef(6,7);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> PlotDataRef(6,7);
     PlotDataRef(0,0) = -0.0;
     PlotDataRef(1,0) = -0.2;
     PlotDataRef(2,0) = -0.4;
@@ -538,7 +538,7 @@ try
     PlotDataRef(4,6) = 1;
     PlotDataRef(5,6) = 1;
 
-    if ((PlotDataRef-PlotData).Abs().Max()>1e-4)
+    if ((PlotDataRef-PlotData).cwiseAbs().maxCoeff()>1e-4)
     {
         std::cout<< "final results stored in load disp file as well" << std::endl;
         PlotData.Info();

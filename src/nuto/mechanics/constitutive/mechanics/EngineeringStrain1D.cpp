@@ -14,12 +14,12 @@
 
 NuTo::EngineeringStrain1D::EngineeringStrain1D() : ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
-	mEngineeringStrain = 0.0;
+	(*this)[0] = 0.0;
 }
 
 NuTo::EngineeringStrain1D::EngineeringStrain1D(const DeformationGradient1D& rDeformationGradient)
 {
-    mEngineeringStrain = rDeformationGradient.mDeformationGradient -1.;
+	(*this)[0] = rDeformationGradient.mDeformationGradient -1.;
 }
 
 //! @brief ... get number of strain components
@@ -33,7 +33,7 @@ unsigned int NuTo::EngineeringStrain1D::GetNumberOfComponents() const
 //! @return ... Engineering Strain (exx)
 const double* NuTo::EngineeringStrain1D::GetData() const
 {
-    return &mEngineeringStrain;
+    return data();
 }
 
 //! @brief ... set Engineering Strain
@@ -41,7 +41,7 @@ const double* NuTo::EngineeringStrain1D::GetData() const
 //! @sa mDeformationGradient
 void NuTo::EngineeringStrain1D::SetData(const double rData[1])
 {
-	mEngineeringStrain = rData[0];
+	(*this)[0] = rData[0];
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -60,8 +60,8 @@ void NuTo::EngineeringStrain1D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStrain1D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
-       & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
+    ar & boost::serialization::make_nvp ("EngineeringStrain1DEigen",boost::serialization::base_object< FullVectorFixed<double,1> > ( *this ));
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStrain1D" << std::endl;
 #endif

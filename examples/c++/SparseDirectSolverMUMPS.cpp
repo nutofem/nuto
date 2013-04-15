@@ -24,7 +24,7 @@ int main()
         std::cout << "symmetric matrix, sparse CSR storage" << std::endl;
         A_sy.Info();
         std::cout << std::endl << "symmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double> A_sy_full(A_sy);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_sy_full(A_sy);
         A_sy_full.Info(12,3);
 
         // nonsymmetric coefficient matrix
@@ -47,11 +47,11 @@ int main()
         std::cout << std::endl << "nonsymmetric matrix, sparse CSR storage" << std::endl;
         A_nosy.Info();
         std::cout << std::endl << "nonsymmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double> A_nosy_full(A_nosy);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_nosy_full(A_nosy);
         A_nosy_full.Info(12,3);
 
         // create right hand side vector
-        NuTo::FullMatrix<double> rhs(5,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhs(5,1);
         rhs.SetValue(0,0,1);
         rhs.SetValue(1,0,2);
         rhs.SetValue(2,0,3);
@@ -66,25 +66,25 @@ int main()
 
         // solve symmetric problem
         std::cout << std::endl << "solving the symmetric problem" << std::endl;
-        NuTo::FullMatrix<double> sol_sy(5,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> sol_sy(5,1);
         mumps.Solve(A_sy,rhs,sol_sy);
         std::cout << std::endl << "solution of the symmetric problem" << std::endl;
         sol_sy.Info(12,3);
 
         // solve nonsymmetric problem
         std::cout << std::endl << "solving the nonsymmetric problem" << std::endl;
-        NuTo::FullMatrix<double> sol_nosy(5,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> sol_nosy(5,1);
         mumps.Solve(A_nosy,rhs,sol_nosy);
         std::cout << std::endl << "solution of the nonsymmetric problem" << std::endl;
         sol_nosy.Info(12,3);
 
         // solve for Schur complement
         std::cout << std::endl << "solving the Schur complement of A with respect to indices 0 and 4" << std::endl;
-        NuTo::FullMatrix<int> schur_Indices(2,1);
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> schur_Indices(2,1);
         //attention - zero based indexing for the indices
         schur_Indices(0,0) = 0;
         schur_Indices(1,0) = 4;
-        NuTo::FullMatrix<double> schur_complement(2,2);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> schur_complement(2,2);
         mumps.SchurComplement(A_nosy,schur_Indices,schur_complement);
         schur_complement.Info(12,3); //correct solution is [0.6 3 ]
                                      //                    [0   16]

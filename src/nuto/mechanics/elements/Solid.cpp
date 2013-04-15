@@ -278,21 +278,16 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				{
 				case Element::INTERNAL_GRADIENT:
 				{
-                    //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
-                    //on the global level
-                    if (mStructure->GetHessianConstant(0)==false)
-                    {
-						// Jacobian
-						double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
-						if (numDispDofs>0)
-						{
-							AddDetJBtSigma(derivativeShapeFunctionsGlobal,engineeringStress, factor, 0, it->second->GetFullMatrixDouble());
-						}
-						if (numTempDofs>0)
-						{
-							AddDetJBtHeatFlux(derivativeShapeFunctionsGlobal,heatFlux, factor, numDispDofs, it->second->GetFullMatrixDouble());
-						}
-                    }
+					// Jacobian
+					double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+					if (numDispDofs>0)
+					{
+						AddDetJBtSigma(derivativeShapeFunctionsGlobal,engineeringStress, factor, 0, it->second->GetFullMatrixDouble());
+					}
+					if (numTempDofs>0)
+					{
+						AddDetJBtHeatFlux(derivativeShapeFunctionsGlobal,heatFlux, factor, numDispDofs, it->second->GetFullMatrixDouble());
+					}
 				}
 				break;
 				case Element::HESSIAN_0_TIME_DERIVATIVE:
@@ -406,7 +401,7 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
-/*NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     // get section information determining which input on the constitutive level should be used
@@ -554,7 +549,7 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 void NuTo::Solid::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
                               const ConstitutiveTangentLocal<6,6>& rConstitutiveTangent, double rFactor,
                               int rRow, int rCol,
-                              FullMatrix<double>& rCoefficientMatrix)const
+                              FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     const double *C = rConstitutiveTangent.GetData();
     double x1,x2,y1,y2,z1,z2,x2x1,y2x1,z2x1,x2y1,y2y1,z2y1,x2z1,y2z1,z2z1;
@@ -621,7 +616,7 @@ void NuTo::Solid::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
 void NuTo::Solid::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
                               const ConstitutiveTangentLocal<3,3>& rConstitutiveTangent, double rFactor,
                               int rRow, int rCol,
-                              FullMatrix<double>& rCoefficientMatrix)const
+                              FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     const double *C = rConstitutiveTangent.GetData();
     double x1,x2,y1,y2,z1,z2;
@@ -679,7 +674,7 @@ void NuTo::Solid::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
                                  const EngineeringStress3D& rEngineeringStress,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double>& rResult)const
+                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
 {
     const double *s = rEngineeringStress.GetData();
     double x1,y1,z1;
@@ -710,7 +705,7 @@ void NuTo::Solid::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  const HeatFlux3D& rHeatFlux,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double>& rResult)const
+                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
 {
     const double *s = rHeatFlux.GetData();
     double x1,y1,z1;
@@ -827,7 +822,7 @@ void NuTo::Solid::CalculateDerivativeShapeFunctionsGlobal(const std::vector<doub
 }
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-/*NuTo::Error::eError NuTo::Solid::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Solid::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
 	// get section information determining which input on the constitutive level should be used
@@ -1169,7 +1164,7 @@ void NuTo::Solid::CalculateTemperatureGradient(const std::vector<double>& rDeriv
 
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
-/*NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
 	// get section information determining which input on the constitutive level should be used
@@ -1272,7 +1267,7 @@ void NuTo::Solid::CalculateTemperatureGradient(const std::vector<double>& rDeriv
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-/*NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Solid::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     // get section information determining which input on the constitutive level should be used
@@ -1397,7 +1392,7 @@ void  NuTo::Solid::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
-/*NuTo::Error::eError NuTo::Solid::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
+/*NuTo::Error::eError NuTo::Solid::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rIpData)const
 {
    // get section information determining which input on the constitutive level should be used
     const SectionBase* section(GetSection());

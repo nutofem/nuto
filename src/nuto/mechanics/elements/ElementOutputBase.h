@@ -3,12 +3,12 @@
 #define ELEMENT_OUTPUTBASE_H_
 #include <boost/assert.hpp>
 #include <vector>
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 
 namespace NuTo
 {
-template <class T> class FullMatrix;
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...
@@ -30,9 +30,9 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    virtual FullMatrix<double>& GetFullMatrixDouble();
+    virtual FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble();
 
-    virtual FullMatrix<int>& GetFullMatrixInt();
+    virtual FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt();
 
     virtual std::vector<int>& GetVectorInt();
 

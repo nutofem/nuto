@@ -35,7 +35,7 @@ public:
     	return new ElementOutputFullMatrixDouble(*this);
     }
 
-    FullMatrix<double>& GetFullMatrixDouble()
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble()
 	{
         return mMatrix;
 	}
@@ -62,7 +62,7 @@ public:
 private:
     bool mConstant;
     bool mSymmetric;
-    FullMatrix<double> mMatrix;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
 };
 }
 #ifdef ENABLE_SERIALIZATION

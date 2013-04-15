@@ -54,7 +54,7 @@ void NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix(int& curConstr
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeRotations2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+void NuTo::ConstraintLinearNodeRotations2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const
 {
     rRHS(curConstraintEquation,0) = mRHS;
     curConstraintEquation++;

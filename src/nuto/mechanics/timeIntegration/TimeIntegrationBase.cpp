@@ -53,7 +53,7 @@ void NuTo::TimeIntegrationBase::ResetForNextLoad()
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 //! @param rConstraintLoad ... constraint, whose rhs is increased as a function of time
 //! @param rConstraintRHS ... first row time, rhs of the constraint (linear interpolation in between afterwards, constant)
-void NuTo::TimeIntegrationBase::SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double>& rConstraintRHS)
+void NuTo::TimeIntegrationBase::SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rConstraintRHS)
 {
 	if (rConstraintRHS.GetNumColumns()!=2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
@@ -75,7 +75,7 @@ void NuTo::TimeIntegrationBase::SetDisplacements(int rConstraintLoad, const NuTo
 
 //! @brief sets a scalar time dependent multiplication factor for the external loads
 //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
-void NuTo::TimeIntegrationBase::SetExternalLoads(const NuTo::FullMatrix<double>& rLoadRHSFactor)
+void NuTo::TimeIntegrationBase::SetExternalLoads(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor)
 {
 	if (rLoadRHSFactor.GetNumColumns()!=2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetExternalLoads] number of columns must be 2, first column contains the time, second column contains the corresponding value.");
@@ -121,7 +121,7 @@ double NuTo::TimeIntegrationBase::ConstraintsCalculateRHS(double curTime)
 //! @param curTime ... current time (within the loadstep)
 //! @param rLoad_j ... external load vector for the independent dofs
 //! @param rLoad_k ... external load vector for the dependent dofs
-void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullMatrix<double>& rLoad_j, NuTo::FullMatrix<double>& rLoad_k)
+void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_j, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_k)
 {
 	if (mLoadRHSFactor.GetNumRows()!=0)
 	{
@@ -155,7 +155,7 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 //! @brief calculate the external force as a function of time delta
 //! @ param rStructure ... structure
 //! @ param rPlotVector... data to be plotted, is append to the matrix and written to a file
-void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatrix<double>& rPlotVector)
+void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rPlotVector)
 {
 	if (mResultDir.length()>0)
 	{
@@ -304,7 +304,7 @@ void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool 
 }
 
 //! @brief sets the minimum time step for the time integration procedure
-void NuTo::TimeIntegrationBase::SetGroupNodesReactionForces(NuTo::FullMatrix<int> rVecGroupNodesReactionForces)
+void NuTo::TimeIntegrationBase::SetGroupNodesReactionForces(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecGroupNodesReactionForces)
 {
 	if (rVecGroupNodesReactionForces.GetNumColumns()!=1)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetGroupNodesReactionForces] vector (must have a single column).");

@@ -14,7 +14,7 @@ int main()
 
 	//3x3 nodes 2x2 element grid
 	//create nodes
-    NuTo::FullMatrix<double> Coordinates(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(2,1);
 	Coordinates(0,0) = 0.0;
 	Coordinates(1,0) = 0.0;
 	int node1 = myStructure.NodeCreate("displacements",Coordinates);
@@ -52,7 +52,7 @@ int main()
 	int node9 = myStructure.NodeCreate("displacements",Coordinates);
 
 	//create elements
-    NuTo::FullMatrix<int> Incidence(4,1);
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(4,1);
 	Incidence(0,0) = node1;
 	Incidence(1,0) = node2;
 	Incidence(2,0) = node5;
@@ -81,7 +81,7 @@ int main()
     int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement4,"2D4NGauss4Ip","StaticDataNonlocal");
 */
-    NuTo::FullMatrix<int> Incidence3(3,1);
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence3(3,1);
 
     Incidence3(0,0) = node5;
    	Incidence3(1,0) = node6;
@@ -135,19 +135,19 @@ int main()
 
     //calculate linear elastic matrix
 	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrix;
-	NuTo::FullMatrix<double> dispForceVector;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
 
 	myStructure.ElementTotalUpdateTmpStaticData();
 	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
 	stiffnessMatrix.RemoveZeroEntries(0,1e-14);
 
-	NuTo::FullMatrix<double> fullStiffnessMatrixElastic(stiffnessMatrix);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> fullStiffnessMatrixElastic(stiffnessMatrix);
 	std::cout<<"stiffnessMatrix elastic"<<std::endl;
 	fullStiffnessMatrixElastic.Info();
-	NuTo::FullMatrix<double> displacements;
-	NuTo::FullMatrix<double> dependentDofs;
-	NuTo::FullMatrix<double> intForce;
-	NuTo::FullMatrix<double> intForce2;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacements;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofs;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForce;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForce2;
 
 	//check the stiffness twice, once in the initial deformed state
 	//and once after the update (should be linear elastic)
@@ -170,7 +170,7 @@ int main()
 			rightDisp = 0.6;
 		}
 
-		NuTo::FullMatrix<double>matrixRightDisp(2,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixRightDisp(2,1);
 		matrixRightDisp.SetValue(0,0,rightDisp);
 		matrixRightDisp.SetValue(1,0,0.);
 
@@ -178,7 +178,7 @@ int main()
 		myStructure.NodeSetDisplacements(node6,matrixRightDisp);
 		myStructure.NodeSetDisplacements(node9,matrixRightDisp);
 
-		NuTo::FullMatrix<double>matrixCenterDisp(2,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixCenterDisp(2,1);
 		if (theLoadStep!=2)
 		    matrixCenterDisp.SetValue(0,0,0.5*rightDisp);
 		else
@@ -189,7 +189,7 @@ int main()
 		myStructure.NodeSetDisplacements(node5,matrixCenterDisp);
 		myStructure.NodeSetDisplacements(node8,matrixCenterDisp);
 
-		NuTo::FullMatrix<double>matrixLeftDisp(2,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixLeftDisp(2,1);
 		matrixLeftDisp.SetValue(0,0,0.0);
 		matrixLeftDisp.SetValue(1,0,0.);
 
@@ -197,7 +197,7 @@ int main()
 		myStructure.NodeSetDisplacements(node4,matrixLeftDisp);
 		myStructure.NodeSetDisplacements(node7,matrixLeftDisp);
 
-	    //NuTo::FullMatrix<double>matrixLeftDispNode1(2,1);
+	    //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixLeftDispNode1(2,1);
 	    //matrixLeftDispNode1.SetValue(0,0,0.0);
 	    //matrixLeftDispNode1.SetValue(1,0,0.);
 	    //myStructure.NodeSetDisplacements(node1,matrixLeftDispNode1);
@@ -208,7 +208,7 @@ int main()
 		myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
 		stiffnessMatrix.RemoveZeroEntries(0,1e-14);
 
-		NuTo::FullMatrix<double> fullStiffnessMatrix(stiffnessMatrix);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> fullStiffnessMatrix(stiffnessMatrix);
 
 		std::cout<<"stiffnessMatrix analytic"<<std::endl;
 		fullStiffnessMatrix.Info();
@@ -217,7 +217,7 @@ int main()
 		myStructure.BuildGlobalGradientInternalPotentialVector(intForce);
 
 		double delta(1e-8);
-		NuTo::FullMatrix<double> stiffnessMatrixCD(displacements.GetNumRows(),displacements.GetNumRows());
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCD(displacements.GetNumRows(),displacements.GetNumRows());
 
 		//check with central differences
 		for (int count2=0; count2<displacements.GetNumRows(); count2++)
@@ -236,7 +236,7 @@ int main()
 		std::cout << "stiffnessMatrixCD" << std::endl;
 		stiffnessMatrixCD.Info();
 		int row,col;
-		double maxerror((fullStiffnessMatrix-stiffnessMatrixCD).Abs().Max(row,col));
+		double maxerror((fullStiffnessMatrix-stiffnessMatrixCD).cwiseAbs().maxCoeff(&row,&col));
 	    switch(theLoadStep)
 	    {
 	    case 0:
@@ -246,9 +246,10 @@ int main()
 	    {
 	        std::cout << "max difference in stiffness matrix for unloading " << maxerror << " row " << row << " col " << col << std::endl;
 	    	double omega(fullStiffnessMatrix(0,0)/fullStiffnessMatrixElastic(0,0));
-	    	double maxerror2((fullStiffnessMatrixElastic*omega-stiffnessMatrix).Abs().Max(row,col));
+	    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> diffMatrix(fullStiffnessMatrixElastic*omega-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffnessMatrix));
+	    	double maxerror2(diffMatrix.cwiseAbs().maxCoeff(&row,&col));
 			std::cout<<"stiffnessMatrix elastic*omega"<<std::endl;
-			(fullStiffnessMatrixElastic*omega-stiffnessMatrix).Info();
+			diffMatrix.Info();
     	    std::cout << "max difference in stiffness matrix for unloading and scaled elastic matrix " << maxerror2 << " row " << row << " col " << col << std::endl;
 	    }
     	break;
@@ -269,7 +270,7 @@ int main()
 	myStructure.ExportVtkDataFile("NonlocalDamagePlasticityModel.vtk");
 #endif
 
-    NuTo::FullMatrix<double> shift(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> shift(2,1);
     shift(0,0) = 3+myStructure.ConstitutiveLawGetNonlocalRadius(myMatDamage);
     shift(1,0) = 0;
     myStructure.CopyAndTranslate(shift);

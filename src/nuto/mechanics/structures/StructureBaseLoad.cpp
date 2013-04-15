@@ -12,7 +12,7 @@
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
 
 // adds a force for a node
-int NuTo::StructureBase::LoadCreateNodeForce(int rNodeIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     // find node
     NodeBase* nodePtr;
@@ -33,7 +33,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rNodeIdent, const NuTo::FullMat
     return this->LoadCreateNodeForce(nodePtr,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     //find unused integer id
     int id(0);
@@ -66,7 +66,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::
 }
 
 // adds a force for a node group
-int NuTo::StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     // find group in map
     boost::ptr_map<int,GroupBase>::iterator itGroup = this->mGroupMap.find(rGroupIdent);
@@ -85,7 +85,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::F
     return this->LoadCreateNodeGroupForce(nodeGroup,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     //find unused integer id
     int id(0);

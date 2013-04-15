@@ -552,7 +552,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
-/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     //calculate local coordinates
@@ -647,7 +647,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                 return error;
 
 
-NuTo::FullMatrix<double> stiffnessAnalytic(Eigen::Matrix<double,3,3>::Map(NonlocalTangent.GetSubMatrix(0)->GetData(),3,3));
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessAnalytic(Eigen::Matrix<double,3,3>::Map(NonlocalTangent.GetSubMatrix(0)->GetData(),3,3));
 std::cout << "Element " << this << std::endl;
 std::cout << "stiffness analytic " << std::endl<< stiffnessAnalytic << std::endl << std::endl;
 
@@ -656,7 +656,7 @@ double delta(1e-6);
 NuTo::EngineeringStress2D  engineeringStress1,engineeringStress2;
 constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
         deformationGradient, engineeringStress1);
-NuTo::FullMatrix<double> stiffnessCDF(3,3);
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessCDF(3,3);
 for (int countStrain=0; countStrain<3; countStrain++)
 {
     switch(countStrain)
@@ -833,7 +833,7 @@ exit(0);
 //! &param rFirstCol first column of the coefficient matrix to be modified (corresponding to the current nonlocal element)
 void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFunctionsLocal,const std::vector<double>& rNonlocalDerivativeShapeFunctionsLocal,
                               const ConstitutiveTangentLocal<3,3>& rConstitutiveTangent, double rFactor,
-                              FullMatrix<double>& rCoefficientMatrix, int rFirstRow, int rFirstCol)const
+                              FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix, int rFirstRow, int rFirstCol)const
 {
     assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rFirstCol + (int)rNonlocalDerivativeShapeFunctionsLocal.size()<=rCoefficientMatrix.GetNumColumns());
     assert((int)rLocalDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
@@ -878,7 +878,7 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFu
 void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
                               const ConstitutiveTangentLocal<2,2>& rConstitutiveTangent, double rFactor,
                               int rRow, int rCol,
-                              FullMatrix<double>& rCoefficientMatrix)const
+                              FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     const double *C = rConstitutiveTangent.GetData();
     double x1,x2,y1,y2;
@@ -925,7 +925,7 @@ void NuTo::Plane::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
                                  const EngineeringStress2D& rEngineeringStress,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double>& rResult)const
+                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
 {
     assert(rResult.GetNumRows()==2*GetNumShapeFunctions() && rResult.GetNumColumns()==1);
     const double *s = rEngineeringStress.GetData();
@@ -953,7 +953,7 @@ void NuTo::Plane::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  const HeatFlux2D& rHeatFlux,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double>& rResult)const
+                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
 {
     const double *s = rHeatFlux.GetData();
     double x1,y1;
@@ -1044,7 +1044,7 @@ void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<doubl
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-/*NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Plane::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     //calculate local coordinates
@@ -1263,7 +1263,7 @@ void NuTo::Plane::CalculateTemperatures(std::vector<double>& rTemperatures)const
 
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
-/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     throw MechanicsException("[NuTo::Plane::CalculateCoefficientMatrix_1] to be implemented.");
@@ -1272,7 +1272,7 @@ void NuTo::Plane::CalculateTemperatures(std::vector<double>& rTemperatures)const
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Plane::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
    //calculate local coordinates
@@ -1379,7 +1379,7 @@ void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
-/*NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
+/*NuTo::Error::eError NuTo::Plane::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rIpData)const
 {
 	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());

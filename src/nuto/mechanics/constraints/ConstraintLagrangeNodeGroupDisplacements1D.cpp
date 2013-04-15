@@ -18,7 +18,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
 
-NuTo::ConstraintLagrangeNodeGroupDisplacements1D::ConstraintLagrangeNodeGroupDisplacements1D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rRHS) :
+NuTo::ConstraintLagrangeNodeGroupDisplacements1D::ConstraintLagrangeNodeGroupDisplacements1D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rRHS) :
         ConstraintNodeGroup(rGroup), ConstraintLagrange(rEquationSign)
 {
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=1)
@@ -39,7 +39,7 @@ int NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetNumLagrangeMultipliers(
 
 //! @brief returns the Lagrange Multiplier
 //! first col Lagrange, second column slack variables
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetLagrangeMultiplier(FullMatrix<double>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetLagrangeMultiplier(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const
 {
     rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
     for (unsigned int count=0; count<mLagrangeValue.size(); count++)
@@ -48,7 +48,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetLagrangeMultiplier(Ful
 
 //! @brief returns the Lagrange Multiplier dofs
 //! first col Lagrangedofs
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetDofsLagrangeMultiplier(FullMatrix<int>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetDofsLagrangeMultiplier(FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const
 {
     rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
     for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
@@ -77,7 +77,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofs(int& rDOF)
 //! @brief write dof values to constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofValues(const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
     assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -103,7 +103,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofValues(const 
 //! @brief extract dof values from the constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetGlobalDofValues(FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
     assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -213,7 +213,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatri
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     int dof(2*mLagrangeDOF.size());

@@ -2,13 +2,13 @@
 #ifndef SPARSE_DIRECT_SOLVER_MKLPARDISO_H
 #define SPARSE_DIRECT_SOLVER_MKLPARDISO_H
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/SparseDirectSolver.h"
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template<class T> class FullMatrix;
 
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
@@ -34,7 +34,7 @@ public:
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     //! @param rRhs ... matrix storing the right-hand-side vectors (input)
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
-    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution);
 
     //! @brief ... use the nested dissection alogrithm from the METIS-package for for the fill-in reducing odering of the coefficient matrix
     //! @sa mOrderingType

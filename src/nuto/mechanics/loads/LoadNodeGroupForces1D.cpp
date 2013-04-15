@@ -22,7 +22,7 @@ NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(const Group<NodeBase>* rGroup
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<double>& rActiceDofsLoadVector, NuTo::FullMatrix<double>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const
 {
     assert(rActiceDofsLoadVector.GetNumColumns()==1);
     assert(rDependentDofsLoadVector.GetNumColumns()==1);

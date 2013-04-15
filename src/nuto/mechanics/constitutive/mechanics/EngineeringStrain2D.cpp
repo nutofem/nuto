@@ -14,23 +14,23 @@
 
 NuTo::EngineeringStrain2D::EngineeringStrain2D() : ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
-	mEngineeringStrain[0] = 0.0;
-	mEngineeringStrain[1] = 0.0;
-	mEngineeringStrain[2] = 0.0;
+	(*this)[0] = 0.0;
+	(*this)[1] = 0.0;
+	(*this)[2] = 0.0;
 }
 
 NuTo::EngineeringStrain2D::EngineeringStrain2D(const DeformationGradient2D& rDeformationGradient)
 {
-    mEngineeringStrain[0] = rDeformationGradient.mDeformationGradient[0] -1;
-    mEngineeringStrain[1] = rDeformationGradient.mDeformationGradient[3] -1;
-    mEngineeringStrain[2] = rDeformationGradient.mDeformationGradient[1]+rDeformationGradient.mDeformationGradient[2];
+	(*this)[0] = rDeformationGradient.mDeformationGradient[0] -1;
+	(*this)[1] = rDeformationGradient.mDeformationGradient[3] -1;
+	(*this)[2] = rDeformationGradient.mDeformationGradient[1]+rDeformationGradient.mDeformationGradient[2];
 }
 
 NuTo::EngineeringStrain2D::EngineeringStrain2D(const EngineeringStrain2D& rEngineeringStrain)
 {
-    mEngineeringStrain[0] = rEngineeringStrain.mEngineeringStrain[0];
-    mEngineeringStrain[1] = rEngineeringStrain.mEngineeringStrain[1];
-    mEngineeringStrain[2] = rEngineeringStrain.mEngineeringStrain[2];
+	(*this)[0] = rEngineeringStrain[0];
+	(*this)[1] = rEngineeringStrain[1];
+	(*this)[2] = rEngineeringStrain[2];
 }
 
 //! @brief ... get number of strain components
@@ -45,7 +45,7 @@ unsigned int NuTo::EngineeringStrain2D::GetNumberOfComponents() const
 //! @sa mDeformationGradient
 const double* NuTo::EngineeringStrain2D::GetData() const
 {
-    return mEngineeringStrain;
+    return data();
 }
 
 //! @brief ... set Engineering Strain
@@ -53,9 +53,9 @@ const double* NuTo::EngineeringStrain2D::GetData() const
 //! @sa mDeformationGradient
 void NuTo::EngineeringStrain2D::SetData(double rEngineeringStrain[3])
 {
-	mEngineeringStrain[0] = rEngineeringStrain[0];
-	mEngineeringStrain[1] = rEngineeringStrain[1];
-	mEngineeringStrain[2] = rEngineeringStrain[2];
+	(*this)[0] = rEngineeringStrain[0];
+	(*this)[1] = rEngineeringStrain[1];
+	(*this)[2] = rEngineeringStrain[2];
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -74,8 +74,8 @@ void NuTo::EngineeringStrain2D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStrain2D" << std::endl;
 #endif
-    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
-       & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
+    ar & boost::serialization::make_nvp ("EngineeringStrain2DEigen",boost::serialization::base_object< FullVectorFixed<double,3> > ( *this ));
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStrain2D" << std::endl;
 #endif

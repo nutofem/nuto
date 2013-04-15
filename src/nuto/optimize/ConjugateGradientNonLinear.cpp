@@ -42,8 +42,8 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
     bool BrentsMethodConverged;
 
-    FullMatrix<double> gradientOrig;
-    FullMatrix<double> hessianOrig;
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> gradientOrig;
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessianOrig;
     Eigen::VectorXd prevParameters;
     Eigen::VectorXd gradientScaled;
     Eigen::VectorXd scaleFactorsInv(GetNumParameters());
@@ -525,7 +525,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
     return returnValue;
 }
 
-void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, FullMatrix<double>& hessianOrig, Eigen::VectorXd& scaleFactorsInv)
+void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& hessianOrig, Eigen::VectorXd& scaleFactorsInv)
 {
     //calculate hessian for preconditioning
     mpCallbackHandler->Hessian(hessianOrig);

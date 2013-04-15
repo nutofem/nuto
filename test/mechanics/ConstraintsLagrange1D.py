@@ -424,14 +424,14 @@ PlotDataRef.SetValue(3,6,2);
 PlotDataRef.SetValue(4,6,1);
 PlotDataRef.SetValue(5,6,1);
 
-if ((PlotDataRef-PlotData).Abs().Max()[0]>1e-4):
+if ((PlotDataRef-PlotData).Abs().Max()>1e-4):
     print "final results stored in load disp file as well";
     PlotData.Info();
     print "reference results";
     PlotDataRef.Info();
     print "delta results";
     (PlotDataRef-PlotData).Info(10,7);
-    print "[ConstraintLagrange1D] result is not correct." , (PlotDataRef-PlotData).Abs().Max()[0];
+    print "[ConstraintLagrange1D] result is not correct." , (PlotDataRef-PlotData).Abs().Max();
 else:
     print "[ConstraintLagrange1D] nice, result is correct";
 

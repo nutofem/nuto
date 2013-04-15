@@ -541,11 +541,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
     Evaluate(elementOutput);
 
     //assign the outputs
-    NuTo::FullMatrix<double>* damage(0);
-    NuTo::FullMatrix<double>* engineeringStrain(0);
-    NuTo::FullMatrix<double>* engineeringPlasticStrain(0);
-    NuTo::FullMatrix<double>* engineeringStress(0);
-    NuTo::FullMatrix<double>* heatFlux(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* damage(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringPlasticStrain(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStress(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* heatFlux(0);
     for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
     {
         switch (itElementOutput->second->GetIpDataType())
@@ -902,7 +902,7 @@ int NuTo::ElementBase::GetNumNonlocalElements()const
 
 //! @brief integrates the stress over the element
 //! @param rStress integrated stress
-void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)
+void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStress)
 {
 	// define variables storing the element contribution
 	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRESS);
@@ -912,7 +912,7 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)
 	elementOutput.insert(keyIP_DATA,&elementOutputIpData);
 
 	this->Evaluate(elementOutput);
-	NuTo::FullMatrix<double>&  rIpStress(elementOutputIpData.GetFullMatrixDouble());
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  rIpStress(elementOutputIpData.GetFullMatrixDouble());
 
     //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
     std::vector<double> ipVolume;
@@ -927,7 +927,7 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double>& rStress)
 
 //! @brief integrates the strain over the element
 //! @param rStrain integrated strain
-void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)
+void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStrain)
 {
 	// define variables storing the element contribution
 	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRAIN);
@@ -937,7 +937,7 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double>& rStrain)
 	elementOutput.insert(keyIP_DATA,&elementOutputIpData);
 
 	this->Evaluate(elementOutput);
-	NuTo::FullMatrix<double>&  rIpStrain(elementOutputIpData.GetFullMatrixDouble());
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  rIpStrain(elementOutputIpData.GetFullMatrixDouble());
 
     //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
     std::vector<double> ipVolume;

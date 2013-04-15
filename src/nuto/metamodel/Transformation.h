@@ -36,13 +36,13 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
     //! @brief build the transformation using the given Points
-	virtual void Build(const FullMatrix<double>& rCoordinates)=0;
+	virtual void Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)=0;
 
     //! @brief transform the given points 
-    virtual void TransformForward(FullMatrix<double>& rCoordinates)const=0;
+    virtual void TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const=0;
 
     //! @brief transform the given points 
-    virtual void TransformBackward(FullMatrix<double>& rCoordinates)const=0;
+    virtual void TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const=0;
 
 protected:
 

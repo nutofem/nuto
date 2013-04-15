@@ -45,7 +45,7 @@ namespace NuTo
         mCallbackHessian = args_hessian    ;      // Remember new callback
     }
 
-	void CallbackHandlerPython::SetParameters(const NuTo::FullMatrix<double>& rParameters)
+	void CallbackHandlerPython::SetParameters(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParameters)
     {    
         //printf("CallbackHandlerPython::SetParameterscall SetParameters routine %p\n",mCallbackSetParameters);
 		
@@ -89,7 +89,7 @@ namespace NuTo
         return objective;
     }
 
-	void CallbackHandlerPython::Gradient (NuTo::FullMatrix<double>& rGradient)const
+	void CallbackHandlerPython::Gradient (NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const
 	{
 	    //printf("CallbackHandler::Gradient\n");
         
@@ -120,7 +120,7 @@ namespace NuTo
     }
 
 
-    void CallbackHandlerPython::Hessian(NuTo::FullMatrix<double>& rHessian)const
+    void CallbackHandlerPython::Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rHessian)const
     {
         //printf("CallbackHandler::Hessian\n");
         

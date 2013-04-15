@@ -101,7 +101,7 @@ public:
 	virtual void Info()const;
 
     protected:
-    void CalcScalingFactors(int& numHessianCalls, FullMatrix<double>& hessianOrig, Eigen::VectorXd& scaleFactorsInv);
+    void CalcScalingFactors(int& numHessianCalls, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& hessianOrig, Eigen::VectorXd& scaleFactorsInv);
 
     double mAccuracyGradient;
     double mMinDeltaObjBetweenRestarts;

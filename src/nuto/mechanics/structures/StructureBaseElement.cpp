@@ -24,9 +24,9 @@
 
 //! @brief calls ElementCoefficientMatrix_0,
 //! renaming only for clarification in mechanical problems for the end user
-void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<double>& rResult ,
-		NuTo::FullMatrix<int>& rGlobalDofsRow,
-		NuTo::FullMatrix<int>& rGlobalDofsColumn)
+void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult ,
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow,
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -65,7 +65,7 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 //! for a mechanical problem, this corresponds to the stiffness matrix
 //! @param rDelta  delta step for finite differences
 //! @return element with maximum error
-int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double>& rDifference)
+int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDifference)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -74,12 +74,12 @@ int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, Nu
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
-    NuTo::FullMatrix<double> tmpDifference;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> tmpDifference;
     double maxError(0);
     int maxElement(-1);
 	std::vector<int> globalDofsRow,globalDofsColumn;
-	NuTo::FullMatrix<double> stiffnessAnalytic;
-	NuTo::FullMatrix<double> stiffnessCDF;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessAnalytic;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessCDF;
 //	bool symmetryFlag;
     for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
     {
@@ -137,7 +137,7 @@ int NuTo::StructureBase::ElementTotalCoefficientMatrix_0_Check(double rDelta, Nu
 //! @param rElementId element
 //! @param rDelta  delta step for finite differences
 //! @return maximum difference between analytical and central difference method
-double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, double rDelta, NuTo::FullMatrix<double>& rDifference)
+double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDifference)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -155,8 +155,8 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
     try
     {
     	std::vector<int> globalDofsRow,globalDofsColumn;
-    	NuTo::FullMatrix<double> stiffnessAnalytic;
-    	NuTo::FullMatrix<double> stiffnessCDF;
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessAnalytic;
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessCDF;
 //    	bool symmetryFlag;
 //    	elementPtr->CalculateCoefficientMatrix_0(stiffnessAnalytic, globalDofsRow, globalDofsColumn, symmetryFlag);
     	std::cout << "stiffnessAnalytic " << "\n" << stiffnessAnalytic << "\n" << "\n";
@@ -199,7 +199,7 @@ double NuTo::StructureBase::ElementCoefficientMatrix_0_Check(int rElementId, dou
 //! @param rDelta  delta step for finite differences
 //! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
 //! @return maximum difference between analytical and central difference method
-void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(int rElementId, double rDelta, NuTo::FullMatrix<double>& stiffnessCDF)
+void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(int rElementId, double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& stiffnessCDF)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -220,10 +220,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(int rElementId, do
 //! @param rDelta  delta step for finite differences
 //! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
 //! @return maximum difference between analytical and central difference method
-void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElementPtr, double rDelta, NuTo::FullMatrix<double>& stiffnessCDF)
+void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElementPtr, double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& stiffnessCDF)
 {
-	NuTo::FullMatrix<double> resforce1;
-	NuTo::FullMatrix<double> resforce2;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resforce1;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resforce2;
 
 	// if other DOFs than displacements are implemented, a routine should be implemented for all elements, that
 	// specifies wich DOFs are used
@@ -384,9 +384,9 @@ bool NuTo::StructureBase::CheckStiffness()
 
     mLogger << "test of stiffness still included, node merge is called!!! " << "\n";
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-    NuTo::FullMatrix<double> dispForceVector;
-    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
 
     bool oldShowtime = mShowTime;
     mShowTime = false;
@@ -402,12 +402,12 @@ bool NuTo::StructureBase::CheckStiffness()
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
     //this->ConstraintInfo(10);
 
-    NuTo::FullMatrix<double> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
     //std::cout<<"stiffness matrix" << "\n";
     //stiffnessMatrixCSRVector2Full.Info(10,3);
     double interval(-1e-10);
-    NuTo::FullMatrix<double> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
-    NuTo::FullMatrix<double> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
     double energy1,energy2;
     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
@@ -438,7 +438,7 @@ bool NuTo::StructureBase::CheckStiffness()
 
     mShowTime=oldShowtime;
 
-    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e-1)
+    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e-1)
     {
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
         {
@@ -450,13 +450,13 @@ bool NuTo::StructureBase::CheckStiffness()
 			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
         }
         //extract the first 5x5 block
-        //NuTo::FullMatrix<double> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
-        //NuTo::FullMatrix<double> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
-        //NuTo::FullMatrix<double> blockDelta(blockAlgo-blockCDF);
+        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
+        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
+        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockDelta(blockAlgo-blockCDF);
 
         double maxError;
         int row,col;
-        maxError = (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max(row,col);
+        maxError =(stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff(&row,&col);
         mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << stiffnessMatrixCSRVector2Full(row,col) << "\n";
 
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
@@ -466,13 +466,13 @@ bool NuTo::StructureBase::CheckStiffness()
 			mLogger<< "\n" << "intForceVector cdf" << "\n";
 			mLogger.Out(intForceVectorCDF.Trans(),10,3,false);
 			mLogger << "\n" << "error" << "\n";
-			mLogger.Out((intForceVector1-intForceVectorCDF).Abs().Trans(),10,3);
+			mLogger.Out(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(intForceVector1-intForceVectorCDF).cwiseAbs().transpose(),10,3);
         }
-        maxError = (intForceVector1-intForceVectorCDF).Abs().Max(row,col);
+        maxError = (intForceVector1-intForceVectorCDF).cwiseAbs().maxCoeff(&row,&col);
         mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
 
         //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
-        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).Abs().Max()>1e1)
+        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e1)
         {
         	NodeInfo(10);
             mLogger << "stiffness ist wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
@@ -493,9 +493,9 @@ bool NuTo::StructureBase::CheckStiffness()
 //! for a mechanical problem, this corresponds to the stiffness, damping or mass matrix (rTimeDerivative=0,1,2)
 void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
 		                        int rTimeDerivative,
-                                NuTo::FullMatrix<double>& rResult,
-                                NuTo::FullMatrix<int>& rGlobalDofsRow,
-                                NuTo::FullMatrix<int>& rGlobalDofsColumn)
+                                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
+                                NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow,
+                                NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -586,8 +586,8 @@ void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
 void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
-		NuTo::FullMatrix<double>& rResult,
-		NuTo::FullMatrix<int>& rGlobalDofsRow)
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1106,7 +1106,7 @@ void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const
 //! @brief calculates the engineering strain
 //! @param rElemIdent  identifier for the element
 //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix<double>& rEngineeringStrain)
+void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1155,7 +1155,7 @@ void NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId, FullMatrix
 //! @brief calculates the engineering plastic strain
 //! @param rElemIdent  identifier for the element
 //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double>& rEngineeringPlasticStrain)
+void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringPlasticStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1204,7 +1204,7 @@ void NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId, Ful
 //! @brief calculates the engineering stress
 //! @param rElemIdent  identifier for the element
 //! @param rEngineeringStress engineering stress (return value, always 6xnumIp matrix)
-void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix<double>& rEngineeringStress)
+void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1254,7 +1254,7 @@ void NuTo::StructureBase::ElementGetEngineeringStress(int rElementId, FullMatrix
 //! @brief calculates the damage
 //! @param rElemIdent  identifier for the element
 //! @param rEngineeringStress damage (return value, always 1xnumIp matrix)
-void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double>& rDamage)
+void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDamage)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1327,7 +1327,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
 		try
 		{
 			elementVector[countElement]->Evaluate(elementOutput);
-			FullMatrix<double>& damage = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
+			FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& damage = elementOutput.find(Element::IP_DATA)->second->GetFullMatrixDouble();
 			if (damage.Max()>maxDamage)
 				maxDamage = damage.Max();
 		}
@@ -1535,7 +1535,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
 //! @param rEngineeringStress  average stress (return value)
-void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)
+void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1544,7 +1544,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 #endif
     start=clock();
 #endif
-    NuTo::FullMatrix<double> elementEngineeringStress;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStress;
     rEngineeringStress.Resize(6,1);
 
     std::vector<ElementBase*> elementVector;
@@ -1591,7 +1591,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
 //! @param rEngineeringStress  average stress (return value)
-void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStress)
+void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1609,7 +1609,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-    NuTo::FullMatrix<double> elementEngineeringStress;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStress;
     rEngineeringStress.Resize(6,1);
 
     for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
@@ -1656,13 +1656,13 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
 //! @param rEngineeringStraiu  average strain (return value)
-void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)
+void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-    NuTo::FullMatrix<double> elementEngineeringStrain;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStrain;
     rEngineeringStrain.Resize(6,1);
 
     std::vector<ElementBase*> elementVector;
@@ -1703,7 +1703,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
 //! @param rEngineeringStrain  average strain (return value)
-void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double>& rEngineeringStrain)
+void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1718,7 +1718,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-    NuTo::FullMatrix<double> elementEngineeringStrain;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStrain;
     rEngineeringStrain.Resize(6,1);
 
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
@@ -1763,7 +1763,7 @@ double NuTo::StructureBase::ElementTotalGetInternalEnergy()
     start=clock();
 #endif
     double totalEnergy(0);
-    NuTo::FullMatrix<double> ipEnergy;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ipEnergy;
 
     std::vector<const ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -1819,7 +1819,7 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)
     assert(elementGroup!=0);
 
     double totalEnergy(0);
-    NuTo::FullMatrix<double> ipEnergy;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ipEnergy;
 
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
@@ -1867,7 +1867,7 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
     start=clock();
 #endif
     double elasticEnergy(0);
-    NuTo::FullMatrix<double> ipEnergy;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ipEnergy;
 
     std::vector<const ElementBase*> elementVector;
     GetElementsTotal(elementVector);

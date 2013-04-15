@@ -58,10 +58,10 @@ int main()
 		gridDimension=myGrid.GetGridDimension();
 		assert (numVoxel==gridDimension[0]*gridDimension[1]*gridDimension[2]);
 		std::cout<<__FILE__<<"  variab: spac: "<<voxelSpacing[0]<< " gridDim: "<<gridDimension[0]<<std::endl;
-		NuTo::FullMatrix<int> imageValues (numVoxel,1);
-		//imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "../nuto/examples/c++/InputStructureGrid3D");
-		//imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "InputCheckerboard");
-		imageValues.NuTo::FullMatrix<int>::ImportFromVtkASCIIFile( "InputTest");
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> imageValues (numVoxel,1);
+		//imageValues.NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>::ImportFromVtkASCIIFile( "../nuto/examples/c++/InputStructureGrid3D");
+		//imageValues.NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>::ImportFromVtkASCIIFile( "InputCheckerboard");
+		imageValues.NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>::ImportFromVtkASCIIFile( "InputTest");
 
 		std::cout<<"first value "<< imageValues(0,0) << std::endl;
 		std::cout<<"numVoxel "<< numVoxel << std::endl;
@@ -82,8 +82,8 @@ int main()
         myHelpStruc.ConstitutiveLawSetYoungsModulus(myMat, YoungsModulus);
 
         // create nodes
-        NuTo::FullMatrix<double> nodeCoordinates(3, 1);
-        NuTo::FullMatrix<int> elementIncidence(8,1);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> nodeCoordinates(3, 1);
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> elementIncidence(8,1);
 
         nodeCoordinates(0, 0) = -voxelSpacing[0] * microTomm / 2;
         nodeCoordinates(1, 0) = -voxelSpacing[1] * microTomm / 2;
@@ -136,9 +136,9 @@ int main()
         myHelpStruc.NodeBuildGlobalDofs();
 
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::FullMatrix<double> stiffnessMatrix;
-        NuTo::FullMatrix<int> rows;
-        NuTo::FullMatrix<int> coluums;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrix;
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rows;
+        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> coluums;
         myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
 
         std::cout<<"Element Stiffness created"<<std::endl;
@@ -159,7 +159,7 @@ int main()
 
 
 		//set Modul for each color
-		NuTo::FullMatrix<double> myMapColorModul(256,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> myMapColorModul(256,1);
 		for(int count=0;count<thresholdMaterialValue;count++)
 			myMapColorModul(count,0)=100000.;
 		for(int count=thresholdMaterialValue;count<255;count++)
@@ -177,7 +177,7 @@ int main()
 		int NumElementsY = (int) gridDimension[1];
 		int NumElementsZ = (int) gridDimension[2];
 
-		NuTo::FullMatrix<double> direction(3,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(3,1);
 		direction(0,0)= 1;
 		direction(1,0)= 0;
 		direction(2,0)= 0;
@@ -223,7 +223,7 @@ int main()
 			direction(0,0)= 1;
 			direction(1,0)= 0;
 			direction(2,0)= 0;
-			NuTo::FullMatrix<double> displacements(3,1);
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacements(3,1);
 			displacements(0,0)= BoundaryDisplacement;
 			displacements(1,0)= 0;
 			displacements(2,0)= 0;
@@ -306,7 +306,7 @@ int main()
 		std::cout<<__FILE__<<" "<<__LINE__<<"  glob dofs "<<myGrid.GetNumNodes()*3<<std::endl;
 		//std::cout<<__FILE__<<" "<<__LINE__<<" active dofs "<<myGrid.GetNumActiveDofs()<<std::endl;
 
-		//NuTo::FullMatrix<int> *voxelLocation(myGrid.GetNumElements(),4);
+		//NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> *voxelLocation(myGrid.GetNumElements(),4);
 		//voxelLocation=myGrid.GetVoxelNumAndLocMatrix();
 		//  std::cout<<__FILE__<<" "<<__LINE__<<" VoxelLocationmatrix: \n"<<voxelLocation<< "\n\n"<<std::endl;
 		/*
@@ -335,8 +335,8 @@ int main()
 		NuTo::ConjugateGradientStructureGrid myOptimizer((unsigned int) myGrid.GetNumNodes()*3);
 		std::cout<<__FILE__<<" "<<__LINE__<<"  optimizer created"<<std::endl;
 
-		NuTo::FullMatrix<double> startVector(myGrid.GetNumNodes()*3,1);
-		NuTo::FullMatrix<double> rDisplacements(3,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> startVector(myGrid.GetNumNodes()*3,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rDisplacements(3,1);
 
 		for (int myNode=0; myNode<numNodes;++myNode)
 		{
@@ -354,7 +354,7 @@ int main()
 
 		std::cout<<__FILE__<<" "<<__LINE__<<"  Grid set"<<std::endl;
 
-		NuTo::FullMatrix<double> returnVector(myGrid.GetNumNodes()*3,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> returnVector(myGrid.GetNumNodes()*3,1);
 		std::cout<<__FILE__<<" "<<__LINE__<<" startVector filled, last value"<<startVector(myGrid.GetNumNodes()*3-1,0)<<std::endl;
 		//set callback routines for the calculation of the objective function, gradient etc
 		//this works, because Neural network has been derived from CallbackHandler of the optimization module
@@ -365,8 +365,8 @@ int main()
 		returnVector=myOptimizer.GetParameters();
 		//
 		// myGrid.NodeMergeActiveDofValues(returnVector);
-		NuTo::FullMatrix<double> dispAll(0,1);
-		NuTo::FullMatrix<double> dispNode(3,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispAll(0,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispNode(3,1);
 		/*
 		for (int count=0; count<myGrid.GetNumNodes(); ++count)
 		{
@@ -378,13 +378,13 @@ int main()
 		//dispAll.WriteToFile("displacements.txt"," ");
 		returnVector.WriteToFile("displacements.txt"," ");
 		//dispAll.Info(12,6);
-		NuTo::FullMatrix<double> dispAnsys(myGrid.GetNumNodes(),1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispAnsys(myGrid.GetNumNodes(),1);
 		//dispAnsys.ReadFromFile("disp_cube11_ansys.txt");
 		/*
 		try
 		{
 			dispAnsys.ReadFromFile("solu_disp_checkerboard_cube11.txt");
-			//NuTo::FullMatrix<double> dispAllDiff=dispAll-dispAnsys;
+			//NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispAllDiff=dispAll-dispAnsys;
 			dispAllDiff.WriteToFile("displDiff.txt"," ");
 			Eigen::VectorXd diffVector;
 			Eigen::VectorXd dispAllVector;

@@ -99,7 +99,7 @@ SetGlobalDofs(int& rDOF)
 //! @param rDependentDofValues ... dependent dof values
 template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumDamage >
 void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumDamage>::
-SetGlobalDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)
+SetGlobalDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
 	assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -164,7 +164,7 @@ SetGlobalDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveD
 //! @param rDependentDofValues ... dependent dof values
 template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumDamage >
 void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::
-GetGlobalDofValues(int rTimeDerivative, NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
+GetGlobalDofValues(int rTimeDerivative, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
 	assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);

@@ -15,17 +15,17 @@
 // constructor
 NuTo::EngineeringStress2D::EngineeringStress2D(): ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
-    this->mEngineeringStress[0] = 0.0;
-    this->mEngineeringStress[1] = 0.0;
-    this->mEngineeringStress[2] = 0.0;
+    (*this)[0] = 0.0;
+    (*this)[1] = 0.0;
+    (*this)[2] = 0.0;
 }
 
 //! @brief ... copy constructor
 NuTo::EngineeringStress2D::EngineeringStress2D(const EngineeringStress2D& rOther)
 {
-	this->mEngineeringStress[0] = rOther.mEngineeringStress[0];
-	this->mEngineeringStress[1] = rOther.mEngineeringStress[1];
-	this->mEngineeringStress[2] = rOther.mEngineeringStress[2];
+	(*this)[0] = rOther[0];
+	(*this)[1] = rOther[1];
+	(*this)[2] = rOther[2];
 }
 
 // number of components
@@ -37,14 +37,14 @@ unsigned int NuTo::EngineeringStress2D::GetNumberOfComponents() const
 // get Engineering stress
 const double* NuTo::EngineeringStress2D::GetData() const
 {
-    return this->mEngineeringStress;
+    return data();
 }
 
 // info routine
 void NuTo::EngineeringStress2D::Info(unsigned short rVerboseLevel) const
 {
-    std::cout << "    components of Engineering stress tensor (vector notation): " << this->mEngineeringStress[0] << ", "
-              << this->mEngineeringStress[1] << ", " << this->mEngineeringStress[2]  << std::endl;
+    std::cout << "    components of Engineering stress tensor (vector notation): " << (*this)[0] << ", "
+              << (*this)[1] << ", " << (*this)[2]  << std::endl;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -63,8 +63,8 @@ void NuTo::EngineeringStress2D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStress2D" << std::endl;
 #endif
-    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
-       & BOOST_SERIALIZATION_NVP(mEngineeringStress);
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
+    ar & boost::serialization::make_nvp ("EngineeringStress2DEigen",boost::serialization::base_object< FullVectorFixed<double,3> > ( *this ));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStress2D" << std::endl;
 #endif

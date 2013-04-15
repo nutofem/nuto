@@ -96,11 +96,11 @@ if (printResult):
     print "rhs"
     rhs.Info()
 
-if ((constraintMatrixFull-constraintMatrixFullCorrect).Abs().Max()[0]>1e-8):
+if ((constraintMatrixFull-constraintMatrixFullCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : constraint matrix is not correct.'
         error = True;
 
-if ((rhs-rhsCorrect).Abs().Max()[0]>1e-8):
+if ((rhs-rhsCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : right hand side is not correct.'
         error = True;
 

@@ -35,7 +35,7 @@ NuTo::MultipleLinearRegression::MultipleLinearRegression(): Metamodel()
  *  \f]
  *  where \f$p\f$ is the number of regressor variables.
  */
-void NuTo::MultipleLinearRegression::GetRegressionCoefficientsTransformed(NuTo::FullMatrix<double>& rRegressionCoefficients) const
+void NuTo::MultipleLinearRegression::GetRegressionCoefficientsTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficients) const
 {
 	rRegressionCoefficients = this->mCoefficients;
 }
@@ -48,12 +48,12 @@ void NuTo::MultipleLinearRegression::GetRegressionCoefficientsTransformed(NuTo::
  * \f]
  */
 //! @sa NuTo::MultipleLinearRegression::Hessian(), NuTo::MultipleLinearRegression::GetMeanSquareErrorTransformed()
-void NuTo::MultipleLinearRegression::GetRegressionCoefficientsCovarianceMatrixTransformed(NuTo::FullMatrix<double>& rCovarianceMatrix) const
+void NuTo::MultipleLinearRegression::GetRegressionCoefficientsCovarianceMatrixTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const
 {
 	try
 	{
 		// calculate hessian matrix
-		NuTo::FullMatrix<double> hessianMatrix;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessianMatrix;
 		this->Hessian(hessianMatrix);
 
 		// calculate inverse of hessian
@@ -80,7 +80,7 @@ void NuTo::MultipleLinearRegression::GetRegressionCoefficientsCovarianceMatrixTr
  * where \f$COV(\boldsymbol{\beta})\f$ is the covariance matrix of the regression coefficients, \f$n\f$ is the number of support points,
  * \f$p\f$ is the number regressor variables, and \f$t_{0.5\alpha,n-p}\f$ ist the \f$0.5\alpha\f$-quantile of the t-distribution with \f$n-p\f$ degrees of freedom.
  */
-void NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceIntervalsTransformed(NuTo::FullMatrix<double>& rRegressionCoefficients, NuTo::FullMatrix<double>& rRegressionCoefficientsMin, NuTo::FullMatrix<double>& rRegressionCoefficientsMax, double rAlpha) const
+void NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceIntervalsTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficients, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficientsMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficientsMax, double rAlpha) const
 {
 	// get regression coefficients
 	rRegressionCoefficients = this->mCoefficients;
@@ -99,7 +99,7 @@ void NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceInterval
 	try
 	{
 		// calculate covariance matrix
-		NuTo::FullMatrix<double> covarianceMatrix;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> covarianceMatrix;
 		this->GetRegressionCoefficientsCovarianceMatrixTransformed(covarianceMatrix);
 
 		// calculate confidence intervals
@@ -121,12 +121,12 @@ void NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceInterval
 }
 
 // calculate the (1-rAlpha) confidence interval on the mean response of the linear regression
-void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponse(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha) const
+void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponse(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const
 {
 	try
 	{
 		//apply transformation of inputs
-		NuTo::FullMatrix<double> rInputTransformed = rInput;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rInputTransformed = rInput;
 		mSupportPoints.TransformForwardInput(rInputTransformed);
 
 		//solve the submodule
@@ -166,7 +166,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponse(const 
  * where \f$COV(\boldsymbol{\beta})\f$ is the covariance matrix of the regression coefficients, \f$n\f$ is the number of support points,
  * \f$p\f$ is the number regressor variables, and \f$t_{0.5\alpha,n-p}\f$ ist the \f$0.5\alpha\f$-quantile of the t-distribution with \f$n-p\f$ degrees of freedom.
  */
-void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransformed(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha) const
+void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const
 {
 	// get number of degrees of freedom
 	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows();
@@ -185,7 +185,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransfo
 		double tValue = boost::math::quantile(boost::math::complement(tDistribution, 0.5 * rAlpha));
 
 		// calculate covariance matrix
-		NuTo::FullMatrix<double> covarianceMatrix;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> covarianceMatrix;
 		this->GetRegressionCoefficientsCovarianceMatrixTransformed(covarianceMatrix);
 
 		// prepare output
@@ -231,12 +231,12 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransfo
 }
 
 // calculate the (1-rAlpha) confidence interval on predictions of the linear regression
-void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPrediction(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha) const
+void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPrediction(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const
 {
 	try
 	{
 		//apply transformation of inputs
-		NuTo::FullMatrix<double> rInputTransformed = rInput;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rInputTransformed = rInput;
 		mSupportPoints.TransformForwardInput(rInputTransformed);
 
 		//solve the submodule
@@ -277,7 +277,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPrediction(const Fu
  * \f$p\f$ is the number regressor variables, and \f$t_{0.5\alpha,n-p}\f$ ist the \f$0.5\alpha\f$-quantile of the t-distribution with \f$n-p\f$ degrees of freedom.
  * The mean-square-error of the support point residuals is used as estimator for the error variance \f$\sigma_e^2\f$.
  */
-void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransformed(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha) const
+void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const
 {
 	// get number of degrees of freedom
 	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows();
@@ -296,7 +296,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransform
 		double tValue = boost::math::quantile(boost::math::complement(tDistribution, 0.5 * rAlpha));
 
 		// calculate covariance matrix
-		NuTo::FullMatrix<double> covarianceMatrix;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> covarianceMatrix;
 		this->GetRegressionCoefficientsCovarianceMatrixTransformed(covarianceMatrix);
 
 		// calculate mean square error
@@ -375,11 +375,11 @@ void NuTo::MultipleLinearRegression::BuildDerived()
 		this->mCoefficients.setZero(numParameters,1);
 
 		// get hessian matrix
-		NuTo::FullMatrix<double> hessianMatrix;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessianMatrix;
 		this->Hessian(hessianMatrix);
 
 		// get gradient
-		NuTo::FullMatrix<double> gradientVector;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> gradientVector;
 		this->Gradient(gradientVector);
 		gradientVector *= -1;
 
@@ -395,7 +395,7 @@ void NuTo::MultipleLinearRegression::BuildDerived()
 }
 
 // calculate response for given input data (transformed system)
-void NuTo::MultipleLinearRegression::SolveTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates)const
+void NuTo::MultipleLinearRegression::SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const
 {
     int dimInput = this->mSupportPoints.GetDimInput();
 	if(rInputCoordinates.GetNumRows() != dimInput)
@@ -452,7 +452,7 @@ void NuTo::MultipleLinearRegression::SolveTransformed(const FullMatrix<double>& 
  *  \end{bmatrix}\f]
  *  are the support points.
  */
-void NuTo::MultipleLinearRegression::GetSupportPointsResidual(NuTo::FullMatrix<double>& rResidualVector) const
+void NuTo::MultipleLinearRegression::GetSupportPointsResidual(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResidualVector) const
 {
 	// check output dimension
 	if(this->mSupportPoints.GetDimOutput() != 1)
@@ -463,7 +463,7 @@ void NuTo::MultipleLinearRegression::GetSupportPointsResidual(NuTo::FullMatrix<d
 	try
 	{
 		// calculate output of the regression model
-		NuTo::FullMatrix<double> regressionOutputVector;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> regressionOutputVector;
 		this->SolveTransformed(this->mSupportPoints.GetTransformedSupportPointsInput(), regressionOutputVector);
 
 		// apply transformation of outputs
@@ -482,7 +482,7 @@ void NuTo::MultipleLinearRegression::GetSupportPointsResidual(NuTo::FullMatrix<d
 
 // calculate the residual between the support point data and the linear regression (transformed data)
 //! @sa NuTo::MultipleLinearRegression::GetSupportPointsResidual
-void NuTo::MultipleLinearRegression::GetSupportPointsResidualTransformed(NuTo::FullMatrix<double>& rResidualVector) const
+void NuTo::MultipleLinearRegression::GetSupportPointsResidualTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResidualVector) const
 {
 	// check output dimension
 	if(this->mSupportPoints.GetDimOutput() != 1)
@@ -493,7 +493,7 @@ void NuTo::MultipleLinearRegression::GetSupportPointsResidualTransformed(NuTo::F
 	try
 	{
 		// calculate output of the regression model
-		NuTo::FullMatrix<double> regressionOutputVector;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> regressionOutputVector;
 		this->SolveTransformed(this->mSupportPoints.GetTransformedSupportPointsInput(), regressionOutputVector);
 
 		// substract original output
@@ -765,7 +765,7 @@ double NuTo::MultipleLinearRegression::Objective()const
  *  \end{bmatrix}.
  *  \f]
  */
-void NuTo::MultipleLinearRegression::Gradient(NuTo::FullMatrix<double>& rGradient)const
+void NuTo::MultipleLinearRegression::Gradient(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const
 {
 	try
 	{
@@ -882,7 +882,7 @@ void NuTo::MultipleLinearRegression::Gradient(NuTo::FullMatrix<double>& rGradien
  *  \end{bmatrix}.
  *  \f]
  */
-void NuTo::MultipleLinearRegression::Hessian(NuTo::FullMatrix<double>&  rHessian)const
+void NuTo::MultipleLinearRegression::Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>&  rHessian)const
 {
 	try
 	{
@@ -1060,7 +1060,7 @@ double NuTo::MultipleLinearRegression::GetErrorSumOfSquares() const
 	try
 	{
 		// calculate residuals
-		NuTo::FullMatrix<double> residualVector;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> residualVector;
 		this->GetSupportPointsResidual(residualVector);
 
 		// calculate sum of squares of residuals
@@ -1104,7 +1104,7 @@ double NuTo::MultipleLinearRegression::GetErrorSumOfSquaresTransformed() const
 	try
 	{
 		// calculate residuals
-		NuTo::FullMatrix<double> residualVector;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> residualVector;
 		this->GetSupportPointsResidualTransformed(residualVector);
 
 		// calculate sum of squares of residuals
@@ -1151,7 +1151,7 @@ double NuTo::MultipleLinearRegression::GetRegressionSumOfSquaresTransformed() co
 	try
 	{
 		// calculate regression for support points
-		NuTo::FullMatrix<double> outputRegression;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> outputRegression;
 		this->SolveTransformed(this->mSupportPoints.GetTransformedSupportPointsInput(), outputRegression);
 		const double* outputRegressionData = outputRegression.data();
 
@@ -1206,7 +1206,7 @@ double NuTo::MultipleLinearRegression::GetRegressionSumOfSquares() const
 	try
 	{
 		// calculate regression for support points
-		NuTo::FullMatrix<double> outputRegression;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> outputRegression;
 		this->Solve(this->mSupportPoints.GetOrigSupportPointsInput(), outputRegression);
 		const double* outputRegressionData = outputRegression.data();
 
@@ -1326,7 +1326,7 @@ void NuTo::MultipleLinearRegression::TestRegressionCoefficientsSignificanceTrans
 	try
 	{
 		// calculate covariance matrix
-		NuTo::FullMatrix<double> covarianceMatrix;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> covarianceMatrix;
 		this->GetRegressionCoefficientsCovarianceMatrixTransformed(covarianceMatrix);
 
 		// calculate rAlpha/2 quantile of t-distribution
@@ -1509,7 +1509,7 @@ bool NuTo::MultipleLinearRegression::PerformRegressionSignificanceTest(double rT
 }
 
 // test the significance of a set of regressor variables/coefficients using original support point coordinates
-bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificance(const NuTo::FullMatrix<int>& rTestCoefficients, double rAlpha) const
+bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificance(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha) const
 {
 	try
 	{
@@ -1524,7 +1524,7 @@ bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificance(const NuT
 }
 
 // test the significance of a set of regressor variables/coefficients using transformed support point coordinates
-bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificanceTransformed(const NuTo::FullMatrix<int>& rTestCoefficients, double rAlpha) const
+bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificanceTransformed(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha) const
 {
 	try
 	{
@@ -1575,7 +1575,7 @@ bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificanceTransforme
  * where \f$SS_r(\boldsymbol{\beta^{(1)})} | \beta_0, \boldsymbol{\beta^{(2)}})\f$ is the increase in the regression sum of squares
  * due to the inclusion of \f$\boldsymbol{x^{(1)}}\f$, and \f$F_{\alpha,r,n-p}\f$ is the \f$(1-\alpha)\f$-quantile of a F-distribution with \f$(r,n-p)\f$ degrees of freedom.
  */
-bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(const NuTo::FullMatrix<int>& rTestCoefficients, double rAlpha, bool rTransformedFlag) const
+bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha, bool rTransformedFlag) const
 {
 	// test input data
 	if(rTestCoefficients.GetNumColumns() != 1)
@@ -1648,8 +1648,8 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		}
 
 		// extract reduced support point input
-		const NuTo::FullMatrix<double>& fullSupportPointInput = this->mSupportPoints.GetTransformedSupportPointsInput();
-		NuTo::FullMatrix<double> reducedSupportPointInput(0, this->mSupportPoints.GetNumSupportPoints());
+		const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& fullSupportPointInput = this->mSupportPoints.GetTransformedSupportPointsInput();
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> reducedSupportPointInput(0, this->mSupportPoints.GetNumSupportPoints());
 		for(int coefficient = 1; coefficient < this->mCoefficients.GetNumRows(); coefficient++)
 		{
 			if(coefficientFlag[coefficient] == true)
@@ -1664,7 +1664,7 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		reducedModel.Build();
 
 		// calculate output of the reduced model
-		NuTo::FullMatrix<double> reducedModelOutput;
+		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> reducedModelOutput;
 		reducedModel.Solve(reducedSupportPointInput, reducedModelOutput);
 		if(!rTransformedFlag)
 		{

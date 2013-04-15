@@ -43,22 +43,22 @@ public:
     //! @param rGlobalDofsRow ... row numbers in global system
     //! @param rGlobalDofsColumn ... column numbers in global system
     //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
-    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
-    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //                                        std::vector<int>& rGlobalDofs)const;
 
     //! @brief Update the static data of an element
@@ -71,7 +71,7 @@ public:
     //! @param factor multiplication factor (detJ area..)
     //! @param Komegaomega return matrix with detJ * NtT+cBtB
     void CalculateKOmegaOmega(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
-    		FullMatrix<double>& Komegaomega);
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Komegaomega);
 
     //! @brief add Koo*omega+detJ*F (detJ is already included in Koo)
     //! @param derivativeShapeFunctions of the ip for all shape functions
@@ -80,7 +80,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJBtdSigmadOmegaN(const std::vector<double>& derivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& tangentStressNonlocalDamage,
-    		const std::vector<double>& shapeFunctions, double factor, int rRow, int rCol, FullMatrix<double>& result);
+    		const std::vector<double>& shapeFunctions, double factor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& result);
 
     //! @brief add detJ transpose N dOmega/depsilon B
     //! @param rShapeFunctions of the ip for all shape functions
@@ -89,7 +89,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJNtdOmegadEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentLocalDamageStrain,
-    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double> rResult);
+    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rResult);
 
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
@@ -198,7 +198,7 @@ public:
     void AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctions,
                                   const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent, double rFactor,
                                   int rRow, int rCol,
-                                  FullMatrix<double>& rCoefficientMatrix)const ;
+                                  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const ;
 
     //! @brief adds up the internal force vector
     //! @param derivativeShapeFunctions derivatives of the shape functions
@@ -209,7 +209,7 @@ public:
     void AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunctions,
                                 const EngineeringStress1D& rEngineeringStress, double factor,
                                 int rRow,
-                                FullMatrix<double>& rResult)const;
+                                FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -221,7 +221,7 @@ public:
                                      const HeatFlux1D& rHeatFlux,
                                      double rFactor,
                                      int rRow,
-                                     FullMatrix<double>& rResult)const;
+                                     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
 
     //! @brief add Koo*omega+detJ*F (detJ is already included in Koo)
     //! @param rShapeFunctions of the ip for all shape functions
@@ -230,21 +230,21 @@ public:
     //! @param rNodeDamage nodal damage values
     //! @param rFactor factor including detJ and area
     //! @param rResult result
-    void AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double>& rKomegaomega,
-    		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullMatrix<double>& rResult);
+    void AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKomegaomega,
+    		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
 
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
-    virtual void BlowLocalMatrixToGlobal(NuTo::FullMatrix<double>& rFullCoefficientMatrix)const=0;
+    virtual void BlowLocalMatrixToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rFullCoefficientMatrix)const=0;
 
     //! @brief transforms the local vector to the global system
     //! relevant only for 2D and 3D truss elements
-    virtual void BlowLocalVectorToGlobal(NuTo::FullMatrix<double>& rFullVector)const=0;
+    virtual void BlowLocalVectorToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rFullVector)const=0;
 
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    //Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
+    //Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -292,7 +292,7 @@ protected:
     //! @param rCoefficientMatrix to be added to
     virtual void AddDetJHtH(const std::vector<double>& rShapeFunctions,
                             double rFactor,
-                            FullMatrix<double>& rCoefficientMatrix)const;
+                            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const;
 };
 
 } // namespace NuTo

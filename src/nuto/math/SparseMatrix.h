@@ -14,10 +14,10 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/math/Matrix.h"
+#include "nuto/math/FullMatrix_Def.h"
 
 namespace NuTo
 {
-template<class T> class FullMatrix;
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... abstract base class for sparse matrices
@@ -137,7 +137,7 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-    virtual void WriteEntriesToFullMatrix(FullMatrix<T>& FullMatrix) const = 0;
+    virtual void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& FullMatrix) const = 0;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed

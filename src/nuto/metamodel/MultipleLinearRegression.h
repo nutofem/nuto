@@ -61,15 +61,15 @@ public:
     //! @brief ... calculate approximation (in transformed space)
     //! @param rInputCoordinates ... matrix of input data points (transformed)
     //! @param rOutputCoordinates ... vector of output data (transformed)
-    void SolveTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates)const;
+    void SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const;
 
     //! @brief ... calculate the residual between the support point data and the linear regression
     //! @param rResidualVector ... residual vector
-    void GetSupportPointsResidual(NuTo::FullMatrix<double>& rResidualVector) const;
+    void GetSupportPointsResidual(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResidualVector) const;
 
     //! @brief ... calculate the residual between the transformed support point data and the linear regression
     //! @param rResidualVector ... residual vector (transformed)
-    void GetSupportPointsResidualTransformed(NuTo::FullMatrix<double>& rResidualVector) const;
+    void GetSupportPointsResidualTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResidualVector) const;
 
     //! @brief ... calculate the mean square error using original support points
     //! @return mean square error
@@ -81,18 +81,18 @@ public:
 
     //! @brief ... get regression coefficients
     //! @param rRegressionCoefficients ... vector of regression coefficients
-    void GetRegressionCoefficientsTransformed(NuTo::FullMatrix<double>& rRegressionCoefficients) const;
+    void GetRegressionCoefficientsTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficients) const;
 
     //! @brief ... get covariance matrix of regression coefficients
     //! @param rCovarianceMatrix ... covariance matrix
-    void GetRegressionCoefficientsCovarianceMatrixTransformed(NuTo::FullMatrix<double>& rCovarianceMatrix) const;
+    void GetRegressionCoefficientsCovarianceMatrixTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const;
 
     //! @brief ... get the (1-rAlpha) confidence interval on the regression coefficients
     //! @param rRegressionCoefficients ... vector of regression coefficients
     //! @param rRegressionCoefficientsMin ... lower bound of the confidence interval on regression coefficients
     //! @param rRegressionCoefficientsMax ... upper bound of the confidence interval on regression coefficients
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
-    void GetRegressionCoefficientsConfidenceIntervalsTransformed(NuTo::FullMatrix<double>& rRegressionCoefficients, NuTo::FullMatrix<double>& rRegressionCoefficientsMin, NuTo::FullMatrix<double>& rRegressionCoefficientsMax, double rAlpha = 0.05) const;
+    void GetRegressionCoefficientsConfidenceIntervalsTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficients, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficientsMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRegressionCoefficientsMax, double rAlpha = 0.05) const;
 
     //! @brief ... calculate the (1-rAlpha) confidence interval on the mean response of the linear regression
     //! @param rInput ... input point coordinates
@@ -100,7 +100,7 @@ public:
     //! @param rOutputMin ... lower bound of the confidence interval
     //! @param rOutputMax ... upper bound of the confidence interval
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
-    void SolveConfidenceIntervalsMeanResponse(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha = 0.05) const;
+    void SolveConfidenceIntervalsMeanResponse(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha = 0.05) const;
 
     //! @brief ... calculate the (1-rAlpha) confidence interval on predictions of the linear regression
     //! @param rInput ... input point coordinates
@@ -108,7 +108,7 @@ public:
     //! @param rOutputMin ... lower bound of the confidence interval
     //! @param rOutputMax ... upper bound of the confidence interval
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
-    void SolveConfidenceIntervalsPrediction(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha = 0.05) const;
+    void SolveConfidenceIntervalsPrediction(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha = 0.05) const;
 
     //! @brief calculate the coefficient of determination (correlation between the outputs predicted by the regression model and the actual data) using original support point coordinates
     //! @return ... coefficient of determination
@@ -169,13 +169,13 @@ public:
     //! @param rTestCoefficients ... matrix of identifiers (number of identifiers, 1) defining the subset of regressor variables/coefficients (the intercept \f$\beta_0\f$ is not tested) for which the test is performed
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
     //! @return true if the contribution of the subset is significant, false otherwise
-    bool TestGeneralRegressionSignificance(const NuTo::FullMatrix<int>& rTestCoefficients, double rAlpha=0.05) const;
+    bool TestGeneralRegressionSignificance(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha=0.05) const;
 
     //! @brief test the significance of a set of regressor variables/coefficients using transformed support point coordinates
     //! @param rTestCoefficients ... matrix of identifiers (number of identifiers, 1) defining the subset of regressor variables/coefficients (the intercept \f$\beta_0\f$ is not tested) for which the test is performed
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
     //! @return true if the contribution of the subset is significant, false otherwise
-    bool TestGeneralRegressionSignificanceTransformed(const NuTo::FullMatrix<int>& rTestCoefficients, double rAlpha=0.05) const;
+    bool TestGeneralRegressionSignificanceTransformed(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha=0.05) const;
 
 	//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
@@ -188,7 +188,7 @@ protected:
     //! @param rOutputMin ... lower bound of the confidence interval
     //! @param rOutputMax ... upper bound of the confidence interval
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
-    void SolveConfidenceIntervalsMeanResponseTransformed(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha) const;
+    void SolveConfidenceIntervalsMeanResponseTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const;
 
     //! @brief ... calculate the (1-rAlpha) confidence interval on predictions of the linear regression
     //! @param rInput ... input point coordinates
@@ -196,7 +196,7 @@ protected:
     //! @param rOutputMin ... lower bound of the confidence interval
     //! @param rOutputMax ... upper bound of the confidence interval
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
-    void SolveConfidenceIntervalsPredictionTransformed(const FullMatrix<double>& rInput, NuTo::FullMatrix<double>& rOutputMean, NuTo::FullMatrix<double>& rOutputMin, NuTo::FullMatrix<double>& rOutputMax, double rAlpha) const;
+    void SolveConfidenceIntervalsPredictionTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const;
 
     //! @brief perform the regression significance test
     //! @param rTotalSumOfSquares ... total sum of squares
@@ -213,20 +213,20 @@ protected:
     //! @param rAlpha ... the confidence level is defined as (1 - rAlpha)
     //! @param rTransformedFlag ... if true, the transformed support point coordinates are used, otherwise the original support point coordinates are used
     //! @return true if the contribution of the subset is significant, false otherwise
-    bool PerformGeneralRegressionSignificanceTest(const NuTo::FullMatrix<int>& rTestCoefficients, double rAlpha, bool rTransformedFlag) const;
+    bool PerformGeneralRegressionSignificanceTest(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha, bool rTransformedFlag) const;
 
     //! @brief ... sum of squares of the error terms
 	double Objective()const;
 
 	//! @brief ... calculate the gradient of the objective function
 	//! @param rGradient ... gradient vector (output)
-	void Gradient(NuTo::FullMatrix<double>& rGradient)const;
+	void Gradient(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const;
 
 	//! @brief ... calculate the hessian of the objective function
 	//! @param rHessian ... hessian matrix
-    void Hessian(NuTo::FullMatrix<double>&  rHessian)const;
+    void Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>&  rHessian)const;
 
-    NuTo::FullMatrix<double> mCoefficients; //!< ... regression coefficients \f$\beta_0, \beta_1, \ldots, \beta_p\f$
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mCoefficients; //!< ... regression coefficients \f$\beta_0, \beta_1, \ldots, \beta_p\f$
 };
 
 }

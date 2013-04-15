@@ -13,6 +13,7 @@
 #include <map>
 
 #include "nuto/base/ErrorEnum.h"
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
@@ -36,8 +37,6 @@ class EngineeringStrain3D;
 class EngineeringStress1D;
 class EngineeringStress2D;
 class EngineeringStress3D;
-template<class T>
-class FullMatrix;
 class Logger;
 class SecondPiolaKirchhoffStress1D;
 class SecondPiolaKirchhoffStress2D;
@@ -138,7 +137,7 @@ public:
     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding yield strength
-    virtual NuTo::FullMatrix<double> GetYieldStrength() const;
+    virtual NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetYieldStrength() const;
 
     //! @brief ... add yield strength
     //! @param rEpsilon ...  equivalent plastic strain
@@ -161,7 +160,7 @@ public:
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
-    virtual NuTo::FullMatrix<double> GetHardeningModulus() const;
+    virtual NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetHardeningModulus() const;
 
     //! @brief ... add hardening modulus
     //! @param rEpsilon ...  equivalent plastic strain

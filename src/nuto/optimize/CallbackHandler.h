@@ -36,7 +36,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-	virtual void SetParameters(const NuTo::FullMatrix<double>& rParameters)
+	virtual void SetParameters(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParameters)
 	{
 	    //printf("[CallbackHandler::SetParameters]\n");
 	    throw OptimizeException("[CallbackHandler::SetParameters] SetParameters function not implemented in CallbackHandler object.");
@@ -49,7 +49,7 @@ public:
 		return 0;
 	}
 
-	virtual void Gradient (NuTo::FullMatrix<double>& rGradient)const
+	virtual void Gradient (NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const
 	{
 	    //printf("[CallbackHandler::Gradient]\n");
 	    throw OptimizeException("[CallbackHandler::Gradient] Gradient function not implemented in CallbackHandler object.");
@@ -62,7 +62,7 @@ public:
 	}
 
 
-	virtual void Hessian(NuTo::FullMatrix<double>& rHessian)const
+	virtual void Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rHessian)const
 	{
 	    //printf("[CallbackHandler::Hessian]\n");
 	    throw OptimizeException("[CallbackHandler::Hessian] Hessian function not implemented in CallbackHandler object.");

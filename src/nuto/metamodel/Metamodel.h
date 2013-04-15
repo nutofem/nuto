@@ -20,7 +20,7 @@ extern "C" {
 
 namespace NuTo
 {
-template<class T> class FullMatrix;
+template<class T, int rows, int cols> class FullMatrix;
 
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
@@ -65,21 +65,21 @@ public:
     //! @param rCoordinate ... coordinate for which the transformation is performed
     void AppendZeroMeanUnitVarianceTransformationOutput(int rCoordinate);
 
-    FullMatrix<double> GetOriginalSupportPointsInput()const;
-    FullMatrix<double> GetOriginalSupportPointsOutput()const;
-    FullMatrix<double> GetTransformedSupportPointsInput()const;
-    FullMatrix<double> GetTransformedSupportPointsOutput()const;
-    void SetSupportPoints(int rDimInput, int rDimOutput, FullMatrix<double> rInputCoordinates, FullMatrix<double> rOutputCoordinates);
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetOriginalSupportPointsInput()const;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetOriginalSupportPointsOutput()const;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetTransformedSupportPointsInput()const;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetTransformedSupportPointsOutput()const;
+    void SetSupportPoints(int rDimInput, int rDimOutput, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rInputCoordinates, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rOutputCoordinates);
     void BuildTransformation();
     void InitRandomNumberGenerator(int rSeed);
     double RandomDouble();
     virtual void Info()const;
-    void Solve(const FullMatrix<double>& rInputCoordinates, FullMatrix<double>& rOutputCoordinates)const;
-    void SolveConfidenceInterval(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates, 
-                                                    NuTo::FullMatrix<double>& rOutputCoordinatesMin, NuTo::FullMatrix<double>& rOutputCoordinatesMax)const;
-    virtual void SolveTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates)const=0;
-    virtual void SolveConfidenceIntervalTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates, 
-                                            NuTo::FullMatrix<double>& rOutputCoordinatesMin, NuTo::FullMatrix<double>& rOutputCoordinatesMax)const
+    void Solve(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const;
+    void SolveConfidenceInterval(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates,
+                                                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMax)const;
+    virtual void SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const=0;
+    virtual void SolveConfidenceIntervalTransformed(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates,
+                                            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMax)const
     {
         throw MetamodelException("Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
     }
@@ -87,52 +87,52 @@ public:
     //! @brief calculate the sample mean for each support point using original support point coordinates
     //! @param rInputMean ... vector of mean values of the input support point coordinates
     //! @param rOutputMean ... vector of mean values of the output support point coordinates
-    void GetOriginalSupportPointsMeanValue(NuTo::FullMatrix<double>& rInputMean, NuTo::FullMatrix<double>& rOutputMean) const;
+    void GetOriginalSupportPointsMeanValue(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean) const;
 
     //! @brief calculate the sample mean for each support point using transformed support point coordinates
     //! @param rInputMean ... vector of mean values of the input support point coordinates
     //! @param rOutputMean ... vector of mean values of the output support point coordinates
-    void GetTransformedSupportPointsMeanValue(NuTo::FullMatrix<double>& rInputMean, NuTo::FullMatrix<double>& rOutputMean) const;
+    void GetTransformedSupportPointsMeanValue(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean) const;
 
     //! @brief calculate the sample variance for each support point using original support point coordinates
     //! @param rInputVariance ... vector of sample variances of the input support point coordinates
     //! @param rOutputVariance ... vector of sample variances of the output support point coordinates
-    void GetOriginalSupportPointsVariance(NuTo::FullMatrix<double>& rInputVariance, NuTo::FullMatrix<double>& rOutputVariance) const;
+    void GetOriginalSupportPointsVariance(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputVariance, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputVariance) const;
 
     //! @brief calculate the sample variance for each support point using transformed support point coordinates
     //! @param rInputVariance ... vector of sample variances of the input support point coordinates
     //! @param rOutputVariance ... vector of sample variances of the output support point coordinates
-    void GetTransformedSupportPointsVariance(NuTo::FullMatrix<double>& rInputVariance, NuTo::FullMatrix<double>& rOutputVariance) const;
+    void GetTransformedSupportPointsVariance(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputVariance, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputVariance) const;
 
     //! @brief calculate the covariance matrix of the support points using original support point coordinates
     //! @param rCovarianceMatrix ... covariance matrix
-    void GetOriginalSupportPointsCovarianceMatrix(NuTo::FullMatrix<double>& rCovarianceMatrix) const;
+    void GetOriginalSupportPointsCovarianceMatrix(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const;
 
     //! @brief calculate the covariance matrix of the support points using transformed support point coordinates
     //! @param rCovarianceMatrix ... covariance matrix
-    void GetTransformedSupportPointsCovarianceMatrix(NuTo::FullMatrix<double>& rCovarianceMatrix) const;
+    void GetTransformedSupportPointsCovarianceMatrix(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
     //! @param rCorrelationMatrix ... Pearson's correlation matrix
-    void GetOriginalSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double>& rCorrelationMatrix) const;
+    void GetOriginalSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
     //! @param rCorrelationMatrix ... Pearson's correlation matrix
-    void GetTransformedSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double>& rCorrelationMatrix) const;
+    void GetTransformedSupportPointsPearsonCorrelationMatrix(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
     //! @param rCorrelationMatrix ... Pearson's correlation matrix
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
-    void GetOriginalSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
+    void GetOriginalSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using transformed support point coordinates
     //! @param rCorrelationMatrix ... Pearson's correlation matrix
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
-    void GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
+    void GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 protected:
 
     NuTo::SupportPoints mSupportPoints;

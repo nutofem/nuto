@@ -96,7 +96,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
         rStructure.ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
         NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        FullMatrix<double> bRHSprev, bRHShalf, bRHSend, bRHSdot, bRHSddot;
+        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> bRHSprev, bRHShalf, bRHSend, bRHSdot, bRHSddot;
 
         // allocate space for stiffness matrix
         SparseMatrixCSRVector2General<double> stiffMatrix_jj(rStructure.GetNumActiveDofs(), rStructure.GetNumActiveDofs());
@@ -114,26 +114,26 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             massMatrix_kk.Resize(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs(),rStructure.GetNumDofs() - rStructure.GetNumActiveDofs());
             rStructure.BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
 
-            //NuTo::FullMatrix<double> m11Full(massMatrix_jj);
-            //NuTo::FullMatrix<double> eigenValues;
+            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> m11Full(massMatrix_jj);
+            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
             //m11Full.EigenValuesSymmetric(eigenValues);
             //std::cout << "eigenvalues mass" << "\n";
             //std::cout << eigenValues.Trans() << "\n";
         }
 
         //extract displacements, velocities and accelerations
-        NuTo::FullMatrix<double> disp_j,disp_k, vel_j, vel_k, acc_j, acc_k, delta_disp_j, delta_disp_k;
-        NuTo::FullMatrix<double> trial_disp_j,trial_disp_k, trial_vel_j, trial_vel_k, trial_acc_j, trial_acc_k;
-        NuTo::FullMatrix<double> extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
-        NuTo::FullMatrix<double> intForce_j(rStructure.GetNumActiveDofs(),1), intForce_k(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs(),1),
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> disp_j,disp_k, vel_j, vel_k, acc_j, acc_k, delta_disp_j, delta_disp_k;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> trial_disp_j,trial_disp_k, trial_vel_j, trial_vel_k, trial_acc_j, trial_acc_k;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForce_j(rStructure.GetNumActiveDofs(),1), intForce_k(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs(),1),
                                  prevIntForce_j(rStructure.GetNumActiveDofs(),1), prevIntForce_k(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs(),1);
-        NuTo::FullMatrix<double> residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
 
         //store last converged displacements, velocities and accelerations
-        NuTo::FullMatrix<double> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
         rStructure.NodeExtractDofValues(0,lastConverged_disp_j, lastConverged_disp_k);
 //        mInternalEnergy = rStructure.ElementTotalGetInternalEnergy();
-        FullMatrix<double> plotHistory(1,7);
+        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotHistory(1,7);
         plotHistory(0,0) = mTime;
 //        plotHistory(0,2) = mInternalEnergy;
 //        plotHistory(0,6) = mInternalEnergy;
@@ -258,7 +258,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             RHSConstraint = ConstraintsCalculateRHS(curTime);
             rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
             rStructure.ConstraintGetRHSAfterGaussElimination(bRHSend);
-            FullMatrix<double> deltaBRHS(bRHSend-bRHSprev);
+            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaBRHS(bRHSend-bRHSprev);
 
             //std::cout << "bRHSprev " << bRHSprev.Trans() << "\n";
                //std::cout << "bRHShalf " << bRHShalf.Trans() << "\n";
@@ -338,7 +338,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             //solve for trial state
             NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
             hessianModSolver.SetOneBasedIndexing();
-            //std::cout << NuTo::FullMatrix<double>(stiffMatrix_jj) << std::endl;
+            //std::cout << NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
             mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
             delta_disp_j*=-1;
 
@@ -539,8 +539,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 //calculate energies (at this point, use the trapezoidal rule for all energies, for some energies, you can compare that to the direct calculation
                 // e.g. internal energy for elastic materials or the kinetic energy
                 //double internalEnergyExact = rStructure.ElementTotalGetInternalEnergy();
-                FullMatrix<double> delta_disp_j(disp_j-lastConverged_disp_j);
-                FullMatrix<double> delta_disp_k(disp_k-lastConverged_disp_k);
+                FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> delta_disp_j(disp_j-lastConverged_disp_j);
+                FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> delta_disp_k(disp_k-lastConverged_disp_k);
 
                 mInternalEnergy+= 0.5*(delta_disp_j.Dot(intForce_j+prevIntForce_j)+
                                        delta_disp_k.Dot(intForce_k+prevIntForce_k));
@@ -561,7 +561,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 mExternalEnergy += 0.5*(delta_disp_j.Dot(extForce_j+prevExtForce_j) + delta_disp_k.Dot(extForce_k+prevExtForce_k)+
                                         delta_disp_j.Dot(residual_j+prevResidual_j) + delta_disp_k.Dot(residual_k+prevResidual_k));
 
-                NuTo::FullMatrix<double> plotVector(1,7);
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector(1,7);
                 plotVector(0,0) = mTime;
                 plotVector(0,1) = RHSConstraint;
                 plotVector(0,2) = mInternalEnergy;
@@ -581,7 +581,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                 //sum the residuals for the required output nodes
                 for (int countGroup=0; countGroup<mVecGroupNodesReactionForces.GetNumRows(); countGroup++)
                 {
-                    FullMatrix<double> reactionForce;
+                    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> reactionForce;
                     if (rStructure.GetDimension()==2)
                         reactionForce.Resize(1,2);
                     else

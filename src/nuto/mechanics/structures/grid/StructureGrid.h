@@ -273,7 +273,7 @@ public:
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector)
+    Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector)
     {
         throw MechanicsException ( "[NuTo::StructureGrid::BuildGlobalGradientInternalPotentialSubVectors] Routine is not implemented." );
     }
@@ -296,12 +296,12 @@ public:
     //! @brief gets the displacements of a node
      //! @param rNode node identifier
      //! @param rDisplacements matrix (one column) with the displacements
-     void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double>& rDisplacements)const;
+     void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)const;
 
      //! @brief sets the displacements of a node
      //! @param rIdent node identifier
      //! @param rDisplacements matrix (one column) with the displacements
-     void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double>& rDisplacements);
+     void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
 
      //! @brief a reference to a node
      //! @param identifier
@@ -344,18 +344,18 @@ public:
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    void NodeExtractDofValues(NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
+    void NodeExtractDofValues(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
     {
         throw MechanicsException ( "[NuTo::StructureGrid::NodeExtractDofValues] Routine is not implemented." );
     }
 
     //! @brief merge dof values
-    void NodeMergeActiveDofValues(const NuTo::FullMatrix<double>& rActiveDofValues)
+    void NodeMergeActiveDofValues(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues)
     {
         throw MechanicsException ( "[NuTo::StructureGrid::NodeMergeActiveDofValues] Routine is not implemented." );
     }
     //! @brief get internal forces
-    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double>& rNodeForce)const
+    void NodeGetInternalForce(const NodeBase* rNode, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce)const
     {
         throw MechanicsException ( "[NuTo::StructureGrid::NodeGetInternalForce] Routine is not implemented." );
     }
@@ -363,7 +363,7 @@ public:
     //! @brief calculates the internal force vector for a given node
     //! @param rNodeId node id
     //! @param rNodeForce return value
-    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double>& rNodeForce)const
+    void NodeGetInternalForce(int rNodeId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce)const
     {
         throw MechanicsException ( "[NuTo::StructureGrid::NodeGetInternalForce] Routine is not implemented." );
     }
@@ -372,7 +372,7 @@ public:
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double>& rActiveDofValues, NuTo::FullMatrix<double>& rDependentDofValues) const
+    void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
     {
         throw MechanicsException ( "[NuTo::StructureGrid::NodeExtractDofValues] Routine is not implemented." );
     }
@@ -381,7 +381,7 @@ public:
      //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
      //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
      //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-     void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues, const NuTo::FullMatrix<double>& rDependentDofValues)
+     void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
      {
          throw MechanicsException ( "[NuTo::StructureGrid::NodeMergeDofValues] Routine is not implemented." );
      }
@@ -389,7 +389,7 @@ public:
      //! @brief write dof values (e.g. displacements, temperatures to the nodes)
      //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
      //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-     void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double>& rActiveDofValues)
+     void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues)
      {
          throw MechanicsException ( "[NuTo::StructureGrid::NodeMergeActiveDofValues] Routine is not implemented." );
      }
@@ -405,8 +405,8 @@ public:
     //! @brief info about the elements in the Structure
     void ElementInfo(int mVerboseLevel) const;
 
-    void CreateElementGrid(NuTo::FullMatrix<double>& rBaseCoefficientMatrix0,
-            const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType);
+    void CreateElementGrid(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBaseCoefficientMatrix0,
+            const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rColorToMaterialData,const std::string& rElementType);
 
      //! @brief Creates an element
      //! @param number of material

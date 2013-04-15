@@ -137,9 +137,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
 
     // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
     double elastStrain[4];
-    elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-    elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-    elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+    elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+    elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+    elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
     elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
     // subtract thermal strain
@@ -175,15 +175,15 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
     {
         omega = CalculateDamage(kappa, kappaD);
         oneMinusOmega = 1.-omega;
-        engineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-        engineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-        engineeringStress.mEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
+        engineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+        engineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+        engineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
     }
     else
     {
-    	engineeringStress.mEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-    	engineeringStress.mEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-    	engineeringStress.mEngineeringStress[2] = (C33*elastStrain[2]);
+    	engineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+    	engineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+    	engineeringStress[2] = (C33*elastStrain[2]);
     }
 
     //set this to true, if update is in the map, perform the update after all other outputs have been calculated
@@ -206,12 +206,12 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
             //this is for the visualize routines
             EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
 
-            engineeringStress3D.mEngineeringStress[0] = engineeringStress.mEngineeringStress[0];
-            engineeringStress3D.mEngineeringStress[1] = engineeringStress.mEngineeringStress[1];
-            engineeringStress3D.mEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
-            engineeringStress3D.mEngineeringStress[3] = engineeringStress.mEngineeringStress[2];
-            engineeringStress3D.mEngineeringStress[4] = 0.;
-            engineeringStress3D.mEngineeringStress[5] = 0.;
+            engineeringStress3D[0] = engineeringStress[0];
+            engineeringStress3D[1] = engineeringStress[1];
+            engineeringStress3D[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
+            engineeringStress3D[3] = engineeringStress[2];
+            engineeringStress3D[4] = 0.;
+            engineeringStress3D[5] = 0.;
         }
         break;
         case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D:
@@ -363,23 +363,23 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
         {
             EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-			engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
-			engineeringStrain3D.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
-			engineeringStrain3D.mEngineeringStrain[2] = 0;
-			engineeringStrain3D.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
-			engineeringStrain3D.mEngineeringStrain[4] = 0.;
-			engineeringStrain3D.mEngineeringStrain[5] = 0.;
+			engineeringStrain3D[0] = engineeringStrain[0];
+			engineeringStrain3D[1] = engineeringStrain[1];
+			engineeringStrain3D[2] = 0;
+			engineeringStrain3D[3] = engineeringStrain[2];
+			engineeringStrain3D[4] = 0.;
+			engineeringStrain3D[5] = 0.;
         }
         break;
         case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
         {
         	EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-        	engineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
-        	engineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
-        	engineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
-        	engineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
-        	engineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-        	engineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+        	engineeringPlasticStrain[0] = oldStaticData->mTmpEpsilonP[0];
+        	engineeringPlasticStrain[1] = oldStaticData->mTmpEpsilonP[1];
+        	engineeringPlasticStrain[2] = oldStaticData->mTmpEpsilonP[3];
+        	engineeringPlasticStrain[3] = oldStaticData->mTmpEpsilonP[2];
+        	engineeringPlasticStrain[4] = 0.;
+        	engineeringPlasticStrain[5] = 0.;
         }
         break;
         case NuTo::Constitutive::eOutput::DAMAGE:
@@ -456,9 +456,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
         const EngineeringStress2D& prevStress(oldStaticData->GetPrevStress());
         const EngineeringStrain2D prevStrain(oldStaticData->GetPrevStrain());
         energy+=0.5*(
-            (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
-            (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
-            (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+            (engineeringStress[0]+prevStress[0])*(engineeringStrain[0]-prevStrain[0])+
+            (engineeringStress[1]+prevStress[1])*(engineeringStrain[1]-prevStrain[1])+
+            (engineeringStress[2]+prevStress[2])*(engineeringStrain[2]-prevStrain[2])
             );
         oldStaticData->mPrevStrain = engineeringStrain;
         oldStaticData->mPrevSigma = engineeringStress;
@@ -510,12 +510,12 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineer
 {
     const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
     // update the temporary parts of the static data
-    rEngineeringPlasticStrain.mEngineeringStrain[0] = oldStaticData->mTmpEpsilonP[0];
-    rEngineeringPlasticStrain.mEngineeringStrain[1] = oldStaticData->mTmpEpsilonP[1];
-    rEngineeringPlasticStrain.mEngineeringStrain[2] = oldStaticData->mTmpEpsilonP[3];
-    rEngineeringPlasticStrain.mEngineeringStrain[3] = oldStaticData->mTmpEpsilonP[2];
-    rEngineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-    rEngineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+    rEngineeringPlasticStrain[0] = oldStaticData->mTmpEpsilonP[0];
+    rEngineeringPlasticStrain[1] = oldStaticData->mTmpEpsilonP[1];
+    rEngineeringPlasticStrain[2] = oldStaticData->mTmpEpsilonP[3];
+    rEngineeringPlasticStrain[3] = oldStaticData->mTmpEpsilonP[2];
+    rEngineeringPlasticStrain[4] = 0.;
+    rEngineeringPlasticStrain[5] = 0.;
 
     return Error::SUCCESSFUL;
 }
@@ -597,9 +597,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineer
 
         // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
         double elastStrain[4];
-        elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-        elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-        elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+        elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+        elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+        elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
         elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
         if (mDamage)
@@ -617,16 +617,16 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineer
             //rLogger << "stress calculation unloading=" << unloading << " omega " << 1.-oneMinusOmega << "\n";
 
             //calculate the stress
-            rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-            rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-            rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
+            rEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+            rEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+            rEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
         }
         else
         {
             //calculate the stress
-            rEngineeringStress.mEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-            rEngineeringStress.mEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-            rEngineeringStress.mEngineeringStress[2] = (C33*elastStrain[2]);
+            rEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+            rEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+            rEngineeringStress[2] = (C33*elastStrain[2]);
          }
     }
     else
@@ -676,9 +676,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineer
 
         // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
         double elastStrain[4];
-        elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-        elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-        elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+        elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+        elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+        elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
         elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
         if (mDamage)
@@ -695,22 +695,22 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineer
             double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
 
             //calculate the stress
-            rEngineeringStress.mEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-            rEngineeringStress.mEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-            rEngineeringStress.mEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
-            rEngineeringStress.mEngineeringStress[3] = oneMinusOmega*(C44*elastStrain[2]);
-            rEngineeringStress.mEngineeringStress[4] = 0.;
-            rEngineeringStress.mEngineeringStress[5] = 0.;
+            rEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
+            rEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
+            rEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
+            rEngineeringStress[3] = oneMinusOmega*(C44*elastStrain[2]);
+            rEngineeringStress[4] = 0.;
+            rEngineeringStress[5] = 0.;
         }
         else
         {
             //calculate the stress
-            rEngineeringStress.mEngineeringStress[0] = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
-            rEngineeringStress.mEngineeringStress[1] = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
-            rEngineeringStress.mEngineeringStress[2] = C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]);
-            rEngineeringStress.mEngineeringStress[3] = C44*elastStrain[2];
-            rEngineeringStress.mEngineeringStress[4] = 0.;
-            rEngineeringStress.mEngineeringStress[5] = 0.;
+            rEngineeringStress[0] = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
+            rEngineeringStress[1] = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
+            rEngineeringStress[2] = C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]);
+            rEngineeringStress[3] = C44*elastStrain[2];
+            rEngineeringStress[4] = 0.;
+            rEngineeringStress[5] = 0.;
         }
     }
     else
@@ -854,9 +854,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetTangent_
 
             // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
             double elastStrain[4];
-            elastStrain[0] = engineeringStrain.mEngineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-            elastStrain[1] = engineeringStrain.mEngineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-            elastStrain[2] = engineeringStrain.mEngineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
+            elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
+            elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
+            elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
             elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
             // calculate Engineering stress
@@ -1066,9 +1066,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateStati
         const EngineeringStress2D& prevStress(oldStaticData->GetPrevStress());
         const EngineeringStrain2D prevStrain(oldStaticData->GetPrevStrain());
         energy+=0.5*(
-            (stress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
-            (stress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
-            (stress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+            (stress[0]+prevStress[0])*(engineeringStrain[0]-prevStrain[0])+
+            (stress[1]+prevStress[1])*(engineeringStrain[1]-prevStrain[1])+
+            (stress[2]+prevStress[2])*(engineeringStrain[2]-prevStrain[2])
             );
         oldStaticData->mPrevStrain = engineeringStrain;
         oldStaticData->mPrevSigma = stress;
@@ -1261,9 +1261,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetInternal
     rDeformationGradient.GetEngineeringStrain(engineeringStrain);
     EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
     rEnergy+=0.5*(
-            (engineeringStress.mEngineeringStress[0]+prevStress.mEngineeringStress[0])*(engineeringStrain.mEngineeringStrain[0]-prevStrain.mEngineeringStrain[0])+
-            (engineeringStress.mEngineeringStress[1]+prevStress.mEngineeringStress[1])*(engineeringStrain.mEngineeringStrain[1]-prevStrain.mEngineeringStrain[1])+
-            (engineeringStress.mEngineeringStress[2]+prevStress.mEngineeringStress[2])*(engineeringStrain.mEngineeringStrain[2]-prevStrain.mEngineeringStrain[2])
+            (engineeringStress[0]+prevStress[0])*(engineeringStrain[0]-prevStrain[0])+
+            (engineeringStress[1]+prevStress[1])*(engineeringStrain[1]-prevStrain[1])+
+            (engineeringStress[2]+prevStress[2])*(engineeringStrain[2]-prevStrain[2])
             );
     return Error::SUCCESSFUL;
 }
@@ -1928,9 +1928,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
     int numActiveYieldFunctions;
 
     // for the application of strains in steps, calculate the total strain increment to be applied
-    deltaStrain(0) = rStrain.mEngineeringStrain[0]-rPrevTotalStrain.mEngineeringStrain[0];
-    deltaStrain(1) = rStrain.mEngineeringStrain[1]-rPrevTotalStrain.mEngineeringStrain[1];
-    deltaStrain(2) = rStrain.mEngineeringStrain[2]-rPrevTotalStrain.mEngineeringStrain[2];
+    deltaStrain(0) = rStrain[0]-rPrevTotalStrain[0];
+    deltaStrain(1) = rStrain[1]-rPrevTotalStrain[1];
+    deltaStrain(2) = rStrain[2]-rPrevTotalStrain[2];
     deltaStrain(3) = 0;
 
     // initialize last plastic strain and last converged stress
@@ -1981,9 +1981,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
     {
         numberOfExternalCutbacks++;
 
-        curTotalStrain(0) = rPrevTotalStrain.mEngineeringStrain[0]+cutbackFactorExternal*deltaStrain(0);
-        curTotalStrain(1) = rPrevTotalStrain.mEngineeringStrain[1]+cutbackFactorExternal*deltaStrain(1);
-        curTotalStrain(2) = rPrevTotalStrain.mEngineeringStrain[2]+cutbackFactorExternal*deltaStrain(2);
+        curTotalStrain(0) = rPrevTotalStrain[0]+cutbackFactorExternal*deltaStrain(0);
+        curTotalStrain(1) = rPrevTotalStrain[1]+cutbackFactorExternal*deltaStrain(1);
+        curTotalStrain(2) = rPrevTotalStrain[2]+cutbackFactorExternal*deltaStrain(2);
         curTotalStrain(3) = 0.;
 
 #ifdef ENABLE_DEBUG

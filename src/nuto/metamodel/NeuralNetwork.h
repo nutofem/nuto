@@ -42,7 +42,7 @@ enum eTransferFunctions {
 
 	//! @brief constructor
 	//! @param rvNumNeurons ... number of neurons in each hidden layer
-    NeuralNetwork (const FullMatrix<int>& rvNumNeurons);
+    NeuralNetwork (const FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rvNumNeurons);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -66,30 +66,30 @@ enum eTransferFunctions {
 	void SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction);
 	
 	double Objective()const;
-	void Gradient(NuTo::FullMatrix<double>& rGradient)const;
-    void Hessian(NuTo::FullMatrix<double>&  rDiagHessian)const;
-    void HessianDiag(NuTo::FullMatrix<double>&  rDiagHessian)const;
-    void HessianFull(NuTo::FullMatrix<double>&  rDiagHessian)const;
+	void Gradient(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const;
+    void Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>&  rDiagHessian)const;
+    void HessianDiag(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>&  rDiagHessian)const;
+    void HessianFull(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>&  rDiagHessian)const;
     
-    void GetParameters(NuTo::FullMatrix<double>& Parameters)const;
-    void SetParameters(const NuTo::FullMatrix<double>& Parameters);
+    void GetParameters(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& Parameters)const;
+    void SetParameters(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& Parameters);
     virtual void Info()const;
     
     //! @brief ... get the inverse noise covariance matrix
     //! @param rInverseCovariance ... inverse noise covariance matrix
-    void GetInverseNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<double>& rInverseCovariance)const;
+    void GetInverseNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInverseCovariance)const;
     
     //! @brief ... get the noise covariance matrix
     //! @param rCovariance ... noise covariance matrix
-    void GetNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<double>& rCovariance)const;
+    void GetNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovariance)const;
     
     //! @brief ... get noise correlation matrix
     //! @param rNoiseCorrelation ... noise correlation matrix
-    void GetNoiseCorrelationMatrix(NuTo::FullMatrix<double>& rNoiseCorrelation)const;
+    void GetNoiseCorrelationMatrix(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rNoiseCorrelation)const;
     
     //! @brief ... get precision (alpha) parameters
     //! @param rPrecisionParameters ... precision parameters
-    void GetPrecisionParametersTransformed(NuTo::FullMatrix<double>& rPrecisionParameters)const;
+    void GetPrecisionParametersTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPrecisionParameters)const;
     
     int GetNumParameters()const
 	{
@@ -176,9 +176,9 @@ enum eTransferFunctions {
     void Jacobian(Eigen::MatrixXd& rJacobian, std::vector<double>& pA, std::vector<double>& pO, Eigen::MatrixXd& pM)const;
 #endif
     
-    void SolveTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates)const;
-    void SolveConfidenceIntervalTransformed(const FullMatrix<double>& rInputCoordinates, NuTo::FullMatrix<double>& rOutputCoordinates, 
-                                                                 NuTo::FullMatrix<double>& rOutputCoordinatesMin, NuTo::FullMatrix<double>& rOutputCoordinatesMax)const;
+    void SolveTransformed(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const;
+    void SolveConfidenceIntervalTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates,
+                                                                 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMax)const;
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... restore the object from a file
     //! @param filename ... filename

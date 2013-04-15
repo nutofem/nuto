@@ -46,11 +46,11 @@ public:
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     //! @param rConstraintLoad ... constraint, whose rhs is increased as a function of time
     //! @param rConstraintRHS ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-    void SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double>& rConstraintRHS);
+    void SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rConstraintRHS);
 
     //! @brief sets a scalar time dependent multiplication factor for the external loads
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
-    void SetExternalLoads(const NuTo::FullMatrix<double>& rLoadRHSFactor);
+    void SetExternalLoads(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor);
 
     //! @brief apply calculate the new rhs of the constraints as a function of the current time delta
     double ConstraintsCalculateRHS(double rTimeDelta);
@@ -59,12 +59,12 @@ public:
     //! @param curTime ... current time in the load step
     //! @param rLoad_j ... external load vector for the independent dofs
     //! @param rLoad_k ... external load vector for the dependent dofs
-    void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullMatrix<double>& rLoad_j, NuTo::FullMatrix<double>& rLoad_k);
+    void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_j, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_k);
 
     //! @brief calculate the external force as a function of time delta
     //! @ param rStructure ... structure
     //! @ param rPlotVector... data to be plotted, is append to the matrix and written to a file
-    void PostProcess(StructureBase& rStructure, NuTo::FullMatrix<double>& rPlotVector);
+    void PostProcess(StructureBase& rStructure, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rPlotVector);
 
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
@@ -92,10 +92,10 @@ public:
 
 
     //! @brief sets the minimum time step for the time integration procedure
-    void SetGroupNodesReactionForces(NuTo::FullMatrix<int> rVecGroupNodesReactionForces);
+    void SetGroupNodesReactionForces(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecGroupNodesReactionForces);
 
     //! @brief returns the g
-    const NuTo::FullMatrix<int> GetVecGroupNodesReactionForces()const
+    const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> GetVecGroupNodesReactionForces()const
     {
     	return mVecGroupNodesReactionForces;
     }
@@ -137,10 +137,10 @@ protected:
     int mConstraintLoad;
     //includes for each time step the rhs of the constraint mConstraintLoad
     //the time step is given by mTimeDelta/(mConstraintRHS.Rows()-1)
-	NuTo::FullMatrix<double> mConstraintRHS;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mConstraintRHS;
     //includes for each time step the scalar factor for the external load
     //the time step is given by mTimeDelta/(mLoadRHSFactor()-1)
-	NuTo::FullMatrix<double> mLoadRHSFactor;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mLoadRHSFactor;
 	//accumulated time (in case several loadings are looked at, one after another)
 	double mTime;
     //adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
@@ -156,13 +156,13 @@ protected:
     //last time when a vtk file was plotted
     double mLastTimePlot;
     //output data for all load steps
-    FullMatrix<double> mPlotMatrixAllLoadSteps;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixAllLoadSteps;
     //output data for load steps that have a minimum distance of mMinTimeStepPlot
-    FullMatrix<double> mPlotMatrixSelectedLoadSteps;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixSelectedLoadSteps;
     //result directory
     std::string mResultDir;
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
-    NuTo::FullMatrix<int> mVecGroupNodesReactionForces;
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mVecGroupNodesReactionForces;
 
 };
 } //namespace NuTo

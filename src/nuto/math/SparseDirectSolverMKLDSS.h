@@ -3,13 +3,13 @@
 #ifndef SPARSE_DIRECT_SOLVER_MKLDSS_H
 #define SPARSE_DIRECT_SOLVER_MKLDSS_H
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/SparseDirectSolver.h"
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template<class T> class FullMatrix;
 
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
@@ -36,7 +36,7 @@ public:
     //! @param rMatrix ... sparse coefficient matrix stored in the CSR format
     //! @param rRhs ... matrix of right-hand-side vectors (full storage)
     //! @param rSolution ... matrix of solution vectors (full storage)
-    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution);
 
     //! @brief ... enable refinement in the solution stage
     inline void enableRefinement()

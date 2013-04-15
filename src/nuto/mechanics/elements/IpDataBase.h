@@ -16,11 +16,11 @@
 #include <string>
 #include <vector>
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
-template<class T> class  FullMatrix;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementBase;

@@ -104,11 +104,11 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
     			double temperature(itInput->second->GetTemperature());
     			double deltaStrain(mThermalExpansionCoefficient * temperature);
     			EngineeringStrain1D elasticEngineeringStrain;
-    			elasticEngineeringStrain.mEngineeringStrain -= deltaStrain;
+    			elasticEngineeringStrain[0] -= deltaStrain;
     		}
 			EngineeringStress1D& engineeringStress(itOutput->second->GetEngineeringStress1D());
 			// calculate Engineering stress
-			engineeringStress.mEngineeringStress = mE * elasticEngineeringStrain.mEngineeringStrain;
+			engineeringStress = mE*elasticEngineeringStrain;
 
 		    break;
     	}
@@ -125,17 +125,17 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
     			double temperature(itInput->second->GetTemperature());
     			double deltaStrain(mThermalExpansionCoefficient * temperature);
     			EngineeringStrain1D elasticEngineeringStrain;
-    			elasticEngineeringStrain.mEngineeringStrain -= deltaStrain;
+    			elasticEngineeringStrain[0] -= deltaStrain;
     		}
 			EngineeringStress3D& engineeringStress(itOutput->second->GetEngineeringStress3D());
 
 			// calculate Engineering stress
-			engineeringStress.mEngineeringStress[0] = mE * elasticEngineeringStrain.mEngineeringStrain;
-			engineeringStress.mEngineeringStress[1] = 0.;
-			engineeringStress.mEngineeringStress[2] = 0.;
-			engineeringStress.mEngineeringStress[3] = 0.;
-			engineeringStress.mEngineeringStress[4] = 0.;
-			engineeringStress.mEngineeringStress[5] = 0.;
+			engineeringStress[0] = mE * elasticEngineeringStrain[0];
+			engineeringStress[1] = 0.;
+			engineeringStress[2] = 0.;
+			engineeringStress[3] = 0.;
+			engineeringStress[4] = 0.;
+			engineeringStress[5] = 0.;
 
 		    break;
     	}
@@ -149,23 +149,23 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
     	case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
     	{
     		EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-			engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain;
-			engineeringStrain3D.mEngineeringStrain[1] = -mNu*engineeringStrain.mEngineeringStrain;
-			engineeringStrain3D.mEngineeringStrain[2] = engineeringStrain3D.mEngineeringStrain[1];
-			engineeringStrain3D.mEngineeringStrain[3] = 0.;
-			engineeringStrain3D.mEngineeringStrain[4] = 0.;
-			engineeringStrain3D.mEngineeringStrain[5] = 0.;
+			engineeringStrain3D[0] = engineeringStrain[0];
+			engineeringStrain3D[1] = -mNu*engineeringStrain[0];
+			engineeringStrain3D[2] = engineeringStrain3D[1];
+			engineeringStrain3D[3] = 0.;
+			engineeringStrain3D[4] = 0.;
+			engineeringStrain3D[5] = 0.;
     	}
     	break;
     	case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
     	{
     		EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-    		engineeringPlasticStrain.mEngineeringStrain[0] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[1] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[2] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[3] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+    		engineeringPlasticStrain[0] = 0.;
+    		engineeringPlasticStrain[1] = 0.;
+    		engineeringPlasticStrain[2] = 0.;
+    		engineeringPlasticStrain[3] = 0.;
+    		engineeringPlasticStrain[4] = 0.;
+    		engineeringPlasticStrain[5] = 0.;
     		break;
     	}
     	case NuTo::Constitutive::eOutput::DAMAGE:
@@ -234,8 +234,8 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
     			double temperature(itInput->second->GetTemperature());
     			double deltaStrain(mThermalExpansionCoefficient * temperature);
     			EngineeringStrain2D elasticEngineeringStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[0] -= deltaStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[1] -= deltaStrain;
+    			elasticEngineeringStrain[0] -= deltaStrain;
+    			elasticEngineeringStrain[1] -= deltaStrain;
     		}
 			EngineeringStress2D& engineeringStress(itOutput->second->GetEngineeringStress2D());
 		    // calculate Engineering stress
@@ -248,9 +248,9 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
 				this->CalculateCoefficients3D(C11, C12, C33);
 
 				// calculate Engineering stress
-				engineeringStress.mEngineeringStress[0] = C11 * elasticEngineeringStrain.mEngineeringStrain[0] + C12 * elasticEngineeringStrain.mEngineeringStrain[1];
-				engineeringStress.mEngineeringStress[1] = C11 * elasticEngineeringStrain.mEngineeringStrain[1] + C12 * elasticEngineeringStrain.mEngineeringStrain[0];
-				engineeringStress.mEngineeringStress[2] = C33 * elasticEngineeringStrain.mEngineeringStrain[2] ;
+				engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
+				engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
+				engineeringStress[2] = C33 * elasticEngineeringStrain[2] ;
 		    	break;}
 		    case Section::PLANE_STRESS:{
 				// calculate coefficients of the material matrix
@@ -258,9 +258,9 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
 				this->CalculateCoefficients2DPlainStress(C11, C12, C33);
 
 				// calculate Engineering stress
-				engineeringStress.mEngineeringStress[0] = C11 * elasticEngineeringStrain.mEngineeringStrain[0] + C12 * elasticEngineeringStrain.mEngineeringStrain[1];
-				engineeringStress.mEngineeringStress[1] = C11 * elasticEngineeringStrain.mEngineeringStrain[1] + C12 * elasticEngineeringStrain.mEngineeringStrain[0];
-				engineeringStress.mEngineeringStress[2] = C33 * elasticEngineeringStrain.mEngineeringStrain[2] ;
+				engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
+				engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
+				engineeringStress[2] = C33 * elasticEngineeringStrain[2] ;
 		    	break;}
 		    default:
 		    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Invalid type of 2D section behavoir found!!!");
@@ -282,8 +282,8 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
     			double temperature(itInput->second->GetTemperature());
     			double deltaStrain(mThermalExpansionCoefficient * temperature);
     			EngineeringStrain2D elasticEngineeringStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[0] -= deltaStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[1] -= deltaStrain;
+    			elasticEngineeringStrain[0] -= deltaStrain;
+    			elasticEngineeringStrain[1] -= deltaStrain;
     		}
 			EngineeringStress3D& engineeringStress(itOutput->second->GetEngineeringStress3D());
 		    // calculate Engineering stress
@@ -296,12 +296,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
 				this->CalculateCoefficients3D(C11, C12, C33);
 
 				// calculate Engineering stress
-				engineeringStress.mEngineeringStress[0] = C11 * elasticEngineeringStrain.mEngineeringStrain[0] + C12 * elasticEngineeringStrain.mEngineeringStrain[1];
-				engineeringStress.mEngineeringStress[1] = C11 * elasticEngineeringStrain.mEngineeringStrain[1] + C12 * elasticEngineeringStrain.mEngineeringStrain[0];
-				engineeringStress.mEngineeringStress[2] = C12 * (elasticEngineeringStrain.mEngineeringStrain[0]+elasticEngineeringStrain.mEngineeringStrain[1]);
-				engineeringStress.mEngineeringStress[3] = C33 * elasticEngineeringStrain.mEngineeringStrain[2] ;
-				engineeringStress.mEngineeringStress[4] = 0.;
-				engineeringStress.mEngineeringStress[5] = 0.;
+				engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
+				engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
+				engineeringStress[2] = C12 * (elasticEngineeringStrain[0]+elasticEngineeringStrain[1]);
+				engineeringStress[3] = C33 * elasticEngineeringStrain[2] ;
+				engineeringStress[4] = 0.;
+				engineeringStress[5] = 0.;
 		    	break;}
 		    case Section::PLANE_STRESS:{
 				// calculate coefficients of the material matrix
@@ -309,12 +309,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
 				this->CalculateCoefficients2DPlainStress(C11, C12, C33);
 
 				// calculate Engineering stress
-				engineeringStress.mEngineeringStress[0] = C11 * elasticEngineeringStrain.mEngineeringStrain[0] + C12 * elasticEngineeringStrain.mEngineeringStrain[1];
-				engineeringStress.mEngineeringStress[1] = C11 * elasticEngineeringStrain.mEngineeringStrain[1] + C12 * elasticEngineeringStrain.mEngineeringStrain[0];
-				engineeringStress.mEngineeringStress[2] = 0.;
-				engineeringStress.mEngineeringStress[3] = C33 * elasticEngineeringStrain.mEngineeringStrain[2] ;
-				engineeringStress.mEngineeringStress[4] = 0.;
-				engineeringStress.mEngineeringStress[5] = 0.;
+				engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
+				engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
+				engineeringStress[2] = 0.;
+				engineeringStress[3] = C33 * elasticEngineeringStrain[2] ;
+				engineeringStress[4] = 0.;
+				engineeringStress[5] = 0.;
 		    	break;}
 		    default:
 		    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStressFromEngineeringStrain] Invalid type of 2D section behavoir found!!!");
@@ -380,20 +380,20 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
     	    switch(rElement->GetSection()->GetType())
     	    {
     	    case Section::PLANE_STRAIN:
-    	    	engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
-    	    	engineeringStrain3D.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
-    	    	engineeringStrain3D.mEngineeringStrain[2] = 0;
-    	    	engineeringStrain3D.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
-    	    	engineeringStrain3D.mEngineeringStrain[4] = 0.;
-    	    	engineeringStrain3D.mEngineeringStrain[5] = 0.;
+    	    	engineeringStrain3D[0] = engineeringStrain[0];
+    	    	engineeringStrain3D[1] = engineeringStrain[1];
+    	    	engineeringStrain3D[2] = 0;
+    	    	engineeringStrain3D[3] = engineeringStrain[2];
+    	    	engineeringStrain3D[4] = 0.;
+    	    	engineeringStrain3D[5] = 0.;
     	    	break;
     	    case Section::PLANE_STRESS:
-    	    	engineeringStrain3D.mEngineeringStrain[0] = engineeringStrain.mEngineeringStrain[0];
-    	    	engineeringStrain3D.mEngineeringStrain[1] = engineeringStrain.mEngineeringStrain[1];
-    	    	engineeringStrain3D.mEngineeringStrain[2] = mNu*(mNu+1.)/(mNu-1.)*(engineeringStrain.mEngineeringStrain[0]+engineeringStrain.mEngineeringStrain[1]);
-    	    	engineeringStrain3D.mEngineeringStrain[3] = engineeringStrain.mEngineeringStrain[2];
-    	    	engineeringStrain3D.mEngineeringStrain[4] = 0.;
-    	    	engineeringStrain3D.mEngineeringStrain[5] = 0.;
+    	    	engineeringStrain3D[0] = engineeringStrain[0];
+    	    	engineeringStrain3D[1] = engineeringStrain[1];
+    	    	engineeringStrain3D[2] = mNu*(mNu+1.)/(mNu-1.)*(engineeringStrain[0]+engineeringStrain[1]);
+    	    	engineeringStrain3D[3] = engineeringStrain[2];
+    	    	engineeringStrain3D[4] = 0.;
+    	    	engineeringStrain3D[5] = 0.;
     	    	break;
     	    default:
     	    	throw MechanicsException("[NuTo::LinearElastic::GetEngineeringStrainFromEngineeringStrain] Invalid type of 2D section behavoir found!!!");
@@ -403,12 +403,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
     	case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
     	{
     		EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-    		engineeringPlasticStrain.mEngineeringStrain[0] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[1] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[2] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[3] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+    		engineeringPlasticStrain[0] = 0.;
+    		engineeringPlasticStrain[1] = 0.;
+    		engineeringPlasticStrain[2] = 0.;
+    		engineeringPlasticStrain[3] = 0.;
+    		engineeringPlasticStrain[4] = 0.;
+    		engineeringPlasticStrain[5] = 0.;
     		break;
     	}
     	case NuTo::Constitutive::eOutput::DAMAGE:
@@ -487,19 +487,19 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(ElementBase
     			double temperature(itInput->second->GetTemperature());
     			double deltaStrain(mThermalExpansionCoefficient * temperature);
     			EngineeringStrain3D elasticEngineeringStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[0] -= deltaStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[1] -= deltaStrain;
-    			elasticEngineeringStrain.mEngineeringStrain[2] -= deltaStrain;
+    			elasticEngineeringStrain[0] -= deltaStrain;
+    			elasticEngineeringStrain[1] -= deltaStrain;
+    			elasticEngineeringStrain[2] -= deltaStrain;
     		}
 			EngineeringStress3D& engineeringStress(itOutput->second->GetEngineeringStress3D());
 		    // calculate Engineering stress
 
-		    engineeringStress.mEngineeringStress[0] = C11 * elasticEngineeringStrain.mEngineeringStrain[0] + C12 * (elasticEngineeringStrain.mEngineeringStrain[1]+elasticEngineeringStrain.mEngineeringStrain[2]);
-		    engineeringStress.mEngineeringStress[1] = C11 * elasticEngineeringStrain.mEngineeringStrain[1] + C12 * (elasticEngineeringStrain.mEngineeringStrain[0]+elasticEngineeringStrain.mEngineeringStrain[2]);
-		    engineeringStress.mEngineeringStress[2] = C11 * elasticEngineeringStrain.mEngineeringStrain[2] + C12 * (elasticEngineeringStrain.mEngineeringStrain[0]+elasticEngineeringStrain.mEngineeringStrain[1]);
-		    engineeringStress.mEngineeringStress[3] = C44 * elasticEngineeringStrain.mEngineeringStrain[3] ;
-		    engineeringStress.mEngineeringStress[4] = C44 * elasticEngineeringStrain.mEngineeringStrain[4] ;
-		    engineeringStress.mEngineeringStress[5] = C44 * elasticEngineeringStrain.mEngineeringStrain[5] ;
+		    engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * (elasticEngineeringStrain[1]+elasticEngineeringStrain[2]);
+		    engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * (elasticEngineeringStrain[0]+elasticEngineeringStrain[2]);
+		    engineeringStress[2] = C11 * elasticEngineeringStrain[2] + C12 * (elasticEngineeringStrain[0]+elasticEngineeringStrain[1]);
+		    engineeringStress[3] = C44 * elasticEngineeringStrain[3] ;
+		    engineeringStress[4] = C44 * elasticEngineeringStrain[4] ;
+		    engineeringStress[5] = C44 * elasticEngineeringStrain[5] ;
    		break;
     	}
     	case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D:
@@ -559,12 +559,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(ElementBase
     	case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
     	{
     		EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-    		engineeringPlasticStrain.mEngineeringStrain[0] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[1] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[2] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[3] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[4] = 0.;
-    		engineeringPlasticStrain.mEngineeringStrain[5] = 0.;
+    		engineeringPlasticStrain[0] = 0.;
+    		engineeringPlasticStrain[1] = 0.;
+    		engineeringPlasticStrain[2] = 0.;
+    		engineeringPlasticStrain[3] = 0.;
+    		engineeringPlasticStrain[4] = 0.;
+    		engineeringPlasticStrain[5] = 0.;
     		break;
     	}
     	case NuTo::Constitutive::eOutput::DAMAGE:

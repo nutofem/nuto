@@ -117,7 +117,7 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Info() const
 //! @brief ... write nonzero matrix entries into a full matrix
 //! @param rFullMatrix ... the full matrix
 template <class T>
-void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const
+void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
 {
 	std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
 	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();

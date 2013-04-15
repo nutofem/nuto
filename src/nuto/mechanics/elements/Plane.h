@@ -51,22 +51,22 @@ public:
     //! @param rGlobalDofsRow ... row numbers in global system
     //! @param rGlobalDofsColumn ... column numbers in global system
     //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the damping matrix
-    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
     //! for a mechanical problem, this corresponds to the Mass matrix
-    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
     //                                        std::vector<int>& rGlobalDofs)const;
 
     //! @brief calculates the local coordinates of the nodes
@@ -175,7 +175,7 @@ public:
     //! &param rFirstCol first column of the coefficient matrix to be modified (corresponding to the current nonlocal element)
     void AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFunctionsLocal,const std::vector<double>& rNonlocalDerivativeShapeFunctionsLocal,
                                   const ConstitutiveTangentLocal<3,3>& rConstitutiveTangent, double rFactor,
-                                  FullMatrix<double>& rCoefficientMatrix, int rFirstRow, int rFirstCol)const;
+                                  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix, int rFirstRow, int rFirstCol)const;
 
     //! @brief adds to a matrix the product B^tCB, where B contains the derivatives of the shape functions and C is the constitutive tangent
     //! eventually include also area/width of an element (that's the thermal solution)
@@ -187,7 +187,7 @@ public:
     void AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctionsGlobal,
                                   const ConstitutiveTangentLocal<2,2>& rConstitutiveTangent, double rFactor,
                                   int rRow, int rCol,
-                                  FullMatrix<double>& rCoefficientMatrix)const;
+                                  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -199,7 +199,7 @@ public:
                         const EngineeringStress2D& rEngineeringStress,
                         double factor,
                         int rRow,
-                        FullMatrix<double>& rResult)const;
+                        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -211,12 +211,12 @@ public:
                                      const HeatFlux2D& rHeatFlux,
                                      double rFactor,
                                      int rRow,
-                                     FullMatrix<double>& rResult)const;
+                                     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
 
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
     //! @param rIpData return value with dimension (dim of data type) x (numIp)
-    //Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const;
+    //Error::eError GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rIpData)const;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object

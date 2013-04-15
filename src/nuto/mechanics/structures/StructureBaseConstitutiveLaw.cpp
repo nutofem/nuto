@@ -295,7 +295,7 @@ void NuTo::StructureBase::ConstitutiveLawSetInitialYieldStrength(int rIdent, dou
 //! @brief ... get yield strength for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding yield strength
-NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetYieldStrength(int rIdent) const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetYieldStrength(int rIdent) const
 {
 	try
 	{
@@ -361,7 +361,7 @@ void NuTo::StructureBase::ConstitutiveLawSetInitialHardeningModulus(int rIdent, 
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding hardening modulus
-NuTo::FullMatrix<double> NuTo::StructureBase::ConstitutiveLawGetHardeningModulus(int rIdent) const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetHardeningModulus(int rIdent) const
 {
 	try
 	{

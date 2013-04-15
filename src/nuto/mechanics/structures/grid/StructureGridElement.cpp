@@ -74,8 +74,8 @@ void NuTo::StructureGrid::ElementInfo(int mVerboseLevel)const
 
 //! @brief create element grid without data free elements
 //! @param reference to a base coefficient matrix, to a ColorToMaterialMatrix and to an element type
-void NuTo::StructureGrid::CreateElementGrid( NuTo::FullMatrix<double>& rBaseCoefficientMatrix0,
-const NuTo::FullMatrix<double>& rColorToMaterialData,const std::string& rElementType)
+void NuTo::StructureGrid::CreateElementGrid( NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBaseCoefficientMatrix0,
+const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rColorToMaterialData,const std::string& rElementType)
 {
     throw MechanicsException("[NuTo::StructureGrid::CreateElementGrid] Not implemented.");
 }

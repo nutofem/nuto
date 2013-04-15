@@ -68,25 +68,25 @@ public:
 	}
 
     //! @brief returns the input of the support points in a matrix
-    inline const FullMatrix<double>& GetOrigSupportPointsInput()const
+    inline const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetOrigSupportPointsInput()const
 	{
 	    return mSPOrigInput;
 	}
     
     //! @brief returns the output of the support points in a matrix
-    inline const FullMatrix<double>& GetOrigSupportPointsOutput()const
+    inline const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetOrigSupportPointsOutput()const
 	{
 	    return mSPOrigOutput;
 	}
     
     //! @brief returns the input of the transformed support points in a matrix
-    inline const FullMatrix<double>& GetTransformedSupportPointsInput()const
+    inline const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetTransformedSupportPointsInput()const
 	{
 	    return mSPTransInput;
 	}
     
     //! @brief returns the input of the transformed support points in a matrix
-    inline const FullMatrix<double>& GetTransformedSupportPointsOutput()const
+    inline const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetTransformedSupportPointsOutput()const
 	{
 	    return mSPTransOutput;
 	}
@@ -109,12 +109,12 @@ public:
     void BuildTransformation();
 
     //! @brief set support points
-    void SetSupportPoints(const FullMatrix<double>& rSPOrigInput, const FullMatrix<double>& rSPOrigOutput);
+    void SetSupportPoints(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSPOrigInput, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSPOrigOutput);
 
     //! @brief return the Weight vector as Matrix (use only from Python level, since everything is copied)
-    inline const FullMatrix<double> GetWeights(int rSample)const
+    inline const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetWeights(int rSample)const
     {
-        return FullMatrix<double>(mWeight.size(),1,mWeight);
+        return FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(mWeight.size(),1,mWeight);
     }
 
     //! @brief Removes all applied Transformations for the input and the output points
@@ -128,86 +128,86 @@ public:
 
     //! @brief perform forward transformation for inputs (from orig to transformed)
     //! @brief in general, the forward direction is orig_input -> inputtrans1 ->inputtrans2 -> metamodel -> outputtrans2 -> outputtrans1 -> orig_output
-    void TransformForwardInput(FullMatrix<double>& rCoordinates)const;
+    void TransformForwardInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
     
     //! @brief perform backward transformation for inputs (from transformed to orig
-    void TransformBackwardInput(FullMatrix<double>& rCoordinates)const;
+    void TransformBackwardInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
     
     //! @brief perform forward transformation for outputs (from transformed to orig)
     //! @brief attention, this is exactly the backwards order, since transformations for outputs are given in revers order
-    void TransformForwardOutput(FullMatrix<double>& rCoordinates)const;
+    void TransformForwardOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
     
     //! @brief perform backward transformation for outputs
-    void TransformBackwardOutput(FullMatrix<double>& rCoordinates)const;
+    void TransformBackwardOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
     
 #endif
 
     //! @brief calculate the mean value of the original inputs
     //! @param rMean ... vector of mean values (output)
-    void GetMeanValueOriginalInput(FullMatrix<double>& rMean)const;
+    void GetMeanValueOriginalInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const;
 
     //! @brief calculate the mean value of the transformed inputs
     //! @param rMean ... vector of mean values (output)
-    void GetMeanValueTransformedInput(FullMatrix<double>& rMean)const;
+    void GetMeanValueTransformedInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const;
 
     //! @brief calculate the mean value of the original outputs
     //! @param rMean ... vector of mean values (output)
-    void GetMeanValueOriginalOutput(FullMatrix<double>& rMean)const;
+    void GetMeanValueOriginalOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const;
 
     //! @brief calculate the mean value of the transformed outputs
     //! @param rMean ... vector of mean values (output)
-    void GetMeanValueTransformedOutput(FullMatrix<double>& rMean)const;
+    void GetMeanValueTransformedOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const;
 
     //! @brief calculate the variance of the original inputs
     //! @param rVariance ... vector of variances (output)
-    void GetVarianceOriginalInput(FullMatrix<double>& rVariance)const;
+    void GetVarianceOriginalInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const;
 
     //! @brief calculate the variance of the transformed inputs
     //! @param rVariance ... vector of variances (output)
-    void GetVarianceTransformedInput(FullMatrix<double>& rVariance)const;
+    void GetVarianceTransformedInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const;
 
     //! @brief calculate the variance of the transformed outputs
     //! @param rVariance ... vector of variances (output)
-    void GetVarianceOriginalOutput(FullMatrix<double>& rVariance)const;
+    void GetVarianceOriginalOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const;
 
     //! @brief calculate the variance of the original outputs
     //! @param rVariance ... vector of variances (output)
-    void GetVarianceTransformedOutput(FullMatrix<double>& rVariance)const;
+    void GetVarianceTransformedOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const;
 
     //! @brief calculate the covariance matrix of original inputs and outputs
     //! @param rCovarianceMatrix ... covariance matrix
-    void GetCovarianceMatrixOriginal(FullMatrix<double>& rCovarianceMatrix) const;
+    void GetCovarianceMatrixOriginal(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const;
 
     //! @brief calculate the covariance matrix of transformed inputs and outputs
     //! @param rCovarianceMatrix ... covariance matrix
-    void GetCovarianceMatrixTransformed(FullMatrix<double>& rCovarianceMatrix) const;
+    void GetCovarianceMatrixTransformed(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix
     //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
-    void GetPearsonCorrelationMatrixOriginal(FullMatrix<double>& rCorrelationMatrix) const;
+    void GetPearsonCorrelationMatrixOriginal(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix using transformed support point coordinates
     //! @param rCorrelationMatrix  ... Pearsons correlation matrix
-    void GetPearsonCorrelationMatrixTransformed(FullMatrix<double>& rCorrelationMatrix) const;
+    void GetPearsonCorrelationMatrixTransformed(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const;
 
     //! @brief calculate the confidence interval on Pearson's correlation coefficient using original support point coordinates
     //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rMaxCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
-    void GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
+    void GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 
     //! @brief calculate the confidence interval on Pearson's correlation coefficient using transformed support point coordinates
     //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rMaxCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
-    void GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
+    void GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
 private:
-    FullMatrix<double>  mSPOrigInput;      //!< original inputs, each sample after another
-    FullMatrix<double>  mSPOrigOutput;     //!< original outputs, each sample after another
-    FullMatrix<double>  mSPTransInput;     //!< transformed inputs, each sample after another
-    FullMatrix<double>  mSPTransOutput;    //!< transformed outputs, each sample after another
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  mSPOrigInput;      //!< original inputs, each sample after another
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  mSPOrigOutput;     //!< original outputs, each sample after another
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  mSPTransInput;     //!< transformed inputs, each sample after another
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  mSPTransOutput;    //!< transformed outputs, each sample after another
 
     std::vector<double> mWeight;    //!< weight of each support point
     
@@ -219,24 +219,24 @@ private:
 	//! @brief calculate the mean values of given data
 	//! @param rData ... matrix of data points, each sample after another
 	//! @param rMean ... vector of mean values (output)
-	void CalculateMeanValues(const FullMatrix<double>& rData, FullMatrix<double>& rMean) const;
+	void CalculateMeanValues(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean) const;
 
 	//! @brief calculate the variance in data
 	//! @param rData ... matrix of data points, each sample after another
 	//! @param rVariance ... vector of variances
-	void CalculateVariance(const FullMatrix<double>& rData, FullMatrix<double>& rVariance) const;
+	void CalculateVariance(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance) const;
 
 	//! @brief calculate the covariance matrix
 	//! @param rInputData ... matrix of input data points, each sample after another
 	//! @param rOutputData ... matrix of output data points, each sample after another
 	//! @param rCovarianceMatrix ... covariance matrix
-	void CalculateCovarianceMatrix(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCovarianceMatrix) const;
+	void CalculateCovarianceMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const;
 
 	//! @brief calculate Pearson's correlation matrix
 	//! @param rInputData ... matrix of input data points, each sample after another
 	//! @param rOutputData ... matrix of output data points, each sample after another
 	//! @param rCorrelationMatrix ... Pearson's correlation matrix
-	void CalculatePearsonCorrelationMatrix(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCorrelationMatrix) const;
+	void CalculatePearsonCorrelationMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const;
 
 	//! @brief calculate Pearson's correlation matrix
 	//! @param rInputData ... matrix of input data points, each sample after another
@@ -245,7 +245,7 @@ private:
 	//! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
-	void CalculatePearsonCorrelationMatrixConfidenceIntervals(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha) const;
+	void CalculatePearsonCorrelationMatrixConfidenceIntervals(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha) const;
 
 };
 } // namespace nuto

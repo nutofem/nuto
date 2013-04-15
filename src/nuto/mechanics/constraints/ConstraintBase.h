@@ -8,6 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
@@ -17,7 +18,6 @@ class NodeBase;
 class ConstraintLinear;
 class ConstraintNonlinear;
 class ConstraintLagrange;
-template<class T> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 
 //! @author Jörg F. Unger, ISM
@@ -83,7 +83,7 @@ public:
 
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-    virtual void SetCrackOpening(const NuTo::FullMatrix<double>& rStrain);
+    virtual void SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStrain);
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical

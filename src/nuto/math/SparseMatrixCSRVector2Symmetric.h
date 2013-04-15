@@ -28,7 +28,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rN
 //! @param rAbsoluteTolerance ... absolute tolerance
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
-NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(NuTo::FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
+NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
                              NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
 {
 	if (rFullMatrix.GetNumColumns()!=rFullMatrix.GetNumRows())
@@ -166,7 +166,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::ImportFromSLangText(const char* r
 //! @brief ... write nonzero matrix entries into a full matrix
 //! @param rFullMatrix ... the full matrix
 template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
 {
 	if (this->mOneBasedIndexing)
 	{
@@ -458,7 +458,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
 //! @return ... full matrix
 template<class T>
-NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::operator* (const FullMatrix<T> &rMatrix) const
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::operator* (const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
 {
     throw MathException("[NuTo::SparseMatrixCSRVector2Symmetric<T>::operator*] To be implemented.");
 /*  this is just copied from the general matrix (no symmtry)
@@ -466,7 +466,7 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::operator* (const F
 	{
 		throw MathException("[SparseMatrixCSRVector2Symmetric::operator*] invalid matrix dimensions.");
 	}
-	FullMatrix<T> result(this->GetNumRows(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over rows
@@ -520,7 +520,7 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::operator* (const F
 }
 
 template<class T>
-NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const NuTo::FullMatrix<T>& rMatrix) const
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
     throw MathException("[NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult] To be implemented.");
 /*  this is just copied from the general matrix (no symmtry)
@@ -528,7 +528,7 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Nu
 	{
 		throw MathException("[SparseMatrixCSRVector2Symmetric::TransMult] invalid matrix dimensions.");
 	}
-	FullMatrix<T> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -580,7 +580,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 }
 
 template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::Gauss(NuTo::FullMatrix<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     throw MathException("SparseMatrixCSRVector2Symmetric::Gauss] : to be implemented");
 }

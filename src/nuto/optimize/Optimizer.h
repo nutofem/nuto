@@ -77,13 +77,13 @@ public:
 	
 	virtual int Optimize()=0;
 	
-    void SetParameters(const NuTo::FullMatrix<double>& rParameters)
+    void SetParameters(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rParameters)
     {
         mvParameters = rParameters;
         isBuild = false;
     }
 
-    const NuTo::FullMatrix<double>& GetParameters()const
+    const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetParameters()const
     {
         return mvParameters;    
     }
@@ -149,7 +149,7 @@ protected:
     CallbackHandler *mpCallbackHandler;
     CallbackHandlerGrid *mpCallbackHandlerGrid;
     double objective;
-    FullMatrix<double> mvParameters;
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mvParameters;
     std::vector<double> mParameters;
     std::vector<double> mvEqualConstraints;
     std::vector<double> mvInEqualConstraints;

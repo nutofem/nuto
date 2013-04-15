@@ -206,7 +206,7 @@ void NuTo::StructureGrid::NodeDelete(const int rIdent)
 //! @brief gets the displacements of a node
 //! @param rIdent node identifier
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureGrid::NodeGetDisplacements(int rNode, FullMatrix<double>& rDisplacements)const
+void NuTo::StructureGrid::NodeGetDisplacements(int rNode, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)const
 {
     throw MechanicsException("[NuTo::StructureGrid::NodeGetDisplacements] Not implemented.");
 //#ifdef SHOW_TIME
@@ -229,7 +229,7 @@ void NuTo::StructureGrid::NodeGetDisplacements(int rNode, FullMatrix<double>& rD
 //! @brief sets the displacements of a node
 //! @param rIdent node identifier
 //! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureGrid::NodeSetDisplacements(int rNode, const FullMatrix<double>& rDisplacements)
+void NuTo::StructureGrid::NodeSetDisplacements(int rNode, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)
 {
 	   throw MechanicsException("[NuTo::StructureGrid::NodeSetDisplacements] Not implemented.");
 //#ifdef SHOW_TIME

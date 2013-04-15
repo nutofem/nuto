@@ -28,7 +28,7 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(int rNumRo
 //! @param rAbsoluteTolerance ... absolute tolerance
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
-NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(NuTo::FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
+NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
                              NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
 {
 	this->mNumColumns = rFullMatrix.GetNumColumns();
@@ -192,7 +192,7 @@ void NuTo::SparseMatrixCSRVector2General<T>::ImportFromSLangText(const char* rFi
 //! @brief ... write nonzero matrix entries into a full matrix
 //! @param rFullMatrix ... the full matrix
 template<class T>
-void NuTo::SparseMatrixCSRVector2General<T>::WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const
+void NuTo::SparseMatrixCSRVector2General<T>::WriteEntriesToFullMatrix(FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
 {
 	if (this->mOneBasedIndexing)
 	{
@@ -538,14 +538,14 @@ NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::o
 //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
 //! @return ... full matrix
 template<class T>
-NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2General<T>::operator* (const FullMatrix<T> &rMatrix) const
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::operator* (const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
 {
 	if (this->GetNumColumns() != rMatrix.GetNumRows())
 	{
 		std::cout << "this->GetNumColumns() " << this->GetNumColumns() << " rMatrix.GetNumRows() " << rMatrix.GetNumRows() << "\n";
 		throw MathException("[SparseMatrixCSRVector2General::operator*] invalid matrix dimensions.");
 	}
-	FullMatrix<T> result(this->GetNumRows(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over rows
@@ -695,13 +695,13 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRSymmet
 }
 
 template<class T>
-NuTo::FullMatrix<T> NuTo::SparseMatrixCSRVector2General<T>::TransMult(const NuTo::FullMatrix<T>& rMatrix) const
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
 	if (this->GetNumRows() != rMatrix.GetNumRows())
 	{
 		throw MathException("[SparseMatrixCSRVector2General::TransMult] invalid matrix dimensions.");
 	}
-	FullMatrix<T> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -778,7 +778,7 @@ NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::T
 }
 
 template<class T>
-void NuTo::SparseMatrixCSRVector2General<T>::Gauss(NuTo::FullMatrix<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void NuTo::SparseMatrixCSRVector2General<T>::Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     throw MathException("SparseMatrixCSRVector2General::Gauss] : to be implemented");
 }

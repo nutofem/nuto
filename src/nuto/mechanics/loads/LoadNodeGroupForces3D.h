@@ -18,8 +18,6 @@ namespace NuTo
 class NodeBase;
 template <class T>
 class Group;
-template <class T>
-class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for all forces applied to a group of nodes in 3D
@@ -33,12 +31,12 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the force
     //! @param rValue ... value of the force
-    LoadNodeGroupForces3D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue);
+    LoadNodeGroupForces3D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double>& rActiceDofsLoadVector, NuTo::FullMatrix<double>& rDependentDofsLoadVector)const;
+    void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -38,7 +38,7 @@ NuTo::MinMaxTransformation::MinMaxTransformation(const MinMaxTransformation &rOt
 }
 
 
-void NuTo::MinMaxTransformation::Build(const FullMatrix<double>& rCoordinates)
+void NuTo::MinMaxTransformation::Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)
 {
     if ( rCoordinates.GetNumColumns() == 0)
 	{
@@ -64,7 +64,7 @@ void NuTo::MinMaxTransformation::Build(const FullMatrix<double>& rCoordinates)
 	}
 }
 
-void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double>& rCoordinates)const
+void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     if ( rCoordinates.GetNumColumns() == 0)
     {
@@ -94,7 +94,7 @@ void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double>& rCoordinat
 	}
 }
 
-void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double>& rCoordinates)  const
+void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)  const
 {
     if ( rCoordinates.GetNumColumns() == 0)
     {

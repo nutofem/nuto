@@ -79,7 +79,7 @@ void NuTo::SupportPoints::AppendTransformationOutput(Transformation* rTransforma
     mlTransformationOutput.push_back(rTransformation);
 }
 
-void NuTo::SupportPoints::SetSupportPoints(const FullMatrix<double>& rSPOrigInput, const FullMatrix<double>& rSPOrigOutput)
+void NuTo::SupportPoints::SetSupportPoints(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSPOrigInput, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSPOrigOutput)
 {
     if (rSPOrigInput.GetNumColumns()!=rSPOrigOutput.GetNumColumns())
     {
@@ -97,14 +97,14 @@ void NuTo::SupportPoints::SetSupportPoints(const FullMatrix<double>& rSPOrigInpu
 }
 
 //! @brief perform forward transformation for inputs (from orig to transformed)
-void NuTo::SupportPoints::TransformForwardInput(FullMatrix<double>& rCoordinates)const
+void NuTo::SupportPoints::TransformForwardInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     for (boost::ptr_list<Transformation>::const_iterator it=mlTransformationInput.begin();it!=mlTransformationInput.end(); it++)
         it->TransformForward(rCoordinates);
 }
 
 //! @brief perform backward transformation for inputs  (from transformed to orig)
-void NuTo::SupportPoints::TransformBackwardInput(FullMatrix<double>& rCoordinates)const
+void NuTo::SupportPoints::TransformBackwardInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     for (boost::ptr_list<Transformation>::const_reverse_iterator it=mlTransformationInput.rbegin();it!=mlTransformationInput.rend(); it++)
         it->TransformBackward(rCoordinates);
@@ -113,7 +113,7 @@ void NuTo::SupportPoints::TransformBackwardInput(FullMatrix<double>& rCoordinate
 //! @brief perform forward transformation for outputs (from transformed to orig)
 //! @brief attention, this is exactly the backwards order, since transformations for outputs are given in revers order
 //! @brief orig->trans1->trans2-transformed
-void NuTo::SupportPoints::TransformForwardOutput(FullMatrix<double>& rCoordinates)const
+void NuTo::SupportPoints::TransformForwardOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     for (boost::ptr_list<Transformation>::const_reverse_iterator it=mlTransformationOutput.rbegin();it!=mlTransformationOutput.rend(); it++)
         it->TransformBackward(rCoordinates);
@@ -121,7 +121,7 @@ void NuTo::SupportPoints::TransformForwardOutput(FullMatrix<double>& rCoordinate
 
 //! @brief perform backward transformation for outputs
 //! @brief attention, this is exactly the backwards order, since transformations for given in revers order
-void NuTo::SupportPoints::TransformBackwardOutput(FullMatrix<double>& rCoordinates)const
+void NuTo::SupportPoints::TransformBackwardOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     for (boost::ptr_list<Transformation>::const_iterator it=mlTransformationOutput.begin();it!=mlTransformationOutput.end(); it++)
         it->TransformForward(rCoordinates);
@@ -135,13 +135,13 @@ void NuTo::SupportPoints::ClearTransformations()
 }
 
 // calculate mean values of original inputs
-void NuTo::SupportPoints::GetMeanValueOriginalInput(FullMatrix<double>& rMean)const
+void NuTo::SupportPoints::GetMeanValueOriginalInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const
 {
 	this->CalculateMeanValues(this->mSPOrigInput, rMean);
 }
 
 // calculate mean values of transformed inputs
-void NuTo::SupportPoints::GetMeanValueTransformedInput(FullMatrix<double>& rMean)const
+void NuTo::SupportPoints::GetMeanValueTransformedInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -151,13 +151,13 @@ void NuTo::SupportPoints::GetMeanValueTransformedInput(FullMatrix<double>& rMean
 }
 
 // calculate mean values of original outputs
-void NuTo::SupportPoints::GetMeanValueOriginalOutput(FullMatrix<double>& rMean)const
+void NuTo::SupportPoints::GetMeanValueOriginalOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const
 {
 	this->CalculateMeanValues(this->mSPOrigOutput, rMean);
 }
 
 // calculate mean values of transformed outputs
-void NuTo::SupportPoints::GetMeanValueTransformedOutput(FullMatrix<double>& rMean)const
+void NuTo::SupportPoints::GetMeanValueTransformedOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean)const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -167,13 +167,13 @@ void NuTo::SupportPoints::GetMeanValueTransformedOutput(FullMatrix<double>& rMea
 }
 
 // calculate variance of original inputs
-void NuTo::SupportPoints::GetVarianceOriginalInput(FullMatrix<double>& rVariance)const
+void NuTo::SupportPoints::GetVarianceOriginalInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const
 {
 	this->CalculateVariance(this->mSPOrigInput, rVariance);
 }
 
 // calculate variance of transformed inputs
-void NuTo::SupportPoints::GetVarianceTransformedInput(FullMatrix<double>& rVariance)const
+void NuTo::SupportPoints::GetVarianceTransformedInput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -183,13 +183,13 @@ void NuTo::SupportPoints::GetVarianceTransformedInput(FullMatrix<double>& rVaria
 }
 
 // calculate variance of original outputs
-void NuTo::SupportPoints::GetVarianceOriginalOutput(FullMatrix<double>& rVariance)const
+void NuTo::SupportPoints::GetVarianceOriginalOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const
 {
 	this->CalculateVariance(this->mSPOrigOutput, rVariance);
 }
 
 // calculate variance of transformed outputs
-void NuTo::SupportPoints::GetVarianceTransformedOutput(FullMatrix<double>& rVariance)const
+void NuTo::SupportPoints::GetVarianceTransformedOutput(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance)const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -199,13 +199,13 @@ void NuTo::SupportPoints::GetVarianceTransformedOutput(FullMatrix<double>& rVari
 }
 
 // calculate covariance matrix
-void NuTo::SupportPoints::GetCovarianceMatrixOriginal(FullMatrix<double>& rCovarianceMatrix) const
+void NuTo::SupportPoints::GetCovarianceMatrixOriginal(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const
 {
 	this->CalculateCovarianceMatrix(this->mSPOrigInput, this->mSPOrigOutput, rCovarianceMatrix);
 }
 
 // calculate covariance matrix
-void NuTo::SupportPoints::GetCovarianceMatrixTransformed(FullMatrix<double>& rCovarianceMatrix) const
+void NuTo::SupportPoints::GetCovarianceMatrixTransformed(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -215,13 +215,13 @@ void NuTo::SupportPoints::GetCovarianceMatrixTransformed(FullMatrix<double>& rCo
 }
 
 // calculate Pearson's correlation matrix using original support point coordinates
-void NuTo::SupportPoints::GetPearsonCorrelationMatrixOriginal(FullMatrix<double>& rCorrelationMatrix) const
+void NuTo::SupportPoints::GetPearsonCorrelationMatrixOriginal(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const
 {
 	this->CalculatePearsonCorrelationMatrix(this->mSPOrigInput, this->mSPOrigOutput, rCorrelationMatrix);
 }
 
 // calculate Pearson's correlation matrix using transformed support point coordinates
-void NuTo::SupportPoints::GetPearsonCorrelationMatrixTransformed(FullMatrix<double>& rCorrelationMatrix) const
+void NuTo::SupportPoints::GetPearsonCorrelationMatrixTransformed(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -231,7 +231,7 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixTransformed(FullMatrix<doub
 }
 
 // calculate the confidence interval on Pearson's correlation coefficient using original support point coordinates
-void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha) const
+void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha) const
 {
 	try
 	{
@@ -247,7 +247,7 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsOriginal
 }
 
 // calculate the confidence interval on Pearson's correlation coefficient using transformed support point coordinates
-void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha) const
+void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha) const
 {
 	if(!this->mTransformationBuild)
 	{
@@ -275,7 +275,7 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransfor
  * \f]
  * where \f$p\f$ is the number of point coordinates, \f$n\f$ is the number of samples.
  */
-void NuTo::SupportPoints::CalculateMeanValues(const FullMatrix<double>& rData, FullMatrix<double>& rMean) const
+void NuTo::SupportPoints::CalculateMeanValues(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean) const
 {
 	int numRows = rData.GetNumRows();
 	int numSamples = rData.GetNumColumns();
@@ -310,7 +310,7 @@ void NuTo::SupportPoints::CalculateMeanValues(const FullMatrix<double>& rData, F
  * where \f$p\f$ is the number of point coordinates, \f$n\f$ is the number of samples, and \f$\bar{x}_i\f$ is the sample mean of the
  * corresponding coordinate.
  */
-void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double>& rData, FullMatrix<double>& rVariance) const
+void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance) const
 {
 	int numRows = rData.GetNumRows();
 	int numSamples = rData.GetNumColumns();
@@ -322,7 +322,7 @@ void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double>& rData, Ful
 	double factor = 1.0/static_cast<double>(numSamples-1);
 
 	// calculate mean values
-	FullMatrix<double> meanVector;
+	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> meanVector;
 	this->CalculateMeanValues(rData, meanVector);
 
 	// calculate variance
@@ -363,7 +363,7 @@ void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double>& rData, Ful
  * where \f$\bar{z}_i\f$ is the sample mean of the \f$i\f$-th coordinate, \f$n\f$ is the number of samples, \f$p_i\f$ is the number of input coordinates,
  * and \f$p_o\f$ is the number of output coordinates. Since \f$cov(z_i,z_j) = cov(z_j,z_i)\f$ the covariance matrix is symmetric.
  */
-void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCovarianceMatrix) const
+void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const
 {
 	// get data
 	int numInputData = rInputData.GetNumRows();
@@ -379,9 +379,9 @@ void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double>& rI
 	}
 
 	// calculate mean values
-	FullMatrix<double> inputDataMeanVector;
+	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> inputDataMeanVector;
 	this->CalculateMeanValues(rInputData, inputDataMeanVector);
-	FullMatrix<double> outputDataMeanVector;
+	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> outputDataMeanVector;
 	this->CalculateMeanValues(rOutputData, outputDataMeanVector);
 
 	// calculate covariance matrix
@@ -476,7 +476,7 @@ void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double>& rI
  * \f$\bar{z}_i, \bar{z}_j\f$ are the corresponding sample means, \f$n\f$ is the number of samples, \f$p_i\f$ is the number of input coordinates,
  * and \f$p_o\f$ is the number of output coordinates.
  */
-void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCorrelationMatrix) const
+void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix) const
 {
 	// calculate covariance matrix
 	this->CalculateCovarianceMatrix(rInputData, rOutputData, rCorrelationMatrix);
@@ -510,7 +510,7 @@ void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const FullMatrix<dou
  * \f]
  * where \f$Z_{0.5\alpha}\f$ is the \f$(1-0.5\alpha)\f$-quantil of the standard normal distribution, and \f$n\f$ is the number of support points.
  */
-void NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals(const FullMatrix<double>& rInputData, const FullMatrix<double>& rOutputData, FullMatrix<double>& rCorrelationMatrix, FullMatrix<double>& rMinCorrelationMatrix, FullMatrix<double>& rMaxCorrelationMatrix, double rAlpha ) const
+void NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMinCorrelationMatrix, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMaxCorrelationMatrix, double rAlpha ) const
 {
 	// check number of samples
 	if(this->GetNumSupportPoints() < 4)

@@ -22,7 +22,7 @@ NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS() : SparseDirectSolver(
 }
 
 #ifdef HAVE_MKL_DSS
-void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
 {
     // timing
     clock_t startTime = clock();

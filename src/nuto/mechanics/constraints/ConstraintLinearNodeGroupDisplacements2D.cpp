@@ -18,7 +18,7 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
         ConstraintNodeGroup(rGroup), ConstraintLinear()
 {
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
@@ -81,7 +81,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& 
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const
+void NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {

@@ -9,8 +9,8 @@ int main()
     NuTo::Structure myStructure(3);
 
     // create nodes
-    NuTo::FullMatrix<double> Coordinates(3,1);
-    NuTo::FullMatrix<int> Incidence(10,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(3,1);
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(10,1);
 
     //create nodes
     Coordinates(0,0) = 0.0;
@@ -74,9 +74,9 @@ int main()
     // assign constitutive law
     myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
 
-    NuTo::FullMatrix<double> Ke;
-    NuTo::FullMatrix<int> rowIndex;
-    NuTo::FullMatrix<int> colIndex;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Ke;
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rowIndex;
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> colIndex;
     myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
 
 	return 0;

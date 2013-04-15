@@ -67,7 +67,7 @@ int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
 //! @brief ... store all element ids connected to this node in a vector
 //! @param rNode (Input) 			... node id
 //! @param rElementNumbers (Output) ... vector of element ids
-void NuTo::Structure::NodeGetElements(const int rNodeId, NuTo::FullMatrix<int>& rElementNumbers)
+void NuTo::Structure::NodeGetElements(const int rNodeId, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementNumbers)
 {
 	const NuTo::NodeBase* nodePtr(NuTo::Structure::NodeGetNodePtr(rNodeId));
 	std::vector<NuTo::ElementBase*> elementPtrs;
@@ -143,14 +143,14 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 //! creates a node at coordinate's origin
 int NuTo::Structure::NodeCreate(std::string rDOFs)
 {
-	NuTo::FullMatrix<double> coordinates(this->GetDimension(), 1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(this->GetDimension(), 1);
 
 	//return int identifier of the new node
     return NodeCreate(rDOFs,coordinates);
 }
 
 //! creates a node
-int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates)
+int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)
 {
 
     //find unused integer id
@@ -168,7 +168,7 @@ int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCo
 }
 
 //! creates a node
-int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates, int rNumTimeDerivatives)
+int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives)
 {
 
     //find unused integer id
@@ -185,7 +185,7 @@ int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCo
     return id;
 }
 
-void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates, int rNumTimeDerivatives)
+void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives)
 {
 	// check node number
 	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -506,19 +506,19 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullM
 
 //! @brief create multiple nodes
 //! @param reference to a FullMatrix containing the node coordinates (row->coordinate; col->nodes)
-//! @return a FullMatrix<int> with the identifiers
-NuTo::FullMatrix<int> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::FullMatrix<double>& rCoordinates)
+//! @return a FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> with the identifiers
+NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NuTo::Structure::NodesCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)
 {
 	std::vector<int> idVec;
 	/// go through the nodes
 	for(size_t i=0 ; i<(size_t)rCoordinates.GetNumColumns(); ++i)
 	{
-		NuTo::FullMatrix<double> coordinate(rCoordinates.GetColumn(i));
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinate(rCoordinates.GetColumn(i));
 		idVec.push_back(this->NodeCreate(rDOFs, coordinate));
 	}
 
     //return int identifiers of the new nodes as FullMatrix
-	NuTo::FullMatrix<int> ids(idVec);
+	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> ids(idVec);
 
     return ids;
 }
@@ -650,7 +650,7 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 
         // reorder columns
         this->mConstraintMatrix.ReorderColumns(tmpMapping);
-        //NuTo::FullMatrix<double> constraintMatrixFull(mConstraintMatrix);
+        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> constraintMatrixFull(mConstraintMatrix);
         //constraintMatrixFull.Info(12,5);
         // remove columns of dependent dofs
         // check if the submatrix which is removed is a diagonal matrix
@@ -700,7 +700,7 @@ void NuTo::Structure::NodeBuildGlobalDofs()
 }
 
 // merge dof values
-void NuTo::Structure::NodeMergeActiveDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues)
+void NuTo::Structure::NodeMergeActiveDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues)
 {
     if (this->mNodeNumberingRequired)
     {
@@ -713,7 +713,7 @@ void NuTo::Structure::NodeMergeActiveDofValues(int rTimeDerivative, const FullMa
 	this->mUpdateTmpStaticDataRequired=true;
 
     // calculate dependent dof values
-	FullMatrix<double> dependentDofValues;
+	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofValues;
     if (mNumActiveDofs>0)
         dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
     else
@@ -733,7 +733,7 @@ void NuTo::Structure::NodeMergeActiveDofValues(int rTimeDerivative, const FullMa
 }
 
 // merge dof values
-void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
     if (this->mNodeNumberingRequired)
     {
@@ -764,7 +764,7 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const FullMatrix<d
 }
 
 // extract dof values
-void NuTo::Structure::NodeExtractDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::Structure::NodeExtractDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
     if (this->mNodeNumberingRequired)
     {

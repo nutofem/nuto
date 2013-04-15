@@ -35,7 +35,7 @@ public:
     	return new ElementOutputIpData(*this);
     }
 
-    FullMatrix<double>& GetFullMatrixDouble()
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble()
 	{
         return mMatrix;
 	}
@@ -47,7 +47,7 @@ public:
 
 private:
     NuTo::IpData::eIpStaticDataType mIpDataType;
-    FullMatrix<double> mMatrix;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
 };
 }
 #ifdef ENABLE_SERIALIZATION

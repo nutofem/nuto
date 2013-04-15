@@ -4,95 +4,16 @@
 #include <fstream>
 #include <iostream>
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/math/dlapack.h"
 #include "nuto/math/Matrix.h"
-#include "nuto/math/FullMatrix.h"
 #include <eigen3/Eigen/QR>
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
-
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name FullMatrixDouble
-template<>
-std::string FullMatrix<double>::GetTypeId()const
-{
-    return std::string("FullMatrixDouble");
-}
-
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name FullMatrixInt
-template<>
-std::string FullMatrix<int>::GetTypeId()const
-{
-    return std::string("FullMatrixInt");
-}
-
-//! @brief ... converts any IntFullMatrix to an DoubleFullMatrix
-//! @return    converted matrix
-template<>
-FullMatrix<double> FullMatrix<int>::Convert2double()
-{
-    FullMatrix<double> doubleMatrix(GetNumRows(),GetNumColumns());
-    for (int count=0; count<GetNumColumns(); count++)
-        for (int count2=0; count2<GetNumRows(); count2++)
-            doubleMatrix(count2,count) = (double)(*this)(count2,count);
-
-    return doubleMatrix;
-}
-
-//! @brief ... converts any DoubleFullMatrix to an DoubleFullMatrix
-//! @return    converted matrix
-template<>
-FullMatrix<double> FullMatrix<double>::Convert2double()
-{
-    return Copy();
-}
-
-//! @brief ... converts any DoubleFullMatrix to an IntFullMatrix
-//! @return    converted matrix
-template<>
-FullMatrix<int> FullMatrix<double>::Convert2int()
-{
-    FullMatrix<int> intMatrix(GetNumRows(),GetNumColumns());
-    for (int count=0; count<GetNumColumns(); count++)
-        for (int count2=0; count2<GetNumRows(); count2++)
-            intMatrix(count2,count) = (int)(*this)(count2,count);
-
-    return intMatrix;
-}
-
-//! @brief ... converts any IntFullMatrix to an IntFullMatrix
-//! @return    converted matrix
-template<>
-FullMatrix<int> FullMatrix<int>::Convert2int()
-{
-    return Copy();
-}
-
-//! @brief ... multiply this matrix by a vector (which is stored in a vector
-//! @param other ... vector
-//! @return matrix
-template<>
-FullMatrix<double> FullMatrix<double>::operator* ( const std::vector<double> &other ) const
-{
-    return FullMatrix<double> (((Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>)(*this))*Eigen::Map<Eigen::VectorXd>((double*)&(other[0]),other.size()));
-}
-
-//! @brief ... multiply this matrix by a vector (which is stored in a vector
-//! @param other ... vector
-//! @return  matrix
-template<>
-FullMatrix<int> FullMatrix<int>::operator* ( const std::vector<int> &other ) const
-{
-    return FullMatrix<int> ( ((Eigen::Matrix<int,Eigen::Dynamic,Eigen::Dynamic>)(*this))*Eigen::Map<Eigen::VectorXi>((int*)&(other[0]),other.size()));
-}
-
-// import SLang matrix or vector
+/*// import SLang matrix or vector
 template<>
 void FullMatrix<double>::ImportFromSLangText(const char* fileName)
 {
@@ -148,7 +69,6 @@ void FullMatrix<double>::ImportFromSLangText(const char* fileName)
 
     // close file
     file.close();
-
 }
 
 template<>
@@ -156,9 +76,11 @@ void FullMatrix<int>::ImportFromSLangText(const char* fileName)
 {
     throw MathException("[FullMatrix::importFromSLang] not implemented for this data-type.");
 }
+*/
 
+/*
 template<>
-void FullMatrix<int>::ImportFromVtkASCIIFile(const char* rFileName)
+void FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>::ImportFromVtkASCIIFile(const char* rFileName)
 {
     using namespace boost::spirit::classic;
 
@@ -210,23 +132,14 @@ void FullMatrix<int>::ImportFromVtkASCIIFile(const char* rFileName)
    file.close();
 }
 template<>
-void FullMatrix<double>::ImportFromVtkASCIIFile(const char* rfileName)
+void FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>::ImportFromVtkASCIIFile(const char* rfileName)
 {
     throw MathException("[FullMatrix::importFromVtkASCIIFile] not implemented for double data-type.");
 }
 
-//! @brief elementwise absolute value of the matrix
-template<>
-FullMatrix<int> FullMatrix<int>::Abs() const
-{
-	return FullMatrix<int>(this->array().abs().matrix());
-}
+*/
 
-template<>
- FullMatrix<double> FullMatrix<double>::Abs() const
-{
-	return FullMatrix<double> ( this->array().abs().matrix());
-}
+/*
 template<>
 void FullMatrix<int>::SolveCholeskyLapack(const FullMatrix<double>& rRHS, FullMatrix<double>& rSolution) const
 {
@@ -377,214 +290,28 @@ void FullMatrix<double>::InverseCholeskyLapack(FullMatrix<double>& rInverse) con
 	throw MathException("[NuTo::FullMatrix::InverseCholeskyLapack] lapack package not enabled.");
 #endif //ENABLE_MKL
 }
+*/
 
-//! @brief calculates the inverse of a matrix
-//! @param rInverse ... inverse matrix
 template<>
-FullMatrix<int> FullMatrix<int>::Inverse() const
+std::string GetTypeIdBaseDataType<int>()
 {
-    throw MathException("[FullMatrix::Inverse] not implemented for integer data-type.");
+	return std::string("Int");
 }
 
-//! @brief calculates the inverse of a matrix
-//! @param rInverse ... inverse matrix
 template<>
-FullMatrix<double> FullMatrix<double>::Inverse() const
+std::string GetTypeIdBaseDataType<double>()
 {
-    return FullMatrix<double>(this->inverse().eval());
+	return std::string("Double");
 }
 
 
-//! @brief calculates the inverse of a matrix
-//! @param rInverse ... norm of matrix
-template<>
-double FullMatrix<int>::Norm() const
-{
-    throw MathException("[FullMatrix::Norm] not implemented for integer data-type.");
-}
-
-//! @brief ... calculates the norm of this matrix, i.e. for vectors the Euclidean norm
-//! @return norm of this matrix
-template<>
-double FullMatrix<double>::Norm() const
-{
-    return this->norm();
-}
-
-
-//! @brief calculates the eigenvalues
-//! @param rEigenValues ... eigenvalues
-template<>
-void FullMatrix<int>::EigenValuesSymmetric(FullMatrix<double>& rEigenValues) const
-{
-    throw MathException("[FullMatrix::EigenValues] not implemented for integer data-type.");
-}
-
-//! @brief calculates the eigenvalues of a symmetric matrix
-//! attention, of the matrix is not self adjoint (symmetric for real matrices), the result is wrong
-//! @param rEigenValues ... eigenvalues
-template<>
-void FullMatrix<double>::EigenValuesSymmetric(FullMatrix<double>& rEigenValues) const
-{
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver((*this),false);
-    rEigenValues = FullMatrix<double>(mySolver.eigenvalues());
-}
-
-//! @brief calculates the eigenvalues
-//! @param rEigenValues ... eigenvalues
-template<>
-void FullMatrix<int>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) const
-{
-    throw MathException("[FullMatrix::EigenValues] not implemented for integer data-type.");
-}
-
-//! @brief calculates the eigenvalues
-//! @param rEigenValues ... the computed eigen vectors as a matrix of column vectors
-template<>
-void FullMatrix<double>::EigenVectorsSymmetric(FullMatrix<double>& rEigenVectors) const
-{
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver((*this));
-    rEigenVectors = FullMatrix<double>(mySolver.eigenvectors());
-}
 
 #ifdef ENABLE_SERIALIZATION
-template<typename T>
-void FullMatrix<T>::Save ( const std::string &filename, std::string rType)const
-{
-    try
-    {
-	//transform to uppercase
-	std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
 
-	// open file
-	std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-	if (!ofs.is_open())
-	{
-	    throw MathException ( std::string ( "[NuTo::FullMatrix::Save] error opening file." ) );
-	}
-
-	// write data
-	std::string typeIdString ( GetTypeId() );
-	if (rType=="BINARY")
-	{
-	    boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-	    oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
-	    oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-	}
-	else if (rType=="XML")
-	{
-	    boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-	    oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
-	    oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-	}
-	else if (rType=="TEXT")
-	{
-	    boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-	    ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
-	    ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-	}
-	else
-	{
-	    throw MathException ( "[NuTo::FullMatrix::Save]File type not implemented." );
-	}
-
-	// close file
-	ofs.close();
-    }
-    catch ( boost::archive::archive_exception e )
-    {
-	std::string s ( std::string ( "[NuTo::FullMatrix::Save]File save exception in boost - " ) +std::string ( e.what() ) );
-	std::cout << s << "\n";
-	throw MathException ( s );
-    }
-    catch ( MathException &e )
-    {
-	throw e;
-    }
-    catch ( std::exception &e )
-    {
-	throw MathException ( e.what() );
-    }
-    catch ( ... )
-    {
-	throw MathException ( "[NuTo::FullMatrix::Save] Unhandled exception." );
-    }
-}
-
-template<typename T>
-void FullMatrix<T>::Restore ( const std::string &filename,  std::string rType)
-{
-    try
-    {
-	//transform to uppercase
-	std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-
-	// open file
-	std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-	if (!ifs.is_open())
-	{
-	    throw MathException ( "[NuTo::FullMatrix::Restore] error opening file");
-	}
-
-	// read date
-	std::string typeIdString;
-	if (rType=="BINARY")
-	{
-	    boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-	    oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
-	    if ( typeIdString!=GetTypeId() )
-	    {
-		throw MathException ( "[NuTo::FullMatrix::Restore]Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-	    }
-	    oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-	}
-	else if (rType=="XML")
-	{
-	    boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-	    oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
-	    if ( typeIdString!=GetTypeId() )
-	    {
-		throw MathException ( "[NuTo::FullMatrix::Restore]Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-	    }
-	    oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-	}
-	else if (rType=="TEXT")
-	{
-	    boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-	    ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
-	    if ( typeIdString!=GetTypeId() )
-	    {
-		throw MathException ( "[NuTo::FullMatrix::Restore]Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-	    }
-	    ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-	}
-	else
-	{
-	    throw MathException ( "[NuTo::FullMatrix::Restore]File type not implemented" );
-	}
-
-	// close file
-	ifs.close();
-    }
-    catch ( MathException &e )
-    {
-	throw e;
-    }
-    catch ( std::exception &e )
-    {
-	throw MathException ( e.what() );
-    }
-    catch ( ... )
-    {
-	throw MathException ( "[NuTo::FullMatrix::Restore] Unhandled exception." );
-    }
-}
-
-
-template void FullMatrix<int>::Save (const std::string&, std::string) const;
-template void FullMatrix<int>::Restore (const std::string&, std::string);
-template void FullMatrix<double>::Save (const std::string&, std::string) const;
-template void FullMatrix<double>::Restore (const std::string&, std::string);
+template void FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>::Save (const std::string&, std::string) const;
+template void FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>::Restore (const std::string&, std::string);
+template void FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>::Save (const std::string&, std::string) const;
+template void FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>::Restore (const std::string&, std::string);
 
 #endif // ENABLE_SERIALIZATION
 

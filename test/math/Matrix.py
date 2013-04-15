@@ -55,7 +55,7 @@ else:
     result1Exact = nuto.DoubleFullMatrix(1,1)
     print pathToResultFiles
     result1Exact.ReadFromFile(pathToResultFiles+"Result1.txt",1," ")
-    if ((result1Exact-result1).Abs().Max()[0]>1e-8):
+    if ((result1Exact-result1).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result1 is not correct.'
         error = True;
 
@@ -69,7 +69,7 @@ if createResult:
 else:
     result2Exact = nuto.DoubleFullMatrix(1,1)
     result2Exact.ReadFromFile(pathToResultFiles+"Result2.txt",1," ")
-    if ((result2Exact-result2).Abs().Max()[0]>1e-8):
+    if ((result2Exact-result2).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result2 is not correct.'
         error = True;
 
@@ -83,7 +83,7 @@ if createResult:
 else:
     result3Exact = nuto.DoubleFullMatrix(1,1)
     result3Exact.ReadFromFile(pathToResultFiles+"Result3.txt",1," ")
-    if ((result3Exact-result3).Abs().Max()[0]>1e-8):
+    if ((result3Exact-result3).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result3 is not correct.'
         error = True;
 
@@ -97,7 +97,7 @@ if createResult:
 else:
     result4Exact = nuto.DoubleFullMatrix(1,1)
     result4Exact.ReadFromFile(pathToResultFiles+"Result4.txt",1," ")
-    if ((result4Exact-result4).Abs().Max()[0]>1e-8):
+    if ((result4Exact-result4).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result4 is not correct.'
         error = True;
 
@@ -111,7 +111,7 @@ if createResult:
 else:
     result5Exact = nuto.DoubleFullMatrix(1,1)
     result5Exact.ReadFromFile(pathToResultFiles+"Result5.txt",1," ")
-    if ((result5Exact-result5).Abs().Max()[0]>1e-8):
+    if ((result5Exact-result5).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result5 is not correct.'
         error = True;
 
@@ -125,7 +125,7 @@ if createResult:
 else:
     int_result6Exact = nuto.IntFullMatrix(1,1)
     int_result6Exact.ReadFromFile(pathToResultFiles+"Result6.txt",1," ")
-    if ((int_result6Exact-int_result6).Abs().Max()[0]>1e-8):
+    if ((int_result6Exact-int_result6).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result6 is not correct.'
         error = True;
 
@@ -139,7 +139,7 @@ if createResult:
 else:
     int_result7Exact = nuto.IntFullMatrix(1,1)
     int_result7Exact.ReadFromFile(pathToResultFiles+"Result7.txt",1," ")
-    if ((int_result7Exact-int_result7).Abs().Max()[0]>1e-8):
+    if ((int_result7Exact-int_result7).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result7 is not correct.'
         error = True;
 
@@ -153,7 +153,7 @@ if createResult:
 else:
     int_result8Exact = nuto.IntFullMatrix(1,1)
     int_result8Exact.ReadFromFile(pathToResultFiles+"Result8.txt",1," ")
-    if ((int_result8Exact-int_result8).Abs().Max()[0]>1e-8):
+    if ((int_result8Exact-int_result8).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result8 is not correct.'
         error = True;
 
@@ -167,7 +167,7 @@ if createResult:
 else:
     result9Exact = nuto.DoubleFullMatrix(1,1)
     result9Exact.ReadFromFile(pathToResultFiles+"Result9.txt",1," ")
-    if ((result9Exact-result9).Abs().Max()[0]>1e-8):
+    if ((result9Exact-result9).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result9 is not correct.'
         error = True;
 
@@ -181,7 +181,7 @@ if createResult:
 else:
     result10Exact = nuto.DoubleFullMatrix(1,1)
     result10Exact.ReadFromFile(pathToResultFiles+"Result10.txt",1," ")
-    if ((result10Exact-result10).Abs().Max()[0]>1e-8):
+    if ((result10Exact-result10).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : result10 is not correct.'
         error = True;
 

@@ -75,24 +75,24 @@ void NuTo::DeformationGradient1D::SetDeformationGradient1D(const double* rDeform
 // calculate engineering strain
 void NuTo::DeformationGradient1D::GetEngineeringStrain(NuTo::EngineeringStrain1D& rEngineeringStrain) const
 {
-    rEngineeringStrain.mEngineeringStrain = mDeformationGradient -1.;
+    rEngineeringStrain[0] = mDeformationGradient -1.;
 }
 
 void NuTo::DeformationGradient1D::GetEngineeringStrain(NuTo::EngineeringStrain2D& rEngineeringStrain) const
 {
-	rEngineeringStrain.mEngineeringStrain[0] = mDeformationGradient -1.;
-	rEngineeringStrain.mEngineeringStrain[1] = 0.;
-	rEngineeringStrain.mEngineeringStrain[2] = 0.;
+	rEngineeringStrain[0] = mDeformationGradient -1.;
+	rEngineeringStrain[1] = 0.;
+	rEngineeringStrain[2] = 0.;
 }
 
 void NuTo::DeformationGradient1D::GetEngineeringStrain(NuTo::EngineeringStrain3D& rEngineeringStrain) const
 {
-	rEngineeringStrain.mEngineeringStrain[0] = mDeformationGradient -1.;
-	rEngineeringStrain.mEngineeringStrain[1] = 0.;
-	rEngineeringStrain.mEngineeringStrain[2] = 0.;
-	rEngineeringStrain.mEngineeringStrain[3] = 0.;
-	rEngineeringStrain.mEngineeringStrain[4] = 0.;
-	rEngineeringStrain.mEngineeringStrain[5] = 0.;
+	rEngineeringStrain[0] = mDeformationGradient -1.;
+	rEngineeringStrain[1] = 0.;
+	rEngineeringStrain[2] = 0.;
+	rEngineeringStrain[3] = 0.;
+	rEngineeringStrain[4] = 0.;
+	rEngineeringStrain[5] = 0.;
 }
 
 // calculate Green strain

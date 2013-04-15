@@ -11,8 +11,8 @@ int main()
     NuTo::Structure myStructure(1);
 
     // create nodes
-    NuTo::FullMatrix<double> Coordinates(1,1);
-    NuTo::FullMatrix<double> Displacements(1,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(1,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Displacements(1,1);
 
     Coordinates(0,0) = 1;
     int myNode1 = myStructure.NodeCreate("displacements", Coordinates);
@@ -30,7 +30,7 @@ int main()
     myStructure.NodeSetDisplacements(myNode3, Displacements);
 
     // create element
-    NuTo::FullMatrix<int> Incidences(2,1);
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidences(2,1);
 
     Incidences(0,0) = myNode1;
     Incidences(1,0) = myNode2;

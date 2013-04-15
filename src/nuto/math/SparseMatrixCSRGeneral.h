@@ -168,7 +168,7 @@ void NuTo::SparseMatrixCSRGeneral<T>::Info() const
 //! @brief ... write nonzero matrix entries into a full matrix
 //! @param rFullMatrix ... the full matrix
 template <class T>
-void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToFullMatrix(NuTo::FullMatrix<T>& rFullMatrix) const
+void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
 {
 	std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
 	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
@@ -450,13 +450,13 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (cons
 //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
 //! @return ... full matrix
 template <class T>
-NuTo::FullMatrix<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (const NuTo::FullMatrix<T> &rMatrix) const
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
 {
 	if (this->GetNumColumns() != rMatrix.GetNumRows())
 	{
 		throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
 	}
-	FullMatrix<T> result(this->GetNumRows(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over rows
@@ -505,13 +505,13 @@ NuTo::FullMatrix<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (const NuTo::Full
 }
 
 template <class T>
-NuTo::FullMatrix<T> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullMatrix<T>& rMatrix) const
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
 	if (this->GetNumRows() != rMatrix.GetNumRows())
 	{
 		throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
 	}
-	FullMatrix<T> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose

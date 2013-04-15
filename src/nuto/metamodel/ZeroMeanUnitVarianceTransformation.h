@@ -46,15 +46,15 @@ public:
 
     //! @brief build the transformation using the given Points
     //! @param rCoordinates ... point coordinates
-    virtual void Build(const FullMatrix<double>& rCoordinates);
+    virtual void Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates);
 
     //! @brief transform the given points in forward direction x = f(x) 
     //! @param rCoordinates ... point coordinates
-    virtual void TransformForward(FullMatrix<double>& rCoordinates)const;
+    virtual void TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
 
     //! @brief transform the given points in backward direction x = f^(-1)(x)
     //! @param rCoordinates ... point coordinates
-    virtual void TransformBackward(FullMatrix<double>& rCoordinates)const;
+    virtual void TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
 
 protected:
     int  mCoordinate;     //!< coordinate within the point coordinates (0<=entry<dim)

@@ -121,7 +121,7 @@ if createResult:
 else:
     ParametersExact = nuto.DoubleFullMatrix(1,1)
     ParametersExact.ReadFromFile(pathToResultFiles+"Parameters.txt",1," ")
-    if ((ParametersExact-myOptimizer.GetParameters()).Abs().Max()[0]>1e-8):
+    if ((ParametersExact-myOptimizer.GetParameters()).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : Parameters is not correct.'
         error = True;
 

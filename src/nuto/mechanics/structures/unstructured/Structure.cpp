@@ -315,7 +315,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 					}
 					else
 					{
-						NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+						NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
 								elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
 								elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -381,7 +381,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 				}
 				else
 				{
-					NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
 							elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
 							elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -438,7 +438,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 		}
 		else
 		{
-			NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
 					elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
 					elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -563,7 +563,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 					}
 					else
 					{
-						NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+						NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
 								elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
 								elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -638,7 +638,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 				}
 				else
 				{
-					NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
 							elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
 							elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -711,7 +711,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 		}
 		else
 		{
-        	NuTo::FullMatrix<double>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
         								elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
         								elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 			std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
@@ -848,7 +848,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] element matrix is not symmetric (general sparse matrix required).");
 					}
 
-					NuTo::FullMatrix<double>&  elementMatrix = outputPtrHessian->GetFullMatrixDouble();
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = outputPtrHessian->GetFullMatrixDouble();
 
 	    			std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 	    			std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
@@ -981,7 +981,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 						throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] element matrix is not symmetric (general sparse matrix required).");
 					}
 
-					NuTo::FullMatrix<double>&  elementMatrix = outputPtrHessian->GetFullMatrixDouble();
+					NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = outputPtrHessian->GetFullMatrixDouble();
 
 					std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 	    			std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
@@ -1045,7 +1045,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
     return errorGlobal;
 }
 
-NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double>& rActiveDofGradientVector, NuTo::FullMatrix<double>& rDependentDofGradientVector)
+NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector)
 {
     // initialize vectors
     assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
@@ -1097,7 +1097,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 					}
 					else
 					{
-		            	NuTo::FullMatrix<double>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+		            	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
 		    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
 		    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
@@ -1146,7 +1146,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 				}
 				else
 				{
-	            	NuTo::FullMatrix<double>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+	            	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
 	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetVectorInt());
 
 	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
@@ -1191,7 +1191,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 		}
 		else
 		{
-        	NuTo::FullMatrix<double>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
 			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
 			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
@@ -1464,7 +1464,7 @@ void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
 void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
 		int rNumTimeDerivatives,
 		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
-		NuTo::FullMatrix<int>& rElementGroupIds)
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementGroupIds)
 {
     try
     {
@@ -1854,7 +1854,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
     }
 */
     //create the nodes
-	NuTo::FullMatrix<double> coordinates;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates;
 	switch (mDimension)
 	{
 	case 2:
@@ -1876,7 +1876,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
     	newNodeNumber[ nodes[nodeCount].id] = NodeCreate(rDOFs, coordinates, rNumTimeDerivatives);
     }
 
-	NuTo::FullMatrix<int> nodeNumbers;
+	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> nodeNumbers;
     for (unsigned int elementCount=0; elementCount<elements.size(); elementCount++)
     {
     	nodeNumbers.Resize(elements[elementCount].nodes.size(),1);
@@ -1921,7 +1921,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 //! @brief copy and move the structure
 //! most of the data is kept, but e.g. nonlocal data and
 //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double>& rOffset)
+void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rOffset)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1955,7 +1955,7 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double>& rOffset)
 //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
 //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
 //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
-void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer)
+void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer)
 {
 	if (rOffset.GetNumRows()!=mDimension)
 		throw MechanicsException("[NuTo::Structure::CopyAndTranslate] offset has to have the same dimension as the structure.");

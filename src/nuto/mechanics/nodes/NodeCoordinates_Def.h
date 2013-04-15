@@ -24,7 +24,6 @@
 
 namespace NuTo
 {
-template <class T> class FullMatrix;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes

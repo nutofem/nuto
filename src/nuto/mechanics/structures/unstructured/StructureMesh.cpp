@@ -9,7 +9,7 @@
 //! @parameters rBoundingBox box for the spheres (3*2 matrix)
 //! @parameters rCircles (coordinates x,y and radius)
 //! @parameters rTriangles (triangles connecting the circle centers)
-void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rCircles, NuTo::FullMatrix<double>& rTriangles)
+void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCircles, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTriangles)
 {
 /*    if (mDimension!=2)
     	throw MechanicsException("[NuTo::Structure::MeshCreateLattice2D] structure is not 2D.");
@@ -18,7 +18,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
     std::string dofs("COORDINATES DISPLACEMENTS VELOCITIES ACCELERATIONS ROTATIONS ANGULAR_VELOCITIES ANGULAR_ACCELERATIONS RADIUS");
 	for (int count=0; count<rCircles.GetNumRows(); count++)
 	{
-		NuTo::FullMatrix<double> coordinates(2,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(2,1);
 		coordinates(0,0) = rCircles(count,0);
 		coordinates(1,0) = rCircles(count,1);
 		int theNode = NodeCreate(dofs, coordinates);
@@ -58,7 +58,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
 //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
 //! @parameters rBoundingBox (min and max for x and y)
 //! @parameters rSpheres (coordinates x,y,z and radius)
-void NuTo::Structure::MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, NuTo::FullMatrix<double>& rSpheres, NuTo::FullMatrix<double>& rTetraeders)
+void NuTo::Structure::MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheres, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTetraeders)
 {
 /*
 	if (mDimension!=3)
@@ -66,7 +66,7 @@ void NuTo::Structure::MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double
 	std::string dofs("COORDINATES DISPLACEMENTS RADIUS");
 	for (int count=0; count<rSpheres.GetNumRows(); count++)
 	{
-		NuTo::FullMatrix<double> coordinates(3,1);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(3,1);
 		coordinates(0,0) = rSpheres(count,0);
 		coordinates(1,0) = rSpheres(count,1);
 		coordinates(2,0) = rSpheres(count,2);

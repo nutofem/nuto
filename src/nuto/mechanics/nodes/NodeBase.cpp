@@ -26,7 +26,7 @@ void NuTo::NodeBase::SetGlobalDofs(int& rDOF)
 //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues)
+void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
 {
 	throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
 }
@@ -35,7 +35,7 @@ void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, const FullMatrix<do
 //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeBase::GetGlobalDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const
+void NuTo::NodeBase::GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
 }

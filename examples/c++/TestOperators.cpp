@@ -33,7 +33,7 @@ int main()
         A_sy.SetOneBasedIndexing();
         A_sy.Info();
         std::cout << std::endl << "symmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double> A_sy_full(A_sy);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_sy_full(A_sy);
         A_sy_full.Info();
 
         std::cout << "----------------------------------" << std::endl;
@@ -41,7 +41,7 @@ int main()
         NuTo::SparseMatrixCSRSymmetric<double> B_sy;
         B_sy = A_sy * 10.0;
         B_sy.Info();
-        NuTo::FullMatrix<double> B_sy_full(B_sy);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> B_sy_full(B_sy);
         //~ B_sy_full.Info();
         
         std::cout << "----------------------------------" << std::endl;
@@ -72,7 +72,7 @@ int main()
         A_ge.SetOneBasedIndexing();
         A_ge.Info();
         std::cout << std::endl << "general matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double> A_ge_full(A_ge);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_ge_full(A_ge);
         A_ge_full.Info();
 
         std::cout << "----------------------------------" << std::endl;
@@ -80,7 +80,7 @@ int main()
         NuTo::SparseMatrixCSRGeneral<double> B_ge;
         B_ge = A_ge * 10.0;
         B_ge.Info();
-        NuTo::FullMatrix<double> B_ge_full(B_ge);
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> B_ge_full(B_ge);
         //~ B_ge_full.Info();
         
         std::cout << "----------------------------------" << std::endl;

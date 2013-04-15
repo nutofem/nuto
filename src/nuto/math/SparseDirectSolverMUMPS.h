@@ -2,13 +2,13 @@
 #ifndef SPARSE_DIRECT_SOLVER_MUMPS_H
 #define SPARSE_DIRECT_SOLVER_MUMPS_H
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/SparseDirectSolver.h"
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template<class T> class FullMatrix;
 
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
@@ -35,13 +35,13 @@ public:
     //! @param rRhs ... matrix storing the right-hand-side vectors (input)
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
 
-    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution);
 
     //! @brief ... calculates the Schurcomplement
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     //! @param rSchurIndices ... vector/matrix storing the indices of the global matrix to be condensed to (zero based indexing)
     //! @param rSchurComplement ... Schur complement
-    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullMatrix<int> rSchurIndices, NuTo::FullMatrix<double>& rSchurComplement);
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement);
 
 protected:
     //! @brief ... generate an error message from the error code
@@ -56,9 +56,9 @@ protected:
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     //! @param rRhs ... matrix storing the right-hand-side vectors (input)
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
-    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double>& rRhs, FullMatrix<double>& rSolution);
+    void Solve(const SparseMatrixCSR<double>& rMatrix, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution);
 
-    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution);
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution);
 
 #endif // HAVE_MUMPS
 };

@@ -15,13 +15,13 @@ namespace NuTo
 {
 
 template<>
-SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const FullMatrix<int>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
+SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
 {
     throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] conversion from full matrix not implemented for integers.");
 }
 
 template<>
-SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<double>(0,0)
+SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<double>(0,0)
 {
     this->Resize(rFullMatrix.GetNumRows(),rFullMatrix.GetNumColumns());
     double tolerance = rAbsoluteTolerance;
@@ -166,7 +166,7 @@ void SparseMatrixCSRGeneral<int>::ImportFromSLangText(const char* rFileName)
 }
 
 template<>
-void SparseMatrixCSRGeneral<int>::Gauss(FullMatrix<int>& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void SparseMatrixCSRGeneral<int>::Gauss(FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
@@ -178,7 +178,7 @@ void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>& rRhs, std::
 }
 
 template<>
-void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     // initialize help vectors for reordering
     rMappingNewToInitialOrdering.resize(this->GetNumColumns());

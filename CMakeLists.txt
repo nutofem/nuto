@@ -119,7 +119,7 @@ ELSE(ENABLE_OPENMP)
 ENDIF(ENABLE_OPENMP)
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wfatal-errors")
   # ISO standards mode does not work well on MinGW
   # (they don't define certain things that are defined on other platforms in standard mode,
   # like M_PI)
@@ -276,7 +276,8 @@ IF(NOT EIGEN_ROOT AND NOT DEFINED $ENV{EIGEN_ROOT})
 ENDIF(NOT EIGEN_ROOT AND NOT DEFINED $ENV{EIGEN_ROOT})
 FIND_PACKAGE(Eigen REQUIRED)
 IF(EIGEN_FOUND)
-  INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
+# the math directory has to be included for the matrixbase addons   
+  INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src/nuto/math)
 ELSE(EIGEN_FOUND)
   message(FATAL_ERROR "Fatal error: Eigen (version >= 3.0) required.\n")
 ENDIF(EIGEN_FOUND)

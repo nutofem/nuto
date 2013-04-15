@@ -78,7 +78,7 @@ if (printResult):
     A_full.Info()
     print ""
 A_full -= A_full_ref
-if (A_full.Abs().Max()[0] != 0.):
+if (A_full.Abs().Max() != 0.):
     print '[' + system,sys.argv[0] + '] : error converting sparse matrix with zero indexing to full matrix.'
     error = True;
 
@@ -207,7 +207,7 @@ if (printResult):
     B2_FullRef.Info(12,3)
     print ""
 
-if ((B2_Full-B2_FullRef).Abs().Max()[0]>1e-8):
+if ((B2_Full-B2_FullRef).Abs().Max()>1e-8):
     print '[' + system,sys.argv[0] + '] : concatenation of B2 is not correct.'
     error = True;
     

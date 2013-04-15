@@ -18,8 +18,8 @@ int main()
    int iter = 1000;
    //int size = 5;
 
-	NuTo::FullMatrix<double> Amat(size,1);
-	NuTo::FullMatrix<double> Bmat(size,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Amat(size,1);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Bmat(size,1);
 
 	Eigen::VectorXd A(size);
 	Eigen::VectorXd B(size);

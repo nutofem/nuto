@@ -16,8 +16,8 @@ int main()
 		myStructure.Info();
 
 		// create nodes
-		NuTo::FullMatrix<double> Coordinates(2,9);
-		NuTo::FullMatrix<double> Displacements(2,9);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(2,9);
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Displacements(2,9);
 
 		Coordinates(0,0) = 0; Coordinates(1,0) = 0;
 		Coordinates(0,1) = 1; Coordinates(1,1) = 0;
@@ -32,32 +32,32 @@ int main()
 		DBG_POSITION_INFO("Coordinates Matrix")
 		Coordinates.Info();
 
-		NuTo::FullMatrix<double> Coordinates2(2,9, std::vector< double >{0,0 , 1,0 , 2,0 , 0,1 , 1,1 , 2,1 , 0,2 , 1,2 , 2,2});
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates2(2,9, std::vector< double >{0,0 , 1,0 , 2,0 , 0,1 , 1,1 , 2,1 , 0,2 , 1,2 , 2,2});
 		DBG_POSITION_INFO("Coordinates2 Matrix")
 		Coordinates2.Info();
 		
-		NuTo::FullMatrix<double> DiffCoords = Coordinates - Coordinates2;
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DiffCoords = Coordinates - Coordinates2;
 		DBG_POSITION_INFO("DiffCoords Matrix")
 		DiffCoords.Info();
 		
-		NuTo::FullMatrix<double> InitCrackCoords1(2,3, std::vector< double >{0.0,1.5, 1,1.75 , 2,0.5 });
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> InitCrackCoords1(2,3, std::vector< double >{0.0,1.5, 1,1.75 , 2,0.5 });
 		DBG_POSITION_INFO("InitCrackCoords1 Matrix")
 		InitCrackCoords1.Info();
-		NuTo::FullMatrix<double> InitCrackCoords5(2,4, std::vector< double >{-1.0,-1.0, 0.5,1 , 1,1.5 , 1.5,0});
+		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> InitCrackCoords5(2,4, std::vector< double >{-1.0,-1.0, 0.5,1 , 1,1.5 , 1.5,0});
 		DBG_POSITION_INFO("InitCrackCoords5 Matrix")
 		InitCrackCoords5.Info();
 		
-		NuTo::FullMatrix<int> Nodes = myStructure.NodesCreate("displacements", Coordinates);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Nodes = myStructure.NodesCreate("displacements", Coordinates);
 		
-		NuTo::FullMatrix<int> CrackNodes1 = myStructure.NodesCreate("coordinates", InitCrackCoords1);
-		NuTo::FullMatrix<int> CrackNodes5 = myStructure.NodesCreate("coordinates", InitCrackCoords5);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> CrackNodes1 = myStructure.NodesCreate("coordinates", InitCrackCoords1);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> CrackNodes5 = myStructure.NodesCreate("coordinates", InitCrackCoords5);
 		DBG_POSITION_INFO("CrackNodes1")
 		CrackNodes1.Info(5);
 		DBG_POSITION_INFO("CrackNodes5")
 		CrackNodes5.Info(5);
 
 		// create elements
-		NuTo::FullMatrix<int> Incidences(4,4);
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidences(4,4);
 
 		// element1
 		Incidences(0,0) = Nodes(0,0);
@@ -83,7 +83,7 @@ int main()
 		DBG_POSITION_INFO("Incidence Matrix")
 		Incidences.Info();
 
-	    NuTo::FullMatrix<int> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
+	    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
 
 	    // create constitutive law
 	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");

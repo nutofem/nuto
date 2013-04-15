@@ -79,7 +79,7 @@ if (printResult):
     print "Ke"
     Ke.Info()
 
-if ((Ke-KeCorrect).Abs().Max()[0]>1e-8):
+if ((Ke-KeCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : stiffness is not correct.'
         error = True;
 
@@ -96,7 +96,7 @@ if (printResult):
     print "Fi"
     Fi.Info()
 
-if ((Fi-FiCorrect).Abs().Max()[0]>1e-8):
+if ((Fi-FiCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : resforce is not correct.'
         error = True;
 
@@ -148,7 +148,7 @@ if (printResult):
 
 
 #correct approximated stiffness via central differences of the internal force vector
-if ((KeApprox-KeCorrect).Abs().Max()[0]>1e-8):
+if ((KeApprox-KeCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : stiffness matrix via central differences and resforces not correct.'
         error = True;
 
@@ -166,7 +166,7 @@ if (printResult):
     print "EngineeringStrain"
     EngineeringStrain.Info()
 
-if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
+if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : strain is not correct.'
         error = True;
 
@@ -183,7 +183,7 @@ if (printResult):
     print "EngineeringStress"
     EngineeringStress.Info(20)
 
-if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
+if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : stress is not correct.'
         error = True;
 
@@ -206,7 +206,7 @@ if (printResult):
     print "Me"
     Me.Info(6,5)
     
-if ((Me-MeCorrect).Abs().Max()[0]>1e-8):
+if ((Me-MeCorrect).Abs().Max()>1e-8):
     print '[' + system,sys.argv[0] + '] : mass is not correct.'
     error = True;
         

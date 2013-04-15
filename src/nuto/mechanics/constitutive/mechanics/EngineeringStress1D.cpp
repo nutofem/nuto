@@ -15,7 +15,7 @@
 // constructor
 NuTo::EngineeringStress1D::EngineeringStress1D(): ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
-    this->mEngineeringStress = 0.0;
+	(*this)[0] = 0.0;
 }
 
 // number of components
@@ -27,13 +27,13 @@ unsigned int NuTo::EngineeringStress1D::GetNumberOfComponents() const
 // get Engineering stress
 const double* NuTo::EngineeringStress1D::GetData() const
 {
-    return &mEngineeringStress;
+    return data();
 }
 
 // info routine
 void NuTo::EngineeringStress1D::Info(unsigned short rVerboseLevel) const
 {
-    std::cout << "    components of Engineering stress tensor (vector notation): " << this->mEngineeringStress << std::endl;
+    std::cout << "    components of Engineering stress tensor (vector notation): " << (*this)[0] << std::endl;
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -52,8 +52,8 @@ void NuTo::EngineeringStress1D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStress1D" << std::endl;
 #endif
-    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
-       & BOOST_SERIALIZATION_NVP(mEngineeringStress);
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
+    ar & boost::serialization::make_nvp ("EngineeringStress1DEigen",boost::serialization::base_object< FullVectorFixed<double,1> > ( *this ));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStress1D" << std::endl;
 #endif

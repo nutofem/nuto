@@ -11,7 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -162,8 +162,8 @@ if (createResult):
 else:
     gradientExact = nuto.DoubleFullMatrix(NumParameters,1)
     gradientExact.ReadFromFile(pathToResultFiles+"Gradient.txt",1," ")
-    if ((gradientExact-gradient).Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : gradient is not correct.(' + str((gradientExact-gradient).Abs().Max()[0]) + ')'
+    if ((gradientExact-gradient).Abs().Max()>1e-8):
+        print '[' + system,sys.argv[0] + '] : gradient is not correct.(' + str((gradientExact-gradient).Abs().Max()) + ')'
         print 'gradientExact:'
         gradientExact.Trans().Info()
         error = True;
@@ -180,8 +180,8 @@ else:
     hessianExact = nuto.DoubleFullMatrix(NumParameters,1)
     hessianExact.ReadFromFile(pathToResultFiles+"Hessian.txt",1," ")
     RelError = (hessianExact-hessian).ElementwiseDiv(hessianExact)
-    if (RelError.Abs().Max()[0]>1e-8):
-        print '[' + system,sys.argv[0] + '] : hessian is not correct.(' + str(RelError.Abs().Max()[0]) + ')'
+    if (RelError.Abs().Max()>1e-8):
+        print '[' + system,sys.argv[0] + '] : hessian is not correct.(' + str(RelError.Abs().Max()) + ')'
         print 'hessianExact:'
         hessianExact.Info()
         print 'relative Error:'

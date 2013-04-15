@@ -8,8 +8,6 @@
 
 namespace NuTo
 {
-template <class T>
-class FullMatrix;
 //! @author Daniel Arnold, ISM
 //! @date June 2010
 //! @brief ... abstract class for all constraints applied to a single node
@@ -43,7 +41,7 @@ public:
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double>& rRHS)const;
+    void GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

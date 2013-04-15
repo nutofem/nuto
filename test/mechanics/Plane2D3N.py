@@ -111,7 +111,7 @@ myStructure.NodeMergeActiveDofValues(displacementVector)
 intForceVector = nuto.DoubleFullMatrix()
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
 residualVector = extForceVector - intForceVector
-if ((residualVector).Abs().Max()[0]>1e-8):
+if ((residualVector).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : residual force vector is not zero.'
         error = True;
 
@@ -136,7 +136,7 @@ for element in range(0,8):
 	    print "EngineeringStrain"
 	    EngineeringStrain.Info()
 
-	if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()[0]>1e-8):
+	if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()>1e-8):
 	        if (not printResult):
 	            print "EngineeringStrainCorrect"
 	            EngineeringStrainCorrect.Info()
@@ -155,7 +155,7 @@ for element in range(0,8):
 	    print "EngineeringStress"
 	    EngineeringStress.Info()
 
-	if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()[0]>1e-8):
+	if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-8):
 	        if (not printResult):
                     print "EngineeringStressCorrect"
 	            EngineeringStressCorrect.Info()

@@ -8,6 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -23,7 +24,7 @@ class ConstitutiveEngineeringStressStrain;
 //! @brief ... three-dimensional deformation gradient
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class EngineeringStrain3D: public ConstitutiveOutputBase
+class EngineeringStrain3D: public ConstitutiveOutputBase, public FullVectorFixed<double,6>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -68,6 +69,16 @@ public:
     	return *this;
     }
 
+    //! @brief ... assignment constructor
+	//! @param  rOther ... copied element
+    template<typename OtherDerived>
+    EngineeringStrain3D& operator=( const Eigen::MatrixBase <OtherDerived>& other)
+	{
+    	this->FullVectorFixed<double,6>::operator=(other);
+    	return *this;
+	}
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -79,7 +90,7 @@ private:
     //! @brief ... engineering strain
     //! The engineering strain is stored as :
     //! (exx,eyy,ezz,gxy,gyz,gzx)
-    double mEngineeringStrain[6];
+    //double mEngineeringStrain[6];
 };
 
 }

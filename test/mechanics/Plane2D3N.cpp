@@ -72,20 +72,20 @@ try
 
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
-    NuTo::FullMatrix<double> dispForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
     myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
     NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix (stiffnessMatrixCSRVector2);
 
     // build global external load vector
-    NuTo::FullMatrix<double> extForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
     myStructure.BuildGlobalExternalLoadVector(extForceVector);
 
     // calculate right hand side
-    NuTo::FullMatrix<double> rhsVector = dispForceVector + extForceVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
     // solve
     NuTo::SparseDirectSolverMUMPS mySolver;
-    NuTo::FullMatrix<double> displacementVector;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementVector;
     stiffnessMatrix.SetOneBasedIndexing();
     mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
 
@@ -93,9 +93,9 @@ try
     myStructure.NodeMergeActiveDofValues(displacementVector);
     
     // calculate residual
-    NuTo::FullMatrix<double> intForceVector = nuto.DoubleFullMatrix();
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector = nuto.DoubleFullMatrix();
     myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-    NuTo::FullMatrix<double> residualVector (extForceVector - intForceVector);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> residualVector (extForceVector - intForceVector);
     if ((residualVector).Abs().Max()[0]>1e-8)
     {
 	std::cout << "[Plane2D3N] : residual force vector is not zero." << std::endl;
@@ -104,14 +104,14 @@ try
 
     //calculate engineering strain of myelement1 at all integration points
     //the size the matrix is not important and reallocated within the procedure
-    NuTo::FullMatrix<double> EngineeringStrain(6,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> EngineeringStrain(6,1);
     //correct strain
-    NuTo::FullMatrix<double> EngineeringStrainCorrect;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> EngineeringStrainCorrect;
     EngineeringStrainCorrect(0,0) = 0.1;
     EngineeringStrainCorrect(1,0) = -0.025;
 
-    NuTo::FullMatrix<double> EngineeringStress(6,1);
-    NuTo::FullMatrix<double> EngineeringStressCorrect(6,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> EngineeringStress(6,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> EngineeringStressCorrect(6,1);
     EngineeringStressCorrect(0,0) = 1.0416666666666667;
     EngineeringStressCorrect(2,0) = 0.2083333333333333;
  

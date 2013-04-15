@@ -766,14 +766,14 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRGeneral<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
     // get dof values stored at the nodes
-    FullMatrix<double> activeDofValues;
-    FullMatrix<double> dependentDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> activeDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofValues;
     try
     {
         this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
@@ -809,7 +809,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
             return error;
 
         // build equivalent load vector
-        rVector = coefficientMatrixJK * NuTo::FullMatrix<double>(dependentDofValues - this->mConstraintRHS);
+        rVector = coefficientMatrixJK * NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(dependentDofValues - this->mConstraintRHS);
     }
     else
     {
@@ -837,14 +837,14 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRSymmetric<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
     // get dof values stored at the nodes
-    FullMatrix<double> activeDofValues;
-    FullMatrix<double> dependentDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> activeDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofValues;
     try
     {
         this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
@@ -899,22 +899,22 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
         rMatrix.Add_TransA_Mult_B_Mult_A(this->mConstraintMatrix, coefficientMatrixKK);
 
         // build equivalent load vector
-        FullMatrix<double> deltaRHS = this->mConstraintRHS - dependentDofValues - this->mConstraintMatrix * activeDofValues;
-        FullMatrix<double> Kdd_Mult_DeltaRHS = coefficientMatrixKK * deltaRHS;
+        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaRHS = this->mConstraintRHS - dependentDofValues - this->mConstraintMatrix * activeDofValues;
+        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Kdd_Mult_DeltaRHS = coefficientMatrixKK * deltaRHS;
         rVector = this->mConstraintMatrix.TransMult(Kdd_Mult_DeltaRHS) - coefficientMatrixJK * deltaRHS;
     }
     return Error::SUCCESSFUL;
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2General<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
     // get dof values stored at the nodes
-    FullMatrix<double> activeDofValues;
-    FullMatrix<double> dependentDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> activeDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofValues;
     try
     {
         this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
@@ -958,7 +958,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
                 mLogger << "delta " << "\n";
                 (dependentDofValues - this->mConstraintRHS).Trans().Info(12,10);
                 mLogger << "coefficientMatrixJK" << "\n";
-                (NuTo::FullMatrix<double>(coefficientMatrixJK)).Info(12,3);
+                (NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(coefficientMatrixJK)).Info(12,3);
         */
     }
     else
@@ -988,14 +988,14 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
 
     // get dof values stored at the nodes
-    FullMatrix<double> activeDofValues;
-    FullMatrix<double> dependentDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> activeDofValues;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofValues;
     try
     {
         this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
@@ -1065,7 +1065,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
 //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (nonsymmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1092,7 +1092,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::Spa
 //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (symmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1120,7 +1120,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::Spa
 //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (nonsymmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1148,7 +1148,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::Spa
 //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1176,7 +1176,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
 //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (nonsymmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1204,7 +1204,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::Spa
 //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (symmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1232,7 +1232,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::Spa
 //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (nonsymmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1260,7 +1260,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::Spa
 //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1290,7 +1290,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMat
 
 
 // build global external load vector
-void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector)
+void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1311,7 +1311,7 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
     }
 
     rVector.Resize(this->mNumActiveDofs, 1);
-    FullMatrix<double> dependentDofLoadVector(this->mNumDofs - this->mNumActiveDofs,1);
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofLoadVector(this->mNumDofs - this->mNumActiveDofs,1);
 
     // loop over all loads
     boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
@@ -1332,7 +1332,7 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
 }
 
 // build global external load vector
-void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>& rVector_j, NuTo::FullMatrix<double>& rVector_k)
+void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector_j, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector_k)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1371,7 +1371,7 @@ void NuTo::StructureBase::BuildGlobalExternalLoadVector(NuTo::FullMatrix<double>
 
 
 // build global gradient of the internal potential (e.g. the internal forces)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1401,7 +1401,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalGradientInternalPotentialVec
 
 
     rVector.Resize(this->mNumActiveDofs, 1);
-    FullMatrix<double> dependentDofGradientVector(this->mNumDofs - this->mNumActiveDofs,1);
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofGradientVector(this->mNumDofs - this->mNumActiveDofs,1);
 
     try
     {
@@ -1511,7 +1511,7 @@ void NuTo::StructureBase::PostProcessDataAfterConvergence(int rLoadStep, int rNu
 }
 
 //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-void NuTo::StructureBase::PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullMatrix<double>& rResidualVector)const
+void NuTo::StructureBase::PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResidualVector)const
 {
 }
 
@@ -1571,7 +1571,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
         this->NodeBuildGlobalDofs();
         this->ElementTotalUpdateTmpStaticData();
 
-        NuTo::FullMatrix<double> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged;
         this->NodeExtractDofValues(0,displacementsActiveDOFsLastConverged,displacementsDependentDOFsLastConverged);
 
         InitBeforeNewLoadStep(loadStep);
@@ -1591,8 +1591,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         curLoadFactor = 1.;
                     }
                     this->NodeBuildGlobalDofs();
-                    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-                    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+                    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
                     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
                     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
                     Error::eError error = this->ElementTotalUpdateTmpStaticData();
@@ -1655,13 +1655,13 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
 
         //init some auxiliary variables
         NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-        NuTo::FullMatrix<double> dispForceVector;
-        NuTo::FullMatrix<double> intForceVector;
-        NuTo::FullMatrix<double> extForceVector;
-        NuTo::FullMatrix<double> rhsVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector;
 
 
-        NuTo::FullMatrix<double> intForceVectorInit;
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVectorInit;
         //calculate the initial out of balance force
         if (rInitialStateInEquilibrium==false)
         {
@@ -1763,7 +1763,7 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                     else
                         return error;
                 }
-                //   NuTo::FullMatrix<double>(stiffnessMatrixCSRVector2).Info(12,3);
+                //   NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffnessMatrixCSRVector2).Info(12,3);
                 //    mLogger << "disp force vector "<< "\n";
                 //    dispForceVector.Trans().Info(12,10);
                 //Check the stiffness matrix
@@ -1773,8 +1773,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
 
                 //update displacements of all nodes according to the new conre mat
                 {
-                    NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-                    NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+                    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
                     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
                     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
                     error = this->ElementTotalUpdateTmpStaticData();
@@ -1887,8 +1887,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
             double maxResidual(1);
             int numNewtonIterations(0);
             double alpha(1.);
-            NuTo::FullMatrix<double> displacementsActiveDOFs;
-            NuTo::FullMatrix<double> displacementsDependentDOFs;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFs;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFs;
             int convergenceStatus(0);
             //0 - not converged, continue Newton iteration
             //1 - converged
@@ -1908,8 +1908,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                 }
 
                 // solve
-                NuTo::FullMatrix<double> deltaDisplacementsActiveDOFs;
-                NuTo::FullMatrix<double> oldDisplacementsActiveDOFs;
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
+                NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> oldDisplacementsActiveDOFs;
                 this->NodeExtractDofValues(0,oldDisplacementsActiveDOFs, displacementsDependentDOFs);
                 NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
                 stiffnessMatrixCSR.SetOneBasedIndexing();
@@ -1922,17 +1922,17 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                     mLogger << "Error solving system of equations using mumps." << "\n";
                     if (mNumActiveDofs<1000)
                     {
-                        NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
                         if (mNumActiveDofs<30)
                         {
                             mLogger << "stiffness full" << "\n";
                             mLogger.Out(stiffnessMatrixFull,12,3);
                         }
-                        NuTo::FullMatrix<double> eigenValues;
+                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
                         stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
                         mLogger << "eigenvalues" << "\n";
                         mLogger.Out(eigenValues.Trans(),12,3);
-                        NuTo::FullMatrix<double> eigenVectors;
+                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
                         stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
                         mLogger << "eigenvector 1" << "\n";
                         mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
@@ -1976,17 +1976,17 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
 /*if (mNumActiveDofs<1000)
 {
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-	NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
 	if (mNumActiveDofs<30)
 	{
 		mLogger << "stiffness full" << "\n";
 		mLogger.Out(stiffnessMatrixFull,12,3);
 	}
-	NuTo::FullMatrix<double> eigenValues;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
 	stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
 	mLogger << "eigenvalues" << "\n";
 	mLogger.Out(eigenValues.Trans(),12,3);
-	NuTo::FullMatrix<double> eigenVectors;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
 	stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
 	mLogger << "eigenvector 1" << "\n";
 	mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
@@ -2048,17 +2048,17 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         if (mNumActiveDofs<1000)
                         {
                             mLogger << "System is not converging." << "\n";
-                            NuTo::FullMatrix<double> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
+                            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixFull(stiffnessMatrixCSRVector2);
                             if (mNumActiveDofs<30)
                             {
                                 mLogger << "stiffness full" << "\n";
                                 mLogger.Out(stiffnessMatrixFull,12,3);
                             }
-                            NuTo::FullMatrix<double> eigenValues;
+                            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
                             stiffnessMatrixFull.EigenValuesSymmetric(eigenValues);
                             mLogger << "eigenvalues" << "\n";
                             mLogger.Out(eigenValues.Trans(),12,3);
-                            NuTo::FullMatrix<double> eigenVectors;
+                            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
                             stiffnessMatrixFull.EigenVectorsSymmetric(eigenVectors);
                             mLogger << "eigenvector 1" << "\n";
                             mLogger.Out(eigenVectors.GetColumn(0).Trans(),12,3);
@@ -2299,8 +2299,8 @@ NuTo::Error::eError NuTo::StructureBase::NewtonRaphson(bool rSaveStructureBefore
                         //mLogger << "stiffnessMatrix: num zero removed " << numRemoved << ", numEntries " << numEntries << "\n";
 
                         //update displacements of all nodes according to the new conre mat
-                        NuTo::FullMatrix<double> displacementsActiveDOFsCheck;
-                        NuTo::FullMatrix<double> displacementsDependentDOFsCheck;
+                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
+                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
                         this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
                         this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
                         error = this->ElementTotalUpdateTmpStaticData();
@@ -2568,8 +2568,8 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 //! @parameters rDistanceBoundaryParticles distance of the boundary particles
 //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
 //! @return ... matrix with spheres (coordinates x y z and radius)
-NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnSpecimenBoundary(int rTypeOfSpecimen,
-		FullMatrix<double>& rBoundingBox, int rSeed,
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::CreateSpheresOnSpecimenBoundary(int rTypeOfSpecimen,
+		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, int rSeed,
 		double rRadiusBoundaryParticles, double rDistanceBoundaryParticles)
 {
     if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
@@ -2584,7 +2584,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnSpecimenBoundary(in
     		throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] box dimensions should be not negative.");
     }
 
-	FullMatrix<double> particles;
+	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> particles;
 	particles.Resize(1000,4);
 
 	int numParticles(0);
@@ -3318,8 +3318,8 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresOnSpecimenBoundary(in
 //! @parameters rSeed seed for the random number generator
 //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
 //! @return ... matrix with spheres (coordinates x y z and radius)
-NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeOfSpecimen, FullMatrix<double>& rBoundingBox, double rRelParticleMass, FullMatrix<double>& rGradingCurve,
-		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double>& rSpheresBoundary)
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeOfSpecimen, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, double rRelParticleMass, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve,
+		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary)
 {
     if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
     	throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] bounding box has to have the dimension [3,2]");
@@ -3383,7 +3383,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeO
 	// calculating mass of the aggregates */
 	double massSumParticles = Vspecimen * rDensity * rRelParticleMass;
 
-	FullMatrix<double> particles(rSpheresBoundary);
+	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> particles(rSpheresBoundary);
 
 	int numParticles(rSpheresBoundary.GetNumRows());
 
@@ -3569,9 +3569,9 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeO
 //! @parameters rZCoord z coordinate (where to cut)
 //! @parameters rMinRadius minimal radius of the circle
 //! @return ... matrix with the circles (x,y,r)
-NuTo::FullMatrix<double> NuTo::StructureBase::CutSpheresZ(NuTo::FullMatrix<double>& rSpheres, double rZCoord, double rMinRadius)
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::CutSpheresZ(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheres, double rZCoord, double rMinRadius)
 {
-	NuTo::FullMatrix<double> circles(1000,3);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> circles(1000,3);
 	int numCircles(0);
 	for (int countSphere=0; countSphere<rSpheres.GetNumRows(); countSphere++)
 	{
@@ -3600,7 +3600,7 @@ NuTo::FullMatrix<double> NuTo::StructureBase::CutSpheresZ(NuTo::FullMatrix<doubl
 
 
 //! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
-void NuTo::StructureBase::InsertParticleIntoBox(NuTo::FullMatrix<double>& rParticles, int rTheParticle, std::vector<std::vector<int > >& rSubBox, std::array<int,3>& rNSubBox,std::array<double,3>& rLSubBox, FullMatrix<double>& rBoundingBox)
+void NuTo::StructureBase::InsertParticleIntoBox(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rParticles, int rTheParticle, std::vector<std::vector<int > >& rSubBox, std::array<int,3>& rNSubBox,std::array<double,3>& rLSubBox, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox)
 {
 
 	//calculate current coordinate box of the center

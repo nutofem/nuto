@@ -131,7 +131,7 @@ try
     }
 
     //import mesh
-    NuTo::FullMatrix<int> createdGroupIds;
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> createdGroupIds;
     myStructure.ImportFromGmsh(mshFile.string(),2,"displacements", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
 
 	//section
@@ -246,9 +246,9 @@ try
 #endif
 
 	//directionX
-    NuTo::FullMatrix<double> DirectionX(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
     DirectionX.SetValue(0,0,1.0);
-    NuTo::FullMatrix<double> DirectionY(2,1);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionY(2,1);
     DirectionY.SetValue(1,0,1.0);
 
     int constraintBottomDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Bottom,DirectionY,0);
@@ -285,7 +285,7 @@ try
 	int numLoadSteps(2);
 
 	bool linearAcceleration(true);
-	NuTo::FullMatrix<double> dispRHS;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispRHS;
 	if (linearAcceleration)
 	{
 		dispRHS.Resize(10*numLoadSteps+2,2);
@@ -307,7 +307,7 @@ try
 		dispRHS(1,1) = finalDisplacement;
 	}
 
-    //NuTo::FullMatrix<double> velocity(2,1);
+    //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> velocity(2,1);
 	//velocity(0,0) = 0.0;
 	//velocity(1,0) = finalDisplacement/simulationTime;
 	//std::cout << "velocity " << velocity.Trans() << "\n";
@@ -325,7 +325,7 @@ try
     //myStructure.SetNumProcessors(8);
 
     //set output to be calculated at the left and right nodes
-    NuTo::FullMatrix<int> groupNodesReactionForces(2,1);
+    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> groupNodesReactionForces(2,1);
     groupNodesReactionForces(0,0) = grpNodes_Top;
     groupNodesReactionForces(1,0) = grpNodes_Bottom;
     myIntegrationScheme.SetGroupNodesReactionForces(groupNodesReactionForces);
@@ -340,20 +340,20 @@ try
 	resultFile = resultDir;
 	resultFile /= std::string("resultAllLoadSteps.dat");
 
-	NuTo::FullMatrix<double> result;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result;
     result.ReadFromFile(resultFile.string());
     //result.Info(15,12,true);
 
     boost::filesystem::path resultFileRef(resultFile.parent_path().parent_path());
     resultFileRef /= std::string("DogboneDirectNewmarkresultAllLoadStepsRef.dat");
-	NuTo::FullMatrix<double> resultRef;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef;
 	resultRef.ReadFromFile(resultFileRef.string());
     std::cout << "result \n" << result << "\n";
     std::cout << "resultFileRef \n" << resultRef << "\n";
 
-    if ((resultRef-result).Abs().Max()>1e-4)
+    if ((resultRef-result).cwiseAbs().maxCoeff()>1e-4)
     {
-    	std::cout << "difference " << (resultRef-result).Abs().Max() << "\n";
+    	std::cout << "difference " << (resultRef-result).cwiseAbs().maxCoeff() << "\n";
     	result.Info();
         std::cout<< "reference results" << std::endl;
         resultRef.Info();

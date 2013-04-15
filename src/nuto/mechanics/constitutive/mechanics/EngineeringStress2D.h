@@ -8,6 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -36,7 +37,7 @@ class ConstitutiveEngineeringStressStrain;
  */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class EngineeringStress2D: public ConstitutiveOutputBase
+class EngineeringStress2D: public ConstitutiveOutputBase, public FullVectorFixed<double,3>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -70,7 +71,16 @@ public:
     //! @sa mEngineeringStress
     const double* GetData() const;
 
-    EngineeringStress2D operator+ ( const EngineeringStress2D &other ) const
+    //! @brief ... assignment constructor
+	//! @param  rOther ... copied element
+    template<typename OtherDerived>
+    EngineeringStress2D& operator=( const Eigen::MatrixBase <OtherDerived>& other)
+	{
+    	this->FullVectorFixed<double,3>::operator=(other);
+    	return *this;
+	}
+
+/*    EngineeringStress2D operator+ ( const EngineeringStress2D &other ) const
     {
         EngineeringStress2D result;
         result.mEngineeringStress[0] = mEngineeringStress[0] + other.mEngineeringStress[0];
@@ -96,7 +106,7 @@ public:
          result.mEngineeringStress[2] = scalar*mEngineeringStress[2];
          return result;
      }
-
+*/
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const;
@@ -110,11 +120,6 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 private:
-    //! @brief ... components of the Engineering stress tensor
-    /*!
-     *  The components of the Engineering stress tensor are stored in vector notation: \f$ \left[\sigma_{xx}, \sigma_{yy}, \sigma_{xy}\right]. \f$
-     */
-    double mEngineeringStress[3];
 };
 
 }

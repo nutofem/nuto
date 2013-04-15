@@ -186,13 +186,13 @@ for theLoadStep in range(0,1):
     if (theLoadStep==0):
         if printResult:
             print "max difference in stiffness matrix for uniform plastic loading ", maxerror 
-        if (maxerror[0]>1e-6):
+        if (maxerror>1e-6):
             print '[' + system,sys.argv[0] + '] : stiffness for uniform plastic loading is not correct.'
             error = True;
     elif (theLoadStep==1):
         if printResult:
             print "max difference in stiffness matrix for unloading " , maxerror 
-        if (maxerror[0]>1e-6):
+        if (maxerror>1e-6):
             print '[' + system,sys.argv[0] + '] : stiffness after unloading is not correct.'
             error = True;
         omega = fullStiffnessMatrix.GetValue(0,0)/fullStiffnessMatrixElastic.GetValue(0,0)
@@ -202,13 +202,13 @@ for theLoadStep in range(0,1):
             (fullStiffnessMatrixElastic*omega-fullStiffnessMatrix).Info()
         if printResult:
             print "max difference in stiffness matrix for unloading and scaled elastic matrix " , maxerror2 
-        if (maxerror2[0]>1e-6):
+        if (maxerror2>1e-6):
             print '[' + system,sys.argv[0] + '] : stiffness matrix for unloading and scaled elastic matrix are not identical.'
             error = True;
     else:
         if printResult:
             print "max difference in stiffness matrix for nonuniform plastic loading/unloading " , maxerror
-        if (maxerror[0]>1e-6):
+        if (maxerror>1e-6):
             print '[' + system,sys.argv[0] + '] :stiffness matrix for nonuniform plastic loading/unloading is not correct.'
             error = True;
 

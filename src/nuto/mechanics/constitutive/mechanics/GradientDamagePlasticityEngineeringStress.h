@@ -196,7 +196,6 @@ public:
     //! @param rStrain              ... current total strain
     //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
     //! @param rPrevTotalStrain     ... previous total strain (history variable)
-    //! @param rPrevStress          ... previous stress
     //! @param rStress              ... new stress
     //! @param rPlasticStrain       ... new plastic strain after return mapping
     //! @param rYieldConditionFlag  ... yield condition flag, true for active, false for inactive, 0 is Drucker-Prager, 1 is Rankine
@@ -207,7 +206,6 @@ public:
             const EngineeringStrain1D& rStrain,
             const EngineeringStrain1D& rPrevPlasticStrain,
             const EngineeringStrain1D& rPrevTotalStrain,
-            Eigen::Matrix<double,1,1>& rPrevStress,
             Eigen::Matrix<double,1,1>& rStress,
             Eigen::Matrix<double,1,1>& rPlasticStrain,
             Eigen::Matrix<int,2,1>& rYieldConditionFlag,

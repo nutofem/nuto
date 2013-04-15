@@ -5,7 +5,7 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 // constructor
-NuTo::LoadNodeForces3D::LoadNodeForces3D(const NodeBase* rNode, const NuTo::FullMatrix<double>& rDirection, double rValue) :
+NuTo::LoadNodeForces3D::LoadNodeForces3D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
         LoadNode(rNode)
 {
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=3)
@@ -26,7 +26,7 @@ NuTo::LoadNodeForces3D::LoadNodeForces3D(const NodeBase* rNode, const NuTo::Full
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeForces3D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<double>& rActiceDofsLoadVector, NuTo::FullMatrix<double>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeForces3D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const
 {
     assert(rActiceDofsLoadVector.GetNumColumns()==1);
     assert(rDependentDofsLoadVector.GetNumColumns()==1);

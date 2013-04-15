@@ -14,6 +14,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/base/NuToObject.h"
+#include "nuto/math/FullMatrix_Def.h"
 
 #include <iostream>
 #include <fstream>
@@ -21,8 +22,6 @@
 
 namespace NuTo
 {
-template<class T> class FullMatrix;
-
 //! @author Jörg F. Unger, NU
 //! @date July 2011
 //! @brief ... logger class for redirecting output to different locations/files
@@ -112,7 +111,7 @@ BOOST_SERIALIZATION_SPLIT_MEMBER()
     //! @brief ..logs a NuTo::FullMatrix
     //! @param rInt1 parameters total number of digits to be plotted
     //! @param rInt2 parameters number of digits after the comma to be plotted
-    void Out(const NuTo::FullMatrix<double>& rObject, int rInt1, int rInt2, bool rScientific=false);
+    void Out(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rObject, int rInt1, int rInt2, bool rScientific=false);
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed

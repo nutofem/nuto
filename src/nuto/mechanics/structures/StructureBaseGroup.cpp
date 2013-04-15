@@ -217,7 +217,7 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
 //! @param ... rCenter center of the selection circle
 //! @param ... rMin ... minimum radius
 //! @param ... rMax ... maximum radius
-void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMatrix<double> rCenter, double rMin, double rMax)
+void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCenter, double rMin, double rMax)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;

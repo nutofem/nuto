@@ -8,6 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -21,7 +22,7 @@ class ConstitutiveMisesPlasticity;
 //! @brief ... three-dimensional deformation gradient
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class EngineeringStrain2D: public ConstitutiveOutputBase
+class EngineeringStrain2D: public ConstitutiveOutputBase, public FullVectorFixed<double,3>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -66,32 +67,14 @@ class EngineeringStrain2D: public ConstitutiveOutputBase
     //! @sa mDeformationGradient
     const double* GetData() const;
 
-    EngineeringStrain2D operator+ ( const EngineeringStrain2D &other ) const
-    {
-        EngineeringStrain2D result;
-        result.mEngineeringStrain[0] = mEngineeringStrain[0] + other.mEngineeringStrain[0];
-        result.mEngineeringStrain[1] = mEngineeringStrain[1] + other.mEngineeringStrain[1];
-        result.mEngineeringStrain[2] = mEngineeringStrain[2] + other.mEngineeringStrain[2];
-        return result;
-    }
-
-    EngineeringStrain2D operator- ( const EngineeringStrain2D &other ) const
-    {
-        EngineeringStrain2D result;
-        result.mEngineeringStrain[0] = mEngineeringStrain[0] - other.mEngineeringStrain[0];
-        result.mEngineeringStrain[1] = mEngineeringStrain[1] - other.mEngineeringStrain[1];
-        result.mEngineeringStrain[2] = mEngineeringStrain[2] - other.mEngineeringStrain[2];
-        return result;
-    }
-
-    EngineeringStrain2D operator* ( double scalar ) const
-    {
-        EngineeringStrain2D result;
-        result.mEngineeringStrain[0] = scalar*mEngineeringStrain[0];
-        result.mEngineeringStrain[1] = scalar*mEngineeringStrain[1];
-        result.mEngineeringStrain[2] = scalar*mEngineeringStrain[2];
-        return result;
-    }
+    //! @brief ... assignment constructor
+	//! @param  rOther ... copied element
+    template<typename OtherDerived>
+    EngineeringStrain2D& operator=( const Eigen::MatrixBase <OtherDerived>& other)
+	{
+    	this->FullVectorFixed<double,3>::operator=(other);
+    	return *this;
+	}
 
     //! @brief ... set Engineering Strain
     //! @return ... Engineering Strain (exx,eyy,gxy)
@@ -110,7 +93,7 @@ private:
     //! @brief ... engineering strain
     //! The engineering strain is stored as :
     //! (exx,eyy,gxy)
-    double mEngineeringStrain[3];
+    //double mEngineeringStrain[3];
 };
 
 }

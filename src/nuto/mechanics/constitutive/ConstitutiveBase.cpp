@@ -148,7 +148,7 @@ void NuTo::ConstitutiveBase::SetInitialYieldStrength(double rSigma)
 //! @brief ... get yield strength for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding yield strength
-NuTo::FullMatrix<double> NuTo::ConstitutiveBase::GetYieldStrength() const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::ConstitutiveBase::GetYieldStrength() const
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetYieldStrength] The constitutive relationship does not have a parameter yield strength.");
 }
@@ -186,7 +186,7 @@ void NuTo::ConstitutiveBase::SetInitialHardeningModulus(double rH)
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding hardening modulus
-NuTo::FullMatrix<double> NuTo::ConstitutiveBase::GetHardeningModulus() const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::ConstitutiveBase::GetHardeningModulus() const
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetYieldStrength] The constitutive relationship does not have a parameter yield strength.");
 }

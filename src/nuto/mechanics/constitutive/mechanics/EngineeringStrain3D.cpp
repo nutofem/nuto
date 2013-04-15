@@ -14,22 +14,22 @@
 
 NuTo::EngineeringStrain3D::EngineeringStrain3D() : ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
-	mEngineeringStrain[0] = 0.0;
-	mEngineeringStrain[1] = 0.0;
-	mEngineeringStrain[2] = 0.0;
-	mEngineeringStrain[3] = 0.0;
-	mEngineeringStrain[4] = 0.0;
-	mEngineeringStrain[5] = 0.0;
+	(*this)[0] = 0.0;
+	(*this)[1] = 0.0;
+	(*this)[2] = 0.0;
+	(*this)[3] = 0.0;
+	(*this)[4] = 0.0;
+	(*this)[5] = 0.0;
 }
 
 NuTo::EngineeringStrain3D::EngineeringStrain3D(const DeformationGradient3D& rDeformationGradient)
 {
-    mEngineeringStrain[0] = rDeformationGradient.mDeformationGradient[0] -1.;
-    mEngineeringStrain[1] = rDeformationGradient.mDeformationGradient[4] -1.;
-    mEngineeringStrain[2] = rDeformationGradient.mDeformationGradient[8] -1.;
-    mEngineeringStrain[3] = rDeformationGradient.mDeformationGradient[1]+rDeformationGradient.mDeformationGradient[3];
-    mEngineeringStrain[4] = rDeformationGradient.mDeformationGradient[5]+rDeformationGradient.mDeformationGradient[7];
-    mEngineeringStrain[5] = rDeformationGradient.mDeformationGradient[2]+rDeformationGradient.mDeformationGradient[6];
+	(*this)[0] = rDeformationGradient.mDeformationGradient[0] -1.;
+	(*this)[1] = rDeformationGradient.mDeformationGradient[4] -1.;
+	(*this)[2] = rDeformationGradient.mDeformationGradient[8] -1.;
+	(*this)[3] = rDeformationGradient.mDeformationGradient[1]+rDeformationGradient.mDeformationGradient[3];
+	(*this)[4] = rDeformationGradient.mDeformationGradient[5]+rDeformationGradient.mDeformationGradient[7];
+	(*this)[5] = rDeformationGradient.mDeformationGradient[2]+rDeformationGradient.mDeformationGradient[6];
 }
 
 //! @brief ... get number of strain components
@@ -44,7 +44,7 @@ unsigned int NuTo::EngineeringStrain3D::GetNumberOfComponents() const
 //! @sa mDeformationGradient
 const double* NuTo::EngineeringStrain3D::GetData() const
 {
-    return mEngineeringStrain;
+    return data();
 }
 
 //! @brief ... get Engineering Strain
@@ -52,12 +52,12 @@ const double* NuTo::EngineeringStrain3D::GetData() const
 //! @sa mDeformationGradient
 void NuTo::EngineeringStrain3D::SetData(const double rData[6])
 {
-	mEngineeringStrain[0] = rData[0];
-	mEngineeringStrain[1] = rData[1];
-	mEngineeringStrain[2] = rData[2];
-	mEngineeringStrain[3] = rData[3];
-	mEngineeringStrain[4] = rData[4];
-	mEngineeringStrain[5] = rData[5];
+	(*this)[0] = rData[0];
+	(*this)[1] = rData[1];
+	(*this)[2] = rData[2];
+	(*this)[3] = rData[3];
+	(*this)[4] = rData[4];
+	(*this)[5] = rData[5];
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -76,8 +76,8 @@ void NuTo::EngineeringStrain3D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStrain3D" << std::endl;
 #endif
-    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase)
-       & BOOST_SERIALIZATION_NVP(mEngineeringStrain);
+    ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
+    ar & boost::serialization::make_nvp ("EngineeringStrain3DEigen",boost::serialization::base_object< FullVectorFixed<double,6> > ( *this ));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStrain3D" << std::endl;
 #endif

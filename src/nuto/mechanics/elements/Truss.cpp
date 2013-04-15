@@ -338,7 +338,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			double factor (detJ*mSection->GetArea()*
 					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
-			FullMatrix<double> Komegaomega;
+			FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Komegaomega;
 			if (numDamageDofs>0)
 			{
 				//calculate Komegaomega detJ*(cBtB+NtN)
@@ -517,7 +517,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJNtdOmegadEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentLocalDamageStrain,
-		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double> rResult)
+		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rResult)
 {
     assert(rShapeFunctions.size()==rDerivativeShapeFunctions.size());
 	double tmpfactor = *(rTangentLocalDamageStrain.GetData())*rFactor;
@@ -538,7 +538,7 @@ void NuTo::Truss::AddDetJNtdOmegadEpsilonB(const std::vector<double>& rShapeFunc
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJBtdSigmadOmegaN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalDamage,
-		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double>& rResult)
+		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
 {
     assert(rShapeFunctions.size()==rDerivativeShapeFunctions.size());
 	double tmpfactor = *(rTangentStressNonlocalDamage.GetData())*rFactor;
@@ -559,12 +559,12 @@ void NuTo::Truss::AddDetJBtdSigmadOmegaN(const std::vector<double>& rDerivativeS
 //! @param rNodeDamage nodal damage values
 //! @param rFactor factor including detJ and area
 //! @param rResult result
-void NuTo::Truss::AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double>& rKomegaomega,
-		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullMatrix<double>& rResult)
+void NuTo::Truss::AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKomegaomega,
+		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
 {
 	assert(rResult.GetNumRows()>=(int)(rRow+rShapeFunctions.size()));
 	assert(rShapeFunctions.size()==rNodeDamage.size());
-	FullMatrix<double> tmpResult = rKomegaomega*rNodeDamage;
+	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> tmpResult = rKomegaomega*Eigen::Map<Eigen::VectorXd>(const_cast<double*>(&(rNodeDamage[0])),rNodeDamage.size());
 	double damage = rLocalDamage.GetDamageValue();
 	for (unsigned int count=0; count<rShapeFunctions.size(); count++)
 	{
@@ -580,7 +580,7 @@ void NuTo::Truss::AddDetJRomega(const std::vector<double>& rShapeFunctions,const
 //! @param factor multiplication factor (detJ area..)
 //! @param Komegaomega return matrix with detJ * NtT+cBtB
 void NuTo::Truss::CalculateKOmegaOmega(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
-		FullMatrix<double>& Komegaomega)
+		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Komegaomega)
 {
 	//resize and set to zero
 	Komegaomega.Resize(shapeFunctions.size(),shapeFunctions.size());
@@ -633,7 +633,7 @@ void NuTo::Truss::CalculateNodalDamage(int rTimeDerivative, std::vector<double>&
 }
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the stiffness matrix
-/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     // get section information determining which input on the constitutive level should be used
@@ -741,7 +741,7 @@ void NuTo::Truss::CalculateNodalDamage(int rTimeDerivative, std::vector<double>&
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-/*NuTo::Error::eError NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     //calculate local coordinates
@@ -890,7 +890,7 @@ void NuTo::Truss::CalculateDeformationGradient(const std::vector<double>& rDeriv
 
 //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the damping matrix
-/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double>& rResult,
+/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_1] to be implemented.");
@@ -899,7 +899,7 @@ void NuTo::Truss::CalculateDeformationGradient(const std::vector<double>& rDeriv
 
 //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
 //! for a mechanical problem, this corresponds to the Mass matrix
-/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double>& rCoefficientMatrix,
+/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
         std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
 {
     //calculate local coordinates
@@ -1017,7 +1017,7 @@ void NuTo::Truss::CalculateNonlocalDamage(const std::vector<double>& shapeFuncti
 //! @brief calculates the integration point data with the current displacements applied
 //! @param rIpDataType data type to be stored for each integration point
 //! @param rIpData return value with dimension (dim of data type) x (numIp)
-/*NuTo::Error::eError NuTo::Truss::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double>& rIpData)const
+/*NuTo::Error::eError NuTo::Truss::GetIpData(NuTo::IpData::eIpStaticDataType rIpDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rIpData)const
 {
 	//calculate local coordinates
     std::vector<double> localNodeCoord(GetNumLocalDofs());
@@ -1153,7 +1153,7 @@ double NuTo::Truss::DetJacobian(const std::vector<double>& derivativeShapeFuncti
 void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctions,
                               const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent, double rFactor,
                               int rRow, int rCol,
-                              FullMatrix<double>& rCoefficientMatrix)const
+                              FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     rFactor *=rConstitutiveTangent.GetData()[0];
     for (int node1=0; node1<GetNumNodes(); node1++)
@@ -1169,7 +1169,7 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
 //! @param rShapeFunctions ... shape functions
 //! @param rFactor factor including area, determinant of Jacobian, IP weight and, eventually, the density
 //! @param rCoefficientMatrix to be added to
-void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double rFactor, FullMatrix<double>& rCoefficientMatrix)const
+void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double rFactor, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     for (int node1=0; node1<GetNumNodes(); node1++)
     {
@@ -1190,7 +1190,7 @@ void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double 
 void NuTo::Truss::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunctions,
                                  const EngineeringStress1D& rEngineeringStress, double rFactor,
                                  int rRow,
-                                 FullMatrix<double>& rResult)const
+                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
 {
     rFactor*=rEngineeringStress.GetData()[0];
     for (int node1=0; node1<GetNumNodes(); node1++)
@@ -1209,7 +1209,7 @@ void NuTo::Truss::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  const HeatFlux1D& rHeatFlux,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double>& rResult)const
+                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
 {
     rFactor*=rHeatFlux.GetData()[0];
     for (int node1=0; node1<GetNumNodes(); node1++)

@@ -119,7 +119,7 @@ public:
 
     //! @brief ... write non-zero matrix entries into a full matrix
     //! @param rFullMatrix ... the full matrix
-    virtual void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const = 0;
+    virtual void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const = 0;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name

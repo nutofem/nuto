@@ -35,7 +35,7 @@ public:
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRVector2General(FullMatrix<T>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
+    SparseMatrixCSRVector2General(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
 
     //! @brief ... create sparse matrix with vector of vector from standard CSR format
     //! @param rCSRMatrix ... input matrix (full storage)
@@ -71,7 +71,7 @@ public:
 
     //! @brief ... write nonzero matrix entries into a full matrix
     //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(FullMatrix<T>& rFullMatrix) const;
+    void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const;
 
     //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
     //! @return symmetric part
@@ -128,9 +128,9 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    FullMatrix<T> operator* (const FullMatrix<T> &rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const;
 
-    FullMatrix<T> TransMult(const FullMatrix<T>& rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
 
     //! @brief ... calculate the transpose of the matrix (transpose row and columns)
     //! @return ... transpose of this matrix (sparse csr storage)
@@ -161,7 +161,7 @@ public:
     //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(FullMatrix<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+    void Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering

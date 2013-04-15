@@ -10,7 +10,7 @@
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/base/Logger.h"
 
-//#define PRINTRESULT
+#define PRINTRESULT
 #include <eigen3/Eigen/Eigenvalues>
 int main()
 {
@@ -20,14 +20,14 @@ try
     bool testDruckerPragerYieldSurface3D(true);
     bool testRoundedRankineYieldSurface1D(true);
     bool testDruckerPragerYieldSurface1D(true);
-    bool testReturnMapping3D(false);
-    bool testReturnMapping1D(false);
+    bool testReturnMapping3D(true);
+    bool testReturnMapping1D(false); //I'm still working on that one
 
     NuTo::Logger logger;
 
     NuTo::GradientDamagePlasticityEngineeringStress myConstitutiveLaw;
     myConstitutiveLaw.SetDensity(1.);
-    myConstitutiveLaw.SetYoungsModulus(30000.);
+    myConstitutiveLaw.SetYoungsModulus(40000.);
     myConstitutiveLaw.SetPoissonsRatio(0.2);
     myConstitutiveLaw.SetNonlocalRadius(2.);
     myConstitutiveLaw.SetTensileStrength(3.);
@@ -416,12 +416,12 @@ try
 #endif //PRINTRESULT
 
         Eigen::Matrix<double,6,18> strainCases; //total strains at t and t+1 and plastic strains at t
-        strainCases <<   0    ,0,0,0,0,0 ,       0.0002, 0.    , 0.     , 0.      , 0.       , 0.          , 0      ,       0,       0,       0,       0,       0, //only Rankine uniaxial
-                         0    ,0,0,0,0,0 ,       -0.002, 0.    , 0.     , 0.      , 0.       , 0.          , 0      ,       0,       0,       0,       0,       0, //only Drucker Prager uniaxial
-                         0    ,0,0,0,0,0 ,       0.0002, 0.0001, 0.00005, 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003, //only Rankine triaxial
-                         0    ,0,0,0,0,0 ,       -0.002, 0.0001, 0.00005, 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003, //only Drucker Prager triaxial
-                         0.001,0,0,0,0,0 ,       -0.002, 0.002, 0.0018  , 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003,   //mixed triaxial
-                         0.001,0,0,0,0,0 ,       -0.000, 0.000, 0.000   , 0.00000 , 0.00000  , 0.00000     , 0.00105, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003;   //unloading
+        strainCases <<   0    ,0,0,0,0,0 ,       0.0002, -0.000001, 0.000001, 0.      , 0.       , 0.          , 0      ,       0,       0,       0,       0,       0, //only Rankine uniaxial
+                         0    ,0,0,0,0,0 ,       -0.002, 0.       , 0.      , 0.      , 0.       , 0.          , 0      ,       0,       0,       0,       0,       0, //only Drucker Prager uniaxial
+                         0    ,0,0,0,0,0 ,       0.0002, 0.0001   , 0.00005 , 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003, //only Rankine triaxial
+                         0    ,0,0,0,0,0 ,       -0.002, 0.0001   , 0.00005 , 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003, //only Drucker Prager triaxial
+                         0.001,0,0,0,0,0 ,       -0.002, 0.002    , 0.0018  , 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003,   //mixed triaxial
+                         0.001,0,0,0,0,0 ,       -0.000, 0.000    , 0.000   , 0.00000 , 0.00000  , 0.00000     , 0.00105, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003;   //unloading
 
         Eigen::Matrix<double,6,1> strainVector;
         Eigen::Matrix<double,3,3> strainMatrix;
@@ -433,17 +433,18 @@ try
 
         Eigen::Matrix<double,6,6> resultStress;
         Eigen::Matrix<double,6,6> resultStressRef;
-        resultStressRef <<   1.88569,   1.23287,   0.483467,   1.19764 , -0.389136, -0.509386,
-                           -44.6144 , -35.4312 , -24.8893  , -16.8473  ,  5.47401 ,  7.16557 ,
-                             1.62333,   1.84712,   0.465602,   0.869178, -0.563737, -0.542969,
-                           -45.6326 , -35.5209 , -25.7945  , -17.0811  ,  5.22697 ,  7.06607 ,
-                           -18.4416 ,  -7.97863,   0.979261, -11.7574  ,  4.31316 ,  6.31829 ,
-                           -25.1595 , -18.932  , -12.4085  ,   3.43689 ,  5.35931 , -0.199261;
+        resultStressRef <<
+        		 1.86056,   1.18068,  0.421063,   1.24369,   -0.4041, -0.522927,
+        		 -58.3571,  -48.2591,  -36.6669,  -18.5256,   6.01935,   7.87943,
+        		    1.586,   1.82156,  0.367397,  0.914886, -0.593383, -0.571522,
+        		 -59.6457,  -48.5145,  -37.8072,  -18.8036,   5.75406,    7.7786,
+        		 -16.2175,  -9.17583,    1.0038,  -12.6593,   4.00921,   6.15978,
+        		  -33.546,  -25.2426,  -16.5447,  -15.3908,   5.63212,   6.14616;
 
         angleCases << M_PI*0.5,M_PI*.1,M_PI*0.3;
         double psi,theta,phi;
 
-        double delta=1e-10;
+        double delta=1e-9;
         for (int countAngle=0; countAngle<angleCases.rows(); countAngle++)
         {
             psi = angleCases(countAngle,0);
@@ -458,6 +459,7 @@ try
 
             for (int countStrain=0; countStrain<strainCases.rows(); countStrain++)
             {
+            	//std::cout << "strainCase " << countStrain << std::endl;
                 //prev total strain
                 strainMatrix << strainCases(countStrain,0)     , 0.5*strainCases(countStrain,3) , 0.5*strainCases(countStrain,4)
                               , 0.5*strainCases(countStrain,3) , 0.5*strainCases(countStrain,1) , 0.5*strainCases(countStrain,5)
@@ -515,6 +517,7 @@ try
 
                 for (int count=0; count<6; count++)
                 {
+                	//std::cout << "checkComponent " << count << std::endl;
                     strainMatrix << strainCases(countStrain,0+6)     , 0.5*strainCases(countStrain,3+6) , 0.5*strainCases(countStrain,4+6)
                                   , 0.5*strainCases(countStrain,3+6) , 0.5*strainCases(countStrain,1+6) , 0.5*strainCases(countStrain,5+6)
                                   , 0.5*strainCases(countStrain,4+6) , 0.5*strainCases(countStrain,5+6) , strainCases(countStrain,2+6);
@@ -548,7 +551,7 @@ try
                 std::cout << "stress \n  " << newStress1.transpose() << std::endl<< std::endl;
 #endif// PRINTRESULT
                 resultStress.row(countStrain) = newStress1.transpose();
-                if (normDiffdsde > 1e-1 || normDiffdepde > 1e-5 )
+                if (normDiffdsde > 2e-1 || normDiffdepde > 1e-5 )
                 {
 #ifdef PRINTRESULT
                     std::cout << "dsigma depsilon exact\n  " << dSigmadEpsilon.transpose() << std::endl<< std::endl;
@@ -584,82 +587,75 @@ try
     if (testReturnMapping1D)
     {
 #ifdef PRINTRESULT
-        std::cout << "test return mapping in 1D" << std::endl;
+        std::cout << "test return mapping in 1D test" << std::endl;
 #endif //PRINTRESULT
 
-        Eigen::Matrix<double,1,6> strainCases; //total strains at t and t+1 and plastic strains at t (component in axial and radial direction)
-        strainCases <<   0 , 0, 0.0004, 0.0, 0,0;
+        Eigen::Matrix<double,1,3> strainCases; //total strains at t and t+1 and plastic strains at t (component in axial direction)
+        strainCases <<   0. , 0.0004, 0.;
 
         Eigen::Matrix<double,1,1> sigma_1, sigma_2;
         Eigen::Matrix<double,1,1> d2sigma_d2epsilon_1, d2sigma_d2epsilon_cdf;
 
         Eigen::Matrix<double,1,1> resultStress;
         Eigen::Matrix<double,1,1> resultStressRef;
-        resultStressRef <<   0.;
+        resultStressRef <<   3.;
 
 
-        double delta=1e-10;
+        double delta=1e-9;
 
 		for (int countStrain=0; countStrain<strainCases.rows(); countStrain++)
 		{
-			double tmp;
 			//prev total strain
 			NuTo::EngineeringStrain1D prevEngineeringStrain1D;
-			tmp = strainCases(countStrain,0);
-			prevEngineeringStrain1D.SetData(&tmp);
-			double rPrevTotalStrainRadial = strainCases(countStrain,1);
+			prevEngineeringStrain1D[0] = strainCases(countStrain,0);
 
 			//total strain at current time
 			NuTo::EngineeringStrain1D engineeringStrain1D;
-			tmp = strainCases(countStrain,2);
-			engineeringStrain1D.SetData(&tmp);
-			double trialStrainEpsilonTotRadial = strainCases(countStrain,3);
+			engineeringStrain1D[0] = strainCases(countStrain,1);
 
 			//previous plastic strain
-			double prevPlasticStrain[2];
-			prevPlasticStrain[0] = strainCases(countStrain,4);
-			prevPlasticStrain[1] = strainCases(countStrain,5);
+			NuTo::EngineeringStrain1D prevPlasticStrain;
+			prevPlasticStrain[0] = strainCases(countStrain,2);
 
 			Eigen::Matrix<double,1,1> dSigmadEpsilon,dSigmadEpsilonCDF;
-			Eigen::Matrix<double,1,1> dEpsilonPdEpsilon,dEpsilonPdEpsilonCDF;
-			Eigen::Matrix<double,2,1> newEpsilonP1,newEpsilonP2;
-			double newEpsilonTotRadial(0);
+			Eigen::Matrix<double,2,1> dKappadEpsilon,dKappadEpsilonCDF;
+			Eigen::Matrix<double,1,1> newEpsilonP1,newEpsilonP2;
+			Eigen::Matrix<int,2,1> yieldConditionFlag;
 			Eigen::Matrix<double,1,1> newStress1,newStress2;
-			double deltaEqPlasticStrain(0);
+			Eigen::Matrix<double,2,1> deltaEqPlasticStrain;
 
-			myConstitutiveLaw.ReturnMapping1D(engineeringStrain1D, trialStrainEpsilonTotRadial, prevPlasticStrain, prevEngineeringStrain1D,
-					rPrevTotalStrainRadial,
-					newStress1, newEpsilonP1, newEpsilonTotRadial,
-					deltaEqPlasticStrain, &dSigmadEpsilon, &dEpsilonPdEpsilon, logger);
+			myConstitutiveLaw.ReturnMapping1DNew(engineeringStrain1D, prevPlasticStrain, prevEngineeringStrain1D,
+					newStress1, newEpsilonP1, yieldConditionFlag, deltaEqPlasticStrain, &dSigmadEpsilon, &dKappadEpsilon, logger);
 
-			tmp = strainCases(countStrain,2)+delta;
-			engineeringStrain1D.SetData(&tmp);
+			engineeringStrain1D[0] = strainCases(countStrain,2)+delta;
 
-			myConstitutiveLaw.ReturnMapping1D(engineeringStrain1D, trialStrainEpsilonTotRadial, prevPlasticStrain, prevEngineeringStrain1D,
-					rPrevTotalStrainRadial,
-					newStress2, newEpsilonP2, newEpsilonTotRadial,
-					deltaEqPlasticStrain, 0, 0, logger);
+			myConstitutiveLaw.ReturnMapping1DNew(engineeringStrain1D, prevPlasticStrain, prevEngineeringStrain1D,
+					newStress2, newEpsilonP2, yieldConditionFlag, deltaEqPlasticStrain, 0, 0, logger);
 
 			dSigmadEpsilonCDF.col(0) = (newStress2-newStress1)/delta;
 			//dEpsilonPdEpsilonCDF(0,0) = (newEpsilonP2(0,0)-newEpsilonP1(0,0))/delta;
 
 #ifdef PRINTRESULT
 			double normDiffdsde((dSigmadEpsilonCDF-dSigmadEpsilon).norm());
-			double normDiffdepde((dEpsilonPdEpsilonCDF-dEpsilonPdEpsilon).norm());
+			//double normDiffdepde((dEpsilonPdEpsilonCDF-dEpsilonPdEpsilon).norm());
 
-			std::cout << countStrain<< ".strain \n" << strainCases.row(countStrain) << "\n\ndiff dsigma depsilon " << normDiffdsde << ", diff depsilonP depsilon " << normDiffdepde << std::endl << std::endl;;
+			std::cout << countStrain<< ".strains \n" << strainCases.row(countStrain) << "\n\ndiff dsigma depsilon "
+					//<< normDiffdsde << ", diff depsilonP depsilon " << normDiffdepde
+					  << std::endl << std::endl;
 			std::cout << "stress \n  " << newStress1 << std::endl<< std::endl;
 			std::cout << "new plastic strain \n  " << newEpsilonP1.transpose() << std::endl<< std::endl;
 #endif// PRINTRESULT
 			resultStress.row(countStrain) = newStress1.transpose();
-			//if (normDiffdsde > 1e-1 || normDiffdepde > 1e-5 )
+			std::cout << "normDiffdsde \n  " << normDiffdsde << std::endl<< std::endl;
+			//std::cout << "normDiffdepde \n  " << normDiffdepde << std::endl<< std::endl;
+			if (normDiffdsde > 1e-1 )
 			{
 #ifdef PRINTRESULT
 				std::cout << "dsigma depsilon exact\n  " << dSigmadEpsilon.transpose() << std::endl<< std::endl;
 				std::cout << "dsigma depsilon cdf  \n  " << dSigmadEpsilonCDF.transpose() << std::endl<< std::endl;
 
-				std::cout << "depsilonP depsilon exact\n  " << dEpsilonPdEpsilon.transpose() << std::endl<< std::endl;
-				std::cout << "depsilonP depsilon cdf  \n  " << dEpsilonPdEpsilonCDF.transpose() << std::endl<< std::endl;
+				//std::cout << "depsilonP depsilon exact\n  " << dEpsilonPdEpsilon.transpose() << std::endl<< std::endl;
+				//std::cout << "depsilonP depsilon cdf  \n  " << dEpsilonPdEpsilonCDF.transpose() << std::endl<< std::endl;
 #endif// PRINTRESULT
 				throw NuTo::MechanicsException("Derivatives for return mapping 3D in GradientDamagePlasticityEngineeringStress are different compared to central differences.");
 			}

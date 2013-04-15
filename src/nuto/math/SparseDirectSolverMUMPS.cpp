@@ -31,7 +31,7 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
 }
 
 #ifdef HAVE_MUMPS
-void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
+void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -181,7 +181,7 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
 #endif
 }
 
-void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullMatrix<int> rSchurIndices, NuTo::FullMatrix<double>& rSchurComplement)
+void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -250,7 +250,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&solver);
 
     //resize result matrix
-    NuTo::FullMatrix<double> rSchurComplementTranspose(rSchurIndices.GetNumRows(),rSchurIndices.GetNumRows());
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.GetNumRows(),rSchurIndices.GetNumRows());
 
     // define the problem
     solver.n   = matrixDimension;                       // dimension
@@ -313,7 +313,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
         throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] Termination phase: " + this->GetErrorString(solver.info[0]) + ".");
     }
 
-    rSchurComplement = rSchurComplementTranspose.Trans();
+    rSchurComplement = rSchurComplementTranspose.transpose();
 
 #ifdef SHOW_TIME
     end = clock();
@@ -340,12 +340,12 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
     }
 }
 #else // HAVE_MUMPS
-void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
+void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
 {
 	throw NuTo::MathException("[SparseDirectSolverMUMPS::Solve] MUMPS-solver was not found on your system (check cmake)");
 }
 
-void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double>& rRhs, NuTo::FullMatrix<double>& rSolution)
+void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
 {
     throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] MUMPS-solver was not found on your system (check cmake)");
 }

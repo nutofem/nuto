@@ -205,7 +205,8 @@ void NuTo::Logger::SetQuiet(bool rQuiet)
 //! @brief ..logs a NuTo::Object
 //! @param rInt1 parameters (e.g. for matrices, this is the total number of digits to be plotted
 //! @param rInt2 parameters (e.g. for matrices, this is the number of digits after the comma to be plotted
-void NuTo::Logger::Out(const NuTo::FullMatrix<double>& rFullMatrix, int rInt1, int rInt2, bool rScientific)
+void NuTo::Logger::Out(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix,
+		int rInt1, int rInt2, bool rScientific)
 {
 	rFullMatrix.Out(*this,rInt1,rInt2,rScientific);
 }

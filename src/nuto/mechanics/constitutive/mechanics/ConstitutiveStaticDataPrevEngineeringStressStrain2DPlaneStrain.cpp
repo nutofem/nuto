@@ -14,13 +14,13 @@
 //! @brief constructor
 NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain() : ConstitutiveStaticDataBase()
 {
-    mPrevSigma.mEngineeringStress[0] = 0.;
-    mPrevSigma.mEngineeringStress[1] = 0.;
-    mPrevSigma.mEngineeringStress[2] = 0.;
+    mPrevSigma[0] = 0.;
+    mPrevSigma[1] = 0.;
+    mPrevSigma[2] = 0.;
 
-    mPrevStrain.mEngineeringStrain[0] = 0.;
-    mPrevStrain.mEngineeringStrain[1] = 0.;
-    mPrevStrain.mEngineeringStrain[2] = 0.;
+    mPrevStrain[0] = 0.;
+    mPrevStrain[1] = 0.;
+    mPrevStrain[2] = 0.;
 
     mPrevTotalEnergy = 0.;
 

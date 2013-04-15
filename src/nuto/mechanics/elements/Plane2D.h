@@ -47,12 +47,12 @@ public:
 
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
-    void BlowLocalMatrixToGlobal(NuTo::FullMatrix<double>& FullrCoefficientMatrix)const
+    void BlowLocalMatrixToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& FullrCoefficientMatrix)const
     {}
 
     //! @brief transforms the local vector to the global system
     //! relevant only for 2D and 3D truss elements
-    void BlowLocalVectorToGlobal(NuTo::FullMatrix<double>& rFullVector)const
+    void BlowLocalVectorToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rFullVector)const
     {}
 
     //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)

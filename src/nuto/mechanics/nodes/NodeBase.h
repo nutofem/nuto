@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
@@ -24,7 +25,6 @@
 
 namespace NuTo
 {
-template <class T> class FullMatrix;
 class NodeDisplacementsMultiscale2D;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -63,13 +63,13 @@ public:
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double>& rActiveDofValues, const FullMatrix<double>& rDependentDofValues);
+    virtual void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues);
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double>& rActiveDofValues, FullMatrix<double>& rDependentDofValues) const;
+    virtual void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const;
 
     //! @brief extract all dof numbers from the node (based on global dof number)
     //virtual int* GetGlobalDofs();

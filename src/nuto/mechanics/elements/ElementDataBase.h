@@ -18,12 +18,12 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/array.hpp>
 
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
-template<class T> class  FullMatrix;
 class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
 class CrackBase;
