@@ -60,7 +60,7 @@ public:
     //! @param row ... row of the nonzero entry (zero based indexing!!!)
     //! @param column ... column of the nonzero entry (zero based indexing!!!)
     //! @param value ... value of the nonzero entry
-    virtual void AddEntry(int row, int column, T value) = 0;
+    virtual void AddValue(int row, int column, const T& value) = 0;
 
     //! @brief ... switch to one based indexing
     virtual void SetOneBasedIndexing() = 0;
@@ -137,7 +137,9 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-    virtual void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& FullMatrix) const = 0;
+    //! @brief ... write non-zero matrix entries into a matrix
+    //! @param rMatrix ... the matrix
+    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const = 0;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed

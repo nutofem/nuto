@@ -32,12 +32,12 @@ error = False
 myStructure = nuto.Structure(1)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(1,1,(1,)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(1,1,(2,)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(1,1,(3,)))
+myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,)))
+myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,)))
+myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((3,)))
 
 #create element
-myElement1 = myStructure.ElementCreate("Truss1D3N",nuto.IntFullMatrix(3,1,(myNode1,myNode2,myNode3)))
+myElement1 = myStructure.ElementCreate("Truss1D3N",nuto.IntFullVector((myNode1,myNode2,myNode3)))
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
@@ -59,13 +59,13 @@ myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 myStructure.ElementSetSection(myElement1,mySection1)
 
 #set displacements of right node
-myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(1,1,(0.1,)))
-myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(1,1,(0.2,)))
+myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullVector((0.1,)))
+myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullVector((0.2,)))
 
 #calculate element stiffness matrix
 Ke = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-colIndex = nuto.IntFullMatrix(0,0)
+rowIndex = nuto.IntFullVector(0)
+colIndex = nuto.IntFullVector(0)
 timeDerivative = 0
 # this is the same : myStructure.ElementStiffness(myElement1,timeDerivative,Ke,rowIndex,colIndex)   
 myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
@@ -84,12 +84,12 @@ if ((Ke-KeCorrect).Abs().Max()>1e-8):
         error = True;
 
 #calculate internal force vector
-Fi = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
+Fi = nuto.DoubleFullVector(0)
+rowIndex = nuto.IntFullVector(0)
 myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
 
 #correct internal force vector
-FiCorrect = nuto.DoubleFullMatrix(3,1,(-0.003, 0.0 , 0.003))
+FiCorrect = nuto.DoubleFullVector((-0.003, 0.0 , 0.003))
 if (printResult):
     print "FiCorrect"
     FiCorrect.Info()
@@ -102,10 +102,10 @@ if ((Fi-FiCorrect).Abs().Max()>1e-8):
 
 
 #check stiffness with internal force vector
-prevDisp = nuto.DoubleFullMatrix(0,0) 
+prevDisp = nuto.DoubleFullVector(0) 
 
 delta=1e-4;
-Fi1 = nuto.DoubleFullMatrix(0,0)
+Fi1 = nuto.DoubleFullVector(0)
 myStructure.NodeGetDisplacements(myNode1,prevDisp)
 prevDisp.AddValue(0,0,delta)
 myStructure.NodeSetDisplacements(myNode1,prevDisp)
@@ -116,7 +116,7 @@ myStructure.NodeSetDisplacements(myNode1,prevDisp)
 #    print "Fi1"
 #    Fi1.Info()
 
-Fi2 = nuto.DoubleFullMatrix(0,0)
+Fi2 = nuto.DoubleFullVector(0)
 myStructure.NodeGetDisplacements(myNode2,prevDisp)
 prevDisp.AddValue(0,0,delta)
 myStructure.NodeSetDisplacements(myNode2,prevDisp)
@@ -127,7 +127,7 @@ myStructure.NodeSetDisplacements(myNode2,prevDisp)
 #    print "Fi2"
 #    Fi2.Info()
 
-Fi3 = nuto.DoubleFullMatrix(0,0)
+Fi3 = nuto.DoubleFullVector(0)
 myStructure.NodeGetDisplacements(myNode3,prevDisp)
 prevDisp.AddValue(0,0,delta)
 myStructure.NodeSetDisplacements(myNode3,prevDisp)
@@ -139,9 +139,9 @@ myStructure.NodeSetDisplacements(myNode3,prevDisp)
 #    Fi2.Info()
 
 KeApprox = nuto.DoubleFullMatrix(3,3)
-KeApprox.SetBlock ( 0, 0, (Fi1-Fi)*(1./delta))
-KeApprox.SetBlock ( 0, 1, (Fi2-Fi)*(1./delta))
-KeApprox.SetBlock ( 0, 2, (Fi3-Fi)*(1./delta))
+KeApprox.SetColumn ( 0, (Fi1-Fi)*(1./delta))
+KeApprox.SetColumn ( 1, (Fi2-Fi)*(1./delta))
+KeApprox.SetColumn ( 2, (Fi3-Fi)*(1./delta))
 if (printResult):
     print "KeApprox"
     KeApprox.Info()
@@ -192,8 +192,8 @@ myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss3Ip","NOIPDATA")
 
 #calculate element stiffness matrix
 Me = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-colIndex = nuto.IntFullMatrix(0,0)
+rowIndex = nuto.IntFullVector(0)
+colIndex = nuto.IntFullVector(0)
 timeDerivative = 2
 myStructure.ElementCoefficientMatrix(myElement1,timeDerivative,Me,rowIndex,colIndex)
 

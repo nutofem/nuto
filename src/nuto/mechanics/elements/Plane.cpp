@@ -187,7 +187,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			switch(it->first)
 			{
 			case Element::INTERNAL_GRADIENT:
-				it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,1);
+				it->second->GetFullVectorDouble().Resize(numLocalDispDofs+numTempDofs);
 	    	    //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
 	    		//on the global level
 	    		if (mStructure->GetHessianConstant(0)==false)
@@ -356,11 +356,11 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						double factor(mSection->GetThickness()*fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
 						if (numLocalDispDofs>0)
 						{
-							AddDetJBtSigma(derivativeShapeFunctionsLocal,engineeringStress2D, factor, 0, it->second->GetFullMatrixDouble());
+							AddDetJBtSigma(derivativeShapeFunctionsLocal,engineeringStress2D, factor, 0, it->second->GetFullVectorDouble());
 						}
 						if (numTempDofs>0)
 						{
-							AddDetJBtHeatFlux(derivativeShapeFunctionsLocal,heatFlux2D, factor, numLocalDispDofs, it->second->GetFullMatrixDouble());
+							AddDetJBtHeatFlux(derivativeShapeFunctionsLocal,heatFlux2D, factor, numLocalDispDofs, it->second->GetFullVectorDouble());
 						}
 		    	    }
 				}
@@ -925,7 +925,7 @@ void NuTo::Plane::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
                                  const EngineeringStress2D& rEngineeringStress,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
 {
     assert(rResult.GetNumRows()==2*GetNumShapeFunctions() && rResult.GetNumColumns()==1);
     const double *s = rEngineeringStress.GetData();
@@ -938,8 +938,8 @@ void NuTo::Plane::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
         x1 = rFactor * rDerivativeShapeFunctionsLocal[node1mul2];
         y1 = rFactor * rDerivativeShapeFunctionsLocal[node1mul2plus1];
 
-        rResult(rRow + node1mul2,0)     +=x1*s[0]+y1*s[2];
-        rResult(rRow + node1mul2plus1,0)+=y1*s[1]+x1*s[2];
+        rResult(rRow + node1mul2)     +=x1*s[0]+y1*s[2];
+        rResult(rRow + node1mul2plus1)+=y1*s[1]+x1*s[2];
     }
 }
 
@@ -953,7 +953,7 @@ void NuTo::Plane::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  const HeatFlux2D& rHeatFlux,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
 {
     const double *s = rHeatFlux.GetData();
     double x1,y1;
@@ -966,8 +966,8 @@ void NuTo::Plane::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
         x1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul2];
         y1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul2plus1];
 
-        rResult(rRow + node1mul2,0)     +=x1*s[0];
-        rResult(rRow + node1mul2plus1,0)+=y1*s[1];
+        rResult(rRow + node1mul2)     +=x1*s[0];
+        rResult(rRow + node1mul2plus1)+=y1*s[1];
     }
 }
 

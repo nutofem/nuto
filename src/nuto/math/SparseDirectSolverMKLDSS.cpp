@@ -4,6 +4,7 @@
 
 #include "nuto/math/MathException.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/math/SparseMatrixCSR.h"
 #include "nuto/math/SparseDirectSolver.h"
 #include "nuto/math/SparseDirectSolverMKLDSS.h"
@@ -22,7 +23,7 @@ NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS() : SparseDirectSolver(
 }
 
 #ifdef HAVE_MKL_DSS
-void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
     // timing
     clock_t startTime = clock();
@@ -272,5 +273,10 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     default:
         throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_delete: unknown error code.");
     }
+}
+#else// HAVE_MKL_DSS
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
+{
+	throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]MKLDSS not implemented.");
 }
 #endif // HAVE_MKL_DSS

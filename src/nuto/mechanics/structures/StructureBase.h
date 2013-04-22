@@ -40,6 +40,7 @@ namespace NuTo
 {
 class ElementBase;
 class NodeBase;
+template<class T, int rows> class FullVector;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRVector2General;
@@ -220,76 +221,76 @@ public:
     //! @param rType ... matrix type (stiffness or mass)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (symmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector);
 #endif //SWIG
 
     //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (symmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (symmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector on independent dofs - C external load vector on dependent dofs
-    void BuildGlobalExternalLoadVector(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector_j);
+    void BuildGlobalExternalLoadVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector_j);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector on independent dofs
     //! @param rVector ... external load vector on dependent dofs
-    void BuildGlobalExternalLoadVector(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector_j, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector_k);
+    void BuildGlobalExternalLoadVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector_j, NuTo::FullVector<double,Eigen::Dynamic>& rVector_k);
 
     //! @brief ... build global gradient of the internal potential (e.g. the internal forces)
     //! @param rVector ... global gradient of the internal potential (e.g. internal force vector)
-    NuTo::Error::eError BuildGlobalGradientInternalPotentialVector(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rVector);
+    NuTo::Error::eError BuildGlobalGradientInternalPotentialVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
     //! @param rType   ... matrix type (stiffness damping mass)
@@ -321,7 +322,7 @@ public:
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector) = 0;
+    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) = 0;
 
 //*************************************************
 //************ Node routines        ***************
@@ -356,7 +357,7 @@ public:
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output) ... vector of element ids
-    void NodeGetElements(const int rNodeId, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementNumbers);
+    void NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers);
 
     //! @brief delete node
     //! @param rIdent ... node identifier
@@ -371,34 +372,34 @@ public:
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeSetDisplacements(int rId,const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+    void NodeSetDisplacements(int rId,const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeSetDisplacements(int rId, int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+    void NodeSetDisplacements(int rId, int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rRotations matrix (one column) with the rotations
-    void NodeSetRotations(int rId,const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRotations);
+    void NodeSetRotations(int rId,const NuTo::FullVector<double,Eigen::Dynamic>& rRotations);
 
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGroupSetDisplacements(int rIdent, int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+    void NodeGroupSetDisplacements(int rIdent, int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGroupSetDisplacements(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+    void NodeGroupSetDisplacements(int rIdent, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
     //! @brief gets the coordinates of a node
     //! @param rNode node identifier
     //! @param rCoordinates matrix (one column) with the coordinates
-    void NodeGetCoordinates(int rNode, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)const;
+    void NodeGetCoordinates(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)const;
 
     //! @brief gets the coordinates of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
@@ -408,12 +409,12 @@ public:
     //! @brief gets the displacements of a node
     //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacements(int rNode, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements)const;
+    void NodeGetDisplacements(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements)const;
 
     //! @brief gets the rotations of a node
     //! @param rNode node identifier
     //! @param rRotation matrix (one column) with the rotations
-    void NodeGetRotations(int rNode, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRotations)const;
+    void NodeGetRotations(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rRotations)const;
 
     //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
@@ -424,12 +425,12 @@ public:
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const = 0;
+    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const = 0;
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    inline void NodeExtractDofValues(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
+    inline void NodeExtractDofValues(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
     {
     	NodeExtractDofValues(0,rActiveDofValues,rDependentDofValues);
     }
@@ -438,12 +439,12 @@ public:
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)=0;
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)=0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    inline void NodeMergeDofValues(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
+    inline void NodeMergeDofValues(const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)
     {
     	NodeMergeDofValues(0,rActiveDofValues,rDependentDofValues);
     }
@@ -451,11 +452,11 @@ public:
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues)=0;
+    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues)=0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    inline void NodeMergeActiveDofValues(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues)
+    inline void NodeMergeActiveDofValues(const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues)
     {
     	NodeMergeActiveDofValues(0,rActiveDofValues);
     }
@@ -463,18 +464,18 @@ public:
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(int rId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce);
+    void NodeInternalForce(int rId, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
 
     //! @brief calculate the internal force vector for a node group of nodes
     //! @param rIdent ... group id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeGroupInternalForce(int rIdent, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce);
+    void NodeGroupInternalForce(int rIdent, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
 
 #ifndef SWIG
     //! @brief calculate the internal force vector for a node
     //! @param rNodePtr  node for which this has to be calculated
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rNodeForce);
+    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
 
 #ifdef ENABLE_VISUALIZE
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
@@ -526,16 +527,16 @@ public:
     //! @brief calls ElementCoefficientMatrix_0,
     //! renaming only for clarification in mechanical problems for the end user
     void ElementStiffness(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult ,
-                          NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow,
-                          NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsColumn);
+                          NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow,
+                          NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsColumn);
 
     //! @brief calculates the coefficient matrix for the rTimeDerivative derivative in the differential equation
     //! for a mechanical problem, this corresponds to the stiffness, damping or mass matrix (rTimeDerivative=0,1,2)
     void ElementCoefficientMatrix(int rElementId,
     		                        int rTimeDerivative,
                                     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-                                    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow,
-                                    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsColumn);
+                                    NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow,
+                                    NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsColumn);
 
     //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
     //! and compares it to the matrix using central differences
@@ -575,8 +576,8 @@ public:
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
     void ElementGradientInternalPotential(int rElementId,
-                                          NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-                                          NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow);
+                                          NuTo::FullVector<double,Eigen::Dynamic>& rResult,
+                                          NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow);
 
     //! @brief modifies the constitutive law of a single element
     //! @param rElementIdent identifier for the element
@@ -741,7 +742,7 @@ public:
     //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
     //! @param ConstraintId constraint id
     //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
-    void ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMultiplier)const;
+    void ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullVector<double,Eigen::Dynamic>& rMultiplier)const;
 
     //! @brief sets the penalty stiffness of the augmented Lagragian to the prescribed value
     //! @param ConstraintId constraint id
@@ -847,12 +848,12 @@ public:
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
     //! @param rRHS rhs
-    void ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS);
+    void ConstraintGetRHSAfterGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rRHS);
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
     //! @param rConstraintMatrix constraint matrix
-    void ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rhsBeforeGaussElimination);
+    void ConstraintGetRHSBeforeGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rhsBeforeGaussElimination);
 
     //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
     //! the result is stored internally in mConstraintRHS
@@ -880,12 +881,12 @@ public:
     //! @brief extract dof values from the node (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void ConstraintExtractGlobalDofValues(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)const;
+    void ConstraintExtractGlobalDofValues(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)const;
 
     //! @brief write dof values to the Lagrange multipliers (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void ConstraintMergeGlobalDofValues(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& dependentDofValues);
+    void ConstraintMergeGlobalDofValues(const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& dependentDofValues);
 
 #endif
 
@@ -970,7 +971,7 @@ public:
     //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
     //! @param rActiveDofGradientVector ... gradient of active dofs
     //! @param rDependentDofGradientVector ... gradient of dependent dofs
-    void ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector) const;
+    void ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) const;
 
     //! @brief ... calculates the potential due to the addition of Lagrange terms
     double ConstraintTotalGetTotalEnergy()const;
@@ -1382,7 +1383,7 @@ public:
     //! @param ... rCenter center of the selection circle
     //! @param ... rMin ... minimum radius
     //! @param ... rMax ... maximum radius
-    void GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCenter, double rMin, double rMax);
+    void GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter, double rMin, double rMax);
 
     //! @brief ... Adds an element to an element group
     //! @param ... rIdentGroup identifier for the group
@@ -1622,7 +1623,7 @@ public:
     virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResidualVector)const;
+    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullVector<double,Eigen::Dynamic>& rResidualVector)const;
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
     virtual void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual)const;
@@ -1751,7 +1752,7 @@ protected:
     SparseMatrixCSRGeneral<double> mConstraintMappingRHS;
 
     //! @brief right hand side of the constraint equations
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mConstraintRHS;
+    FullVector<double,Eigen::Dynamic> mConstraintRHS;
 
     //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
     bool mHaveTmpStaticData;

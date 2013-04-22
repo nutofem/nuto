@@ -1,4 +1,5 @@
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -27,7 +28,7 @@ try
 #ifdef SHOW_TIME
 	myStructure.SetShowTime(true);
 #endif //SHOW_TIME
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> createdGroupIds;
+	NuTo::FullVector<int,Eigen::Dynamic> createdGroupIds;
     myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh",0,"displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
     myStructure.Info();
 
@@ -96,13 +97,13 @@ try
 
 
 	//fix left support
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
-	DirectionX.SetValue(0,0,1.0);
-	DirectionX.SetValue(1,0,0.0);
+	NuTo::FullVector<double,Eigen::Dynamic> DirectionX(2);
+	DirectionX.SetValue(0,1.0);
+	DirectionX.SetValue(1,0.0);
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>DirectionY(2,1);
-	DirectionY.SetValue(0,0,0.0);
-	DirectionY.SetValue(1,0,1.0);
+	NuTo::FullVector<double,Eigen::Dynamic> DirectionY(2);
+	DirectionY.SetValue(0,0.0);
+	DirectionY.SetValue(1,1.0);
 
 	myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_LeftBoundary,DirectionX, 0);
 	myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodes_LowerLeftNode,DirectionY, 0);
@@ -142,10 +143,10 @@ try
 
 	//init some auxiliary variables
 	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector;
+	NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
+	NuTo::FullVector<double,Eigen::Dynamic> intForceVector;
+	NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
+	NuTo::FullVector<double,Eigen::Dynamic> rhsVector;
 
 	//allocate solver
 	NuTo::SparseDirectSolverMUMPS mySolver;
@@ -174,8 +175,8 @@ try
 
 	//update displacements of all nodes according to the new conre mat
 	{
-	    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
-	    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
+		NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
+		NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
 	    myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
 	    myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 	    myStructure.ElementTotalUpdateTmpStaticData();
@@ -221,10 +222,10 @@ try
 			}*/
 
 			// solve
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> oldDisplacementsActiveDOFs;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFs;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> oldDisplacementsActiveDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFs;
 			NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrixCSRVector2);
 			stiffnessMatrixCSR.SetOneBasedIndexing();
 			mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
@@ -280,7 +281,7 @@ try
 			myStructure.ElementTotalUpdateStaticData();
 
 			//store result/plot data
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SupportingForce;
+			NuTo::FullVector<double,Eigen::Dynamic> SupportingForce;
 			myStructure.NodeGroupInternalForce(GrpNodes_RightBoundary,SupportingForce);
 			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SinglePlotData(1,6);
 			SinglePlotData(0,0) = curDisp;
@@ -325,8 +326,8 @@ try
 			myStructure.NodeBuildGlobalDofs();
 
 			//set previous converged displacements
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
+			NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
+			NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
 			myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
 			myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 			myStructure.ElementTotalUpdateTmpStaticData();
@@ -362,8 +363,8 @@ try
 		rhsVector = dispForceVector + extForceVector - intForceVector;
 
         //update displacements of all nodes according to the new conre mat
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
+		NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
+		NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
 		myStructure.NodeExtractDofValues(displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
 		myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
 		myStructure.ElementTotalUpdateTmpStaticData();

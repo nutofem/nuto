@@ -12,7 +12,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 
-NuTo::EngineeringStrain2D::EngineeringStrain2D() : ConstitutiveOutputBase::ConstitutiveOutputBase()
+NuTo::EngineeringStrain2D::EngineeringStrain2D() : ConstitutiveOutputBase::ConstitutiveOutputBase(), FullVector<double,3>()
 {
 	(*this)[0] = 0.0;
 	(*this)[1] = 0.0;
@@ -74,7 +74,7 @@ void NuTo::EngineeringStrain2D::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize EngineeringStrain2D" << std::endl;
 #endif
-    ar & boost::serialization::make_nvp ("EngineeringStrain2DEigen",boost::serialization::base_object< FullVectorFixed<double,3> > ( *this ));
+    ar & boost::serialization::make_nvp ("EngineeringStrain2DEigen",boost::serialization::base_object< FullVector<double,3> > ( *this ));
     ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStrain2D" << std::endl;

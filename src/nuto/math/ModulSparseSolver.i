@@ -2,6 +2,7 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
+#include "nuto/math/FullVector.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
@@ -22,6 +23,7 @@
 %import "nuto/math/NuToMath.i"
 %import "nuto/math/ModulMatrix.i"
 %import "nuto/math/ModulFullMatrix.i"
+%import "nuto/math/ModulFullVector.i"
 %import "nuto/math/ModulSparseMatrix.i"
 
 /* solver */

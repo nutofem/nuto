@@ -204,7 +204,7 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
                     int thisColumn = AColumn;
                     if (thisColumn >= thisRow)
                     {
-                        this->AddEntry(thisRow, thisColumn, transAValue_Mult_BValue * AValue);
+                        this->AddValue(thisRow, thisColumn, transAValue_Mult_BValue * AValue);
                     }
 
                 }
@@ -239,7 +239,7 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
                         int thisColumn = AColumn;
                         if (thisColumn >= thisRow)
                         {
-                            this->AddEntry(thisRow, thisColumn, transAValue_Mult_BValue * AValue);
+                            this->AddValue(thisRow, thisColumn, transAValue_Mult_BValue * AValue);
                         }
 
                     }
@@ -300,12 +300,12 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(cons
                 if(aColumn >= bRow)
                 {
                     // sub value from upper triangle
-                    this->AddEntry(bRow, aColumn, value);
+                    this->AddValue(bRow, aColumn, value);
                 }
                 if (bRow >= aColumn)
                 {
                     // sub transpose from upper triangle
-                    this->AddEntry(aColumn, bRow, value);
+                    this->AddValue(aColumn, bRow, value);
                 }
             }
         }

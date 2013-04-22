@@ -87,12 +87,12 @@ myStructure.NodeBuildGlobalDofs()
 
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 stiffnessMatrixCSRVector2 = nuto.DoubleSparseMatrixCSRVector2General(0,0)
-dispForceVector = nuto.DoubleFullMatrix()
+dispForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector)
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrixCSRVector2)
 
 # build global external load vector
-extForceVector = nuto.DoubleFullMatrix()
+extForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalExternalLoadVector(extForceVector)
 
 # calculate right hand side
@@ -100,7 +100,7 @@ rhsVector = dispForceVector + extForceVector
 
 # solve
 mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullMatrix()
+displacementVector = nuto.DoubleFullVector()
 stiffnessMatrix.SetOneBasedIndexing()
 mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
 
@@ -108,7 +108,7 @@ mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
 myStructure.NodeMergeActiveDofValues(displacementVector)
 
 # calculate residual
-intForceVector = nuto.DoubleFullMatrix()
+intForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
 residualVector = extForceVector - intForceVector
 if ((residualVector).Abs().Max()>1e-8):

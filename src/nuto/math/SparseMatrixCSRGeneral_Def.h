@@ -5,6 +5,7 @@
 
 #include "nuto/math/SparseMatrixCSR.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 //the template class SparseMatrixCSRVector2General is split into definition and implementation, include only the definition here
 #include "nuto/math/SparseMatrixCSRVector2General_Def.h"
 
@@ -61,7 +62,7 @@ public:
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    void AddEntry(int rRow, int rColumn, T rValue);
+    void AddValue(int rRow, int rColumn, const T& rValue);
 
     //! @brief ... print info about the object
     void Info() const;
@@ -70,10 +71,9 @@ public:
     //! @param rFileName ... file name
     void ImportFromSLangText(const char* rFileName);
 
-    //! @brief ... write nonzero matrix entries into a full matrix
-    //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const;
-
+    //! @brief ... write nonzero matrix entries into another
+    //! @param rMatrix ... the matrix
+    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const ;
 
     //! @brief ... add two matrices
     //! @param rOther ... general sparse matrix stored in the CSR format
@@ -112,6 +112,8 @@ public:
     NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const;
 
     NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
+
+    NuTo::FullVector<T, Eigen::Dynamic> TransMult(const NuTo::FullVector<T, Eigen::Dynamic>& rVector) const;
 
     //! @brief ... calculate the transpose of the matrix (transpose row and columns)
     //! @return ... transpose of this matrix (sparse csr storage)

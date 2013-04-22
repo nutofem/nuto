@@ -28,7 +28,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumDamage>
+template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalDamage>
 class NodeDof: public virtual NodeBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -63,6 +63,9 @@ public:
 
     	ar & BOOST_SERIALIZATION_NVP(mTemperatures);
     	ar & BOOST_SERIALIZATION_NVP(mDofTemperatures);
+
+    	ar & BOOST_SERIALIZATION_NVP(mNonlocalDamage);
+    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalDamage);
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -75,14 +78,14 @@ public:
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) override;
+    void SetGlobalDofValues(int rTimeDerivative, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues) override;
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const override;
+    void GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const override;
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
@@ -210,7 +213,7 @@ public:
 
     //! @brief returns the number of temperatures of the node
     //! @return number of temperatures
-    int GetNumTemperatures()const;
+    int GetNumTemperatures()const override;
 
     //! @brief returns the temperature of the node
     //! @return temperature
@@ -237,30 +240,30 @@ public:
 
     //! @brief returns the number of Damage dofs of the node
     //! @return number of Damages
-    int GetNumDamage()const;
+    int GetNumNonlocalDamage()const override;
 
     //! @brief returns the Damage of the node
     //! @return Damage
-    void GetDamage(double* rDamage)const override;
+    void GetNonlocalDamage(double* rNonlocalDamage)const override;
 
     //! @brief returns the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @return Damage
-    void GetDamage(int rTimeDerivative, double* rDamage)const override;
+    void GetNonlocalDamage(int rTimeDerivative, double* rNonlocalDamage)const override;
 
     //! @brief set the Damage of the node
     //! @param rDamage  given Damage
-    void SetDamage(const double* rDamage) override;
+    void SetNonlocalDamage(const double* rDamage) override;
 
     //! @brief set the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @param rDamage  given Damage
-    void SetDamage(int rTimeDerivative, const double* rDamage) override;
+    void SetNonlocalDamage(int rTimeDerivative, const double* rNonlocalDamage) override;
 
     //! @brief gives the global DOF of a Damage component
     //! @param rComponent component
     //! @return global DOF
-    int GetDofDamage()const override;
+    int GetDofNonlocalDamage()const override;
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
@@ -287,8 +290,8 @@ protected:
     boost::array<boost::array<double, TNumTemperatures>,TNumTimeDerivatives+1> mTemperatures;
     boost::array<int, TNumTemperatures> mDofTemperatures;
 
-    boost::array<boost::array<double, TNumDamage>,TNumTimeDerivatives+1> mDamage;
-    boost::array<int, TNumDamage> mDofDamage;
+    boost::array<boost::array<double, TNumNonlocalDamage>,TNumTimeDerivatives+1> mNonlocalDamage;
+    boost::array<int, TNumNonlocalDamage> mDofNonlocalDamage;
 
 };
 

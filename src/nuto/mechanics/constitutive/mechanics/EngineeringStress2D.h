@@ -8,7 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -37,7 +37,7 @@ class ConstitutiveEngineeringStressStrain;
  */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class EngineeringStress2D: public ConstitutiveOutputBase, public FullVectorFixed<double,3>
+class EngineeringStress2D: public ConstitutiveOutputBase, public FullVector<double,3>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -76,7 +76,7 @@ public:
     template<typename OtherDerived>
     EngineeringStress2D& operator=( const Eigen::MatrixBase <OtherDerived>& other)
 	{
-    	this->FullVectorFixed<double,3>::operator=(other);
+    	this->FullVector<double,3>::operator=(other);
     	return *this;
 	}
 

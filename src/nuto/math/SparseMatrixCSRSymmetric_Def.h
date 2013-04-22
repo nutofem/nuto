@@ -39,7 +39,7 @@ public:
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    void AddEntry(int rRow, int rColumn, T rValue);
+    void AddValue(int rRow, int rColumn, const T& rValue);
 
     //! @brief ... print info about the object
     void Info() const;
@@ -48,9 +48,9 @@ public:
     //! @param rFileName ... file name
     void ImportFromSLangText(const char* rFileName);
 
-    //! @brief ... write nonzero matrix entries into a full matrix
+    //! @brief ... write nonzero matrix entries into a matrix
     //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const;
+    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const;
 
     //! @brief ... adds \f$(\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{A})\f$ to the matrix
     //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)

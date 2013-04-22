@@ -53,7 +53,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(NuTo::
 		{
 			if (rFullMatrix(row,col) > tolerance)
 			{
-				this->AddEntry(rFullMatrix(row,col),row,col);
+				this->AddValue(rFullMatrix(row,col),row,col);
 			}
 			if (col!=row && fabs(rFullMatrix(col,row)-rFullMatrix(row,col))>tolerance)
 			{
@@ -107,7 +107,7 @@ int NuTo::SparseMatrixCSRVector2Symmetric<T>::GetNumColumns() const
 //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
 //! @param rValue ... value of the nonzero entry
 template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddEntry(int rRow, int rColumn, T rValue)
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddValue(int rRow, int rColumn, const T& rValue)
 {
 	// check for overflow
 	assert(rRow < INT_MAX);
@@ -163,21 +163,22 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::ImportFromSLangText(const char* r
 	throw MathException("NuTo::SparseMatrixCSRVector2Symmetric::ImportFromSLangText] to be implemented.");
 }
 
-//! @brief ... write nonzero matrix entries into a full matrix
-//! @param rFullMatrix ... the full matrix
+//! @brief ... write nonzero matrix entries into a matrix
+//! @param rMatrix ... the matrix
 template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix) const
 {
+	rMatrix.Resize(this->GetNumRows(), this->GetNumColumns());
 	if (this->mOneBasedIndexing)
 	{
 		for (unsigned int row=0; row<this->mColumns.size(); row++)
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				rFullMatrix(row, this->mColumns[row][col_count]-1) = this->mValues[row][col_count];
+				rMatrix.AddValue(row, this->mColumns[row][col_count]-1,this->mValues[row][col_count]);
 				if ((int)row!=this->mColumns[row][col_count]-1)
 				{
-				    rFullMatrix(this->mColumns[row][col_count]-1, row) = this->mValues[row][col_count];
+				    rMatrix.AddValue(this->mColumns[row][col_count]-1, row, this->mValues[row][col_count]);
 				}
 			}
 		}
@@ -188,10 +189,10 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToFullMatrix(FullMatr
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				rFullMatrix(row, this->mColumns[row][col_count]) = this->mValues[row][col_count];
+				rMatrix.AddValue(row, this->mColumns[row][col_count], this->mValues[row][col_count]);
                 if ((int)row!=this->mColumns[row][col_count])
                 {
-                    rFullMatrix(this->mColumns[row][col_count], row) = this->mValues[row][col_count];
+                    rMatrix.AddValue(this->mColumns[row][col_count], row, this->mValues[row][col_count]);
                 }
 			}
 		}
@@ -366,7 +367,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>& NuTo::SparseMatrixCSRVector2Symmetric<
 	{
 		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
 		{
-			this->AddEntry(row, rOther.mColumns[row][pos], - rOther.mValues[row][pos]);
+			this->AddValue(row, rOther.mColumns[row][pos], - rOther.mValues[row][pos]);
 		}
 	}
 	return *this;
@@ -390,7 +391,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>& NuTo::SparseMatrixCSRVector2Symmetric<
 	{
 		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
 		{
-			this->AddEntry(row, rOther.mColumns[row][pos], rOther.mValues[row][pos]);
+			this->AddValue(row, rOther.mColumns[row][pos], rOther.mValues[row][pos]);
 		}
 	}
 	return *this;
@@ -428,7 +429,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 			const std::vector<T>& otherValueVec(rOther.mValues[thisColumn]);
 			for (unsigned int otherPos = 0; otherPos < otherColumnVec.size(); otherPos++)
 			{
-				result.AddEntry(thisRow, otherColumnVec[otherPos], thisValue * otherValueVec[otherPos]);
+				result.AddValue(thisRow, otherColumnVec[otherPos], thisValue * otherValueVec[otherPos]);
 			}
 		}
 	}

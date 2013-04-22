@@ -119,7 +119,7 @@ void NuTo::Structure::ElementInfo(int rVerboseLevel)const
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 int NuTo::Structure::ElementCreate (const std::string& rElementType,
-        const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodeNumbers)
+        const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers)
 {
 	return ElementCreate(rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA") );
 }
@@ -129,7 +129,7 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes
 int NuTo::Structure::ElementCreate (const std::string& rElementType,
-        const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
+        const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
 {
 	//find unused integer id
 	int elementNumber(mElementMap.size());
@@ -147,13 +147,13 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 	return elementNumber;
 }
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
-        const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers)
+        const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers)
 {
 	ElementCreate(rElementNumber,rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA"));
 }
 
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
-        const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
+        const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
 {
 	// check node number
 	boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(rElementNumber);
@@ -347,7 +347,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
 //! @param rElementType element type
 //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
 //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the element numbers
-NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NuTo::Structure::ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers)
+NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers)
 {
 	std::vector<int> idVec;
 	/// go through the elements
@@ -358,7 +358,7 @@ NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NuTo::Structure::ElementsCre
 	}
 
     //return int identifiers of the new elements as FullMatrix
-	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> ids(idVec);
+	NuTo::FullVector<int,Eigen::Dynamic> ids(idVec);
     return ids;
 }
 
@@ -368,7 +368,7 @@ NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NuTo::Structure::ElementsCre
 //! @param rElementDataType Element data for the elements
 //! @param rIpDataType Integration point data for the elements
 //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the element numbers
-NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NuTo::Structure::ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
+NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
 {
 	std::vector<int> idVec;
 	/// go through the elements
@@ -379,7 +379,7 @@ NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NuTo::Structure::ElementsCre
 	}
 
     //return int identifiers of the new elements as FullMatrix
-	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> ids(idVec);
+	NuTo::FullVector<int,Eigen::Dynamic> ids(idVec);
     return ids;
 }
 

@@ -32,13 +32,13 @@ error = False
 myStructure = nuto.Structure(2)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(-1,-1)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(+2,-1)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(+2,+1)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(-1,+1)))
+myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((-1,-1)))
+myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+2,-1)))
+myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+2,+1)))
+myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((-1,+1)))
 
 #create element
-myElement1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(myNode1,myNode2,myNode3,myNode4)))
+myElement1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4)))
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
@@ -56,13 +56,13 @@ myStructure.ElementSetSection(myElement1,mySection)
 
 
 #set displacements of right node
-myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
-myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullMatrix(2,1,(0.1,0.2)))
+myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullVector((0.1,0.2)))
+myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullVector((0.1,0.2)))
 
 #calculate element stiffness matrix
 Ke = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-colIndex = nuto.IntFullMatrix(0,0)
+rowIndex = nuto.IntFullVector(0)
+colIndex = nuto.IntFullVector(0)
 print "calculate element stiffness in Plane2D4N"
 myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
 if (printResult):
@@ -84,8 +84,8 @@ else:
        error = True;
 
 #calculate internal force vector
-Fi = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
+Fi = nuto.DoubleFullVector(0)
+rowIndex = nuto.IntFullVector(0)
 myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
 if (printResult):
     print "Internal Force"
@@ -96,7 +96,7 @@ if createResult:
     print pathToResultFiles+"Internalforce.txt"
     Fi.WriteToFile(pathToResultFiles+"Internalforce.txt"," ","#Correct result","  ")
 else:
-    FiCorrect = nuto.DoubleFullMatrix(24,1)
+    FiCorrect = nuto.DoubleFullVector(24)
     FiCorrect.ReadFromFile(pathToResultFiles+"Internalforce.txt",1," ")
     if (printResult):
         print "FiCorrect"
@@ -106,21 +106,21 @@ else:
         error = True;
 
 #check stiffness with internal force vector
-prevDisp = nuto.DoubleFullMatrix(0,0) 
+prevDisp = nuto.DoubleFullVector(0) 
 
 delta=1e-4;
 KeApprox = nuto.DoubleFullMatrix(Ke.GetNumRows(),Ke.GetNumColumns())
 curColumn=0
 for theNode in range(0, Ke.GetNumColumns()/myStructure.GetDimension()):
    for theDof in range(0,myStructure.GetDimension()):
-      Fi_new = nuto.DoubleFullMatrix(0,0)
+      Fi_new = nuto.DoubleFullVector(0)
       myStructure.NodeGetDisplacements(theNode,prevDisp)
       prevDisp.AddValue(theDof,0,delta)
       myStructure.NodeSetDisplacements(theNode,prevDisp)
       myStructure.ElementGradientInternalPotential(myElement1,Fi_new,rowIndex)
       prevDisp.AddValue(theDof,0,-delta)
       myStructure.NodeSetDisplacements(theNode,prevDisp)
-      KeApprox.SetBlock ( 0, curColumn, (Fi_new-Fi)*(1./delta))
+      KeApprox.SetColumn ( curColumn, (Fi_new-Fi)*(1./delta))
       curColumn+=1
 
 if (printResult):

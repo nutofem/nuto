@@ -121,7 +121,7 @@ double NuTo::TimeIntegrationBase::ConstraintsCalculateRHS(double curTime)
 //! @param curTime ... current time (within the loadstep)
 //! @param rLoad_j ... external load vector for the independent dofs
 //! @param rLoad_k ... external load vector for the dependent dofs
-void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_j, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_k)
+void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k)
 {
 	if (mLoadRHSFactor.GetNumRows()!=0)
 	{

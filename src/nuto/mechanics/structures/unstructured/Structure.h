@@ -121,7 +121,7 @@ public:
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector);
+    NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector);
 
 //*************************************************
 //************ Node routines        ***************
@@ -156,7 +156,7 @@ public:
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output)	... vector of element ids
-    void NodeGetElements(const int rNodeId, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementNumbers);
+    void NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers);
 
     //! @brief creates a node at coordinate's origin
     //! @param rDOFs space separated string containing the attributes like
@@ -171,7 +171,7 @@ public:
     //! e.g. a 2D structure might have 2 displacements and 1 rotation
     //! @param rCoordinates coordinates of the node
     //! @return node number
-    int NodeCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
+    int NodeCreate(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates);
 
     //! @brief creates a node
     //! @param rDOFs space separated string containing the attributes like
@@ -181,13 +181,13 @@ public:
     //! @param rCoordinates coordinates of the node
     //! @param rNumTimeDerivatives ...  number of time derivatives for the dofs to be stored
     //! @return node number
-    int NodeCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives);
+    int NodeCreate(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives);
 
     //! @brief creates a node
     //! @param rNodeNumber ... node number
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    inline void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)
+    inline void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
     {
     	NodeCreate(rNodeNumber,rDOFs,rCoordinates,0);
     }
@@ -197,13 +197,13 @@ public:
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
     //! @param rNumTimeDerivatives ...  number of time derivatives for the dofs to be stored
-    void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives);
+    void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives);
 
     //! @brief creates multiple nodes
     //! @param rDOFs ... space separated string containing the nodal dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  nodal coordinates (column-wise storage of each nodal coordinate)
     //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the node numbers
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> NodesCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
+    NuTo::FullVector<int,Eigen::Dynamic> NodesCreate(std::string rDOFs, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
 
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
@@ -226,7 +226,7 @@ public:
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues);
+    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues);
 
     using StructureBase::NodeMergeActiveDofValues;
 
@@ -234,20 +234,20 @@ public:
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValuess ... vector of global dependent values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues,const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValuess);
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues,const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValuess);
 
     using StructureBase::NodeMergeDofValues;
 
     //! @brief ...merge additional dof values
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! empty in the standard case, is used in StructureIp
-    virtual void NodeMergeAdditionalGlobalDofValues(int rTimeDerivative, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues){};
+    virtual void NodeMergeAdditionalGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues){};
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const;
+    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
 
     using StructureBase::NodeExtractDofValues;
 
@@ -255,7 +255,7 @@ public:
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractAdditionalGlobalDofValues(int rTimeDerivative, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const{};
+    virtual void NodeExtractAdditionalGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const{};
 
 #ifndef SWIG
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -303,20 +303,20 @@ public:
     //! @param rIpDataType data of the ip (static data, nonlocal data,..)
     //! @return element number
     int ElementCreate (const std::string& rElementType,
-            const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+            const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief Creates an element
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
     //! @return element number
-    int ElementCreate (const std::string& rElementType, const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers);
+    int ElementCreate (const std::string& rElementType, const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers);
 
     //! @brief Creates an element
     //! @param rElementIdent identifier for the element
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
     void ElementCreate (int rElementNumber, const std::string& rElementType,
-            const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers);
+            const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers);
 
     //! @brief Creates an element
     //! @param rElementNumber element number
@@ -326,21 +326,21 @@ public:
     //! @param rIpDataType data of the ip (static data, nonlocal data,..)
     //! @return element number
     void ElementCreate (int rElementNumber, const std::string& rElementType,
-    		const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    		const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief creates multiple elements
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
-    //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the element numbers
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers);
+    //! @return a NuTo::FullVector<int,Eigen::Dynamic> containing the element numbers
+    NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers);
 
     //! @brief creates multiple elements
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @param rElementDataType Element data for the elements
     //! @param rIpDataType Integration point data for the elements
-    //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the element numbers
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    //! @return a NuTo::FullVector<int,Eigen::Dynamic> containing the element numbers
+    NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
@@ -392,7 +392,7 @@ public:
     void ImportFromGmsh (const std::string& rFileName,
     		int rNumTimeDerivatives,
     		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
-    		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementGroupIds);
+    		NuTo::FullVector<int,Eigen::Dynamic>& rElementGroupIds);
 
     //***********************************************************
     //************         Mesh routines        *****************
@@ -430,7 +430,7 @@ public:
 
     //! @brief ... create a new crack with given node-Id's
     //! @param rNodes ... vector of node-Id's
-    int CrackCreate(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodes);
+    int CrackCreate(NuTo::FullVector<int,Eigen::Dynamic>& rNodes);
 
     //! @brief ... delete an existing crack
     //! @param rIdent ... crack identifier
@@ -459,12 +459,12 @@ public:
     //! @brief ... take cracked elements and initiate PhantomNodeMethod
     //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
     //! @return  ... id vector of cracked elements
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> InitiatePhantomNodeMethod(int rNumIp);
+    NuTo::FullVector<int,Eigen::Dynamic> InitiatePhantomNodeMethod(int rNumIp);
 
     //! @brief ... take cracked elements and initiate PhantomNodeMethod
     //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
     //! @return  ... id vector of cracked elements
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> InitiatePhantomNodeMethodTriangle(int rNumIp);
+    NuTo::FullVector<int,Eigen::Dynamic> InitiatePhantomNodeMethodTriangle(int rNumIp);
 #ifndef SWIG
     //! @brief ... extends an existing crack
     //! @param rIdent ... crack identifier
@@ -505,13 +505,13 @@ public:
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
     //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
     //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
-    void CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer);
+    void CopyAndTranslate(NuTo::FullVector<double,Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer);
 #endif //SWIG
 
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-    void CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rOffset);
+    void CopyAndTranslate(NuTo::FullVector<double,Eigen::Dynamic>& rOffset);
 
     //*************************************************
     //************ Info routine         ***************

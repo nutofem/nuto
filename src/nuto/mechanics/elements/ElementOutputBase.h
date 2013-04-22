@@ -4,6 +4,7 @@
 #include <boost/assert.hpp>
 #include <vector>
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 
@@ -33,6 +34,10 @@ public:
     virtual FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble();
 
     virtual FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt();
+
+    virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
+
+    virtual FullVector<int,Eigen::Dynamic>& GetFullVectorInt();
 
     virtual std::vector<int>& GetVectorInt();
 

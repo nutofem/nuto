@@ -6,6 +6,7 @@
 
 #include "nuto/base/Debug.h"
 
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/cracks/CrackExplicit2D.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -104,14 +105,14 @@ void NuTo::Structure::CrackDelete(int rIdent)
 //! @param rIdent ... crack identifier
 int NuTo::Structure::CrackCreate()
 {
-	NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> nodes(0,0);
+	NuTo::FullVector<int,Eigen::Dynamic> nodes(0);
 
 	return NuTo::Structure::CrackCreate(nodes);
 }
 
 //! @brief ... create a new crack with given node-Id's
 //! @param rNodes ... vector of node-Id's
-int NuTo::Structure::CrackCreate(NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodes)
+int NuTo::Structure::CrackCreate(NuTo::FullVector<int,Eigen::Dynamic>& rNodes)
 {
 
 	//find unused integer id
@@ -141,7 +142,7 @@ int NuTo::Structure::CrackCreate(NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dy
 
     size_t numNodes=rNodes.GetNumRows();
     for(size_t thisNodeCount=0;thisNodeCount<numNodes;++thisNodeCount)
-    	CrackPushBack(id,this->NodeGetNodePtr(rNodes(thisNodeCount,0)));
+    	CrackPushBack(id,this->NodeGetNodePtr(rNodes(thisNodeCount)));
 
 	return id;
 
@@ -667,7 +668,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 //! @brief ... take cracked elements and initiate PhantomNodeMethod
 //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
 //! @return  ... id vector of cracked elements
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(int rNumIp)
+NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(int rNumIp)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -986,13 +987,13 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::InitiateP
 	returnVec.reserve(crackedElems.size());
     BOOST_FOREACH(elementBasePtr_t thisElem, crackedElems)
 		returnVec.push_back(thisElem->ElementGetId());
-    return NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>(returnVec);
+    return NuTo::FullVector<int, Eigen::Dynamic>(returnVec);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //! @brief ... take cracked elements and initiate PhantomNodeMethod
 //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
 //! @return  ... id vector of cracked elements
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodTriangle(int rNumIp)
+NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodTriangle(int rNumIp)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1359,7 +1360,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::InitiateP
 	returnVec.reserve(crackedElems.size());
     BOOST_FOREACH(elementBasePtr_t thisElem, crackedElems)
 		returnVec.push_back(thisElem->ElementGetId());
-    return NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>(returnVec);
+    return NuTo::FullVector<int, Eigen::Dynamic>(returnVec);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

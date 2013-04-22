@@ -16,6 +16,7 @@
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"

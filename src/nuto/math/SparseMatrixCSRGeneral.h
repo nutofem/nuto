@@ -85,7 +85,7 @@ int NuTo::SparseMatrixCSRGeneral<T>::GetNumColumns() const
 //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
 //! @param rValue ... value of the nonzero entry
 template <class T>
-void NuTo::SparseMatrixCSRGeneral<T>::AddEntry(int rRow, int rColumn, T rValue)
+void NuTo::SparseMatrixCSRGeneral<T>::AddValue(int rRow, int rColumn, const T& rValue)
 {
 	// check for overflow
     assert(rRow < INT_MAX);
@@ -168,10 +168,11 @@ void NuTo::SparseMatrixCSRGeneral<T>::Info() const
 //! @brief ... write nonzero matrix entries into a full matrix
 //! @param rFullMatrix ... the full matrix
 template <class T>
-void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
+void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const
 {
 	std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
 	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
+	rMatrix.Resize(this->GetNumRows(), this->GetNumColumns());
 	if (this->mOneBasedIndexing)
 	{
 		unsigned int row = 0;
@@ -180,7 +181,7 @@ void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToFullMatrix(NuTo::FullMatrix<
 			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
 			{
 				//rFullMatrix.setValue(row, (*columnIterator) - 1, *valueIterator);
-				rFullMatrix(row, (*columnIterator) - 1) = *valueIterator;
+				rMatrix.AddValue(row, (*columnIterator) - 1, *valueIterator);
 				columnIterator++;
 				valueIterator++;
 			}
@@ -195,7 +196,7 @@ void NuTo::SparseMatrixCSRGeneral<T>::WriteEntriesToFullMatrix(NuTo::FullMatrix<
 			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
 			{
 				//rFullMatrix.setValue(row, *columnIterator, *valueIterator);
-				rFullMatrix(row, *columnIterator) = *valueIterator;
+				rMatrix.AddValue(row, *columnIterator, *valueIterator);
 				columnIterator++;
 				valueIterator++;
 			}
@@ -369,7 +370,7 @@ NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::operator-=  (c
 	{
 		for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
 		{
-			this->AddEntry(row, rOther.mColumns[pos], - rOther.mValues[pos]);
+			this->AddValue(row, rOther.mColumns[pos], - rOther.mValues[pos]);
 		}
 	}
 	return *this;
@@ -394,7 +395,7 @@ NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::operator+=  (c
 	{
 		for (int pos = rOther.mRowIndex[row]; pos < rOther.mRowIndex[row + 1]; pos++)
 		{
-			this->AddEntry(row, rOther.mColumns[pos], rOther.mValues[pos]);
+			this->AddValue(row, rOther.mColumns[pos], rOther.mValues[pos]);
 		}
 	}
 	return *this;
@@ -427,7 +428,7 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (cons
 			{
 				unsigned int otherColumn = rOther.mColumns[otherPos];
 				T otherValue = rOther.mValues[otherPos];
-				result.AddEntry(thisRow, otherColumn, thisValue * otherValue);
+				result.AddValue(thisRow, otherColumn, thisValue * otherValue);
 			}
 		}
 	}
@@ -505,13 +506,13 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral
 }
 
 template <class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+NuTo::FullMatrix <T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
 	if (this->GetNumRows() != rMatrix.GetNumRows())
 	{
 		throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic,Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -549,6 +550,48 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral
 	return result;
 }
 
+
+template <class T>
+NuTo::FullVector <T,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullVector<T, Eigen::Dynamic>& rVector) const
+{
+	if (this->GetNumRows() != rVector.GetNumRows())
+	{
+		throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
+	}
+
+	FullVector<T, Eigen::Dynamic> result(this->GetNumColumns());
+	if (this->HasOneBasedIndexing())
+	{
+		// loop over columns of transpose
+		for (int column = 0; column < this->GetNumRows(); column++)
+		{
+			// perform multiplication
+			for (int pos = this->mRowIndex[column] - 1; pos < this->mRowIndex[column + 1] - 1; pos++)
+			{
+				int row = this->mColumns[pos] - 1;
+				T value = this->mValues[pos];
+				result(row) += value * rVector(column);
+			}
+		}
+	}
+	else
+	{
+		// loop over columns of transpose
+		for (int column = 0; column < this->GetNumRows(); column++)
+		{
+			// perform multiplication
+			for (int pos = this->mRowIndex[column]; pos < this->mRowIndex[column + 1]; pos++)
+			{
+				int row = this->mColumns[pos];
+				T value = this->mValues[pos];
+				result(row) += value * rVector(column);
+			}
+		}
+	}
+	return result;
+}
+
+
 //! @brief ... calculate the transpose of the matrix (transpose row and columns)
 //! @return ... transpose of this matrix (sparse csr storage)
 template <class T>
@@ -561,7 +604,7 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::Transpose() con
 		{
 			for (int pos = this->mRowIndex[row] - 1; pos < this->mRowIndex[row + 1] - 1; pos++)
 			{
-				transMatrix.AddEntry(this->mColumns[pos] - 1, row, this->mValues[pos]);
+				transMatrix.AddValue(this->mColumns[pos] - 1, row, this->mValues[pos]);
 			}
 		}
 		transMatrix.SetOneBasedIndexing();
@@ -572,7 +615,7 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::Transpose() con
 		{
 			for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
 			{
-				transMatrix.AddEntry(this->mColumns[pos], row, this->mValues[pos]);
+				transMatrix.AddValue(this->mColumns[pos], row, this->mValues[pos]);
 			}
 		}
 	}

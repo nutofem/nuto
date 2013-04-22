@@ -49,18 +49,18 @@ int NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetNumLagrangeMultipliers(
 
 //! @brief returns the Lagrange Multiplier
 //! first col Lagrange, second column slack variables
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeMultiplier(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeMultiplier(FullVector<double,Eigen::Dynamic>& rLagrangeMultiplier)const
 {
-    rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
+    rLagrangeMultiplier.Resize(mGroup->GetNumMembers());
     for (unsigned int count=0; count<mLagrangeValue.size(); count++)
             rLagrangeMultiplier(count,0) = mLagrangeValue[count];
 }
 
 //! @brief returns the Lagrange Multiplier dofs
 //! first col Lagrangedofs
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetDofsLagrangeMultiplier(FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const
 {
-    rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
+    rLagrangeMultiplier.Resize(mGroup->GetNumMembers());
     for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
         rLagrangeMultiplier(count,0) = mLagrangeDOF[count];
 }
@@ -87,7 +87,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofs(int& rDOF)
 //! @brief write dof values to constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
 {
     assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -113,7 +113,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofValues(const 
 //! @brief extract dof values from the constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
 {
     assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -185,54 +185,54 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateCoefficientMatri
         {
         case NuTo::Constraint::EQUAL:
             //derivative with respect to ux and lambda
-            rResult.AddEntry(curNodeEntry,curNodeEntry+1,mDirection[0]);
+            rResult.AddValue(curNodeEntry,curNodeEntry+1,mDirection[0]);
             //derivative with respect to uy and lambda
-            rResult.AddEntry(curNodeEntry,curNodeEntry+2,mDirection[1]);
+            rResult.AddValue(curNodeEntry,curNodeEntry+2,mDirection[1]);
             //derivative with respect to ux^2
-            rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
+            rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
             //derivative with respect to ux and uy
-            rResult.AddEntry(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
+            rResult.AddValue(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
             //derivative with respect to uy^2
-            rResult.AddEntry(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
+            rResult.AddValue(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
         break;
         case NuTo::Constraint::SMALLER:
             if (disp[0]*mDirection[0]+disp[1]*mDirection[1]-mRHS>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to ux and lambda
-                rResult.AddEntry(curNodeEntry,curNodeEntry+1,mDirection[0]);
+                rResult.AddValue(curNodeEntry,curNodeEntry+1,mDirection[0]);
                 //derivative with respect to uy and lambda
-                rResult.AddEntry(curNodeEntry,curNodeEntry+2,mDirection[1]);
+                rResult.AddValue(curNodeEntry,curNodeEntry+2,mDirection[1]);
                 //derivative with respect to ux^2
-                rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
+                rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
                 //derivative with respect to ux and uy
-                rResult.AddEntry(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
+                rResult.AddValue(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
                 //derivative with respect to uy^2
-                rResult.AddEntry(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
+                rResult.AddValue(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
             }
             else
             {
                 //derivative with respect to lambda^2
-                rResult.AddEntry(curNodeEntry,curNodeEntry,-1./mPenalty);
+                rResult.AddValue(curNodeEntry,curNodeEntry,-1./mPenalty);
             }
         break;
         case NuTo::Constraint::GREATER:
             if (mRHS-disp[0]*mDirection[0]-disp[1]*mDirection[1]>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to ux and lambda
-                rResult.AddEntry(curNodeEntry,curNodeEntry+1,-mDirection[0]);
+                rResult.AddValue(curNodeEntry,curNodeEntry+1,-mDirection[0]);
                 //derivative with respect to uy and lambda
-                rResult.AddEntry(curNodeEntry,curNodeEntry+2,-mDirection[1]);
+                rResult.AddValue(curNodeEntry,curNodeEntry+2,-mDirection[1]);
                 //derivative with respect to ux^2
-                rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
+                rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty*mDirection[0]*mDirection[0]);
                 //derivative with respect to ux and uy
-                rResult.AddEntry(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
+                rResult.AddValue(curNodeEntry+1,curNodeEntry+2,mPenalty*mDirection[0]*mDirection[1]);
                 //derivative with respect to uy^2
-                rResult.AddEntry(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
+                rResult.AddValue(curNodeEntry+2,curNodeEntry+2,mPenalty*mDirection[1]*mDirection[1]);
             }
             else
             {
                 //derivative with respect to lambda^2
-                rResult.AddEntry(curNodeEntry,curNodeEntry,-1./mPenalty);
+                rResult.AddValue(curNodeEntry,curNodeEntry,-1./mPenalty);
             }
         break;
         default:
@@ -243,11 +243,11 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateCoefficientMatri
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     int dof(3*mLagrangeDOF.size());
-    rResult.Resize(dof,1);
+    rResult.Resize(dof);
     rGlobalDofs.resize(dof);
     int curNodeEntry(0);
     int theNode(0);

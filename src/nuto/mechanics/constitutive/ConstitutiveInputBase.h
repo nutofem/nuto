@@ -34,6 +34,7 @@ class TemperatureGradient3D;
 class Logger;
 class SecondPiolaKirchhoffStress3D;
 class StructureBase;
+class NonlocalDamage;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Jörg F. Unger, BAM
@@ -56,7 +57,7 @@ public:
     virtual const DeformationGradient3D& GetDeformationGradient3D()const;
     virtual double GetTemperature()const;
     virtual const TemperatureGradient3D& GetTemperatureGradient3D()const;
-    virtual double GetDamage()const;
+    virtual const NonlocalDamage& GetNonlocalDamage()const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -32,7 +32,7 @@ int main()
 		DBG_POSITION_INFO("Coordinates Matrix")
 		Coordinates.Info();
 
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Nodes = myStructure.NodesCreate("displacements", Coordinates);
+		NuTo::FullVector<int,Eigen::Dynamic> Nodes = myStructure.NodesCreate("displacements", Coordinates);
 
 		// create elements
 		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidences(4,4);
@@ -61,7 +61,7 @@ int main()
 		DBG_POSITION_INFO("Incidence Matrix")
 		Coordinates.Info();
 
-	    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences);
+		NuTo::FullVector<int,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences);
 
 	    // create constitutive law
 	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");

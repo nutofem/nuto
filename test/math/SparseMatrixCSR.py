@@ -53,19 +53,19 @@ if (printResult):
 
 # sparse matrix with zero based indexing ###################################
 A_sparse = nuto.DoubleSparseMatrixCSRGeneral(5,5)
-A_sparse.AddEntry(0,0,1)
-A_sparse.AddEntry(1,0,-2)
-A_sparse.AddEntry(3,0,-4)
-A_sparse.AddEntry(0,1,-1)
-A_sparse.AddEntry(1,1,5)
-A_sparse.AddEntry(4,1,8)
-A_sparse.AddEntry(2,2,4)
-A_sparse.AddEntry(3,2,2)
-A_sparse.AddEntry(0,3,-3)
-A_sparse.AddEntry(2,3,6)
-A_sparse.AddEntry(3,3,7)
-A_sparse.AddEntry(2,4,4)
-A_sparse.AddEntry(4,4,-5)
+A_sparse.AddValue(0,0,1)
+A_sparse.AddValue(1,0,-2)
+A_sparse.AddValue(3,0,-4)
+A_sparse.AddValue(0,1,-1)
+A_sparse.AddValue(1,1,5)
+A_sparse.AddValue(4,1,8)
+A_sparse.AddValue(2,2,4)
+A_sparse.AddValue(3,2,2)
+A_sparse.AddValue(0,3,-3)
+A_sparse.AddValue(2,3,6)
+A_sparse.AddValue(3,3,7)
+A_sparse.AddValue(2,4,4)
+A_sparse.AddValue(4,4,-5)
 if (printResult):
     print "matrix A, compressed storage, zero based indexing"
     A_sparse.Info()
@@ -105,19 +105,19 @@ if (printResult):
 # (interface still uses zero based indexing)
 B_sparse = nuto.DoubleSparseMatrixCSRGeneral(5,5,13)
 B_sparse.SetOneBasedIndexing()
-B_sparse.AddEntry(0,0,1)
-B_sparse.AddEntry(1,0,-2)
-B_sparse.AddEntry(3,0,-4)
-B_sparse.AddEntry(0,1,-1)
-B_sparse.AddEntry(1,1,5)
-B_sparse.AddEntry(4,1,8)
-B_sparse.AddEntry(2,2,4)
-B_sparse.AddEntry(3,2,2)
-B_sparse.AddEntry(0,3,-3)
-B_sparse.AddEntry(2,3,6)
-B_sparse.AddEntry(3,3,7)
-B_sparse.AddEntry(2,4,4)
-B_sparse.AddEntry(4,4,-5)
+B_sparse.AddValue(0,0,1)
+B_sparse.AddValue(1,0,-2)
+B_sparse.AddValue(3,0,-4)
+B_sparse.AddValue(0,1,-1)
+B_sparse.AddValue(1,1,5)
+B_sparse.AddValue(4,1,8)
+B_sparse.AddValue(2,2,4)
+B_sparse.AddValue(3,2,2)
+B_sparse.AddValue(0,3,-3)
+B_sparse.AddValue(2,3,6)
+B_sparse.AddValue(3,3,7)
+B_sparse.AddValue(2,4,4)
+B_sparse.AddValue(4,4,-5)
 if (printResult):
     print "matrix B, compressed storage, one based indexing"
     B_sparse.Info()
@@ -144,15 +144,15 @@ if (printResult):
 # sparse matrix vector of vector with one based indexing ###################
 # (interface still uses zero based indexing)
 B2_sparse = nuto.DoubleSparseMatrixCSRVector2General(4,4)
-B2_sparse.AddEntry(1,1,3)
-B2_sparse.AddEntry(0,1,8)
-B2_sparse.AddEntry(0,0,2)
-B2_sparse.AddEntry(1,3,3)
-B2_sparse.AddEntry(1,2,5)
-B2_sparse.AddEntry(3,2,1)
-B2_sparse.AddEntry(3,3,7)
-B2_sparse.AddEntry(3,0,9)
-B2_sparse.AddEntry(3,1,4)
+B2_sparse.AddValue(1,1,3)
+B2_sparse.AddValue(0,1,8)
+B2_sparse.AddValue(0,0,2)
+B2_sparse.AddValue(1,3,3)
+B2_sparse.AddValue(1,2,5)
+B2_sparse.AddValue(3,2,1)
+B2_sparse.AddValue(3,3,7)
+B2_sparse.AddValue(3,0,9)
+B2_sparse.AddValue(3,1,4)
 if (printResult):
     print "matrix B2, compressed storage, vector of vectors, one based indexing"
     B_sparse.Info()
@@ -162,9 +162,9 @@ if (printResult):
     print ""
 
 C2_sparse = nuto.DoubleSparseMatrixCSRVector2General(4,1)
-C2_sparse.AddEntry(0,0,4)
-C2_sparse.AddEntry(1,0,2)
-C2_sparse.AddEntry(3,0,3)
+C2_sparse.AddValue(0,0,4)
+C2_sparse.AddValue(1,0,2)
+C2_sparse.AddValue(3,0,3)
 if (printResult):
     print "matrix C2, converted to full matrix"
     C2_Full = nuto.DoubleFullMatrix(C2_sparse);
@@ -172,8 +172,8 @@ if (printResult):
     print ""
 
 D2_sparse = nuto.DoubleSparseMatrixCSRVector2General(1,5)
-D2_sparse.AddEntry(0,1,4)
-D2_sparse.AddEntry(0,4,1)
+D2_sparse.AddValue(0,1,4)
+D2_sparse.AddValue(0,4,1)
 if (printResult):
     print "matrix D2, converted to full matrix"
     D2_Full = nuto.DoubleFullMatrix(D2_sparse);

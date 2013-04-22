@@ -15,6 +15,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
+#include "nuto/mechanics/constitutive/mechanics/NonlocalDamage.h"
 #include "nuto/mechanics/constitutive/thermal/Temperature.h"
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
 
@@ -50,7 +51,7 @@ const NuTo::TemperatureGradient3D& NuTo::ConstitutiveInputBase::GetTemperatureGr
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetTemperatureGradient3D] not implemented for this input object.");
 }
 
-double NuTo::ConstitutiveInputBase::GetDamage()const
+const NuTo::NonlocalDamage& NuTo::ConstitutiveInputBase::GetNonlocalDamage()const
 {
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetDamage] not implemented for this input object.");
 }

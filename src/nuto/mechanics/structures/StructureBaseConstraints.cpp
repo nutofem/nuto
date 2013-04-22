@@ -419,7 +419,7 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination(Nu
 //! @brief returns the constraint vector after gauss elimination
 //! rConstraintMatrix*DOFS = RHS
 //! @param rConstraintMatrix constraint matrix
-void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)
+void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rRHS)
 {
     if (mNodeNumberingRequired)
     {
@@ -431,7 +431,7 @@ void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullMatrix
 //! @brief returns the constraint vector after gauss elimination
 //! rConstraintMatrix*DOFS = RHS
 //! @param rConstraintMatrix constraint matrix
-void NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rhsBeforeGaussElimination)
+void NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rhsBeforeGaussElimination)
 {
     if (mNodeNumberingRequired)
     {
@@ -439,7 +439,7 @@ void NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination(NuTo::FullMatri
     }
     int numLinearConstraints = ConstraintGetNumLinearConstraints();
 
-    rhsBeforeGaussElimination.Resize(numLinearConstraints,1);
+    rhsBeforeGaussElimination.Resize(numLinearConstraints);
 
     //calculate the rhs vector of the constraint equations before the Gauss elimination
     int curConstraintEquations(0);
@@ -480,7 +480,7 @@ void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
         throw MechanicsException("[NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination] build global numbering first");
     }
 
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsBeforeGaussElimination;
+    FullVector<double,Eigen::Dynamic> rhsBeforeGaussElimination;
     ConstraintGetRHSBeforeGaussElimination(rhsBeforeGaussElimination);
 
     if (mConstraintMappingRHS.GetNumColumns()!=rhsBeforeGaussElimination.GetNumRows())
@@ -832,7 +832,7 @@ void NuTo::StructureBase::ConstraintRenumberGlobalDofs(const std::vector<int>& m
 //! @brief extract dof values from the node (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)const
+void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues)const
 {
     for(boost::ptr_map<int,ConstraintBase>::const_iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
     {
@@ -847,7 +847,7 @@ void NuTo::StructureBase::ConstraintExtractGlobalDofValues(FullMatrix<double,Eig
 //! @brief write dof values to the Lagrange multipliers (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::StructureBase::ConstraintMergeGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& dependentDofValues)
+void NuTo::StructureBase::ConstraintMergeGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& dependentDofValues)
 {
     for(boost::ptr_map<int,ConstraintBase>::iterator it =mConstraintMap.begin(); it!=mConstraintMap.end();it++)
     {
@@ -896,11 +896,11 @@ void NuTo::StructureBase::ConstraintsBuildGlobalCoefficientSubMatrices0General(S
                         int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                     }
                 }
@@ -920,11 +920,11 @@ void NuTo::StructureBase::ConstraintsBuildGlobalCoefficientSubMatrices0General(S
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
                             // add upper triangle and diagonal
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixJK.AddEntry(globalRowDof , globalColumnDof - this->mNumActiveDofs , values[rowCount][colCount]);
+                            rMatrixJK.AddValue(globalRowDof , globalColumnDof - this->mNumActiveDofs , values[rowCount][colCount]);
                         }
                     }
                 }
@@ -971,11 +971,11 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
                         int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                     }
 
@@ -990,11 +990,11 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
                         int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                             rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, values[rowCount][colCount]);
+                             rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                             rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                             rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                     }
                 }
@@ -1016,11 +1016,11 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
                             continue;
                         if (globalRowDof < this->mNumActiveDofs)
                         {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, values[rowCount][colCount]);
+                            rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, values[rowCount][colCount]);
                         }
                     }
 
@@ -1037,11 +1037,11 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0General(Sp
                             continue;
                         if (globalRowDof < this->mNumActiveDofs)
                         {
-                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                     }
                 }
@@ -1086,11 +1086,11 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
                         int globalColumnDof = constraintMatrixGlobalDofs[columns[rowCount][colCount]-constraintMatrix.HasOneBasedIndexing()];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                         }
                         else
                         {
-                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                     }
                 }
@@ -1139,12 +1139,12 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
                             // add upper triangle and diagonal
                             if(globalColumnDof >= globalRowDof)
                             {
-                                rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, values[rowCount][colCount]);
+                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, values[rowCount][colCount]);
                             }
                         }
                         else
                         {
-                            rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                         }
                     }
                 }
@@ -1161,7 +1161,7 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
                             // add upper triangle and diagonal
                             if(globalColumnDof >= globalRowDof)
                             {
-                                rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
+                                rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, values[rowCount][colCount]);
                             }
                         }
                     }
@@ -1174,10 +1174,10 @@ void NuTo::StructureBase::ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(
 //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
 //! @param rActiveDofGradientVector ... gradient of active dofs
 //! @param rDependentDofGradientVector ... gradient of dependent dofs
-void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector) const
+void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) const
 {
     // define variables storing the element contribution outside the loop
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> constraintVector;
+    NuTo::FullVector<double,Eigen::Dynamic> constraintVector;
     std::vector<int> constraintVectorGlobalDofs;
 
     // loop over all constraints
@@ -1199,13 +1199,13 @@ void NuTo::StructureBase::ConstraintBuildGlobalGradientInternalPotentialSubVecto
             int globalRowDof = constraintVectorGlobalDofs[rowCount];
             if (globalRowDof < this->mNumActiveDofs)
             {
-                rActiveDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
+                rActiveDofGradientVector(globalRowDof) += constraintVector(rowCount,0);
             }
             else
             {
                 globalRowDof -= this->mNumActiveDofs;
                 assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-                rDependentDofGradientVector(globalRowDof,0) += constraintVector(rowCount,0);
+                rDependentDofGradientVector(globalRowDof) += constraintVector(rowCount,0);
             }
         }
     }
@@ -1232,7 +1232,7 @@ double NuTo::StructureBase::ConstraintTotalGetTotalEnergy()const
 //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
 //! @param ConstraintId constraint id
 //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
-void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rMultiplier)const
+void NuTo::StructureBase::ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullVector<double,Eigen::Dynamic>& rMultiplier)const
 {
     // get iterator
     boost::ptr_map<int,ConstraintBase>::const_iterator it = this->mConstraintMap.find(ConstraintId);

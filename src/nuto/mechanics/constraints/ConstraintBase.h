@@ -9,6 +9,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo

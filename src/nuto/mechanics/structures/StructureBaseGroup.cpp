@@ -217,7 +217,7 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
 //! @param ... rCenter center of the selection circle
 //! @param ... rMin ... minimum radius
 //! @param ... rMax ... maximum radius
-void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCenter, double rMin, double rMax)
+void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter, double rMin, double rMax)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -251,18 +251,18 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullMat
         {
         case 1:
             nodePtr->GetCoordinates1D(coordinates);
-            r2 = (coordinates[0]-rCenter(0,0))*(coordinates[0]-rCenter(0,0));
+            r2 = (coordinates[0]-rCenter(0))*(coordinates[0]-rCenter(0));
             break;
         case 2:
             nodePtr->GetCoordinates2D(coordinates);
-            r2 = (coordinates[0]-rCenter(0,0))*(coordinates[0]-rCenter(0,0))
-                +(coordinates[1]-rCenter(1,0))*(coordinates[1]-rCenter(1,0));
+            r2 = (coordinates[0]-rCenter(0))*(coordinates[0]-rCenter(0))
+                +(coordinates[1]-rCenter(1))*(coordinates[1]-rCenter(1));
             break;
         case 3:
             nodePtr->GetCoordinates3D(coordinates);
-            r2 = (coordinates[0]-rCenter(0,0))*(coordinates[0]-rCenter(0,0))
-                +(coordinates[1]-rCenter(1,0))*(coordinates[1]-rCenter(1,0))
-                +(coordinates[2]-rCenter(2,0))*(coordinates[2]-rCenter(2,0));
+            r2 = (coordinates[0]-rCenter(0))*(coordinates[0]-rCenter(0))
+                +(coordinates[1]-rCenter(1))*(coordinates[1]-rCenter(1))
+                +(coordinates[2]-rCenter(2))*(coordinates[2]-rCenter(2));
             break;
         default:
             throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] unsupported dimension of the structure.");

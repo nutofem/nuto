@@ -39,16 +39,14 @@ lx = 1.;
 
 #2 nodes 1 element grid
 #create nodes
-Coordinates = nuto.DoubleFullMatrix(1,1);
-Coordinates.SetValue(0,0,0.0);
+Coordinates = nuto.DoubleFullVector(1);
+Coordinates.SetValue(0,0,0);
 node1 = myStructure.NodeCreate("displacements",Coordinates);
 
 Coordinates.SetValue(0,0,lx);
 node2 = myStructure.NodeCreate("displacements",Coordinates);
 
-Incidence = nuto.IntFullMatrix(2,1);
-Incidence.SetValue(0,0,node1);
-Incidence.SetValue(1,0,node2);
+Incidence = nuto.IntFullVector((node1,node2));
 myStructure.ElementCreate("TRUSS1D2N",Incidence);
 
 #create constitutive law
@@ -120,10 +118,10 @@ myStructure.ElementTotalUpdateTmpStaticData();
 
 #init some auxiliary variables
 stiffnessMatrixCSRVector2 = nuto.DoubleSparseMatrixCSRVector2General(0,0);
-dispForceVector = nuto.DoubleFullMatrix(0,0);
-intForceVector = nuto.DoubleFullMatrix(0,0);
-extForceVector = nuto.DoubleFullMatrix(0,0);
-rhsVector = nuto.DoubleFullMatrix(0,0);
+dispForceVector = nuto.DoubleFullVector(0);
+intForceVector = nuto.DoubleFullVector(0);
+extForceVector = nuto.DoubleFullVector(0);
+rhsVector = nuto.DoubleFullVector(0);
 
 #allocate solver
 mySolver = nuto.SparseDirectSolverMUMPS();
@@ -141,9 +139,13 @@ myStructure.ConstraintSetRHS(constraintLHS,curDisp);
 #myStructure.NodeBuildGlobalDofs();
 
 #update displacements of all nodes according to the new conre mat
-displacementsActiveDOFsCheck = nuto.DoubleFullMatrix(0,0);
-displacementsDependentDOFsCheck = nuto.DoubleFullMatrix(0,0);
+displacementsActiveDOFsCheck = nuto.DoubleFullVector(0);
+displacementsDependentDOFsCheck = nuto.DoubleFullVector(0);
 myStructure.NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+print "displacementsActiveDOFsCheck";
+displacementsActiveDOFsCheck.Info();
+print "displacementsDependentDOFsCheck";
+displacementsDependentDOFsCheck.Info();
 myStructure.NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
 myStructure.ElementTotalUpdateTmpStaticData();
 
@@ -153,6 +155,12 @@ myStructure.BuildGlobalExternalLoadVector(extForceVector);
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
 #intForceVector.Info(10,13);
 rhsVector = extForceVector + dispForceVector - intForceVector;
+print "extForceVector";
+extForceVector.Info();
+print "dispForceVector";
+dispForceVector.Info();
+print "intForceVector";
+intForceVector.Info();
 
 #calculate absolute tolerance for matrix entries to be not considered as zero
 maxValue = 0.2/4.2; minValue = 0.; ToleranceZeroStiffness = 0.;
@@ -174,8 +182,8 @@ if (PRINTRESULT):
 #repeat until max displacement is reached
 convergenceStatusLoadSteps = False;
 loadstep = 1;
-displacementsActiveDOFsLastConverged = nuto.DoubleFullMatrix();
-displacementsDependentDOFsLastConverged = nuto.DoubleFullMatrix();
+displacementsActiveDOFsLastConverged = nuto.DoubleFullVector();
+displacementsDependentDOFsLastConverged = nuto.DoubleFullVector();
 while (not convergenceStatusLoadSteps):
     normResidual = 1.;
     maxResidual = 1.;
@@ -198,10 +206,10 @@ while (not convergenceStatusLoadSteps):
         normRHS = rhsVector.Norm();
 
         # solve
-        deltaDisplacementsActiveDOFs = nuto.DoubleFullMatrix();
-        oldDisplacementsActiveDOFs = nuto.DoubleFullMatrix();
-        displacementsActiveDOFs = nuto.DoubleFullMatrix();
-        displacementsDependentDOFs = nuto.DoubleFullMatrix();
+        deltaDisplacementsActiveDOFs = nuto.DoubleFullVector();
+        oldDisplacementsActiveDOFs = nuto.DoubleFullVector();
+        displacementsActiveDOFs = nuto.DoubleFullVector();
+        displacementsDependentDOFs = nuto.DoubleFullVector();
         if (PRINTRESULT):
             stiffnessMatrixCSRVector2Full = nuto.DoubleFullMatrix(stiffnessMatrixCSRVector2);
             stiffnessMatrixCSRVector2Full.Info(20,10);
@@ -209,6 +217,8 @@ while (not convergenceStatusLoadSteps):
         stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrixCSRVector2);
         stiffnessMatrixCSR.SetOneBasedIndexing();
         mySolver.Solve(stiffnessMatrixCSR, rhsVector, deltaDisplacementsActiveDOFs);
+        print "deltaDisplacementsActiveDOFs ";
+        deltaDisplacementsActiveDOFs.Info();
 
         # write displacements to node
         myStructure.NodeExtractDofValues(0,oldDisplacementsActiveDOFs, displacementsDependentDOFs);
@@ -223,6 +233,8 @@ while (not convergenceStatusLoadSteps):
 
             # calculate residual
             myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
+            print "intForceVEctor ";
+            intForceVector.Info();
             rhsVector = extForceVector - intForceVector;
             normResidual = rhsVector.Norm();
             if (PRINTRESULT):
@@ -230,6 +242,7 @@ while (not convergenceStatusLoadSteps):
             alpha*=0.5;
             if(not(alpha>1e-3 and normResidual>normRHS*(1-0.5*alpha) and normResidual>1e-5)):
 		        break;
+        exit(0);
         if (normResidual>normRHS*(1-0.5*alpha)  and normResidual>1e-5):
             convergenceStatus=2;
             break;
@@ -267,26 +280,26 @@ while (not convergenceStatusLoadSteps):
 	SinglePlotData = nuto.DoubleFullMatrix(1,7);
 
         #displacements
-        dispNode = nuto.DoubleFullMatrix();
+        dispNode = nuto.DoubleFullVector();
         myStructure.NodeGetDisplacements(node1,dispNode);
         SinglePlotData.SetValue(0,0,dispNode.GetValue(0,0));
         myStructure.NodeGetDisplacements(node2,dispNode);
         SinglePlotData.SetValue(0,1,dispNode.GetValue(0,0));
 
         #boundary force
-        SupportingForce = nuto.DoubleFullMatrix();
+        SupportingForce = nuto.DoubleFullVector();
         myStructure.NodeGroupInternalForce(GrpNodesLeftBoundary,SupportingForce);
         SinglePlotData.SetValue(0,2,SupportingForce.GetValue(0,0));
         myStructure.NodeGroupInternalForce(GrpNodesRightBoundary,SupportingForce);
         SinglePlotData.SetValue(0,3,SupportingForce.GetValue(0,0));
 
         #lagrange multiplier
-        lagrangeMultiplier = nuto.DoubleFullMatrix();
+        lagrangeMultiplier = nuto.DoubleFullVector();
         myStructure.ConstraintLagrangeGetMultiplier(constraintLHS,lagrangeMultiplier);
         SinglePlotData.SetValue(0,4,lagrangeMultiplier.GetValue(0,0));
         myStructure.ConstraintLagrangeGetMultiplier(constraintRHS,lagrangeMultiplier);
         SinglePlotData.SetValue(0,5,lagrangeMultiplier.GetValue(0,0));
-
+        
         #number of Newton iterations
         SinglePlotData.SetValue(0,6,numNewtonIterations);
 
@@ -350,6 +363,8 @@ while (not convergenceStatusLoadSteps):
     if (not convergenceStatusLoadSteps):
         #update new displacement of RHS
         myStructure.ConstraintSetRHS(constraintLHS,curDisp);
+        print "cur Disp ", curDisp
+        exit(0)
 
         # build global dof numbering and conre mat
         myStructure.NodeBuildGlobalDofs();
@@ -358,12 +373,12 @@ while (not convergenceStatusLoadSteps):
         myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
         numRemoved = stiffnessMatrixCSRVector2.RemoveZeroEntries(ToleranceZeroStiffness,0);
         numEntries = stiffnessMatrixCSRVector2.GetNumEntries();
-	if (PRINTRESULT):
-            print "stiffnessMatrix: num zero removed " , numRemoved , ", numEntries " , numEntries;
+#	if (PRINTRESULT):
+#            print "stiffnessMatrix: num zero removed " , numRemoved , ", numEntries " , numEntries;
 
         #update displacements of all nodes according to the new conre mat
-        displacementsActiveDOFsCheck = nuto.DoubleFullMatrix();
-        displacementsDependentDOFsCheck = nuto.DoubleFullMatrix();
+        displacementsActiveDOFsCheck = nuto.DoubleFullVector();
+        displacementsDependentDOFsCheck = nuto.DoubleFullVector();
 	myStructure.NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
         myStructure.NodeMergeActiveDofValues(displacementsActiveDOFsCheck);
         myStructure.ElementTotalUpdateTmpStaticData();
@@ -432,6 +447,7 @@ if ((PlotDataRef-PlotData).Abs().Max()>1e-4):
     print "delta results";
     (PlotDataRef-PlotData).Info(10,7);
     print "[ConstraintLagrange1D] result is not correct." , (PlotDataRef-PlotData).Abs().Max();
+    error = True;
 else:
     print "[ConstraintLagrange1D] nice, result is correct";
 

@@ -1,4 +1,5 @@
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -14,63 +15,63 @@ int main()
 
 	//3x3 nodes 2x2 element grid
 	//create nodes
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(2,1);
-	Coordinates(0,0) = 0.0;
-	Coordinates(1,0) = 0.0;
+	NuTo::FullVector<double,Eigen::Dynamic> Coordinates(2);
+	Coordinates(0) = 0.0;
+	Coordinates(1) = 0.0;
 	int node1 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 1.0;
-	Coordinates(1,0) = 0.0;
+	Coordinates(0) = 1.0;
+	Coordinates(1) = 0.0;
 	int node2 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 2.0;
-	Coordinates(1,0) = 0.0;
+	Coordinates(0) = 2.0;
+	Coordinates(1) = 0.0;
 	int node3 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 1.0;
-	Coordinates(1,0) = 1.0;
+	Coordinates(0) = 1.0;
+	Coordinates(1) = 1.0;
 	int node5 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 0.0;
-	Coordinates(1,0) = 1.0;
+	Coordinates(0) = 0.0;
+	Coordinates(1) = 1.0;
 	int node4 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 2.0;
-	Coordinates(1,0) = 1.0;
+	Coordinates(0) = 2.0;
+	Coordinates(1) = 1.0;
 	int node6 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 2.0;
+	Coordinates(0) = 0.0;
+    Coordinates(1) = 2.0;
 	int node7 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 1.0;
-	Coordinates(1,0) = 2.0;
+	Coordinates(0) = 1.0;
+	Coordinates(1) = 2.0;
 	int node8 = myStructure.NodeCreate("displacements",Coordinates);
 
-	Coordinates(0,0) = 2.0;
-	Coordinates(1,0) = 2.0;
+	Coordinates(0) = 2.0;
+	Coordinates(1) = 2.0;
 	int node9 = myStructure.NodeCreate("displacements",Coordinates);
 
 	//create elements
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(4,1);
-	Incidence(0,0) = node1;
-	Incidence(1,0) = node2;
-	Incidence(2,0) = node5;
-	Incidence(3,0) = node4;
+	NuTo::FullVector<int,Eigen::Dynamic> Incidence(4);
+	Incidence(0) = node1;
+	Incidence(1) = node2;
+	Incidence(2) = node5;
+	Incidence(3) = node4;
     int myElement1 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement1,"2D4NGauss1Ip","StaticDataNonlocal");
 		
-	Incidence(0,0) = node2;
-	Incidence(1,0) = node3;
-	Incidence(2,0) = node6;
-	Incidence(3,0) = node5;
+	Incidence(0) = node2;
+	Incidence(1) = node3;
+	Incidence(2) = node6;
+	Incidence(3) = node5;
     int myElement2 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement2,"2D4NGauss4Ip","StaticDataNonlocal");
 		
-	Incidence(0,0) = node4;
-	Incidence(1,0) = node5;
-	Incidence(2,0) = node8;
-	Incidence(3,0) = node7;
+	Incidence(0) = node4;
+	Incidence(1) = node5;
+	Incidence(2) = node8;
+	Incidence(3) = node7;
     int myElement3 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement3,"2D4NGauss1Ip","StaticDataNonlocal");
 		
@@ -81,17 +82,17 @@ int main()
     int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement4,"2D4NGauss4Ip","StaticDataNonlocal");
 */
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence3(3,1);
+    NuTo::FullVector<int,Eigen::Dynamic> Incidence3(3);
 
-    Incidence3(0,0) = node5;
-   	Incidence3(1,0) = node6;
-   	Incidence3(2,0) = node9;
+    Incidence3(0) = node5;
+   	Incidence3(1) = node6;
+   	Incidence3(2) = node9;
    	int myElement4 = myStructure.ElementCreate("PLANE2D3N",Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement4,"2D3NGauss1Ip","StaticDataNonlocal");
 
-    Incidence3(0,0) = node5;
-   	Incidence3(1,0) = node9;
-   	Incidence3(2,0) = node8;
+    Incidence3(0) = node5;
+   	Incidence3(1) = node9;
+   	Incidence3(2) = node8;
    	int myElement5 = myStructure.ElementCreate("PLANE2D3N",Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
     myStructure.ElementSetIntegrationType(myElement5,"2D3NGauss1Ip","StaticDataNonlocal");
 
@@ -135,7 +136,7 @@ int main()
 
     //calculate linear elastic matrix
 	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrix;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
+	NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
 
 	myStructure.ElementTotalUpdateTmpStaticData();
 	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
@@ -144,10 +145,10 @@ int main()
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> fullStiffnessMatrixElastic(stiffnessMatrix);
 	std::cout<<"stiffnessMatrix elastic"<<std::endl;
 	fullStiffnessMatrixElastic.Info();
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacements;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofs;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForce;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForce2;
+	NuTo::FullVector<double,Eigen::Dynamic> displacements;
+	NuTo::FullVector<double,Eigen::Dynamic> dependentDofs;
+	NuTo::FullVector<double,Eigen::Dynamic> intForce;
+	NuTo::FullVector<double,Eigen::Dynamic> intForce2;
 
 	//check the stiffness twice, once in the initial deformed state
 	//and once after the update (should be linear elastic)
@@ -170,7 +171,7 @@ int main()
 			rightDisp = 0.6;
 		}
 
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixRightDisp(2,1);
+		NuTo::FullVector<double,Eigen::Dynamic> matrixRightDisp(2);
 		matrixRightDisp.SetValue(0,0,rightDisp);
 		matrixRightDisp.SetValue(1,0,0.);
 
@@ -178,7 +179,7 @@ int main()
 		myStructure.NodeSetDisplacements(node6,matrixRightDisp);
 		myStructure.NodeSetDisplacements(node9,matrixRightDisp);
 
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixCenterDisp(2,1);
+		NuTo::FullVector<double,Eigen::Dynamic> matrixCenterDisp(2);
 		if (theLoadStep!=2)
 		    matrixCenterDisp.SetValue(0,0,0.5*rightDisp);
 		else
@@ -189,7 +190,7 @@ int main()
 		myStructure.NodeSetDisplacements(node5,matrixCenterDisp);
 		myStructure.NodeSetDisplacements(node8,matrixCenterDisp);
 
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>matrixLeftDisp(2,1);
+		NuTo::FullVector<double,Eigen::Dynamic> matrixLeftDisp(2);
 		matrixLeftDisp.SetValue(0,0,0.0);
 		matrixLeftDisp.SetValue(1,0,0.);
 
@@ -270,9 +271,9 @@ int main()
 	myStructure.ExportVtkDataFile("NonlocalDamagePlasticityModel.vtk");
 #endif
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> shift(2,1);
-    shift(0,0) = 3+myStructure.ConstitutiveLawGetNonlocalRadius(myMatDamage);
-    shift(1,0) = 0;
+	NuTo::FullVector<double,Eigen::Dynamic> shift(2);
+    shift(0) = 3.+myStructure.ConstitutiveLawGetNonlocalRadius(myMatDamage);
+    shift(1) = 0;
     myStructure.CopyAndTranslate(shift);
 
 #ifdef ENABLE_VISUALIZE

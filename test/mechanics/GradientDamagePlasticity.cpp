@@ -2,12 +2,14 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/base/Logger.h"
 
 #define PRINTRESULT
@@ -16,20 +18,22 @@ int main()
 {
 try
 {
-    bool testRoundedRankineYieldSurface3D(true);
-    bool testDruckerPragerYieldSurface3D(true);
-    bool testRoundedRankineYieldSurface1D(true);
-    bool testDruckerPragerYieldSurface1D(true);
-    bool testReturnMapping3D(true);
-    bool testReturnMapping1D(false); //I'm still working on that one
+    bool flagForAllTests(true); //if you just work on one test, set this to false and change the single other variable
+	bool testRoundedRankineYieldSurface3D(flagForAllTests);
+    bool testDruckerPragerYieldSurface3D(flagForAllTests);
+    bool testRoundedRankineYieldSurface1D(flagForAllTests);
+    bool testDruckerPragerYieldSurface1D(flagForAllTests);
+    bool testReturnMapping3D(flagForAllTests);
+    bool testReturnMapping1D(flagForAllTests);
+    bool testTruss1D(false);
 
     NuTo::Logger logger;
 
     NuTo::GradientDamagePlasticityEngineeringStress myConstitutiveLaw;
     myConstitutiveLaw.SetDensity(1.);
-    myConstitutiveLaw.SetYoungsModulus(40000.);
+    myConstitutiveLaw.SetYoungsModulus(30000.);
     myConstitutiveLaw.SetPoissonsRatio(0.2);
-    myConstitutiveLaw.SetNonlocalRadius(2.);
+    myConstitutiveLaw.SetNonlocalRadius(0.00000001);
     myConstitutiveLaw.SetTensileStrength(3.);
     myConstitutiveLaw.SetCompressiveStrength(30.);
     myConstitutiveLaw.SetBiaxialCompressiveStrength(1.12*30.);
@@ -52,11 +56,11 @@ try
 #endif //PRINTRESULT
 
 
-        Eigen::Matrix<double,6,1> stressVector;
-        Eigen::Matrix<double,3,3> stressMatrix;
-        Eigen::Matrix<double,3,3> stressMatrixRot;
+        NuTo::FullMatrix<double,6,1> stressVector;
+        NuTo::FullMatrix<double,3,3> stressMatrix;
+        NuTo::FullMatrix<double,3,3> stressMatrixRot;
 
-        Eigen::Matrix<double,10,6> stressCases;
+        NuTo::FullMatrix<double,10,6> stressCases;
         stressCases <<  4., -0.2, -0.2, 0., 0., 0.,        //D=0,q!=0 one positive
                         4., 4., -0.2, 0., 0., 0.,      //D=0,q!=0 two positive
                         4., 4., 5., 0., 0., 0.,    //D=0,q!=0 three positive
@@ -68,13 +72,13 @@ try
                         4., -0.001, -0.001, 0., 0., 0.,    //D=0,q=0 one positive
                         4., -0.001, 0.001, 0., 0., 0.;    //D!=0   two positive
 
-        Eigen::Matrix<double,6,1> dF_dSigma_1, dF_dSigma_2, dF_dSigma_cdf;
-        Eigen::Matrix<double,6,6> d2F_d2Sigma_1, d2F_d2Sigma_cdf;
-        Eigen::Matrix<double,3,3> rotation1,rotation2,rotation3, rotation;
-        Eigen::Matrix<double,1,3> angleCases;
+        NuTo::FullMatrix<double,6,1> dF_dSigma_1, dF_dSigma_2, dF_dSigma_cdf;
+        NuTo::FullMatrix<double,6,6> d2F_d2Sigma_1, d2F_d2Sigma_cdf;
+        NuTo::FullMatrix<double,3,3> rotation1,rotation2,rotation3, rotation;
+        NuTo::FullMatrix<double,1,3> angleCases;
 
-        Eigen::Matrix<double,10,6> resultGradient;
-        Eigen::Matrix<double,10,6> resultGradientRef;
+        NuTo::FullMatrix<double,10,6> resultGradient;
+        NuTo::FullMatrix<double,10,6> resultGradientRef;
         resultGradientRef << 0.592008 , 0.345492 ,  0.0625    ,  0.904508     ,-0.293893    , -0.38471,
                              0.639584 , 0.707107 ,  0.0675227 , -7.85414e-17  ,-1.13232e-19 , -0.415627,
                              0.542461 , 0.529813 ,  0.649618  , -5.10763e-17  , 2.38359e-17 ,  0.0778541,
@@ -174,18 +178,18 @@ try
         std::cout << "test Drucker Prager yield surface 3D" << std::endl;
 #endif //PRINTRESULT
 
-        Eigen::Matrix<double,1,6> stressCases;
-        Eigen::Matrix<double,6,1> stressVector;
-        Eigen::Matrix<double,3,3> stressMatrix;
-        Eigen::Matrix<double,3,3> stressMatrixRot;
+        NuTo::FullMatrix<double,1,6> stressCases;
+        NuTo::FullMatrix<double,6,1> stressVector;
+        NuTo::FullMatrix<double,3,3> stressMatrix;
+        NuTo::FullMatrix<double,3,3> stressMatrixRot;
         stressCases <<  4., -0.2, -0.2, 0.1, 0.2, 0.3;        //
-        Eigen::Matrix<double,6,1> dF_dSigma_1, dF_dSigma_2, dF_dSigma_cdf;
-        Eigen::Matrix<double,6,6> d2F_d2Sigma_1, d2F_d2Sigma_cdf;
-        Eigen::Matrix<double,3,3> rotation1,rotation2,rotation3, rotation;
-        Eigen::Matrix<double,1,3> angleCases;
+        NuTo::FullMatrix<double,6,1> dF_dSigma_1, dF_dSigma_2, dF_dSigma_cdf;
+        NuTo::FullMatrix<double,6,6> d2F_d2Sigma_1, d2F_d2Sigma_cdf;
+        NuTo::FullMatrix<double,3,3> rotation1,rotation2,rotation3, rotation;
+        NuTo::FullMatrix<double,1,3> angleCases;
 
-        Eigen::Matrix<double,1,6> resultGradient;
-        Eigen::Matrix<double,1,6> resultGradientRef;
+        NuTo::FullMatrix<double,1,6> resultGradient;
+        NuTo::FullMatrix<double,1,6> resultGradientRef;
         resultGradientRef << 0.261482, 0.0856598, -0.179524,   0.74077, -0.395079, -0.313089;
 
         //angleCases << 0,0,0;
@@ -276,20 +280,20 @@ try
         std::cout << "test rounded Rankine yield surface 1D" << std::endl;
 #endif //PRINTRESULT
 
-        Eigen::Matrix<double,1,6> stressCases3D;
+        NuTo::FullMatrix<double,1,6> stressCases3D;
         stressCases3D <<  2*fct, 0.000001, 0.000001, 0., 0., 0.;        //
-        Eigen::Matrix<double,1,1> stressVector1D;
-        Eigen::Matrix<double,6,1> stressVector3D;
+        NuTo::FullMatrix<double,1,1> stressVector1D;
+        NuTo::FullMatrix<double,6,1> stressVector3D;
 
-        Eigen::Matrix<double,1,1> dF_dSigma1_1D;
-        Eigen::Matrix<double,5,1> dF_dSigma2_1D;
-        Eigen::Matrix<double,6,1> dF_dSigma_1D;
-        Eigen::Matrix<double,6,1> dF_dSigma_3D;
+        NuTo::FullMatrix<double,1,1> dF_dSigma1_1D;
+        NuTo::FullMatrix<double,5,1> dF_dSigma2_1D;
+        NuTo::FullMatrix<double,6,1> dF_dSigma_1D;
+        NuTo::FullMatrix<double,6,1> dF_dSigma_3D;
 
-        Eigen::Matrix<double,6,6> d2F_d2Sigma_3D;
-        Eigen::Matrix<double,1,1> d2F_d2Sigma1_1D;
-        Eigen::Matrix<double,5,1> d2F_dSigma2dSigma1_1D;
-        Eigen::Matrix<double,6,1> d2F_dSigma_1D;
+        NuTo::FullMatrix<double,6,6> d2F_d2Sigma_3D;
+        NuTo::FullMatrix<double,1,1> d2F_d2Sigma1_1D;
+        NuTo::FullMatrix<double,5,1> d2F_dSigma2dSigma1_1D;
+        NuTo::FullMatrix<double,6,1> d2F_dSigma_1D;
 
         double deltaF,normDiffGrad,normDiffHess;
         //check yield surface Drucker Prager
@@ -345,20 +349,20 @@ try
         std::cout << "test Drucker Prager yield surface 1D" << std::endl;
 #endif //PRINTRESULT
 
-        Eigen::Matrix<double,1,6> stressCases3D;
+        NuTo::FullMatrix<double,1,6> stressCases3D;
         stressCases3D <<  -2.*f_c1, 0.000001, 0.000001, 0., 0., 0.;        //
-        Eigen::Matrix<double,1,1> stressVector1D;
-        Eigen::Matrix<double,6,1> stressVector3D;
+        NuTo::FullMatrix<double,1,1> stressVector1D;
+        NuTo::FullMatrix<double,6,1> stressVector3D;
 
-        Eigen::Matrix<double,1,1> dF_dSigma1_1D;
-        Eigen::Matrix<double,5,1> dF_dSigma2_1D;
-        Eigen::Matrix<double,6,1> dF_dSigma_1D;
-        Eigen::Matrix<double,6,1> dF_dSigma_3D;
+        NuTo::FullMatrix<double,1,1> dF_dSigma1_1D;
+        NuTo::FullMatrix<double,5,1> dF_dSigma2_1D;
+        NuTo::FullMatrix<double,6,1> dF_dSigma_1D;
+        NuTo::FullMatrix<double,6,1> dF_dSigma_3D;
 
-        Eigen::Matrix<double,6,6> d2F_d2Sigma_3D;
-        Eigen::Matrix<double,1,1> d2F_d2Sigma1_1D;
-        Eigen::Matrix<double,5,1> d2F_dSigma2dSigma1_1D;
-        Eigen::Matrix<double,6,1> d2F_dSigma_1D;
+        NuTo::FullMatrix<double,6,6> d2F_d2Sigma_3D;
+        NuTo::FullMatrix<double,1,1> d2F_d2Sigma1_1D;
+        NuTo::FullMatrix<double,5,1> d2F_dSigma2dSigma1_1D;
+        NuTo::FullMatrix<double,6,1> d2F_dSigma_1D;
 
         double deltaF,normDiffGrad,normDiffHess;
         //check yield surface Drucker Prager
@@ -415,7 +419,7 @@ try
         std::cout << "test return mapping in 3D" << std::endl;
 #endif //PRINTRESULT
 
-        Eigen::Matrix<double,6,18> strainCases; //total strains at t and t+1 and plastic strains at t
+        NuTo::FullMatrix<double,6,18> strainCases; //total strains at t and t+1 and plastic strains at t
         strainCases <<   0    ,0,0,0,0,0 ,       0.0002, -0.000001, 0.000001, 0.      , 0.       , 0.          , 0      ,       0,       0,       0,       0,       0, //only Rankine uniaxial
                          0    ,0,0,0,0,0 ,       -0.002, 0.       , 0.      , 0.      , 0.       , 0.          , 0      ,       0,       0,       0,       0,       0, //only Drucker Prager uniaxial
                          0    ,0,0,0,0,0 ,       0.0002, 0.0001   , 0.00005 , 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003, //only Rankine triaxial
@@ -423,23 +427,23 @@ try
                          0.001,0,0,0,0,0 ,       -0.002, 0.002    , 0.0018  , 0.00005 , 0.00005  , 0.00005     , 0.00005, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003,   //mixed triaxial
                          0.001,0,0,0,0,0 ,       -0.000, 0.000    , 0.000   , 0.00000 , 0.00000  , 0.00000     , 0.00105, 0.00004, 0.00006, 0.00001, 0.00002, 0.00003;   //unloading
 
-        Eigen::Matrix<double,6,1> strainVector;
-        Eigen::Matrix<double,3,3> strainMatrix;
-        Eigen::Matrix<double,3,3> strainMatrixRot;
-        Eigen::Matrix<double,6,1> sigma_1, sigma_2;
-        Eigen::Matrix<double,6,6> d2sigma_d2epsilon_1, d2sigma_d2epsilon_cdf;
-        Eigen::Matrix<double,3,3> rotation1,rotation2,rotation3, rotation;
-        Eigen::Matrix<double,1,3> angleCases;
+        NuTo::FullMatrix<double,6,1> strainVector;
+        NuTo::FullMatrix<double,3,3> strainMatrix;
+        NuTo::FullMatrix<double,3,3> strainMatrixRot;
+        NuTo::FullMatrix<double,6,1> sigma_1, sigma_2;
+        NuTo::FullMatrix<double,6,6> d2sigma_d2epsilon_1, d2sigma_d2epsilon_cdf;
+        NuTo::FullMatrix<double,3,3> rotation1,rotation2,rotation3, rotation;
+        NuTo::FullMatrix<double,1,3> angleCases;
 
-        Eigen::Matrix<double,6,6> resultStress;
-        Eigen::Matrix<double,6,6> resultStressRef;
+        NuTo::FullMatrix<double,6,6> resultStress;
+        NuTo::FullMatrix<double,6,6> resultStressRef;
         resultStressRef <<
-        		 1.86056,   1.18068,  0.421063,   1.24369,   -0.4041, -0.522927,
-        		 -58.3571,  -48.2591,  -36.6669,  -18.5256,   6.01935,   7.87943,
-        		    1.586,   1.82156,  0.367397,  0.914886, -0.593383, -0.571522,
-        		 -59.6457,  -48.5145,  -37.8072,  -18.8036,   5.75406,    7.7786,
-        		 -16.2175,  -9.17583,    1.0038,  -12.6593,   4.00921,   6.15978,
-        		  -33.546,  -25.2426,  -16.5447,  -15.3908,   5.63212,   6.14616;
+        		  1.88456,   1.22853,  0.495572,   1.20006, -0.389922,  -0.50458,
+        		 -44.6144,  -35.4312,  -24.8893,  -16.8473,   5.47401,   7.16557,
+        		  1.62333,   1.84712,  0.465602,  0.869178, -0.563737, -0.542969,
+        		 -45.6326,  -35.5209,  -25.7945,  -17.0811,   5.22697,   7.06607,
+        		 -16.0628,  -8.95325,  0.982608,  -12.7224,   4.03367,   6.09357,
+        		 -25.1595,   -18.932,  -12.4085,  -11.5431,   4.22409,   4.60962;
 
         angleCases << M_PI*0.5,M_PI*.1,M_PI*0.3;
         double psi,theta,phi;
@@ -507,10 +511,10 @@ try
                 prevPlasticStrain3D[5] = 2.*strainMatrixRot(0,2);
 
                 double deltaEqPlasticStrain;
-                Eigen::Matrix<double,6,6> dSigmadEpsilon,dSigmadEpsilonCDF;
-                Eigen::Matrix<double,6,6> dEpsilonPdEpsilon,dEpsilonPdEpsilonCDF;
-                Eigen::Matrix<double,6,1> newEpsilonP1,newEpsilonP2;
-                Eigen::Matrix<double,6,1> newStress1,newStress2;
+                NuTo::FullMatrix<double,6,6> dSigmadEpsilon,dSigmadEpsilonCDF;
+                NuTo::FullMatrix<double,6,6> dEpsilonPdEpsilon,dEpsilonPdEpsilonCDF;
+                NuTo::FullMatrix<double,6,1> newEpsilonP1,newEpsilonP2;
+                NuTo::FullMatrix<double,6,1> newStress1,newStress2;
 
                 myConstitutiveLaw.ReturnMapping3D(engineeringStrain3D, prevPlasticStrain3D, prevEngineeringStrain3D,
                         newStress1, newEpsilonP1,    deltaEqPlasticStrain, &dSigmadEpsilon, &dEpsilonPdEpsilon, logger);
@@ -587,18 +591,21 @@ try
     if (testReturnMapping1D)
     {
 #ifdef PRINTRESULT
-        std::cout << "test return mapping in 1D test" << std::endl;
+        std::cout << "test return mapping in 1D" << std::endl;
 #endif //PRINTRESULT
 
-        Eigen::Matrix<double,1,3> strainCases; //total strains at t and t+1 and plastic strains at t (component in axial direction)
-        strainCases <<   0. , 0.0004, 0.;
+        NuTo::FullMatrix<double,4,3> strainCases; //total strains at t and t+1 and plastic strains at t (component in axial direction)
+        strainCases <<    0.     ,   0.0004, 0.,       //Rankine
+                          0.0001 ,   0.0004, 0.0002,   //Rankine with previous total strain and previous plastic strain
+                          0.0    ,  -0.002,  0.,        //DP
+                         -0.0001 ,  -0.002, -0.0002;    //DP with previous total strain and previous plastic strain
 
-        Eigen::Matrix<double,1,1> sigma_1, sigma_2;
-        Eigen::Matrix<double,1,1> d2sigma_d2epsilon_1, d2sigma_d2epsilon_cdf;
+        NuTo::FullMatrix<double,1,1> sigma_1, sigma_2;
+        NuTo::FullMatrix<double,1,1> d2sigma_d2epsilon_1, d2sigma_d2epsilon_cdf;
 
-        Eigen::Matrix<double,1,1> resultStress;
-        Eigen::Matrix<double,1,1> resultStressRef;
-        resultStressRef <<   3.;
+        NuTo::FullMatrix<double,4,1> resultStress;
+        NuTo::FullMatrix<double,4,1> resultStressRef;
+        resultStressRef <<   3. , 3 , -30, -30;
 
 
         double delta=1e-9;
@@ -617,47 +624,47 @@ try
 			NuTo::EngineeringStrain1D prevPlasticStrain;
 			prevPlasticStrain[0] = strainCases(countStrain,2);
 
-			Eigen::Matrix<double,1,1> dSigmadEpsilon,dSigmadEpsilonCDF;
-			Eigen::Matrix<double,2,1> dKappadEpsilon,dKappadEpsilonCDF;
-			Eigen::Matrix<double,1,1> newEpsilonP1,newEpsilonP2;
-			Eigen::Matrix<int,2,1> yieldConditionFlag;
-			Eigen::Matrix<double,1,1> newStress1,newStress2;
-			Eigen::Matrix<double,2,1> deltaEqPlasticStrain;
+			NuTo::FullMatrix<double,1,1> dSigmadEpsilon,dSigmadEpsilonCDF;
+			NuTo::FullMatrix<double,2,1> dKappadEpsilon,dKappadEpsilonCDF;
+			NuTo::EngineeringStrain1D newEpsilonP1,newEpsilonP2;
+			NuTo::FullMatrix<int,2,1> yieldConditionFlag;
+			NuTo::EngineeringStress1D newStress1,newStress2;
+			NuTo::FullMatrix<double,2,1> kappa1,kappa2;
 
-			myConstitutiveLaw.ReturnMapping1DNew(engineeringStrain1D, prevPlasticStrain, prevEngineeringStrain1D,
-					newStress1, newEpsilonP1, yieldConditionFlag, deltaEqPlasticStrain, &dSigmadEpsilon, &dKappadEpsilon, logger);
+			myConstitutiveLaw.ReturnMapping1D(engineeringStrain1D, prevPlasticStrain, prevEngineeringStrain1D,
+					newStress1, newEpsilonP1, yieldConditionFlag, kappa1, &dSigmadEpsilon, &dKappadEpsilon, logger);
 
-			engineeringStrain1D[0] = strainCases(countStrain,2)+delta;
+			engineeringStrain1D[0] = strainCases(countStrain,1)+delta;
 
-			myConstitutiveLaw.ReturnMapping1DNew(engineeringStrain1D, prevPlasticStrain, prevEngineeringStrain1D,
-					newStress2, newEpsilonP2, yieldConditionFlag, deltaEqPlasticStrain, 0, 0, logger);
+			myConstitutiveLaw.ReturnMapping1D(engineeringStrain1D, prevPlasticStrain, prevEngineeringStrain1D,
+					newStress2, newEpsilonP2, yieldConditionFlag, kappa2, 0, 0, logger);
 
-			dSigmadEpsilonCDF.col(0) = (newStress2-newStress1)/delta;
-			//dEpsilonPdEpsilonCDF(0,0) = (newEpsilonP2(0,0)-newEpsilonP1(0,0))/delta;
+			dSigmadEpsilonCDF = (newStress2-newStress1)/delta;
+			dKappadEpsilonCDF = (kappa2-kappa1)/delta;
 
 #ifdef PRINTRESULT
 			double normDiffdsde((dSigmadEpsilonCDF-dSigmadEpsilon).norm());
-			//double normDiffdepde((dEpsilonPdEpsilonCDF-dEpsilonPdEpsilon).norm());
+			double normDiffdKappadEpsilon((dKappadEpsilonCDF-dKappadEpsilon).norm());
 
 			std::cout << countStrain<< ".strains \n" << strainCases.row(countStrain) << "\n\ndiff dsigma depsilon "
-					//<< normDiffdsde << ", diff depsilonP depsilon " << normDiffdepde
+					<< normDiffdsde << ", diff dKappa dEpsilon " << normDiffdKappadEpsilon
 					  << std::endl << std::endl;
 			std::cout << "stress \n  " << newStress1 << std::endl<< std::endl;
 			std::cout << "new plastic strain \n  " << newEpsilonP1.transpose() << std::endl<< std::endl;
+			std::cout << "new delta eq plastic strain \n  " << kappa1.transpose() << std::endl<< std::endl;
+			std::cout << "yieldConditionFlag \n  " << yieldConditionFlag.transpose() << std::endl<< std::endl;
 #endif// PRINTRESULT
 			resultStress.row(countStrain) = newStress1.transpose();
-			std::cout << "normDiffdsde \n  " << normDiffdsde << std::endl<< std::endl;
-			//std::cout << "normDiffdepde \n  " << normDiffdepde << std::endl<< std::endl;
-			if (normDiffdsde > 1e-1 )
+			//if (normDiffdsde > 1e-1 || normDiffdKappadEpsilon>1e-1)
 			{
 #ifdef PRINTRESULT
 				std::cout << "dsigma depsilon exact\n  " << dSigmadEpsilon.transpose() << std::endl<< std::endl;
 				std::cout << "dsigma depsilon cdf  \n  " << dSigmadEpsilonCDF.transpose() << std::endl<< std::endl;
 
-				//std::cout << "depsilonP depsilon exact\n  " << dEpsilonPdEpsilon.transpose() << std::endl<< std::endl;
-				//std::cout << "depsilonP depsilon cdf  \n  " << dEpsilonPdEpsilonCDF.transpose() << std::endl<< std::endl;
+				std::cout << "dKappadEpsilon  exact\n  " << dKappadEpsilon.transpose() << std::endl<< std::endl;
+				std::cout << "dKappadEpsilon  cdf  \n  " << dKappadEpsilonCDF.transpose() << std::endl<< std::endl;
 #endif// PRINTRESULT
-				throw NuTo::MechanicsException("Derivatives for return mapping 3D in GradientDamagePlasticityEngineeringStress are different compared to central differences.");
+				//throw NuTo::MechanicsException("Derivatives for return mapping 3D in GradientDamagePlasticityEngineeringStress are different compared to central differences.");
 			}
 #ifdef PRINTRESULT
 			std::cout << "======================================================================="<< std::endl;
@@ -673,9 +680,142 @@ try
             throw NuTo::MechanicsException("Result for return mapping 3D in GradientDamagePlasticityEngineeringStress is different than reference value.");
         }
     }
+    // ********************************
+    // Truss 1D
+    // ********************************
+    if (testTruss1D)
+    {
+#ifdef PRINTRESULT
+        std::cout << "test truss1D" << std::endl;
+#endif //PRINTRESULT
+
+        double l=100;
+        int numNodes = 2;
+        int numElements = numNodes-1;
+        double l_e=l/(numNodes-1);
+        double area1D = 1.;
+
+    	// create one-dimensional structure
+    	NuTo::Structure myStructure(1);
+
+#ifdef ENABLE_VISUALIZE
+    	myStructure.AddVisualizationComponentSection();
+    	myStructure.AddVisualizationComponentConstitutive();
+    	myStructure.AddVisualizationComponentDisplacements();
+    	myStructure.AddVisualizationComponentEngineeringStrain();
+    	myStructure.AddVisualizationComponentEngineeringStress();
+    	myStructure.AddVisualizationComponentDamage();
+    	myStructure.AddVisualizationComponentEngineeringPlasticStrain();
+    	myStructure.AddVisualizationComponentPrincipalEngineeringStress();
+#endif
+
+    	// create section
+    	int mySection1D = myStructure.SectionCreate("Truss");
+    	myStructure.SectionSetArea(mySection1D, area1D);
+    	myStructure.SectionSetDOF(mySection1D, "displacements nonlocaldamage");
+
+    	// material
+    	int myNumberConstitutiveLaw = myStructure.ConstitutiveLawCreate("GradientDamagePlasticityEngineeringStress");
+        myStructure.ConstitutiveLawSetYoungsModulus(myNumberConstitutiveLaw,myConstitutiveLaw.GetYoungsModulus());
+        myStructure.ConstitutiveLawSetPoissonsRatio(myNumberConstitutiveLaw,myConstitutiveLaw.GetPoissonsRatio());
+        myStructure.ConstitutiveLawSetDensity(myNumberConstitutiveLaw,myConstitutiveLaw.GetDensity());
+        myStructure.ConstitutiveLawSetNonlocalRadius(myNumberConstitutiveLaw,myConstitutiveLaw.GetNonlocalRadius());
+        myStructure.ConstitutiveLawSetTensileStrength(myNumberConstitutiveLaw,myConstitutiveLaw.GetTensileStrength());
+        myStructure.ConstitutiveLawSetCompressiveStrength(myNumberConstitutiveLaw,myConstitutiveLaw.GetCompressiveStrength());
+        myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myNumberConstitutiveLaw,myConstitutiveLaw.GetBiaxialCompressiveStrength());
+        myStructure.ConstitutiveLawSetFractureEnergy(myNumberConstitutiveLaw,myConstitutiveLaw.GetFractureEnergy());
+        //myStructure.ConstitutiveLawSetThermalExpansionCoefficient(myNumberConstitutiveLaw,myConstitutiveLaw.GetThermalExpansionCoefficient());
+        //myStructure.ConstitutiveLawSetepsilonf(myNumberConstitutiveLaw,myConstitutiveLaw.SetEpsilonF());
+
+    	// create nodes
+    	NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
+    	for(int node = 0; node < numNodes ; node++)
+    	{
+    		std::cout << "create node: " << node << " coordinates: " << node * l_e << std::endl;
+    		nodeCoordinates(0) = node *l_e;
+    		myStructure.NodeCreate(node, "displacements nonlocaldamage", nodeCoordinates);
+    	}
+    	int nodeLeft = 0;
+    	int nodeRight = numNodes-1;
+
+    	// create elements
+    	NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(2);
+    	for(int element = 0; element < numElements; element++)
+    	{
+    		std::cout <<  "create element: " << element << " nodes: " << element << "," << element+1 << std::endl;
+    		elementIncidence(0) = element;
+    		elementIncidence(1) = element + 1;
+    		myStructure.ElementCreate(element, "Truss1D2N", elementIncidence,"ConstitutiveLawIp","StaticData");
+        	//modify integration type because the damage matrix needs more integration points
+        	myStructure.ElementSetIntegrationType(element,"1D2NGauss2Ip","StaticData");
+    		myStructure.ElementSetSection(element,mySection1D);
+    		myStructure.ElementSetConstitutiveLaw(element,myNumberConstitutiveLaw);
+    	}
+
+
+    	//left boundary
+    	int grpNodes_Left = myStructure.GroupCreate("Nodes");
+    	int direction=0;
+    	double min=0;
+    	double max=0;
+    	myStructure.GroupAddNodeCoordinateRange(grpNodes_Left,direction,min,max);
+
+    	//right boundary
+    	int grpNodes_Right = myStructure.GroupCreate("Nodes");
+    	direction=0;
+    	min=l;
+    	max=l;
+    	myStructure.GroupAddNodeCoordinateRange(grpNodes_Right,direction,min,max);
+
+    	// set boundary conditions and loads
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> directionConstraint(1,1);
+    	directionConstraint(0,0) = 1;
+    	myStructure.ConstraintLinearSetDisplacementNode(nodeLeft, directionConstraint, 0.0);
+    	int constraintRight = myStructure.ConstraintLinearSetDisplacementNode(nodeRight, directionConstraint, 0.0);
+
+    	NuTo::NewmarkDirect myIntegrationScheme;
+
+    	//myIntegrationScheme.SetDampingCoefficientMass(0.05);
+    	myIntegrationScheme.SetDynamic(false);
+   		double simulationTime(1);
+   		double finalDisplacement(0.0002*l);
+
+   		int numLoadSteps(1);
+
+   		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispRHS(2,2);
+   		dispRHS << 0             , 0,
+   				   simulationTime, finalDisplacement;
+
+   	    myIntegrationScheme.SetDisplacements(constraintRight, dispRHS);
+   	    myIntegrationScheme.SetMaxTimeStep(simulationTime/numLoadSteps);
+   	    myIntegrationScheme.SetAutomaticTimeStepping(true);
+   	    myIntegrationScheme.SetMinTimeStep(1e-5*myIntegrationScheme.GetMaxTimeStep());
+   	    myIntegrationScheme.SetToleranceForce(1e-5);
+   	    myIntegrationScheme.SetMaxNumIterations(10);
+
+   	    //set output during the simulation to false
+   	    myStructure.SetShowTime(false);
+   	    //myStructure.SetNumProcessors(8);
+
+   	    //set output to be calculated at the left and right nodes
+   	    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> groupNodesReactionForces(2,1);
+   	    groupNodesReactionForces(0,0) = grpNodes_Left;
+   	    groupNodesReactionForces(1,0) = grpNodes_Right;
+   	    myIntegrationScheme.SetGroupNodesReactionForces(groupNodesReactionForces);
+
+   	    //set result directory
+   	    bool deleteDirectory(false);
+   	    std::string resultDir = std::string("/home/junger/develop/nuto_build/myNutoExamples/GradientDamagePlasticity/ResultsGradientDamagePlasticity");
+   	    myIntegrationScheme.SetResultDirectory(resultDir,deleteDirectory);
+
+   	    //solve (perform Newton raphson iteration
+   	    myIntegrationScheme.Solve(myStructure, simulationTime);
+        std::cout << "end of calculation " << std::endl;
+    }
 }
-catch (NuTo::Exception& e)
+catch (NuTo::MechanicsException& e)
 {
+    std::cout << "Error executing GradientDamagePlasticity "<< std::endl;
     std::cout << e.ErrorMessage() << std::endl;
     return -1;
 }

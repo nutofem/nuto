@@ -131,7 +131,7 @@ try
     }
 
     //import mesh
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> createdGroupIds;
+    NuTo::FullVector<int,Eigen::Dynamic> createdGroupIds;
     myStructure.ImportFromGmsh(mshFile.string(),2,"displacements", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
 
 	//section
@@ -251,9 +251,9 @@ try
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionY(2,1);
     DirectionY.SetValue(1,0,1.0);
 
-    int constraintBottomDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Bottom,DirectionY,0);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Bottom,DirectionY,0);
     //int constraintBottomRot = myStructure.ConstraintLinearSetRotationNodeGroup(grpNodes_Bottom,0);
-    int constraintBottomLeftX = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupLeftBottomSupport,DirectionX,0);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupLeftBottomSupport,DirectionX,0);
     //mConstraintBottomLeftX = myStructure.ConstraintLinearSetDisplacementNodeGroup(mGrpNodes_Bottom,DirectionX,0);
     int constraintTopDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Top,DirectionY,0);
     //int constraintTopRot = myStructure.ConstraintLinearSetRotationNodeGroup(grpNodes_Top,0);

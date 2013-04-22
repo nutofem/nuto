@@ -9,6 +9,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 #include "nuto/mechanics/MechanicsException.h"
 

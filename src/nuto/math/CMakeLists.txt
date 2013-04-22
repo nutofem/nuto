@@ -20,6 +20,7 @@ SET(NuToMath_SWIG_MODULES
   NuToMath
   ModulMatrix
   ModulFullMatrix
+  ModulFullVector
   ModulOperator
   ModulSparseMatrix
   ModulSparseSolver

@@ -73,10 +73,10 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		int numTemp(GetNumShapeFunctions());
 		int numTempDofs(section->GetIsTemperatureDof() ? numTemp : 0);
 
-		int numDamage(GetNumShapeFunctions());
-		int numDamageDofs(section->GetIsDamageDof() ? numDamage : 0);
+		int numNonlocalDamage(GetNumShapeFunctions());
+		int numNonlocalDamageDofs(section->GetIsNonlocalDamageDof() ? numNonlocalDamage : 0);
 
-		std::vector<double> localNodeDisp,nodeTemp,nodeDamage;
+		std::vector<double> localNodeDisp,nodeTemp,nodeNonlocalDamage;
 
 		//calculate local displacements, velocities and accelerations
 		if (numDispDofs>0)
@@ -90,10 +90,10 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			nodeTemp.resize(numTemp);
 			CalculateNodalTemperatures(0,nodeTemp);
 		}
-		if (numDamageDofs>0 || section->GetInputConstitutiveIsDamage())
+		if (numNonlocalDamageDofs>0 || section->GetInputConstitutiveIsDamage())
 		{
-			nodeDamage.resize(numDamage);
-			CalculateNodalDamage(0,nodeDamage);
+			nodeNonlocalDamage.resize(numNonlocalDamage);
+			CalculateNodalDamage(0,nodeNonlocalDamage);
 		}
 
 		//allocate space for local ip coordinates
@@ -160,7 +160,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE] = &temperature;
 		}
 
-		if (numDamageDofs>0)
+		if (numNonlocalDamageDofs>0)
 		{
 			constitutiveInputList[NuTo::Constitutive::eInput::NONLOCAL_DAMAGE] = &nonLocalDamage;
 		}
@@ -171,7 +171,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			switch(it->first)
 			{
 			case Element::INTERNAL_GRADIENT:
-				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numDamageDofs,1);
+				it->second->GetFullVectorDouble().Resize(numDispDofs+numTempDofs+numNonlocalDamageDofs);
 				//if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
 				//on the global level
 				if (mStructure->GetHessianConstant(0)==false)
@@ -184,7 +184,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 						constitutiveOutputList[NuTo::Constitutive::eOutput::HEAT_FLUX_1D] = &heatFlux1D;
 					}
-					if (numDamageDofs>0)
+					if (numNonlocalDamageDofs>0)
 					{
 						constitutiveOutputList[NuTo::Constitutive::eOutput::DAMAGE] = &localDamage;
 					}
@@ -192,7 +192,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			break;
 			case Element::HESSIAN_0_TIME_DERIVATIVE:
 				{
-					it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,numDispDofs+numTempDofs);
+					it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numNonlocalDamageDofs,numDispDofs+numTempDofs+numNonlocalDamageDofs);
 					it->second->SetSymmetry(true);
 					it->second->SetConstant(true);
 					if (numDispDofs>0)
@@ -201,7 +201,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						//mixed terms
 						if (numTempDofs)
 							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE_1D] = &tangentStressTemperature;
-						if (numDamageDofs)
+						if (numNonlocalDamageDofs)
 							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_DAMAGE_1D] = &tangentStressNonlocalDamage;
 					}
 					if (numTempDofs>0)
@@ -211,17 +211,17 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						//if (numDisp)
 						//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
 					}
-					if (numDamageDofs>0)
+					if (numNonlocalDamageDofs>0)
 					{
 						//mixed terms
 						if (numDispDofs)
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_NONLOCAL_DAMAGE_D_STRAIN_1D] = &tangentLocalDamageStrain;
+							constitutiveOutputList[NuTo::Constitutive::eOutput::D_LOCAL_DAMAGE_D_STRAIN_1D] = &tangentLocalDamageStrain;
 					}
 				}
 			break;
 			case Element::HESSIAN_1_TIME_DERIVATIVE:
 			{
-				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,numDispDofs+numTempDofs);
+				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numNonlocalDamageDofs,numDispDofs+numTempDofs+numNonlocalDamageDofs);
 				it->second->SetSymmetry(true);
 				it->second->SetConstant(true);
 				if (numDispDofs>0)
@@ -236,7 +236,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			break;
 			case Element::HESSIAN_2_TIME_DERIVATIVE:
 			{
-				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,numDispDofs+numTempDofs);
+				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numNonlocalDamageDofs,numDispDofs+numTempDofs+numNonlocalDamageDofs);
 				it->second->SetSymmetry(true);
 				it->second->SetConstant(true);
 				//there is only a constant mass part for the mechanics problem
@@ -277,10 +277,10 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				}
 			break;
 			case Element::GLOBAL_ROW_DOF:
-				this->CalculateGlobalRowDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs);
+				this->CalculateGlobalRowDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs,numNonlocalDamageDofs);
 			break;
 			case Element::GLOBAL_COLUMN_DOF:
-				this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs);
+				this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs,numNonlocalDamageDofs);
 			break;
 			default:
 				throw MechanicsException("[NuTo::Truss::Evaluate] element output not implemented.");
@@ -323,10 +323,10 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				throw MechanicsException("[Nuto::Truss::Evaluate] temperature not yet implemented.");
 			}
 
-			if (numDamageDofs)
+			if (numNonlocalDamageDofs)
 			{
 				CalculateShapeFunctions(localIPCoord, shapeFunctions);
-				CalculateNonlocalDamage(shapeFunctions, nodeDamage, nonLocalDamage);
+				CalculateNonlocalDamage(shapeFunctions, nodeNonlocalDamage, nonLocalDamage);
 			}
 
 			ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
@@ -339,7 +339,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
 			FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Komegaomega;
-			if (numDamageDofs>0)
+			if (numNonlocalDamageDofs>0)
 			{
 				//calculate Komegaomega detJ*(cBtB+NtN)
 				//the nonlocal radius is in a gradient formulation is different from the nonlocal radius in an integral formulation
@@ -359,17 +359,17 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 						if (numDispDofs>0)
 						{
-							AddDetJBtSigma(derivativeShapeFunctionsLocal,engineeringStress1D, factor, 0, it->second->GetFullMatrixDouble());
+							AddDetJBtSigma(derivativeShapeFunctionsLocal,engineeringStress1D, factor, 0, it->second->GetFullVectorDouble());
 						}
 						if (numTempDofs>0)
 						{
 							throw MechanicsException("[Nuto::Truss::Evaluate] temperature not yet implemented.");
 		//TODO				    AddDetJBtCB(derivativeShapeFunctions,tangentStressStrain, factor, 0, it->second->GetFullMatrixDouble());
 						}
-						if (numDamageDofs>0)
+						if (numNonlocalDamageDofs>0)
 						{
 							//add Koo*omega+detJ*F
-							AddDetJRomega(shapeFunctions,localDamage, Komegaomega, nodeDamage, factor, numDispDofs+numTempDofs, it->second->GetFullMatrixDouble());
+							AddDetJRomega(shapeFunctions,localDamage, Komegaomega, nodeNonlocalDamage, factor, numDispDofs+numTempDofs, it->second->GetFullVectorDouble());
 						}
 					}
 				}
@@ -385,7 +385,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 								it->second->SetConstant(false);
 							if (numTempDofs>0)
 								throw MechanicsException("[NuTo::Truss::Evaluate] mixed terms not yet implemented.");
-							if (numDamageDofs>0)
+							if (numNonlocalDamageDofs>0)
 							{
 								AddDetJBtdSigmadOmegaN(derivativeShapeFunctionsLocal, tangentStressNonlocalDamage,shapeFunctions, factor, 0,numDispDofs+numTempDofs, it->second->GetFullMatrixDouble());
 							}
@@ -401,7 +401,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							if (numDispDofs>0)
 								throw MechanicsException("[NuTo::Truss::Evaluate] mixed terms not yet implemented.");
 						}
-						if (numDamageDofs>0)
+						if (numNonlocalDamageDofs>0)
 						{
 							if (numDispDofs>0)
 							{
@@ -431,7 +431,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							throw MechanicsException("[NuTo::Truss::Evaluate] mixed terms not yet implemented.");
 							*/
 					}
-					if (numDamageDofs>0)
+					if (numNonlocalDamageDofs>0)
 					{
 						//no damping term, do Rayleigh damping on the global level
 					}
@@ -457,7 +457,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 						//no termperature terms
 					}
-					if (numDamageDofs>0)
+					if (numNonlocalDamageDofs>0)
 					{
 						//no termperature terms
 					}
@@ -503,7 +503,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
     {
         std::stringstream ss;
         ss << mStructure->ElementGetId(this);
-    	e.AddMessage("[NuTo::True::Evaluate] Error evaluating element data of element"	+ ss.str() + ".");
+    	e.AddMessage("[NuTo::Truss::Evaluate] Error evaluating element data of element"	+ ss.str() + ".");
         throw e;
     }
 
@@ -560,17 +560,17 @@ void NuTo::Truss::AddDetJBtdSigmadOmegaN(const std::vector<double>& rDerivativeS
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKomegaomega,
-		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult)
 {
 	assert(rResult.GetNumRows()>=(int)(rRow+rShapeFunctions.size()));
 	assert(rShapeFunctions.size()==rNodeDamage.size());
-	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> tmpResult = rKomegaomega*Eigen::Map<Eigen::VectorXd>(const_cast<double*>(&(rNodeDamage[0])),rNodeDamage.size());
+	FullVector<double,Eigen::Dynamic> tmpResult = rKomegaomega*Eigen::Map<Eigen::VectorXd>(const_cast<double*>(&(rNodeDamage[0])),rNodeDamage.size());
 	double damage = rLocalDamage.GetDamageValue();
 	for (unsigned int count=0; count<rShapeFunctions.size(); count++)
 	{
-		tmpResult(count,0)+=rShapeFunctions[count]*damage;
+		tmpResult(count)-=rShapeFunctions[count]*damage;
 	}
-	rResult.AddBlock(rRow,0,tmpResult);
+	rResult.segment(rRow,rShapeFunctions.size()) +=rFactor*tmpResult;
 }
 
 //! @brief stores the temperatures of the nodes
@@ -619,16 +619,16 @@ void NuTo::Truss::CalculateNodalTemperatures(int rTimeDerivative, std::vector<do
 //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
 //! @param damage vector with already correct size allocated
 //! this can be checked with an assertation
-void NuTo::Truss::CalculateNodalDamage(int rTimeDerivative, std::vector<double>& rNodalDamage)const
+void NuTo::Truss::CalculateNodalDamage(int rTimeDerivative, std::vector<double>& rNodalNonlocalDamage)const
 {
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
-	assert((int)rNodalDamage.size()==GetNumShapeFunctions());
+	assert((int)rNodalNonlocalDamage.size()==GetNumShapeFunctions());
     for (int count=0; count<GetNumShapeFunctions(); count++)
     {
-        if (GetNode(count)->GetNumDamage()!=1)
+        if (GetNode(count)->GetNumNonlocalDamage()!=1)
             throw MechanicsException("[NuTo::Truss::CalculateNodalDamage] Damage is required as input to the constitutive model, but the node does not have this data.");
-        GetNode(count)->GetDamage(rTimeDerivative,&(rNodalDamage[count]));
+        GetNode(count)->GetNonlocalDamage(rTimeDerivative,&(rNodalNonlocalDamage[count]));
     }
 }
 //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
@@ -1009,8 +1009,11 @@ void NuTo::Truss::CalculateNonlocalDamage(const std::vector<double>& shapeFuncti
     assert(shapeFunctions.size()==rNodeDamage.size());
     double damage(0);
 	for (unsigned int count=0; count<shapeFunctions.size(); count++)
+	{
 		damage+=shapeFunctions[count]*rNodeDamage[count];
-	nonlocalDamage.SetNonlocalDamage(damage);
+		//std::cout << "count " << count << " damage " << rNodeDamage[count] << " shape " << shapeFunctions[count] << std::endl;;
+	}
+	nonlocalDamage.SetNonlocalDamageValue(damage);
 	return;
 }
 
@@ -1190,12 +1193,12 @@ void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double 
 void NuTo::Truss::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunctions,
                                  const EngineeringStress1D& rEngineeringStress, double rFactor,
                                  int rRow,
-                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
 {
     rFactor*=rEngineeringStress.GetData()[0];
     for (int node1=0; node1<GetNumNodes(); node1++)
     {
-        rResult(rRow+node1,0)+=rFactor*rDerivativeShapeFunctions[node1];
+        rResult(rRow+node1)+=rFactor*rDerivativeShapeFunctions[node1];
     }
 }
 
@@ -1209,12 +1212,12 @@ void NuTo::Truss::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  const HeatFlux1D& rHeatFlux,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
 {
     rFactor*=rHeatFlux.GetData()[0];
     for (int node1=0; node1<GetNumNodes(); node1++)
     {
-        rResult(rRow+node1,0)+=rFactor*rDerivativeShapeFunctions[node1];
+        rResult(rRow+node1)+=rFactor*rDerivativeShapeFunctions[node1];
     }
 }
 

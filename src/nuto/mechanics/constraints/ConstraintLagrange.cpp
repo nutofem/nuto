@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
 #include "nuto/mechanics/MechanicsException.h"
 

@@ -33,9 +33,9 @@ error = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(0,0,0)))
-myNode2 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullMatrix(3,1,(5,0,0)))
-myNode3 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullMatrix(3,1,(10,0,0)))
+myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0,0)))
+myNode2 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullVector((5,0,0)))
+myNode3 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullVector((10,0,0)))
 
 #create group of nodes
 myNodeGroup = myStructure.GroupCreate("Nodes")
@@ -70,7 +70,7 @@ if (numberGlobalDofs!=15):
 
 #build constraint matrix and rhs
 constraintMatrixSparse = nuto.DoubleSparseMatrixCSRGeneral(numConstraints,numberGlobalDofs)
-rhs = nuto.DoubleFullMatrix(numConstraints,1)
+rhs = nuto.DoubleFullVector(numConstraints)
 myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination(constraintMatrixSparse)
 myStructure.ConstraintGetRHSBeforeGaussElimination(rhs)
 constraintMatrixFull = nuto.DoubleFullMatrix(constraintMatrixSparse)
@@ -84,7 +84,7 @@ constraintMatrixFullCorrect.SetValue(1,13,1)
 constraintMatrixFullCorrect.SetValue(2,14,1)
 
 #correct rhs
-rhsCorrect = nuto.DoubleFullMatrix(3,1,(0.5,2,2))
+rhsCorrect = nuto.DoubleFullVector((0.5,2,2))
 
 if (printResult):
     print "constraintMatrixCorrect"

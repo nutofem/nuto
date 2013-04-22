@@ -130,7 +130,7 @@ public:
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    virtual void AddEntry(int rRow, int rColumn, T rValue) = 0;
+    virtual void AddValue(int rRow, int rColumn, const T& rValue) = 0;
 
     //! @brief ... print info about the object
     void Info() const
@@ -192,10 +192,9 @@ public:
         }
     }
 
-
-    //! @brief ... write non-zero matrix entries into a full matrix
-    //! @param rFullMatrix ... the full matrix
-    virtual void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const = 0;
+    //! @brief ... write non-zero matrix entries into a matrix
+    //! @param rFullMatrix ... the matrix
+    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const = 0;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name

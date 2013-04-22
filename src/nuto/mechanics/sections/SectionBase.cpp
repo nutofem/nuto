@@ -22,7 +22,7 @@ NuTo::SectionBase::SectionBase()
 	mInputConstitutiveIsDeformationGradient = true;
     mDisplacementDof = true;
     mTemperatureDof = false;
-    mDamageDof = false;
+    mNonlocalDamageDof = false;
 }
 
 int NuTo::SectionBase::GetNumInputConstitutive()const
@@ -44,16 +44,16 @@ bool NuTo::SectionBase::GetIsTemperatureDof()const
 
 //! @brief... set if damage are dofs
 //! @param rFlag ... true, if damage are dofs
-void NuTo::SectionBase::SetIsDamageDof(bool rFlag)
+void NuTo::SectionBase::SetIsNonlocalDamageDof(bool rFlag)
 {
-	mDamageDof = rFlag;
+	mNonlocalDamageDof = rFlag;
 }
 
 //! @brief... get if damage are dof
 //! @return ... true, if damage are dofs
-bool NuTo::SectionBase::GetIsDamageDof()const
+bool NuTo::SectionBase::GetIsNonlocalDamageDof()const
 {
-	return mDamageDof;
+	return mNonlocalDamageDof;
 }
 
 //! @brief... set if temperatures are dofs
@@ -187,7 +187,7 @@ void NuTo::SectionBase::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperature)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperatureGradient)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsDeformationGradient)
-       & BOOST_SERIALIZATION_NVP(mDamageDof)
+       & BOOST_SERIALIZATION_NVP(mNonlocalDamageDof)
        & BOOST_SERIALIZATION_NVP(mDisplacementDof)
        & BOOST_SERIALIZATION_NVP(mTemperatureDof);
 #ifdef DEBUG_SERIALIZATION

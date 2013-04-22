@@ -38,7 +38,7 @@ int NuTo::SparseMatrixCSRSymmetric<T>::GetNumColumns() const
 //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
 //! @param rValue ... value of the nonzero entry
 template <class T>
-void NuTo::SparseMatrixCSRSymmetric<T>::AddEntry(int rRow, int rColumn, T rValue)
+void NuTo::SparseMatrixCSRSymmetric<T>::AddValue(int rRow, int rColumn, const T& rValue)
 {
 	// check for overflow
 	assert(rRow < INT_MAX);
@@ -114,13 +114,14 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Info() const
 	SparseMatrixCSR<T>::Info();
 }
 
-//! @brief ... write nonzero matrix entries into a full matrix
+//! @brief ... write nonzero matrix entries into a matrix
 //! @param rFullMatrix ... the full matrix
 template <class T>
-void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const
+void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix) const
 {
 	std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
 	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
+	rMatrix.Resize(this->GetNumRows(), this->GetNumColumns());
 	if (this->mOneBasedIndexing)
 	{
 		unsigned int row = 0;
@@ -128,8 +129,9 @@ void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T, E
 		{
 			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
 			{
-				rFullMatrix(row, (*columnIterator) - 1) = *valueIterator;
-				rFullMatrix((*columnIterator) - 1, row) = *valueIterator;
+				rMatrix.AddValue(row, (*columnIterator) - 1,*valueIterator);
+				if (static_cast<int>(row)!=(*columnIterator) - 1)
+				    rMatrix.AddValue((*columnIterator) - 1, row, *valueIterator);
 				columnIterator++;
 				valueIterator++;
 			}
@@ -144,11 +146,11 @@ void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToFullMatrix(FullMatrix<T, E
 			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
 			{
 				// set upper triangle and diagonal entries
-				rFullMatrix(row, *columnIterator) = *valueIterator;
+				rMatrix.AddValue(row, *columnIterator, *valueIterator);
 				// set lower triangle entries
 				if (static_cast<int>(row) != *columnIterator)
 				{
-					rFullMatrix(*columnIterator, row) = *valueIterator;
+					rMatrix.AddValue(*columnIterator, row, *valueIterator);
 				}
 				columnIterator++;
 				valueIterator++;

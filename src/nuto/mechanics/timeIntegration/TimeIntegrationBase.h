@@ -15,6 +15,7 @@
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 
 namespace NuTo
 {
@@ -59,7 +60,7 @@ public:
     //! @param curTime ... current time in the load step
     //! @param rLoad_j ... external load vector for the independent dofs
     //! @param rLoad_k ... external load vector for the dependent dofs
-    void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_j, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoad_k);
+    void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k);
 
     //! @brief calculate the external force as a function of time delta
     //! @ param rStructure ... structure
@@ -162,7 +163,7 @@ protected:
     //result directory
     std::string mResultDir;
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mVecGroupNodesReactionForces;
+    NuTo::FullVector<int,Eigen::Dynamic> mVecGroupNodesReactionForces;
 
 };
 } //namespace NuTo

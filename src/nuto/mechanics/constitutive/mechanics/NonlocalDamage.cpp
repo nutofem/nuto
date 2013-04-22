@@ -22,7 +22,7 @@ NuTo::NonlocalDamage::NonlocalDamage(const NonlocalDamage& rNonlocalDamage)
 }
 
 //! @brief ... set damage value
-void NuTo::NonlocalDamage::SetNonlocalDamage(double rNonlocalDamage)
+void NuTo::NonlocalDamage::SetNonlocalDamageValue(double rNonlocalDamage)
 {
 	assert(rNonlocalDamage>=0.);
 	mNonlocalDamage = rNonlocalDamage;

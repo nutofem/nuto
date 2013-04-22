@@ -3,6 +3,7 @@
 %{
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/math/SparseMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"

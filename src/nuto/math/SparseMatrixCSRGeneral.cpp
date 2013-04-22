@@ -274,7 +274,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                     // add row to tmpRow
                     for (int rowPos = this->mRowIndex[row]; rowPos < this->mRowIndex[row + 1]; rowPos++)
                     {
-                        this->AddEntry(tmpRow, this->mColumns[rowPos], this->mValues[rowPos]);
+                        this->AddValue(tmpRow, this->mColumns[rowPos], this->mValues[rowPos]);
                     }
                     for (int rhsCount = 0; rhsCount < rRhs.GetNumColumns(); rhsCount++)
                     {
@@ -337,7 +337,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                 for (int tmpPos = this->mRowIndex[column]; tmpPos < this->mRowIndex[column + 1]; tmpPos++)
                 {
                     unsigned int oldsize = mValues.size();
-                    this->AddEntry(row, this->mColumns[tmpPos], factor * this->mValues[tmpPos]);
+                    this->AddValue(row, this->mColumns[tmpPos], factor * this->mValues[tmpPos]);
                     //this is a dirty trick to check, if an element has been inserted in a previous row, which means, the position of the current value is
                     // shifted by one
                     if (oldsize != mValues.size())
@@ -478,11 +478,11 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
                     // add row to tmpRow
                     for (int rowPos = this->mRowIndex[row]; rowPos < this->mRowIndex[row + 1]; rowPos++)
                     {
-                        this->AddEntry(tmpRow, this->mColumns[rowPos], this->mValues[rowPos]);
+                        this->AddValue(tmpRow, this->mColumns[rowPos], this->mValues[rowPos]);
                     }
                     for (int rowPos = rRhs.mRowIndex[row]; rowPos < rRhs.mRowIndex[row + 1]; rowPos++)
                     {
-                    	rRhs.AddEntry(tmpRow, rRhs.mColumns[rowPos], rRhs.mValues[rowPos]);
+                    	rRhs.AddValue(tmpRow, rRhs.mColumns[rowPos], rRhs.mValues[rowPos]);
                     }
                 }
             }
@@ -553,7 +553,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
                 for (int tmpPos = this->mRowIndex[column]; tmpPos < this->mRowIndex[column + 1]; tmpPos++)
                 {
                     unsigned int oldsize = this->mValues.size();
-                    this->AddEntry(row, this->mColumns[tmpPos], factor * this->mValues[tmpPos]);
+                    this->AddValue(row, this->mColumns[tmpPos], factor * this->mValues[tmpPos]);
                     //this is a dirty trick to check, if an element has been inserted in a previous row, which means, the position of the current value is
                     // shifted by one
                     if (oldsize != this->mValues.size())
@@ -562,7 +562,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
                 for (int tmpPos = rRhs.mRowIndex[column]; tmpPos < rRhs.mRowIndex[column + 1]; tmpPos++)
                 {
                     unsigned int oldsize = rRhs.mValues.size();
-                    rRhs.AddEntry(row, rRhs.mColumns[tmpPos], factor * rRhs.mValues[tmpPos]);
+                    rRhs.AddValue(row, rRhs.mColumns[tmpPos], factor * rRhs.mValues[tmpPos]);
                     //this is a dirty trick to check, if an element has been inserted in a previous row, which means, the position of the current value is
                     // shifted by one
                     if (oldsize != rRhs.mValues.size())

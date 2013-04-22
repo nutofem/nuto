@@ -63,15 +63,15 @@ public:
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    void AddEntry(int rRow, int rColumn, T rValue);
+    void AddValue(int rRow, int rColumn, const T& rValue);
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
     void ImportFromSLangText(const char* rFileName);
 
-    //! @brief ... write nonzero matrix entries into a full matrix
-    //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToFullMatrix(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix) const;
+    //! @brief ... write nonzero matrix entries into a matrix
+    //! @param rMatrix ... the matrix
+    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const;
 
     //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
     //! @return symmetric part

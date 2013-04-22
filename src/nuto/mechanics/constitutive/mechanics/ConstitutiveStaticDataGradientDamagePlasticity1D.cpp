@@ -19,19 +19,15 @@
 NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D::ConstitutiveStaticDataGradientDamagePlasticity1D()
    : NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain1D::ConstitutiveStaticDataPrevEngineeringStressStrain1D()
 {
-    mKappa = 0.;
-    mEpsilonTotRadial = 0.;
-	mEpsilonP[0] = 0.;
-	mEpsilonP[1] = 0.;
+    mKappa.setZero();
+	mPlasticStrain[0] = 0.;
 }
 
 NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D& NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D::operator= (NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D const& rOther)
 {
     NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain1D::operator= (rOther);
     mKappa = rOther.mKappa;
-    mEpsilonTotRadial = rOther.mEpsilonTotRadial;
-    mEpsilonP[0] = rOther.mEpsilonP[0];
-    mEpsilonP[1] = rOther.mEpsilonP[1];
+    mPlasticStrain = rOther.mPlasticStrain;
     return *this;
 }
 
@@ -59,8 +55,7 @@ void NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D::serialize(Archive &
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain1D)
        & BOOST_SERIALIZATION_NVP(mKappa)
-       & BOOST_SERIALIZATION_NVP(mEpsilonTotRadial)
-       & BOOST_SERIALIZATION_NVP(mEpsilonP);
+       & BOOST_SERIALIZATION_NVP(mPlasticStrain);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataGradientDamagePlasticity1D" << std::endl;
 #endif

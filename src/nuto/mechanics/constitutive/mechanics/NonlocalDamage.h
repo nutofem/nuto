@@ -23,8 +23,8 @@ class NonlocalDamage: public ConstitutiveInputBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
+    friend class GradientDamagePlasticity;
     friend class LinearElastic;
-    friend class ConstitutiveMisesPlasticity;
     friend class NonlocalDamagePlasticity;
     friend class Multiscale;
     public:
@@ -38,19 +38,19 @@ class NonlocalDamage: public ConstitutiveInputBase
     NonlocalDamage(const NonlocalDamage& rNonlocalDamage);
 
     //! @brief return output object
-    NonlocalDamage& GetNonlocalDamage()
+    const NonlocalDamage& GetNonlocalDamage()const
     {
     	return *this;
     }
 
     //! @brief return damage value
-    double GetNonlocalDamageValue()
+    double GetNonlocalDamageValue()const
     {
     	return mNonlocalDamage;
     }
 
     //! @brief ... set damage value
-    void SetNonlocalDamage(double rDamage);
+    void SetNonlocalDamageValue(double rDamage);
 
 
 #ifdef ENABLE_SERIALIZATION

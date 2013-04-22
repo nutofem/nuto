@@ -118,8 +118,9 @@ ELSE(ENABLE_OPENMP)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 ENDIF(ENABLE_OPENMP)
 
-IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wfatal-errors")
+IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
+  #-Wfatal-errors for not so long error messages
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long")
   # ISO standards mode does not work well on MinGW
   # (they don't define certain things that are defined on other platforms in standard mode,
   # like M_PI)

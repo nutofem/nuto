@@ -11,6 +11,7 @@
 #include <iostream>
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"

@@ -92,27 +92,36 @@ void NuTo::Truss1D::InterpolateDisplacementsFrom1D(double rLocalCoordinates, dou
 }
 
 // build global row dofs
-void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumTempDofs) const
+void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const
 {
-    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs);
+    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs+rNumNonlocalDamageDofs);
+    int indexDisp(0);
     for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
     {
         const NodeBase * nodePtr(GetNode(nodeCount));
-        if (nodePtr->GetNumDisplacements()>0 && rNumDispDofs>0)
+        if (rNumDispDofs>0)
         {
-            rGlobalRowDofs[nodeCount] = nodePtr->GetDofDisplacement(0);
+            for (int countDisp=0; countDisp<nodePtr->GetNumDisplacements(); countDisp++)
+            {
+        	    rGlobalRowDofs[indexDisp] = nodePtr->GetDofDisplacement(countDisp);
+        	    indexDisp++;
+            }
         }
         if (nodePtr->GetNumTemperatures()>0 && rNumTempDofs>0)
         {
             rGlobalRowDofs[rNumDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
         }
+        if (nodePtr->GetNumNonlocalDamage()>0 && rNumNonlocalDamageDofs>0)
+        {
+            rGlobalRowDofs[rNumDispDofs + rNumTempDofs + nodeCount ] = nodePtr->GetDofNonlocalDamage();
+        }
     }
 }
 
 // build global column dof
-void NuTo::Truss1D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int rNumDispDofs, int rNumTempDofs) const
+void NuTo::Truss1D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const
 {
-    this->CalculateGlobalRowDofs(rGlobalColumnDofs,rNumDispDofs,rNumTempDofs);
+    this->CalculateGlobalRowDofs(rGlobalColumnDofs,rNumDispDofs,rNumTempDofs,rNumNonlocalDamageDofs);
 }
 
 // check element definition

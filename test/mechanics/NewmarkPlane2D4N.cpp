@@ -62,9 +62,9 @@ try
     {
         for (int countX=0; countX<numNodesX; countX++)
         {
-        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(2,1);
-        	coordinates(0,0) = countX*deltaX;
-        	coordinates(1,0) = countY*deltaY;
+        	NuTo::FullVector<double,Eigen::Dynamic> coordinates(2);
+        	coordinates(0) = countX*deltaX;
+        	coordinates(1) = countY*deltaY;
         	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS"),coordinates,2);
         	nodeNum++;
         }
@@ -77,11 +77,11 @@ try
     {
         for (int countX=0; countX<numElementsX; countX++)
         {
-        	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> nodes(4,1);
-        	nodes(0,0) = countX  +  countY   *numNodesX;
-        	nodes(1,0) = countX+1+  countY   *numNodesX;
-        	nodes(2,0) = countX+1+ (countY+1)*numNodesX;
-        	nodes(3,0) = countX  + (countY+1)*numNodesX;
+        	NuTo::FullVector<int,Eigen::Dynamic> nodes(4);
+        	nodes(0) = countX  +  countY   *numNodesX;
+        	nodes(1) = countX+1+  countY   *numNodesX;
+        	nodes(2) = countX+1+ (countY+1)*numNodesX;
+        	nodes(3) = countX  + (countY+1)*numNodesX;
         	myStructure.ElementCreate(std::string("PLANE2D4N"), nodes, std::string("ConstitutiveLawIp"), std::string("StaticData"));
         }
     }
@@ -264,7 +264,7 @@ try
 
     //set result directory
     bool deleteResultDirectoryFirst(true);
-    myIntegrationScheme.SetResultDirectory(resultDir,true);
+    myIntegrationScheme.SetResultDirectory(resultDir,deleteResultDirectoryFirst);
 
     //solve (perform Newton raphson iteration
     myIntegrationScheme.Solve(myStructure, simulationTime);

@@ -13,7 +13,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 
 // constructor
-NuTo::EngineeringStress2D::EngineeringStress2D(): ConstitutiveOutputBase::ConstitutiveOutputBase()
+NuTo::EngineeringStress2D::EngineeringStress2D(): ConstitutiveOutputBase::ConstitutiveOutputBase(), FullVector<double,3>()
 {
     (*this)[0] = 0.0;
     (*this)[1] = 0.0;
@@ -64,7 +64,7 @@ void NuTo::EngineeringStress2D::serialize(Archive & ar, const unsigned int versi
     std::cout << "start serialize EngineeringStress2D" << std::endl;
 #endif
     ar &  BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveOutputBase);
-    ar & boost::serialization::make_nvp ("EngineeringStress2DEigen",boost::serialization::base_object< FullVectorFixed<double,3> > ( *this ));
+    ar & boost::serialization::make_nvp ("EngineeringStress2DEigen",boost::serialization::base_object< FullVector<double,3> > ( *this ));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize EngineeringStress2D" << std::endl;
 #endif

@@ -27,6 +27,7 @@
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
+#include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
 
 #include <ANN/ANN.h>
@@ -340,11 +341,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 										int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 										if (globalColumnDof < this->mNumActiveDofs)
 										{
-											rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+											rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 										}
 										else
 										{
-											rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+											rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 										}
 									}
 								}
@@ -405,12 +406,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 									if (globalColumnDof < this->mNumActiveDofs)
 									{
 										#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-										rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+										rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 									}
 									else
 									{
 										#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-										rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+										rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 									}
 								}
 							}
@@ -461,11 +462,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 							int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 							if (globalColumnDof < this->mNumActiveDofs)
 							{
-								rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+								rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 							}
 							else
 							{
-								rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+								rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 							}
 						}
 					}
@@ -584,11 +585,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 									int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 									if (globalColumnDof < this->mNumActiveDofs)
 									{
-										rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+										rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 									}
 									else
 									{
-										rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+										rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 									}
 
 								}
@@ -600,11 +601,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 									int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 									if (globalColumnDof < this->mNumActiveDofs)
 									{
-										rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+										rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
 									}
 									else
 									{
-										rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+										rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 									}
 								}
 							}
@@ -660,12 +661,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 								if (globalColumnDof < this->mNumActiveDofs)
 								{
 									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-									rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+									rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 								}
 								else
 								{
 									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-									rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+									rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 								}
 
 							}
@@ -678,12 +679,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 								if (globalColumnDof < this->mNumActiveDofs)
 								{
 									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-									rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+									rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
 								}
 								else
 								{
 									#pragma omp critical (StructureBuildGlobalCoefficientSubMatrices0General)
-									rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+									rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 								}
 							}
 						}
@@ -731,11 +732,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 						int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 						if (globalColumnDof < this->mNumActiveDofs)
 						{
-							rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+							rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 						}
 						else
 						{
-							rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+							rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 						}
 
 					}
@@ -747,11 +748,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 						int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 						if (globalColumnDof < this->mNumActiveDofs)
 						{
-							 rMatrixKJ.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+							 rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
 						}
 						else
 						{
-							 rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+							 rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 						}
 					}
 				}
@@ -870,12 +871,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 									// add upper triangle and diagonal
 									if(globalColumnDof >= globalRowDof)
 									{
-										rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+										rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 									}
 								}
 								else
 								{
-									rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+									rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 								}
 							}
 						}
@@ -1003,12 +1004,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 									// add upper triangle and diagonal
 									if(globalColumnDof >= globalRowDof)
 									{
-										rMatrixJJ.AddEntry(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+										rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
 									}
 								}
 								else
 								{
-									rMatrixJK.AddEntry(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+									rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 								}
 
 							}
@@ -1023,7 +1024,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 									// add upper triangle and diagonal
 									if(globalColumnDof >= globalRowDof)
 									{
-										rMatrixKK.AddEntry(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+										rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
 									}
 								}
 							}
@@ -1045,7 +1046,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
     return errorGlobal;
 }
 
-NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofGradientVector)
+NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector)
 {
     // initialize vectors
     assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
@@ -1066,7 +1067,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 
 	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
 
-	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
+	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
 	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
 
     // loop over all elements
@@ -1097,11 +1098,10 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 					}
 					else
 					{
-		            	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+		            	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble());
 		    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
 		    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
-						assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
 
 						// write element contribution to global vectors
 						for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
@@ -1109,13 +1109,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 							int globalRowDof = elementVectorGlobalDofs[rowCount];
 							if (globalRowDof < this->mNumActiveDofs)
 							{
-								rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+								rActiveDofGradientVector(globalRowDof) += elementVector(rowCount);
 							}
 							else
 							{
 								globalRowDof -= this->mNumActiveDofs;
 								assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-								rDependentDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+								rDependentDofGradientVector(globalRowDof) += elementVector(rowCount);
 							}
 						}
 					}
@@ -1146,11 +1146,10 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 				}
 				else
 				{
-	            	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+	            	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble());
 	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetVectorInt());
 
 	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
-					assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
 
 					// write element contribution to global vectors
 					for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
@@ -1159,14 +1158,14 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 						if (globalRowDof < this->mNumActiveDofs)
 						{
 							#pragma omp critical (StructureBuildGlobalGradientInternalPotentialSubVectors)
-							rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+							rActiveDofGradientVector(globalRowDof) += elementVector(rowCount);
 						}
 						else
 						{
 							globalRowDof -= this->mNumActiveDofs;
 							assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
 							#pragma omp critical (StructureBuildGlobalGradientInternalPotentialSubVectors)
-							rDependentDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+							rDependentDofGradientVector(globalRowDof) += elementVector(rowCount);
 						}
 					}
 				}
@@ -1191,11 +1190,10 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 		}
 		else
 		{
-        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble());
+        	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble());
 			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
 			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
-			assert(static_cast<unsigned int>(elementVector.GetNumColumns()) == 1);
 
 			// write element contribution to global vectors
 			for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
@@ -1203,13 +1201,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 				int globalRowDof = elementVectorGlobalDofs[rowCount];
 				if (globalRowDof < this->mNumActiveDofs)
 				{
-					rActiveDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+					rActiveDofGradientVector(globalRowDof) += elementVector(rowCount);
 				}
 				else
 				{
 					globalRowDof -= this->mNumActiveDofs;
 					assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
-					rDependentDofGradientVector(globalRowDof,0) += elementVector(rowCount,0);
+					rDependentDofGradientVector(globalRowDof) += elementVector(rowCount);
 				}
 			}
 		}
@@ -1464,14 +1462,14 @@ void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
 void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
 		int rNumTimeDerivatives,
 		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rElementGroupIds)
+		NuTo::FullVector<int,Eigen::Dynamic>& rElementGroupIds)
 {
     try
     {
     	std::set<int> groupIds;
     	ImportFromGmshAux(rFileName, rNumTimeDerivatives, rDOFs, rElementData, rIPData, true, groupIds);
 
-    	rElementGroupIds.Resize(groupIds.size(),1);
+    	rElementGroupIds.resize(groupIds.size());
     	int count(0);
     	for (std::set<int>::iterator it = groupIds.begin(); it != groupIds.end(); it++, count++)
     	{
@@ -1854,14 +1852,14 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
     }
 */
     //create the nodes
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates;
+	NuTo::FullVector<double,Eigen::Dynamic> coordinates;
 	switch (mDimension)
 	{
 	case 2:
-		coordinates.Resize(2,1);
+		coordinates.Resize(2);
 		break;
 	case 3:
-		coordinates.Resize(3,1);
+		coordinates.Resize(3);
 		break;
 	default:
 		throw MechanicsException("[NuTo::Structure::ImportFromGmsh] Only implemented for 2D and 3D.");
@@ -1869,19 +1867,19 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 	std::map<int,int> newNodeNumber;
     for (unsigned int nodeCount=0; nodeCount<nodes.size(); nodeCount++)
     {
-    	coordinates(0,0) = nodes[nodeCount].Coordinates[0];
-    	coordinates(1,0) = nodes[nodeCount].Coordinates[1];
+    	coordinates(0) = nodes[nodeCount].Coordinates[0];
+    	coordinates(1) = nodes[nodeCount].Coordinates[1];
     	if (mDimension==3)
-        	coordinates(2,0) = nodes[nodeCount].Coordinates[2];
+        	coordinates(2) = nodes[nodeCount].Coordinates[2];
     	newNodeNumber[ nodes[nodeCount].id] = NodeCreate(rDOFs, coordinates, rNumTimeDerivatives);
     }
 
-	NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> nodeNumbers;
+	NuTo::FullVector<int,Eigen::Dynamic> nodeNumbers;
     for (unsigned int elementCount=0; elementCount<elements.size(); elementCount++)
     {
-    	nodeNumbers.Resize(elements[elementCount].nodes.size(),1);
+    	nodeNumbers.Resize(elements[elementCount].nodes.size());
     	for (unsigned int countNode=0; countNode< elements[elementCount].nodes.size(); countNode++)
-    		nodeNumbers(countNode,0) = newNodeNumber[elements[elementCount].nodes[countNode]];
+    		nodeNumbers(countNode) = newNodeNumber[elements[elementCount].nodes[countNode]];
     	//std::cout << "element " << elementCount << " with nodes " << nodeNumbers.Trans() << std::endl;
     	int theElementId(-1);
     	switch (elements[elementCount].type)
@@ -1921,7 +1919,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 //! @brief copy and move the structure
 //! most of the data is kept, but e.g. nonlocal data and
 //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rOffset)
+void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double,Eigen::Dynamic>& rOffset)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -1955,7 +1953,7 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Ei
 //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
 //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
 //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
-void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer)
+void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double,Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase* >& rOld2NewNodePointer, std::map<ElementBase*, ElementBase* >& rOld2NewElementPointer)
 {
 	if (rOffset.GetNumRows()!=mDimension)
 		throw MechanicsException("[NuTo::Structure::CopyAndTranslate] offset has to have the same dimension as the structure.");
@@ -1990,20 +1988,20 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullMatrix<double,Eigen::Dynamic,Ei
 			break;
 		case 1:
 			nodeVector[countNode]->GetCoordinates1D(coordinates);
-			coordinates[0] += rOffset(0,0);
+			coordinates[0] += rOffset(0);
 			newNode->SetCoordinates1D(coordinates);
 			break;
 		case 2:
 			nodeVector[countNode]->GetCoordinates2D(coordinates);
-			coordinates[0] += rOffset(0,0);
-			coordinates[1] += rOffset(1,0);
+			coordinates[0] += rOffset(0);
+			coordinates[1] += rOffset(1);
 			newNode->SetCoordinates2D(coordinates);
 			break;
 		case 3:
 			nodeVector[countNode]->GetCoordinates3D(coordinates);
-			coordinates[0] += rOffset(0,0);
-			coordinates[1] += rOffset(1,0);
-			coordinates[2] += rOffset(2,0);
+			coordinates[0] += rOffset(0);
+			coordinates[1] += rOffset(1);
+			coordinates[2] += rOffset(2);
 			newNode->SetCoordinates3D(coordinates);
 			break;
 		default:

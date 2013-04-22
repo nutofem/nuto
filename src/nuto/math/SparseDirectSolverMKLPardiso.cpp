@@ -9,6 +9,7 @@
 
 #include "nuto/math/MathException.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/math/SparseMatrixCSR.h"
 #include "nuto/math/SparseDirectSolver.h"
 #include "nuto/math/SparseDirectSolverMKLPardiso.h"
@@ -28,7 +29,7 @@ NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirec
 }
 
 #ifdef HAVE_MKL_PARDISO
-void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;

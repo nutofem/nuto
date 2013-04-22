@@ -12,6 +12,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
@@ -37,7 +38,7 @@ public:
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    virtual void AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const=0;
+    virtual void AddLoadToGlobalSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

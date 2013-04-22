@@ -45,7 +45,7 @@ void NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix(int& curConstr
 {
     if (mNode->GetNumRotations()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix] Node does not have a rotation component.");
-    rConstraintMatrix.AddEntry(curConstraintEquation,mNode->GetDofRotation(0),1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofRotation(0),1);
 
     curConstraintEquation++;
 }
@@ -54,9 +54,9 @@ void NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix(int& curConstr
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeRotations2D::GetRHS(int& curConstraintEquation,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearNodeRotations2D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
 {
-    rRHS(curConstraintEquation,0) = mRHS;
+    rRHS(curConstraintEquation) = mRHS;
     curConstraintEquation++;
 }
 

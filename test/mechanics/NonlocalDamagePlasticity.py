@@ -32,24 +32,24 @@ error = False
 myStructure = nuto.Structure(2)
 
 #create nodes
-node1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,0)))
-node2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,0)))
-node3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,0)))
-node4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,1)))
-node5 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,1)))
-node6 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,1)))
-node7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(0,2)))
-node8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(1,2)))
-node9 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(2,1,(2,2)))
+node1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0)))
+node2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,0)))
+node3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,0)))
+node4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,1)))
+node5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,1)))
+node6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,1)))
+node7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,2)))
+node8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,2)))
+node9 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,2)))
 
 #create element
-element1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node1,node2,node5,node4)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node1,node2,node5,node4)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
 myStructure.ElementSetIntegrationType(element1,"2D4NGauss1Ip","StaticDataNonlocal")
-element2 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node2,node3,node6,node5)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element2 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node2,node3,node6,node5)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
 myStructure.ElementSetIntegrationType(element2,"2D4NGauss4Ip","StaticDataNonlocal")
-element3 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node4,node5,node8,node7)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element3 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node4,node5,node8,node7)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
 myStructure.ElementSetIntegrationType(element3,"2D4NGauss1Ip","StaticDataNonlocal")
-element4 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullMatrix(4,1,(node5,node6,node9,node8)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element4 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node5,node6,node9,node8)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
 myStructure.ElementSetIntegrationType(element4,"2D4NGauss4Ip","StaticDataNonlocal")
 
 #create constitutive law
@@ -90,7 +90,7 @@ myStructure.AddVisualizationComponentNonlocalWeights(element2,3)
 
 #calculate linear elastic matrix
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General(0,0)
-dispForceVector = nuto.DoubleFullMatrix(0,0)
+dispForceVector = nuto.DoubleFullVector(0)
 
 myStructure.ElementTotalUpdateTmpStaticData()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
@@ -101,10 +101,10 @@ if printResult:
     print "stiffnessMatrix elastic"
     fullStiffnessMatrixElastic.Info()
 
-displacements = nuto.DoubleFullMatrix(0,0) 
-dependentDofs = nuto.DoubleFullMatrix(0,0)
-intForce	  = nuto.DoubleFullMatrix(0,0)
-intForce2	  = nuto.DoubleFullMatrix(0,0)
+displacements = nuto.DoubleFullVector(0) 
+dependentDofs = nuto.DoubleFullVector(0)
+intForce	  = nuto.DoubleFullVector(0)
+intForce2	  = nuto.DoubleFullVector(0)
 
 #check the stiffness three times
 #loadstep 0 : uniform plastic loading
@@ -119,7 +119,7 @@ for theLoadStep in range(0,1):
     else:
         rightDisp = 0.6
 
-    matrixRightDisp = nuto.DoubleFullMatrix(2,1)
+    matrixRightDisp = nuto.DoubleFullVector(2)
     matrixRightDisp.SetValue(0,0,rightDisp)
     matrixRightDisp.SetValue(1,0,0.)
 
@@ -127,7 +127,7 @@ for theLoadStep in range(0,1):
     myStructure.NodeSetDisplacements(node6,matrixRightDisp)
     myStructure.NodeSetDisplacements(node9,matrixRightDisp)
 
-    matrixCenterDisp = nuto.DoubleFullMatrix(2,1)
+    matrixCenterDisp = nuto.DoubleFullVector(2)
     if theLoadStep!=2:
         matrixCenterDisp.SetValue(0,0,0.5*rightDisp)
     else:
@@ -138,7 +138,7 @@ for theLoadStep in range(0,1):
     myStructure.NodeSetDisplacements(node5,matrixCenterDisp)
     myStructure.NodeSetDisplacements(node8,matrixCenterDisp)
 
-    matrixLeftDisp = nuto.DoubleFullMatrix(2,1)
+    matrixLeftDisp = nuto.DoubleFullVector(2)
     matrixLeftDisp.SetValue(0,0,0.0)
     matrixLeftDisp.SetValue(1,0,0.)
 

@@ -26,7 +26,7 @@ NuTo::LoadNodeForces3D::LoadNodeForces3D(const NodeBase* rNode, const NuTo::Full
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeForces3D::AddLoadToGlobalSubVectors(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeForces3D::AddLoadToGlobalSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
 {
     assert(rActiceDofsLoadVector.GetNumColumns()==1);
     assert(rDependentDofsLoadVector.GetNumColumns()==1);

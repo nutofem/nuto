@@ -53,14 +53,11 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief local accumulated plastic strain
-    double mKappa;
+    //! @brief local accumulated plastic strain 0 DP   1 Rankine
+    FullMatrix<double,2,1> mKappa;
 
-    //! @brief previous (after update) total strain component in radial direction (e22=e33)
-    double mEpsilonTotRadial;
-
-    //! @brief plastic strain (e11 and the radial component of the plastic strain e22=e33)
-    double mEpsilonP[2];
+    //! @brief plastic strain
+    EngineeringStrain1D mPlasticStrain;
 };
 
 }

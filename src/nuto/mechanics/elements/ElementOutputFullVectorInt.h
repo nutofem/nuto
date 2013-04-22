@@ -1,6 +1,6 @@
 // $Id $
-#ifndef ELEMENT_OUTPUT_FULLMATRIX_INT_H_
-#define ELEMENT_OUTPUT_FULLMATRIX_INT_H_
+#ifndef ELEMENT_OUTPUT_FULLVector_INT_H_
+#define ELEMENT_OUTPUT_FULLVector_INT_H_
 
 #include "nuto/math/FullMatrix.h"
 
@@ -11,13 +11,13 @@ namespace NuTo
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...
-class ElementOutputFullMatrixInt : public ElementOutputBase
+class ElementOutputFullVectorInt : public ElementOutputBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    ElementOutputFullMatrixInt(){};
+    ElementOutputFullVectorInt(){};
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -27,21 +27,21 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    ElementOutputFullMatrixInt* Clone() const
+    ElementOutputFullVectorInt* Clone() const
     {
-    	return new ElementOutputFullMatrixInt(*this);
+    	return new ElementOutputFullVectorInt(*this);
     }
 
-    FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt()override
+    FullVector<int,Eigen::Dynamic>& GetFullVectorInt() override
 	{
-        return mMatrix;
+        return mVector;
 	}
 
 private:
-    FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
+    FullVector<int,Eigen::Dynamic> mVector;
 };
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputFullMatrixInt)
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputFullVectorInt)
 #endif // ENABLE_SERIALIZATION
-#endif /* ELEMENT_OUTPUT_FULLMATRIX_INT_H_ */
+#endif /* ELEMENT_OUTPUT_FULLVector_INT_H_ */

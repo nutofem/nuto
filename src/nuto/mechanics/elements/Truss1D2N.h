@@ -100,14 +100,6 @@ public:
         mNodes[rLocalNodeNumber] = rNode;
     }
 
-    //! @brief calculate list of global dofs related to the entries in the element stiffness matrix
-    //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
-    //! @param rGlobalDofsColumn global dofs corresponding to the columns of the matrix
-    void CalculateGlobalDofs(std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn)const
-    {
-        throw MechanicsException("[NuTo::Truss1D2N::CalculateGlobalDofs] to be implemented.");
-    }
-
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
 

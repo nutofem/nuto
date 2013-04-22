@@ -2,6 +2,7 @@
 
 #include "nuto/math/MathException.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
@@ -49,8 +50,8 @@ int main()
 		
 		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Nodes = myStructure.NodesCreate("displacements", Coordinates);
 		
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> CrackNodes1 = myStructure.NodesCreate("coordinates", InitCrackCoords1);
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> CrackNodes5 = myStructure.NodesCreate("coordinates", InitCrackCoords5);
+		NuTo::FullVector<int,Eigen::Dynamic> CrackNodes1 = myStructure.NodesCreate("coordinates", InitCrackCoords1);
+		NuTo::FullVector<int,Eigen::Dynamic> CrackNodes5 = myStructure.NodesCreate("coordinates", InitCrackCoords5);
 		DBG_POSITION_INFO("CrackNodes1")
 		CrackNodes1.Info(5);
 		DBG_POSITION_INFO("CrackNodes5")
@@ -83,7 +84,7 @@ int main()
 		DBG_POSITION_INFO("Incidence Matrix")
 		Incidences.Info();
 
-	    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
+		NuTo::FullVector<int,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
 
 	    // create constitutive law
 	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");

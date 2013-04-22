@@ -49,11 +49,11 @@ public:
 
     //! @brief... get if damage are dof
     //! @return ... true, if damage are dofs
-    bool GetIsDamageDof()const;
+    bool GetIsNonlocalDamageDof()const;
 
     //! @brief... set if damage are dofs
     //! @param rFlag ... true, if damage are dofs
-    void SetIsDamageDof(bool rFlag);
+    void SetIsNonlocalDamageDof(bool rFlag);
 
     //! @brief... get if temperatures are to be used as input to the constitutive model
     //! @return ... true, if temperatures are to be used as input to the constitutive model
@@ -139,7 +139,7 @@ private:
 
     bool mDisplacementDof;
     bool mTemperatureDof;
-    bool mDamageDof;
+    bool mNonlocalDamageDof;
 };
 
 }

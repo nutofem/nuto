@@ -8,7 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -22,7 +22,7 @@ class ConstitutiveMisesPlasticity;
 //! @brief ... three-dimensional deformation gradient
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class EngineeringStrain2D: public ConstitutiveOutputBase, public FullVectorFixed<double,3>
+class EngineeringStrain2D: public ConstitutiveOutputBase, public FullVector<double,3>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -72,7 +72,7 @@ class EngineeringStrain2D: public ConstitutiveOutputBase, public FullVectorFixed
     template<typename OtherDerived>
     EngineeringStrain2D& operator=( const Eigen::MatrixBase <OtherDerived>& other)
 	{
-    	this->FullVectorFixed<double,3>::operator=(other);
+    	this->FullVector<double,3>::operator=(other);
     	return *this;
 	}
 

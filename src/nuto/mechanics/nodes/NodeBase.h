@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
@@ -63,13 +64,13 @@ public:
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues);
+    virtual void SetGlobalDofValues(int rTimeDerivative, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues);
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const;
+    virtual void GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
 
     //! @brief extract all dof numbers from the node (based on global dof number)
     //virtual int* GetGlobalDofs();
@@ -259,30 +260,30 @@ public:
 
     //! @brief returns the number of Damage dofs of the node
     //! @return number of Damages
-    virtual int GetNumDamage()const;
+    virtual int GetNumNonlocalDamage()const;
 
     //! @brief returns the Damage of the node
     //! @return Damage
-    virtual void GetDamage(double* rDamage)const;
+    virtual void GetNonlocalDamage(double* rDamage)const;
 
     //! @brief returns the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @return Damage
-    virtual void GetDamage(int rTimeDerivative, double* rDamage)const;
+    virtual void GetNonlocalDamage(int rTimeDerivative, double* rNonlocalDamage)const;
 
     //! @brief set the Damage of the node
     //! @param rDamage  given Damage
-    virtual void SetDamage(const double* rDamage);
+    virtual void SetNonlocalDamage(const double* rNonlocalDamage);
 
     //! @brief set the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @param rDamage  given Damage
-    virtual void SetDamage(int rTimeDerivative, const double* rDamage);
+    virtual void SetNonlocalDamage(int rTimeDerivative, const double* rNonlocalDamage);
 
     //! @brief gives the global DOF of a Damage component
     //! @param rComponent component
     //! @return global DOF
-    virtual int GetDofDamage()const;
+    virtual int GetDofNonlocalDamage()const;
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string

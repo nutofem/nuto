@@ -172,28 +172,6 @@ public:
 
     //! @brief ... performs the return mapping procedure for the plasticity model
     //! @param rStrain              ... current total strain
-    //! @param rPrevPlasticStrain   ... previous plastic strain (history variable - in the axial direction, and two in the radial direction, which are identical
-    //! @param rPrevTotalStrain     ... previous total strain (history variable)
-    //! @param rPrevEqPlasticStrain ... previous equiavalente plastic strain (history variable)
-    //! @param rEpsilonP            ... new plastic strain after return mapping
-    //! @param rEqPlasticStrain     ... new equivalente olastic strain after return mapping
-    //! @param rdEpsilonPdEpsilon   ... new derivative of current plastic strain with respect to the total strain
-    NuTo::Error::eError ReturnMapping1D(
-            const EngineeringStrain1D& rStrain,
-            double rTrialStrainEpsilonTotRadial,
-            const double rPrevPlasticStrain[2],
-            const EngineeringStrain1D& rPrevTotalStrain,
-            double rPrevTotalStrainRadial,
-            Eigen::Matrix<double,1,1>& rStress,
-            Eigen::Matrix<double,2,1>& rEpsilonP,
-            double rNewEpsilonTotRadial,
-            double& rDeltaEqPlasticStrain,
-            Eigen::Matrix<double,1,1>* rdSigmadEpsilon,
-            Eigen::Matrix<double,1,1>* rdEpsilonPdEpsilon,
-            NuTo::Logger& rLogger)const;
-
-    //! @brief ... performs the return mapping procedure for the plasticity model
-    //! @param rStrain              ... current total strain
     //! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
     //! @param rPrevTotalStrain     ... previous total strain (history variable)
     //! @param rStress              ... new stress
@@ -202,16 +180,16 @@ public:
     //! @param rDeltaKappa          ... delta equivalent plastic strain for Drucker Prager (0) and Rankine yield surface(1)
     //! @param rdSigmadEpsilon      ... new derivative of current stress with respect to the total strain
     //! @param rdKappadEpsilon1     ... new derivative of equivalent plastic strain (Drucker-Prager 0 Rankine 1) with respect to the total strain
-    NuTo::Error::eError ReturnMapping1DNew(
+    NuTo::Error::eError ReturnMapping1D(
             const EngineeringStrain1D& rStrain,
             const EngineeringStrain1D& rPrevPlasticStrain,
             const EngineeringStrain1D& rPrevTotalStrain,
-            Eigen::Matrix<double,1,1>& rStress,
-            Eigen::Matrix<double,1,1>& rPlasticStrain,
-            Eigen::Matrix<int,2,1>& rYieldConditionFlag,
-            Eigen::Matrix<double,2,1>& rDeltaKappa,
-            Eigen::Matrix<double,1,1>* rdSigma1dEpsilon1,
-            Eigen::Matrix<double,2,1>* rdKappadEpsilon1,
+            EngineeringStress1D& rStress,
+            EngineeringStrain1D& rPlasticStrain,
+            NuTo::FullMatrix<int,2,1>& rYieldConditionFlag,
+            NuTo::FullMatrix<double,2,1>& rDeltaKappa,
+            NuTo::FullMatrix<double,1,1>* rdSigma1dEpsilon1,
+            NuTo::FullMatrix<double,2,1>* rdKappadEpsilon1,
             NuTo::Logger& rLogger)const;
 
     //! @brief ... performs the return mapping procedure for the plasticity model
@@ -368,8 +346,8 @@ protected:
     //! @brief ... fracture energy
     double mFractureEnergy;
 
-    //related parameter to the fracture energy
-    double mEpsilonF;
+    //parameter related to the fracture energy
+    FullMatrix<double,2,1> mEpsilonF;
 
     //! @brief ... yield mode (Drucker Prager, Rankine and combinations)
     Constitutive::eNonlocalDamageYieldSurface mYieldSurface;

@@ -11,33 +11,33 @@ int main()
     NuTo::Structure myStructure(1);
 
     // create nodes
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(1,1);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Displacements(1,1);
+    NuTo::FullVector<double,Eigen::Dynamic> Coordinates(1);
+    NuTo::FullVector<double,Eigen::Dynamic> Displacements(1);
 
-    Coordinates(0,0) = 1;
+    Coordinates(0) = 1;
     int myNode1 = myStructure.NodeCreate("displacements", Coordinates);
-    Displacements(0,0) = 0;
+    Displacements(0) = 0;
     myStructure.NodeSetDisplacements(myNode1, Displacements);
 
-    Coordinates(0,0) = 6;
+    Coordinates(0) = 6;
     int myNode2 = myStructure.NodeCreate("displacements", Coordinates);
-    Displacements(0,0) = 0.3;
+    Displacements(0) = 0.3;
     myStructure.NodeSetDisplacements(myNode2, Displacements);
 
-    Coordinates(0,0) = 10;
+    Coordinates(0) = 10;
     int myNode3 = myStructure.NodeCreate("displacements", Coordinates);
-    Displacements(0,0) = 0.6;
+    Displacements(0) = 0.6;
     myStructure.NodeSetDisplacements(myNode3, Displacements);
 
     // create element
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidences(2,1);
+    NuTo::FullVector<int,Eigen::Dynamic> Incidences(2);
 
-    Incidences(0,0) = myNode1;
-    Incidences(1,0) = myNode2;
+    Incidences(0) = myNode1;
+    Incidences(1) = myNode2;
     int myElement1 = myStructure.ElementCreate("Truss1D2N", Incidences);
 
-    Incidences(0,0) = myNode3;
-    Incidences(1,0) = myNode2;
+    Incidences(0) = myNode3;
+    Incidences(1) = myNode2;
     int myElement2 = myStructure.ElementCreate("Truss1D2N", Incidences);
 
     // create constitutive law

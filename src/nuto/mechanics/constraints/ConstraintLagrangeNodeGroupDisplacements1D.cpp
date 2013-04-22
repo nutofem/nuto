@@ -39,20 +39,20 @@ int NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetNumLagrangeMultipliers(
 
 //! @brief returns the Lagrange Multiplier
 //! first col Lagrange, second column slack variables
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetLagrangeMultiplier(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetLagrangeMultiplier(FullVector<double,Eigen::Dynamic>& rLagrangeMultiplier)const
 {
-    rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
+    rLagrangeMultiplier.Resize(mGroup->GetNumMembers());
     for (unsigned int count=0; count<mLagrangeValue.size(); count++)
-        rLagrangeMultiplier(count,0) = mLagrangeValue[count];
+        rLagrangeMultiplier(count) = mLagrangeValue[count];
 }
 
 //! @brief returns the Lagrange Multiplier dofs
 //! first col Lagrangedofs
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetDofsLagrangeMultiplier(FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const
 {
-    rLagrangeMultiplier.Resize(mGroup->GetNumMembers(),1);
+    rLagrangeMultiplier.Resize(mGroup->GetNumMembers());
     for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
-        rLagrangeMultiplier(count,0) = mLagrangeDOF[count];
+        rLagrangeMultiplier(count) = mLagrangeDOF[count];
 }
 
 //!@brief sets/modifies the right hand side of the constraint equations
@@ -77,7 +77,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofs(int& rDOF)
 //! @brief write dof values to constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
 {
     assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -103,7 +103,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::SetGlobalDofValues(const 
 //! @brief extract dof values from the constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
 {
     assert(rActiveDofValues.GetNumColumns() == 1);
     assert(rDependentDofValues.GetNumColumns() == 1);
@@ -173,36 +173,38 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatri
         {
         case NuTo::Constraint::EQUAL:
             //derivative with respect to ux and lambda
-             rResult.AddEntry(curNodeEntry,curNodeEntry+1,1.);
+             rResult.AddValue(curNodeEntry,curNodeEntry+1,1.);
             //derivative with respect to ux^2
-            rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty);
+            rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty);
         break;
         case NuTo::Constraint::SMALLER:
             if (disp[0]-mRHS>-mLagrangeValue[theNode]/mPenalty)
             {
+        		std::cout << "active stiffness" << std::endl;
                 //derivative with respect to ux and lambda
-                 rResult.AddEntry(curNodeEntry,curNodeEntry+1,1.);
+                 rResult.AddValue(curNodeEntry,curNodeEntry+1,1.);
                 //derivative with respect to ux^2
-                rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty);
+                rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty);
             }
             else
             {
+        		std::cout << "inactive stifness" << std::endl;
                 //derivative with respect to lambda^2
-                rResult.AddEntry(curNodeEntry,curNodeEntry,-1./mPenalty);
+                rResult.AddValue(curNodeEntry,curNodeEntry,-1./mPenalty);
             }
         break;
         case NuTo::Constraint::GREATER:
             if (mRHS-disp[0]>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to ux and lambda
-                 rResult.AddEntry(curNodeEntry,curNodeEntry+1,-1.);
+                 rResult.AddValue(curNodeEntry,curNodeEntry+1,-1.);
                 //derivative with respect to ux^2
-                rResult.AddEntry(curNodeEntry+1,curNodeEntry+1,mPenalty);
+                rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty);
             }
             else
             {
                 //derivative with respect to lambda^2
-                rResult.AddEntry(curNodeEntry,curNodeEntry,-1./mPenalty);
+                rResult.AddValue(curNodeEntry,curNodeEntry,-1./mPenalty);
             }
         break;
         default:
@@ -213,11 +215,11 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatri
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     int dof(2*mLagrangeDOF.size());
-    rResult.Resize(dof,1);
+    rResult.Resize(dof);
     rGlobalDofs.resize(dof);
     int curNodeEntry(0);
     int theNode(0);
@@ -239,7 +241,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternal
             rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]+mPenalty*(disp[0]-mRHS);
         break;
         case NuTo::Constraint::SMALLER:
-            if (disp[0]-mRHS>-mLagrangeValue[theNode]/mPenalty)
+        	if (disp[0]-mRHS>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to lambda
                 rResult(curNodeEntry,0)=disp[0]-mRHS;
@@ -248,7 +250,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternal
             }
             else
             {
-                //derivative with respect to lambda
+                 //derivative with respect to lambda
                 rResult(curNodeEntry,0)=-mLagrangeValue[theNode]/mPenalty;
             }
         break;

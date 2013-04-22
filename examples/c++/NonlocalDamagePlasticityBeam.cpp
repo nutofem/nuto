@@ -1,4 +1,5 @@
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
 //just for test
@@ -30,7 +31,7 @@ try
 	double deltaY=lY/NumElementY;
 
 	//create nodes
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(2,1);
+	NuTo::FullVector<double,Eigen::Dynamic> Coordinates(2);
     int LeftSupport = myStructure.GroupCreate("Nodes");
     int RightSupport = myStructure.GroupCreate("Nodes");
     double posX;
@@ -41,8 +42,8 @@ try
 		posX=0.;
 		for (int theNodeX=0 ; theNodeX<NumNodeX;theNodeX++, posX+=deltaX )
 		{
-			Coordinates(0,0) = posX;
-			Coordinates(1,0) = posY;
+			Coordinates(0) = posX;
+			Coordinates(1) = posY;
 			int theNode = myStructure.NodeCreate("displacements",Coordinates);
 			if (posX==0)
 			{
@@ -57,15 +58,15 @@ try
 	}
 
 	//create elements
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(4,1);
+	NuTo::FullVector<int,Eigen::Dynamic> Incidence(4);
 	for (int theElementY=0; theElementY<NumElementY;theElementY++)
 	{
 		for (int theElementX=0; theElementX<NumElementX;theElementX++)
 		{
-			Incidence(0,0) = theElementX+NumNodeX*theElementY;
-			Incidence(1,0) = theElementX+1+NumNodeX*theElementY;
-			Incidence(2,0) = theElementX+1+NumNodeX*(theElementY+1);
-			Incidence(3,0) = theElementX+NumNodeX*(theElementY+1);
+			Incidence(0) = theElementX+NumNodeX*theElementY;
+			Incidence(1) = theElementX+1+NumNodeX*theElementY;
+			Incidence(2) = theElementX+1+NumNodeX*(theElementY+1);
+			Incidence(3) = theElementX+NumNodeX*(theElementY+1);
 		    myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 		}
 	}
@@ -100,13 +101,13 @@ try
 	myStructure.BuildNonlocalData(myMatDamage);
 
 	//fix left support
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
-	DirectionX.SetValue(0,0,1.0);
-	DirectionX.SetValue(1,0,0.0);
+	NuTo::FullVector<double,Eigen::Dynamic> DirectionX(2);
+	DirectionX.SetValue(0,1.0);
+	DirectionX.SetValue(1,0.0);
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>DirectionY(2,1);
-	DirectionY.SetValue(0,0,0.0);
-	DirectionY.SetValue(1,0,1.0);
+	NuTo::FullVector<double,Eigen::Dynamic> DirectionY(2);
+	DirectionY.SetValue(0,0.0);
+	DirectionY.SetValue(1,1.0);
 
 	myStructure.ConstraintLinearSetDisplacementNodeGroup(LeftSupport,DirectionX, 0);
 	myStructure.ConstraintLinearSetDisplacementNode(leftLowerNode,DirectionX, 0);
@@ -151,7 +152,7 @@ try
 			numNewtonIterations++;
 			// build global stiffness matrix and equivalent load vector which corresponds to prescribed boundary values
 			NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
+			NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
 			myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
 			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixFull(stiffnessMatrix);
 			//std::cout<<"stiffnessMatrixFull" << std::endl;
@@ -161,26 +162,26 @@ try
 			stiffnessMatrix.RemoveZeroEntries(0,1e-14);
 
 			// build global external load vector
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> extForceVector;
+			NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
 			myStructure.BuildGlobalExternalLoadVector(extForceVector);
 			//std::cout<<"extForceVector" << std::endl;
 			//extForceVector.Trans().Info();
 
 			// build global internal load vector
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector;
+			NuTo::FullVector<double,Eigen::Dynamic> intForceVector;
 			myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
 
 			// calculate right hand side
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector - intForceVector;
+			NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector - intForceVector;
 			//std::cout<<"rhsVector" << std::endl;
 			//rhsVector.Trans().Info();
 
 			// solve
 			NuTo::SparseDirectSolverMUMPS mySolver;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> oldDisplacementsActiveDOFs;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFs;
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> deltaDisplacementsActiveDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> oldDisplacementsActiveDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFs;
+			NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFs;
 			stiffnessMatrix.SetOneBasedIndexing();
 			mySolver.Solve(stiffnessMatrix, rhsVector, deltaDisplacementsActiveDOFs);
 			//std::cout<<"deltaDisplacementsActiveDOFs" << std::endl;
@@ -192,7 +193,7 @@ try
 			myStructure.NodeExtractDofValues(oldDisplacementsActiveDOFs, displacementsDependentDOFs);
 
 			//perform a linesearch
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> residualVector;
+			NuTo::FullVector<double,Eigen::Dynamic> residualVector;
 			double normRHS = rhsVector.Norm();
 			double alpha(1);
 			do
@@ -236,7 +237,7 @@ try
 	    	}
 
 			//store residual force
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SupportingForce;
+	    	NuTo::FullVector<double,Eigen::Dynamic> SupportingForce;
 			myStructure.NodeGroupInternalForce(RightSupport,SupportingForce);
 			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SinglePlotData(1,6);
 			SinglePlotData(0,0) = curDisp;

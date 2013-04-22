@@ -33,6 +33,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector.h"
 
 #include "nuto/base/Logger.h"
 #include "nuto/math/NuToMath.h"
@@ -47,7 +48,6 @@ namespace NuTo
 template <class T, int rows, int cols>
 FullMatrix<T,rows,cols>::FullMatrix()
 {
-	this->resize ( 0,0 );
 }
 
 //! @brief ... constructor
@@ -61,6 +61,7 @@ FullMatrix<T,rows,cols>::FullMatrix( int rNumRows, int rNumColumns)
 	else
 		this->resize ( rNumRows,rNumColumns );
 }
+
 
 //! @brief ... constructor
 //! @param rEigenMatrix ... other matrix
@@ -84,24 +85,19 @@ FullMatrix<T,rows,cols>::FullMatrix ( int numRows_, int numColumns_, const std::
 			(*this)( i,j ) = *ptr;                           // to access matrix coefficients,
 }
 
-//! @brief ... constructor
-//! @brief ... creates a FullVector(means a FullMatrix size(m,1) )
-//! @param entries_ ... vector containing the matrix in column-major orientation
-template<class T, int rows, int cols>
-FullMatrix<T,rows,cols>::FullMatrix ( const std::vector<T>& entries_ )
-{
-	this->resize ( entries_.size(),1 );
-	const T *ptr = &entries_[0];
-
-	for ( int i=0; i<this->rows(); i++, ptr++ )   	// loop over rows
-		(*this)( i,0 ) = *ptr;                     	// to access matrix coefficients,
-}
-
 //! @brief ... copy constructor
 //! @param  rOther ... copied element
 template<class T, int rows, int cols>
 FullMatrix<T,rows,cols>::FullMatrix ( const FullMatrix<T,rows,cols>& rOther ): Eigen::Matrix<T,rows,cols>(rOther)
 {
+}
+
+//! @brief ... constructor from Sparse matrices
+//! @param  rOther ... copied element
+template<class T, int rows, int cols>
+FullMatrix<T,rows,cols>::FullMatrix ( const SparseMatrix<T>& rOther )
+{
+	rOther.WriteEntriesToMatrix(*this);
 }
 
 //! @brief ... assignment constructor
@@ -134,21 +130,24 @@ FullMatrix<T,rows,cols>& FullMatrix<T,rows,cols>::operator+=( const Eigen::Diago
 	return *this;
 }
 
-//! @brief ... resize matrix (everything is deleted)
+//! @brief ... resize matrix (everything is deleted, attention, the eigenroutine is not setting everything to zero)
 //! @param rows ... number of rows
 //! @param cols ... number of columns
 template<class T, int rows, int cols>
 void FullMatrix<T,rows,cols>::Resize ( int rRows, int rCols )
 {
-	if ( rows*cols>0 )
-		this->setZero ( rRows, rCols );
-	else
+	if ( rRows==0 || rCols==0 )
 		this->resize ( rRows,rCols );
+	else
+		this->setZero ( rRows, rCols );
 }
 
+#ifndef SWIG
 //! @brief ... resize matrix (nothing is deleted)
 //! @param rows ... number of rows
 //! @param cols ... number of columns
+//! routine is not exposed to python because of the different interface for vectors and matrices
+//! if required, add the function manually in FullMatrix.i
 template<class T, int rows, int cols>
 void FullMatrix<T,rows,cols>::ConservativeResize ( int rRows, int rCols )
 {
@@ -157,6 +156,8 @@ void FullMatrix<T,rows,cols>::ConservativeResize ( int rRows, int rCols )
 
 //! @brief ... resize matrix (nothing is deleted)
 //! @param rows ... number of rows
+//! routine is not exposed to python because of the different interface for vectors and matrices
+//! if required, add the function manually in FullMatrix.i
 template<class T, int rows, int cols>
 void FullMatrix<T,rows,cols>::ConservativeResizeRows (int rRows )
 {
@@ -165,11 +166,14 @@ void FullMatrix<T,rows,cols>::ConservativeResizeRows (int rRows )
 
 //! @brief ... resize matrix (nothing is deleted)
 //! @param rows ... number of columns
+//! routine is not exposed to python because of the different interface for vectors and matrices
+//! if required, add the function manually in FullMatrix.i
 template<class T, int rows, int cols>
 void FullMatrix<T,rows,cols>::ConservativeResizeCols (int rCols )
 {
 	this->conservativeResize(Eigen::NoChange_t(), rCols);
 }
+#endif
 
 //! @brief ... add in place another matrix to this matrix and return a reference to this matrix
 //! @param other ... other matrix
@@ -241,7 +245,21 @@ void FullMatrix<T,rows,cols>::SetValue (int i, int j, const T& value )
 	(*this)( i,j ) =value;
 }
 
-//! @brief ... get the value of the (i,j)-th matrix entry
+//! @brief ... set the value of the (i,j)-th matrix entry
+//! @param i ... row
+//! @param j ... column
+//! @param value ... value of the matrix entry
+template<class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::SetValue (int i, const T& value )
+{
+	if ( i>=GetNumRows() || i<0 || GetNumColumns()!=0)
+	{
+		throw MathException ( std::string ( "[FullMatrix::SetValue] Row or column number out of range." ) );
+	}
+	(*this)( i,0 ) =value;
+}
+
+//! @brief ... get the value of the (i,j)-th vector entry
 //! @param i ... row
 //! @param j ... column
 //! @return the value of the (i,j)-th matrix entry
@@ -250,9 +268,23 @@ T FullMatrix<T,rows,cols>::GetValue (int i, int j ) const
 {
 	if ( i>=GetNumRows() || i<0 || j>=GetNumColumns() || j<0 )
 	{
-		throw MathException ( std::string ( "[FullMatrix::GetValue] Row or column number out of range." ) );
+		throw MathException ( std::string ( "[FullMatrix::GetValue] Row  number out of range or not a vector." ) );
 	}
 	return (*this) ( i,j );
+}
+
+//! @brief ... get the value of the (i)-th vector entry
+//! @param i ... row
+//! @param j ... column
+//! @return the value of the (i,j)-th matrix entry
+template<class T, int rows, int cols>
+T FullMatrix<T,rows,cols>::GetValue (int i) const
+{
+	if ( i>=GetNumRows() || i<0 || GetNumColumns()!=0)
+	{
+		throw MathException ( std::string ( "[FullMatrix::GetValue] Row number out of range or not a vector." ) );
+	}
+	return (*this) ( i,0 );
 }
 
 //! @brief ... add a value to the (i,j)-th matrix entry
@@ -295,14 +327,6 @@ inline int FullMatrix<T,rows,cols>::GetNumColumns() const
 	return this->cols();
 }
 
-//! @brief ... convert a sparse matrix into a full matrix of same type
-//! @param sparseMatrix ... sparse matrix
-template<class T, int rows, int cols>
-FullMatrix<T,rows,cols>::FullMatrix( const SparseMatrix<T>& sparseMatrix )
-{
-	this->setZero ( sparseMatrix.GetNumRows(),sparseMatrix.GetNumColumns() );
-	sparseMatrix.WriteEntriesToFullMatrix ( *this );
-}
 
 #ifdef ENABLE_SERIALIZATION
 template<class T, int rows, int cols>
@@ -1278,7 +1302,7 @@ void  FullMatrix<T,rows,cols>::SetRow ( int rI, const FullMatrix<T, Eigen::Dynam
 //! @param rI ... column
 //! @return column entries as full matrix
 template<class T, int rows, int cols>
-FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>  FullMatrix<T,rows,cols>::GetColumn ( int rI ) const
+FullVector<T, Eigen::Dynamic>  FullMatrix<T,rows,cols>::GetColumn ( int rI ) const
 {
 	if ( rI>=this->cols() )
 		throw MathException ( "FullMatrix::GetColumn - column out of Dimension." );
@@ -1291,7 +1315,7 @@ FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>  FullMatrix<T,rows,cols>::GetColum
 //! @param rI ... column
 //! @param rBlock ... new column entries
 template<class T, int rows, int cols>
-void  FullMatrix<T,rows,cols>::SetColumn ( int rI, const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rBlock )
+void  FullMatrix<T,rows,cols>::SetColumn ( int rI, const FullVector<T, Eigen::Dynamic>& rBlock )
 {
 	if ( rBlock.cols() !=1 )
 		throw MathException ( "FullMatrix::SetColumn - Expect a Matrix with a single column as Input." );
@@ -1300,6 +1324,19 @@ void  FullMatrix<T,rows,cols>::SetColumn ( int rI, const FullMatrix<T, Eigen::Dy
 	if ( rBlock.rows() !=this->rows() )
 		throw MathException ( "FullMatrix::SetColumn - number of rows for both matrices must be identical." );
 	this->col ( rI ) = rBlock;
+}
+
+//! @brief ... appends columns to this matrix
+//! @param rBlock ... matrix storing the columns
+template<class T, int rows, int cols>
+void  FullMatrix<T,rows,cols>::AppendColumns ( FullVector<T, Eigen::Dynamic> rBlock )
+{
+	if ( rBlock.rows() !=this->rows() )
+		throw MathException ( "FullMatrix::AppendColumns - number of rows for both matrices must be identical." );
+	Eigen::Matrix<T,rows,cols> tmpMatrix ( this->rows(),this->cols() +rBlock.cols() );
+	tmpMatrix.block ( 0,0,this->rows(),this->cols() ) = *this;
+	tmpMatrix.block ( 0,this->cols(),rBlock.rows(),rBlock.cols() ) = rBlock;
+	*this = tmpMatrix;
 }
 
 //! @brief ... appends columns to this matrix

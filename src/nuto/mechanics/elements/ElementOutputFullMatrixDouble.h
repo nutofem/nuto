@@ -35,7 +35,7 @@ public:
     	return new ElementOutputFullMatrixDouble(*this);
     }
 
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble()
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble() override
 	{
         return mMatrix;
 	}

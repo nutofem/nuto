@@ -232,6 +232,7 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
         SectionPtr->SetIsDisplacementDof(false);
     	SectionPtr->SetIsRotationDof(false);
     	SectionPtr->SetIsTemperatureDof(false);
+    	SectionPtr->SetIsNonlocalDamageDof(false);
 
     	boost::char_separator<char> sep(" ");
         boost::tokenizer< boost::char_separator<char> > tok(DOFsUpperCase, sep);
@@ -251,7 +252,7 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
             }
             else if (*beg=="NONLOCALDAMAGE")
             {
-            	SectionPtr->SetIsDamageDof(true);
+            	SectionPtr->SetIsNonlocalDamageDof(true);
             }
             else
             {

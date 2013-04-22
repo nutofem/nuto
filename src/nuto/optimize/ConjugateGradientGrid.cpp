@@ -5,6 +5,7 @@
 //! @brief ... conjugate gradient method without global matrix matrix-vector product
 
 
+#include "nuto/math/FullVector.h"
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/MisesWielandt.h"
 #include "nuto/optimize/MultiGrid.h"

@@ -569,48 +569,48 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		myHelpStruc.ConstitutiveLawSetYoungsModulus(myMat, 1.0);
 
 		// create nodes
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> nodeCoordinates(3, 1);
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> elementIncidence(8,1);
+		NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(3);
+		NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(8);
 
-		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(0,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(1,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(1)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(2,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(2)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(3,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
+		elementIncidence(3)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(4,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(4)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = -mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(5,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(5)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(6,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(6)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
-		nodeCoordinates(0, 0) = -mVoxelSpacing[0] * 0.5;
-		nodeCoordinates(1, 0) = mVoxelSpacing[1] * 0.5;
-		nodeCoordinates(2, 0) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(7,0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
+		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
+		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
+		elementIncidence(7)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
 
 		// first element create
 
@@ -621,8 +621,8 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		myHelpStruc.ElementSetSection(myHelpElement,mySection1);
 
 		// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rows;
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> coluums;
+		NuTo::FullVector<int,Eigen::Dynamic> rows;
+		NuTo::FullVector<int,Eigen::Dynamic> coluums;
 		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrix;
 		myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
 		if(NuTo::StructureBase::GetVerboseLevel()>3)

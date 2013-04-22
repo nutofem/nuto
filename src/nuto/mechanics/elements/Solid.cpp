@@ -149,7 +149,7 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			switch(it->first)
 			{
 			case Element::INTERNAL_GRADIENT:
-				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,1);
+				it->second->GetFullVectorDouble().Resize(numDispDofs+numTempDofs);
 				//if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
 				//on the global level
 				if (mStructure->GetHessianConstant(0)==false)
@@ -274,6 +274,7 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			//calculate output
 			for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
 			{
+				std::cout << "set it->first " << it->first << std::endl;
 				switch(it->first)
 				{
 				case Element::INTERNAL_GRADIENT:
@@ -282,11 +283,11 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
 					if (numDispDofs>0)
 					{
-						AddDetJBtSigma(derivativeShapeFunctionsGlobal,engineeringStress, factor, 0, it->second->GetFullMatrixDouble());
+						AddDetJBtSigma(derivativeShapeFunctionsGlobal,engineeringStress, factor, 0, it->second->GetFullVectorDouble());
 					}
 					if (numTempDofs>0)
 					{
-						AddDetJBtHeatFlux(derivativeShapeFunctionsGlobal,heatFlux, factor, numDispDofs, it->second->GetFullMatrixDouble());
+						AddDetJBtHeatFlux(derivativeShapeFunctionsGlobal,heatFlux, factor, numDispDofs, it->second->GetFullVectorDouble());
 					}
 				}
 				break;
@@ -328,7 +329,7 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					 }
                  }
                  break;
-				case Element::HESSIAN_2_TIME_DERIVATIVE:
+				 case Element::HESSIAN_2_TIME_DERIVATIVE:
                     if (numDispDofs>0)
                     {
 						this->CalculateShapeFunctions(localIPCoord, shapeFunctions);
@@ -674,7 +675,7 @@ void NuTo::Solid::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
                                  const EngineeringStress3D& rEngineeringStress,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
 {
     const double *s = rEngineeringStress.GetData();
     double x1,y1,z1;
@@ -689,9 +690,9 @@ void NuTo::Solid::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
         y1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul3plus1];
         z1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul3plus2];
 
-        rResult(rRow + node1mul3,0)     +=x1*s[0]+y1*s[3]+z1*s[5];
-        rResult(rRow + node1mul3plus1,0)+=y1*s[1]+x1*s[3]+z1*s[4];
-        rResult(rRow + node1mul3plus2,0)+=z1*s[2]+y1*s[4]+x1*s[5];
+        rResult(rRow + node1mul3)     +=x1*s[0]+y1*s[3]+z1*s[5];
+        rResult(rRow + node1mul3plus1)+=y1*s[1]+x1*s[3]+z1*s[4];
+        rResult(rRow + node1mul3plus2)+=z1*s[2]+y1*s[4]+x1*s[5];
     }
 }
 
@@ -705,7 +706,7 @@ void NuTo::Solid::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  const HeatFlux3D& rHeatFlux,
                                  double rFactor,
                                  int rRow,
-                                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
 {
     const double *s = rHeatFlux.GetData();
     double x1,y1,z1;
@@ -720,9 +721,9 @@ void NuTo::Solid::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
         y1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul3plus1];
         z1 = rFactor * rDerivativeShapeFunctionsGlobal[node1mul3plus2];
 
-        rResult(rRow + node1mul3,0)     +=x1*s[0];
-        rResult(rRow + node1mul3plus1,0)+=y1*s[1];
-        rResult(rRow + node1mul3plus2,0)+=z1*s[2];
+        rResult(rRow + node1mul3)     +=x1*s[0];
+        rResult(rRow + node1mul3plus1)+=y1*s[1];
+        rResult(rRow + node1mul3plus2)+=z1*s[2];
     }
 }
 

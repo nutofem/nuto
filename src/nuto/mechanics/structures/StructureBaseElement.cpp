@@ -18,6 +18,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
+#include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/elements/ElementOutputDummy.h"
@@ -25,8 +26,8 @@
 //! @brief calls ElementCoefficientMatrix_0,
 //! renaming only for clarification in mechanical problems for the end user
 void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult ,
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow,
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsColumn)
+		NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow,
+		NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -368,7 +369,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 					std::cout << "cur col " << curCol << " size of matrix " << stiffnessCDF.GetNumColumns() << "\n";
 					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Allocated matrix for calculation of stiffness with finite differences has illegal size.");
 				}
-				stiffnessCDF.SetColumn(curCol,((resforce2-resforce1)*(1./rDelta)));
+				stiffnessCDF.col(curCol) = (resforce2-resforce1)*(1./rDelta);
 				curCol++;
 			}
 		}
@@ -384,9 +385,9 @@ bool NuTo::StructureBase::CheckStiffness()
 
     mLogger << "test of stiffness still included, node merge is called!!! " << "\n";
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispForceVector;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsActiveDOFsCheck;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacementsDependentDOFsCheck;
+    NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
+    NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
+    NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
 
     bool oldShowtime = mShowTime;
     mShowTime = false;
@@ -407,7 +408,7 @@ bool NuTo::StructureBase::CheckStiffness()
     //stiffnessMatrixCSRVector2Full.Info(10,3);
     double interval(-1e-10);
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows(),1);
+    NuTo::FullVector<double,Eigen::Dynamic> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows());
     double energy1,energy2;
     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
@@ -494,8 +495,8 @@ bool NuTo::StructureBase::CheckStiffness()
 void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
 		                        int rTimeDerivative,
                                 NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-                                NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow,
-                                NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsColumn)
+                                NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow,
+                                NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsColumn)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -571,10 +572,10 @@ void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
     }
 
     //cast to FullMatrixInt
-    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
+    rGlobalDofsRow.Resize(globalDofsRow.size());
     memcpy(rGlobalDofsRow.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
 
-    rGlobalDofsColumn.Resize(globalDofsColumn.size(),1);
+    rGlobalDofsColumn.Resize(globalDofsColumn.size());
     memcpy(rGlobalDofsColumn.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
 #ifdef SHOW_TIME
     end=clock();
@@ -586,8 +587,8 @@ void NuTo::StructureBase::ElementCoefficientMatrix(int rElementId,
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
 void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rGlobalDofsRow)
+		NuTo::FullVector<double,Eigen::Dynamic>& rResult,
+		NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -605,17 +606,17 @@ void NuTo::StructureBase::ElementGradientInternalPotential(int rElementId,
     {
     	//define output
     	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-    	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
+    	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
     	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
 
 		//evaluate output
     	elementPtr->Evaluate(elementOutput);
 
     	//assign output
-		rResult = elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullMatrixDouble();
+		rResult = elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
 		std::vector<int>& globalDofsRow = elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt();
 		//cast to FullMatrixInt
-	    rGlobalDofsRow.Resize(globalDofsRow.size(),1);
+	    rGlobalDofsRow.Resize(globalDofsRow.size());
 	    memcpy(rGlobalDofsRow.data(),&globalDofsRow[0],globalDofsRow.size()*sizeof(int));
     }
     catch(NuTo::MechanicsException &e)

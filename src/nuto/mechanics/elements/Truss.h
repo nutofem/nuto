@@ -209,7 +209,7 @@ public:
     void AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunctions,
                                 const EngineeringStress1D& rEngineeringStress, double factor,
                                 int rRow,
-                                FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+                                FullVector<double,Eigen::Dynamic>& rResult)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -221,7 +221,7 @@ public:
                                      const HeatFlux1D& rHeatFlux,
                                      double rFactor,
                                      int rRow,
-                                     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+                                     FullVector<double,Eigen::Dynamic>& rResult)const;
 
     //! @brief add Koo*omega+detJ*F (detJ is already included in Koo)
     //! @param rShapeFunctions of the ip for all shape functions
@@ -231,7 +231,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKomegaomega,
-    		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+    		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult);
 
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
@@ -239,7 +239,7 @@ public:
 
     //! @brief transforms the local vector to the global system
     //! relevant only for 2D and 3D truss elements
-    virtual void BlowLocalVectorToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rFullVector)const=0;
+    virtual void BlowLocalVectorToGlobal(NuTo::FullVector<double,Eigen::Dynamic>& rFullVector)const=0;
 
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point
@@ -278,13 +278,13 @@ protected:
     //! @param rGlobalRowDofs ... vector of global row dofs
     //! @param rNumDisp ... number of displacement dofs
     //! @param rNumTemp ... number of temperature dofs
-    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs) const=0;
+    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const=0;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
     //! @param rNumDisp ... number of displacement dofs
     //! @param rNumTemp ... number of temperature dofs
-    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs) const=0;
+    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const=0;
 
     //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
     //! @param rShapeFunctions ... shape functions

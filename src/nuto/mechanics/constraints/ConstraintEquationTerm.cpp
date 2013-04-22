@@ -76,7 +76,7 @@ void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseM
     assert(rRow < rConstraintMatrix.GetNumRows());
 
     // add entry to matrix
-    rConstraintMatrix.AddEntry(rRow, this->GetDof(), this->mCoefficient);
+    rConstraintMatrix.AddValue(rRow, this->GetDof(), this->mCoefficient);
 }
 
 int NuTo::ConstraintEquationTerm::GetDof() const

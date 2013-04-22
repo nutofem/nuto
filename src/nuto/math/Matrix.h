@@ -53,6 +53,17 @@ public:
     //! @return string ... number of columns
     virtual int GetNumColumns()const=0;
 
+    //! @brief ... add nonzero entry to matrix
+    //! @param row ... row of the nonzero entry (zero based indexing!!!)
+    //! @param column ... column of the nonzero entry (zero based indexing!!!)
+    //! @param value ... value of the nonzero entry
+    virtual void AddValue(int row, int column, const T& value) = 0;
+
+    //! @brief ... resize the matrix and set all entries to zero
+    //! @param row ... rows
+    //! @param column ... columns
+    virtual void Resize(int row, int column) = 0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

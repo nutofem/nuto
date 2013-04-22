@@ -38,11 +38,11 @@ public:
 
     //! @brief returns the Lagrange Multiplier
     //! first col Lagrange
-    virtual void GetLagrangeMultiplier(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const=0;
+    virtual void GetLagrangeMultiplier(FullVector<double,Eigen::Dynamic>& rLagrangeMultiplier)const=0;
 
     //! @brief returns the Lagrange Multiplier dofs
     //! first col Lagrangedofs
-    virtual void GetDofsLagrangeMultiplier(FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rLagrangeMultiplier)const=0;
+    virtual void GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const=0;
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -55,12 +55,12 @@ public:
     //! @brief write dof values to constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) = 0;
+    virtual void SetGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues) = 0;
 
     //! @brief extract dof values from the constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const = 0;
+    virtual void GetGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const = 0;
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
@@ -75,7 +75,7 @@ public:
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    virtual void CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
+    virtual void CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
             std::vector<int>& rGlobalDofs)const=0;
 
     //! @brief calculates the internal potential

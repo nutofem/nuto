@@ -198,7 +198,7 @@ public:
                                      const EngineeringStress3D& rEngineeringStress,
                                      double rFactor,
                                      int rRow,
-                                     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+                                     FullVector<double,Eigen::Dynamic>& rResult)const;
 
     //! @brief adds up the internal force vector
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates
@@ -210,7 +210,7 @@ public:
                                      const HeatFlux3D& rHeatFlux,
                                      double rFactor,
                                      int rRow,
-                                     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+                                     FullVector<double,Eigen::Dynamic>& rResult)const;
 
     //! @brief calculates the integration point data with the current displacements applied
     //! @param rIpDataType data type to be stored for each integration point

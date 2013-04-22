@@ -55,7 +55,7 @@ myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin, PoissonsRatio)
 mySection = myStructure.SectionCreate("Volume")
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullMatrix(3,1)
+nodeCoordinates = nuto.DoubleFullVector(3)
 #create group of nodes at right boundary
 NodeGroup1 = myStructure.GroupCreate("Nodes")
 node = 0
@@ -71,7 +71,7 @@ for zCount in range (0, NumElementsZ + 1):
             node += 1
 
 # create elements
-elementIncidence = nuto.IntFullMatrix(8,1)
+elementIncidence = nuto.IntFullVector(8)
 element = 0
 ElementGroup1 = myStructure.GroupCreate("Elements")
 for zCount in range (0, NumElementsZ):

@@ -9,59 +9,59 @@ int main()
     NuTo::Structure myStructure(3);
 
     // create nodes
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Coordinates(3,1);
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidence(10,1);
+    NuTo::FullVector<double,Eigen::Dynamic> Coordinates(3);
+    NuTo::FullVector<int,Eigen::Dynamic> Incidence(10);
 
     //create nodes
-    Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 0.0;
-    Coordinates(2,0) = 0.0;
-    Incidence(0,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 0.0;
+    Coordinates(2) = 0.0;
+    Incidence(0) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 1.0;
-    Coordinates(1,0) = 0.0;
-    Coordinates(2,0) = 0.0;
-    Incidence(1,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 1.0;
+    Coordinates(1) = 0.0;
+    Coordinates(2) = 0.0;
+    Incidence(1) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 1.0;
-    Coordinates(2,0) = 0.0;
-    Incidence(2,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 1.0;
+    Coordinates(2) = 0.0;
+    Incidence(2) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 0.0;
-    Coordinates(2,0) = 1.0;
-    Incidence(3,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 0.0;
+    Coordinates(2) = 1.0;
+    Incidence(3) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.5;
-    Coordinates(1,0) = 0.0;
-    Coordinates(2,0) = 0.0;
-    Incidence(4,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.5;
+    Coordinates(1) = 0.0;
+    Coordinates(2) = 0.0;
+    Incidence(4) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.5;
-    Coordinates(1,0) = 0.5;
-    Coordinates(2,0) = 0.0;
-    Incidence(5,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.5;
+    Coordinates(1) = 0.5;
+    Coordinates(2) = 0.0;
+    Incidence(5) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 0.5;
-    Coordinates(2,0) = 0.0;
-    Incidence(6,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 0.5;
+    Coordinates(2) = 0.0;
+    Incidence(6) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 0.0;
-    Coordinates(2,0) = 0.5;
-    Incidence(7,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 0.0;
+    Coordinates(2) = 0.5;
+    Incidence(7) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.5;
-    Coordinates(1,0) = 0.0;
-    Coordinates(2,0) = 0.5;
-    Incidence(8,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.5;
+    Coordinates(1) = 0.0;
+    Coordinates(2) = 0.5;
+    Incidence(8) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0,0) = 0.0;
-    Coordinates(1,0) = 0.5;
-    Coordinates(2,0) = 0.5;
-    Incidence(9,0) = myStructure.NodeCreate("displacements",Coordinates);
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 0.5;
+    Coordinates(2) = 0.5;
+    Incidence(9) = myStructure.NodeCreate("displacements",Coordinates);
 
 	// create element
     int myElement1 = myStructure.ElementCreate("Tetrahedron10N",Incidence);
@@ -75,8 +75,8 @@ int main()
     myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Ke;
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rowIndex;
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> colIndex;
+    NuTo::FullVector<int,Eigen::Dynamic> rowIndex;
+    NuTo::FullVector<int,Eigen::Dynamic> colIndex;
     myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
 
 	return 0;

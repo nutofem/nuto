@@ -2,6 +2,7 @@
 from nuto.base.ModulNuToBase import *
 from nuto.math.NuToMath import *
 from nuto.math.ModulFullMatrix import *
+from nuto.math.ModulFullVector import *
 from nuto.math.ModulMatrix import *
 from nuto.math.ModulOperator import *
 from nuto.math.ModulSparseMatrix import *

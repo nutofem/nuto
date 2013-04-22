@@ -26,7 +26,7 @@ void NuTo::NodeBase::SetGlobalDofs(int& rDOF)
 //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues)
+void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
 {
 	throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
 }
@@ -35,7 +35,7 @@ void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, const FullMatrix<do
 //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::NodeBase::GetGlobalDofValues(int rTimeDerivative, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rActiveDofValues, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDependentDofValues) const
+void NuTo::NodeBase::GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
 }
@@ -380,35 +380,35 @@ int NuTo::NodeBase::GetDofTemperature()const
 
 //! @brief returns the number of Damage of the node
 //! @return number of Damage
-int NuTo::NodeBase::GetNumDamage()const
+int NuTo::NodeBase::GetNumNonlocalDamage()const
 {
 	return 0;
 }
 
 //! @brief returns the Damage of the node
 //! @return Damage
-void NuTo::NodeBase::SetDamage(const double rDamage[1])
+void NuTo::NodeBase::SetNonlocalDamage(const double rNonlocalDamage[1])
 {
 	throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
 }
 
 //! @brief returns the Damage of the node
 //! @return Damage
-void NuTo::NodeBase::SetDamage(int rTimeDerivative, const double rDamage[1])
+void NuTo::NodeBase::SetNonlocalDamage(int rTimeDerivative, const double rNonlocalDamage[1])
 {
 	throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
 }
 
 //! @brief returns the Damage of the node
 //! @return Damage
-void NuTo::NodeBase::GetDamage(double rDamage[1])const
+void NuTo::NodeBase::GetNonlocalDamage(double rNonlocalDamage[1])const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
 }
 
 //! @brief returns the Damage of the node
 //! @return Damage
-void NuTo::NodeBase::GetDamage(int rTimeDerivative, double rDamage[1])const
+void NuTo::NodeBase::GetNonlocalDamage(int rTimeDerivative, double rNonlocalDamage[1])const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
 }
@@ -416,7 +416,7 @@ void NuTo::NodeBase::GetDamage(int rTimeDerivative, double rDamage[1])const
 //! @brief gives the global DOF of a Damage component
 //! @param rComponent component
 //! @return global DOF
-int NuTo::NodeBase::GetDofDamage()const
+int NuTo::NodeBase::GetDofNonlocalDamage()const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetDofDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
 }

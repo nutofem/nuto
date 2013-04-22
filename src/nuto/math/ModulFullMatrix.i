@@ -25,6 +25,8 @@
 
 %include "nuto/math/FullMatrix_Def.h"
 
+
+//this is for matrices
 // extend the python-interface with FullMatrixoperators, since the c++ operators are only defined in the base class (which is not exposed to pyhton) 
 %extend NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> 
 {
@@ -107,5 +109,10 @@
       return *$self;
   }
 }
+
 %template(DoubleFullMatrix) NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>;
 %template(IntFullMatrix) NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>;
+
+// this is necessary to be able for the derived vector class call the base class methods 
+%template(DoubleFullVectorBase) NuTo::FullMatrix<double,Eigen::Dynamic,1>;
+%template(IntFullVectorBase) NuTo::FullMatrix<int,Eigen::Dynamic,1>;

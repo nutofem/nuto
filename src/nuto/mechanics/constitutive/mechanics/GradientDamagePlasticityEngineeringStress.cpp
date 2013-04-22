@@ -44,16 +44,24 @@ NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEnginee
     mRho = 0.;
     mE = 0.;
     mNu = 0.;
-    mNonlocalRadius = 1.;
+    mNonlocalRadius = 0.;
     mTensileStrength = 0.;
     mCompressiveStrength = 0.;
     mBiaxialCompressiveStrength = 0.;
     mFractureEnergy = 0.;
-    mEpsilonF = 1.;
+    mEpsilonF(0) = 0.00001;
+    mEpsilonF(1) = 0.00001;
+    std::cout << "mEpsilonF has to be defined as material parameter " << std::endl;
     mYieldSurface = Constitutive::RANKINE_ROUNDED;
     mDamage = true;
     mThermalExpansionCoefficient = 0.;
     SetParametersValid();
+#ifdef ENABLE_DEBUG
+    std::cout << "NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEngineeringStress debug active" << std::endl;
+#else
+    std::cout << "NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEngineeringStress debug inactive" << std::endl;
+#endif
+
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -107,19 +115,15 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         if (section->GetType()!=Section::TRUSS)
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] only truss sections are implemented.");
 
-        EngineeringStrain1D engineeringStrain1D;
+        EngineeringStrain1D strain1D;
         // calculate engineering strain
         if(rConstitutiveInput.find(NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_1D)==rConstitutiveInput.end())
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] deformation gradient 1d needed to evaluate engineering strain1d.");
         const DeformationGradient1D& deformationGradient(rConstitutiveInput.find(NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_1D)->second->GetDeformationGradient1D());
-        deformationGradient.GetEngineeringStrain(engineeringStrain1D);
+        deformationGradient.GetEngineeringStrain(strain1D);
 
         //Get previous ip_data
         ConstitutiveStaticDataGradientDamagePlasticity1D *oldStaticData = (rElement->GetStaticData(rIp))->AsGradientDamagePlasticity1D();
-
-        //trial strain in radial direction
-        //use the previous total radial strain plus poisson*delta strain in axial direction
-        double trialEpsilonTotRadial = oldStaticData->mEpsilonTotRadial + mNu*(engineeringStrain1D[0]-oldStaticData->mPrevStrain[0]);
 
         // subtract thermal strain
         if (section->GetInputConstitutiveIsTemperature())
@@ -129,8 +133,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate2D] temperature needed to evaluate thermal engineering strain2d.");
             double temperature(itInput->second->GetTemperature());
             double deltaStrain(mThermalExpansionCoefficient * temperature);
-            engineeringStrain1D[0] -= deltaStrain;
-            trialEpsilonTotRadial = -deltaStrain;
+            strain1D[0] -= deltaStrain;
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] add temperature history.");
 /*            double prevTemperature(oldStaticData->mPrevTemperature);
             double deltaStrain(mThermalExpansionCoefficient * prevTemperature);
@@ -139,46 +142,48 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             prevEngineeringStrain3D.mEngineeringStrain[2] -= deltaStrain;
 */
         }
-        Eigen::Matrix<double,1,1> newStress;
-        Eigen::Matrix<double,2,1> newEpsilonP;
-        double deltaEqPlasticStrain;
-        Eigen::Matrix<double,1,1> dSigmadEpsilon;
-        Eigen::Matrix<double,1,1> dEpsilonPdEpsilon;
-        double newEpsilonTotRadial(0);
+        EngineeringStress1D newStress;
+        EngineeringStrain1D newPlasticStrain;
+        FullMatrix<double,2,1> deltaKappa; //0 Drucker Prager  1 Rankine
+        FullMatrix<double,1,1> dSigmadEpsilon;
+        FullMatrix<int,2,1> yieldConditionFlag;  //which yield surface is active
+        FullMatrix<double,2,1> dKappadEpsilon; //0 Drucker Prager  1 Rankine
 
         NuTo::Error::eError error =  this->ReturnMapping1D(
         		//total axial strain
-        		engineeringStrain1D,
-        		//trial strain in radial direction
-        		trialEpsilonTotRadial,
+        		strain1D,
         		//prev plastic strain (axial and radial)
-        		oldStaticData->mEpsilonP,
+        		oldStaticData->mPlasticStrain,
         		//prev total strain in axial direction
         		oldStaticData->mPrevStrain,
-        		//prev total strain in radial direction
-        		oldStaticData->mEpsilonTotRadial,
                 newStress,
-                newEpsilonP,
-                newEpsilonTotRadial,
-                deltaEqPlasticStrain,
+                newPlasticStrain,
+                yieldConditionFlag,
+                deltaKappa,
                 &dSigmadEpsilon,
-                &dEpsilonPdEpsilon,
+                &dKappadEpsilon,
                 rElement->GetStructure()->GetLogger());
         if (error!=Error::SUCCESSFUL)
         	throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] error calling return mapping in 1D.");
 
-        std::cout << "new plastic strain " << newEpsilonP << std::endl;
+        std::cout << "new plastic strain " << newPlasticStrain << std::endl;
 
         //global damage
         if(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)==rConstitutiveInput.end())
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D] nonlocal damage needed to evaluate engineering strain1d.");
-        double globalDamage(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)->second->GetDamage());
+        double nonlocalDamage(rConstitutiveInput.find(NuTo::Constitutive::eInput::NONLOCAL_DAMAGE)->second->GetNonlocalDamage().GetNonlocalDamageValue());
 
         //new equivalent plastic strain
-        double kappa = oldStaticData->mKappa+deltaEqPlasticStrain;
+        FullMatrix<double,2,1> kappa = oldStaticData->mKappa+deltaKappa;
 
         //local damage
-        double localDamage(1-exp(-kappa/mEpsilonF));
+        FullMatrix<double,2,1> localDamage;
+        localDamage[0] = (1.-exp(-kappa[0]/mEpsilonF[0]));
+        localDamage[1] = (1.-exp(-kappa[1]/mEpsilonF[1]));
+
+        double localDamageCombined = 1.-(1.-localDamage[0])*(1.-localDamage[1]);
+
+        //std::cout << "localDamageCombined " << localDamageCombined << " 0 " << localDamage[0] << " 1 " << localDamage[1] << std::endl;
 
         //set this to true, if update is in the map, perform the update after all other outputs have been calculated
         bool performUpdateAtEnd(false);
@@ -191,9 +196,12 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_1D:
             {
                 //calculate engineering stress
-                EngineeringStress1D engineeringStress1D(itOutput->second->GetEngineeringStress1D());
+                EngineeringStress1D& engineeringStress1D(itOutput->second->GetEngineeringStress1D());
 
-                engineeringStress1D[0] = (1.-globalDamage)*newStress(0);
+                engineeringStress1D = (1.-nonlocalDamage)*newStress;
+                std::cout << "nonlocalDamage " << nonlocalDamage;
+                std::cout << "localDamageCombined " << localDamageCombined;
+                std::cout << "newStress " << newStress.transpose();
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D:
@@ -201,7 +209,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 //this is for the visualize routines
                 EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
 
-                engineeringStress3D[0] = (1.-globalDamage)*newStress(0);
+                engineeringStress3D[0] = (1.-nonlocalDamage)*newStress(0);
                 engineeringStress3D[1] = 0.;
                 engineeringStress3D[2] = 0.;
                 engineeringStress3D[3] = 0.;
@@ -211,13 +219,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             break;
             case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
             {
-                Eigen::Matrix<double,1,1> dSigmadEpsilonRedInv
-                 = dSigmadEpsilon.block<1,1>(0,0) +
-                 dSigmadEpsilon.block<1,5>(0,1) * dSigmadEpsilon.block<5,5>(1,1).inverse() * dSigmadEpsilon.block<5,1>(1,0);
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
                 double *localStiffData(tangent.mTangent);
-                localStiffData[0] = (1.-globalDamage) * dSigmadEpsilonRedInv(0,0);
+                localStiffData[0] = (1.-nonlocalDamage) * dSigmadEpsilon(0,0);
             }
             break;
             case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_DAMAGE_1D:
@@ -225,23 +230,24 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
                 double *localStiffData(tangent.mTangent);
-                localStiffData[0] = -globalDamage*newStress(0);
+                localStiffData[0] = -newStress(0);
             }
             break;
-            case NuTo::Constitutive::eOutput::D_NONLOCAL_DAMAGE_D_STRAIN_1D:
+            case NuTo::Constitutive::eOutput::D_LOCAL_DAMAGE_D_STRAIN_1D:
             {
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
                 double *localStiffData(tangent.mTangent);
-                localStiffData[0] = -globalDamage*newStress(0);
+                localStiffData[0] = (1.-localDamage[0])*(1-localDamage[1])*
+                		(dKappadEpsilon[0]/mEpsilonF[0]+dKappadEpsilon[1]/mEpsilonF[1]);
             }
             break;
             case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
             {
                 EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-                engineeringStrain3D[0] = engineeringStrain1D[0];
-                engineeringStrain3D[1] = newEpsilonTotRadial;
-                engineeringStrain3D[2] = newEpsilonTotRadial;
+                engineeringStrain3D[0] = strain1D[0];
+                engineeringStrain3D[1] = 0.;//this is wrong, but I don't care at the moment
+                engineeringStrain3D[2] = 0.;//this is wrong, but I don't care at the moment
                 engineeringStrain3D[3] = 0.;
                 engineeringStrain3D[4] = 0.;
                 engineeringStrain3D[5] = 0.;
@@ -250,17 +256,17 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
             {
                 EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-                engineeringPlasticStrain[0] = newEpsilonP(0);
-                engineeringPlasticStrain[1] = newEpsilonP(1);
-                engineeringPlasticStrain[2] = newEpsilonP(2);
-                engineeringPlasticStrain[3] = newEpsilonP(3);
-                engineeringPlasticStrain[4] = newEpsilonP(4);
-                engineeringPlasticStrain[5] = newEpsilonP(5);
+                engineeringPlasticStrain[0] = newPlasticStrain(0);
+                engineeringPlasticStrain[1] = 0.;//this is wrong, but I don't care at the moment
+                engineeringPlasticStrain[2] = 0.;//this is wrong, but I don't care at the moment
+                engineeringPlasticStrain[3] = 0.;
+                engineeringPlasticStrain[4] = 0.;
+                engineeringPlasticStrain[5] = 0.;
             }
             break;
             case NuTo::Constitutive::eOutput::DAMAGE:
             {
-                itOutput->second->GetDamage().SetDamage(localDamage);
+                itOutput->second->GetDamage().SetDamage(localDamageCombined);
             }
             break;
             case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
@@ -285,22 +291,15 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         {
             double energy = oldStaticData->GetPrevTotalEnergy();
             //calculate delta total energy (sigma1+sigma2)/2*delta_strain
-            const EngineeringStress1D& prevStress(oldStaticData->GetPrevStress());
-            const EngineeringStrain1D prevStrain(oldStaticData->GetPrevStrain());
-            energy+=0.5*(
-                (newStress(0)+prevStress[0])*(engineeringStrain1D[0]-prevStrain[0]));
-            oldStaticData->mPrevStrain = engineeringStrain1D;
-            oldStaticData->mPrevSigma[0] = newStress(0);
+            energy+=(0.5-0.5*nonlocalDamage)*(newStress+oldStaticData->mPrevSigma)*(strain1D-oldStaticData->mPrevStrain);
+            oldStaticData->mPrevStrain = strain1D;
+            oldStaticData->mPrevSigma  = (1.-nonlocalDamage)*newStress;
             oldStaticData->SetPrevTotalEnergy(energy);
 
-            //! @brief previous (after update) total strain component in radial direction (e22=e33)
-            oldStaticData->mEpsilonTotRadial = newEpsilonTotRadial;
+           //! @brief plastic strain
+            oldStaticData->mPlasticStrain = newPlasticStrain;
 
-            //! @brief plastic strain (e11 and the radial component of the plastic strain e22=e33)
-            oldStaticData->mEpsilonP[0] = newEpsilonP(0);
-            oldStaticData->mEpsilonP[1] = newEpsilonP(1);
-
-            // update the parts of the static data that are not related to the temporary updates (from the nonlocal calculation)
+            // update the parts of the static data that are not related to the temporary updates
             oldStaticData->mKappa = kappa;
         }
         return Error::SUCCESSFUL;
@@ -1023,114 +1022,6 @@ void NuTo::GradientDamagePlasticityEngineeringStress::CheckThermalExpansionCoeff
 #define minCutbackFactor 1e-3       //minimum cutback factor for the application of the total strain in steps
 #define minCutbackFactorLS 2e-3     //minimum cutback factor used for the linesearch in the Newton iteration
 
-
-//! @brief ... performs the return mapping procedure for the plasticity model
-//! @param rStrain              ... current total strain
-//! @param rPrevPlasticStrain   ... previous plastic strain (history variable)
-//! @param rPrevTotalStrain     ... previous total strain (history variable)
-//! @param rPrevEqPlasticStrain ... previous equiavalente plastic strain (history variable)
-//! @param rEpsilonP            ... new plastic strain after return mapping
-//! @param rEqPlasticStrain     ... new equivalente olastic strain after return mapping
-//! @param rdEpsilonPdEpsilon   ... new derivative of current plastic strain with respect to the total strain
-NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D(
-        const EngineeringStrain1D& rStrain,
-        double rTrialStrainEpsilonTotRadial,
-        const double rPrevPlasticStrain[2],
-        const EngineeringStrain1D& rPrevTotalStrain,
-        double rPrevTotalStrainRadial,
-        Eigen::Matrix<double,1,1>& rStress,
-        Eigen::Matrix<double,2,1>& rEpsilonP,
-        double rNewEpsilonTotRadial,
-        double& rDeltaEqPlasticStrain,
-        Eigen::Matrix<double,1,1>* rdSigmadEpsilon,
-        Eigen::Matrix<double,1,1>* rdEpsilonPdEpsilon,
-        NuTo::Logger& rLogger)const
-{
-	//total trial strain in 3D to use the full 3D return mapping
-    double prevEpsilonP3D[6];
-    prevEpsilonP3D[0] = rPrevPlasticStrain[0];
-    prevEpsilonP3D[1] = rPrevPlasticStrain[1];
-    prevEpsilonP3D[2] = rPrevPlasticStrain[1];
-    prevEpsilonP3D[3] = 0.;
-    prevEpsilonP3D[4] = 0.;
-    prevEpsilonP3D[5] = 0.;
-
-    EngineeringStrain3D engineeringStrain3D;
-    engineeringStrain3D[0] = rStrain[0];
-    engineeringStrain3D[1] = rTrialStrainEpsilonTotRadial;
-    engineeringStrain3D[2] = rTrialStrainEpsilonTotRadial;
-    engineeringStrain3D[3] =  0.;
-    engineeringStrain3D[4] =  0.;
-    engineeringStrain3D[5] =  0.;
-
-    EngineeringStrain3D prevEngineeringStrain3D;
-    prevEngineeringStrain3D[0] = rPrevTotalStrain[0];
-    prevEngineeringStrain3D[1] = rPrevTotalStrainRadial;
-    prevEngineeringStrain3D[2] = rPrevTotalStrainRadial;
-    prevEngineeringStrain3D[3] =  0.;
-    prevEngineeringStrain3D[4] =  0.;
-    prevEngineeringStrain3D[5] =  0.;
-
-    Eigen::Matrix<double,6,6> dSigmadEpsilon3D;
-    //Eigen::Matrix<double,6,6> dEpsilonPdEpsilon3D;
-    Eigen::Matrix<double,6,1> newEpsilonP3D;
-    Eigen::Matrix<double,6,1> newStress3D;
-
-    bool uniaxialStressCondition(false);
-
-    while (uniaxialStressCondition==false)
-    {
-        // perform return mapping for the plasticity model
-        NuTo::Error::eError error = this->ReturnMapping3D(
-                engineeringStrain3D,
-                prevEpsilonP3D,
-                prevEngineeringStrain3D,
-                newStress3D,
-                newEpsilonP3D,
-                rDeltaEqPlasticStrain,
-                &dSigmadEpsilon3D,
-                0,
-                rLogger);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        //check, of uniaxial stress condition is reached
-        double normStress(newStress3D.block<5,1>(1,0).norm());
-        if (normStress<1e-10)
-            uniaxialStressCondition=true;
-        else
-        {
-            //std::cout << "trial total strain\n" << Eigen::Matrix<double,6,1>::Map(&(engineeringStrain3D.mEngineeringStrain[0]),6,1) << std::endl<< std::endl;
-            //std::cout << "newStress3D\n" << newStress3D << std::endl<< std::endl;
-            //std::cout << "new plastic strain\n" << newEpsilonP3D << std::endl<< std::endl;
-            //std::cout << "dSigmadEpsilon3D\n" << dSigmadEpsilon3D << std::endl<< std::endl;
-            //std::cout << "deltaStrain\n" << dSigmadEpsilon3D.block<5,5>(1,1).inverse()*(newStress3D.block<5,1>(1,0)) << std::endl<< std::endl;
-            Eigen::Matrix<double,5,1>::Map(&(engineeringStrain3D[1]),5,1) -=
-                    dSigmadEpsilon3D.block<5,5>(1,1).inverse()*(newStress3D.block<5,1>(1,0));
-            //std::cout << "new trial elastic strain\n" << Eigen::Matrix<double,6,1>::Map(&(engineeringStrain3D.mEngineeringStrain[0]),6,1) << std::endl<< std::endl;
-        }
-    }
-    rStress(0,0) = newStress3D(0,0);
-    rEpsilonP[0] = newEpsilonP3D(0,0);
-    rEpsilonP[1] = newEpsilonP3D(1,0);
-    rNewEpsilonTotRadial = newStress3D(1,0);
-
-    if (rdSigmadEpsilon!=0)
-    {
-    	std::cout << "full stiffness\n" << dSigmadEpsilon3D << std::endl << std::endl;
-    	std::cout << "d22\n" << dSigmadEpsilon3D.block<5,5>(0,1) << std::endl << std::endl;
-    	std::cout << "d22 inv\n" << dSigmadEpsilon3D.block<5,5>(1,1).inverse() << std::endl << std::endl;
-    	std::cout << "second part d12D22invd21\n" << (dSigmadEpsilon3D.block<1,5>(0,1) * (dSigmadEpsilon3D.block<5,5>(1,1).inverse())) * dSigmadEpsilon3D.block<5,1>(1,0)<< std::endl << std::endl;
-    	*rdSigmadEpsilon = dSigmadEpsilon3D.block<1,1>(0,0)-(dSigmadEpsilon3D.block<1,5>(0,1) * (dSigmadEpsilon3D.block<5,5>(1,1).inverse())) * dSigmadEpsilon3D.block<5,1>(1,0);
-    	std::cout << "*rdSigmadEpsilon\n" << *rdSigmadEpsilon<< std::endl << std::endl;
-    }
-    if (rdEpsilonPdEpsilon!=0)
-    {
-    	//rdSigmadEpsilon = dSigmadEpsilon3D.block<1,1>(0,0)+dSigmadEpsilon3D.block<1,5>(0,1) * dSigmadEpsilon3D.block<5,5>(0,1).inverse() * dSigmadEpsilon3D.block<5,1>(1,0);
-    }
-    return Error::SUCCESSFUL;
-}
-
 #define NUMYIELDSURFACES 2
 //! @brief ... performs the return mapping procedure for the plasticity model
 //! @param rStrain              ... current total strain
@@ -1143,16 +1034,16 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 //! @param rDeltaKappa          ... delta equivalent plastic strain for Drucker Prager (0) and Rankine yield surface(1)
 //! @param rdSigmadEpsilon      ... new derivative of current stress with respect to the total strain
 //! @param rdKappadEpsilon1     ... new derivative of equivalent plastic strain (Drucker-Prager 0 Rankine 1) with respect to the total strain
-NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1DNew(
+NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D(
         const EngineeringStrain1D& rStrain,
         const EngineeringStrain1D& rPrevPlasticStrain,
         const EngineeringStrain1D& rPrevTotalStrain,
-        Eigen::Matrix<double,1,1>& rStress,
-        Eigen::Matrix<double,1,1>& rPlasticStrain,
-        Eigen::Matrix<int,2,1>& rYieldConditionFlag,
-        Eigen::Matrix<double,2,1>& rDeltaKappa,
-        Eigen::Matrix<double,1,1>* rdSigma1dEpsilon1,
-        Eigen::Matrix<double,2,1>* rdKappadEpsilon1,
+        EngineeringStress1D& rStress,
+        EngineeringStrain1D& rPlasticStrain,
+        NuTo::FullMatrix<int,2,1>& rYieldConditionFlag,
+        NuTo::FullMatrix<double,2,1>& rDeltaKappa,
+        NuTo::FullMatrix<double,1,1>* rdSigma1dEpsilon1,
+        NuTo::FullMatrix<double,2,1>* rdKappadEpsilon1,
         NuTo::Logger& rLogger)const
 {
 
@@ -1178,61 +1069,61 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     double H_P  = f_c2*f_c1 / (sqrt3*(2*f_c2-f_c1));
 
     //! @brief strain currently solved for the plastic strains, in general equal to  rStrain, but if applied in steps, it's smaller
-    Eigen::Matrix<double,1,1> curTotalStrain;
+    EngineeringStrain1D curTotalStrain;
     //! @brief previous plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
-    Eigen::Matrix<double,1,1> lastPlastStrain;
+    EngineeringStrain1D lastConvergedPlastStrain;
     //! @brief previous stress, either from previous equilibrium (static data) or if applied in steps, previous converged state
-    Eigen::Matrix<double,1,1> lastStress;
+    EngineeringStress1D lastConvergedStress;
     //! @brief previous change of equivalent plastic strain, either from previous equilibrium (0) or if applied in steps, previous converged state
-    Eigen::Matrix<double,2,1> lastDeltaKappa;
+    FullMatrix<double,2,1> lastDeltaKappa;
     //! @brief plastic strain in the line search
-    Eigen::Matrix<double,1,1> epsilonPLS;
+    EngineeringStrain1D plasticStrainLS;
     //! @brief residual in the return mapping procedure
-    Eigen::Matrix<double,1,1> residual;
+    FullMatrix<double,1,1> residual;
     //! @brief residual in the return mapping procedure within linesearch
-    Eigen::Matrix<double,1,1> residualLS;
+    FullMatrix<double,1,1> residualLS;
     //! @brief full stress increment within one iteration of the return mapping, might be applied in steps in the succeeding line search
-    Eigen::Matrix<double,1,1> deltaStress;
+    EngineeringStress1D deltaStress;
     //! @brief total strain increment between strain from previous static data and new total strain
-    Eigen::Matrix<double,1,1> deltaStrain;
+    EngineeringStrain1D deltaStrain;
     //! @brief plastic strain increment within the linesearch
-    Eigen::Matrix<double,1,1> deltaPlasticStrainLS;
+    EngineeringStrain1D deltaPlasticStrainLS;
     //! @brief plastic strain increment between to load steps (internal load splitting)
-    Eigen::Matrix<double,1,1> deltaPlasticStrain;
+    EngineeringStrain1D deltaPlasticStrain;
     //! @brief trial stress of the first iteration
-    Eigen::Matrix<double,1,1> initTrialStress;
+    EngineeringStress1D initTrialStress;
     //! @brief trial stress in the line search
-    Eigen::Matrix<double,1,1> stressLS;
+    EngineeringStress1D stressLS;
     //! @brief trial stress
-    Eigen::Matrix<double,1,1> trialStress;
+    EngineeringStress1D trialStress;
     //! @brief elastic strain
-    Eigen::Matrix<double,1,1> elasticStrain;
+    EngineeringStrain1D elasticStrain;
     //! @brief elastic strain in line search
-    Eigen::Matrix<double,1,1> elasticStrainLS;
+    EngineeringStrain1D elasticStrainLS;
     //! @brief plastic multiplier
-    Eigen::Matrix<double,2,1> deltaGamma;
+    FullMatrix<double,2,1> deltaGamma;
     //! @brief plastic multiplier
-    Eigen::Matrix<double,2,1> deltaGammaLS;
+    FullMatrix<double,2,1> deltaGammaLS;
     //! @brief increment of plastic multiplier in return mapping procedure
-    Eigen::Matrix<double,2,1> delta2Gamma;
+    FullMatrix<double,2,1> delta2Gamma;
     //! @brief yield condition
-    Eigen::Matrix<double,2,1> yieldCondition;
+    FullMatrix<double,2,1> yieldCondition;
     //! @brief yield condition in line search
-    Eigen::Matrix<double,2,1> yieldConditionLS(0,0);
+    FullMatrix<double,2,1> yieldConditionLS(0,0);
     //! @brief yield condition at the first iteration
-    Eigen::Matrix<double,2,1> initYieldCondition;
+    FullMatrix<double,2,1> initYieldCondition;
     //! @brief (dF/dsigma)T * Hessian * dF/dsigma
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
     //! @brief ((dF/dsigma)T * Hessian * dF/dsigma )^-1
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
+    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
     //! @brief algorithmic modulus DElastInv+delta_gamm*d2F/d2Sigma
-    Eigen::Matrix<double,1,1> hessian;
+    FullMatrix<double,1,1> hessian;
     //! @brief first derivatives of the yield functions
-    Eigen::Matrix<double,1,1> dF_dsigma1[2];
+    FullMatrix<double,1,1> dF_dsigma1[2];
     //! @brief second derivatives of the yield functions
-    Eigen::Matrix<double,1,1> d2F_d2Sigma1[2];
+    FullMatrix<double,1,1> d2F_d2Sigma1[2];
     //! @brief algorithmic modulus * dF_dsigma
-    std::vector<Eigen::Matrix<double,1,1> > vectorN;
+    std::vector<FullMatrix<double,1,1> > vectorN;
     //! @brief number of active yield functions
     int numActiveYieldFunctions;
 
@@ -1242,9 +1133,6 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     rLogger << "\n" << "deltaStrain" << deltaStrain.transpose() << "\n" << "\n";
 #endif
 
-#ifdef ENABLE_DEBUG
-        rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
-#endif
     // *****************************************************************
     //                   elastic matrix generation                     *
     // *****************************************************************
@@ -1272,11 +1160,14 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 */      dD(0,0) = e_mod;
 
         dDInv = dD.inverse();
-        std::cout << "dDInv \n" << dDInv << "\n";
     }
     // initialize last plastic strain and last converged stress
-    lastPlastStrain = rPrevPlasticStrain;
-    lastStress = dD*(rStrain-rPrevPlasticStrain);
+    lastConvergedPlastStrain = rPrevPlasticStrain;
+    lastConvergedStress = dD*(rPrevTotalStrain-rPrevPlasticStrain);
+
+#ifdef ENABLE_DEBUG
+        rLogger << "\n" << "lastConvergedPlastStrain" << lastConvergedPlastStrain.transpose() << "\n" << "\n";
+#endif
 
     //! @brief delta load factor for the previous iteration
     double deltaCutbackFactorExternal(1.);
@@ -1309,10 +1200,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             yieldCondition.setZero();
 
             //TODO just use the upper part for new EigenVersion 3.0
-            initTrialStress = lastStress + deltaCutbackFactorExternal*dD*deltaStrain;
+            initTrialStress = lastConvergedStress + deltaCutbackFactorExternal*dD*deltaStrain;
 #ifdef ENABLE_DEBUG
             rLogger << "initTrialStress " << "\n" << initTrialStress.transpose() << "\n" << "\n";
-            rLogger << "lastStress " << "\n" << lastStress.transpose() << "\n" << "\n";
+            rLogger << "lastConvergedStress " << "\n" << lastConvergedStress.transpose() << "\n" << "\n";
             rLogger << "deltaCutbackFactorExternal " << "\n" << deltaCutbackFactorExternal << "\n" << "\n";
             rLogger << "deltaStrain " << "\n" << deltaStrain.transpose() << "\n" << "\n";
             rLogger << "dD*deltaStrain " << "\n" << dD*deltaStrain << "\n" << "\n";
@@ -1341,12 +1232,12 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                 rLogger << "linear elastic (sub-)step" << "\n" << "\n";
 #endif
                 convergedInternal = true;
-                lastStress = trialStress;
+                lastConvergedStress = trialStress;
                 //no need to update plastic strains and equivalent plastic strains since they do not change for an elastic step
                 if (cutbackFactorExternal==1)
                 {
                     rStress = initTrialStress;
-                    rPlasticStrain = lastPlastStrain;
+                    rPlasticStrain = lastConvergedPlastStrain;
                     rDeltaKappa.setZero();
                     if (rdSigma1dEpsilon1!=0)
                     	*rdSigma1dEpsilon1 = dD;
@@ -1414,7 +1305,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						numberOfInternalIterations++;
 						if (iteration==0)
 						{
-							rPlasticStrain = lastPlastStrain;
+							rPlasticStrain = lastConvergedPlastStrain;
 							rDeltaKappa = lastDeltaKappa;
 							yieldCondition= initYieldCondition;
 							trialStress = initTrialStress;
@@ -1463,7 +1354,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 						// ************************************************************************
 						//  residual
 						// ************************************************************************
-						residual = lastPlastStrain-rPlasticStrain;
+						residual = lastConvergedPlastStrain-rPlasticStrain;
 
 						for (int count=0; count<NUMYIELDSURFACES; count++)
 						{
@@ -1605,7 +1496,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 
 									// solve linearized system of equations for G_inv
 									assert(fabs(matG.determinant())>toleranceDeterminant);
-									matGInv = matG.inverse();
+									matGInv = matG.inverse().eval();
 
 #ifdef ENABLE_DEBUG
 									rLogger << "matG " << "\n" << matG <<"\n"<< "\n";
@@ -1656,7 +1547,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								// Rounded Rankine
 								if (rYieldConditionFlag(1)==ACTIVE)
 								{
-									YieldSurfaceRoundedRankine1D(trialStress,f_ct, 0, &(dF_dsigma2[0]), 0,&(d2F_dSigma2dSigma1[0]));
+									YieldSurfaceRoundedRankine1D(trialStress,f_ct, 0, &(dF_dsigma2[1]), 0,&(d2F_dSigma2dSigma1[1]));
 								}
 
 								for (int count=0; count<NUMYIELDSURFACES; count++)
@@ -1673,7 +1564,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #endif
 
 										//remember we store gamma, not epsilon
-										rDeltaKappa(count,0) = sqrt(deltaEpsilonP(0,count)*deltaEpsilonP(0,count)+deltaEpsilonP(1,count)*deltaEpsilonP(1,count)+deltaEpsilonP(2,count)*deltaEpsilonP(2,count)+
+								rDeltaKappa(count,0) = sqrt(deltaEpsilonP(0,count)*deltaEpsilonP(0,count)+deltaEpsilonP(1,count)*deltaEpsilonP(1,count)+deltaEpsilonP(2,count)*deltaEpsilonP(2,count)+
 													 0.5*(deltaEpsilonP(3,count)*deltaEpsilonP(3,count)+deltaEpsilonP(4,count)*deltaEpsilonP(4,count)+deltaEpsilonP(5,count)*deltaEpsilonP(5,count)));
 #ifdef ENABLE_DEBUG
 								rLogger << "rDeltaKappa " << rDeltaKappa.transpose() <<"\n";
@@ -1684,7 +1575,6 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 										rDeltaKappa(count,0)=0.;
 									}
 								}
-
 
 								//update depsilonp depsilon
 								if (rdKappadEpsilon1!=0)
@@ -1735,11 +1625,15 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 												{
 													(*rdKappadEpsilon1)[count] = 0;
 													for (int count2=0; count2<6; count2++)
-													   (*rdKappadEpsilon1)[count] += depsilonPdepsilon1(count2,count);
+													   (*rdKappadEpsilon1)[count] += depsilonPdepsilon1(count);
 												}
 											}
 
 											curYieldFunction++;
+										}
+										else
+										{
+											(*rdKappadEpsilon1)[count] = 0.;
 										}
 									}
 								}
@@ -1794,7 +1688,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								rLogger << matG << "\n";
 #endif
 
-								matGInv = matG.inverse();
+								matGInv = matG.inverse().eval();
 
 								// compute deltaGamma
 								Eigen::Matrix<double,1,1> helpVector = hessian * residual;
@@ -1879,13 +1773,13 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 									deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
 									stressLS = trialStress - cutbackFactorLS*deltaStress;
 									deltaPlasticStrainLS = dDInv*deltaStress*(cutbackFactorLS);
-									epsilonPLS = rPlasticStrain + deltaPlasticStrainLS;
+									plasticStrainLS = rPlasticStrain + deltaPlasticStrainLS;
 
 
 #ifdef ENABLE_DEBUG
 									rLogger << "deltaGammaLS " << deltaGammaLS.transpose() << "\n"<< "\n";
 									rLogger << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << "\n"<< "\n";
-									rLogger << "epsilonPLS " << epsilonPLS.transpose() << "\n"<< "\n";
+									rLogger << "plasticStrainLS " << plasticStrainLS.transpose() << "\n"<< "\n";
 									rLogger << "stressLS " << stressLS.transpose() << "\n"<< "\n";
 #endif
 
@@ -1914,7 +1808,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 									}
 
 									// residual in line search
-									residualLS = lastPlastStrain-epsilonPLS;
+									residualLS = lastConvergedPlastStrain-plasticStrainLS;
 #ifdef ENABLE_DEBUG
 									rLogger << "residual linesearch" <<  "\n" << residualLS.transpose() << "\n" << "\n";
 #endif
@@ -1955,7 +1849,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 								}
 								trialStress = stressLS;
 								deltaGamma = deltaGammaLS;
-								rPlasticStrain = epsilonPLS;
+								rPlasticStrain = plasticStrainLS;
 
 #ifdef ENABLE_DEBUG
 								if (rYieldConditionFlag(0)==ACTIVE)
@@ -2011,7 +1905,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             }
             else
             {
-                lastPlastStrain = rPlasticStrain;
+                lastConvergedPlastStrain = rPlasticStrain;
                 lastDeltaKappa = rDeltaKappa;
 
                 if (numberOfInternalIterations<10)
@@ -2085,9 +1979,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     //! @brief strain currently solved for the plastic strains, in general equal to  rStrain, but if applied in steps, it's smaller
     Eigen::Vector4d curTotalStrain;
     //! @brief previous plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
-    Eigen::Vector4d lastPlastStrain;
+    Eigen::Vector4d lastConvergedPlastStrain;
     //! @brief plastic strain in the line search
-    Eigen::Vector4d epsilonPLS;
+    Eigen::Vector4d plasticStrainLS;
     //! @brief previous eq plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
     double lastDeltaEqPlasticStrain;
     //! @brief residual in the return mapping procedure
@@ -2150,7 +2044,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     deltaStrain(3) = 0;
 
     // initialize last plastic strain and last converged stress
-    lastPlastStrain << rPrevPlasticStrain[0] , rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,rPrevPlasticStrain[3];
+    lastConvergedPlastStrain << rPrevPlasticStrain[0] , rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,rPrevPlasticStrain[3];
     rDeltaEqPlasticStrain = 0;
     // *****************************************************************
     //                   elastic matrix generation                     *
@@ -2215,7 +2109,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             yieldCondition.setZero(numYieldSurfaces);
 
             //elastic strain, stress and d_matrix
-            elasticStrain = curTotalStrain - lastPlastStrain;
+            elasticStrain = curTotalStrain - lastConvergedPlastStrain;
 
             //TODO just use the upper part for new EigenVersion 3.0
             //trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
@@ -2245,7 +2139,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                 rLogger << "linear elastic step" << "\n" << "\n";
 #endif
                 convergedInternal = true;
-                rEpsilonP =  lastPlastStrain;
+                rEpsilonP =  lastConvergedPlastStrain;
                 rDeltaEqPlasticStrain = 0;
                 trialStress = initTrialStress;
                 if (cutbackFactorExternal==1)
@@ -2319,7 +2213,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                     numberOfInternalIterations++;
                     if (iteration==0)
                     {
-                        rEpsilonP = lastPlastStrain;
+                        rEpsilonP = lastConvergedPlastStrain;
                         rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
                         yieldCondition= initYieldCondition;
                         trialStress = initTrialStress;
@@ -2371,7 +2265,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                     // ************************************************************************
                     //  residual
                     // ************************************************************************
-                    residual = lastPlastStrain-rEpsilonP;
+                    residual = lastConvergedPlastStrain-rEpsilonP;
 
                     for (int count=0; count<numYieldSurfaces; count++)
                     {
@@ -2673,13 +2567,13 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 
                                 deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
                                 deltaPlasticStrainLS = cutbackFactorLS * (dElastInv * deltaStress);
-                                epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
+                                plasticStrainLS = rEpsilonP + deltaPlasticStrainLS;
                                 stressLS = trialStress - cutbackFactorLS*deltaStress;
 
 #ifdef ENABLE_DEBUG
                                 rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
                                 rLogger << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << "\n"<< "\n";
-                                rLogger << "epsilonPLS " << epsilonPLS.transpose() << "\n"<< "\n";
+                                rLogger << "plasticStrainLS " << plasticStrainLS.transpose() << "\n"<< "\n";
                                 rLogger << "stressLS " << stressLS.transpose() << "\n"<< "\n";
 #endif
 
@@ -2710,7 +2604,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                                 }
 
                                 // residual in line search
-                                residualLS = lastPlastStrain-epsilonPLS;
+                                residualLS = lastConvergedPlastStrain-plasticStrainLS;
 
                                 for (int count=0; count<numYieldSurfaces; count++)
                                 {
@@ -2748,7 +2642,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                             }
                             trialStress = stressLS;
                             deltaGamma = deltaGammaLS;
-                            rEpsilonP = epsilonPLS;
+                            rEpsilonP = plasticStrainLS;
 
 #ifdef ENABLE_DEBUG
                             if (yieldConditionFlag(0)==ACTIVE)
@@ -2798,7 +2692,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #endif
 
             //update equivalente plastic strain
-            deltaPlasticStrain = rEpsilonP - lastPlastStrain;
+            deltaPlasticStrain = rEpsilonP - lastConvergedPlastStrain;
             rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
                             0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
 
@@ -2812,7 +2706,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             }
             else
             {
-                lastPlastStrain = rEpsilonP;
+                lastConvergedPlastStrain = rEpsilonP;
                 lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
 
                 if (numberOfInternalIterations<10)
@@ -2890,9 +2784,9 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     //! @brief strain currently solved for the plastic strains, in general equal to  rStrain, but if applied in steps, it's smaller
     Eigen::Matrix<double,6,1> curTotalStrain;
     //! @brief previous plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
-    Eigen::Matrix<double,6,1> lastPlastStrain;
+    Eigen::Matrix<double,6,1> lastConvergedPlastStrain;
     //! @brief plastic strain in the line search
-    Eigen::Matrix<double,6,1> epsilonPLS;
+    Eigen::Matrix<double,6,1> plasticStrainLS;
     //! @brief previous eq plastic strain, either from previous equilibrium (static data) or if applied in steps, previous converged state
     double lastDeltaEqPlasticStrain;
     //! @brief residual in the return mapping procedure
@@ -2953,10 +2847,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #endif
 
     // initialize last plastic strain and last converged stress
-    lastPlastStrain << rPrevPlasticStrain[0], rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,
+    lastConvergedPlastStrain << rPrevPlasticStrain[0], rPrevPlasticStrain[1] ,rPrevPlasticStrain[2] ,
                        rPrevPlasticStrain[3], rPrevPlasticStrain[4] ,rPrevPlasticStrain[5];
 #ifdef ENABLE_DEBUG
-        rLogger << "\n" << "lastPlastStrain" << lastPlastStrain.transpose() << "\n" << "\n";
+        rLogger << "\n" << "lastConvergedPlastStrain" << lastConvergedPlastStrain.transpose() << "\n" << "\n";
 #endif
     rDeltaEqPlasticStrain = 0;
     // *****************************************************************
@@ -3024,7 +2918,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             yieldCondition.setZero(numYieldSurfaces);
 
             //elastic strain, stress and d_matrix
-            elasticStrain = curTotalStrain - lastPlastStrain;
+            elasticStrain = curTotalStrain - lastConvergedPlastStrain;
 
             //TODO just use the upper part for new EigenVersion 3.0
             trialStress = dElast.selfadjointView<Eigen::Upper>()*elasticStrain;
@@ -3055,7 +2949,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                 rLogger << "linear elastic step" << "\n" << "\n";
 #endif
                 convergedInternal = true;
-                rEpsilonP =  lastPlastStrain;
+                rEpsilonP =  lastConvergedPlastStrain;
                 rDeltaEqPlasticStrain = 0;
                 trialStress = initTrialStress;
                 if (cutbackFactorExternal==1)
@@ -3131,7 +3025,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                     numberOfInternalIterations++;
                     if (iteration==0)
                     {
-                        rEpsilonP = lastPlastStrain;
+                        rEpsilonP = lastConvergedPlastStrain;
                         rDeltaEqPlasticStrain = lastDeltaEqPlasticStrain;
                         yieldCondition= initYieldCondition;
                         trialStress = initTrialStress;
@@ -3238,7 +3132,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                     // ************************************************************************
                     //  residual
                     // ************************************************************************
-                    residual = lastPlastStrain-rEpsilonP;
+                    residual = lastConvergedPlastStrain-rEpsilonP;
 
                     for (int count=0; count<numYieldSurfaces; count++)
                     {
@@ -3550,13 +3444,13 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 
                                 deltaGammaLS= deltaGamma + cutbackFactorLS * delta2Gamma;
                                 deltaPlasticStrainLS = cutbackFactorLS * (dElastInv * deltaStress);
-                                epsilonPLS = rEpsilonP + deltaPlasticStrainLS;
+                                plasticStrainLS = rEpsilonP + deltaPlasticStrainLS;
                                 stressLS = trialStress - cutbackFactorLS*deltaStress;
 
 #ifdef ENABLE_DEBUG
                                 rLogger << "delta2Gamma " << delta2Gamma.transpose() << "\n"<< "\n";
                                 rLogger << "deltaPlasticStrainLS " << deltaPlasticStrainLS.transpose() << "\n"<< "\n";
-                                rLogger << "epsilonPLS " << epsilonPLS.transpose() << "\n"<< "\n";
+                                rLogger << "plasticStrainLS " << plasticStrainLS.transpose() << "\n"<< "\n";
                                 rLogger << "stressLS " << stressLS.transpose() << "\n"<< "\n";
 #endif
 
@@ -3586,7 +3480,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                                 }
 
                                 // residual in line search
-                                residualLS = lastPlastStrain-epsilonPLS;
+                                residualLS = lastConvergedPlastStrain-plasticStrainLS;
 
                                 for (int count=0; count<numYieldSurfaces; count++)
                                 {
@@ -3624,7 +3518,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                             }
                             trialStress = stressLS;
                             deltaGamma = deltaGammaLS;
-                            rEpsilonP = epsilonPLS;
+                            rEpsilonP = plasticStrainLS;
 
 #ifdef ENABLE_DEBUG
                             if (yieldConditionFlag(0)==ACTIVE)
@@ -3674,7 +3568,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
 #endif
 
             //update equivalente plastic strain
-            deltaPlasticStrain = rEpsilonP - lastPlastStrain;
+            deltaPlasticStrain = rEpsilonP - lastConvergedPlastStrain;
             rDeltaEqPlasticStrain += sqrt(deltaPlasticStrain[0]*deltaPlasticStrain(0)+deltaPlasticStrain(1)*deltaPlasticStrain(1)+
                             0.5 *(deltaPlasticStrain(2)*deltaPlasticStrain(2))+deltaPlasticStrain(3)*deltaPlasticStrain(3));
 
@@ -3688,7 +3582,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
             }
             else
             {
-                lastPlastStrain = rEpsilonP;
+                lastConvergedPlastStrain = rEpsilonP;
                 lastDeltaEqPlasticStrain = rDeltaEqPlasticStrain;
 
                 if (numberOfInternalIterations<10)

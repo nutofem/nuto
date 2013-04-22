@@ -58,7 +58,7 @@ public:
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    virtual void CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
+    virtual void CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
             std::vector<int>& rGlobalDofs)const=0;
 
     //! @brief calculates the internal potential

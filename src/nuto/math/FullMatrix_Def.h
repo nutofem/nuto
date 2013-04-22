@@ -24,6 +24,7 @@ namespace NuTo
 //forward declarations
 template<typename T> std::string GetTypeIdBaseDataType();
 template <class T> class SparseMatrix;
+template <class T,int rows> class FullVector;
 class Logger;
 
 //! @author Jörg F. Unger, ISM
@@ -58,14 +59,13 @@ public:
     //! @param entries_ ... vector containing the matrix in column-major orientation
     FullMatrix<T,rows,cols> ( int numRows_, int numColumns_, const std::vector<T>& entries_ );
 
-    //! @brief ... constructor
-    //! @brief ... creates a FullVector(means a FullMatrix size(m,1) )
-    //! @param entries_ ... vector containing the matrix in column-major orientation
-    FullMatrix<T,rows,cols> ( const std::vector<T>& entries_ );
-
    //! @brief ... copy constructor
     //! @param  rOther ... copied element
     FullMatrix<T,rows,cols> ( const FullMatrix<T,rows,cols>& rOther );
+
+    //! @brief ... copy constructor
+    //! @param  rOther ... copied element
+    FullMatrix<T,rows,cols> ( const SparseMatrix<T>& rOther );
 
 #ifndef SWIG
     //! @brief ... assignment constructor
@@ -102,6 +102,7 @@ public:
     //! @param cols ... number of columns
     void Resize ( int rRows, int rCols );
 
+#ifndef SWIG
     //! @brief ... resize matrix (nothing is deleted)
     //! @param rows ... number of rows
     //! @param cols ... number of columns
@@ -114,6 +115,7 @@ public:
     //! @brief ... resize matrix (nothing is deleted)
     //! @param rows ... number of columns
     void ConservativeResizeCols (int rCols );
+#endif
 
     //! @brief ... scale this matrix in place by a scalar factor and return a reference to this matrix
     //! @param other ... scalar factor
@@ -136,11 +138,21 @@ public:
     //! @param value ... value of the matrix entry
     void SetValue (int i, int j, const T& value );
 
+    //! @brief ... set the value of the (i)-th vector entry
+    //! @param i ... row
+    //! @param value ... value of the matrix entry
+    void SetValue (int i, const T& value );
+
     //! @brief ... get the value of the (i,j)-th matrix entry
     //! @param i ... row
     //! @param j ... column
     //! @return the value of the (i,j)-th matrix entry
-    T GetValue (int i, int j ) const;
+    T GetValue (int i, int j) const;
+
+    //! @brief ... get the value of the (i)-th vector entry
+    //! @param i ... row
+    //! @return the value of the (i,j)-th matrix entry
+    T GetValue (int i) const;
 
     //! @brief ... add a value to the (i,j)-th matrix entry
     //! @param i ... row
@@ -161,14 +173,6 @@ public:
     //! @brief ... get number of columns
     //! @return number of columns
     int GetNumColumns() const;
-
-    //! @brief ... convert a sparse matrix into a full matrix of same type
-    //! @param sparseMatrix ... sparse matrix
-    FullMatrix( const SparseMatrix<T>& sparseMatrix );
-
-    //! @brief ... copy the matrix
-    //! @return a copy of this matrix
-    //MatrixBase* Copy()
 
 #ifdef ENABLE_SERIALIZATION
     void Save ( const std::string &filename, std::string rType)const;
@@ -366,12 +370,16 @@ public:
     //! @brief ... extract a column from this matrix
     //! @param rI ... column
     //! @return column entries as full matrix
-    FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>  GetColumn ( int rI ) const;
+    FullVector<T, Eigen::Dynamic>  GetColumn ( int rI ) const;
 
     //! @brief ... set a column in this matrix
     //! @param rI ... column
     //! @param rBlock ... new column entries
-    void  SetColumn ( int rI, const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rBlock );
+    void  SetColumn ( int rI, const FullVector<T, Eigen::Dynamic>& rBlock );
+
+    //! @brief ... appends columns to this matrix
+    //! @param rBlock ... matrix storing the columns
+    void  AppendColumns ( FullVector<T, Eigen::Dynamic> rBlock );
 
     //! @brief ... appends columns to this matrix
     //! @param rBlock ... matrix storing the columns
@@ -477,9 +485,6 @@ private:
 
 }; //class FullMatrix
 
-#ifndef SWIG
-template <class T,unsigned int rows> using FullVectorFixed = FullMatrix<T,rows,1>;
-#endif //SWIG
 
 }//namespace nuto
 
