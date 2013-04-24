@@ -29,7 +29,7 @@ myStructure.ConstitutiveLawSetPoissonsRatio(Material1, PoissonsRatio)
 Section1 = myStructure.SectionCreate("Volume")
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullMatrix(3,1)
+nodeCoordinates = nuto.DoubleFullVector(3)
 node = 0
 for zCount in range (0, NumElementsZ + 1):
     nodeCoordinates.SetValue(2,0, zCount * Height/NumElementsZ)
@@ -42,7 +42,7 @@ for zCount in range (0, NumElementsZ + 1):
             node += 1
 
 # create elements
-elementIncidence = nuto.IntFullMatrix(8,1)
+elementIncidence = nuto.IntFullVector(8)
 element = 0
 for zCount in range (0, NumElementsZ):
     for yCount in range(0, NumElementsY):
@@ -126,14 +126,14 @@ print "time required for calculating maximum independent sets: " + str(curTime -
 
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullMatrix()
+dispForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 oldTime = curTime
 curTime = time()
 print "time required for assembling: " + str(curTime - oldTime) + " s"
 
 # build global external load vector
-extForceVector = nuto.DoubleFullMatrix()
+extForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalExternalLoadVector(extForceVector)
 oldTime = curTime
 curTime = time()
@@ -147,7 +147,7 @@ print "time required for calculating right-hand-side vector: " + str(curTime - o
 
 # solve
 mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullMatrix()
+displacementVector = nuto.DoubleFullVector()
 stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
 stiffnessMatrixCSR.SetOneBasedIndexing()
 mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
@@ -162,7 +162,7 @@ curTime = time()
 print "time required for merging dof values: " + str(curTime - oldTime) + " s"
 
 # calculate residual
-intForceVector = nuto.DoubleFullMatrix()
+intForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
 oldTime = curTime
 curTime = time()

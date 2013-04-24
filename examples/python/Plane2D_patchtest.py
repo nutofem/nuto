@@ -171,15 +171,15 @@ print "time required for build maximum independent sets: " + str(curTime - oldTi
 
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullMatrix()
+dispForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 oldTime = curTime
 curTime = time()
 print "time required for assembling: " + str(curTime - oldTime) + " s"
 
 Ke = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullMatrix(0,0)
-colIndex = nuto.IntFullMatrix(0,0)
+rowIndex = nuto.IntFullVector(0)
+colIndex = nuto.IntFullVector(0)
 for i in range( 0 , numElements):
 	myStructure.ElementStiffness(i,Ke,rowIndex,colIndex)
 	print "Ke"
@@ -206,7 +206,7 @@ if ElementType == "PLANE2D4Nb":
 
 
 # build global external load vector
-extForceVector = nuto.DoubleFullMatrix()
+extForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalExternalLoadVector(extForceVector)
 oldTime = curTime
 curTime = time()
@@ -220,7 +220,7 @@ print "time required for calculating right-hand-side vector: " + str(curTime - o
 
 # solve
 mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullMatrix()
+displacementVector = nuto.DoubleFullVector()
 stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
 stiffnessMatrixCSR.SetOneBasedIndexing()
 mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
@@ -235,7 +235,7 @@ curTime = time()
 print "time required for merging dof values: " + str(curTime - oldTime) + " s"
 
 # calculate residual
-intForceVector = nuto.DoubleFullMatrix()
+intForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
 oldTime = curTime
 curTime = time()

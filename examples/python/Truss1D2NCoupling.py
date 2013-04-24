@@ -12,7 +12,7 @@ Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
 myStructure.ConstitutiveLawSetYoungsModulus(Material1, 1)
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullMatrix(1,1)
+nodeCoordinates = nuto.DoubleFullVector(1)
 nodeCoordinates.SetValue(0,0,0)
 myStructure.NodeCreate(1, "displacements", nodeCoordinates)
 nodeCoordinates.SetValue(0,0,1)
@@ -23,7 +23,7 @@ nodeCoordinates.SetValue(0,0,2)
 myStructure.NodeCreate(4, "displacements", nodeCoordinates)
 
 # create elements
-elementIncidence = nuto.IntFullMatrix(2,1)
+elementIncidence = nuto.IntFullVector(2)
 elementIncidence.SetValue(0,0,1)
 elementIncidence.SetValue(1,0,2)
 myStructure.ElementCreate(1, "Truss1D2N", elementIncidence)
@@ -51,13 +51,13 @@ myStructure.NodeBuildGlobalDofs()
 # build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 print "build stiffness matrix"
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullMatrix()
+dispForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 stiffnessMatrix.RemoveZeroEntries(0,1e-14)
 
 # build global external load vector
 print "build external force vector"
-extForceVector = nuto.DoubleFullMatrix()
+extForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalExternalLoadVector(extForceVector)
 
 # calculate right hand side
@@ -67,7 +67,7 @@ rhsVector = dispForceVector + extForceVector
 # solve
 print "solve"
 mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullMatrix()
+displacementVector = nuto.DoubleFullVector()
 stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
 stiffnessMatrixCSR.SetOneBasedIndexing()
 mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
@@ -78,7 +78,7 @@ myStructure.NodeMergeActiveDofValues(displacementVector)
 
 # calculate residual
 print "calculate residual"
-intForceVector = nuto.DoubleFullMatrix()
+intForceVector = nuto.DoubleFullVector()
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
 residualVector = extForceVector - intForceVector
 print "residual: " + str(residualVector.Norm())

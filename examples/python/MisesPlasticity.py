@@ -10,17 +10,17 @@ printResult = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1,+1,+1)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,( 0,+1,+1)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,( 0, 0,+1)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1, 0,+1)))
-myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1,+1, 0)))
-myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,( 0,+1, 0)))
-myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,( 0, 0, 0)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullMatrix(3,1,(+1, 0, 0)))
+myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1,+1,+1)))
+myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0,+1,+1)))
+myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0, 0,+1)))
+myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1, 0,+1)))
+myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1,+1, 0)))
+myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0,+1, 0)))
+myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0, 0, 0)))
+myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1, 0, 0)))
 
 #create element
-myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullMatrix(8,1,(myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)),"ConstitutiveLawIp","StaticData")
+myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)),"ConstitutiveLawIp","StaticData")
 
 #create section
 mySection = myStructure.SectionCreate("Volume")
@@ -82,17 +82,17 @@ myStructure.NodeBuildGlobalDofs()
 max_disp = 2.
 num_steps = 10
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullMatrix()
-extForceVector = nuto.DoubleFullMatrix()
+dispForceVector = nuto.DoubleFullVector()
+extForceVector = nuto.DoubleFullVector()
 mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullMatrix()
-deltaDisplacementVector = nuto.DoubleFullMatrix()
+displacementVector = nuto.DoubleFullVector()
+deltaDisplacementVector = nuto.DoubleFullVector()
 stiffnessMatrix.SetOneBasedIndexing()
-intForceVector = nuto.DoubleFullMatrix()
-boundaryForceVector = nuto.DoubleFullMatrix()
+intForceVector = nuto.DoubleFullVector()
+boundaryForceVector = nuto.DoubleFullVector()
 numActiveDofs = 0
 plotMatrixLoadDisp = nuto.DoubleFullMatrix(2,1)
-plotVectorLoadDisp = nuto.DoubleFullMatrix(2,1)
+plotVectorLoadDisp = nuto.DoubleFullVector(2)
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringPlasticStrain()
