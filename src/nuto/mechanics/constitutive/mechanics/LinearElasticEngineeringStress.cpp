@@ -142,7 +142,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
     	case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
     	{
 			ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
- 		    tangent.mTangent[0]=mE;
+ 		    tangent(0,0)=mE;
 		    tangent.SetSymmetry(true);
     		break;
     	}
@@ -326,7 +326,6 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
     	case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D:
     	{
 			ConstitutiveTangentLocal<3,3>& tangent(itOutput->second->AsConstitutiveTangentLocal_3x3());
- 		    double *data(tangent.mTangent);
 
  			assert(rElement->GetSection()!=0);
  		    switch(rElement->GetSection()->GetType())
@@ -337,17 +336,17 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
  			    this->CalculateCoefficients3D(C11, C12, C33);
 
  			    // store tangent at the output object
- 			    data[ 0] = C11;
- 			    data[ 1] = C12;
- 			    data[ 2] = 0;
+ 			    tangent(0,0) = C11;
+ 			    tangent(1,0) = C12;
+ 			    tangent(2,0) = 0;
 
- 			    data[ 3] = C12;
- 			    data[ 4] = C11;
- 			    data[ 5] = 0;
+ 			    tangent(0,1) = C12;
+ 			    tangent(1,1) = C11;
+ 			    tangent(2,1) = 0;
 
- 			    data[ 6] = 0.;
- 			    data[ 7] = 0.;
- 			    data[ 8] = C33;
+ 			    tangent(0,2) = 0.;
+ 			    tangent(1,2) = 0.;
+ 			    tangent(2,2) = C33;
  		    	break;}
  		    case Section::PLANE_STRESS:{
  			    // calculate coefficients of the material matrix
@@ -355,17 +354,17 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
  				this->CalculateCoefficients2DPlainStress(C11, C12, C33);
 
  			    // store tangent at the output object
- 				data[ 0] = C11;
- 				data[ 1] = C12;
- 				data[ 2] = 0;
+ 			    tangent(0,0) = C11;
+ 			    tangent(1,0) = C12;
+ 			    tangent(2,0) = 0;
 
- 				data[ 3] = C12;
- 				data[ 4] = C11;
- 				data[ 5] = 0;
+ 			    tangent(0,1) = C12;
+ 			    tangent(1,1) = C11;
+ 			    tangent(2,1) = 0;
 
- 				data[ 6] = 0.;
- 				data[ 7] = 0.;
- 				data[ 8] = C33;
+ 			    tangent(0,2) = 0.;
+ 			    tangent(1,2) = 0.;
+ 			    tangent(2,2) = C33;
  		   	break;}
  		    default:
  		    	throw MechanicsException("[NuTo::LinearElastic::GetTangent_EngineeringStress_EngineeringStrain] Invalid type of 2D section behavoir found!!!");
@@ -505,50 +504,48 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(ElementBase
     	case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D:
     	{
 			ConstitutiveTangentLocal<6,6>& tangent(itOutput->second->AsConstitutiveTangentLocal_6x6());
- 		    double *data(tangent.mTangent);
 
-		    // store tangent at the output object
-		    data[ 0] = C11;
-		    data[ 1] = C12;
-		    data[ 2] = C12;
-		    data[ 3] = 0;
-		    data[ 4] = 0;
-		    data[ 5] = 0;
+ 		    tangent(0,0) = C11;
+ 		    tangent(1,0) = C12;
+ 		    tangent(2,0) = C12;
+ 		    tangent(3,0) = 0;
+ 		    tangent(4,0) = 0;
+ 		    tangent(5,0) = 0;
 
-		    data[ 6] = C12;
-		    data[ 7] = C11;
-		    data[ 8] = C12;
-		    data[ 9] = 0;
-		    data[10] = 0;
-		    data[11] = 0;
+ 		    tangent(0,1) = C12;
+ 		    tangent(1,1) = C11;
+ 		    tangent(2,1) = C12;
+ 		    tangent(3,1) = 0;
+ 		    tangent(4,1) = 0;
+ 		    tangent(5,1) = 0;
 
-		    data[12] = C12;
-		    data[13] = C12;
-		    data[14] = C11;
-		    data[15] = 0;
-		    data[16] = 0;
-		    data[17] = 0;
+ 		    tangent(0,2) = C12;
+ 		    tangent(1,2) = C12;
+ 		    tangent(2,2) = C11;
+ 		    tangent(3,2) = 0;
+ 		    tangent(4,2) = 0;
+ 		    tangent(5,2) = 0;
 
-		    data[18] = 0;
-		    data[19] = 0;
-		    data[20] = 0;
-		    data[21] = C44;
-		    data[22] = 0;
-		    data[23] = 0;
+ 		    tangent(0,3) = 0;
+ 		    tangent(1,3) = 0;
+ 		    tangent(2,3) = 0;
+ 		    tangent(3,3) = C44;
+ 		    tangent(4,3) = 0;
+ 		    tangent(5,3) = 0;
 
-		    data[24] = 0;
-		    data[25] = 0;
-		    data[26] = 0;
-		    data[27] = 0;
-		    data[28] = C44;
-		    data[29] = 0;
+ 		    tangent(0,4) = 0;
+ 		    tangent(1,4) = 0;
+ 		    tangent(2,4) = 0;
+ 		    tangent(3,4) = 0;
+ 		    tangent(4,4) = C44;
+ 		    tangent(5,4) = 0;
 
-		    data[30] = 0;
-		    data[31] = 0;
-		    data[32] = 0;
-		    data[33] = 0;
-		    data[34] = 0;
-		    data[35] = C44;
+ 		    tangent(0,5) = 0;
+ 		    tangent(1,5) = 0;
+ 		    tangent(2,5) = 0;
+ 		    tangent(3,5) = 0;
+ 		    tangent(4,5) = 0;
+ 		    tangent(5,5) = C44;
 
 		    tangent.SetSymmetry(true);
     		break;

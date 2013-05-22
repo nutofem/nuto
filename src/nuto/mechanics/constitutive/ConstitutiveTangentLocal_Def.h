@@ -18,6 +18,7 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -27,7 +28,7 @@ namespace NuTo
 //! @author Jörg F. Unger, BAM
 //! @date July 2012
 template <int TNumRows, int TNumColumns>
-class ConstitutiveTangentLocal: public NuTo::ConstitutiveTangentBase
+class ConstitutiveTangentLocal: public NuTo::ConstitutiveTangentBase, public NuTo::FullMatrix<double,TNumRows,TNumColumns>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -53,12 +54,20 @@ public:
     //! @return ... number of columns
     unsigned int GetNumberOfColumns() const;
 
-    //! @brief ... get the tangent matrix
-    //! @brief ... pointer to the tangent matrix (column major storage)
-    const double* GetData() const;
+    //! @brief ... assignment constructor
+	//! @param  rOther ... copied element
+    template<typename OtherDerived>
+    ConstitutiveTangentLocal<TNumRows,TNumColumns>& operator=( const Eigen::MatrixBase <OtherDerived>& other)
+	{
+    	this->FullMatrix<double,TNumRows,TNumColumns>::operator=(other);
+    	return *this;
+	}
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     NuTo::ConstitutiveTangentLocal<1,1>& AsConstitutiveTangentLocal_1x1() override;
+
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    NuTo::ConstitutiveTangentLocal<1,2>& AsConstitutiveTangentLocal_1x2() override;
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     NuTo::ConstitutiveTangentLocal<2,1>& AsConstitutiveTangentLocal_2x1() override;
@@ -85,8 +94,8 @@ public:
     #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialize ConstitutiveTangentLocal" << std::endl;
     #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveTangentBase)
-           & BOOST_SERIALIZATION_NVP(mTangent);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveTangentBase);
+        ar & boost::serialization::make_nvp ("ConstitutiveTangentLocal",boost::serialization::base_object< FullMatrix<double,TNumRows,TNumColumns> > ( *this ));
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize ConstitutiveTangentLocal" << std::endl;
     #endif
@@ -94,8 +103,6 @@ public:
 
 #endif // ENABLE_SERIALIZATION
 private:
-     //! @brief ... tangent matrix
-    double mTangent[TNumRows*TNumColumns];
 };
 
 }

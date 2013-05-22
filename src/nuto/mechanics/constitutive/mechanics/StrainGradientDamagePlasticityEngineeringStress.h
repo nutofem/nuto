@@ -1,6 +1,6 @@
-// $Id: GradientDamagePlasticityEngineeringStress.h 612 2012-08-13 07:31:23Z unger3 $
-#ifndef CONSTITUTIVEGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS_H_
-#define CONSTITUTIVEGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS_H_
+// $Id: StrainGradientDamagePlasticityEngineeringStress.h 612 2012-08-13 07:31:23Z unger3 $
+#ifndef CONSTITUTIVESTRAINGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS_H_
+#define CONSTITUTIVESTRAINGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS_H_
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -15,13 +15,13 @@ class ConstitutiveTangentBase;
 //! @author Joerg F. Unger
 //! @date Apr 26, 2010
 //! @brief ...
-class GradientDamagePlasticityEngineeringStress : public ConstitutiveBase
+class StrainGradientDamagePlasticityEngineeringStress : public ConstitutiveBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    GradientDamagePlasticityEngineeringStress();
+    StrainGradientDamagePlasticityEngineeringStress();
 
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element
@@ -410,7 +410,7 @@ protected:
 }
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::GradientDamagePlasticityEngineeringStress)
+BOOST_CLASS_EXPORT_KEY(NuTo::StrainGradientDamagePlasticityEngineeringStress)
 #endif // ENABLE_SERIALIZATION
 
-#endif /* CONSTITUTIVEGRADIENTDAMAGEPLASTICITY_H_ */
+#endif /* CONSTITUTIVESTRAINGRADIENTDAMAGEPLASTICITY_H_ */

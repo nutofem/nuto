@@ -1301,6 +1301,51 @@ void NuTo::StructureBase::ElementGetDamage(int rElementId, FullMatrix<double,Eig
 #endif
 }
 
+//! @brief calculates the global integration point coordinates
+//! @param rElemIdent  identifier for the element
+//! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
+void NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    // build global tmp static data
+    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringStress] First update of tmp static data required.");
+    }
+
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    try
+    {
+		//evaluate the coordinates
+    	rCoordinates.Resize(3,elementPtr->GetNumIntegrationPoints());
+    	for (int count=0; count<elementPtr->GetNumIntegrationPoints(); count++)
+    	    elementPtr->GetGlobalIntegrationPointCoordinates(count,&(rCoordinates.data()[3*count]));
+    }
+    catch(NuTo::MechanicsException &e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStress] Error getting engineering strain for element "
+        	+ ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::StructureBase::ElementGetEngineeringStress] Error getting engineering strain for element " + ss.str() + ".");
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGetEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
 //! @brief calculates the maximum damage in all elements
 //! @param rElemIdent  identifier for the element
 //! @return max damage value

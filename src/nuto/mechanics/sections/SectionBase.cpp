@@ -18,11 +18,13 @@ NuTo::SectionBase::SectionBase()
 {
 	mInputConstitutiveIsTemperature = false;
 	mInputConstitutiveIsTemperatureGradient = false;
-	mInputConstitutiveIsDamage = false;
+	mInputConstitutiveIsNonlocalEqPlasticStrain = false;
+	mInputConstitutiveIsNonlocalTotalStrain = false;
 	mInputConstitutiveIsDeformationGradient = true;
     mDisplacementDof = true;
     mTemperatureDof = false;
-    mNonlocalDamageDof = false;
+    mNonlocalEqPlasticStrainDof = false;
+    mNonlocalTotalStrainDof = false;
 }
 
 int NuTo::SectionBase::GetNumInputConstitutive()const
@@ -44,16 +46,30 @@ bool NuTo::SectionBase::GetIsTemperatureDof()const
 
 //! @brief... set if damage are dofs
 //! @param rFlag ... true, if damage are dofs
-void NuTo::SectionBase::SetIsNonlocalDamageDof(bool rFlag)
+void NuTo::SectionBase::SetIsNonlocalEqPlasticStrainDof(bool rFlag)
 {
-	mNonlocalDamageDof = rFlag;
+	mNonlocalEqPlasticStrainDof = rFlag;
 }
 
 //! @brief... get if damage are dof
 //! @return ... true, if damage are dofs
-bool NuTo::SectionBase::GetIsNonlocalDamageDof()const
+bool NuTo::SectionBase::GetIsNonlocalEqPlasticStrainDof()const
 {
-	return mNonlocalDamageDof;
+	return mNonlocalEqPlasticStrainDof;
+}
+
+//! @brief... set if damage are dofs
+//! @param rFlag ... true, if damage are dofs
+void NuTo::SectionBase::SetIsNonlocalTotalStrainDof(bool rFlag)
+{
+	mNonlocalTotalStrainDof = rFlag;
+}
+
+//! @brief... get if damage are dof
+//! @return ... true, if damage are dofs
+bool NuTo::SectionBase::GetIsNonlocalTotalStrainDof()const
+{
+	return mNonlocalTotalStrainDof;
 }
 
 //! @brief... set if temperatures are dofs
@@ -76,19 +92,6 @@ void NuTo::SectionBase::SetInputConstitutiveIsTemperature(bool rFlag)
 	mInputConstitutiveIsTemperature = rFlag;
 }
 
-//! @brief... get if damage is to be used as input to the constitutive model
-//! @return ... true, if damage is to be used as input to the constitutive model
-bool NuTo::SectionBase::GetInputConstitutiveIsDamage()const
-{
-	return mInputConstitutiveIsDamage;
-}
-//! @brief... set if damage is to be used as input to the constitutive model
-//! @param rFlag ... true, if damage is to be used as input to the constitutive model
-void NuTo::SectionBase::SetInputConstitutiveIsDamage(bool rFlag)
-{
-	mInputConstitutiveIsDamage = rFlag;
-}
-
 //! @brief... get if temperature gradients are to be used as input to the constitutive model
 //! @return ... true, if temperature gradients are to be used as input to the constitutive model
 bool NuTo::SectionBase::GetInputConstitutiveIsTemperatureGradient()const
@@ -100,6 +103,32 @@ bool NuTo::SectionBase::GetInputConstitutiveIsTemperatureGradient()const
 void NuTo::SectionBase::SetInputConstitutiveIsTemperatureGradient(bool rFlag)
 {
 	mInputConstitutiveIsTemperatureGradient = rFlag;
+}
+
+//! @brief... get if nonlocal eq plastic strains are to be used as input to the constitutive model
+//! @return ... true, if nonlocal eq plastic strains are to be used as input to the constitutive model
+bool NuTo::SectionBase::GetInputConstitutiveIsNonlocalEqPlasticStrain()const
+{
+	return mInputConstitutiveIsNonlocalEqPlasticStrain;
+}
+//! @brief... set if nonlocal eq plastic strains are to be used as input to the constitutive model
+//! @param rFlag ... true, if nonlocal eq plastic strains are to be used as input to the constitutive model
+void NuTo::SectionBase::SetInputConstitutiveIsNonlocalEqPlasticStrain(bool rFlag)
+{
+	mInputConstitutiveIsNonlocalEqPlasticStrain = rFlag;
+}
+
+//! @brief... get if nonlocal eq plastic strains are to be used as input to the constitutive model
+//! @return ... true, if nonlocal eq plastic strains are to be used as input to the constitutive model
+bool NuTo::SectionBase::GetInputConstitutiveIsNonlocalTotalStrain()const
+{
+	return mInputConstitutiveIsNonlocalTotalStrain;
+}
+//! @brief... set if nonlocal eq plastic strains are to be used as input to the constitutive model
+//! @param rFlag ... true, if nonlocal eq plastic strains are to be used as input to the constitutive model
+void NuTo::SectionBase::SetInputConstitutiveIsNonlocalTotalStrain(bool rFlag)
+{
+	mInputConstitutiveIsNonlocalTotalStrain = rFlag;
 }
 
 //! @brief... get if displacements are dof
@@ -183,11 +212,13 @@ void NuTo::SectionBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize SectionBase" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsDamage)
+    ar & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsNonlocalEqPlasticStrain)
+       & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsNonlocalTotalStrain)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperature)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperatureGradient)
        & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsDeformationGradient)
-       & BOOST_SERIALIZATION_NVP(mNonlocalDamageDof)
+       & BOOST_SERIALIZATION_NVP(mNonlocalEqPlasticStrainDof)
+       & BOOST_SERIALIZATION_NVP(mNonlocalTotalStrainDof)
        & BOOST_SERIALIZATION_NVP(mDisplacementDof)
        & BOOST_SERIALIZATION_NVP(mTemperatureDof);
 #ifdef DEBUG_SERIALIZATION

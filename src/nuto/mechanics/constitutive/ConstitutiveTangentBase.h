@@ -14,6 +14,7 @@
 namespace NuTo
 {
 class ConstitutiveTangentLocal1x1;
+class ConstitutiveTangentLocal1x2;
 class ConstitutiveTangentLocal2x2;
 class ConstitutiveTangentLocal3x3;
 class ConstitutiveTangentLocal6x6;
@@ -41,10 +42,6 @@ public:
     //! @brief ... get the number of columns of the tangent matrix
     //! @return ... number of columns
     virtual unsigned int GetNumberOfColumns() const = 0;
-
-    //! @brief ... get the tangent matrix
-    //! @brief ... pointer to the tangent matrix (column major storage)
-    virtual const double* GetData() const = 0;
 
     //! @brief ... set shape of the tangent matrix (symmetric or nonsymmetric)
     //! @param rSymmetry ... symmetry flag: <B>true</B> if the tangent matrix has a symmetric shape and <B>false</B> if the tangent is nonsymmetric.
@@ -77,39 +74,6 @@ public:
     {
         return this->mConstant;
     }
-
-    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentLocal1x1* AsConstitutiveTangentLocal1x1()
-	{
-    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal1x1] to be removed.");
-	}
-
-    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentLocal2x2* AsConstitutiveTangentLocal2x2()
-	{
-    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal2x2] to be removed.");
-	}
-
-    //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentLocal3x3* AsConstitutiveTangentLocal3x3()
-	{
-    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal3x3] to be removed.");
-	}
-
-    //! @brief reinterpret as ConstitutiveTangentLocal1x1, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentLocal6x6* AsConstitutiveTangentLocal6x6()
-	{
-    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentLocal6x6] to be removed.");
-	}
-
-    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-    virtual NuTo::ConstitutiveTangentNonlocal3x3* AsConstitutiveTangentNonlocal3x3()
-	{
-    	throw MechanicsException("[ConstitutiveTangentBase::AsConstitutiveTangentNonlocal3x3] to be removed.");
-	}
-
-
-
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

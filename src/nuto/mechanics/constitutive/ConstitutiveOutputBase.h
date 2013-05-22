@@ -37,6 +37,7 @@ class EngineeringStress1D;
 class EngineeringStress2D;
 class EngineeringStress3D;
 class HeatFlux3D;
+class LocalEqPlasticStrain;
 class Logger;
 class SecondPiolaKirchhoffStress3D;
 class StructureBase;
@@ -59,17 +60,23 @@ public:
     virtual ~ConstitutiveOutputBase()
     {}
 
+    virtual EngineeringStrain1D& GetEngineeringStrain1D();
+    virtual EngineeringStrain2D& GetEngineeringStrain2D();
     virtual EngineeringStrain3D& GetEngineeringStrain3D();
     virtual EngineeringStress1D& GetEngineeringStress1D();
     virtual EngineeringStress2D& GetEngineeringStress2D();
     virtual EngineeringStress3D& GetEngineeringStress3D();
     virtual ConstitutiveTangentLocal3x3& GetConstitutiveTangentLocal3x3();
     virtual ConstitutiveTangentLocal6x6& GetConstitutiveTangentLocal6x6();
+    virtual LocalEqPlasticStrain& GetLocalEqPlasticStrain();
     virtual HeatFlux3D& GetHeatFlux3D();
     virtual Damage& GetDamage();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     virtual NuTo::ConstitutiveTangentLocal<1,1>& AsConstitutiveTangentLocal_1x1();
+
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    virtual NuTo::ConstitutiveTangentLocal<1,2>& AsConstitutiveTangentLocal_1x2();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     virtual NuTo::ConstitutiveTangentLocal<2,1>& AsConstitutiveTangentLocal_2x1();

@@ -254,7 +254,7 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 // based on the global dofs build submatrices of the global coefficent matrix0
 NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)
 {
-    assert(this->mNodeNumberingRequired == false);
+	assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == false);
     assert(rMatrixJJ.GetNumColumns() == this->mNumActiveDofs);
     assert(rMatrixJJ.GetNumRows() == this->mNumActiveDofs);
@@ -449,6 +449,54 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 			assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
 			assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
 
+/*
+//check stiffness matrix
+FullVector<double, Eigen::Dynamic> check_disp_j1,check_disp_j2,check_disp_k1,check_disp_k2;
+this->NodeExtractDofValues(0,check_disp_j1,check_disp_k1);
+//std::cout << "active dof values " << check_disp_j1 << std::endl;
+FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> elementMatrix_cdf(elementMatrix);
+elementMatrix_cdf.setZero();
+
+boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutputCDF;
+boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutputCDF )( Element::INTERNAL_GRADIENT );
+elementPtr->Evaluate(elementOutputCDF);
+NuTo::FullVector<double,Eigen::Dynamic> elementVector1 = elementOutputCDF.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
+//std::cout << "elementVector1 \n" << elementVector1 << std::endl;
+double delta(1e-9);
+for (unsigned int countCol=0; countCol<elementVectorGlobalDofsColumn.size(); countCol++)
+{
+	check_disp_j2 = check_disp_j1;
+	check_disp_k2 = check_disp_k1;
+	if (elementVectorGlobalDofsColumn[countCol]<check_disp_j1.GetNumRows())
+	{
+		check_disp_j2(elementVectorGlobalDofsColumn[countCol])+=delta;
+	}
+	else
+	{
+		check_disp_k2(elementVectorGlobalDofsColumn[countCol]-check_disp_j1.GetNumRows())+=delta;
+	}
+
+	this->NodeMergeDofValues(check_disp_j2,check_disp_k2);
+	elementPtr->Evaluate(elementOutputCDF);
+	NuTo::FullVector<double,Eigen::Dynamic> elementVector2 = elementOutputCDF.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
+	elementMatrix_cdf.col(countCol) = ((elementVector2-elementVector1))*(1./delta);
+}
+this->NodeMergeDofValues(check_disp_j1,check_disp_k1);
+if ((elementMatrix_cdf-elementMatrix).cwiseAbs().maxCoeff()>1e-0)
+{
+	std::cout << "elem stiffness exact\n" <<  elementMatrix << std::endl<< std::endl;;
+	std::cout << "dofs \n"; for (unsigned int count=0; count<elementVectorGlobalDofsColumn.size(); count++) std::cout << elementVectorGlobalDofsColumn[count] << "  ";
+	std::cout << std::endl << std::endl;
+	std::cout << "elem stiffness cdf\n" <<  elementMatrix_cdf << std::endl<< std::endl;;
+	std::cout << "delta \n" <<  elementMatrix_cdf-elementMatrix << std::endl<< std::endl;;
+	std::cout << std::endl << std::endl;;
+	exit(-1);
+}
+else
+{
+	std::cout << "error element stiffness is " << (elementMatrix_cdf-elementMatrix).cwiseAbs().maxCoeff() << std::endl;
+}
+*/
 			// write element contribution to global matrix
 			for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
 			{
@@ -463,6 +511,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 							if (globalColumnDof < this->mNumActiveDofs)
 							{
 								rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+								//std::cout << "add at (" << globalRowDof << "," << globalColumnDof << ") " << elementMatrix(rowCount, colCount) << std::endl;
 							}
 							else
 							{
@@ -1469,7 +1518,7 @@ void NuTo::Structure::ImportFromGmsh (const std::string& rFileName,
     	std::set<int> groupIds;
     	ImportFromGmshAux(rFileName, rNumTimeDerivatives, rDOFs, rElementData, rIPData, true, groupIds);
 
-    	rElementGroupIds.resize(groupIds.size());
+    	rElementGroupIds.Resize(groupIds.size());
     	int count(0);
     	for (std::set<int>::iterator it = groupIds.begin(); it != groupIds.end(); it++, count++)
     	{

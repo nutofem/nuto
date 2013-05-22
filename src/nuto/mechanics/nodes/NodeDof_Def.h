@@ -28,7 +28,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalDamage>
+template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
 class NodeDof: public virtual NodeBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -64,8 +64,11 @@ public:
     	ar & BOOST_SERIALIZATION_NVP(mTemperatures);
     	ar & BOOST_SERIALIZATION_NVP(mDofTemperatures);
 
-    	ar & BOOST_SERIALIZATION_NVP(mNonlocalDamage);
-    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalDamage);
+    	ar & BOOST_SERIALIZATION_NVP(mNonlocalEqPlasticStrain);
+    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalEqPlasticStrain);
+
+    	ar & BOOST_SERIALIZATION_NVP(mNonlocalTotalStrain);
+    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalTotalStrain);
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -240,30 +243,93 @@ public:
 
     //! @brief returns the number of Damage dofs of the node
     //! @return number of Damages
-    int GetNumNonlocalDamage()const override;
+    int GetNumNonlocalEqPlasticStrain()const override;
 
     //! @brief returns the Damage of the node
     //! @return Damage
-    void GetNonlocalDamage(double* rNonlocalDamage)const override;
+    void GetNonlocalEqPlasticStrain(double* rNonlocalEqPlasticStrain)const override;
 
     //! @brief returns the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @return Damage
-    void GetNonlocalDamage(int rTimeDerivative, double* rNonlocalDamage)const override;
+    void GetNonlocalEqPlasticStrain(int rTimeDerivative, double* rNonlocalEqPlasticStrain)const override;
 
     //! @brief set the Damage of the node
     //! @param rDamage  given Damage
-    void SetNonlocalDamage(const double* rDamage) override;
+    void SetNonlocalEqPlasticStrain(const double* rNonlocalEqPlasticStrain) override;
 
     //! @brief set the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @param rDamage  given Damage
-    void SetNonlocalDamage(int rTimeDerivative, const double* rNonlocalDamage) override;
+    void SetNonlocalEqPlasticStrain(int rTimeDerivative, const double* rNonlocalEqPlasticStrain) override;
 
     //! @brief gives the global DOF of a Damage component
     //! @param rComponent component
     //! @return global DOF
-    int GetDofNonlocalDamage()const override;
+    int GetDofNonlocalEqPlasticStrain(int rComponent)const override;
+
+    //! @brief returns the number of Damage dofs of the node
+    //! @return number of Damages
+    int GetNumNonlocalTotalStrain()const override;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    void GetNonlocalTotalStrain1D(double* rNonlocalTotalStrain)const override;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    void GetNonlocalTotalStrain2D(double* rNonlocalTotalStrain)const override;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    void GetNonlocalTotalStrain3D(double* rNonlocalTotalStrain)const override;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    void GetNonlocalTotalStrain1D(int rTimeDerivative, double* rNonlocalTotalStrain)const override;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    void GetNonlocalTotalStrain2D(int rTimeDerivative, double* rNonlocalTotalStrain)const override;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    void GetNonlocalTotalStrain3D(int rTimeDerivative, double* rNonlocalTotalStrain)const override;
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    void SetNonlocalTotalStrain1D(const double* rNonlocalTotalStrain) override;
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    void SetNonlocalTotalStrain2D(const double* rNonlocalTotalStrain) override;
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    void SetNonlocalTotalStrain3D(const double* rNonlocalTotalStrain) override;
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    void SetNonlocalTotalStrain1D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    void SetNonlocalTotalStrain2D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    void SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
+
+    //! @brief gives the global DOF of a Damage component
+    //! @param rComponent component
+    //! @return global DOF
+    int GetDofNonlocalTotalStrain(int rComponent)const override;
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
@@ -290,8 +356,11 @@ protected:
     boost::array<boost::array<double, TNumTemperatures>,TNumTimeDerivatives+1> mTemperatures;
     boost::array<int, TNumTemperatures> mDofTemperatures;
 
-    boost::array<boost::array<double, TNumNonlocalDamage>,TNumTimeDerivatives+1> mNonlocalDamage;
-    boost::array<int, TNumNonlocalDamage> mDofNonlocalDamage;
+    boost::array<boost::array<double, TNumNonlocalEqPlasticStrain>,TNumTimeDerivatives+1> mNonlocalEqPlasticStrain;
+    boost::array<int, TNumNonlocalEqPlasticStrain> mDofNonlocalEqPlasticStrain;
+
+    boost::array<boost::array<double, TNumNonlocalTotalStrain>,TNumTimeDerivatives+1> mNonlocalTotalStrain;
+    boost::array<int, TNumNonlocalTotalStrain> mDofNonlocalTotalStrain;
 
 };
 

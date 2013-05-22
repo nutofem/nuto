@@ -17,7 +17,7 @@
 
 //! @brief ... constructor
 template <int TNumRows, int TNumColumns>
-NuTo::ConstitutiveTangentLocal<TNumRows,TNumColumns>::ConstitutiveTangentLocal()
+NuTo::ConstitutiveTangentLocal<TNumRows,TNumColumns>::ConstitutiveTangentLocal() : ConstitutiveTangentBase::ConstitutiveTangentBase(), FullMatrix<double,TNumRows,TNumColumns>()
 {}
 
 //! @brief ... destructor
@@ -41,27 +41,6 @@ unsigned int NuTo::ConstitutiveTangentLocal<TNumRows,TNumColumns>::GetNumberOfCo
 	return TNumColumns;
 }
 
-//! @brief ... get the tangent matrix
-//! @brief ... pointer to the tangent matrix (column major storage)
-template <int TNumRows, int TNumColumns>
-const double* NuTo::ConstitutiveTangentLocal<TNumRows,TNumColumns>::GetData() const
-{
-	return mTangent;
-}
 
-//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-/*template <int TNumRows, int TNumColumns>
-NuTo::ConstitutiveTangentLocal<TNumRows,TNumColumns>& NuTo::ConstitutiveTangentLocal1x1<TNumRows,TNumColumns>::AsConstitutiveTangentLocal1x1()
-{
-	return (*this);
-}
-
-//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
-template <int TNumRows, int TNumColumns>
-NuTo::ConstitutiveTangentLocal<TNumRows,TNumColumns>& NuTo::ConstitutiveTangentLocal1x1<TNumRows,TNumColumns>::AsConstitutiveTangentLocal2x2()
-{
-	return (*this);
-}
-*/
 #endif// CONSTITUTIVETANGENTLOCAL_H
 

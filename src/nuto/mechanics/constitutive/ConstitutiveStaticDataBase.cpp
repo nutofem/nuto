@@ -104,6 +104,18 @@ const NuTo::ConstitutiveStaticDataMisesPlasticity3D* NuTo::ConstitutiveStaticDat
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMisesPlasticity3D] Static data is not of type ConstitutiveStaticDataMisesPlasticity3D.");
 }
 
+//!@ brief reinterpret as strain gradient damage1d static data
+NuTo::ConstitutiveStaticDataStrainGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsStrainGradientDamagePlasticity1D()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataStrainGradientDamagePlasticity1D] Static data is not of type StrainGradientDamagePlasticity1D.");
+}
+
+//!@ brief reinterpret as strain gradient damage plasticity static data
+const NuTo::ConstitutiveStaticDataStrainGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsStrainGradientDamagePlasticity1D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamagePlasticity1D] Static data is not of type GradientDamagePlasticity1D.");
+}
+
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");

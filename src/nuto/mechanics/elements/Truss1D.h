@@ -76,11 +76,11 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const;
+    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs, int rNumNonlocalTotalStrainDofs) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const;
+    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs, int rNumNonlocalTotalStrainDofs) const;
 
 
 };

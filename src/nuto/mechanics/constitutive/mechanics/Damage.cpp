@@ -31,7 +31,7 @@ const double* NuTo::Damage::GetData() const
 //! @brief ... set damage value
 void NuTo::Damage::SetDamage(double rDamage)
 {
-	assert(rDamage>=0.);
+	//assert(rDamage>=0.);
 	mDamage = rDamage;
 }
 

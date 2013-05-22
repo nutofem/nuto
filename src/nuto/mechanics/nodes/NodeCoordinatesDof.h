@@ -8,23 +8,23 @@
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief ... constructor
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumDamage>
-NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::NodeCoordinatesDof()
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::NodeCoordinatesDof()
 : NuTo::NodeCoordinates<TNumCoordinates>::NodeCoordinates(),
-  NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::NodeDof()
+  NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::NodeDof()
 {
 }
 
 //! @brief ... destructor
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumDamage>
-NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::~NodeCoordinatesDof()
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::~NodeCoordinatesDof()
 {
 }
 
 //! @brief assignment operator
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumDamage>
-void NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::
-     operator=(NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage> const& rOther)
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+void NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::
+     operator=(NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain> const& rOther)
 {
 	throw MechanicsException("NuTo::NodeCoordinatesDof");
 }
@@ -32,8 +32,8 @@ void NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplaceme
 
 //! @brief returns the type of node as a string (all the data stored at the node)
 //! @return string
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumDamage>
-std::string NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+std::string NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::
 GetNodeTypeStr()const
 {
 	throw MechanicsException("");
@@ -42,8 +42,8 @@ GetNodeTypeStr()const
 
 
 #ifdef ENABLE_VISUALIZE
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumDamage>
-void NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+void NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::
 Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
 {
 
@@ -51,11 +51,11 @@ Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::Vis
 #endif // ENABLE_VISUALIZE
 
 //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumDamage>
-NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>*
-NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>::Clone()const
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures , int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>*
+NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::Clone()const
 {
-    return new NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumDamage>(*this);
+    return new NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>(*this);
 }
 
 #endif //NodeCoordinatesDof_H

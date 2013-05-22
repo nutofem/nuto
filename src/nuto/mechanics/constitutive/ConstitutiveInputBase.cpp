@@ -15,7 +15,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalDamage.h"
+#include "nuto/mechanics/constitutive/mechanics/NonlocalEqPlasticStrain.h"
 #include "nuto/mechanics/constitutive/thermal/Temperature.h"
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
 
@@ -51,11 +51,25 @@ const NuTo::TemperatureGradient3D& NuTo::ConstitutiveInputBase::GetTemperatureGr
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetTemperatureGradient3D] not implemented for this input object.");
 }
 
-const NuTo::NonlocalDamage& NuTo::ConstitutiveInputBase::GetNonlocalDamage()const
+const NuTo::NonlocalEqPlasticStrain& NuTo::ConstitutiveInputBase::GetNonlocalEqPlasticStrain()const
 {
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetDamage] not implemented for this input object.");
 }
 
+const NuTo::EngineeringStrain1D& NuTo::ConstitutiveInputBase::GetEngineeringStrain1D()const
+{
+	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetEngineeringStrain1D] not implemented for this input object.");
+}
+
+const NuTo::EngineeringStrain2D& NuTo::ConstitutiveInputBase::GetEngineeringStrain2D()const
+{
+	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetEngineeringStrain2D] not implemented for this input object.");
+}
+
+const NuTo::EngineeringStrain3D& NuTo::ConstitutiveInputBase::GetEngineeringStrain3D()const
+{
+	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetEngineeringStrain3D] not implemented for this input object.");
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

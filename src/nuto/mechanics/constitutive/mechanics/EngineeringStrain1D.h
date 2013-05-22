@@ -9,6 +9,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/math/FullVector.h"
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -22,7 +23,7 @@ class ConstitutiveMisesPlasticity;
 //! @brief ... three-dimensional deformation gradient
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-class EngineeringStrain1D: public ConstitutiveOutputBase, public FullVector<double,1>
+class EngineeringStrain1D: public ConstitutiveOutputBase, public ConstitutiveInputBase, public FullVector<double,1>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -37,6 +38,7 @@ class EngineeringStrain1D: public ConstitutiveOutputBase, public FullVector<doub
     friend class DeformationGradient1D;
     friend class DeformationGradient2D;
     friend class DeformationGradient3D;
+    friend class StrainGradientDamagePlasticityEngineeringStress;
     public:
     //! @brief ... constructor
     //! @param pStructure ... structure
@@ -69,6 +71,16 @@ class EngineeringStrain1D: public ConstitutiveOutputBase, public FullVector<doub
     	this->FullVector<double,1>::operator=(other);
     	return *this;
 	}
+
+    NuTo::EngineeringStrain1D& GetEngineeringStrain1D()
+    {
+    	return *this;
+    }
+
+    const NuTo::EngineeringStrain1D& GetEngineeringStrain1D()const
+    {
+    	return *this;
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

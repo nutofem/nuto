@@ -27,7 +27,9 @@ NuTo::IpDataStaticData::~IpDataStaticData()
 void NuTo::IpDataStaticData::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 {
 	if (mStaticData!=0)
+	{
 		delete mStaticData;
+	}
 	if (rConstitutive!=0)
 	    mStaticData = rElement->AllocateStaticData(rConstitutive);
 	else

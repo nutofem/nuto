@@ -19,11 +19,22 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
+#include "nuto/mechanics/constitutive/mechanics/LocalEqPlasticStrain.h"
 #include "nuto/mechanics/constitutive/thermal/HeatFlux3D.h"
 
 // constructor
 NuTo::ConstitutiveOutputBase::ConstitutiveOutputBase()
 {
+}
+
+NuTo::EngineeringStrain1D& NuTo::ConstitutiveOutputBase::GetEngineeringStrain1D()
+{
+	throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetEngineeringStrain1D] not implemented for this output object.");
+}
+
+NuTo::EngineeringStrain2D& NuTo::ConstitutiveOutputBase::GetEngineeringStrain2D()
+{
+	throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetEngineeringStrain2D] not implemented for this output object.");
 }
 
 NuTo::EngineeringStrain3D& NuTo::ConstitutiveOutputBase::GetEngineeringStrain3D()
@@ -44,6 +55,11 @@ NuTo::EngineeringStress2D& NuTo::ConstitutiveOutputBase::GetEngineeringStress2D(
 NuTo::EngineeringStress3D& NuTo::ConstitutiveOutputBase::GetEngineeringStress3D()
 {
 	throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetEngineeringStress3D] not implemented for this output object.");
+}
+
+NuTo::LocalEqPlasticStrain& NuTo::ConstitutiveOutputBase::GetLocalEqPlasticStrain()
+{
+	throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetLocalEqPlasticStrain] not implemented for this output object.");
 }
 
 NuTo::ConstitutiveTangentLocal6x6& NuTo::ConstitutiveOutputBase::GetConstitutiveTangentLocal6x6()
@@ -70,6 +86,12 @@ NuTo::HeatFlux3D& NuTo::ConstitutiveOutputBase::GetHeatFlux3D()
 NuTo::ConstitutiveTangentLocal<1,1>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_1x1()
 {
     throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 1x1.");
+}
+
+//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+NuTo::ConstitutiveTangentLocal<1,2>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_1x2()
+{
+    throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 1x2.");
 }
 
 //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception

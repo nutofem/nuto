@@ -72,7 +72,7 @@ NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(ElementBase* rElement, int 
 	// calculate engineering strain
 	if(rConstitutiveInput.find(NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_3D)==rConstitutiveInput.end())
 		throw MechanicsException("[NuTo::LinearHeatFlux::Evaluate] temperature gradient 3d needed.");
-	const TemperatureGradient3D& temperatureGradient3D(rConstitutiveInput.find(NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_3D)->second->GetTemperatureGradient3D());
+	//const TemperatureGradient3D& temperatureGradient3D(rConstitutiveInput.find(NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_3D)->second->GetTemperatureGradient3D());
 
 	//check, if an nonlinear iteration has to be performed, in this simple case, just calculate the linear elastic coefficients
     if (rConstitutiveOutput.find(NuTo::Constitutive::eOutput::HEAT_FLUX_3D)!=rConstitutiveOutput.end()
@@ -117,7 +117,7 @@ NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(ElementBase* rElement, int 
     	case NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D:
     	{
 			ConstitutiveTangentLocal<3,3>& tangent(itOutput->second->AsConstitutiveTangentLocal_3x3());
- 		    double *data(tangent.mTangent);
+ 		    double *data(tangent.data());
 
 		    // store tangent at the output object
 		    data[ 0] = mThermalConductivity;

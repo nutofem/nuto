@@ -6,6 +6,7 @@
 #include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 
 // create a new constitutive law
@@ -36,6 +37,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "LINEARHEATFLUX")
     {
         ConstitutiveLawType = Constitutive::LINEAR_HEAT_FLUX;
+    }
+    else if (ConstitutiveLawTypeString == "STRAINGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS")
+    {
+        ConstitutiveLawType = Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
     }
     else
     {
@@ -80,6 +85,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::GradientDamagePlasticityEngineeringStress();
+            break;
+        case NuTo::Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");

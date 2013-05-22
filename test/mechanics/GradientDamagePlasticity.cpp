@@ -18,14 +18,14 @@ int main()
 {
 try
 {
-    bool flagForAllTests(true); //if you just work on one test, set this to false and change the single other variable
+    bool flagForAllTests(false); //if you just work on one test, set this to false and change the single other variable
 	bool testRoundedRankineYieldSurface3D(flagForAllTests);
     bool testDruckerPragerYieldSurface3D(flagForAllTests);
     bool testRoundedRankineYieldSurface1D(flagForAllTests);
     bool testDruckerPragerYieldSurface1D(flagForAllTests);
     bool testReturnMapping3D(flagForAllTests);
     bool testReturnMapping1D(flagForAllTests);
-    bool testTruss1D(false);
+    bool testTruss1D(true);
 
     NuTo::Logger logger;
 
@@ -33,7 +33,7 @@ try
     myConstitutiveLaw.SetDensity(1.);
     myConstitutiveLaw.SetYoungsModulus(30000.);
     myConstitutiveLaw.SetPoissonsRatio(0.2);
-    myConstitutiveLaw.SetNonlocalRadius(0.00000001);
+    myConstitutiveLaw.SetNonlocalRadius(30.0);
     myConstitutiveLaw.SetTensileStrength(3.);
     myConstitutiveLaw.SetCompressiveStrength(30.);
     myConstitutiveLaw.SetBiaxialCompressiveStrength(1.12*30.);
@@ -690,7 +690,7 @@ try
 #endif //PRINTRESULT
 
         double l=100;
-        int numNodes = 2;
+        int numNodes = 51;
         int numElements = numNodes-1;
         double l_e=l/(numNodes-1);
         double area1D = 1.;
@@ -712,7 +712,12 @@ try
     	// create section
     	int mySection1D = myStructure.SectionCreate("Truss");
     	myStructure.SectionSetArea(mySection1D, area1D);
-    	myStructure.SectionSetDOF(mySection1D, "displacements nonlocaldamage");
+    	myStructure.SectionSetDOF(mySection1D, "displacements nonlocaleqplasticstrain");
+
+    	double redFactor(0.99);
+    	int mySection1D_red = myStructure.SectionCreate("Truss");
+    	myStructure.SectionSetArea(mySection1D_red, area1D*redFactor);
+    	myStructure.SectionSetDOF(mySection1D_red, "displacements nonlocaleqplasticstrain");
 
     	// material
     	int myNumberConstitutiveLaw = myStructure.ConstitutiveLawCreate("GradientDamagePlasticityEngineeringStress");
@@ -731,24 +736,28 @@ try
     	NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
     	for(int node = 0; node < numNodes ; node++)
     	{
-    		std::cout << "create node: " << node << " coordinates: " << node * l_e << std::endl;
+    		//std::cout << "create node: " << node << " coordinates: " << node * l_e << std::endl;
     		nodeCoordinates(0) = node *l_e;
-    		myStructure.NodeCreate(node, "displacements nonlocaldamage", nodeCoordinates);
+    		myStructure.NodeCreate(node, "displacements nonlocaleqplasticstrain", nodeCoordinates);
     	}
     	int nodeLeft = 0;
     	int nodeRight = numNodes-1;
 
     	// create elements
+    	std::cout << "element with reduced section " <<  numElements/2 << std::endl;
     	NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(2);
     	for(int element = 0; element < numElements; element++)
     	{
-    		std::cout <<  "create element: " << element << " nodes: " << element << "," << element+1 << std::endl;
+    		//std::cout <<  "create element: " << element << " nodes: " << element << "," << element+1 << std::endl;
     		elementIncidence(0) = element;
     		elementIncidence(1) = element + 1;
     		myStructure.ElementCreate(element, "Truss1D2N", elementIncidence,"ConstitutiveLawIp","StaticData");
         	//modify integration type because the damage matrix needs more integration points
         	myStructure.ElementSetIntegrationType(element,"1D2NGauss2Ip","StaticData");
-    		myStructure.ElementSetSection(element,mySection1D);
+    		if (element==numElements/2)
+    			myStructure.ElementSetSection(element,mySection1D_red);
+    		else
+    			myStructure.ElementSetSection(element,mySection1D);
     		myStructure.ElementSetConstitutiveLaw(element,myNumberConstitutiveLaw);
     	}
 
@@ -778,9 +787,9 @@ try
     	//myIntegrationScheme.SetDampingCoefficientMass(0.05);
     	myIntegrationScheme.SetDynamic(false);
    		double simulationTime(1);
-   		double finalDisplacement(0.0002*l);
+   		double finalDisplacement(0.002*l);
 
-   		int numLoadSteps(1);
+   		int numLoadSteps(100);
 
    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispRHS(2,2);
    		dispRHS << 0             , 0,
@@ -811,6 +820,24 @@ try
    	    //solve (perform Newton raphson iteration
    	    myIntegrationScheme.Solve(myStructure, simulationTime);
         std::cout << "end of calculation " << std::endl;
+
+        //extract the coordinates and damage values of all the nodes
+   	    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotDamageDistribution(numNodes,4);
+   	    for (int count=0; count<numNodes; count++)
+   	    {
+   	    	NuTo::FullVector<double,Eigen::Dynamic> coordinates, displacements;
+   	    	NuTo::FullVector<double,Eigen::Dynamic> nonlocalEqPlasticStrain;
+   	    	myStructure.NodeGetCoordinates(count,coordinates);
+   	    	myStructure.NodeGetDisplacements(count,displacements);
+   	    	myStructure.NodeGetNonlocalEqPlasticStrain(count,nonlocalEqPlasticStrain);
+   	    	plotDamageDistribution(count,0) =  coordinates(0);
+   	    	plotDamageDistribution(count,1) =  displacements(0);
+   	    	plotDamageDistribution(count,2) =  nonlocalEqPlasticStrain(0);
+   	    	plotDamageDistribution(count,2) =  nonlocalEqPlasticStrain(1);
+   	    }
+
+   	    std::cout << "plotDamageDistribution\n" << plotDamageDistribution << std::endl;
+   	    plotDamageDistribution.WriteToFile(resultDir+"/CoordDispDamageLastStep.dat"," ");
     }
 }
 catch (NuTo::MechanicsException& e)

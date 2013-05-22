@@ -416,6 +416,16 @@ public:
     //! @param rRotation matrix (one column) with the rotations
     void NodeGetRotations(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rRotations)const;
 
+    //! @brief gets the global nonlocal eq plastic strain variables of a node
+    //! @param rNode node identifier
+    //! @return global (nodal) nonlocal eq plastic strain
+    void NodeGetNonlocalEqPlasticStrain(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rNonlocalEqPlasticStrain)const;
+
+    //! @brief gets the global nonlocal total strain variables of a node
+    //! @param rNode node identifier
+    //! @return global (nodal) nonlocal total strain
+    void NodeGetNonlocalTotalStrain(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rNonlocalTotalStrain)const;
+
     //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
@@ -667,6 +677,11 @@ public:
     //! @param rElemIdent  identifier for the element
     //! @param rDamage (return value, always 1xnumIp matrix)
     void ElementGetDamage(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDamage);
+
+    //! @brief calculates the global integration point coordinates
+    //! @param rElemIdent  identifier for the element
+    //! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
+    void ElementGetIntegrationPointCoordinates(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
 
     //! @brief calculates the maximum damage in all elements
     //! @param rElemIdent  identifier for the element

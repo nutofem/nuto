@@ -837,7 +837,7 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFu
 {
     assert(rCoefficientMatrix.GetNumRows()==2*GetNumShapeFunctions() && rFirstCol + (int)rNonlocalDerivativeShapeFunctionsLocal.size()<=rCoefficientMatrix.GetNumColumns());
     assert((int)rLocalDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
-    const double *C = rConstitutiveTangent.GetData();
+    const double *C = rConstitutiveTangent.data();
     double x1,x2,y1,y2,x1x2,y2x1,x2y1,y2y1;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {
@@ -880,7 +880,7 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               int rRow, int rCol,
                               FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
-    const double *C = rConstitutiveTangent.GetData();
+    const double *C = rConstitutiveTangent.data();
     double x1,x2,y1,y2;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {

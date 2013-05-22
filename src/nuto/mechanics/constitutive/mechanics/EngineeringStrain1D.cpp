@@ -12,7 +12,8 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 
-NuTo::EngineeringStrain1D::EngineeringStrain1D() : ConstitutiveOutputBase::ConstitutiveOutputBase(), FullVector<double,1>()
+NuTo::EngineeringStrain1D::EngineeringStrain1D() : ConstitutiveOutputBase::ConstitutiveOutputBase(),
+              ConstitutiveInputBase::ConstitutiveInputBase(), FullVector<double,1>()
 {
 	(*this)[0] = 0.0;
 }

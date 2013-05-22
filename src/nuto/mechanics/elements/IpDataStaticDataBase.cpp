@@ -22,6 +22,8 @@ NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 
 NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 {
+	if (mStaticData!=0)
+		delete mStaticData;
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)

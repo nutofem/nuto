@@ -232,7 +232,7 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
         SectionPtr->SetIsDisplacementDof(false);
     	SectionPtr->SetIsRotationDof(false);
     	SectionPtr->SetIsTemperatureDof(false);
-    	SectionPtr->SetIsNonlocalDamageDof(false);
+    	SectionPtr->SetIsNonlocalEqPlasticStrainDof(false);
 
     	boost::char_separator<char> sep(" ");
         boost::tokenizer< boost::char_separator<char> > tok(DOFsUpperCase, sep);
@@ -250,9 +250,13 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
             {
             	SectionPtr->SetIsTemperatureDof(true);
             }
-            else if (*beg=="NONLOCALDAMAGE")
+            else if (*beg=="NONLOCALEQPLASTICSTRAIN")
             {
-            	SectionPtr->SetIsNonlocalDamageDof(true);
+            	SectionPtr->SetIsNonlocalEqPlasticStrainDof(true);
+            }
+            else if (*beg=="NONLOCALTOTALSTRAIN")
+            {
+            	SectionPtr->SetIsNonlocalTotalStrainDof(true);
             }
             else
             {
@@ -312,9 +316,13 @@ void NuTo::StructureBase::SectionSetInputConstitutive(int rId, const std::string
             {
             	SectionPtr->SetInputConstitutiveIsDeformationGradient(true);
             }
-            else if (*beg=="NONLOCALDAMAGE")
+            else if (*beg=="NONLOCALEQPLASTICSTRAIN")
             {
-            	SectionPtr->SetInputConstitutiveIsDamage(true);
+            	SectionPtr->SetInputConstitutiveIsNonlocalEqPlasticStrain(true);
+            }
+            else if (*beg=="NONLOCALTOTALSTRAIN")
+            {
+            	SectionPtr->SetInputConstitutiveIsNonlocalEqPlasticStrain(true);
             }
             else
             {

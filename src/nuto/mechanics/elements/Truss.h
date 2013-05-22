@@ -10,9 +10,11 @@ class StructureBase;
 class DeformationGradient1D;
 class ConstitutiveTangentLocal1x1;
 class EngineeringStress1D;
+class EngineeringStrain1D;
 class HeatFlux1D;
 class Damage;
-class NonlocalDamage;
+class LocalEqPlasticStrain;
+class NonlocalEqPlasticStrain;
 template <int TNumRows, int TNumColumns> class ConstitutiveTangentLocal;
 
 //! @author Jörg F. Unger, ISM
@@ -64,32 +66,51 @@ public:
     //! @brief Update the static data of an element
     //Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
 
-    //! @brief stores the temperatures of the nodes
+    //! @brief calculates the Kkk matrix
     //! @param shapeFunctions of the ip for all shape functions
     //! @param derivativeShapeFunctions of the ip for all shape functions
     //! @param c nonlocal gradient radius
     //! @param factor multiplication factor (detJ area..)
-    //! @param Komegaomega return matrix with detJ * NtT+cBtB
-    void CalculateKOmegaOmega(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Komegaomega);
+    //! @param Kkk return matrix with detJ * NtT+cBtB
+    void CalculateKkk(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
 
-    //! @brief add Koo*omega+detJ*F (detJ is already included in Koo)
+    //! @brief add Kkk*kappa+detJ*F (detJ is already included in Kkk)
     //! @param derivativeShapeFunctions of the ip for all shape functions
-    //! @param tangentStressNonlocalDamage derivative of the stress with respect to the nonlocal damage variable
+    //! @param tangentStressNonlocalEqPlasticStrain derivative of the stress with respect to the nonlocal eq plastic strain
     //! @param rShapeFunctions of the ip for all shape functions
     //! @param rFactor factor including detJ and area
     //! @param rResult result
-    void AddDetJBtdSigmadOmegaN(const std::vector<double>& derivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& tangentStressNonlocalDamage,
-    		const std::vector<double>& shapeFunctions, double factor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& result);
+    void AddDetJBtdSigmadNonlocalEqPlasticStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,2>& rTangentStressNonlocalEqPlasticStrain,
+    		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+
+    //! @brief add Kkk*kappa+detJ*F (detJ is already included in Kkk)
+    //! @param derivativeShapeFunctions of the ip for all shape functions
+    //! @param tangentStressNonlocalEqPlasticStrain derivative of the stress with respect to the nonlocal eq plastic strain
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJBtdSigmadNonlocalTotalStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalTotalStrain,
+    		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
 
     //! @brief add detJ transpose N dOmega/depsilon B
     //! @param rShapeFunctions of the ip for all shape functions
-    //! @param tangentLocalDamageStrain derivative of the localdamage with respect to the strain
+    //! @param rTangentLocalEqPlasticStrainStrain derivative of the local eq plastic strains with respect to the strain
     //! @param rderivativeShapeFunctions of the ip for all shape functions
     //! @param rFactor factor including detJ and area
     //! @param rResult result
-    void AddDetJNtdOmegadEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentLocalDamageStrain,
-    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rResult);
+    void AddDetJNtdLocalEqPlasticStraindEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<2,1>& rTangentLocalEqPlasticStrainStrain,
+    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+
+    //! @brief add detJ transpose N dOmega/depsilon B
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rTangentLocalEqPlasticStrainStrain derivative of the local eq plastic strains with respect to the strain
+    //! @param rderivativeShapeFunctions of the ip for all shape functions
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJNtB(const std::vector<double>& rShapeFunctions,
+    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol,
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
 
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
@@ -108,17 +129,31 @@ public:
     //! this can be checked with an assertation
     void CalculateNodalTemperatures(int rTimeDerivative, std::vector<double>& rTemperatures)const;
 
-    //! @brief stores the damage of the nodes
+    //! @brief stores the nonlocal eq plastic strain of the nodes
     //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
-    //! @param damage vector with already correct size allocated
+    //! @param nonlocal eq plastic strain vector with already correct size allocated (2*nodes)
     //! this can be checked with an assertation
-    void CalculateNodalDamage(int rTimeDerivative, std::vector<double>& rNodalDamage)const;
+    void CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalEquivalentPlasticStrain)const;
 
-    //! @brief returns the nonlocal damage interpolated from the nodal values
+    //! @brief returns the nonlocal eq plastic strain interpolated from the nodal values
     //! @param shapeFunctionsGlobal shape functions
-    //! @param rNodeDamage nonlocal damage values of the nodes
-    //! @param NonlocalDamage return value (damage)
-    void CalculateNonlocalDamage(const std::vector<double>& shapeFunctions, const std::vector<double>& rNodeDamage, NonlocalDamage& nonlocalDamage);
+    //! @param rNodeDamage nonlocal eq plastic strain values of the nodes
+    //! @param rNonlocalEqentPlasticStrain return value
+    void CalculateNonlocalEqPlasticStrain(const std::vector<double>& shapeFunctions,
+    		const std::vector<double>& rNodeEquivalentPlasticStrain, NonlocalEqPlasticStrain& rNonlocalEqentPlasticStrain);
+
+    //! @brief stores the nonlocal total strain of the nodes
+    //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
+    //! @param nonlocal total strain vector with already correct size allocated (1*nodes)
+    //! this can be checked with an assertation
+    void CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalTotalStrain)const;
+
+    //! @brief returns the nonlocal total strain interpolated from the nodal values
+    //! @param shapeFunctionsGlobal shape functions
+    //! @param rNodeNonlocalTotalStrain nonlocal total strain values of the nodes
+    //! @param rNonlocalTotalStrain return value
+    void CalculateNonlocalTotalStrain(const std::vector<double>& shapeFunctions,
+    		const std::vector<double>& rNodeNonlocalTotalStrain, EngineeringStrain1D& rNonlocalTotalStrain);
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -223,15 +258,26 @@ public:
                                      int rRow,
                                      FullVector<double,Eigen::Dynamic>& rResult)const;
 
-    //! @brief add Koo*omega+detJ*F (detJ is already included in Koo)
+    //! @brief add Kkk*omega+detJ*F (detJ is already included in Koo)
     //! @param rShapeFunctions of the ip for all shape functions
-    //! @param rLocalDamage local damage value
-    //! @param rKomegaomega stiffness matrix Komegaomega
-    //! @param rNodeDamage nodal damage values
+    //! @param rLocalEqPlasticStrain local eq. plastic strain values
+    //! @param rKkk stiffness matrix Kkk
+    //! @param rNodeNonlocalEqPlasticStrain nodal nonlocal eq plastic strain values
     //! @param rFactor factor including detJ and area
     //! @param rResult result
-    void AddDetJRomega(const std::vector<double>& rShapeFunctions,const Damage& rLocalDamage, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKomegaomega,
-    		const std::vector<double>& rNodeDamage, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult);
+    void AddDetJRnonlocalplasticStrain(const std::vector<double>& rShapeFunctions,const LocalEqPlasticStrain& rLocalEqPlasticStrain, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
+    		const std::vector<double>& rNodeNonlocalEqPlasticStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult);
+
+    //! @brief add Kkk*omega+detJ*F (detJ is already included in Koo)
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rLocalTotalStrain local total strain values
+    //! @param rKkk stiffness matrix Kkk
+    //! @param rNodeNonlocalTotalStrain nodal nonlocal total strain values
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJRnonlocalTotalStrain(const std::vector<double>& rShapeFunctions,const EngineeringStrain1D& rLocalTotalStrain,
+    		const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
+    		const std::vector<double>& rNodeNonlocalTotalStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult);
 
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
@@ -278,13 +324,13 @@ protected:
     //! @param rGlobalRowDofs ... vector of global row dofs
     //! @param rNumDisp ... number of displacement dofs
     //! @param rNumTemp ... number of temperature dofs
-    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const=0;
+    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs) const=0;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
     //! @param rNumDisp ... number of displacement dofs
     //! @param rNumTemp ... number of temperature dofs
-    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalDamageDofs) const=0;
+    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs) const=0;
 
     //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
     //! @param rShapeFunctions ... shape functions

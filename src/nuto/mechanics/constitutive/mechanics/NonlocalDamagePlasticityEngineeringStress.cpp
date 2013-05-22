@@ -231,18 +231,17 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
                 	ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
                     //rLogger << "unloading local stiffness " << C11 << " "<< C12 << " " << C33 << " omega " << 1.-oneMinusOmega << "\n";
                     tangent.SetSymmetry(true);
-                    double *localStiffData(tangent.mTangent);
-                    localStiffData[0] = oneMinusOmega * C11;
-                    localStiffData[1] = oneMinusOmega * C12;
-                    localStiffData[2] = 0.;
+                    tangent(0,0) = oneMinusOmega * C11;
+                    tangent(1,0) = oneMinusOmega * C12;
+                    tangent(2,0) = 0.;
 
-                    localStiffData[3] = localStiffData[1];
-                    localStiffData[4] = localStiffData[0];
-                    localStiffData[5] = 0.;
+                    tangent(1,0) = tangent(1,0);
+                    tangent(1,1) = tangent(0,0);
+                    tangent(1,2) = 0.;
 
-                    localStiffData[6] = 0.;
-                    localStiffData[7] = 0.;
-                    localStiffData[8] = oneMinusOmega * C33;
+                    tangent(2,0) = 0.;
+                    tangent(2,1) = 0.;
+                    tangent(2,2) = oneMinusOmega * C33;
                 }
                 else
                 {
@@ -280,7 +279,6 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
                                 continue;
                             assert(totalNonlocalIp<outputBase->GetNumSubMatrices());
                             ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(totalNonlocalIp));
-                            double *localStiffData = tangent.mTangent;
 
                             //here the nonlocal delta is relevant
                             const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
@@ -319,21 +317,21 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
                             //rLogger<< "dOmegadepsilon/weight analytic" << "\n" << -minusdOmegadEpsilon/weights[theNonlocalIP] << "\n";
                             //rLogger << "weight " << weights[theNonlocalIP] << "\n";
 
-                            Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
+                            tangent = sigmaElast * minusdOmegadEpsilon.transpose() ;
 
                             if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
                             {
 
                                 const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-                                localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
-                                localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
-                                localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
-                                localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
-                                localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
-                                localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
-                                localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
-                                localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
-                                localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
+                                tangent(0,0) += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
+                                tangent(1,0) += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
+                                tangent(2,0) += oneMinusOmega*(-C33*tmpdEP[2]);
+                                tangent(0,1) += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
+                                tangent(1,1) += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
+                                tangent(2,1) += oneMinusOmega*(-C33*tmpdEP[6]);
+                                tangent(0,2) += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
+                                tangent(1,2) += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
+                                tangent(2,2) += oneMinusOmega*(C33*(1.-tmpdEP[10]));
                             }
                         }
                     }
@@ -345,18 +343,17 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
             	outputBase->SetLocalSolution(true);
             	ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
                 tangent.SetSymmetry(true);
-                double *localStiffData(tangent.mTangent);
 
                 const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-                localStiffData[0] = C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]);
-                localStiffData[1] = C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1];
-                localStiffData[2] = -C33*tmpdEP[2];
-                localStiffData[3] = -C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]);
-                localStiffData[4] = -C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]);
-                localStiffData[5] = -C33*tmpdEP[6];
-                localStiffData[6] = -C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]);
-                localStiffData[7] = -C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9];
-                localStiffData[8] = C33*(1.-tmpdEP[10]);
+                tangent(0,0) = C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]);
+                tangent(1,0) = C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1];
+                tangent(2,0) = -C33*tmpdEP[2];
+                tangent(0,1) = -C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]);
+                tangent(1,1) = -C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]);
+                tangent(2,1) = -C33*tmpdEP[6];
+                tangent(0,2) = -C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]);
+                tangent(1,2) = -C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9];
+                tangent(2,2) = C33*(1.-tmpdEP[10]);
             }
         }
         break;

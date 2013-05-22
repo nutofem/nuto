@@ -547,6 +547,94 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<do
 #endif
 }
 
+//! @brief gets the global nonlocal eq plastic strain variables of a node
+//! @param rNode node identifier
+//! @return global (nodal) nonlocal eq plastic strain
+void NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rNonlocalEqPlasticStrain)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	const NodeBase* nodePtr = NodeGetNodePtr(rNode);
+
+	try
+	{
+		if (nodePtr->GetNumNonlocalEqPlasticStrain()!=2)
+		{
+			throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] Node does not have nonlocal equivalent plastic strains.");
+		}
+		rNonlocalEqPlasticStrain.resize(2);
+		nodePtr->GetNonlocalEqPlasticStrain(rNonlocalEqPlasticStrain.data());
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+        b.AddMessage("[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] Error getting global damage.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] Error getting NodeGetNonlocalEqPlasticStrain of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief gets the global nonlocal total strain variables of a node
+//! @param rNode node identifier
+//! @return global (nodal) nonlocal total strain
+void NuTo::StructureBase::NodeGetNonlocalTotalStrain(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rNonlocalTotalStrain)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	const NodeBase* nodePtr = NodeGetNodePtr(rNode);
+
+	try
+	{
+		switch (nodePtr->GetNumNonlocalTotalStrain())
+		{
+		case 0:
+			throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Node does not have nonlocal total strains.");
+        break;
+		case 1:
+			rNonlocalTotalStrain.resize(1);
+			nodePtr->GetNonlocalTotalStrain1D(rNonlocalTotalStrain.data());
+		break;
+		case 3:
+			rNonlocalTotalStrain.resize(3);
+			nodePtr->GetNonlocalTotalStrain2D(rNonlocalTotalStrain.data());
+		break;
+		case 6:
+			rNonlocalTotalStrain.resize(6);
+			nodePtr->GetNonlocalTotalStrain3D(rNonlocalTotalStrain.data());
+		break;
+		default:
+			throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Number of nonlocal total strain components is either 1, 3 or 6 .");
+		break;
+		}
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+        b.AddMessage("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Error getting nonlocal total strain.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Error getting nonlocal total strain of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeGetNonlocalTotalStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
 //! @brief calculate the internal force vector for a node
 //! @param rId ... node id
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)

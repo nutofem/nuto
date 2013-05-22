@@ -258,32 +258,95 @@ public:
     //! @return global DOF
     virtual int GetDofTemperature()const;
 
-    //! @brief returns the number of Damage dofs of the node
+    //! @brief returns the number of nonlocal equivalent plastic strain dofs of the node
     //! @return number of Damages
-    virtual int GetNumNonlocalDamage()const;
+    virtual int GetNumNonlocalEqPlasticStrain()const;
 
     //! @brief returns the Damage of the node
     //! @return Damage
-    virtual void GetNonlocalDamage(double* rDamage)const;
+    virtual void GetNonlocalEqPlasticStrain(double* rNonlocalEqPlasticStrain)const;
 
     //! @brief returns the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @return Damage
-    virtual void GetNonlocalDamage(int rTimeDerivative, double* rNonlocalDamage)const;
+    virtual void GetNonlocalEqPlasticStrain(int rTimeDerivative, double* rNonlocalEqPlasticStrain)const;
 
     //! @brief set the Damage of the node
     //! @param rDamage  given Damage
-    virtual void SetNonlocalDamage(const double* rNonlocalDamage);
+    virtual void SetNonlocalEqPlasticStrain(const double* rNonlocalEqPlasticStrain);
 
     //! @brief set the Damage of the node
     //! @param rTimeDerivative time derivative
     //! @param rDamage  given Damage
-    virtual void SetNonlocalDamage(int rTimeDerivative, const double* rNonlocalDamage);
+    virtual void SetNonlocalEqPlasticStrain(int rTimeDerivative, const double* rNonlocalEqPlasticStrain);
 
     //! @brief gives the global DOF of a Damage component
     //! @param rComponent component
     //! @return global DOF
-    virtual int GetDofNonlocalDamage()const;
+    virtual int GetDofNonlocalEqPlasticStrain(int rComponent)const;
+
+    //! @brief returns the number of nonlocal equivalent plastic strain dofs of the node
+    //! @return number of Damages
+    virtual int GetNumNonlocalTotalStrain()const;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    virtual void GetNonlocalTotalStrain1D(double* rNonlocalTotalStrain)const;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    virtual void GetNonlocalTotalStrain2D(double* rNonlocalTotalStrain)const;
+
+    //! @brief returns the Damage of the node
+    //! @return Damage
+    virtual void GetNonlocalTotalStrain3D(double* rNonlocalTotalStrain)const;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    virtual void GetNonlocalTotalStrain1D(int rTimeDerivative, double* rNonlocalTotalStrain)const;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    virtual void GetNonlocalTotalStrain2D(int rTimeDerivative, double* rNonlocalTotalStrain)const;
+
+    //! @brief returns the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @return Damage
+    virtual void GetNonlocalTotalStrain3D(int rTimeDerivative, double* rNonlocalTotalStrain)const;
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    virtual void SetNonlocalTotalStrain1D(const double* rNonlocalTotalStrain);
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    virtual void SetNonlocalTotalStrain2D(const double* rNonlocalTotalStrain);
+
+    //! @brief set the Damage of the node
+    //! @param rDamage  given Damage
+    virtual void SetNonlocalTotalStrain3D(const double* rNonlocalTotalStrain);
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    virtual void SetNonlocalTotalStrain1D(int rTimeDerivative, const double* rNonlocalTotalStrain);
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    virtual void SetNonlocalTotalStrain2D(int rTimeDerivative, const double* rNonlocalTotalStrain);
+
+    //! @brief set the Damage of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rDamage  given Damage
+    virtual void SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain);
+
+    //! @brief gives the global DOF of a Damage component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofNonlocalTotalStrain(int rComponent)const;
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string

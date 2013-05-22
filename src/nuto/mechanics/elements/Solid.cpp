@@ -552,7 +552,7 @@ void NuTo::Solid::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               int rRow, int rCol,
                               FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
-    const double *C = rConstitutiveTangent.GetData();
+    const double *C = rConstitutiveTangent.data();
     double x1,x2,y1,y2,z1,z2,x2x1,y2x1,z2x1,x2y1,y2y1,z2y1,x2z1,y2z1,z2z1;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {
@@ -619,7 +619,7 @@ void NuTo::Solid::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               int rRow, int rCol,
                               FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
-    const double *C = rConstitutiveTangent.GetData();
+    const double *C = rConstitutiveTangent.data();
     double x1,x2,y1,y2,z1,z2;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {

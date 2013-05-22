@@ -18,7 +18,8 @@ enum eConstitutiveType
     MULTISCALE,                //!< multiscale model, where the average stress is calculated from a full fine scale model
     LATTICE_CONCRETE,          //!< material law for lattice model
     LINEAR_HEAT_FLUX,           //!< material law for lattice model
-    GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS //!< gradient damage plasticity model
+    GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< gradient damage plasticity model
+    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
 };
 
 enum eNonlocalDamageYieldSurface
@@ -46,7 +47,8 @@ enum eInput
 	TEMPERATURE_GRADIENT_1D,           //!<
 	TEMPERATURE_GRADIENT_2D,           //!<
 	TEMPERATURE_GRADIENT_3D,           //!<
-	NONLOCAL_DAMAGE                   //!<
+	NONLOCAL_EQ_PLASTIC_STRAIN,        //!<
+	NONLOCAL_TOTAL_STRAIN_1D           //!<
 };
 
 static inline std::string InputToString ( const eInput& e )
@@ -59,7 +61,8 @@ static inline std::string InputToString ( const eInput& e )
                               (TEMPERATURE_GRADIENT_1D,"TEMPERATURE_GRADIENT_1D")
                               (TEMPERATURE_GRADIENT_2D,"TEMPERATURE_GRADIENT_2D")
                               (TEMPERATURE_GRADIENT_3D,"TEMPERATURE_GRADIENT_3D")
-                              (NONLOCAL_DAMAGE,"NONLOCAL_DAMAGE");
+                              (NONLOCAL_EQ_PLASTIC_STRAIN,"NONLOCAL_EQ_PLASTIC_STRAIN")
+                              (NONLOCAL_TOTAL_STRAIN_1D,"NONLOCAL_TOTAL_STRAIN_1D");
  std::map< eInput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;
@@ -80,7 +83,8 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,
-	D_ENGINEERING_STRESS_D_NONLOCAL_DAMAGE_1D,
+	D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,
+	D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
@@ -94,9 +98,10 @@ enum eOutput
 	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D,
 	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,
 	DAMAGE,
-	D_LOCAL_DAMAGE_D_STRAIN_1D,
 	UPDATE_STATIC_DATA,
-	UPDATE_TMP_STATIC_DATA
+	UPDATE_TMP_STATIC_DATA,
+	LOCAL_EQ_PLASTIC_STRAIN,
+	D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D
 };
 
 static inline std::string OutputToString( const eOutput& e )
@@ -112,6 +117,8 @@ static inline std::string OutputToString( const eOutput& e )
                               (D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D")
                               (D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D")
                               (D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D")
+                              (D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D")
+                              (D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D")
                               (D_ENGINEERING_STRESS_D_TEMPERATURE_1D,"D_ENGINEERING_STRESS_D_TEMPERATURE_1D")
                               (D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
                               (D_ENGINEERING_STRESS_D_TEMPERATURE_3D,"D_ENGINEERING_STRESS_D_TEMPERATURE_3D")
@@ -126,7 +133,9 @@ static inline std::string OutputToString( const eOutput& e )
                               (D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D")
                               (DAMAGE,"DAMAGE")
                               (UPDATE_STATIC_DATA,"UPDATE_STATIC_DATA")
-                              (UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA");
+                              (UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA")
+                              (LOCAL_EQ_PLASTIC_STRAIN,"LOCAL_EQ_PLASTIC_STRAIN")
+                              (D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D");
   std::map< eOutput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;

@@ -22,6 +22,7 @@ constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain1D.cpp
 constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.cpp
 constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.cpp
+constitutive/mechanics/ConstitutiveStaticDataStrainGradientDamagePlasticity1D.cpp
 constitutive/mechanics/EngineeringStress1D.cpp
 constitutive/mechanics/EngineeringStress2D.cpp
 constitutive/mechanics/EngineeringStress3D.cpp
@@ -41,8 +42,9 @@ constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
 constitutive/mechanics/LinearElasticEngineeringStress.cpp
+constitutive/mechanics/LocalEqPlasticStrain.cpp
 constitutive/mechanics/MisesPlasticityEngineeringStress.cpp
-constitutive/mechanics/NonlocalDamage.cpp
+constitutive/mechanics/NonlocalEqPlasticStrain.cpp
 constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements1D.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
@@ -50,6 +52,7 @@ constitutive/mechanics/RelativeInterfaceDisplacements3D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress1D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress2D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
+constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES

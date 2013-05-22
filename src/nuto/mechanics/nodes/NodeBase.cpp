@@ -378,47 +378,146 @@ int NuTo::NodeBase::GetDofTemperature()const
 	throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
-//! @brief returns the number of Damage of the node
+//! @brief returns the number of nonlocal eqivalent plastic strain of the node
 //! @return number of Damage
-int NuTo::NodeBase::GetNumNonlocalDamage()const
+int NuTo::NodeBase::GetNumNonlocalEqPlasticStrain()const
 {
 	return 0;
 }
 
-//! @brief returns the Damage of the node
+//! @brief returns the nonlocal eqivalent plastic strain of the node
 //! @return Damage
-void NuTo::NodeBase::SetNonlocalDamage(const double rNonlocalDamage[1])
+void NuTo::NodeBase::SetNonlocalEqPlasticStrain(const double rNonlocalEqPlasticStrain[2])
 {
-	throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
 }
 
-//! @brief returns the Damage of the node
+//! @brief returns the nonlocal eqivalent plastic strain of the node
 //! @return Damage
-void NuTo::NodeBase::SetNonlocalDamage(int rTimeDerivative, const double rNonlocalDamage[1])
+void NuTo::NodeBase::SetNonlocalEqPlasticStrain(int rTimeDerivative, const double rNonlocalDamage[2])
 {
-	throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
 }
 
-//! @brief returns the Damage of the node
+//! @brief returns the nonlocal eqivalent plastic strain of the node
 //! @return Damage
-void NuTo::NodeBase::GetNonlocalDamage(double rNonlocalDamage[1])const
+void NuTo::NodeBase::GetNonlocalEqPlasticStrain(double rNonlocalDamage[2])const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
 }
 
-//! @brief returns the Damage of the node
+//! @brief returns the nonlocal eqivalent plastic strain of the node
 //! @return Damage
-void NuTo::NodeBase::GetNonlocalDamage(int rTimeDerivative, double rNonlocalDamage[1])const
+void NuTo::NodeBase::GetNonlocalEqPlasticStrain(int rTimeDerivative, double rNonlocalDamage[2])const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
 }
 
-//! @brief gives the global DOF of a Damage component
+//! @brief gives the global DOF of a nonlocal eqivalent plastic strain component
 //! @param rComponent component
 //! @return global DOF
-int NuTo::NodeBase::GetDofNonlocalDamage()const
+int NuTo::NodeBase::GetDofNonlocalEqPlasticStrain(int rComponent)const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetDofDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");
+	throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
+}
+
+//! @brief returns the number of nonlocal eqivalent plastic strain of the node
+//! @return number of Damage
+int NuTo::NodeBase::GetNumNonlocalTotalStrain()const
+{
+	return 0;
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::SetNonlocalTotalStrain1D(const double rNonlocalTotalStrain[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::SetNonlocalTotalStrain2D(const double rNonlocalTotalStrain[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::SetNonlocalTotalStrain3D(const double rNonlocalTotalStrain[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::SetNonlocalTotalStrain1D(int rTimeDerivative, const double rNonlocalDamage[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::SetNonlocalTotalStrain2D(int rTimeDerivative, const double rNonlocalDamage[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::SetNonlocalTotalStrain3D(int rTimeDerivative, const double rNonlocalDamage[2])
+{
+	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::GetNonlocalTotalStrain1D(double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::GetNonlocalTotalStrain2D(double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::GetNonlocalTotalStrain3D(double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::GetNonlocalTotalStrain1D(int rTimeDerivative, double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::GetNonlocalTotalStrain2D(int rTimeDerivative, double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal eqivalent plastic strain of the node
+//! @return Damage
+void NuTo::NodeBase::GetNonlocalTotalStrain3D(int rTimeDerivative, double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief gives the global DOF of a nonlocal eqivalent plastic strain component
+//! @param rComponent component
+//! @return global DOF
+int NuTo::NodeBase::GetDofNonlocalTotalStrain(int rComponent)const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
 }
 
 

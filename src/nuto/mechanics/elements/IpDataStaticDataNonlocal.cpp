@@ -22,8 +22,6 @@ NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::Ip
 
 NuTo::IpDataStaticDataNonlocal::~IpDataStaticDataNonlocal()
 {
-	if (mStaticData!=0)
-		delete mStaticData;
 }
 
 void NuTo::IpDataStaticDataNonlocal::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
