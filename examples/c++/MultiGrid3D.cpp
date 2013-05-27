@@ -50,7 +50,11 @@ int main()
 	// read entries
 	NuTo::StructureGrid myGrid(3); // also creates CallbackHandler
 	myGrid.StructureBase::SetVerboseLevel(0);
-	myGrid.ImportFromVtkASCIIFileHeader("InputTest");
+	// change to you inputfile and location
+	std::string inputfile="../nuto/examples/c++/InputStructureGrid3D";
+//	std::string inputfile="InputTest";
+
+	myGrid.ImportFromVtkASCIIFileHeader(inputfile);
 	//calculate one element stiffness matrix with E=1
 
 	std::cout<<"[MultiGrid3D]  One material example - only one PoissonsRatio.\n";
@@ -75,7 +79,7 @@ int main()
 		myMapColorModul[count]=0.;
 
 	// create grid structure
-	myGrid.CreateGrid(thresholdMaterialValue,"InputTest",myMapColorModul);
+	myGrid.CreateGrid(thresholdMaterialValue,inputfile,myMapColorModul);
 	if (matrixFreeMethod)
 	{
 		myGrid.SetBasisEdgeStiffnessMatrices(0);
@@ -155,7 +159,6 @@ int main()
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
 
-	myGrid.AnsysInput(rDisplVector);
 
 
 	size_t numDofs=myGrid.GetNumNodes()*3;
@@ -173,12 +176,27 @@ std::cout<<"[MultiGrid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC 
 	myGrid.StructureBase::SetVerboseLevel(0);
 	size_t numNodes=myGrid.GetNumNodes();
 
+
 	NuTo::MultiGrid myMultiGridSolver;
 	myMultiGridSolver.SetVerboseLevel(0);
 	myMultiGridSolver.SetStructure(&myGrid);
 	myMultiGridSolver.Initialize();
+	//finest grid
+//	myGrid.LSDynaInput();
 
-	myMultiGridSolver.Optimize();
+	// second grid and coarser
+
+//	for(int gridNum=0;gridNum<myMultiGridSolver.GetNumGrids()-1;++gridNum)
+//	{
+// grid pointer with number 0 leads to first coarser grid
+
+		// set the number per hand or add different filenames
+		NuTo::StructureGrid* pointer=myMultiGridSolver.GetGridPtr(0);
+		pointer->LSDynaInput();
+//	}
+
+
+//	myMultiGridSolver.Optimize();
 	std::cout<<"[MultiGrid3D] test. \n";
 
 	outputTime.close();

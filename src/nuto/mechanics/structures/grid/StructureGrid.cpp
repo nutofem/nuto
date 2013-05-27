@@ -13,7 +13,6 @@
 #ifdef SHOW_TIME
     #include <ctime>
 #endif
-
 # ifdef _OPENMP
     #include <omp.h>
 # endif
@@ -256,7 +255,7 @@ void NuTo::StructureGrid::Restore (const std::string &filename, std::string rTyp
 #endif // ENABLE_SERIALIZATION
 
 //! @brief import routine for basic grid data without StructureGrid data space
-void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel)
+void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(std::string rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel)
 {
     std::cout<<__FILE__<<" "<<__LINE__<<" in ImportFromVtkASCIIFileHeader without StructureGrid data \n ";
     try
@@ -331,7 +330,7 @@ void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName,siz
 
 
 //! @brief import routine for basic grid data with StructureGrid data space
-void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(const char* rFileName)
+void NuTo::StructureGrid::ImportFromVtkASCIIFileHeader(std::string rFileName)
 {
     try
     {
@@ -1569,6 +1568,12 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 	// new structure settings
 	rCoarseGrid->SetGridDimension(rGridDimension);
 	rCoarseGrid->mNumVoxel=rGridDimension[0]*rGridDimension[1]*rGridDimension[2];
+	rCoarseGrid->mGridOrigin[0]=mGridOrigin[0]-mVoxelSpacing[0];
+	rCoarseGrid->mGridOrigin[1]=mGridOrigin[1]-mVoxelSpacing[1];
+	rCoarseGrid->mGridOrigin[2]=mGridOrigin[2]-mVoxelSpacing[2];
+	rCoarseGrid->mVoxelSpacing[0]=2*mVoxelSpacing[0];
+	rCoarseGrid->mVoxelSpacing[1]=2*mVoxelSpacing[1];
+	rCoarseGrid->mVoxelSpacing[2]=2*mVoxelSpacing[2];
 	rCoarseGrid->SetNumBasisMaterials(GetNumBasisMaterials());
 	rCoarseGrid->SetCurrentGridNumber(GetCurrentGridNumber()+1);
 	rCoarseGrid->SetFineGridPtr(this);
@@ -1605,6 +1610,23 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 					}
 				}
 				rCoarseGrid->mMGYoungsModulus.push_back(rYoungsModulus*0.125*2); // average and length considered
+
+				int matSet=false;
+				for(int numMat=0;numMat<rCoarseGrid->mNumMaterials;++numMat)
+				{
+						if(	rCoarseGrid->mYoungsModulus[numMat]==rYoungsModulus*0.125*2)
+						{
+							rCoarseGrid->mMaterialOfElem.push_back(numMat);
+							matSet=true;
+							break;
+						}
+				}
+				if(matSet==false) //new material of first material
+				{
+					rCoarseGrid->mYoungsModulus.push_back(rYoungsModulus*0.125*2);
+					rCoarseGrid->mMaterialOfElem.push_back(rCoarseGrid->mNumMaterials);
+					++(rCoarseGrid->mNumMaterials);
+				}
 				++coarseGridNumElements; // one more already
 				rCoarseGrid->mVoxelId.push_back((dim2)*(rGridDimension[0])*(rGridDimension[1])
 						 +(dim1)*(rGridDimension[0]) + dim0);
@@ -1627,6 +1649,7 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 			}
 		}
 	}
+	assert(mMaterialOfElem.size()==mVoxelId.size());
 	//create nodes
 	size_t numNodes=0;
 //		mNodeId. neue größe
@@ -1992,5 +2015,66 @@ void  NuTo::StructureGrid::AnsysInput(std::vector<double> &rDisplVector) const
     file.close();
 }
 
+void  NuTo::StructureGrid::LSDynaInput() const
+{
+	// open file
+	std::ofstream file;
+
+    file.open("lsdynaInput");
+      assert(mNumMaterials);
+    assert((int) mYoungsModulus.size()==mNumMaterials);
+    int countMat=mNumMaterials;
+    if(file)
+    {
+			//material id, youngsmodulus, nu
+		for(int i=0;i<countMat;++i)
+		{
+
+			file<<i+1<<","<<mYoungsModulus[i]<<" , 0.2\n";
+
+		}
+		file<<"\n";
+		//node id, x,y,z
+		int node=0;
+		for (size_t z=0;z<mGridDimension[2]+1;++z)
+		{
+			for (size_t y=0;y<mGridDimension[1]+1;++y)
+			{
+				for (size_t x=0;x<mGridDimension[0]+1;++x)
+				{
+					if(mNodeId[node]<mEdgeId.size())
+					{
+						file<<mNodeId[node]+1<<","<<x*mVoxelSpacing[0]<<","<<y*mVoxelSpacing[1]<<","<<z*mVoxelSpacing[2]<<"\n";
+					}
+					node++;
+				}
+			}
+		}
+		file<<"\n";
+		int mat=1;
+		int numElems=(int) mMaterialOfElem.size();
+		std::vector<size_t> nodes(8);
+		// attention for more materials
+		for (int i=0;i<numElems;++i)
+		{
+			if(mMaterialOfElem[i]+1!=mat)
+			{
+				mat=mMaterialOfElem[i]+1;
+			}
+			CalculateNodesAtElement(i,nodes);
+			// element id, material id, node 1, 2, 3, ..
+			file <<  i + 1 << "," <<mat << ","<< nodes[0] + 1
+					<< "," <<nodes[1] + 1 << ","
+					<< nodes[2] + 1 << ","
+					<< nodes[3] + 1 << ","
+					<< nodes[4] + 1 << ","
+					<< nodes[5] + 1 << ","
+					<< nodes[6] + 1 << ","
+					<< nodes[7] + 1 << "\n";
+
+		}
+    }
+    file.close();
+}
 
 

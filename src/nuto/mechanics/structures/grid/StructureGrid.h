@@ -53,10 +53,10 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief import routine for basic grid data without StructureGrid data space
-    void ImportFromVtkASCIIFileHeader(const char* rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel);
+    void ImportFromVtkASCIIFileHeader(std::string rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel);
 
     //! @brief import routine for basic grid data with StructureGrid data space
-    void ImportFromVtkASCIIFileHeader(const char* rFileName);
+    void ImportFromVtkASCIIFileHeader(std::string rFileName);
 
 	//! @brief ... imports Data from a Vtk ASCII File
 	//! @param fileName ... file name
@@ -502,6 +502,7 @@ public:
     void StartRestriction(std::vector<double> &rRestrictionFactor);
     void Prolongation(std::vector<double> &rProlongationFactor);
     void AnsysInput(std::vector<double >&rDisplVector) const;
+    void LSDynaInput() const;
 
 protected:
 
