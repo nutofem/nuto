@@ -7,7 +7,6 @@ SET(NuToOptimize_SOURCES
   Jacobi.cpp
   OptimizeException.cpp
   MisesWielandt.cpp
-  MultiGrid.cpp
 )
 
 SET(NuToOptimize_SWIG_MODULES

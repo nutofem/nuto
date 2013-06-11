@@ -11,7 +11,6 @@
 #include "nuto/optimize/CallbackHandlerPython.h"
 #include "nuto/optimize/Jacobi.h"
 #include "nuto/optimize/MisesWielandt.h"
-#include "nuto/optimize/MultiGrid.h"
 #include "nuto/optimize/OptimizeException.h"
 %}
 
@@ -31,4 +30,3 @@
 %include "nuto/optimize/ConjugateGradientNonLinear.h"
 %include "nuto/optimize/Jacobi.h"
 %include "nuto/optimize/MisesWielandt.h"
-%include "nuto/optimize/MultiGrid.h"

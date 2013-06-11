@@ -11,53 +11,33 @@
 #include <iostream>
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/grid/StructureGrid.h"
+#include "nuto/mechanics/structures/grid/MultiGridStructure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
-#include "nuto/optimize/ConjugateGradientGrid.h"
-#include "nuto/optimize/MultiGrid.h"
+#include "nuto/optimize/Jacobi.h"
 
 int main()
 {
 	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
 //	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
 
-	std::fstream outputTime;
-	std::string filename = "timeOutput";
-    outputTime.open(filename,std::fstream::out|std::fstream::app);
-	std::cout<<"[MultiGrid3D] matrixFreeMethod is";
-	if (matrixFreeMethod)
-	{
-		std::cout<<" NBN \n";
-		outputTime<<" NBN  ";
-
-	}
-	else
-	{
-		std::cout<<" EBE \n";
-		outputTime<<" EBE  ";
-	}
-
+//    double PoissonsRatio = 0.;
     double PoissonsRatio = 0.2;
-    std::cout<<"[MulitGrid3D] PoissonsRatio = "<<PoissonsRatio<<"\n";
 
     // create structure
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-	// read entries
+
+    // read entries
 	NuTo::StructureGrid myGrid(3); // also creates CallbackHandler
-	myGrid.StructureBase::SetVerboseLevel(0);
-	// change to you inputfile and location
-	std::string inputfile="../nuto/examples/c++/InputStructureGrid3D";
-//	std::string inputfile="InputTest";
-
-	myGrid.ImportFromVtkASCIIFileHeader(inputfile);
+	myGrid.SetVerboseLevel(0);
+//	std::string inputFile="InputTest";
+	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
+	myGrid.ImportFromVtkASCIIFileHeader(inputFile);
 	//calculate one element stiffness matrix with E=1
-
-	std::cout<<"[MultiGrid3D]  One material example - only one PoissonsRatio.\n";
 
 	myGrid.SetMatrixFreeMethod(matrixFreeMethod);
 	myGrid.SetBasisElementStiffnessMatrix(PoissonsRatio,0);
@@ -79,7 +59,8 @@ int main()
 		myMapColorModul[count]=0.;
 
 	// create grid structure
-	myGrid.CreateGrid(thresholdMaterialValue,inputfile,myMapColorModul);
+
+	myGrid.CreateGrid(thresholdMaterialValue,inputFile,myMapColorModul);
 	if (matrixFreeMethod)
 	{
 		myGrid.SetBasisEdgeStiffnessMatrices(0);
@@ -127,7 +108,6 @@ int main()
 
 	double BoundaryDisplacement = -1.0;
 //	double BoundaryDisplacement = -(myGrid.GetGridDimension()[2]*myGrid.GetVoxelSpacing()[2])/20.0;
-	std::cout<<"[MultiGrid3D]  Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
 	// diplacement vector plus one dof for calculation with non existing neighbor dofs
 	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
 	//for z=0,x,y -all ux=0
@@ -159,47 +139,109 @@ int main()
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
 
+//	myGrid.AnsysInput(rDisplVector);
 
 
 	size_t numDofs=myGrid.GetNumNodes()*3;
-	outputTime<<MaterialYoungsModulus<<"   "<<PoissonsRatio<<"  ";
-	outputTime<<myGrid.GetNumVoxels()<<" "<<numDofs<<"   ";
 #ifdef SHOW_TIME
 end=clock();
-std::cout<<"[MultiGrid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-	outputTime<<difftime(end,start)/CLOCKS_PER_SEC<<"   ";
 #endif
+	double mem=sizeof(myGrid);
+	myGrid.Info();
+	std::cout<<"-   Poissons ratio .............................. "<<PoissonsRatio<<"\n\n";
+	std::cout<<"Boundary displacement .......................... "<<BoundaryDisplacement<<"\n";
+	std::cout<<"Direction of external force/displacement ....... z\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
+#ifdef SHOW_TIME
+	std::cout<<"Time for structure initialization............... "<<difftime(end,start)/CLOCKS_PER_SEC<<"(sec)\n";
+#endif
+	std::cout<<"Allocated memory ............................... "<<mem/1000.<<"(MB)\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
 
 	std::cout<<"[MultiGrid3D] number of dofs "<<numDofs<<" free: "<<numDofs-myGrid.GetNumConstraints()<<" constraint: "<<myGrid.GetNumConstraints()<<"\n";
 	// start analysis
 //	std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
-	myGrid.StructureBase::SetVerboseLevel(0);
+	myGrid.SetVerboseLevel(0);
+	myGrid.SetMisesWielandt(false);
 	size_t numNodes=myGrid.GetNumNodes();
 
-
-	NuTo::MultiGrid myMultiGridSolver;
-	myMultiGridSolver.SetVerboseLevel(0);
-	myMultiGridSolver.SetStructure(&myGrid);
-	myMultiGridSolver.Initialize();
-	//finest grid
-//	myGrid.LSDynaInput();
-
-	// second grid and coarser
-
-//	for(int gridNum=0;gridNum<myMultiGridSolver.GetNumGrids()-1;++gridNum)
+	NuTo::MultiGridStructure myMultiGrid;
+	myMultiGrid.SetVerboseLevel(3);
+	myMultiGrid.SetStructure(&myGrid);
+	myMultiGrid.SetUseMultiGridAsPreconditoner(false);
+	myMultiGrid.SetMaxCycle(numNodes);
+	myMultiGrid.SetNumPreSmoothingSteps(1);
+	myMultiGrid.SetNumPostSmoothingSteps(1);
+	// for test purpose of mg
+//	std::ifstream test;
+//	test.open("result.txt");
+//	if(test)	// file is open
 //	{
-// grid pointer with number 0 leads to first coarser grid
-
-		// set the number per hand or add different filenames
-		NuTo::StructureGrid* pointer=myMultiGridSolver.GetGridPtr(0);
-		pointer->LSDynaInput();
+//		rDisplVector.clear();
+//		double help=0;
+//		size_t count=0;
+//		while(!test.eof()) // keep reading untill end-of-file
+//		{
+//			test>>help;
+//			rDisplVector.push_back(help);
+//			++count;
+//		}
+//		test.close();
+//		--count; // for last empty line
+//
+//		if (count!=numDofs)
+//			std::cout<<"[MultiGrid3D] Wrong input file.\n";
+//	rDisplVector.push_back(0.0);
+//	rDisplVector.push_back(0.0);
+//	rDisplVector.push_back(0.0);
+//	myMultiGrid.SetParameters(rDisplVector);
 //	}
 
+	myMultiGrid.Initialize();
+	myMultiGrid.Info();
+//	std::vector<double> residual(numNodes*3);
+//	myGrid.Gradient(rDisplVector,residual);
+//	rDisplVector.assign((numNodes+1)*3, 0.0);
+//	myGrid.SetParameters(rDisplVector);
+//	for(size_t i=0;i<numNodes*3;++i)
+//		residual[i]*=-1;
+//	myGrid.SetResidual(residual);
+////	myMultiGrid.ExportVTKStructuredDataFile(0,"outputGrid0.vtk");
+////	myMultiGrid.ExportVTKStructuredDataFile(1,"outputGrid1.vtk");
+//
+//	std::vector<double> error;
+//	std::ifstream input2;
+//	double help2=0;
+//	// result file only with existing nodes
+//	input2.open("result.txt");
+//	if(input2)	// file is open
+//	{
+//		size_t count=0;
+//		while(!input2.eof()) // keep reading untill end-of-file
+//		{
+//			input2>>help2;
+//			error.push_back(help2);
+//			++count;
+//		}
+//		input2.close();
+//		--count; // for last empty line
+//	}
+//	myGrid.Gradient(error,residual);
+//	std::cout<<"MG: residual of error ";
+//	for(size_t i=0;i<numNodes*3;++i)
+//		std::cout<<" "<<residual[i];
+//	std::cout<<"\n";
+//
 
-//	myMultiGridSolver.Optimize();
-	std::cout<<"[MultiGrid3D] test. \n";
+	myMultiGrid.MultiGridSolve();
 
-	outputTime.close();
+// test jacobi
+//	NuTo::Jacobi myOptimizer(numNodes*3);
+//	myOptimizer.SetVerboseLevel(5);
+//	myOptimizer.SetCallback(&myGrid);
+//	myOptimizer.Optimize();
+
+//	rDisplVector=myMultiGrid.GetParameters();
 	rDisplVector=myGrid.GetParameters();
 
 	std::ofstream file;
@@ -275,5 +317,6 @@ std::cout<<"[MultiGrid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC 
 	}
 	else
 		std::cout<<"[MultiGrid3D] Comparison with reference results is not possible (no result file).\n";
+
 	return 0;
 }

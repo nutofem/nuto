@@ -17,31 +17,17 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/ConjugateGradientGrid.h"
+#include "nuto/optimize/Jacobi.h"
 #include "nuto/optimize/MisesWielandt.h"
 
 int main()
 {
-	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
+    bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
 //	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
 
-	std::fstream outputTime;
-	std::string filename = "timeOutput";
-    outputTime.open(filename,std::fstream::out|std::fstream::app);
-	std::cout<<"[NuTo::Grid3D] matrixFreeMethod is";
-	if (matrixFreeMethod)
-	{
-		std::cout<<" NBN \n";
-		outputTime<<" NBN  ";
 
-	}
-	else
-	{
-		std::cout<<" EBE \n";
-		outputTime<<" EBE  ";
-	}
-
+//    double PoissonsRatio = 0.;
     double PoissonsRatio = 0.2;
-    std::cout<<"[NuTo::Grid3D] PoissonsRatio = "<<PoissonsRatio<<"\n";
     // create structure
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -49,13 +35,12 @@ int main()
 #endif
 	// read entries
 	NuTo::StructureGrid myGrid(3); // also creates CallbackHandler
-	myGrid.StructureBase::SetVerboseLevel(0);
-	myGrid.CallbackHandlerGrid::SetVerboseLevel(0);
-	myGrid.ImportFromVtkASCIIFileHeader("InputTest");
+	myGrid.SetVerboseLevel(0);
+//	std::string inputFile="InputTest";
+	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
+	myGrid.ImportFromVtkASCIIFileHeader(inputFile);
 
 	//calculate one element stiffness matrix with E=1
-
-	std::cout<<"[NuTo::Grid3D] One material example - only one PoissonsRatio.\n";
 
 	myGrid.SetMatrixFreeMethod(matrixFreeMethod);
 	myGrid.SetBasisElementStiffnessMatrix(PoissonsRatio,0);
@@ -77,7 +62,7 @@ int main()
 		myMapColorModul[count]=0.;
 
 	// create grid structure
-	myGrid.CreateGrid(thresholdMaterialValue,"InputTest",myMapColorModul);
+	myGrid.CreateGrid(thresholdMaterialValue,inputFile,myMapColorModul);
 	if (matrixFreeMethod)
 	{
 		myGrid.SetBasisEdgeStiffnessMatrices(0);
@@ -127,7 +112,6 @@ int main()
 	//	bool EnableDisplacementControl = false;
 	double BoundaryDisplacement = -1.0;
 //	double BoundaryDisplacement = -(myGrid.GetGridDimension()[2]*myGrid.GetVoxelSpacing()[2])/20.0;
-	std::cout<<"[NuTo::Grid3D] Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
 	// diplacement vector plus one dof for calculation with non existing neighbor dofs
 	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
 	//for z=0,x,y -all ux=0
@@ -165,35 +149,62 @@ int main()
 	size_t numNodes=myGrid.GetNumNodes();
 	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
 
-	outputTime<<MaterialYoungsModulus<<"   "<<PoissonsRatio<<"  ";
-	outputTime<<myGrid.GetNumVoxels()<<" "<<numDofs<<"   ";
+
+	myGrid.SetMisesWielandt(false);
+//	myGrid.SetWeightingFactor(1.);
+
 #ifdef SHOW_TIME
 end=clock();
-std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-	outputTime<<difftime(end,start)/CLOCKS_PER_SEC<<"   ";
 #endif
 	double mem=sizeof(myGrid);
+	myGrid.Info();
+	std::cout<<"-   Poissons ratio .............................. "<<PoissonsRatio<<"\n\n";
+	std::cout<<"Boundary displacement .......................... "<<BoundaryDisplacement<<"\n";
+	std::cout<<"Direction of external force/displacement ....... z\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
+#ifdef SHOW_TIME
+	std::cout<<"Time for structure initialization............... "<<difftime(end,start)/CLOCKS_PER_SEC<<"(sec)\n";
+#endif
+	std::cout<<"Allocated memory ............................... "<<mem/1000.<<"(MB)\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
 
-	outputTime<<mem<<"  ";
-	std::cout<<"[NuTo::Grid3D] memory "<<mem/1000.<<" MB \n";
-	std::cout<<"[NuTo::Grid3D] number of dofs "<<numDofs<<" free: "<<numDofs-myGrid.GetNumConstraints()<<" constraint: "<<myGrid.GetNumConstraints()<<"\n";
 	// start analysis
 
 	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
-	myOptimizer.SetVerboseLevel(0);
+	myOptimizer.SetVerboseLevel(1);
 	myOptimizer.SetCallback( (&myGrid));
-	myOptimizer.SetMisesWielandt(true);
-	std::cout<<"[NuTo::Grid3D] Parameters set, Anzahl = "<<myOptimizer.GetNumParameters()<<std::endl;
-
-	outputTime.close();
-
+	myOptimizer.Info();
 	myOptimizer.Optimize();
 
+//	std::vector<double> &residual=myGrid.GetResidual();
+//	myGrid.Gradient(rDisplVector,residual);
+//	rDisplVector.assign((numNodes+1)*3, 0.0);
+//
+//	myGrid.SetParameters(rDisplVector);
+//	for(size_t i=0;i<numNodes*3;++i)
+//		residual[i]*=-1;
+//	myGrid.SetResidual(residual);
+//	myOptimizer.Optimize();
+
+//	//test jacobi solver
+//	NuTo::Jacobi myOptimizer(numNodes*3);
+//	myOptimizer.SetVerboseLevel(1);
+//	myOptimizer.SetCallback( (&myGrid));
+//	myOptimizer.Info();
+//	std::vector<double> &res=myGrid.GetResidual();
+//	myGrid.Gradient(rDisplVector,res);
+//	for(size_t i=0;i<numNodes*3;++i)
+//		res[i]*=-1;
+//	myGrid.SetResidual(res);
+//	myOptimizer.Optimize();
+
+//	rDisplVector=myGrid.GetResidual();
 	rDisplVector=myGrid.GetParameters();
 	myGrid.ExportVTKStructuredDataFile("./outputFile.vtk");
-//	outputFile.close();
 
-//	std::vector<double> rStrainVector=myGrid.GetEngineeringStrain();
+//	std::vector<double> rStrainVector;
+//	myGrid.GetEngineeringStrain(rDisplVector, rStrainVector);
+
 //	std::vector<double> rStressVector=myGrid.GetEngineeringStress();
 
 	std::ofstream file;
@@ -207,6 +218,12 @@ std::cout<<"[NuTo::Grid3D] structure set " << difftime(end,start)/CLOCKS_PER_SEC
 			file<<rDisplVector[3*i+2]<<"\n";
 	}
 	file.close();
+
+//    file.open("strains.txt");
+//    size_t it_end=rStrainVector.size();
+//	for(size_t i=0;i<it_end;++i)
+//			file<<rStrainVector[i]<<"\n";
+//	file.close();
 
 	file.open("displVTK.txt");
  	for(size_t i=0;i<numGridNodes;++i)

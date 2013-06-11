@@ -5,10 +5,9 @@
 //! @brief ... conjugate gradient method without global matrix matrix-vector product
 
 
-#include "nuto/math/FullVector.h"
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/MisesWielandt.h"
-#include "nuto/optimize/MultiGrid.h"
+//#include "nuto/optimize/MultiGrid.h"
 #define machine_precision 1e-15
 //sqrt machine_precision
 
@@ -36,9 +35,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 
 	optimization_return_attributes returnValue;
-
-	std::fstream outputTime;
-	std::string filename = "timeOutput";
+#pragma acc data  copyin()
 
 	// u  = parameters
 	// r  = gradient
@@ -53,15 +50,15 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	std::vector<double> h(mNumParameters);
 	std::vector<double> d(mNumParameters+3);
 
+#pragma acc data copy(u),copyin(r,pr,p,h,d)
 
 	int precision = 6;
 	int width = 10;
-
-	if (mVerboseLevel>2)
-		std::cout<< __FILE__<<" "<<__LINE__<< "[NuTo::ConjugateGradientGrid::Optimize] numParameters "<< mNumParameters << std::endl;
 	bool converged(false);
 	double rAccuracyGradientScaled = mAccuracyGradient;
-	std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] gradient accuracy "<<rAccuracyGradientScaled <<std::endl;
+//	if(mVerboseLevel>2)
+//		std::cout<<"[ConjugateGradientGrid::Optimize] gradient accuracy "<<rAccuracyGradientScaled <<std::endl;
+
 
 	int localMaxGradientCalls=(int) mNumParameters;
 //	int localMaxGradientCalls=2*mNumParameters;
@@ -69,36 +66,29 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		SetMaxGradientCalls(localMaxGradientCalls);
 
 	// calculate objective
-	numFunctionCalls++;
-	if (numFunctionCalls>mMaxFunctionCalls)
+	if (numFunctionCalls++>mMaxFunctionCalls)
 	{
 		converged = true;
 		returnValue = MAXFUNCTIONCALLS;
 	}
 
+	// print r
+//			std::cout<<" r ";
+//			for(size_t i=0;i<mNumParameters;++i)
+//				std::cout<<r[i]<<" ";
+//			std::cout<<"\n";
 
-	//0 set if no precondition
-//	outputTime.open(filename,std::fstream::out|std::fstream::app);
-//	outputTime<<" 0 ";
-//	outputTime.close();
-	// calculate Diag preonditioner;
 	mpCallbackHandlerGrid->Hessian(p);
-
-	//1 set if no scaling
-//	std::fstream outputTime;
-//	std::string filename = "timeOutput";
-//	outputTime.open(filename,std::fstream::out|std::fstream::app);
-//	outputTime<<" 1 ";
-//	outputTime.close();
-	CalcScalingFactors(numHessianCalls,p);
+	++numHessianCalls;
 
 //	 print p
 //	std::cout<<" p ";
-//	for(int i=0;i<mNumParameters;i+=3)
+//	for(size_t i=0;i<mNumParameters;++i)
 //		std::cout<<p[i]<<" ";
 //	std::cout<<"\n";
 
 
+	double residualNorm0=0.;
 	while(!converged)
 	{
 		numGradientCalls++;
@@ -124,33 +114,30 @@ int NuTo::ConjugateGradientGrid::Optimize()
 				break;
 			}
 
-			//calculate gradient as a start solution
-			if (mVerboseLevel>3)
-				std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] ("<<__LINE__<<") calc start direction"<<std::endl;
 			double help=0.0;
+			//calculate gradient as a start solution
 			for(size_t i=0;i<mNumParameters;++i)
 			{
 				help+=r[i]*r[i];
 			}
 //			std::cout<<__FILE__<<" "<<__LINE__<<" help "<<help<<std::endl;
 			if (help==0)
+			{
 				mpCallbackHandlerGrid->Gradient(u,r);
-			else
-				std::cout<<"[NuTo::ConjugateGradientGrid::Optimize] ("<<__LINE__<<") no gradient calcuation"<<std::endl;
+				for(size_t i=0;i<mNumParameters;++i)
+				{
+//				if(help==0) //calculate r=f-Ku, multiply -1, else r=Ke positive Gradient needed
+					r[i]*=-1;
+				}
+			}
 
 			// have to change sign --> next loop
 			// add external load
 
-			// print r
-//			std::cout<<" r ";
-//			for(size_t i=0;i<mNumParameters;++i)
-//				std::cout<<r[i]<<" ";
-//			std::cout<<"\n";
 
 //			pr=r;
 			for(size_t i=0;i<mNumParameters;++i)
 			{
-				r[i]*=-1;
 //				pr[i]=r[i];
  				pr[i]=p[i]*r[i];
 				//upate for start solution
@@ -161,95 +148,107 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			for(size_t i=0;i<mNumParameters;++i)
  				alphaNumerator+=r[i]*pr[i];
 
-			if (mVerboseLevel>2)
-				std::cout<<__FILE__<<" "<<__LINE__<<" normGradient "<<alphaNumerator << " accuracy " <<rAccuracyGradientScaled<<std::endl;
-
-			if (mVerboseLevel>5 && curCycle>0)
-				std::cout<< "   Restart after " <<curCycle << " cycles " << std::endl;
+			residualNorm0=alphaNumerator;
 			curCycle = 0;
-		std::cout.precision(precision);
-//		std::cout <<std::setw(width)<<"It.: "<<curIteration<<" i=3 -> r "<<r[3]<<" p "<<p[3]<<" pr "<<pr[3]<<" a1 "<<alphaNumerator<<"\n";
 		}
 
 
 		//begin with cycles bigger 0
 
-		if (mVerboseLevel>4)
-			std::cout<<__FILE__<<" "<<__LINE__<<" calc search direction"<<std::endl;
-
 		// set h to zero done in matrix-vector routine
 		mpCallbackHandlerGrid->Gradient(d,h);
+
+//		std::cout<<" d ";
+//		for(size_t i=0;i<mNumParameters;++i)
+//			std::cout<<d[i]<<" ";
+//		std::cout<<"\n";
 
 	    alphaDenominator=0.;
 //	    squaredNorm=0;
 		for(size_t i=0;i<mNumParameters;++i)
 			alphaDenominator+=d[i]*h[i];
 		alpha = alphaNumerator/alphaDenominator;
+		// neg/zero curvature of direction
+//		if(alphaDenominator<=0) //www.weizmann
+//		{
+//			std::cout<< "[ConjugateGradientGrid::Optimize] Negative curacture of search direction. " << std::endl;
+//			double normDirection=0.;
+//			for(size_t i=0;i<mNumParameters;++i)
+//				normDirection+=d[i]*d[i];
+//			for(size_t i=0;i<mNumParameters;++i)
+//				u[i]=d[i]/normDirection;
+//			converged=true;
+//			break;
+//		}
+//
 		betaNumerator =0;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
 			u[i]+= alpha*d[i];
 			r[i]-=alpha*h[i];
+
 			pr[i]=p[i]*r[i];
 			betaNumerator+=r[i]*pr[i];
 		}
 		beta = betaNumerator/ alphaNumerator;
+//		std::cout << std::setw(width)<<"alphaDenominator (dh) : "<<alphaDenominator<<" alphaNumerator (rz)_i : "<<alphaNumerator<<" betaNumerator (rz)_i+1 : "<<betaNumerator<< std::endl;
 		alphaNumerator = betaNumerator;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
 			d[i] *=beta;
 			d[i] +=pr[i];
 		}
+//		std::cout<<" d ";
+//		for(size_t i=0;i<mNumParameters;++i)
+//			std::cout<<d[i]<<" ";
+//		std::cout<<"\n";
 
 //		std::cout <<std::setw(width)<<"It.: "<<curIteration<<" i=3 -> h "<<h[3]<<" alpha "<<alpha<<" r "<<r[3]<<" p "<<p[3]<<" pr "<<pr[3]<<" b1 "<<betaNumerator<<" d "<<d[3]<<" u "<<u[3]<<"\n";
 
 
-		if (mVerboseLevel>4)
-		{
-			std::cout.precision(precision);
-			std::cout <<std::setw(width)<<" It.: "<< curIteration<< " norm gradient squared (betaNumerator)"<<betaNumerator<<std::endl;
-			std::cout << std::setw(width)<< "pr " ;
-			for (size_t count=0; count<mNumParameters; count++)
-			{
-				std::cout << std::setw(width)<< pr[count] << "   " ;
-			}
-			std::cout << std::endl;
-			std::cout << std::setw(width)<< "r " ;
-			for (size_t count=0; count<mNumParameters; count++)
-			{
-				std::cout << std::setw(width)<< r[count] << "   " ;
-			}
-			std::cout << std::endl;
-			std::cout << std::setw(width)<< "h " ;
-			for (size_t count=0; count<mNumParameters; count++)
-			{
-				std::cout << std::setw(width)<< h[count] << "   " ;
-			}
-			std::cout << std::endl;
-			std::cout << std::setw(width)<< "d " ;
-			for (size_t count=0; count<mNumParameters; count++)
-			{
-				std::cout << std::setw(width)<< d[count] << "   " ;
-			}
-			std::cout << std::endl;
-			std::cout << std::setw(width)<< "u " ;
-			for (size_t count=0; count<mNumParameters; count++)
-			{
-				std::cout << std::setw(width)<<u[count] << "   " ;
-			}
-			std::cout << std::endl;
+//		if (mVerboseLevel>4)
+//		{
+//			std::cout.precision(precision);
+//			std::cout <<std::setw(width)<<"[ConjugateGradientGrid::Optimize]  It.: "<< curIteration<< " norm gradient squared (betaNumerator)"<<betaNumerator<<std::endl;
+//			std::cout << std::setw(width)<< "pr " ;
+//			for (size_t count=0; count<mNumParameters; count++)
+//			{
+//				std::cout << std::setw(width)<< pr[count] << "   " ;
+//			}
+//			std::cout << std::endl;
+//			std::cout << std::setw(width)<< "r " ;
+//			for (size_t count=0; count<mNumParameters; count++)
+//			{
+//				std::cout << std::setw(width)<< r[count] << "   " ;
+//			}
+//			std::cout << std::endl;
+//			std::cout << std::setw(width)<< "h " ;
+//			for (size_t count=0; count<mNumParameters; count++)
+//			{
+//				std::cout << std::setw(width)<< h[count] << "   " ;
+//			}
+//			std::cout << std::endl;
+//			std::cout << std::setw(width)<< "d " ;
+//			for (size_t count=0; count<mNumParameters; count++)
+//			{
+//				std::cout << std::setw(width)<< d[count] << "   " ;
+//			}
+//			std::cout << std::endl;
+//			std::cout << std::setw(width)<< "u " ;
+//			for (size_t count=0; count<mNumParameters; count++)
+//			{
+//				std::cout << std::setw(width)<<u[count] << "   " ;
+//			}
+//			std::cout << std::endl;
 
-			std::cout << std::setw(width)<< "alpha "<<alpha<< "beta "<<beta << std::endl;
-		}
+//		}
 
-		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientScaled*rAccuracyGradientScaled) ||
-				(betaNumerator<0 && betaNumerator>-rAccuracyGradientScaled*rAccuracyGradientScaled))
+//			std::cout << "betaNumerator "<<betaNumerator<< " tol: "<<rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0<< std::endl;
+		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0) ||
+				(betaNumerator<0 && betaNumerator>-rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0))
+//		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientScaled*rAccuracyGradientScaled) ||
+//				(betaNumerator<0 && betaNumerator>-rAccuracyGradientScaled*rAccuracyGradientScaled))
 		{
-			if (mVerboseLevel>2)
-			{
-				std::cout<< "CONVERGED " << std::endl;
-				std::cout<< "Iteration " << curIteration <<" with norm grad squared" << betaNumerator << std::endl;
-			}
 			converged = true;
 			returnValue = NORMGRADIENT;
 			break;
@@ -257,7 +256,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 		if (beta<0)
 		{
-			std::cout<< "Set beta ("<< beta <<") to zero " << std::endl;
+			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero " << std::endl;
 			beta=0;
 		}
 
@@ -306,16 +305,13 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 #ifdef SHOW_TIME
     endOpt=clock();
-    if (mShowTime)
-		std::cout<< "Elapsed time (sec)............. " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << std::endl;
-    outputTime.open(filename,std::fstream::out|std::fstream::app);
- 	outputTime<<(difftime(endOpt,startOpt)/CLOCKS_PER_SEC)<<"   "<<curIteration<<"\n";
-	outputTime.close();
-
+    if (mShowTime && mVerboseLevel>0)
+    		std::cout<< "[ConjugateGradientGrid::Optimize] Elapsed time (sec)............. " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << std::endl;
 #endif
-//	if (mVerboseLevel)
-//	{
+	if (mVerboseLevel>0)
+	{
 		std::cout<< " "  << std::endl;
+		std::cout<< "[ConjugateGradientGrid::Optimize] "  << std::endl;
 		std::cout<< "Number of Iterations............. " << curIteration << std::endl;
 //		std::cout<< "Number of Function Calls......... " << numFunctionCalls << std::endl;
 //		std::cout<< "Number of Gradient Calls......... " << numGradientCalls << std::endl;
@@ -343,11 +339,9 @@ int NuTo::ConjugateGradientGrid::Optimize()
 				break;
 		}
 		std::cout << std::endl;
-//	}
-	if(mVerboseLevel>4)
-	{
+
 		std::cout.precision(precision);
-		std::cout << std::setw(width)<< "displacements " ;
+		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] displacements " ;
 		for (size_t count=0; count<mNumParameters; count++)
 		{
 			std::cout << std::setw(width)<<u[count] << "   " ;
@@ -358,59 +352,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	objective=sqrt(betaNumerator);
 	return returnValue;
 }
-
-void NuTo::ConjugateGradientGrid::CalcScalingFactors(int& numHessianCalls,std::vector<double> &p)
-{
-//#ifdef SHOW_TIME
-//    std::clock_t start,end;
-//    start=clock();
-//#endif
-    //diagonal scaling with scaling factor
-	++numHessianCalls;
-//    double scalefactor=1;
-    double scalefactor=0.0000000001;
-	if (mUseMisesWielandt)
-	{
-		if(!(mpCallbackHandlerGrid->GetWeightingFactor()))
-		{
-			// scale factor is 2/(2-lambda_max-lambda_min) [Meister: Num. lin. GLS] for Jacobi-Relaxation-Method
-			NuTo::MisesWielandt myEigenCalculator(mNumParameters);
-			myEigenCalculator.SetVerboseLevel(5);
-			myEigenCalculator.SetCallback((mpCallbackHandlerGrid));
-			myEigenCalculator.Optimize();
-			double lambda_max=myEigenCalculator.GetObjective();
-//			double lambda_min=lambda_max/2.;
-			// Jacobi-Relaxation-weighting
-	//		scalefactor=2./(2-lambda_max-lambda_min);
-			// my scale factor
-	//		scalefactor=2./(lambda_max*lambda_max);
-			scalefactor=1./lambda_max;
-			// damping Jacobi: lampda of D-1 K Arbenz_2007
-	//		scalefactor=4./(3.*lambda_max);
-
-			mpCallbackHandlerGrid->SetWeightingFactor(scalefactor);
-		}
-		else
-			scalefactor=mpCallbackHandlerGrid->GetWeightingFactor();
-	}
-
-	std::fstream outputTime;
-	std::string filename = "timeOutput";
-    outputTime.open(filename,std::fstream::out|std::fstream::app);
-    outputTime<<scalefactor<<"  ";
-    outputTime.close();
-//    if(mVerboseLevel>0)
-	std::cout<<"[ConjugateGradientGrid::CalcScalingFactors] scale factor "<<scalefactor<<"\n";
-    for (size_t count=0; count<mNumParameters; ++count)
-        p[count] *=scalefactor;
-
-//#ifdef SHOW_TIME
-//    end=clock();
-//    if (mShowTime)
-//        std::cout<<"[NuTo::ConjugateGradientGrid::CalcScalingFactors] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-//#endif
-}
-
 
 #ifdef ENABLE_SERIALIZATION
 //! @brief ... save the object to a file
@@ -580,11 +521,10 @@ std::string NuTo::ConjugateGradientGrid::GetTypeId()const
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::ConjugateGradientGrid::Info () const
 {
-    NuTo::Optimizer::InfoBase();
-	std::cout<< "AccuracyGradient" << mAccuracyGradient << std::endl;
-	std::cout<< "MinDeltaObjBetweenRestarts" << mMinDeltaObjBetweenRestarts << std::endl;
-	std::cout<< "MaxGradientCalls" << mMaxGradientCalls << std::endl;
-	std::cout<< "MaxHessianCalls" << mMaxHessianCalls << std::endl;
-	std::cout<< "MaxIterations" << mMaxIterations << std::endl;
-	std::cout<< "ShowSteps" << mShowSteps << std::endl;
+	std::cout<< "ConjugateGradientGrid\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
+	std::cout<< "AccuracyGradient ....................... " << mAccuracyGradient << std::endl;
+	std::cout<< "MaxGradientCalls ....................... " << mMaxGradientCalls << std::endl;
+	std::cout<< "MaxHessianCalls ........................ " << mMaxHessianCalls << std::endl;
+	std::cout<< "MaxIterations .......................... " << mMaxIterations << std::endl;
 }

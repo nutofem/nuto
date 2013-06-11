@@ -19,15 +19,18 @@
 
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
+#include "nuto/mechanics/structures/grid/MultiGridStructure.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
+#include "nuto/optimize/MisesWielandt.h"
+
 
 #include <algorithm>
 
 
-NuTo::StructureGrid::StructureGrid(int rDimension):  CallbackHandlerGrid (),StructureBase ( rDimension )
+NuTo::StructureGrid::StructureGrid(int rDimension):  CallbackHandlerGrid ()
 {
    if (rDimension!=3)
 	{
@@ -39,6 +42,8 @@ NuTo::StructureGrid::StructureGrid(int rDimension):  CallbackHandlerGrid (),Stru
     mVoxelSpacing.resize(rDimension);	//spacing between center of neighbor voxels / dimension of each voxel
     mGridOrigin.resize(rDimension);		// origin of the model , in the center of the first voxel
     mMatrixFreeMethod=0;
+    mUseDiagHessian =true;
+   	mUseMisesWielandt =true;
     mImageDataFile="InputFile";
     mNumMaterials=0;
     mNumBasisMaterials=1;
@@ -57,21 +62,37 @@ NuTo::StructureGrid::~StructureGrid()
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::StructureGrid::Info()const
 {
-	std::cout << "StructureGrid Info \n";
-	std::cout << "Dimension             : " << mDimension << "\n";
-	std::cout << "GridNumber            : " <<mCurrentGridNumber <<"\n";
-	std::cout << "GridDimension         : " <<mGridDimension[0]<<" "<<mGridDimension[1]<<" "<<mGridDimension[2]<<"\n";
-	std::cout << "Number of voxels      : " <<mNumVoxel <<"\n";
-	std::cout << "Number of grid edges  : " << (mGridDimension[0]+1)*(mGridDimension[1]+1)* (mGridDimension[2]+1)<< "\n";
-	std::cout << "Number of elements    : "<<mVoxelId.size()<<"\n";
-	std::cout << "Number of nodes       : "<<mEdgeId.size()<<"\n";
-	std::cout << "Number of constraints : "<<mNumConstraintDofs<<"\n";
-	std::cout << "Dof is constraint : \n";
-	for(size_t i=0;i<mEdgeId.size()*3;++i)
-	{
-		std::cout <<mDofIsConstraint[i] <<" ";
-	}
-	std::cout<<"\n";
+	std::cout<<"Structured grid Info\n "
+			"-----------------------------------------------------------------------------------\n";
+	std::cout<<"Dimension ...................................... " << mDimension << "\n";
+	std::cout<<"GridNumber ..................................... " <<mCurrentGridNumber <<"\n";
+	std::cout<<"GridDimension .................................. " <<mGridDimension[0]<<" "<<mGridDimension[1]<<" "<<mGridDimension[2]<<"\n";
+	std::cout<<"Number of voxels ............................... "<<GetNumVoxels()<<"\n";
+	std::cout<<"Number of elements ............................. "<<GetNumElements()<<"\n";
+	std::cout<<"Number of dofs (free/constraint) ............... "<<GetNumNodes()*3<<" ("<<GetNumNodes()*3-GetNumConstraints()<<"/"<<GetNumConstraints()<<")\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
+	std::cout<<"\n Solver configuration\n"
+			"-----------------------------------------------------------------------------------\n";
+	std::cout<<"MatrixFreeMethod is ............................ ";
+	if (mMatrixFreeMethod) 								std::cout<<" NBN\n";
+	else 												std::cout<<" EBE\n";
+	std::cout<<"Preconditioner is .............................. ";
+	if (mUseDiagHessian) 								std::cout<<" DIAGONAL D_ii\n";
+	else 												std::cout<<" MULTIGRID\n";
+	std::cout<<"Scaling of Preconditioner is ................... ";
+	if (mUseMisesWielandt) 								std::cout<<" EIGENVALUE - 1/maxLambda\n";
+	else 												std::cout<<" 1\n";
+	if(GetWeightingFactor()!=0)
+	std::cout<<"Value of scaling factor is ..................... "<<mWeightingFactor<<"\n";
+
+//	else 												std::cout<<" 1/NumberParameters\n";
+	std::cout<<"-----------------------------------------------------------------------------------\n";
+	std::cout<<"Number of different materials .................. "<<GetNumMaterials()<<"\n";
+//	for(int i=0;i<GetNumMaterials();++i)
+//	{
+		std::cout<<"Material "<<0<<"\n";
+		std::cout<<"-   Youngs modulus .............................. "<<mYoungsModulus[0]<<"\n";
+//	}
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -87,7 +108,7 @@ void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of grid structure" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
        & BOOST_SERIALIZATION_NVP (mDimension)
        & BOOST_SERIALIZATION_NVP (mNumVoxel)
        & BOOST_SERIALIZATION_NVP (mGridDimension)
@@ -104,7 +125,6 @@ void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP (mEdgeId)
        & BOOST_SERIALIZATION_NVP (mNodeId)
        & BOOST_SERIALIZATION_NVP (mVoxelId)
-       & BOOST_SERIALIZATION_NVP (mMaterialOfElem)
 //	serialization does not work
 //       & BOOST_SERIALIZATION_NVP (mDofIsConstraint)
        & BOOST_SERIALIZATION_NVP (mDisplacements)
@@ -112,11 +132,12 @@ void NuTo::StructureGrid::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP (mLinearElasticEngineeringStresses)
        & BOOST_SERIALIZATION_NVP (mYoungsModulus)
        & BOOST_SERIALIZATION_NVP (mMatrixFreeMethod)
+       & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
+       & BOOST_SERIALIZATION_NVP(mUseMisesWielandt)
        & BOOST_SERIALIZATION_NVP (mFineEdgeId)
        & BOOST_SERIALIZATION_NVP (mWeightingFactor)
        & BOOST_SERIALIZATION_NVP (mpFineGrid)
-       & BOOST_SERIALIZATION_NVP (mpCoarseGrid)
-       & BOOST_SERIALIZATION_NVP (mMGYoungsModulus);
+       & BOOST_SERIALIZATION_NVP (mpCoarseGrid);
 #ifdef DEBUG_SERIALIZATION
      std::cout << "finish serialization of grid structure" << std::endl;
 #endif
@@ -534,7 +555,7 @@ const size_t NuTo::StructureGrid::GetNumConstraints() const
 void NuTo::StructureGrid::SetMatrixFreeMethod(bool rMatrixFreeMethod)
 {
 	mMatrixFreeMethod=rMatrixFreeMethod;
-	if(NuTo::CallbackHandlerGrid::GetVerboseLevel()>5)
+	if(mVerboseLevel>5)
 	{
 		std::cout<<"MatrixFreeMethod is ";
 		if (mMatrixFreeMethod)
@@ -543,6 +564,12 @@ void NuTo::StructureGrid::SetMatrixFreeMethod(bool rMatrixFreeMethod)
 			std::cout<<" EBE \n";
 	}
 }
+
+bool NuTo::StructureGrid::GetMatrixFreeMethod()
+{
+	return mMatrixFreeMethod;
+}
+
 //! @brief set basis element stiffness
 //! @param rVoxelSpacing ... element length,
 //! @param rPoissonsRatio
@@ -561,7 +588,8 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 
 		NuTo::Structure myHelpStruc(3);
 
-		myHelpStruc.SetVerboseLevel(5);
+		myHelpStruc.SetVerboseLevel(0);
+		myHelpStruc.SetShowTime(false);
 		// create material law
 		int myMat=myHelpStruc.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
 		myHelpStruc.ConstitutiveLawSetPoissonsRatio(myMat, rPoissonsRatio);
@@ -624,8 +652,8 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		NuTo::FullVector<int,Eigen::Dynamic> coluums;
 		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrix;
 		myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
-		if(NuTo::StructureBase::GetVerboseLevel()>3)
-			stiffnessMatrix.WriteToFile("stiffness"," ");
+//		if(mVerboseLevel>3)
+		stiffnessMatrix.WriteToFile("stiffness"," ");
 		if((int) mLocalCoefficientMatrix0.size()==rBasisMaterialNum)
 		{
 			std::vector<double> stiffness(24*24);
@@ -645,10 +673,10 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 			NuTo::Brick8N* myElementPointer;
 			myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
 			myElementPointer->CalculateDerivativeShapeFunctionsLocal( rLocalCoordinates, mLocalDerivativeShapeFunctions);
-			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
+//			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
 
 			static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients3D(mC11,mC12,mC44);
-			std::cout<<"[StructureGrid] (line "<<__LINE__<<" stiffnessTensorCoefficients "<<mC11<<" "<<mC12<<" "<<" "<<mC44<<"\n";
+//			std::cout<<"[StructureGrid] (line "<<__LINE__<<" stiffnessTensorCoefficients "<<mC11<<" "<<mC12<<" "<<" "<<mC44<<"\n";
 		}
 		else
 			throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Basis material number is wrong.");
@@ -878,8 +906,8 @@ void NuTo::StructureGrid::CalculateNodesAtElement(size_t elementNumber,std::vect
 //! @brief set material number at edges for node-edge based routines
 void NuTo::StructureGrid::SetMaterialNumberForEdges()
 {
-	std::vector<int> matOfEdge(0);
-	matOfEdge.resize(64*(int) mEdgeId.size(),0);
+	std::vector<double> matOfEdge(0);
+	matOfEdge.resize(64*mEdgeId.size(),0);
 	int orderEdgesForElem[8][8]={
 		{35,39,47,45,57,59,63,62},// 7.
 		{27,34,44,41,53,56,61,60},// 6.
@@ -896,22 +924,18 @@ void NuTo::StructureGrid::SetMaterialNumberForEdges()
 	for(size_t element=0;element<mVoxelId.size();++element)
 	{
 		CalculateNodesAtElement(element,nodeNumbers);
-		//std::cout<<" mat "<<mMaterialOfElem[element];
 		// over local 8 nodes to get correct neighbor element
 		for(int locNode=0;locNode<8;++locNode)
 		{
 			// save edge matrix at all edges of element
 			for(int node=0;node<8;++node)
 			{
-				matOfEdge.at(64*nodeNumbers[locNode]+orderEdgesForElem[locNode][node])=mMaterialOfElem[element];
+				matOfEdge[64*nodeNumbers[locNode]+orderEdgesForElem[locNode][node]]=mYoungsModulus[element];
 
 			}
 		}
 	}
-	std::cout<<" matofelem size orig "<<mMaterialOfElem.size();
-	mMaterialOfElem.assign(matOfEdge.begin(),matOfEdge.end());
-	std::cout<<" matofelem size new "<<mMaterialOfElem.size();
-
+	mYoungsModulus.assign(matOfEdge.begin(),matOfEdge.end());
 }
 
 //! @brief create grid data
@@ -921,6 +945,7 @@ void NuTo::StructureGrid::SetMaterialNumberForEdges()
 void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fileName,
 		 std::vector<double>& rColorToMaterialData)
 {
+	mImageDataFile=fileName;
 	std::vector<int> imageValues (mNumVoxel);
 	NuTo::StructureGrid::ImportFromVtkASCIIFile( fileName,imageValues);
 	size_t numElems=0;
@@ -954,10 +979,6 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 			allEdgesAtVoxel[8*element+7] =  (int)(rVoxelLocation[2]+1)*(mGridDimension[0]+1)*(mGridDimension[1]+1) + (rVoxelLocation[1]+1) * (mGridDimension[1]+1) + rVoxelLocation[0];
 	}
 
-	int numCoeffMat=1;		// set material 0 with E=0
-	mYoungsModulus.push_back(0.);
-
-	bool matExistsAlready=false;
 	for (size_t countVoxels=0;countVoxels<mNumVoxel;++countVoxels)
 	{
 		if (imageValues[countVoxels]<rThresholdMaterialValue)
@@ -965,36 +986,17 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 			mVoxelId.push_back(countVoxels);
 //			std::cout<<" voxel "<<countVoxels<<" elem "<<numElems;
 			++numElems;
+			mYoungsModulus.push_back(rColorToMaterialData[imageValues[countVoxels]]);
+
 			for (int node=0;node<8;++node)
 			{
 				nodeExist.set(allEdgesAtVoxel[8*countVoxels+node],true);
 //				std::cout<<" nodeExist "<<allEdgesAtVoxel[8*countVoxels+node];
 			}
-
-			// nodes are no more set here but not yet elsewhere
-			for(int countMat=1;countMat<numCoeffMat;countMat++)
-			{
-				if (rColorToMaterialData[imageValues[countVoxels]]==mYoungsModulus.at(countMat)) //same modulus already used
-				{
-					mMaterialOfElem.push_back(countMat);
-					countMat=numCoeffMat+1;
-					matExistsAlready=true;
-				}
-				else
-					matExistsAlready=false;
-			}
-				if (!matExistsAlready)
-				{
-					mMaterialOfElem.push_back(numCoeffMat);
-					//set mYoungsModulus and add on material on counter
-					mYoungsModulus.push_back(rColorToMaterialData[imageValues[countVoxels]]);
-					numCoeffMat++;
-					matExistsAlready=true; //matrix already added
-				}
   		}
 	}
 	mNumBasisMaterials=1;
-	mNumMaterials=numCoeffMat;
+	mNumMaterials=mYoungsModulus.size();
  	for (size_t node=0;node<numGridNodes;++node)
 	{
 		if (nodeExist[node])
@@ -1016,17 +1018,17 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 
  	}
 	mResidual.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
+	mExtForces.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
 
- 	if(StructureBase::mVerboseLevel>1)
+ 	if(mVerboseLevel>1)
 	{
 		std::cout<<"[NuTo::StructureGrid] numElems = "<<numElems<<"\n";
 		std::cout<<"[NuTo::StructureGrid] numNodes = "<<mEdgeId.size()<<"\n";
 		std::cout<<"[NuTo::StructureGrid] numNodes = "<<numNodes<<"\n";
-		std::cout<<"[NuTo::StructureGrid] Young's Modulus 0= "<<mYoungsModulus[0]<<"\n";
-		std::cout<<"[NuTo::StructureGrid] Young's Modulus 1= "<<mYoungsModulus[1]<<"\n";
+		std::cout<<"[NuTo::StructureGrid] Young's Modulus elem 0= "<<mYoungsModulus[0]<<"\n";
 	}
 
-	if(StructureBase::mVerboseLevel>5)
+	if(mVerboseLevel>5)
 	{
 		std::cout<<"\n[NuTo::StructureGrid] : voxelId ";
 		for(size_t i=0;i<numElems;++i)
@@ -1044,7 +1046,7 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 		std::cout<<"\n";
 	}
 
-
+#pragma acc data copyin(mVoxelId,mYoungsModulus,mLocalCoefficientMatrix0,mResidual)
 }
 
 //! @brief set displacement boundary conditions
@@ -1063,7 +1065,7 @@ void NuTo::StructureGrid::SetDisplacementConstraints(size_t rDirection,size_t *r
 		mNumConstraintDofs=0;
 	}
 	size_t gridNode=0;
-	if (StructureBase::mVerboseLevel>3)
+	if (mVerboseLevel>3)
 	{
 		std::cout<<"[StructureGrid::SetDisplacementConstraints] constraint regions x: "<<rGridLocation[0]<<" - "<<rGridLocation[1];
 		std::cout<<" y: "<<rGridLocation[2]<<" - "<<rGridLocation[3];
@@ -1089,14 +1091,14 @@ void NuTo::StructureGrid::SetDisplacementConstraints(size_t rDirection,size_t *r
 			}
 		}
 	}
-	if(StructureBase::mVerboseLevel>3)
+	if(mVerboseLevel>3)
 		std::cout<<" numConstraints "<<mNumConstraintDofs<<"\n";
 	rDisplVector=mDisplacements;
 }
 
 //! @brief get DisplacementConstaints
 //! @return dynamic_bitset of constraints
-const boost::dynamic_bitset<> NuTo::StructureGrid::GetDisplacementConstaints() const
+const boost::dynamic_bitset<> NuTo::StructureGrid::GetDisplacementConstaints()
 {
 	return mDofIsConstraint;
 }
@@ -1112,7 +1114,7 @@ const std::vector<double>* NuTo::StructureGrid::GetLocalCoefficientMatrix0(int r
 }
 //! @brief calculate gradient
 
-void NuTo::StructureGrid::Gradient (std::vector<double>& rValues,std::vector<double>& rGradient)const
+void NuTo::StructureGrid::Gradient (std::vector<double>& rValues,std::vector<double>& rGradient)
 {
 	if(!mMatrixFreeMethod)
 		CalculateMatrixVectorProductEBE(rValues,rGradient);
@@ -1124,48 +1126,59 @@ void NuTo::StructureGrid::Gradient (std::vector<double>& rValues,std::vector<dou
 //! @param ... u - parameters input, r - gradient output
 void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,std::vector<double>& r)const
 {
-	// make sure residual vector is reset with zero //
-	for(size_t i=0;i<r.size();++i)
-		r[i]=0;
-	//----------------------------------------------//
+	size_t numParas=r.size();
 	size_t numElems=mVoxelId.size();
 	int dofsElem=24;
+
+
+	// make sure residual vector is reset with zero //
+#pragma acc parallel loop present(r[0:numParas])
+{
+	for(size_t i=0;i<numParas;++i)
+		r[i]=0;
+}
+	//----------------------------------------------//
 	// global external force vector (active dofs)
     //	std::vector<double>  force(mNumParameters,1);
 
+	//move local data in loop for acc ?
+	#pragma acc firstprivate(residual[0,24],displacement[0,24],nodeNumbers[0,numNodes],youngsModulus)
 	std::vector<double> residual (24);
 	std::vector<double> displacement(24);
-	std::vector<size_t> nodeNumbers(8);
+	int numNodes=8;
+	std::vector<size_t> nodeNumbers(numNodes);
+	double youngsModulus=0;
 
 	//loop over all elements
+	#pragma acc parallel loop present(u[0:numParas],r[0:numParas],mVoxelId[0:numElems],mYoungsModulus[0:numElems],	mLocalCoefficientMatrix0[0:576],mDofIsConstraint[0:numParas])
 	for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
 	{
 		//calculate local return vector with all dofs: r=Ku
-#ifndef NODESATELEM
+		#ifndef NODESATELEM
 		CalculateNodesAtElement(elementNumber,nodeNumbers);
-#endif
-		double youngsModulus=0;
-		if(mCurrentGridNumber==0)
-			youngsModulus=mYoungsModulus[mMaterialOfElem[elementNumber]];
-		else
-			youngsModulus=mMGYoungsModulus[elementNumber];
+		#endif
+		youngsModulus=mYoungsModulus[elementNumber];
 
-		for(int node=0;node<8;++node)
+		#pragma acc parallel loop
+		for(int node=0;node<numNodes;++node)
 		{
-#ifdef NODESATELEM
+			#ifdef NODESATELEM
 			nodeNumbers[node]=mNodesAtElem[8*elementNumber+node];
-#endif
+			#endif
 //			displacement[3*node]=u.at(3*nodeNumbers[node]);
 			displacement[3*node]=u[3*nodeNumbers[node]];
 			displacement[3*node+1]=u[3*nodeNumbers[node]+1];
 			displacement[3*node+2]=u[3*nodeNumbers[node]+2];
 		}
+		#pragma acc parallel loop //needed or for each thread initialized already with zero
 		for(int i=0;i<dofsElem;++i)
 		{
 			residual[i]=0;
+			#pragma acc parallel loop
 			for(int j=0;j<dofsElem;++j)
 				residual[i]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*i+j]*displacement[j];
 		}
+
 		for(int node=0;node<8;++node)
 		{
 			if(!mDofIsConstraint[3*nodeNumbers[node]])
@@ -1189,7 +1202,8 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 //    std::clock_t start,end;
 //    start=clock();
 //#endif //SHOW_TIME
-//	std::cout<<"[StructureGrid::CalculateMatrixVectorProductNBN]\n";
+//	if (mVerboseLevel>3)
+//		std::cout<<"[StructureGrid::CalculateMatrixVectorProductNBN] "<<std::endl;
 
 	// make sure residual vector is reset with zero //
 	for(size_t i=0;i<r.size();++i)
@@ -1200,21 +1214,16 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 //	int  nodeNumbers[64];
 	const int nodeNbrOfEdge[64]={0,1,1,2,3,3,4,4,4,4,5,5,6,7,7,8,9,9,10,10,10,10,11,11,12,12,12,12,13,13,13,13,13,13,13,13,14,14,14,14,15,15,16,16,16,16,17,17,18,19,19,20,21,21,22,22,22,22,23,23,24,25,25,26};
 //	const int nbrOfEdges[27]={1,2,1,2,4,2,1,2,1,2,4,2,4,8,4,2,4,2,1,2,1,2,4,2,1,2,1};
-	//loop over all elements
-//	std::cout<<" NBN : numNodes "<<numNodes<<" numGridPoints "<<mNodeId.size()<<"\n";
-//	for(size_t i=0;i<mNodeId.size();++i)
-//		std::cout<<" point "<<i<<" gridPointId "<<mNodeId.at(i)<<"\n";
 
 	for (size_t node=0;node<numNodes;++node)
     {
-//		double* youngsModulus=&mYoungsModulus[mMaterialOfElem[64*node]];
-
 		size_t neighbors[64] ;
 		double youngsModulus[64];
 		for (size_t i=0;i<64;++i)
 		{
 			neighbors[i]=mNodeId[mEdgeId[node]+mNeighborNodesNE[nodeNbrOfEdge[i]]];
-			youngsModulus[i] = mYoungsModulus[mMaterialOfElem[64*node+i]];
+
+			youngsModulus[i] = mYoungsModulus[64*node+i];
 		}
 
 
@@ -1227,7 +1236,7 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 		for(int i=0;i<64;++i)
 		{
 //			std::cout<<" dof "<<3*neighbors[i]<<" node "<<node<<" i "<<i<<" edge neigh "<<mEdgeId[node]+mNeighborNodesNE[nodeNbrOfEdge[i]]<<"="<<mEdgeId[node]<<"+"<<mNeighborNodesNE[nodeNbrOfEdge[i]]<<" nodeId " <<mNodeId[mEdgeId[node]+mNeighborNodesNE[nodeNbrOfEdge[i]]]<<"\n";
-			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i]*u.at(3*neighbors[i]);
+			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i]*u[3*neighbors[i]];
 			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+1]*u[3*neighbors[i]+1];
 			r[3*node+0]+=youngsModulus[i]*mBasisEdgeCoefficientMatrix0[0][9*i+2]*u[3*neighbors[i]+2];
 
@@ -1257,7 +1266,7 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 
 //! @brief get weighting factor for preconditioner
 //! @return rWeight ... weighting factor
-double  NuTo::StructureGrid::GetWeightingFactor()
+double  NuTo::StructureGrid::GetWeightingFactor()const
 {
 	return mWeightingFactor;
 }
@@ -1269,20 +1278,17 @@ void  NuTo::StructureGrid::SetWeightingFactor(double rWeight)
 	mWeightingFactor=rWeight;
 }
 
-void NuTo::StructureGrid::Hessian(std::vector<double>&  rDiagHessian)const
+void NuTo::StructureGrid::Hessian(std::vector<double>&  rDiagHessian)
 {
-//	std::cout<<"[StructureGrid::Hessian] "<<std::endl;
-	//only diagonal preconditioner so fas
-	HessianDiag(rDiagHessian);
+	if(mUseDiagHessian)
+		HessianDiag(rDiagHessian);
 }
-void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
+void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)
 {
-//#ifdef SHOW_TIME
-//    std::clock_t start,end;
-//    start=clock();
-//#endif
-	if (NuTo::CallbackHandlerGrid::GetVerboseLevel()>3)
-		std::cout<<"[StructureGrid::HessianDiag] "<<std::endl;
+#pragma data present(rHessianDiag,mYoungsModulus,mLocalCoefficientMatrix0)
+#pragma acc parallel loop
+	for(size_t i=0;i<rHessianDiag.size();++i)
+		rHessianDiag[i]=0.;
 
 	if (!mMatrixFreeMethod)
 	{
@@ -1290,15 +1296,11 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
 //		std::cout<<"[StructureGrid::HessianDiag] EBE"<<std::endl;
 		std::vector<size_t> nodeNumbers(8);
 
+#pragma acc parallel loop
 		for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
 		{
 			double elemStiff=0;
-			if(mCurrentGridNumber==0)
-				elemStiff=mYoungsModulus[mMaterialOfElem[elementNumber]]*mLocalCoefficientMatrix0[0][0];
-			else
-			{
-				elemStiff=mMGYoungsModulus.at(elementNumber)*mLocalCoefficientMatrix0[0][0];
-			}
+			elemStiff=mYoungsModulus[elementNumber]*mLocalCoefficientMatrix0[0][0];
 #ifdef NODESATELEM
 			nodeNumbers[node]=mNodesAtElem[8*elementNumber+node];
 #else
@@ -1321,20 +1323,9 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
 			double elemStiff[3]={0,0,0};
 			for (size_t edge=28;edge<36;++edge)
 			{
-				if(mCurrentGridNumber==0)
-				{
-					elemStiff[0]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge];
-					elemStiff[1]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge+4];
-					elemStiff[2]+=mYoungsModulus[mMaterialOfElem[64*nodeNumber+edge]]*mBasisEdgeCoefficientMatrix0[0][9*edge+8];
-				}
-				else
-				{
-					elemStiff[0]+=mMGYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge];
-					elemStiff[1]+=mMGYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge+4];
-					elemStiff[2]+=mMGYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge+8];
-
-				}
-//					std::cout<<"elem Stiff of "<<nodeNumber <<" : "<<elemStiff[0]<<" "<<elemStiff[1]<<" "<<elemStiff[2]<<" \n";
+					elemStiff[0]+=mYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge];
+					elemStiff[1]+=mYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge+4];
+					elemStiff[2]+=mYoungsModulus[64*nodeNumber+edge]*mBasisEdgeCoefficientMatrix0[0][9*edge+8];
 			}
 			rHessianDiag[3*nodeNumber]=elemStiff[0];
 			rHessianDiag[3*nodeNumber+1]=elemStiff[1];
@@ -1349,7 +1340,47 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)const
 		{
 					rHessianDiag[i]=1./rHessianDiag[i];
 		}
+		else
+			rHessianDiag[i]=1.;
 	}
+	CalcScalingFactors(rHessianDiag);
+}
+void NuTo::StructureGrid::CalcScalingFactors(std::vector<double> &p)
+{
+    //diagonal scaling with scaling factor
+	double scalefactor=GetWeightingFactor();
+	if(scalefactor==0.)
+	{
+		if (mUseMisesWielandt)
+		{
+			SetMisesWielandt(false); // if not, get a infinite loop
+			// scale factor is 2/(2-lambda_max-lambda_min) [Meister: Num. lin. GLS] for Jacobi-Relaxation-Method
+			NuTo::MisesWielandt myEigenCalculator(GetNumNodes()*3);
+			myEigenCalculator.SetVerboseLevel(GetVerboseLevel());
+			myEigenCalculator.SetCallback(this);
+			myEigenCalculator.Optimize();
+			double lambda_max=myEigenCalculator.GetObjective();
+	//			double lambda_min=lambda_max/2.;
+			// Jacobi-Relaxation-weighting
+	//		scalefactor=2./(2-lambda_max-lambda_min);
+			// my scale factor
+	//		scalefactor=2./(lambda_max*lambda_max);
+			scalefactor=1./lambda_max;
+			// damping Jacobi: lampda of D-1 K Arbenz_2007
+	//		scalefactor=4./(3.*lambda_max);
+			SetMisesWielandt(true);
+		}
+		else
+			// 1 is needed for MisesWielandt (Hessian), make sure it is 1 in standard
+			scalefactor=1.;
+			//   scalefactor=1./(double) mNumParameters;
+		SetWeightingFactor(scalefactor);
+//		std::cout<<"[StructureGrid] weighting factor "<<scalefactor<<"\n";
+
+	}
+	for (size_t count=0; count<GetNumNodes()*3; ++count)
+        p[count] *=scalefactor;
+
 }
 
 void NuTo::StructureGrid::GetEngineeringStrain(const std::vector<double> &rDisplacements, std::vector<double> &rEngineeringStrain)const
@@ -1386,15 +1417,15 @@ void NuTo::StructureGrid::GetEngineeringStress( std::vector<double>& rEngineerin
 	rEngineeringStress.resize(mVoxelId.size()*6);
 	for(size_t element=0;element<mVoxelId.size();++element)
 	{
-			rEngineeringStress[6*element+0]=mYoungsModulus[mMaterialOfElem[element]]
+			rEngineeringStress[6*element+0]=mYoungsModulus[element]
 			                              *(mC11 * rEngineeringStrain[6*element+0]
 			                               +mC12 * rEngineeringStrain[6*element+1]
 			                               +mC12 * rEngineeringStrain[6*element+2]);
-			rEngineeringStress[6*element+1]=mYoungsModulus[mMaterialOfElem[element]]
+			rEngineeringStress[6*element+1]=mYoungsModulus[element]
 			                              *(mC12 * rEngineeringStrain[6*element+0]
 			                               +mC11 * rEngineeringStrain[6*element+1]
 			                               +mC12 * rEngineeringStrain[6*element+2]);
-			rEngineeringStress[6*element+2]=mYoungsModulus[mMaterialOfElem[element]]
+			rEngineeringStress[6*element+2]=mYoungsModulus[element]
 			                              *(mC12 * rEngineeringStrain[6*element+0]
 			                               +mC12 * rEngineeringStrain[6*element+1]
 			                               +mC11 * rEngineeringStrain[6*element+2]);
@@ -1446,15 +1477,51 @@ void NuTo::StructureGrid::ExportVTKStructuredDataFile(const std::string& rFilena
      // close file
 	input.close();
 
-	std::vector<double> rStrainVector(0);
-	GetEngineeringStrain(mDisplacements,rStrainVector);
-//	for(size_t i=0;i<rStrainVector.size();++i)
-//	{
-//		if(rStrainVector[i]!=0.)
-//			std::cout<<" strain["<<i<<"]="<<rStrainVector[i]<<"\n";
-//	}
-	std::vector<double> rStressVector(0);
-	GetEngineeringStress(rStrainVector,rStressVector);
+	size_t numNodes=mEdgeId.size();
+	size_t numEdges=mNodeId.size();
+	size_t countNodes=0;
+	assert(3*(numNodes+1)==mDisplacements.size());
+	file << "POINT_DATA "<<numEdges<<"\n";
+	file << "VECTORS displacements double \n";
+//			   std::cout<<" VTK mDisplacements "<<mDisplacements.size()<<"\n";
+	for (size_t i=0;i<mNodeId.size();++i) // loop over grid points
+	{
+		if(mNodeId[i]<numNodes)
+		{
+//			file<<mDisplacements[3*mNodeId[i]]<<" " <<mDisplacements[3*mNodeId[i]+1]<<" "<<mDisplacements[3*mNodeId[i]+2]<<"\n";
+			file<<mResidual[3*mNodeId[i]]<<" " <<mResidual[3*mNodeId[i]+1]<<" "<<mResidual[3*mNodeId[i]+2]<<"\n";
+			++countNodes;
+		}
+		else
+			file<<"0.0 0.0 0.0\n";
+	}
+	assert(countNodes==numNodes);
+
+	countNodes=0;
+	file << "POINT_DATA "<<numEdges<<"\n";
+	file << "VECTORS constraints int \n";
+	for (size_t i=0;i<numEdges;++i) // loop over grid points
+	{
+		if(mNodeId[i]<numNodes)
+		{
+			file<<mDofIsConstraint[3*mNodeId[i]]<<" " <<mDofIsConstraint[3*mNodeId[i]+1]<<" "<<mDofIsConstraint[3*mNodeId[i]+2]<<"\n";
+			++countNodes;
+		}
+		else
+			file<<"0.0 0.0 0.0\n";
+	}
+	assert(countNodes==numNodes);
+
+//
+//	std::vector<double> rStrainVector(0);
+//	GetEngineeringStrain(mDisplacements,rStrainVector);
+////	for(size_t i=0;i<rStrainVector.size();++i)
+////	{
+////		if(rStrainVector[i]!=0.)
+////			std::cout<<" strain["<<i<<"]="<<rStrainVector[i]<<"\n";
+////	}
+//	std::vector<double> rStressVector(0);
+//	GetEngineeringStress(rStrainVector,rStressVector);
 
 //	for (size_t i=0;i<rStrainVector.size();++i)
 //	{
@@ -1463,53 +1530,36 @@ void NuTo::StructureGrid::ExportVTKStructuredDataFile(const std::string& rFilena
 //		if(abs(rStressVector[i])<minDigit)
 //			rStressVector[i]=0.0;
 //	}
-	size_t numNodes=mEdgeId.size();
-	assert(3*(numNodes+1)==mDisplacements.size());
-	file << "POINT_DATA "<<mNodeId.size()<<"\n";
-	file << "VECTORS displacements double \n";
-//			   std::cout<<" VTK mDisplacements "<<mDisplacements.size()<<"\n";
-	size_t countNodes=0;
-	for (size_t i=0;i<mNodeId.size();++i) // loop over grid points
-	{
-		if(mNodeId[i]<numNodes)
-		{
-			file<<mDisplacements[3*mNodeId[i]]<<" " <<mDisplacements[3*mNodeId[i]+1]<<" "<<mDisplacements[3*mNodeId[i]+2]<<"\n";
-			++countNodes;
-		}
-		else
-			file<<"0.0 0.0 0.0\n";
-	}
-	assert(countNodes==numNodes);
-    file << "CELL_DATA "<<mNumVoxel<<"\n";
-	file << "TENSORS strains double \n";
-	size_t j=0;
-	for (size_t i=0;i<mNumVoxel;++i)
-	{
-		if(mVoxelId[j]==i)
-		{
-			file<<rStrainVector[6*j]<<" "<<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+4]<<"\n"
-			  <<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+1]<<" "<<rStrainVector[6*j+3]<<"\n"
-			  <<rStrainVector[6*j+4]<<" "<<rStrainVector[6*j+3]<<" "<<rStrainVector[6*j+2]<<"\n";
-			++j;
-		}
-		else
-			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
-	}
-
-	file << "TENSORS stress double \n";
-	j=0;
-	for (size_t i=0;i<mNumVoxel;++i)
-	{
-		if(mVoxelId[j]==i)
-		{
-			file<<rStressVector[6*j]<<" "<<rStressVector[6*j+5]<<" "<<rStressVector[6*j+4]<<"\n"
-			  <<rStressVector[6*j+5]<<" "<<rStressVector[6*j+1]<<" "<<rStressVector[6*j+3]<<"\n"
-			  <<rStressVector[6*j+4]<<" "<<rStressVector[6*j+3]<<" "<<rStressVector[6*j+2]<<"\n";
-			++j;
-		}
-		else
-			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
-	}
+//    file << "CELL_DATA "<<mNumVoxel<<"\n";
+//	file << "TENSORS strains double \n";
+//	size_t j=0;
+//	for (size_t i=0;i<mNumVoxel;++i)
+//	{
+//		if(mVoxelId[j]==i)
+//		{
+//			file<<rStrainVector[6*j]<<" "<<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+4]<<"\n"
+//			  <<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+1]<<" "<<rStrainVector[6*j+3]<<"\n"
+//			  <<rStrainVector[6*j+4]<<" "<<rStrainVector[6*j+3]<<" "<<rStrainVector[6*j+2]<<"\n";
+//			++j;
+//		}
+//		else
+//			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
+//	}
+//
+//	file << "TENSORS stress double \n";
+//	j=0;
+//	for (size_t i=0;i<mNumVoxel;++i)
+//	{
+//		if(mVoxelId[j]==i)
+//		{
+//			file<<rStressVector[6*j]<<" "<<rStressVector[6*j+5]<<" "<<rStressVector[6*j+4]<<"\n"
+//			  <<rStressVector[6*j+5]<<" "<<rStressVector[6*j+1]<<" "<<rStressVector[6*j+3]<<"\n"
+//			  <<rStressVector[6*j+4]<<" "<<rStressVector[6*j+3]<<" "<<rStressVector[6*j+2]<<"\n";
+//			++j;
+//		}
+//		else
+//			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
+//	}
     file.close();
 }
 
@@ -1521,6 +1571,10 @@ std::vector<double>&  NuTo::StructureGrid::GetResidual()
 {
 	return mResidual;
 }
+std::vector<double>&  NuTo::StructureGrid::GetExtForces()
+{
+	return mExtForces;
+}
 
 void NuTo::StructureGrid::SetParameters(std::vector<double>& rParameters)
 {
@@ -1530,6 +1584,11 @@ void NuTo::StructureGrid::SetParameters(std::vector<double>& rParameters)
 void NuTo::StructureGrid::SetResidual(std::vector<double>& rResidual)
 {
 	mResidual=rResidual;
+}
+
+void NuTo::StructureGrid::SetExtForces(std::vector<double>& rExtForces)
+{
+	mExtForces=rExtForces;
 }
 
 //! @brief MultiGrid routines
@@ -1575,6 +1634,9 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 	rCoarseGrid->mVoxelSpacing[1]=2*mVoxelSpacing[1];
 	rCoarseGrid->mVoxelSpacing[2]=2*mVoxelSpacing[2];
 	rCoarseGrid->SetNumBasisMaterials(GetNumBasisMaterials());
+	rCoarseGrid->SetWeightingFactor(GetWeightingFactor());
+	rCoarseGrid->SetMisesWielandt(GetMisesWielandt());
+	rCoarseGrid->SetMatrixFreeMethod(GetMatrixFreeMethod());
 	rCoarseGrid->SetCurrentGridNumber(GetCurrentGridNumber()+1);
 	rCoarseGrid->SetFineGridPtr(this);
 	SetCoarseGridPtr(rCoarseGrid);
@@ -1603,30 +1665,12 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 					if(rElemId[voxel+neighborVoxel[i]]<numElems) //element exist in fine grid
 					{
 						//create coarse element
-						if(mCurrentGridNumber)
-							rYoungsModulus+=GetElementYoungsModulus(rElemId[voxel+neighborVoxel[i]]); // coarse grid material
-						else
-							rYoungsModulus+=mYoungsModulus[mMaterialOfElem[rElemId[voxel+neighborVoxel[i]]]]; // coarse grid material
+//							rYoungsModulus+=GetElementYoungsModulus(rElemId[voxel+neighborVoxel[i]]); // coarse grid material
+							rYoungsModulus+=mYoungsModulus[rElemId[voxel+neighborVoxel[i]]]; // coarse grid material
 					}
 				}
-				rCoarseGrid->mMGYoungsModulus.push_back(rYoungsModulus*0.125*2); // average and length considered
 
-				int matSet=false;
-				for(int numMat=0;numMat<rCoarseGrid->mNumMaterials;++numMat)
-				{
-						if(	rCoarseGrid->mYoungsModulus[numMat]==rYoungsModulus*0.125*2)
-						{
-							rCoarseGrid->mMaterialOfElem.push_back(numMat);
-							matSet=true;
-							break;
-						}
-				}
-				if(matSet==false) //new material of first material
-				{
-					rCoarseGrid->mYoungsModulus.push_back(rYoungsModulus*0.125*2);
-					rCoarseGrid->mMaterialOfElem.push_back(rCoarseGrid->mNumMaterials);
-					++(rCoarseGrid->mNumMaterials);
-				}
+				rCoarseGrid->mYoungsModulus.push_back(rYoungsModulus*0.125*2); // average and length considered
 				++coarseGridNumElements; // one more already
 				rCoarseGrid->mVoxelId.push_back((dim2)*(rGridDimension[0])*(rGridDimension[1])
 						 +(dim1)*(rGridDimension[0]) + dim0);
@@ -1649,7 +1693,6 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 			}
 		}
 	}
-	assert(mMaterialOfElem.size()==mVoxelId.size());
 	//create nodes
 	size_t numNodes=0;
 //		mNodeId. neue größe
@@ -1714,7 +1757,6 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 	mpCoarseGrid=rCoarseGrid;
 }
 
-
 //! @brief MultiGrid routines
 //! @brief set pointer to coarser grid
 void NuTo::StructureGrid::SetCoarseGridPtr(NuTo::StructureGrid* rCoarseGrid)
@@ -1743,11 +1785,13 @@ void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restriction
 
 		rRestriction.resize(neighbors);
 		rProlongation.resize(neighbors);
-		double unitFactor=1/64.;
+		// 1/8:  ..........  r coarse first step = r coarse calculated r_c=-K_c*u_c
+		double unitFactorRestriction=1./8.;
+		double unitFactorProlongation=1./8.;
 		for (int i=0;i<neighbors;++i)
 		{
-			rRestriction[i]=helpRestriction[i]*unitFactor;
-			rProlongation[i]=helpRestriction[i]*unitFactor;
+			rRestriction[i]=helpRestriction[i]*unitFactorRestriction;
+			rProlongation[i]=helpRestriction[i]*unitFactorProlongation;
 		}
 	}
 	else
@@ -1758,7 +1802,8 @@ void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restriction
 }
 void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 {
-	std::cout<<"[StructureGrid::Restriction] \n";
+	if(CallbackHandlerGrid::mVerboseLevel>2)
+		std::cout<<"[StructureGrid::Restriction] \n";
 	std::vector<size_t> rCoarseDimension=mpCoarseGrid->GetGridDimension();
 	std::vector<size_t> rFineDimension=GetGridDimension();
 
@@ -1767,72 +1812,8 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 		SetNeighborNodesNE();
 
 	int fineGridEdge=0;
-	for (int node = 0; node < mpCoarseGrid->GetNumNodes(); ++node)
-	{
-		mpCoarseGrid->mDisplacements[3*node+0]=0;
-		mpCoarseGrid->mDisplacements[3*node+1]=0;
-		mpCoarseGrid->mDisplacements[3*node+2]=0;
-
-		std::vector<double> help={0,0,0};
-		//corresponding fine grid node
-		fineGridEdge=(int) mpCoarseGrid->mFineEdgeId.at(node);
-		double sum=0.;
-		if(!mpCoarseGrid->mDofIsConstraint[3*node])
-		{
-			for (int i = 0; i < 27; ++i)
-			{
-				if((int) mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-				{
-					help[0]+=mResidual[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])]*rRestrictionFactor[i];
-					sum+=rRestrictionFactor[i];
-				}
-			}
-			if(sum)
-				mpCoarseGrid->mResidual[3*node]=-help[0]/sum;
-			else
-				mpCoarseGrid->mResidual[3*node]=-help[0];
-		}
-
-		if(!mpCoarseGrid->mDofIsConstraint[3*node+1])
-		{
-			for (int i = 0; i < 27; ++i)
-			{
-				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[1]+=mResidual[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+1]*rRestrictionFactor[i];
-			}
-			if(sum)
-				mpCoarseGrid->mResidual[3*node+1]=-help[1]/sum;
-			else
-				mpCoarseGrid->mResidual[3*node+1]=-help[1];
-
-		}
-		if(!mpCoarseGrid->mDofIsConstraint[3*node+2])
-		{
-			for (int i = 0; i < 27; ++i)
-			{
-				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[2]+=mResidual[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+2]*rRestrictionFactor[i];
-			}
-			if(sum)
-				mpCoarseGrid->mResidual[3*node+2]=-help[2]/sum;
-			else
-				mpCoarseGrid->mResidual[3*node+2]=-help[2];
-		}
-	}
-}
-
-void NuTo::StructureGrid::StartRestriction(std::vector<double> &rRestrictionFactor)
-{
-	std::cout<<"[StructureGrid::StartRestriction] \n";
-	std::vector<size_t> rCoarseDimension=mpCoarseGrid->GetGridDimension();
-	std::vector<size_t> rFineDimension=GetGridDimension();
-
-	// 27 neighbor nodes
-	if (mNeighborNodesNE.empty())
-		SetNeighborNodesNE();
-
-	int fineGridEdge=0;
-	for (int node = 0; node < mpCoarseGrid->GetNumNodes(); ++node)
+	int rNumNodes=mpCoarseGrid->GetNumNodes();
+	for (int node = 0; node < rNumNodes; ++node)
 	{
 		mpCoarseGrid->mDisplacements[3*node+0]=0;
 		mpCoarseGrid->mDisplacements[3*node+1]=0;
@@ -1844,92 +1825,62 @@ void NuTo::StructureGrid::StartRestriction(std::vector<double> &rRestrictionFact
 
 		std::vector<double> help={0,0,0};
 		//corresponding fine grid node
-		fineGridEdge=(int) mpCoarseGrid->mFineEdgeId.at(node);
-		double sum=0.;
+		fineGridEdge=(int) mpCoarseGrid->mFineEdgeId[node];
 		if(!mpCoarseGrid->mDofIsConstraint[3*node])
 		{
 			for (int i = 0; i < 27; ++i)
 			{
-				if((int) mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-				{
-					help[0]+=mDisplacements[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])]*rRestrictionFactor[i];
-					sum+=rRestrictionFactor[i];
-				}
+				if(mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[0]+=mResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]]*rRestrictionFactor[i];
 			}
-			if(sum)
-				mpCoarseGrid->mDisplacements[3*node]=-help[0]/sum;
-			else
-				mpCoarseGrid->mDisplacements[3*node]=-help[0];
+			mpCoarseGrid->mResidual[3*node]=help[0];
 		}
-		else if (mDofIsConstraint[3*mNodeId.at(fineGridEdge)])
-		{
-			mpCoarseGrid->mDisplacements[3*node]=mDisplacements[3*mNodeId.at(fineGridEdge)];
-		}
+
 		if(!mpCoarseGrid->mDofIsConstraint[3*node+1])
 		{
 			for (int i = 0; i < 27; ++i)
 			{
-				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[1]+=mDisplacements[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+1]*rRestrictionFactor[i];
+				if(mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[1]+=mResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]+1]*rRestrictionFactor[i];
 			}
-			if(sum)
-				mpCoarseGrid->mDisplacements[3*node+1]=-help[1]/sum;
-			else
-				mpCoarseGrid->mDisplacements[3*node+1]=-help[1];
+			mpCoarseGrid->mResidual[3*node+1]=help[1];
 
 		}
-		else if (mDofIsConstraint[3*mNodeId.at(fineGridEdge)+1])
-		{
-			mpCoarseGrid->mDisplacements[3*node+1]=mDisplacements[3*mNodeId.at(fineGridEdge)+1];
-		}
-
 		if(!mpCoarseGrid->mDofIsConstraint[3*node+2])
 		{
 			for (int i = 0; i < 27; ++i)
 			{
-				if((int)mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[2]+=mDisplacements[3*mNodeId.at(fineGridEdge+mNeighborNodesNE[i])+2]*rRestrictionFactor[i];
+				if(mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
+					help[2]+=mResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]+2]*rRestrictionFactor[i];
 			}
-			if(sum)
-				mpCoarseGrid->mDisplacements[3*node+2]=-help[2]/sum;
-			else
-				mpCoarseGrid->mDisplacements[3*node+2]=-help[2];
-		}
-		else if (mDofIsConstraint[3*mNodeId.at(fineGridEdge)+2])
-		{
-			mpCoarseGrid->mDisplacements[3*node+2]=mDisplacements[3*mNodeId.at(fineGridEdge)+2];
+			mpCoarseGrid->mResidual[3*node+2]=help[2];
 		}
 	}
 }
 
 void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor)
 {
-	std::cout<<"[StructureGrid::Prolongation] \n";
+//		std::cout<<"[StructureGrid::Prolongation] \n";
+	size_t numFineNodes=mpFineGrid->GetNumNodes();
 	std::vector<size_t> rCoarseDimension=GetGridDimension();
 	std::vector<size_t> rFineDimension=mpFineGrid->GetGridDimension();
-
 	// 27 neighbor nodes
 	if (mpFineGrid->mNeighborNodesNE.empty())
 		SetNeighborNodesNE();
 	size_t numNeighbors=mpFineGrid->mNeighborNodesNE.size();
 	size_t fineGridEdge=0;
-
-//	std::cout<<__FILE__<<" "<<__LINE__<<"numNodes "<<GetNumNodes()<<"\n";
-	for (int node = 0; node < GetNumNodes(); ++node)
+	int numNodes=GetNumNodes();
+	for (int node = 0; node < numNodes; ++node)
 	{
 		//corresponding fine grid node
 		fineGridEdge=mFineEdgeId[node];
 		for (size_t i = 0; i < numNeighbors; ++i)
 		{
-			int nodeId=mpFineGrid->mNodeId[fineGridEdge+mpFineGrid->mNeighborNodesNE[i]];
-//			std::cout<<"[StructureGrid::Prolongation] "<<__LINE__<<" node "<<node<<" fine node "<<nodeId<<" \n";
-			if (nodeId<mpFineGrid->GetNumNodes())
+			size_t nodeId=mpFineGrid->mNodeId[fineGridEdge+mpFineGrid->mNeighborNodesNE[i]];
+			if (nodeId<numFineNodes)
 			{
 				if(!mpFineGrid->mDofIsConstraint[3*nodeId])
-				{
-//					std::cout<<mDisplacements[3*node]*rProlongationFactor[i]<<" ";
 					mpFineGrid->mDisplacements[3*nodeId]+=mDisplacements[3*node]*rProlongationFactor[i];
-				}
 				if(!mpFineGrid->mDofIsConstraint[3*nodeId+1])
 					mpFineGrid->mDisplacements[3*nodeId+1]+=mDisplacements[3*node+1]*rProlongationFactor[i];
 				if(!mpFineGrid->mDofIsConstraint[3*nodeId+2])
@@ -1937,7 +1888,7 @@ void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor)
 			}
 		}
 	}
-	for (int dof=0;dof < 3*(mpFineGrid->GetNumNodes()+1);++dof)
+	for (size_t dof=0;dof < 3*(numFineNodes+1);++dof)
 		mpFineGrid->mResidual[dof]=0;
 }
 
@@ -1991,16 +1942,11 @@ void  NuTo::StructureGrid::AnsysInput(std::vector<double> &rDisplVector) const
     file<<"alls\n";
     int mat=1;
     file<<"type,1 \n mat,"<<mat<<" \n";
-    int numElems=(int) mMaterialOfElem.size();
     std::vector<size_t> nodes(8);
     // attention for more materials
-    for (int i=0;i<numElems;++i)
+    for(int i=0;i<countMat;++i)
     {
-		if(mMaterialOfElem[i]+1!=mat)
-		{
-			mat=mMaterialOfElem[i]+1;
-			file<<"mat,"<<mat<<"\n";
-		}
+		file<<"mat,"<<i+1<<"\n";
 		CalculateNodesAtElement(i,nodes);
  		file << "en," << i + 1 << "," << nodes[0] + 1
 				<< "," <<nodes[1] + 1 << ","
@@ -2024,6 +1970,7 @@ void  NuTo::StructureGrid::LSDynaInput() const
       assert(mNumMaterials);
     assert((int) mYoungsModulus.size()==mNumMaterials);
     int countMat=mNumMaterials;
+    // change so, that materials arent doubled
     if(file)
     {
 			//material id, youngsmodulus, nu
@@ -2051,19 +1998,11 @@ void  NuTo::StructureGrid::LSDynaInput() const
 			}
 		}
 		file<<"\n";
-		int mat=1;
-		int numElems=(int) mMaterialOfElem.size();
-		std::vector<size_t> nodes(8);
-		// attention for more materials
-		for (int i=0;i<numElems;++i)
+		for(size_t elems=0;elems<mVoxelId.size();++elems)
 		{
-			if(mMaterialOfElem[i]+1!=mat)
-			{
-				mat=mMaterialOfElem[i]+1;
-			}
-			CalculateNodesAtElement(i,nodes);
-			// element id, material id, node 1, 2, 3, ..
-			file <<  i + 1 << "," <<mat << ","<< nodes[0] + 1
+			std::vector<size_t> nodes(8);
+			CalculateNodesAtElement(elems,nodes);
+			file <<  elems + 1 << "," <<elems+1 << ","<< nodes[0] + 1
 					<< "," <<nodes[1] + 1 << ","
 					<< nodes[2] + 1 << ","
 					<< nodes[3] + 1 << ","
@@ -2073,6 +2012,8 @@ void  NuTo::StructureGrid::LSDynaInput() const
 					<< nodes[7] + 1 << "\n";
 
 		}
+			// element id, material id, node 1, 2, 3, ..
+
     }
     file.close();
 }

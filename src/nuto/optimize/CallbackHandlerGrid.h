@@ -76,19 +76,19 @@ public:
 		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetResidual function not implemented in CallbackHandlerGrid object.");
     }
 
-    virtual void Gradient (std::vector<double>& rValue,std::vector<double>& rGradient)const
+    virtual void Gradient (std::vector<double>& rValue,std::vector<double>& rGradient)
 	{
 		throw OptimizeException("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
 	}
 
-	virtual void Hessian (std::vector<double>& rHessian)const
+	virtual void Hessian (std::vector<double>& rHessian)
 	{
 		throw OptimizeException("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
 	}
 
 	//! @brief get DisplacementConstaints
 	//! @return dynamic_bitset of constraints
-	virtual const boost::dynamic_bitset<> GetDisplacementConstaints() const
+	virtual const boost::dynamic_bitset<> GetDisplacementConstaints()
 	{
 		throw OptimizeException("[CallbackHandlerGrid::GetDisplacementConstaints] GetDisplacementConstaints function not implemented in CallbackHandlerGrid object.");
 	}

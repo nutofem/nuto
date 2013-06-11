@@ -681,7 +681,7 @@ public:
     //! @brief calculates the global integration point coordinates
     //! @param rElemIdent  identifier for the element
     //! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
-    void ElementGetIntegrationPointCoordinates(int rElementId, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
+    void ElementGetIntegrationPointCoordinates(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
 
     //! @brief calculates the maximum damage in all elements
     //! @param rElemIdent  identifier for the element
