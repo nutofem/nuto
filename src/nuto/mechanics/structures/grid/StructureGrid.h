@@ -159,6 +159,12 @@ public:
     //! @param nodeNumbers ... nodes at element
     void CalculateNodesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers)const;
 
+    //! @brief ..calculate node numbers and node coordinates at one element
+    //! @param elementNumber ... number of the element
+    //! @param nodeNumbers ... nodes at element
+    //! @param nodalCoords ... nodal coordinates at element
+    void CalculateNodalCoordinatesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers,std::vector<double>& nodalCoord)const;
+
     //! @brief set material number at edges for node-edge based routines
     void SetMaterialNumberForEdges();
 
@@ -332,9 +338,8 @@ protected:
     std::vector<double> mVoxelSpacing; //spacing between center of neighbor voxels / dimension of each voxel
     std::vector<size_t> mGridDimension; //dimension of the voxel model
     std::vector<double> mGridOrigin;// origin of the model , in the center of the first voxel
-//    boost::ptr_map<int,NodeBase> mNodeMap;
-//    boost::ptr_map<int,ElementBase> mElementMap;
     std::string mImageDataFile;
+//    bool mMortonOrderIsTrue;
 	size_t mNumConstraintDofs;
     std::vector<std::vector<double> > mLocalCoefficientMatrix0;
     std::vector<std::vector<double> > mBasisEdgeCoefficientMatrix0;

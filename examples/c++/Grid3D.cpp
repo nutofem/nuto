@@ -35,9 +35,9 @@ int main()
 #endif
 	// read entries
 	NuTo::StructureGrid myGrid(3); // also creates CallbackHandler
-	myGrid.SetVerboseLevel(0);
-//	std::string inputFile="InputTest";
-	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
+	myGrid.SetVerboseLevel(2);
+	std::string inputFile="InputTest";
+//	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
 	myGrid.ImportFromVtkASCIIFileHeader(inputFile);
 
 	//calculate one element stiffness matrix with E=1
@@ -169,7 +169,6 @@ end=clock();
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
 	// start analysis
-
 	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
 	myOptimizer.SetVerboseLevel(1);
 	myOptimizer.SetCallback( (&myGrid));

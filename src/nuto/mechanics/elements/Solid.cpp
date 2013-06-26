@@ -274,7 +274,6 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			//calculate output
 			for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
 			{
-				std::cout << "set it->first " << it->first << std::endl;
 				switch(it->first)
 				{
 				case Element::INTERNAL_GRADIENT:
