@@ -87,6 +87,7 @@ structures/unstructured/StructureCrack.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES
+elements/BoundaryGradientDamage1D.cpp
 elements/Brick8N.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp

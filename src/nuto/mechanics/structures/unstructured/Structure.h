@@ -342,6 +342,27 @@ public:
     //! @return a NuTo::FullVector<int,Eigen::Dynamic> containing the element numbers
     NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
+    //! @param rGroupNumberElements group for elements on the real boundary
+    //! @param rGroupNumberBoundaryNodes nodes on the boundary
+    //! @param rVirtualBoundary thickness of the virtual boundary element (related to the nonlocal radius)
+    //! @param rElementType element type
+    //! @param rNodeIdents Identifier for the corresponding nodes
+    void BoundaryElementsCreate (const std::string& rElementType,
+    		int rGroupNumberElements, int rGroupNumberBoundaryNodes,
+    		double rVirtualBoundary,
+    		const std::string& rElementDataType, const std::string& rIpDataType);
+
+    //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
+    //! @param rGroupNumberElements group for elements on the real boundary
+    //! @param rGroupNumberBoundaryNodes nodes on the boundary
+    //! @param rVirtualBoundary thickness of the virtual boundary element (related to the nonlocal radius)
+    //! @param rElementType element type
+    //! @param rNodeIdents Identifier for the corresponding nodes
+    void BoundaryElementsCreate (Element::eElementType rType,
+    		const Group<ElementBase>* rGroupElements, const Group<NodeBase>* rGroupBoundaryNodes,
+    		double rVirtualBoundary,
+    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+
     //! @brief Deletes an element
     //! @param rElementNumber element number
     void ElementDelete (int rElementNumber);

@@ -4,6 +4,7 @@
 #include <boost/tokenizer.hpp>
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
+#include "nuto/mechanics/elements/BoundaryGradientDamage1D.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
@@ -11,6 +12,9 @@
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/nodes/NodeDof.h"
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
+#include "nuto/mechanics/nodes/NodeCoordinatesDof.h"
 //! @brief returns the number of nodes
 //! @return number of nodes
 int NuTo::Structure::GetNumElements() const
@@ -114,6 +118,8 @@ void NuTo::Structure::ElementInfo(int rVerboseLevel)const
     }
 }
 
+
+
 //! @brief Creates an element
 //! @param rElementIdent identifier for the element
 //! @param rElementType element type
@@ -123,6 +129,247 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 {
 	return ElementCreate(rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA") );
 }
+
+
+//! @param rGroupNumberElements group for elements on the real boundary
+//! @param rGroupNumberBoundaryNodes nodes on the boundary
+//! @param rElementType element type
+//! @param rNodeIdents Identifier for the corresponding nodes
+void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
+		int rGroupNumberElements, int rGroupNumberBoundaryNodes,
+		double rVirtualBoundary,
+		const std::string& rElementDataType, const std::string& rIpDataType)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    // get element type
+    std::string upperCaseElementType;
+    std::transform(rElementType.begin(), rElementType.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
+
+    Element::eElementType elementType;
+    if (upperCaseElementType=="BOUNDARYGRADIENTDAMAGE1D")
+    {
+    	elementType = NuTo::Element::BOUNDARYGRADIENTDAMAGE1D;
+    }
+    else
+    {
+    	throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Element type "+upperCaseElementType +" does not exist.");
+    }
+
+    //find groups
+	boost::ptr_map<int,GroupBase>::iterator itGroupElements = mGroupMap.find(rGroupNumberElements);
+    if (itGroupElements==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
+    if (itGroupElements->second->GetType()!=NuTo::Groups::Elements)
+    	throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not an element group.");
+
+	boost::ptr_map<int,GroupBase>::iterator itGroupBoundaryNodes = mGroupMap.find(rGroupNumberBoundaryNodes);
+    if (itGroupBoundaryNodes==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
+    if (itGroupBoundaryNodes->second->GetType()!=NuTo::Groups::Nodes)
+    	throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not a node group.");
+
+
+    // check element data
+    std::string upperCaseElementDataType;
+    std::transform(rElementDataType.begin(), rElementDataType.end(), std::back_inserter(upperCaseElementDataType), (int(*)(int)) toupper);
+
+    ElementData::eElementDataType elementDataType;
+    if (upperCaseElementDataType=="CONSTITUTIVELAWIP")
+    {
+    	elementDataType = NuTo::ElementData::CONSTITUTIVELAWIP;
+    }
+    else
+	{
+		throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Element data type "+upperCaseElementDataType +" does not exist.");
+	}
+
+    // check ip data
+    std::string upperCaseIpDataType;
+    std::transform(rIpDataType.begin(), rIpDataType.end(), std::back_inserter(upperCaseIpDataType), (int(*)(int)) toupper);
+
+    IpData::eIpDataType ipDataType;
+    if (upperCaseIpDataType=="STATICDATA")
+   	{
+    	ipDataType = NuTo::IpData::STATICDATA;
+   	}
+	else
+	{
+		throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Ip data type "+upperCaseIpDataType +" does not exist.");
+	}
+
+    BoundaryElementsCreate(elementType,
+    		itGroupBoundaryNodes->second->AsGroupElement(), itGroupBoundaryNodes->second->AsGroupNode(),
+    		rVirtualBoundary,
+    		elementDataType, ipDataType);
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::BoundaryElementsCreate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
+//! @param rGroupNumberElements group for elements on the real boundary
+//! @param rGroupNumberBoundaryNodes nodes on the boundary
+//! @param rElementType element type
+//! @param rNodeIdents Identifier for the corresponding nodes
+void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
+		const Group<ElementBase>* rGroupElements, const Group<NodeBase>* rGroupBoundaryNodes,
+		double rVirtualBoundary,
+		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+{
+	int order(3);
+	double deltaL(rVirtualBoundary/order);
+
+    for (Group<ElementBase>::const_iterator itElement=rGroupElements->begin(); itElement!=rGroupElements->end();itElement++)
+    {
+        try
+        {
+        	std::map<NodeBase*,std::vector<NodeBase*> > copiedNodes;
+
+        	//better check local dimension, but this is in general identical
+    		switch(itElement->second->GetGlobalDimension())
+    		{
+    		case 1:
+    		{
+    			//in 1D it is either the first or the last node of the element
+      			NodeBase* nodePtr [2];
+      			nodePtr[0] = itElement->second->GetNode(0);
+      			nodePtr[1] = itElement->second->GetNode(itElement->second->GetNumNodes()-1);
+
+       			int nodeNumber[2];
+       			double coordinate[2];
+
+       			for (int count=0; count<2; count++)
+       			{
+       				nodeNumber[count] = NodeGetId(nodePtr[count]);
+       				nodePtr[count]->GetCoordinates1D(&(coordinate[count]));
+       			}
+
+       			//loop over first/last node of element
+       			for (int countNode=0; countNode<2; countNode++)
+       			{
+					if (rGroupBoundaryNodes->Contain(nodeNumber[countNode]))
+					{
+						int numTimeDerivatives = nodePtr[countNode]->GetNumTimeDerivatives();
+						int numNonlocalEqPlasticStrain = nodePtr[countNode]->GetNumNonlocalEqPlasticStrain();
+						int numNonlocalNonlocalTotalStrain = nodePtr[countNode]->GetNumNonlocalTotalStrain();
+						//check, if the virtual boundary extends to the left or to the right
+						std::vector<NodeBase*> newNodes(order+1);
+						newNodes[0] = nodePtr[countNode];
+						for (int countOrder=0; countOrder<order; countOrder++)
+						{
+							NodeBase* newNodePtr;
+							double NewCoordinate;
+							if (countNode==0)
+							{
+								if (coordinate[0]<coordinate[1])
+									//boundary extends to the left
+									NewCoordinate = coordinate[0]-(countNode+1)*deltaL;
+								else
+									//boundary extends to the right
+									NewCoordinate = coordinate[0]+(countNode+1)*deltaL;
+							}
+							else
+							{
+								if (coordinate[0]<coordinate[1])
+									//boundary extends to the right
+									NewCoordinate = coordinate[1]+(countNode+1)*deltaL;
+								else
+									//boundary extends to the right
+									NewCoordinate = coordinate[1]-(countNode+1)*deltaL;
+							}
+
+							switch(numTimeDerivatives)
+							{
+							case 0:
+								if (numNonlocalEqPlasticStrain==1)
+									newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,1,0>();
+								if (numNonlocalNonlocalTotalStrain==1)
+									newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,1>();
+								break;
+							case 2:
+								if (numNonlocalEqPlasticStrain==1)
+									newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,1,0>();
+								if (numNonlocalNonlocalTotalStrain==1)
+									newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,0,1>();
+								break;
+							}
+
+							newNodePtr->SetCoordinates1D(&NewCoordinate);
+
+							//find unused integer id
+							int newNodeId(mNodeMap.size());
+							boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(newNodeId);
+							while (it!=mNodeMap.end())
+							{
+								newNodeId++;
+								it = mNodeMap.find(newNodeId);
+							}
+							// add new node to map
+							this->mNodeMap.insert(newNodeId, newNodePtr);
+
+							newNodes[countOrder+1] = newNodePtr;
+						}
+						//add to map (copied nodes with the original boundary node
+						//this has to be done for 2D and 3D, but for 1D, boundary nodes belong only to a single element
+						//copiedNodes[nodePtr1] = newNodes;
+
+						//create the boundary element
+						ElementBase* newElementPtr = new NuTo::BoundaryGradientDamage1D(this,newNodes,
+								itElement->second->AsTruss(),countNode,
+								NuTo::ElementData::CONSTITUTIVELAWIP,
+								IntegrationType::IntegrationType1D2NGauss2Ip,
+								IpData::STATICDATA);
+
+					}//if (rGroupBoundaryNodes->Contain(nodeNumber1))
+				}//for (int count=0; count<2; count++)
+    		}
+    		break;
+    		case 2:
+    			// determine a list with the extended nodes that determine the virtual boundary elements
+    			throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] not yet implemented for 2D.");
+   			break;
+    		case 3:
+    			// determine a list with the extended nodes that determine the virtual boundary elements
+    			throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] not yet implemented for 3D.");
+    		break;
+    		default:
+    			throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Dimension of the real boundary elements is neither 1,2 or 3.");
+    		}
+
+        	this->mNodeNumberingRequired  = true;
+        }
+        catch(NuTo::MechanicsException &e)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+            e.AddMessage("[NuTo::StructureBase::BoundaryElementsCreate] Error creating boundary element for element "
+            	+ ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+        	throw NuTo::MechanicsException
+        	   ("[NuTo::StructureBase::BoundaryElementsCreate] Error creating boundary element for element " + ss.str() + ".");
+        }
+    }
+
+
+
+
+}
+
+
+
 
 //! @brief Creates an element
 //! @param rElementIdent identifier for the element

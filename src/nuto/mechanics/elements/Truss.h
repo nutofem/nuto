@@ -306,7 +306,7 @@ public:
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
     Truss* AsTruss();
 
-    #ifdef ENABLE_SERIALIZATION
+#ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version

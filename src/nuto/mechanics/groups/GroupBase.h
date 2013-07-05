@@ -89,7 +89,7 @@ public:
 	//! @brief check if a group contains the entry
 	//! @param rId id of the entry
     //! @return TRUE if rMember is in the group, FALSE otherwise
-	virtual bool Contain(int rId)=0;
+	virtual bool Contain(int rId)const=0;
 
     //! @brief replaces a ptr by another one
     //! @param rOldPtr

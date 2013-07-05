@@ -82,7 +82,7 @@ public:
     //! @brief check if a group contains the entry
     //! @param rElementPtr Element pointer
     //! @return TRUE if rMember is in the group, FALSE otherwise
-    bool Contain(int rId)
+    bool Contain(int rId)const
     {
         if (this->find(rId)==this->end())
         	return false;
