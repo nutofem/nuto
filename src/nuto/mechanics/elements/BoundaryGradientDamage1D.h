@@ -32,7 +32,7 @@ public:
     BoundaryGradientDamage1D(const StructureBase* rStructure,
     		std::vector<NuTo::NodeBase* >& rNodes,
     		Truss* rRealBoundaryElement,
-    		int rEdgeRealBoundaryElement,
+    		bool rEdgeRealBoundaryElement,
     		ElementData::eElementDataType rElementDataType,
     		IntegrationType::eIntegrationType rIntegrationType,
     		IpData::eIpDataType rIpDataType
@@ -47,11 +47,20 @@ public:
         return 1;
     }
 
+    //! @brief returns the global dimension of the element
+    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
+    //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
+    //! @return global dimension
+    int GetLocalDimension()const
+    {
+        return 1;
+    }
+
     //! @brief returns the enum (type of the element)
     //! @return enum
     NuTo::Element::eElementType GetEnumType()const
     {
-        return NuTo::Element::TRUSS1D2N;
+        return NuTo::Element::BOUNDARYGRADIENTDAMAGE1D;
     }
 
     //! @brief returns the number of nodes in this element
@@ -59,6 +68,15 @@ public:
     int GetNumNodes()const
     {
         return mNodes.size();
+    }
+
+    //! @brief returns the number of shape functions
+    //! this is required for the calculation of the derivatives of the shape functions
+    //! whose size is GetLocalDimension*GetNumShapeFunctions
+    //! @return local dimension
+    int GetNumShapeFunctions()const
+    {
+    	return mNodes.size();
     }
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -129,6 +147,23 @@ public:
     void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
     {}
 
+    //! @brief calculates the local coordinates of the nodes
+    //! @param localCoordinates vector with already correct size allocated
+    //! this can be checked with an assertation
+    void CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const;
+
+    //! @brief stores the nonlocal eq plastic strain of the nodes
+    //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
+    //! @param nonlocal eq plastic strain vector with already correct size allocated (2*nodes)
+    //! this can be checked with an assertation
+    void CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalEquivalentPlasticStrain)const;
+
+    //! @brief stores the nonlocal total strain of the nodes
+    //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
+    //! @param nonlocal total strain vector with already correct size allocated (1*nodes)
+    //! this can be checked with an assertation
+    void CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalTotalStrain)const;
+
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
@@ -158,7 +193,9 @@ protected:
 
      std::vector<NodeBase*> mNodes;
     //edge of the real boundary element where the virtual boundary element is attached to
-    int mEdgeRealBoundaryElement;
+    //0 node 0
+    //1 last node
+    bool mEdgeRealBoundaryElement;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs

@@ -40,13 +40,14 @@
 NuTo::BoundaryGradientDamage1D::BoundaryGradientDamage1D(const StructureBase* rStructure,
     		std::vector<NuTo::NodeBase* >& rNodes,
     		Truss* rRealBoundaryElement,
-    		int rEdgeRealBoundaryElement,
+    		bool rEdgeRealBoundaryElement,
     		ElementData::eElementDataType rElementDataType,
     		IntegrationType::eIntegrationType rIntegrationType,
     		IpData::eIpDataType rIpDataType
     		)
 {
-
+	mEdgeRealBoundaryElement = rEdgeRealBoundaryElement;
+	mRealBoundaryElement = rRealBoundaryElement;
 }
 
 //! @brief calculates output data fo the elmement
@@ -54,7 +55,6 @@ NuTo::BoundaryGradientDamage1D::BoundaryGradientDamage1D(const StructureBase* rS
 //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
 NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput)
 {
-/*
 
 	if (mStructure->GetHessianConstant(1)==false)
     	throw MechanicsException("[NuTo::Truss::Evaluate] only implemented for a constant Hessian for the first derivative (damping).");
@@ -63,55 +63,358 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 
     try
     {
-		// get section information determining which input on the constitutive level should be used
-		const SectionBase* section(GetSection());
-		if (section==0)
-			throw MechanicsException("[NuTo::Truss::Evaluate] no section allocated for element.");
+    	//***********************************************************************************************
+        //First calculate the relevant informations for the real boundary element on the actual boundary
+    	//***********************************************************************************************
+
+    	//this requires the calculation of stresses and the derivatives of stresses with respect to all dofs of the
+    	//real boundary element
+    	// get section information determining which input on the constitutive level should be used
+		const SectionBase* sectionReal(mRealBoundaryElement->GetSection());
+		if (sectionReal==0)
+			throw MechanicsException("[NuTo::Truss::Evaluate] no section allocated for real boundary element.");
 
 		//calculate coordinates
-		int numCoordinates(GetNumShapeFunctions());
-		std::vector<double> localNodeCoord(numCoordinates);
-		CalculateLocalCoordinates(localNodeCoord);
+		int numCoordinatesReal(mRealBoundaryElement->GetNumShapeFunctions());
+		std::vector<double> localNodeCoordReal(numCoordinatesReal);
+		mRealBoundaryElement->CalculateLocalCoordinates(localNodeCoordReal);
 
 		//calculate local displacements, velocities and accelerations
 		//the difference between disp and dispdof is a problem where the displacements are fixed, but enter the constitutive equation
 		//for example in a two stage problem, first solve mechanics, then thermal and so on
-		int numDisp(GetNumShapeFunctions());
-		int numDispDofs = section->GetIsDisplacementDof() ? numDisp : 0;
+		int numDispReal(mRealBoundaryElement->GetNumShapeFunctions());
+		int numDispDofsReal = sectionReal->GetIsDisplacementDof() ? numDispReal : 0;
 
-		int numTemp(GetNumShapeFunctions());
-		int numTempDofs(section->GetIsTemperatureDof() ? numTemp : 0);
+		int numTempReal(mRealBoundaryElement->GetNumShapeFunctions());
+		int numTempDofsReal(sectionReal->GetIsTemperatureDof() ? numTempReal : 0);
 
-		int numNonlocalEqPlasticStrain(2*GetNumShapeFunctions());
-		int numNonlocalEqPlasticStrainDofs(section->GetIsNonlocalEqPlasticStrainDof() ? numNonlocalEqPlasticStrain : 0);
+		int numNonlocalEqPlasticStrainReal(2*mRealBoundaryElement->GetNumShapeFunctions());
+		int numNonlocalEqPlasticStrainDofsReal(sectionReal->GetIsNonlocalEqPlasticStrainDof() ? numNonlocalEqPlasticStrainReal : 0);
 
-		int numNonlocalTotalStrain(GetNumShapeFunctions());
-		int numNonlocalTotalStrainDofs(section->GetIsNonlocalTotalStrainDof() ? numNonlocalTotalStrain : 0);
+		int numNonlocalTotalStrainReal(mRealBoundaryElement->GetNumShapeFunctions());
+		int numNonlocalTotalStrainDofsReal(sectionReal->GetIsNonlocalTotalStrainDof() ? numNonlocalTotalStrainReal : 0);
 
-		std::vector<double> localNodeDisp,nodeTemp,nodeNonlocalEqPlasticStrain,nodeNonlocalTotalStrain;
+		std::vector<double> localNodeDispReal,nodeTempReal,nodeNonlocalEqPlasticStrainReal,nodeNonlocalTotalStrainReal;
 
 		//calculate local displacements, velocities and accelerations
-		if (numDispDofs>0)
+		if (numDispDofsReal>0)
 		{
-			localNodeDisp.resize(numDisp);
-			CalculateLocalDisplacements(0,localNodeDisp);
+			localNodeDispReal.resize(numDispReal);
+			mRealBoundaryElement->CalculateLocalDisplacements(0,localNodeDispReal);
 		}
-		//calculate temperatures, temperature rate and temperature a
-		if (numTempDofs>0 || section->GetInputConstitutiveIsTemperature())
+		if (numTempDofsReal>0)
 		{
-			nodeTemp.resize(numTemp);
-			CalculateNodalTemperatures(0,nodeTemp);
+			nodeTempReal.resize(numTempReal);
+			mRealBoundaryElement->CalculateNodalTemperatures(0,nodeTempReal);
 		}
-		if (numNonlocalEqPlasticStrainDofs>0 || section->GetInputConstitutiveIsNonlocalEqPlasticStrain())
+		if (numNonlocalEqPlasticStrainDofsReal>0 || sectionReal->GetInputConstitutiveIsNonlocalEqPlasticStrain())
 		{
-			nodeNonlocalEqPlasticStrain.resize(numNonlocalEqPlasticStrain);
-			CalculateNodalNonlocalEqPlasticStrain(0,nodeNonlocalEqPlasticStrain);
+			nodeNonlocalEqPlasticStrainReal.resize(numNonlocalEqPlasticStrainReal);
+			mRealBoundaryElement->CalculateNodalNonlocalEqPlasticStrain(0,nodeNonlocalEqPlasticStrainReal);
 		}
-		if (numNonlocalTotalStrainDofs>0 || section->GetInputConstitutiveIsNonlocalTotalStrain())
+		if (numNonlocalTotalStrainDofsReal>0 || sectionReal->GetInputConstitutiveIsNonlocalTotalStrain())
 		{
-			nodeNonlocalTotalStrain.resize(numNonlocalTotalStrain);
-			CalculateNodalNonlocalTotalStrain(0,nodeNonlocalTotalStrain);
+			nodeNonlocalTotalStrainReal.resize(numNonlocalTotalStrainReal);
+			mRealBoundaryElement->CalculateNodalNonlocalTotalStrain(0,nodeNonlocalTotalStrainReal);
 		}
+
+		//allocate space for local ip coordinates
+		double localIPCoordReal;
+
+		//allocate space for local shape functions
+		std::vector<double> derivativeShapeFunctionsNaturalReal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctions());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsLocalReal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctions());    //allocate space for derivatives of shape functions
+		std::vector<double> shapeFunctionsReal(mRealBoundaryElement->GetNumShapeFunctions());                                       //allocate space for derivatives of shape functions
+
+		//allocate deformation gradient
+		DeformationGradient1D deformationGradientReal;
+
+		EngineeringStrain3D engineeringStrain3DReal;
+
+		//allocate global engineering plastic strain
+		EngineeringStrain3D engineeringPlasticStrain3DReal;
+
+		//allocate  damage (output of constitutive relation)
+		Damage damageReal;
+
+		//allocate nonlocal eq plastic strain (nodal dof value, input of constitutive relation)
+		NonlocalEqPlasticStrain nonLocalEqPlasticStrainReal;
+
+		EngineeringStrain1D nonlocalTotalStrainReal;
+
+		EngineeringStrain1D localTotalStrainReal;
+
+		//allocate temperature
+		Temperature temperatureReal;
+
+		//allocate global engineering stress
+		EngineeringStress1D engineeringStress1DReal;
+		EngineeringStress3D engineeringStress3DReal;
+
+		//allocate tangents
+		ConstitutiveTangentLocal<1,1> tangentStressStrainReal;
+		ConstitutiveTangentLocal<1,1> tangentStressTemperatureReal;
+		ConstitutiveTangentLocal<1,2> tangentStressNonlocalEqPlasticStrainReal;
+		ConstitutiveTangentLocal<1,1> tangentStressNonlocalTotalStrainReal;
+
+		//define inputs and outputs
+		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputListReal;
+		std::map< NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase* > constitutiveOutputListReal;
+
+		if (numDispDofsReal>0)
+		{
+			constitutiveInputListReal[NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D] = &deformationGradientReal;
+		}
+
+		if (sectionReal->GetInputConstitutiveIsTemperature())
+		{
+			constitutiveInputListReal[NuTo::Constitutive::Input::TEMPERATURE] = &temperatureReal;
+		}
+
+		if (numNonlocalEqPlasticStrainDofsReal>0)
+		{
+			constitutiveInputListReal[NuTo::Constitutive::Input::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrainReal;
+		}
+
+		if (numNonlocalTotalStrainDofsReal>0)
+		{
+			constitutiveInputListReal[NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrainReal;
+		}
+
+    	//*****************************************************************************************************
+        //Now calculate the relevant informations for the virtual boundary element within the element boundary (nodal values
+    	//*****************************************************************************************************
+		//calculate coordinates
+		int numCoordinatesVirt(this->GetNumShapeFunctions());
+		std::vector<double> localNodeCoordVirt(numCoordinatesVirt);
+//this->CalculateLocalCoordinates(localNodeCoordVirt);
+
+		//calculate local displacements, velocities and accelerations
+		//the difference between disp and dispdof is a problem where the displacements are fixed, but enter the constitutive equation
+		//for example in a two stage problem, first solve mechanics, then thermal and so on
+		int numNonlocalEqPlasticStrainVirt(2*this->GetNumShapeFunctions());
+		int numNonlocalEqPlasticStrainDofsVirt(sectionReal->GetIsNonlocalEqPlasticStrainDof() ? numNonlocalEqPlasticStrainVirt : 0);
+
+		int numNonlocalTotalStrainVirt(this->GetNumShapeFunctions());
+		int numNonlocalTotalStrainDofsVirt(sectionReal->GetIsNonlocalTotalStrainDof() ? numNonlocalTotalStrainVirt : 0);
+
+		std::vector<double> nodeNonlocalEqPlasticStrainVirt,nodeNonlocalTotalStrainVirt;
+
+		if (numNonlocalEqPlasticStrainDofsVirt>0 || sectionReal->GetInputConstitutiveIsNonlocalEqPlasticStrain())
+		{
+			nodeNonlocalEqPlasticStrainVirt.resize(numNonlocalEqPlasticStrainVirt);
+//this->CalculateNodalNonlocalEqPlasticStrain(0,nodeNonlocalEqPlasticStrainVirt);
+		}
+		if (numNonlocalTotalStrainDofsVirt>0 || sectionReal->GetInputConstitutiveIsNonlocalTotalStrain())
+		{
+			nodeNonlocalTotalStrainVirt.resize(numNonlocalTotalStrainVirt);
+//this->CalculateNodalNonlocalTotalStrain(0,nodeNonlocalTotalStrainVirt);
+		}
+
+		//allocate space for local ip coordinates
+		double localIPCoordVirt;
+
+		//allocate space for local shape functions
+		std::vector<double> derivativeShapeFunctionsNaturalVirt(this->GetLocalDimension()*this->GetNumShapeFunctions());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsLocalVirt(this->GetLocalDimension()*this->GetNumShapeFunctions());    //allocate space for derivatives of shape functions
+		std::vector<double> shapeFunctionsVirt(this->GetNumShapeFunctions());                                       //allocate space for derivatives of shape functions
+
+		//allocate nonlocal eq plastic strain (nodal dof value, input of constitutive relation)
+		NonlocalEqPlasticStrain nonLocalEqPlasticStrainVirt;
+
+		EngineeringStrain1D nonlocalTotalStrainVirt;
+
+		EngineeringStrain1D localTotalStrainVirt;
+
+		//allocate tangents
+		ConstitutiveTangentLocal<1,1> tangentBoundaryStrainBoundaryStress;
+		ConstitutiveTangentLocal<1,1> tangentBoundaryStrainNonlocalTotalStrainVirt;
+		ConstitutiveTangentLocal<1,1> tangentBoundaryStrainNonlocalEqPlasticStrainVirt;
+
+		//define inputs and outputs
+		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputListVirt;
+		std::map< NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase* > constitutiveOutputListVirt;
+
+		if (numNonlocalEqPlasticStrainDofsVirt>0)
+		{
+			constitutiveInputListVirt[NuTo::Constitutive::Input::ENGINEERING_STRESS_1D] = &engineeringStress1DReal;
+			constitutiveInputListVirt[NuTo::Constitutive::Input::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrainVirt;
+		}
+
+		if (numNonlocalTotalStrainDofsVirt>0)
+		{
+			constitutiveInputListVirt[NuTo::Constitutive::Input::ENGINEERING_STRESS_1D] = &engineeringStress1DReal;
+			constitutiveInputListVirt[NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrainVirt;
+		}
+
+
+		//define outputs for the element output and the constitutive law
+		for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
+		{
+			switch(it->first)
+			{
+			case Element::INTERNAL_GRADIENT:
+				it->second->GetFullVectorDouble().Resize(numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt);
+				//if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
+				//on the global level
+				if (mStructure->GetHessianConstant(0)==false)
+				{
+					if (numDispDofsReal>0)
+					{
+						constitutiveOutputListReal[NuTo::Constitutive::Output::ENGINEERING_STRESS_1D] = &engineeringStress1DReal;
+					}
+					if (numNonlocalTotalStrainDofsVirt>0)
+					{
+						constitutiveOutputListVirt[NuTo::Constitutive::Output::ENGINEERING_STRAIN_FROM_BOUNDARY_1D] = &localTotalStrainVirt;
+					}
+					if (numNonlocalEqPlasticStrainDofsVirt>0)
+					{
+						constitutiveOutputListVirt[NuTo::Constitutive::Output::ENGINEERING_STRAIN_FROM_BOUNDARY_1D] = &localTotalStrainVirt;
+					}
+				}
+			break;
+			case Element::HESSIAN_0_TIME_DERIVATIVE:
+				{
+					it->second->GetFullMatrixDouble().Resize(numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt,numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt + numDispDofsReal+numTempDofsReal+numNonlocalEqPlasticStrainDofsReal+numNonlocalTotalStrainDofsReal);
+					it->second->SetSymmetry(false);
+					it->second->SetConstant(false);
+					if (numDispDofsReal>0)
+					{
+						constitutiveOutputListReal[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D] = &tangentStressStrainReal;
+						//mixed terms
+						if (numTempDofsReal>0)
+							constitutiveOutputListReal[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE_1D] = &tangentStressTemperatureReal;
+						if (numNonlocalEqPlasticStrainDofsReal>0)
+						{
+							constitutiveOutputListReal[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D] = &tangentStressNonlocalEqPlasticStrainReal;
+						}
+						if (numNonlocalTotalStrainDofsReal>0)
+						{
+							constitutiveOutputListReal[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D] = &tangentStressNonlocalTotalStrainReal;
+						}
+					}
+					if (numNonlocalTotalStrainDofsVirt>0)
+					{
+						constitutiveOutputListVirt[NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_STRESS_1D] = &tangentBoundaryStrainBoundaryStress;
+						constitutiveOutputListVirt[NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_NONLOCAL_TOTAL_STRAIN_1D] = &tangentBoundaryStrainNonlocalTotalStrainVirt;
+					}
+					if (numNonlocalTotalStrainDofsVirt>0)
+					{
+						constitutiveOutputListVirt[NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_STRESS_1D] = &tangentBoundaryStrainBoundaryStress;
+						constitutiveOutputListVirt[NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_NONLOCAL_TOTAL_STRAIN_1D] = &tangentBoundaryStrainNonlocalTotalStrainVirt;
+					}
+				}
+			break;
+			case Element::HESSIAN_1_TIME_DERIVATIVE:
+			{
+				it->second->GetFullMatrixDouble().Resize(numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt,numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt + numDispDofsReal+numTempDofsReal+numNonlocalEqPlasticStrainDofsReal+numNonlocalTotalStrainDofsReal);
+				it->second->SetSymmetry(true);
+				it->second->SetConstant(true);
+				// Rayleigh damping should be introduced on the global level
+			}
+			break;
+			case Element::HESSIAN_2_TIME_DERIVATIVE:
+			{
+				it->second->GetFullMatrixDouble().Resize(numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt,numNonlocalEqPlasticStrainDofsVirt+numNonlocalTotalStrainDofsVirt + numDispDofsReal+numTempDofsReal+numNonlocalEqPlasticStrainDofsReal+numNonlocalTotalStrainDofsReal);
+				it->second->SetSymmetry(true);
+				it->second->SetConstant(true);
+				//there is only a constant mass part for the mechanics problem
+			}
+			break;
+			case Element::UPDATE_STATIC_DATA:
+				constitutiveOutputListReal[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
+				constitutiveOutputListVirt[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
+			break;
+			case Element::UPDATE_TMP_STATIC_DATA:
+				constitutiveOutputListReal[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
+				constitutiveOutputListVirt[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
+			break;
+			case Element::IP_DATA:
+			break;
+			case Element::GLOBAL_ROW_DOF:
+				//this->CalculateGlobalRowDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs,numNonlocalEqPlasticStrainDofs,numNonlocalTotalStrainDofs);
+			break;
+			case Element::GLOBAL_COLUMN_DOF:
+				//this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs,numNonlocalEqPlasticStrainDofs,numNonlocalTotalStrainDofs);
+			break;
+			default:
+				throw MechanicsException("[NuTo::Truss::Evaluate] element output not implemented.");
+			}
+		}
+
+		// loop over the integration points along the boundary (this is a point in 1D, a line in 2D or a surface in 3D)
+		for (int theIP=0; theIP<this->GetNumIntegrationPoints(); theIP++)
+		{
+			//the integration points are sorted the way that the ones with the zero weight refer to the real boundary element (on their surface)
+			//with the stresses used for the next integration points (with nonzero weight) until the next ip with zero weight is obtained
+			double weight = mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+
+			if (weight==0.)
+			{
+/*
+				//the ip is located on the boundary of the real element
+                this->GetLocalIntegrationPointCoordinatesReal(theIP, localIPCoordReal);
+
+				//derivative in natural coordinate system
+				mRealBoundaryElement->CalculateDerivativeShapeFunctions(localIPCoordReal, derivativeShapeFunctionsNaturalReal);
+
+				//determinant of the Jacobian
+				double detJReal(mRealBoundaryElement->DetJacobian(derivativeShapeFunctionsNaturalReal,localNodeCoordReal));
+
+				//derivative in local coordinate system
+				for (unsigned int count=0; count<derivativeShapeFunctionsNaturalReal.size(); count++)
+				{
+					derivativeShapeFunctionsLocalReal[count] = derivativeShapeFunctionsNaturalReal[count]/detJ;
+				}
+
+				if (numDispDofsReal)
+				{
+					// determine deformation gradient from the local Displacements and the derivative of the shape functions
+					CalculateDeformationGradient(derivativeShapeFunctionsLocalReal, localNodeCoordReal, localNodeDispReal, deformationGradientReal);
+				}
+
+				if (section->GetInputConstitutiveIsTemperature())
+				{
+					// determine temperature
+					throw MechanicsException("[Nuto::Truss::Evaluate] temperature not yet implemented.");
+				}
+
+				if (numNonlocalEqPlasticStrainDofsReal)
+				{
+					mRealBoundaryElement->CalculateShapeFunctions(localIPCoordReal, shapeFunctionsReal);
+					mRealBoundaryElement->CalculateNonlocalEqPlasticStrain(shapeFunctionsReal, nodeNonlocalEqPlasticStrainReal, nonLocalEqPlasticStrainReal);
+				}
+
+				if (numNonlocalTotalStrainDofsReal)
+				{
+					CalculateShapeFunctions(localIPCoordReal, shapeFunctionsReal);
+					CalculateNonlocalTotalStrain(shapeFunctionsReal, nodeNonlocalTotalStrainReal, nonlocalTotalStrainReal);
+				}
+
+				ConstitutiveBase* constitutivePtr = this->GetConstitutiveLaw(theIP);
+				Error::eError error = constitutivePtr->Evaluate1D(this, theIP,
+						constitutiveInputListReal, constitutiveOutputListReal);
+				if (error!=Error::SUCCESSFUL)
+					return error;
+					*/
+			}
+			else
+			{
+				//the ip is located within the virtual boundary element
+			}
+
+
+			//double factor (detJ*mSection->GetArea()*
+			//		       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+		}
+
+/*
+
+     	//*********************************************************************************************************************
+		// Perform the integration in the virtual boundary element taking into account the data from the real boundary element
+		//*********************************************************************************************************************
+
+
 
 		//allocate space for local ip coordinates
 		double localIPCoord;
@@ -172,27 +475,27 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 
 		if (numDispDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_1D] = &deformationGradient;
+			constitutiveInputList[NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D] = &deformationGradient;
 		}
 
 		if (numTempDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_1D] = &temperatureGradient1D;
+			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE_GRADIENT_1D] = &temperatureGradient1D;
 		}
 
 		if (section->GetInputConstitutiveIsTemperature())
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE] = &temperature;
+			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE] = &temperature;
 		}
 
 		if (numNonlocalEqPlasticStrainDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrain;
+			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrain;
 		}
 
 		if (numNonlocalTotalStrainDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrain;
+			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrain;
 		}
 
 		//define outputs
@@ -555,6 +858,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 				}
 			}
 		}
+*/
     }
     catch (NuTo::MechanicsException e)
     {
@@ -563,7 +867,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
     	e.AddMessage("[NuTo::Truss::Evaluate] Error evaluating element data of element"	+ ss.str() + ".");
         throw e;
     }
-*/
+
     return Error::SUCCESSFUL;
 }
 

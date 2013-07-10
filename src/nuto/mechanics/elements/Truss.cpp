@@ -160,32 +160,32 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		ConstitutiveTangentLocal<2,1> tangentLocalEqPlasticStrainStrain;
 
 		//define inputs and outputs
-		std::map< NuTo::Constitutive::eInput, const ConstitutiveInputBase* > constitutiveInputList;
-		std::map< NuTo::Constitutive::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
+		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputList;
+		std::map< NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
 
 		if (numDispDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_1D] = &deformationGradient;
+			constitutiveInputList[NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D] = &deformationGradient;
 		}
 
 		if (numTempDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_1D] = &temperatureGradient1D;
+			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE_GRADIENT_1D] = &temperatureGradient1D;
 		}
 
 		if (section->GetInputConstitutiveIsTemperature())
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE] = &temperature;
+			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE] = &temperature;
 		}
 
 		if (numNonlocalEqPlasticStrainDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrain;
+			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrain;
 		}
 
 		if (numNonlocalTotalStrainDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrain;
+			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrain;
 		}
 
 		//define outputs
@@ -201,19 +201,19 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				{
 					if (numDispDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_1D] = &engineeringStress1D;
+						constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_1D] = &engineeringStress1D;
 					}
 					if (numTempDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::HEAT_FLUX_1D] = &heatFlux1D;
+						constitutiveOutputList[NuTo::Constitutive::Output::HEAT_FLUX_1D] = &heatFlux1D;
 					}
 					if (numNonlocalEqPlasticStrainDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::LOCAL_EQ_PLASTIC_STRAIN] = &localEqPlasticStrain;
+						constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_PLASTIC_STRAIN] = &localEqPlasticStrain;
 					}
 					if (numNonlocalTotalStrainDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_1D] = &localTotalStrain;
+						constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRAIN_1D] = &localTotalStrain;
 					}
 				}
 			break;
@@ -224,18 +224,18 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					it->second->SetConstant(true);
 					if (numDispDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D] = &tangentStressStrain;
+						constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D] = &tangentStressStrain;
 						//mixed terms
 						if (numTempDofs>0)
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE_1D] = &tangentStressTemperature;
+							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE_1D] = &tangentStressTemperature;
 						if (numNonlocalEqPlasticStrainDofs>0)
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D] = &tangentStressNonlocalEqPlasticStrain;
+							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D] = &tangentStressNonlocalEqPlasticStrain;
 						if (numNonlocalTotalStrainDofs>0)
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D] = &tangentStressNonlocalTotalStrain;
+							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D] = &tangentStressNonlocalTotalStrain;
 					}
 					if (numTempDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_RATE_1D] = &tangentHeatFluxTemperatureGradient;
+						constitutiveOutputList[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_1D] = &tangentHeatFluxTemperatureGradient;
 						//mixed terms
 						//if (numDisp)
 						//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
@@ -244,7 +244,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 						//mixed terms
 						if (numDispDofs)
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D] = &tangentLocalEqPlasticStrainStrain;
+							constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D] = &tangentLocalEqPlasticStrainStrain;
 					}
 				}
 			break;
@@ -259,7 +259,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				}
 				if (numTempDofs>0)
 				{
-					constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_RATE_1D] = &tangentHeatFluxTemperatureRate;
+					constitutiveOutputList[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_1D] = &tangentHeatFluxTemperatureRate;
 				}
 			}
 			break;
@@ -272,10 +272,10 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			}
 			break;
 			case Element::UPDATE_STATIC_DATA:
-				constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+				constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
 			break;
 			case Element::UPDATE_TMP_STATIC_DATA:
-				constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+				constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
 			break;
 			case Element::IP_DATA:
 				switch(it->second->GetIpDataType())
@@ -283,23 +283,23 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				case NuTo::IpData::ENGINEERING_STRAIN:
 					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
 					 //define outputs
-					constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D] = &engineeringStrain3D;
+					constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D] = &engineeringStrain3D;
 				break;
 				case NuTo::IpData::ENGINEERING_STRESS:
 					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
 					 //define outputs
-					 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D] = &engineeringStress3D;
+					 constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_3D] = &engineeringStress3D;
 				break;
 				case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
 					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
 					 //define outputs
-					 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D] = &engineeringPlasticStrain3D;
+					 constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D] = &engineeringPlasticStrain3D;
 					 break;
 				break;
 				case NuTo::IpData::DAMAGE:
 					it->second->GetFullMatrixDouble().Resize(1,GetNumIntegrationPoints());
 					//define outputs
-					constitutiveOutputList[NuTo::Constitutive::eOutput::DAMAGE] = &damage;
+					constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &damage;
 				break;
 				default:
 					throw MechanicsException("[NuTo::Truss::Evaluate] this ip data type is not implemented.");

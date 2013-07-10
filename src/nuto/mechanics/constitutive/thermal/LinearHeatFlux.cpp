@@ -59,8 +59,8 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearHeatFlux)
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+		const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 	// check if parameters are valid
     if (this->mParametersValid == false)
@@ -70,23 +70,23 @@ NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(ElementBase* rElement, int 
     }
 
 	// calculate engineering strain
-	if(rConstitutiveInput.find(NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_3D)==rConstitutiveInput.end())
+	if(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE_GRADIENT_3D)==rConstitutiveInput.end())
 		throw MechanicsException("[NuTo::LinearHeatFlux::Evaluate] temperature gradient 3d needed.");
 	//const TemperatureGradient3D& temperatureGradient3D(rConstitutiveInput.find(NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_3D)->second->GetTemperatureGradient3D());
 
 	//check, if an nonlinear iteration has to be performed, in this simple case, just calculate the linear elastic coefficients
-    if (rConstitutiveOutput.find(NuTo::Constitutive::eOutput::HEAT_FLUX_3D)!=rConstitutiveOutput.end()
-    		|| rConstitutiveOutput.find(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D)!=rConstitutiveOutput.end())
+    if (rConstitutiveOutput.find(NuTo::Constitutive::Output::HEAT_FLUX_3D)!=rConstitutiveOutput.end()
+    		|| rConstitutiveOutput.find(NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D)!=rConstitutiveOutput.end())
     {
     	//in a nonlinear material routine, the Return mapping would be performed here
     }
 
-    for (std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
+    for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
     		itOutput != rConstitutiveOutput.end(); itOutput++)
     {
     	switch(itOutput->first)
     	{
-    	case NuTo::Constitutive::eOutput::HEAT_FLUX_3D:
+    	case NuTo::Constitutive::Output::HEAT_FLUX_3D:
     	{
 /*    		EngineeringStrain3D elasticEngineeringStrain(engineeringStrain);
     		// if temperature is an input, subtract thermal strains to get elastic strains
@@ -114,7 +114,7 @@ NuTo::Error::eError NuTo::LinearHeatFlux::Evaluate3D(ElementBase* rElement, int 
     		break;
 
     	}
-    	case NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D:
+    	case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D:
     	{
 			ConstitutiveTangentLocal<3,3>& tangent(itOutput->second->AsConstitutiveTangentLocal_3x3());
  		    double *data(tangent.data());

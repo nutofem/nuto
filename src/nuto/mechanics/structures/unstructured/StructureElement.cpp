@@ -201,7 +201,7 @@ void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
 	}
 
     BoundaryElementsCreate(elementType,
-    		itGroupBoundaryNodes->second->AsGroupElement(), itGroupBoundaryNodes->second->AsGroupNode(),
+    		itGroupElements->second->AsGroupElement(), itGroupBoundaryNodes->second->AsGroupNode(),
     		rVirtualBoundary,
     		elementDataType, ipDataType);
 

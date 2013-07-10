@@ -9,6 +9,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/math/FullVector.h"
+#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
@@ -27,7 +28,7 @@ class ConstitutiveEngineeringStressStrain;
  */
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class EngineeringStress1D: public ConstitutiveOutputBase, public FullVector<double,1>
+class EngineeringStress1D: public ConstitutiveOutputBase, public ConstitutiveInputBase, public FullVector<double,1>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

@@ -28,8 +28,8 @@ NuTo::ConstitutiveBase::ConstitutiveBase()
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate1D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
+		const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 	std::cout << "[ConstitutiveBase::Evaluate1D] make this function pure virtual." << std::endl;
 	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
@@ -42,8 +42,8 @@ NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate1D(ElementBase* rElement, in
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
+		const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 	std::cout << "[ConstitutiveBase::Evaluate1D] make this function pure virtual." << std::endl;
 	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
@@ -56,8 +56,8 @@ NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(ElementBase* rElement, in
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
+		const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
+		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 	std::cout << "[ConstitutiveBase::Evaluate3D] make this function pure virtual." << std::endl;
 	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");

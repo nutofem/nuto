@@ -163,22 +163,22 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		 double nonlocalInvJacobian[4], nonlocalDetJac;
 
 		//define inputs and outputs
-		std::map< NuTo::Constitutive::eInput, const ConstitutiveInputBase* > constitutiveInputList;
-		std::map< NuTo::Constitutive::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
+		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputList;
+		std::map< NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
 
 		if (numLocalDispDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_2D] = &deformationGradient;
+			constitutiveInputList[NuTo::Constitutive::Input::DEFORMATION_GRADIENT_2D] = &deformationGradient;
 		}
 
 		if (numTempDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT_2D] = &temperatureGradient;
+			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE_GRADIENT_2D] = &temperatureGradient;
 		}
 
 		if (section->GetInputConstitutiveIsTemperature())
 		{
-			constitutiveInputList[NuTo::Constitutive::eInput::TEMPERATURE] = &temperature;
+			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE] = &temperature;
 		}
 
 		//define outputs
@@ -194,11 +194,11 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 	    	    {
 					if (numLocalDispDofs>0)
 					{
-						 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_2D] = &engineeringStress2D;
+						 constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_2D] = &engineeringStress2D;
 					}
 					if (numTempDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::HEAT_FLUX_2D] = &heatFlux2D;
+						constitutiveOutputList[NuTo::Constitutive::Output::HEAT_FLUX_2D] = &heatFlux2D;
 					}
 	    	    }
 			break;
@@ -213,12 +213,12 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						if (NumNonlocalElements==0)
 						{
 							nonlocalTangentStressStrain.SetNumSubMatrices(1);
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &(nonlocalTangentStressStrain.GetSubMatrix_3x3(0));
+							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &(nonlocalTangentStressStrain.GetSubMatrix_3x3(0));
 						}
 						else
 						{
 							nonlocalTangentStressStrain.SetNumSubMatrices(NumNonlocalIps);
-							constitutiveOutputList[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &nonlocalTangentStressStrain;
+							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &nonlocalTangentStressStrain;
 						}
 
 						//mixed term
@@ -228,7 +228,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					}
 					if (numTempDofs>0)
 					{
-						constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D] = &tangentHeatFluxTemperatureGradient;
+						constitutiveOutputList[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D] = &tangentHeatFluxTemperatureGradient;
 						//mixed term
 						//if (numDispDofs)
 						//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
@@ -245,7 +245,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                 }
                 if (numTempDofs>0)
                 {
-                        constitutiveOutputList[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_RATE_2D] = &tangentHeatFluxTemperatureRate;
+                        constitutiveOutputList[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_2D] = &tangentHeatFluxTemperatureRate;
                 }
 			break;
 			case Element::HESSIAN_2_TIME_DERIVATIVE:
@@ -257,10 +257,10 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 	        }
 			break;
 			case Element::UPDATE_STATIC_DATA:
-				constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+				constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
 			break;
 			case Element::UPDATE_TMP_STATIC_DATA:
-				constitutiveOutputList[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+				constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
 			break;
 			case Element::IP_DATA:
 				switch(it->second->GetIpDataType())
@@ -268,23 +268,23 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				case NuTo::IpData::ENGINEERING_STRAIN:
 					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
 					 //define outputs
-					constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D] = &engineeringStrain3D;
+					constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D] = &engineeringStrain3D;
 				break;
 				case NuTo::IpData::ENGINEERING_STRESS:
 					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
 					 //define outputs
-					 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D] = &engineeringStress3D;
+					 constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_3D] = &engineeringStress3D;
 				break;
 				case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
 					it->second->GetFullMatrixDouble().Resize(6,GetNumIntegrationPoints());
 					 //define outputs
-					 constitutiveOutputList[NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D] = &engineeringPlasticStrain3D;
+					 constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D] = &engineeringPlasticStrain3D;
 					 break;
 				break;
 				case NuTo::IpData::DAMAGE:
 					it->second->GetFullMatrixDouble().Resize(1,GetNumIntegrationPoints());
 					//define outputs
-					  constitutiveOutputList[NuTo::Constitutive::eOutput::DAMAGE] = &damage;
+					  constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &damage;
 				break;
 				default:
 					throw MechanicsException("[NuTo::Plane::Evaluate] this ip data type is not implemented.");

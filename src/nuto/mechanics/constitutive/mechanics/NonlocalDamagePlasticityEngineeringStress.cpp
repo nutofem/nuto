@@ -96,8 +96,8 @@ NuTo::NonlocalDamagePlasticityEngineeringStress::NonlocalDamagePlasticityEnginee
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate1D(ElementBase* rElement, int rIp,
-        const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
-        std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+        const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+        std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate1D] not implemented for 1D.");
 }
@@ -108,8 +108,8 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate1D(
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(ElementBase* rElement, int rIp,
-        const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
-        std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+        const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+        std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     // get section information determining which input on the constitutive level should be used
     const SectionBase* section(rElement->GetSection());
@@ -126,9 +126,9 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
 
     EngineeringStrain2D engineeringStrain;
     // calculate engineering strain
-    if(rConstitutiveInput.find(NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_2D)==rConstitutiveInput.end())
+    if(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_2D)==rConstitutiveInput.end())
         throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate] deformation gradient 2d needed to evaluate engineering strain2d.");
-    const DeformationGradient2D& deformationGradient(rConstitutiveInput.find(NuTo::Constitutive::eInput::DEFORMATION_GRADIENT_2D)->second->GetDeformationGradient2D());
+    const DeformationGradient2D& deformationGradient(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_2D)->second->GetDeformationGradient2D());
     deformationGradient.GetEngineeringStrain(engineeringStrain);
 
     //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
@@ -145,7 +145,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
     // subtract thermal strain
     if (section->GetInputConstitutiveIsTemperature())
     {
-        std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::eInput::TEMPERATURE));
+        std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
         if (itInput==rConstitutiveInput.end())
             throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D] temperature needed to evaluate thermal engineering strain2d.");
         double temperature(itInput->second->GetTemperature());
@@ -189,19 +189,19 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
     //set this to true, if update is in the map, perform the update after all other outputs have been calculated
     bool performUpdateAtEnd(false);
 
-    for (std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
+    for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
             itOutput != rConstitutiveOutput.end(); itOutput++)
     {
         switch(itOutput->first)
         {
-        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_2D:
+        case NuTo::Constitutive::Output::ENGINEERING_STRESS_2D:
         {
             // copy Engineering stress
             itOutput->second->GetEngineeringStress2D() = engineeringStress;
 
         }
         break;
-        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_3D:
+        case NuTo::Constitutive::Output::ENGINEERING_STRESS_3D:
         {
             //this is for the visualize routines
             EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
@@ -214,7 +214,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
             engineeringStress3D[5] = 0.;
         }
         break;
-        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D:
+        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D:
         {
             if (mDamage)
             {
@@ -357,7 +357,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
             }
         }
         break;
-        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_3D:
+        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
         {
             EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
 			engineeringStrain3D[0] = engineeringStrain[0];
@@ -368,7 +368,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
 			engineeringStrain3D[5] = 0.;
         }
         break;
-        case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_3D:
+        case NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D:
         {
         	EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
         	engineeringPlasticStrain[0] = oldStaticData->mTmpEpsilonP[0];
@@ -379,11 +379,11 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
         	engineeringPlasticStrain[5] = 0.;
         }
         break;
-        case NuTo::Constitutive::eOutput::DAMAGE:
+        case NuTo::Constitutive::Output::DAMAGE:
         {
             itOutput->second->GetDamage().SetDamage(omega);        }
         break;
-        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         {
         	if (rConstitutiveOutput.size()!=1)
         		throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
@@ -433,7 +433,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
 			Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,4>::Identity() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
         }
 		break;
-        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
         	performUpdateAtEnd = true;
         }
@@ -476,8 +476,8 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate3D(ElementBase* rElement, int rIp,
-        const std::map<NuTo::Constitutive::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
-        std::map<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+        const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+        std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate3D] not implemented for 3D.");
 }
