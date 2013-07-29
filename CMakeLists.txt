@@ -5,7 +5,7 @@ PROJECT(NuTo CXX C Fortran)
 # Minimum version for cmake 2.8
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
-SET(CMAKE_VERBOSE_MAKEFILE OFF)
+SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Check for Mingw64
 if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
@@ -21,6 +21,7 @@ OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during se
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
 OPTION(ENABLE_OPENMP "enables OpenMP" FALSE)
 OPTION(ENABLE_SERIALIZATION "enables serialization" TRUE)
+OPTION(ENABLE_NUMPY "enables numpy" TRUE)
 OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" TRUE)
 OPTION(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 OPTION(ENABLE_METAMODEL "enables the metamodel package" TRUE)
@@ -56,6 +57,15 @@ IF (ENABLE_SERIALIZATION)
     SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_SERIALIZATION")
 ENDIF(ENABLE_SERIALIZATION)
 
+##### parts added
+IF (ENABLE_NUMPY)
+    ADD_DEFINITIONS("-DENABLE_NUMPY")
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_NUMPY" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_NUMPY")
+ENDIF(ENABLE_NUMPY)
+
+
+########
 IF (ENABLE_VERBOSELEVEL)
     ADD_DEFINITIONS("-DENABLE_VERBOSELEVEL")
     SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_VERBOSELEVEL" ${NuTo_DOXYGEN_PREDEFINED})
@@ -131,6 +141,19 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   endif()
 ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
+###########Parts Added
+FIND_PACKAGE(Numpy)
+  if(NUMPY_FOUND)
+   INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_PATH})
+   #set (ENABLE_NUMPY TRUE)
+   
+   message (STATUS "Numpy found ")
+  else(NUMPY_FOUND)
+    message (STATUS "Numpy not found ")
+  endif(NUMPY_FOUND)
+
+#################
+
 # Python required for interface files c++ and python
 MESSAGE(STATUS "Checking for Python...")
 FIND_PACKAGE(PythonLibs REQUIRED)
@@ -181,7 +204,7 @@ ENDIF(ENABLE_MKL)
 
 # boost
 MESSAGE(STATUS "Checking for Boost...")
-SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51")
+SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54")
 IF(ENABLE_STATIC_EXTERNALS)
   SET(Boost_USE_STATIC_LIBS TRUE)
 ENDIF(ENABLE_STATIC_EXTERNALS)

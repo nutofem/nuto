@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-
+//using namespace std;
 #include <boost/tokenizer.hpp>
 
 
@@ -62,6 +62,52 @@ FullMatrix<T,rows,cols>::FullMatrix( int rNumRows, int rNumColumns)
 		this->resize ( rNumRows,rNumColumns );
 }
 
+/////////////////Parts added //////////////////
+// convert numpy array python to eign matrix c++
+
+#ifdef ENABLE_NUMPY
+template <class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::convrtfn(int * inData,int rowcount, int colcount)
+    {
+	int count =0;
+	for(int i=0;i< rowcount;i++)
+	{
+	   for(int j=0;j<colcount;j++) 
+	    {
+		(*this)(i,j)=inData[count];
+		count++;
+	    }
+	}
+    }
+
+
+// convert eign matrix from c++ to numpy array python
+template <class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::convrtToPy(int * in,int Rcount,int Ccount)
+     {
+   
+        int count=0;
+        for(int i=0;i<Rcount;i++)
+        {
+
+         for(int j=0;j<Ccount;j++)
+         {   
+           in[count]=(*this)(i,j);
+           count++;
+         }
+
+        }
+          
+      }
+
+//print eign matrix
+template <class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::printmatrix()
+    {
+      std::cout<<(*this)<<std::endl;
+    }
+#endif
+//////////////////////////////////////////////
 
 //! @brief ... constructor
 //! @param rEigenMatrix ... other matrix

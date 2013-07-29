@@ -11,6 +11,25 @@
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 %}
 
+//// parts added
+
+#ifdef ENABLE_NUMPY
+%include "numpy.i"
+
+%init %{
+import_array();
+%}
+
+%apply (int* IN_ARRAY2, int DIM1, int DIM2){(int* inData,int rowcount,int colcount)};
+%apply (int* INPLACE_ARRAY2, int DIM1,int DIM2){(int* in,int Rcount,int Ccount)};
+
+#endif
+
+
+
+//////////////////////////
+
+
 // convert python string to std::string
 %include "std_string.i"
 // convert python tuple to std::vector
