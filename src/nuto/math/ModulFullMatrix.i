@@ -20,6 +20,9 @@
 import_array();
 %}
 
+%apply (double * IN_ARRAY2, int DIM1, int DIM2){(double* inData,int rowcount,int colcount)};
+%apply (double* INPLACE_ARRAY2, int DIM1,int DIM2){(double* in,int Rcount,int Ccount)};
+
 %apply (int* IN_ARRAY2, int DIM1, int DIM2){(int* inData,int rowcount,int colcount)};
 %apply (int* INPLACE_ARRAY2, int DIM1,int DIM2){(int* in,int Rcount,int Ccount)};
 

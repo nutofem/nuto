@@ -6,16 +6,16 @@ import ctypes
 import numpy
 
 
-myeigen= nuto.IntFullMatrix(2,2);
+myeigen= nuto.DoubleFullMatrix(2,2);
 
 ### take numpy convert to c++ and assign matrix to this numpy array and print matrix
-A = numpy.array([[1,2] ,[0,1]],dtype='int32')
+A = numpy.array([[1,2.3] ,[0,1]],dtype='float64')
 myeigen.convrtfn(A)
 myeigen.printmatrix()
 
 ### access matrix in c++ here in python and print it
-B =numpy.array([[1,1],[1,1]],dtype='int32')
-#myeigen.convrtToPy(B)
+B =numpy.array([[1,1.2],[1,1.1]],dtype='float64')
+myeigen.convrtToPy(B)
 print B
 
 ## testing

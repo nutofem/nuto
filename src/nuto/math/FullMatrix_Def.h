@@ -49,8 +49,8 @@ public:
      
  
     #ifdef ENABLE_NUMPY
-    void convrtfn(int * inData,int rowcount, int colcount);
-    void convrtToPy(int * in,int Rcount,int Ccount);
+    void convrtfn(T * inData,int rowcount, int colcount);
+    void convrtToPy(T * in,int Rcount,int Ccount);
     void printmatrix();
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     #endif

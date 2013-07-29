@@ -67,7 +67,7 @@ FullMatrix<T,rows,cols>::FullMatrix( int rNumRows, int rNumColumns)
 
 #ifdef ENABLE_NUMPY
 template <class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::convrtfn(int * inData,int rowcount, int colcount)
+void FullMatrix<T,rows,cols>::convrtfn(T * inData,int rowcount, int colcount)
     {
 	int count =0;
 	for(int i=0;i< rowcount;i++)
@@ -83,7 +83,7 @@ void FullMatrix<T,rows,cols>::convrtfn(int * inData,int rowcount, int colcount)
 
 // convert eign matrix from c++ to numpy array python
 template <class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::convrtToPy(int * in,int Rcount,int Ccount)
+void FullMatrix<T,rows,cols>::convrtToPy(T * in,int Rcount,int Ccount)
      {
    
         int count=0;
