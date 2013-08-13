@@ -146,6 +146,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
 		    tangent.SetSymmetry(true);
     		break;
     	}
+    	case NuTo::Constitutive::Output::ENGINEERING_STRAIN_1D:
+    	{
+    		EngineeringStrain1D& engineeringStrain1D(itOutput->second->GetEngineeringStrain1D());
+			engineeringStrain1D[0] = engineeringStrain[0];
+    	}
+    	break;
     	case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
     	{
     		EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());

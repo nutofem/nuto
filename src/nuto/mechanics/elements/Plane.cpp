@@ -1257,7 +1257,7 @@ void NuTo::Plane::CalculateTemperatures(std::vector<double>& rTemperatures)const
     {
         if (GetNode(count)->GetNumTemperatures()!=1)
             throw MechanicsException("[NuTo::Solid::CalculateTemperatures] Temperature is required as input to the constitutive model, but the node does not have this data.");
-        GetNode(count)->GetTemperature(&(rTemperatures[count]));
+        rTemperatures[count] = GetNode(count)->GetTemperature();
     }
 }
 

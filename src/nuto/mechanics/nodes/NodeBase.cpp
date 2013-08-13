@@ -344,28 +344,28 @@ int NuTo::NodeBase::GetNumTemperatures()const
 
 //! @brief returns the temperature of the node
 //! @return temperature
-void NuTo::NodeBase::SetTemperature(const double rTemperature[1])
+void NuTo::NodeBase::SetTemperature(double rTemperature)
 {
 	throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
 //! @brief returns the temperature of the node
 //! @return temperature
-void NuTo::NodeBase::SetTemperature(int rTimeDerivative, const double rTemperature[1])
+void NuTo::NodeBase::SetTemperature(int rTimeDerivative, double rTemperature)
 {
 	throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
 //! @brief returns the temperature of the node
 //! @return temperature
-void NuTo::NodeBase::GetTemperature(double rTemperature[1])const
+double NuTo::NodeBase::GetTemperature()const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
 
 //! @brief returns the temperature of the node
 //! @return temperature
-void NuTo::NodeBase::GetTemperature(int rTimeDerivative, double rTemperature[1])const
+double NuTo::NodeBase::GetTemperature(int rTimeDerivative)const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
 }
@@ -508,6 +508,13 @@ void NuTo::NodeBase::GetNonlocalTotalStrain2D(int rTimeDerivative, double rNonlo
 //! @brief returns the nonlocal eqivalent plastic strain of the node
 //! @return Damage
 void NuTo::NodeBase::GetNonlocalTotalStrain3D(int rTimeDerivative, double rNonlocalDamage[2])const
+{
+	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+}
+
+//! @brief returns the nonlocal total strain component of the node
+//! @return strain component (rTimeDerivative=0)
+double NuTo::NodeBase::GetNonlocalTotalStrain(short rIndex)const
 {
 	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
 }

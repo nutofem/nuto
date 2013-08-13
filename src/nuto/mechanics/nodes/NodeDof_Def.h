@@ -220,21 +220,21 @@ public:
 
     //! @brief returns the temperature of the node
     //! @return temperature
-    void GetTemperature(double* rTemperature)const override;
+    double GetTemperature()const override;
 
     //! @brief returns the temperature of the node
     //! @param rTimeDerivative time derivative
     //! @return temperature
-    void GetTemperature(int rTimeDerivative, double* rTemperature)const override;
+    double GetTemperature(int rTimeDerivative)const override;
 
     //! @brief set the temperature of the node
     //! @param rTemperature  given temperature
-    void SetTemperature(const double* rTemperature) override;
+    void SetTemperature(double rTemperature) override;
 
     //! @brief set the temperature of the node
     //! @param rTimeDerivative time derivative
     //! @param rTemperature  given temperature
-    void SetTemperature(int rTimeDerivative, const double* rTemperature) override;
+    void SetTemperature(int rTimeDerivative, double rTemperature) override;
 
     //! @brief gives the global DOF of a temperature component
     //! @param rComponent component
@@ -325,6 +325,10 @@ public:
     //! @param rTimeDerivative time derivative
     //! @param rDamage  given Damage
     void SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
+
+    //! @brief returns the nonlocal total strain component of the node
+    //! @return strain component (rTimeDerivative=0)
+    double GetNonlocalTotalStrain(short rIndex)const;
 
     //! @brief gives the global DOF of a Damage component
     //! @param rComponent component

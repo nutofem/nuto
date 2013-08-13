@@ -137,7 +137,7 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 //! @param rNodeIdents Identifier for the corresponding nodes
 void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
 		int rGroupNumberElements, int rGroupNumberBoundaryNodes,
-		double rVirtualBoundary,
+		int rOrder, double rVirtualBoundary,
 		const std::string& rElementDataType, const std::string& rIpDataType)
 {
 #ifdef SHOW_TIME
@@ -202,7 +202,7 @@ void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
 
     BoundaryElementsCreate(elementType,
     		itGroupElements->second->AsGroupElement(), itGroupBoundaryNodes->second->AsGroupNode(),
-    		rVirtualBoundary,
+    		rOrder, rVirtualBoundary,
     		elementDataType, ipDataType);
 
 #ifdef SHOW_TIME
@@ -219,11 +219,10 @@ void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
 //! @param rNodeIdents Identifier for the corresponding nodes
 void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
 		const Group<ElementBase>* rGroupElements, const Group<NodeBase>* rGroupBoundaryNodes,
-		double rVirtualBoundary,
+		int rOrder, double rVirtualBoundary,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
-	int order(3);
-	double deltaL(rVirtualBoundary/order);
+	double deltaL(rVirtualBoundary/rOrder);
 
     for (Group<ElementBase>::const_iterator itElement=rGroupElements->begin(); itElement!=rGroupElements->end();itElement++)
     {
@@ -256,12 +255,11 @@ void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
 					if (rGroupBoundaryNodes->Contain(nodeNumber[countNode]))
 					{
 						int numTimeDerivatives = nodePtr[countNode]->GetNumTimeDerivatives();
-						int numNonlocalEqPlasticStrain = nodePtr[countNode]->GetNumNonlocalEqPlasticStrain();
 						int numNonlocalNonlocalTotalStrain = nodePtr[countNode]->GetNumNonlocalTotalStrain();
 						//check, if the virtual boundary extends to the left or to the right
-						std::vector<NodeBase*> newNodes(order+1);
+						std::vector<NodeBase*> newNodes(rOrder+1);
 						newNodes[0] = nodePtr[countNode];
-						for (int countOrder=0; countOrder<order; countOrder++)
+						for (int countOrder=0; countOrder<rOrder; countOrder++)
 						{
 							NodeBase* newNodePtr;
 							double NewCoordinate;
@@ -269,32 +267,28 @@ void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
 							{
 								if (coordinate[0]<coordinate[1])
 									//boundary extends to the left
-									NewCoordinate = coordinate[0]-(countNode+1)*deltaL;
+									NewCoordinate = coordinate[0]-(countOrder+1)*deltaL;
 								else
 									//boundary extends to the right
-									NewCoordinate = coordinate[0]+(countNode+1)*deltaL;
+									NewCoordinate = coordinate[0]+(countOrder+1)*deltaL;
 							}
 							else
 							{
 								if (coordinate[0]<coordinate[1])
 									//boundary extends to the right
-									NewCoordinate = coordinate[1]+(countNode+1)*deltaL;
+									NewCoordinate = coordinate[1]+(countOrder+1)*deltaL;
 								else
 									//boundary extends to the right
-									NewCoordinate = coordinate[1]-(countNode+1)*deltaL;
+									NewCoordinate = coordinate[1]-(countOrder+1)*deltaL;
 							}
 
 							switch(numTimeDerivatives)
 							{
 							case 0:
-								if (numNonlocalEqPlasticStrain==1)
-									newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,1,0>();
 								if (numNonlocalNonlocalTotalStrain==1)
 									newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,1>();
 								break;
 							case 2:
-								if (numNonlocalEqPlasticStrain==1)
-									newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,1,0>();
 								if (numNonlocalNonlocalTotalStrain==1)
 									newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,0,1>();
 								break;
@@ -323,8 +317,23 @@ void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
 						ElementBase* newElementPtr = new NuTo::BoundaryGradientDamage1D(this,newNodes,
 								itElement->second->AsTruss(),countNode,
 								NuTo::ElementData::CONSTITUTIVELAWIP,
-								IntegrationType::IntegrationType1D2NGauss2Ip,
+								IntegrationType::IntegrationType1D2NBoundaryGauss3Ip,
 								IpData::STATICDATA);
+
+						//find unused integer id
+						int elementNumber(mElementMap.size());
+						boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(elementNumber);
+						while (it!=mElementMap.end())
+						{
+							elementNumber++;
+							it = mElementMap.find(elementNumber);
+						}
+
+						mElementMap.insert(elementNumber, newElementPtr);
+
+						//modify the material of the element, use the constitutive law of the first ip in the neigboring element
+						newElementPtr->SetConstitutiveLaw(itElement->second->GetConstitutiveLaw(0));
+
 
 					}//if (rGroupBoundaryNodes->Contain(nodeNumber1))
 				}//for (int count=0; count<2; count++)

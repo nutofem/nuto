@@ -133,6 +133,24 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
                         mLogger << "("<< it->second->GetDofRotation(iDof)<< ")" ;
                     }
                 }
+                if (it->second->GetNumTemperatures()>0 )
+                {
+                	mLogger << "\t t:";
+                    for(unsigned short iDof=0; iDof<it->second->GetNumTemperatures(); ++iDof)
+                    {
+                    	mLogger << "\t" << it->second->GetTemperature() ;
+                        mLogger << "("<< it->second->GetDofTemperature()<< ")" ;
+                    }
+                }
+                if (it->second->GetNumNonlocalTotalStrain()>0 )
+                {
+                	mLogger << "\t ns:";
+                    for(unsigned short iDof=0; iDof<it->second->GetNumNonlocalTotalStrain(); ++iDof)
+                    {
+                    	mLogger << "\t" << it->second->GetNonlocalTotalStrain(iDof) ;
+                        mLogger << "("<< it->second->GetDofNonlocalTotalStrain(iDof)<< ")" ;
+                    }
+                }
 			}
 			mLogger << "\n";
     	}

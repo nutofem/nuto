@@ -1,4 +1,4 @@
-// $Id: IntegrationType1D2NGauss3Ip.cpp 345 2010-10-19 07:50:21Z arnold2 $
+// $Id: IntegrationType1D2NBoundaryGauss3Ip.cpp 345 2010-10-19 07:50:21Z arnold2 $
 
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
 #include <assert.h>
@@ -29,7 +29,7 @@ void NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetLocalIntegrationPointCoordina
         rCoordinates =  0.774596669241483; // sqr(3/5)
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType1D2NGauss3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
@@ -57,7 +57,7 @@ double NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetIntegrationPointWeight(int 
     case 3 :
         return 0.555555555555556; // 5/9
     default:
-        throw MechanicsException("[NuTo::IntegrationType1D2NGauss3Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 
@@ -72,7 +72,7 @@ std::string NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifier()const
 //! @return identifier
 std::string NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic()
 {
-    return std::string("1D2NBoundaryGAUSS3IP");
+    return std::string("1D2NBOUNDARYGAUSS3IP");
 }
 
 #ifdef ENABLE_VISUALIZE

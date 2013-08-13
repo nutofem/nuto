@@ -64,6 +64,8 @@ public:
     virtual const EngineeringStrain2D& GetEngineeringStrain2D()const;
     virtual const EngineeringStrain3D& GetEngineeringStrain3D()const;
 
+    virtual const EngineeringStress1D& GetEngineeringStress1D()const;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

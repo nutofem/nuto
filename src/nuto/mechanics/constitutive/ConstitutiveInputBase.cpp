@@ -15,6 +15,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalEqPlasticStrain.h"
 #include "nuto/mechanics/constitutive/thermal/Temperature.h"
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
@@ -69,6 +70,11 @@ const NuTo::EngineeringStrain2D& NuTo::ConstitutiveInputBase::GetEngineeringStra
 const NuTo::EngineeringStrain3D& NuTo::ConstitutiveInputBase::GetEngineeringStrain3D()const
 {
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetEngineeringStrain3D] not implemented for this input object.");
+}
+
+const NuTo::EngineeringStress1D& NuTo::ConstitutiveInputBase::GetEngineeringStress1D()const
+{
+	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetEngineeringStress1D] not implemented for this input object.");
 }
 
 #ifdef ENABLE_SERIALIZATION

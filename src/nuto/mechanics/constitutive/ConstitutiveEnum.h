@@ -51,7 +51,10 @@ enum eInput
 	TEMPERATURE_GRADIENT_3D,           //!<
 	NONLOCAL_EQ_PLASTIC_STRAIN,        //!<
 	NONLOCAL_TOTAL_STRAIN_1D,          //!<
-	ENGINEERING_STRESS_1D              //!< usually the stress is an output, that 's why the additional input term is required
+	ENGINEERING_STRESS_1D,             //!< usually the stress is an output, that 's why the additional input term is required
+	DEFORMATION_GRADIENT_REAL_1D,      //!<
+	NONLOCAL_TOTAL_STRAIN_REAL_1D,     //!<
+	NONLOCAL_TOTAL_STRAIN_VIRT_1D      //!<
 };
 }
 
@@ -67,7 +70,10 @@ static inline std::string InputToString ( const Input::eInput& e )
                               (Input::TEMPERATURE_GRADIENT_3D,"TEMPERATURE_GRADIENT_3D")
                               (Input::NONLOCAL_EQ_PLASTIC_STRAIN,"NONLOCAL_EQ_PLASTIC_STRAIN")
                               (Input::NONLOCAL_TOTAL_STRAIN_1D,"NONLOCAL_TOTAL_STRAIN_1D")
-                              (Input::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_INPUT_1D");
+                              (Input::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
+                              (Input::DEFORMATION_GRADIENT_REAL_1D,"DEFORMATION_GRADIENT_REAL_1D")
+                              (Input::NONLOCAL_TOTAL_STRAIN_REAL_1D,"NONLOCAL_TOTAL_STRAIN_REAL_1D")
+                              (Input::NONLOCAL_TOTAL_STRAIN_VIRT_1D,"NONLOCAL_TOTAL_STRAIN_VIRT_1D");
  std::map< Input::eInput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;
@@ -108,9 +114,12 @@ enum eOutput
 	UPDATE_TMP_STATIC_DATA,
 	LOCAL_EQ_PLASTIC_STRAIN,
 	D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,
-	ENGINEERING_STRAIN_FROM_BOUNDARY_1D,
-	D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_STRESS_1D,
-	D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_NONLOCAL_TOTAL_STRAIN_1D
+	ENGINEERING_STRESS_REAL_1D,
+	ENGINEERING_STRAIN_VIRT_1D,
+	D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,
+	D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,
+	D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,
+	D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D
 };
 }
 
@@ -146,9 +155,12 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA")
                               (Output::LOCAL_EQ_PLASTIC_STRAIN,"LOCAL_EQ_PLASTIC_STRAIN")
                               (Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D")
-                              (Output::ENGINEERING_STRAIN_FROM_BOUNDARY_1D,"ENGINEERING_STRAIN_FROM_BOUNDARY_1D")
-                              (Output::D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_STRESS_1D,"D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_STRESS_1D")
-                              (Output::D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_NONLOCAL_TOTAL_STRAIN_1D,"D_ENGINEERING_STRAIN_FROM_BOUNDARY_D_NONLOCAL_TOTAL_STRAIN_1D");
+                              (Output::ENGINEERING_STRESS_REAL_1D,"ENGINEERING_STRESS_REAL_1D")
+                              (Output::ENGINEERING_STRAIN_VIRT_1D,"ENGINEERING_STRAIN_VIRT_1D")
+                              (Output::D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D")
+                              (Output::D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D")
+                              (Output::D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,"D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D")
+                              (Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,"D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D");
   std::map< Output::eOutput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;

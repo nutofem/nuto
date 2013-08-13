@@ -30,6 +30,7 @@
 
 namespace NuTo
 {
+class BoundaryGradientDamage1D;
 class CrackBase;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
@@ -348,6 +349,12 @@ public:
 
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
     virtual Truss* AsTruss();
+
+    //! @brief cast the base pointer to an BoundaryGradientDamage1D, otherwise throws an exception
+    virtual const BoundaryGradientDamage1D* AsBoundaryGradientDamage1D()const;
+
+    //! @brief cast the base pointer to an BoundaryGradientDamage1D, otherwise throws an exception
+    virtual BoundaryGradientDamage1D* AsBoundaryGradientDamage1D();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

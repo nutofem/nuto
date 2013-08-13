@@ -62,6 +62,7 @@ constraints/ConstraintLagrange.cpp
 constraints/ConstraintLagrangeNodeGroupDisplacements1D.cpp
 constraints/ConstraintLagrangeNodeGroupDisplacements2D.cpp
 constraints/ConstraintLinear.cpp
+constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.cpp
 constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
 constraints/ConstraintLinearEquation.cpp
 constraints/ConstraintLinearNodeDisplacements1D.cpp

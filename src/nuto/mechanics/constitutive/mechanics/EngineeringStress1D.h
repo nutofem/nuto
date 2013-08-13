@@ -60,6 +60,11 @@ public:
     	return *this;
     }
 
+    const EngineeringStress1D& GetEngineeringStress1D()const override
+    {
+    	return *this;
+    }
+
     //! @brief ... assignment constructor
 	//! @param  rOther ... copied element
     template<typename OtherDerived>

@@ -6,6 +6,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
@@ -50,6 +51,9 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         break;
         case  NuTo::IntegrationType::IntegrationType1D2NGauss2Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss2Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType1D2NBoundaryGauss3Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NBoundaryGauss3Ip();
         break;
         case  NuTo::IntegrationType::IntegrationType1D2NGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss3Ip();

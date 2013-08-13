@@ -187,11 +187,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
 
         if (Cmat.GetNumEntries()>0)
         {
-             residual_mod=residual_j - CmatT*residual_k;
+            residual_mod=prevResidual_j - CmatT*prevResidual_k;
         }
         else
         {
-            residual_mod=residual_j;
+            residual_mod=prevResidual_j;
         }
 
         if (residual_mod.Norm()>mToleranceForce)
@@ -373,6 +373,9 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
            }
 			//solve for trial state
 			NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
+//FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> hessianModFull(stiffMatrix_jj);
+//std::cout << "stiffness\n" << hessianModFull << std::endl;
+
 			hessianModSolver.SetOneBasedIndexing();
 			mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
 			delta_disp_j*=-1;
@@ -717,9 +720,12 @@ rStructure.NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 mTime+=timeStep;
 
                 std::cout << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
+                //std::cout << "plot Vector " << plotVector << std::endl;
+                //Postprocess the Newmark routine (boundary forces etc. are calculated and the visualization is called)
+                this->PostProcess(rStructure, plotVector);
 
-                std::cout << "plot Vector " << plotVector << std::endl;
-                PostProcess(rStructure, plotVector);
+                //userdefined postprocessing using the overloaded routine of structurebase
+                rStructure.PostProcessDataAfterUpdate(plotHistory.GetNumRows()-1, iteration, mTime, timeStep, normResidual);
 
                 //eventually increase next time step
                 if (iteration<0.25*mMaxNumIterations)

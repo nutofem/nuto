@@ -8,6 +8,7 @@
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements1D.h"
 #include "nuto/mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearEquation.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements1D.h"

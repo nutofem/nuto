@@ -45,16 +45,11 @@ public:
     //! @param rNumRows ... number of columns
     //! @param rNumColumns ... number of rows
     FullMatrix<T,rows,cols> ( int rNumRows, int rNumColumns);
-//// parts added
-     
- 
-    #ifdef ENABLE_NUMPY
-    void convrtfn(T * inData,int rowcount, int colcount);
-    void convrtToPy(T * in,int Rcount,int Ccount);
-    void printmatrix();
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    #endif
-//// parts added
+
+#ifdef ENABLE_NUMPY
+    void convrtfn(T * inData,int rRow, int rCol);
+    void convrtToPy(T * inData,int rRow,int rCol);
+#endif
      
 #ifndef SWIG
     //! @brief ... constructor

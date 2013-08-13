@@ -1019,6 +1019,18 @@ NuTo::Truss* NuTo::ElementBase::AsTruss()
 	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
 }
 
+//! @brief cast the base pointer to a BoundaryGradientDamage1D, otherwise throws an exception
+const NuTo::BoundaryGradientDamage1D* NuTo::ElementBase::AsBoundaryGradientDamage1D()const
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryGradientDamage1D] Element is not of type BoundaryGradientDamage1D.");
+}
+
+//! @brief cast the base pointer to a BoundaryGradientDamage1D, otherwise throws an exception
+NuTo::BoundaryGradientDamage1D* NuTo::ElementBase::AsBoundaryGradientDamage1D()
+{
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryGradientDamage1D] Element is not of type BoundaryGradientDamage1D.");
+}
+
 //! @brief returns the Element Data Vector
 //! this was necessary due to recursive problems for serialization (nonlocal data)
 //! this method should only be called from the serialization routine of the structure

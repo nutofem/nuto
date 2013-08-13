@@ -11,32 +11,10 @@
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 %}
 
-//// parts added
-
-#ifdef ENABLE_NUMPY
-%include "numpy.i"
-
-%init %{
-import_array();
-%}
-
-%apply (double * IN_ARRAY2, int DIM1, int DIM2){(double* inData,int rowcount,int colcount)};
-%apply (double* INPLACE_ARRAY2, int DIM1,int DIM2){(double* in,int Rcount,int Ccount)};
-
-%apply (int* IN_ARRAY2, int DIM1, int DIM2){(int* inData,int rowcount,int colcount)};
-%apply (int* INPLACE_ARRAY2, int DIM1,int DIM2){(int* in,int Rcount,int Ccount)};
-
-#endif
-
-
-
-//////////////////////////
-
-
 // convert python string to std::string
 %include "std_string.i"
 // convert python tuple to std::vector
-%include "std_vector.i"
+// %include "std_vector.i"
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
 %include "nuto/base/ModulNuToBase.i"
@@ -45,8 +23,22 @@ import_array();
 %import "nuto/math/ModulMatrix.i"
 %import "nuto/math/ModulSparseMatrix.i"
 
-%include "nuto/math/FullMatrix_Def.h"
+#ifdef ENABLE_NUMPY
+  %include "numpy.i"
 
+  %init %{
+  import_array();
+  %}
+
+  %apply (double * IN_ARRAY2, int DIM1, int DIM2){(double* inData,int rowcount,int colcount)};
+  %apply (double* INPLACE_ARRAY2, int DIM1,int DIM2){(double* in,int Rcount,int Ccount)};
+
+  %apply (int* IN_ARRAY2, int DIM1, int DIM2){(int* inData,int rowcount,int colcount)};
+  %apply (int* INPLACE_ARRAY2, int DIM1,int DIM2){(int* in,int Rcount,int Ccount)};
+
+#endif
+
+%include "nuto/math/FullMatrix_Def.h"
 
 //this is for matrices
 // extend the python-interface with FullMatrixoperators, since the c++ operators are only defined in the base class (which is not exposed to pyhton) 

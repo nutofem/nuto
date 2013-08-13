@@ -50,8 +50,8 @@ NuTo::StrainGradientDamagePlasticityEngineeringStress::StrainGradientDamagePlast
     mCompressiveStrength = 0.;
     mBiaxialCompressiveStrength = 0.;
     mFractureEnergy = 0.;
-    mEpsilonF(0) = 0.05;
-    mEpsilonF(1) = 0.05;
+    mEpsilonF(0) = 0.003;
+    mEpsilonF(1) = 0.003;
     std::cout << "mEpsilonF has to be defined as material parameter " << std::endl;
     mYieldSurface = Constitutive::RANKINE_ROUNDED;
     mM = 1;
@@ -103,212 +103,296 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Evalu
         const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-        // get section information determining which input on the constitutive level should be used
-        const SectionBase* section(rElement->GetSection());
+	// get section information determining which input on the constitutive level should be used
+	const SectionBase* section(rElement->GetSection());
 
-        // check if parameters are valid
-        if (this->mParametersValid == false)
-        {
-               //throw an exception giving information related to the wrong parameter
-            CheckParameters();
-        }
+	// check if parameters are valid
+	if (this->mParametersValid == false)
+	{
+		   //throw an exception giving information related to the wrong parameter
+		CheckParameters();
+	}
 
-        if (section->GetType()!=Section::TRUSS)
-            throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate] only truss sections are implemented.");
+	if (section->GetType()!=Section::TRUSS)
+		throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] only truss sections are implemented.");
 
-        // calculate local engineering strain
-        EngineeringStrain1D localStrain1D;
-        if(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D)==rConstitutiveInput.end())
-            throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate] deformation gradient 1d needed to evaluate engineering strain1d.");
-        const DeformationGradient1D& deformationGradient(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D)->second->GetDeformationGradient1D());
-        deformationGradient.GetEngineeringStrain(localStrain1D);
+	EngineeringStrain1D localStrain1D;
 
-        // calculate nonlocal engineering strain
-        if(rConstitutiveInput.find(NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D)==rConstitutiveInput.end())
-            throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate] nonlocal strain 1d needed to evaluate stress.");
-        const EngineeringStrain1D nonlocalStrain1D(rConstitutiveInput.find(NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D)->second->GetEngineeringStrain1D());
+	// calculate nonlocal engineering strain
+	if(rConstitutiveInput.find(NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D)==rConstitutiveInput.end())
+		throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] nonlocal strain 1d needed to evalute constitutive law.");
+	const EngineeringStrain1D nonlocalStrain1D(rConstitutiveInput.find(NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D)->second->GetEngineeringStrain1D());
 
-        //Get previous ip_data
-        ConstitutiveStaticDataStrainGradientDamagePlasticity1D *oldStaticData = (rElement->GetStaticData(rIp))->AsStrainGradientDamagePlasticity1D();
+	//Get previous ip_data
+	ConstitutiveStaticDataStrainGradientDamagePlasticity1D *oldStaticData = (rElement->GetStaticData(rIp))->AsStrainGradientDamagePlasticity1D();
 
-        // subtract thermal strain
-        if (section->GetInputConstitutiveIsTemperature())
-        {
-            std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
-            if (itInput==rConstitutiveInput.end())
-                throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate2D] temperature needed to evaluate thermal engineering strain2d.");
-            double temperature(itInput->second->GetTemperature());
-            double deltaStrain(mThermalExpansionCoefficient * temperature);
-            localStrain1D[0] -= deltaStrain;
-            throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] add temperature history.");
+	EngineeringStress1D newStress;
+	EngineeringStrain1D newPlasticStrain;
+	FullMatrix<double,2,1> deltaKappa; //0 Drucker Prager  1 Rankine
+	FullMatrix<double,1,1> dStressdNonlocalStrain;
+	FullMatrix<int,2,1> yieldConditionFlag;  //which yield surface is active
+	FullMatrix<double,2,1> dKappadNonlocalStrain; //0 Drucker Prager  1 Rankine
+
+	NuTo::Error::eError error =  this->ReturnMapping1D(
+			//total axial strain
+			nonlocalStrain1D,
+			//prev plastic strain (axial and radial)
+			oldStaticData->mPlasticStrain,
+			//prev total strain in axial direction
+			oldStaticData->mPrevNonlocalTotalStrain,
+			newStress,
+			newPlasticStrain,
+			yieldConditionFlag,
+			deltaKappa,
+			&dStressdNonlocalStrain,
+			&dKappadNonlocalStrain,
+			rElement->GetStructure()->GetLogger());
+	if (error!=Error::SUCCESSFUL)
+		throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] error calling return mapping in 1D.");
+
+	//new equivalent plastic strain
+	FullVector<double,2> kappa = oldStaticData->mKappa+deltaKappa;
+
+	FullMatrix<double,1,1> dPlasticStraindNonlocalStrain;
+	dPlasticStraindNonlocalStrain(0,0) = 1.-dStressdNonlocalStrain(0,0)/mE;
+
+	//calculate damage
+	FullVector<double,2> omega;FullVector<double,2> expKappaEpsilonF;
+	expKappaEpsilonF(0) = exp(-kappa(0)/mEpsilonF[0]);
+	expKappaEpsilonF(1) = exp(-kappa(1)/mEpsilonF[1]);
+
+	omega(0) = 1.-expKappaEpsilonF(0);
+	omega(1) = 1.-expKappaEpsilonF(1);
+
+	double omega_tot = 1.-(1.-omega(0))*(1.-omega(1));
+
+	bool isBoundaryLayer(false);
+
+	// **************************************************************************************************
+	// * this is for the boundary layer, where the input is the boundary stress and the nonlocal strain *
+	// * and the output is the local engineering strain (used for the evolution of the nonlocal strain) *
+	// **************************************************************************************************
+	const EngineeringStress1D* engineeringStressPtr(0);
+	if(rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRESS_1D)==rConstitutiveInput.end())
+		isBoundaryLayer=false;
+	else
+	{
+		engineeringStressPtr = &(rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRESS_1D)->second->GetEngineeringStress1D());
+		isBoundaryLayer=true;
+	}
+	// *****************************************************
+	// * standard solution procedure with stress as output *
+	// *****************************************************
+	const DeformationGradient1D* deformationGradient;
+	if(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D)==rConstitutiveInput.end())
+	{
+		if (isBoundaryLayer==false)
+			throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] either the \
+					deformation gradient (standard) or the stress (boundary) has to be given as input to the calculation.");
+	}
+	else
+	{
+		if (isBoundaryLayer==true)
+			throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate2D] the input is either the ,\
+					deformation gradient (standard) or the stress (boundary), never both values.");
+		deformationGradient = &(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_1D)->second->GetDeformationGradient1D());
+		// calculate local engineering strain
+		deformationGradient->GetEngineeringStrain(localStrain1D);
+
+		// subtract thermal strain
+		if (section->GetInputConstitutiveIsTemperature())
+		{
+			std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
+			if (itInput==rConstitutiveInput.end())
+				throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate2D] temperature needed to evaluate thermal engineering strain2d.");
+			double temperature(itInput->second->GetTemperature());
+			double deltaStrain(mThermalExpansionCoefficient * temperature);
+			localStrain1D[0] -= deltaStrain;
+			throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] add temperature history.");
 /*            double prevTemperature(oldStaticData->mPrevTemperature);
-            double deltaStrain(mThermalExpansionCoefficient * prevTemperature);
-            prevEngineeringStrain3D.mEngineeringStrain[0] -= deltaStrain;
-            prevEngineeringStrain3D.mEngineeringStrain[1] -= deltaStrain;
-            prevEngineeringStrain3D.mEngineeringStrain[2] -= deltaStrain;
+			double deltaStrain(mThermalExpansionCoefficient * prevTemperature);
+			prevEngineeringStrain3D.mEngineeringStrain[0] -= deltaStrain;
+			prevEngineeringStrain3D.mEngineeringStrain[1] -= deltaStrain;
+			prevEngineeringStrain3D.mEngineeringStrain[2] -= deltaStrain;
 */
-        }
-        EngineeringStress1D newNonlocalStress;
-        EngineeringStrain1D newPlasticStrain;
-        FullMatrix<double,2,1> deltaKappa; //0 Drucker Prager  1 Rankine
-        FullMatrix<double,1,1> dNonlocalStressdNonlocalStrain;
-        FullMatrix<int,2,1> yieldConditionFlag;  //which yield surface is active
-        FullMatrix<double,2,1> dKappadNonlocalStrain; //0 Drucker Prager  1 Rankine
+		}
+	}
+	//std::cout << "boundary element " << isBoundaryLayer << std::endl;
+	//std::cout << "nonlocal strain " << nonlocalStrain1D << std::endl;
+	//std::cout << "nonlocal stress " << newStress << std::endl;
+	//std::cout << "omega_tot " << omega_tot << std::endl;
 
-        NuTo::Error::eError error =  this->ReturnMapping1D(
-        		//total axial strain
-        		nonlocalStrain1D,
-        		//prev plastic strain (axial and radial)
-        		oldStaticData->mPlasticStrain,
-        		//prev total strain in axial direction
-        		oldStaticData->mPrevNonlocalTotalStrain,
-        		newNonlocalStress,
-                newPlasticStrain,
-                yieldConditionFlag,
-                deltaKappa,
-                &dNonlocalStressdNonlocalStrain,
-                &dKappadNonlocalStrain,
-                rElement->GetStructure()->GetLogger());
-        if (error!=Error::SUCCESSFUL)
-        	throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate1D] error calling return mapping in 1D.");
+	//set this to true, if update is in the map, perform the update after all other outputs have been calculated
+	bool performUpdateAtEnd(false);
 
-        //new equivalent plastic strain
-        FullVector<double,2> kappa = oldStaticData->mKappa+deltaKappa;
+	for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
+			itOutput != rConstitutiveOutput.end(); itOutput++)
+	{
+		switch(itOutput->first)
+		{
+		case NuTo::Constitutive::Output::ENGINEERING_STRESS_1D:
+		{
+			//calculate engineering stress
+			EngineeringStress1D& engineeringStress1D(itOutput->second->GetEngineeringStress1D());
 
-        FullMatrix<double,1,1> dPlasticStraindNonlocalStrain;
-        dPlasticStraindNonlocalStrain(0,0) = 1.-dNonlocalStressdNonlocalStrain(0,0)/mE;
+			if (isBoundaryLayer==false)
+			    engineeringStress1D = (1.-omega_tot)*mE*(localStrain1D-newPlasticStrain);
+			else
+				engineeringStress1D = *engineeringStressPtr;
+			//std::cout << "omega tot " << omega_tot << " new stress " << (1.-omega_tot)*newStress << " kappa overnonlocal " << kappaOverNonlocal.transpose() << std::endl;
+			//std::cout << "old kappa " << oldStaticData->mKappa.transpose() << " delta kappa local " << deltaKappa.transpose() << " nonlocal kappa " << kappaNonlocal.transpose() << std::endl;
+		}
+		break;
+		case NuTo::Constitutive::Output::ENGINEERING_STRESS_3D:
+		{
+			//this is for the visualize routines
+			EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
 
-        //calculate damage
-        FullVector<double,2> omega;FullVector<double,2> expKappaEpsilonF;
-        expKappaEpsilonF(0) = exp(-kappa(0)/mEpsilonF[0]);
-        expKappaEpsilonF(1) = exp(-kappa(1)/mEpsilonF[1]);
+			if (isBoundaryLayer==false)
+			{
+			    engineeringStress3D[0] = (1.-omega_tot)*mE*(localStrain1D-newPlasticStrain)(0);
+			}
+			else
+			{
+				engineeringStress3D[0] = (*engineeringStressPtr)(0);
+			}
+			engineeringStress3D[1] = 0.;
+			engineeringStress3D[2] = 0.;
+			engineeringStress3D[3] = 0.;
+			engineeringStress3D[4] = 0.;
+			engineeringStress3D[5] = 0.;
+		}
+		break;
+		case NuTo::Constitutive::Output::ENGINEERING_STRAIN_1D:
+		{
+			if (isBoundaryLayer==false)
+			    itOutput->second->GetEngineeringStrain1D() = localStrain1D;
+			else
+			{
+				EngineeringStrain1D& engineeringStrain1D(itOutput->second->GetEngineeringStrain1D());
+				engineeringStrain1D(0) = (*engineeringStressPtr)(0)/((1.-omega_tot)*mE);
+			}
+		}
+		break;
+		case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
+		{
+			assert(isBoundaryLayer==false);
+			ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+			tangent.SetSymmetry(false);
+			tangent(0,0) = (1.-omega_tot) * mE;
+		}
+		break;
+		case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D:
+		{
+			assert(isBoundaryLayer==false);
+			ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+			tangent.SetSymmetry(false);
+			NuTo::FullMatrix<double,2,1> dOmega_dNonlocalStrain;
+			NuTo::FullVector<double,2> dOmega_dKappa;
 
-        omega(0) = 1.-expKappaEpsilonF(0);
-        omega(1) = 1.-expKappaEpsilonF(1);
+			for (int count=0; count<2; count++)
+			{
+				dOmega_dKappa(count) = 1./mEpsilonF[count]*expKappaEpsilonF(count);
+				dOmega_dNonlocalStrain(count,0) = dOmega_dKappa(count)*dKappadNonlocalStrain(count,0);
+			}
 
-        double omega_tot = 1.-(1.-omega(0))*(1.-omega(1));
+			double dOmega_tot_dNonlocalStrain = dOmega_dNonlocalStrain(0,0)*(1.-omega(1)) + dOmega_dNonlocalStrain(1,0)*(1.-omega(0));
+			tangent(0,0) = (omega_tot-1.) * mE * dPlasticStraindNonlocalStrain(0,0) - dOmega_tot_dNonlocalStrain*mE*(localStrain1D(0)-newPlasticStrain(0));
+		}
+		break;
+		case NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D:
+		{
+			assert(isBoundaryLayer==true);
+			ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+			tangent.SetSymmetry(false);
+			tangent(0,0) = 1./(mE*(1.-omega_tot));
+		}
+		break;
+		case NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D:
+		{
+			assert(isBoundaryLayer==true);
+			ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+			tangent.SetSymmetry(false);
+			NuTo::FullMatrix<double,2,1> dOmega_dNonlocalStrain;
+			NuTo::FullVector<double,2> dOmega_dKappa;
 
-        //set this to true, if update is in the map, perform the update after all other outputs have been calculated
-        bool performUpdateAtEnd(false);
+			for (int count=0; count<2; count++)
+			{
+				dOmega_dKappa(count) = 1./mEpsilonF[count]*expKappaEpsilonF(count);
+				dOmega_dNonlocalStrain(count,0) = dOmega_dKappa(count)*dKappadNonlocalStrain(count,0);
+			}
 
-        for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
-                itOutput != rConstitutiveOutput.end(); itOutput++)
-        {
-            switch(itOutput->first)
-            {
-            case NuTo::Constitutive::Output::ENGINEERING_STRESS_1D:
-            {
-                //calculate engineering stress
-                EngineeringStress1D& engineeringStress1D(itOutput->second->GetEngineeringStress1D());
+			double dOmega_tot_dNonlocalStrain = dOmega_dNonlocalStrain(0,0)*(1.-omega(1)) + dOmega_dNonlocalStrain(1,0)*(1.-omega(0));
+			tangent(0,0) = (*engineeringStressPtr)(0)/mE*(dOmega_tot_dNonlocalStrain/((1.-omega_tot)*(1.-omega_tot)));
+		}
+		break;
+		case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
+		{
+			EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
+			if (isBoundaryLayer==false)
+			    engineeringStrain3D(0) = localStrain1D[0];
+			else
+			{
+				engineeringStrain3D(0) = 1./((1.-omega_tot)*mE)*(*engineeringStressPtr)(0);
+ 			}
 
-                engineeringStress1D = (1.-omega_tot)*mE*(localStrain1D-newPlasticStrain);
-                //std::cout << "omega tot " << omega_tot << " new stress " << (1.-omega_tot)*newStress << " kappa overnonlocal " << kappaOverNonlocal.transpose() << std::endl;
-                //std::cout << "old kappa " << oldStaticData->mKappa.transpose() << " delta kappa local " << deltaKappa.transpose() << " nonlocal kappa " << kappaNonlocal.transpose() << std::endl;
-            }
-            break;
-            case NuTo::Constitutive::Output::ENGINEERING_STRESS_3D:
-            {
-                //this is for the visualize routines
-                EngineeringStress3D& engineeringStress3D(itOutput->second->GetEngineeringStress3D());
+			engineeringStrain3D(1) = 0.;//this is wrong, but I don't care at the moment
+			engineeringStrain3D(2) = 0.;//this is wrong, but I don't care at the moment
+			engineeringStrain3D(3) = 0.;
+			engineeringStrain3D(4) = 0.;
+			engineeringStrain3D(5) = 0.;
+		}
+		break;
+		case NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D:
+		{
+			EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
+			engineeringPlasticStrain[0] = newPlasticStrain(0);
+			engineeringPlasticStrain[1] = 0.;//this is wrong, but I don't care at the moment
+			engineeringPlasticStrain[2] = 0.;//this is wrong, but I don't care at the moment
+			engineeringPlasticStrain[3] = 0.;
+			engineeringPlasticStrain[4] = 0.;
+			engineeringPlasticStrain[5] = 0.;
+		}
+		break;
+		case NuTo::Constitutive::Output::DAMAGE:
+		{
+			itOutput->second->GetDamage().SetDamage(omega_tot);
+		}
+		break;
+		case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+		{
+			   throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
+		}
+		break;
+		case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+		{
+			performUpdateAtEnd = true;
+		}
+		break;
+		default:
+			throw MechanicsException(std::string("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate3D] output object)") +
+					NuTo::Constitutive::OutputToString(itOutput->first) +
+					std::string(" could not be calculated, check the allocated material law and the section behavior."));
+		}
+	}
 
-                engineeringStress3D[0] = (1.-omega_tot)*mE*(localStrain1D-newPlasticStrain)(0);
-                engineeringStress3D[1] = 0.;
-                engineeringStress3D[2] = 0.;
-                engineeringStress3D[3] = 0.;
-                engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = 0.;
-            }
-            break;
-            case NuTo::Constitutive::Output::ENGINEERING_STRAIN_1D:
-            {
-                itOutput->second->GetEngineeringStrain1D() = localStrain1D;
-            }
-            break;
-            case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
-            {
-                ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
-                tangent.SetSymmetry(false);
-                tangent(0,0) = (1.-omega_tot) * mE;
-            }
-            break;
-            case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D:
-            {
-                ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
-                tangent.SetSymmetry(false);
-                NuTo::FullMatrix<double,2,1> dOmega_dNonlocalStrain;
-                NuTo::FullVector<double,2> dOmega_dKappa;
+	//update history variables
+	if (performUpdateAtEnd)
+	{
+		//double energy = oldStaticData->GetPrevTotalEnergy();
+		//calculate delta total energy (sigma1+sigma2)/2*delta_strain
+		//energy+=(0.5)*(1.-omega_tot)*(newStress+oldStaticData->mPrevSigma)*(strain1D-oldStaticData->mPrevStrain);
+		oldStaticData->mPrevNonlocalTotalStrain = nonlocalStrain1D;
+		oldStaticData->mPrevSigma  = (1.-omega_tot)*mE*(localStrain1D-newPlasticStrain);
+		//oldStaticData->SetPrevTotalEnergy(energy);
 
-                for (int count=0; count<2; count++)
-                {
-					dOmega_dKappa(count) = 1./mEpsilonF[count]*expKappaEpsilonF(count);
-					dOmega_dNonlocalStrain(count,0) = dOmega_dKappa(count)*dKappadNonlocalStrain(count,0);
-                }
+	   //! @brief plastic strain
+		oldStaticData->mPlasticStrain = newPlasticStrain;
 
-                double dOmega_tot_dNonlocalStrain = dOmega_dNonlocalStrain(0,0)*(1.-omega(1)) + dOmega_dNonlocalStrain(1,0)*(1.-omega(0));
-                tangent(0,0) = (omega_tot-1.) * mE * dPlasticStraindNonlocalStrain(0,0) - dOmega_tot_dNonlocalStrain*mE*(localStrain1D(0)-newPlasticStrain(0));
-            }
-            break;
-            case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
-            {
-                EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-                engineeringStrain3D[0] = localStrain1D[0];
-                engineeringStrain3D[1] = 0.;//this is wrong, but I don't care at the moment
-                engineeringStrain3D[2] = 0.;//this is wrong, but I don't care at the moment
-                engineeringStrain3D[3] = 0.;
-                engineeringStrain3D[4] = 0.;
-                engineeringStrain3D[5] = 0.;
-            }
-            break;
-            case NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D:
-            {
-                EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
-                engineeringPlasticStrain[0] = newPlasticStrain(0);
-                engineeringPlasticStrain[1] = 0.;//this is wrong, but I don't care at the moment
-                engineeringPlasticStrain[2] = 0.;//this is wrong, but I don't care at the moment
-                engineeringPlasticStrain[3] = 0.;
-                engineeringPlasticStrain[4] = 0.;
-                engineeringPlasticStrain[5] = 0.;
-            }
-            break;
-            case NuTo::Constitutive::Output::DAMAGE:
-            {
-                itOutput->second->GetDamage().SetDamage(omega_tot);
-            }
-            break;
-            case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-            {
-                   throw MechanicsException("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
-            }
-            break;
-            case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
-            {
-                performUpdateAtEnd = true;
-            }
-            break;
-            default:
-                throw MechanicsException(std::string("[NuTo::StrainGradientDamagePlasticityEngineeringStress::Evaluate3D] output object)") +
-                        NuTo::Constitutive::OutputToString(itOutput->first) +
-                        std::string(" could not be calculated, check the allocated material law and the section behavior."));
-            }
-        }
-
-        //update history variables
-        if (performUpdateAtEnd)
-        {
-        	//double energy = oldStaticData->GetPrevTotalEnergy();
-            //calculate delta total energy (sigma1+sigma2)/2*delta_strain
-            //energy+=(0.5)*(1.-omega_tot)*(newStress+oldStaticData->mPrevSigma)*(strain1D-oldStaticData->mPrevStrain);
-            oldStaticData->mPrevNonlocalTotalStrain = nonlocalStrain1D;
-            oldStaticData->mPrevSigma  = (1.-omega_tot)*mE*(localStrain1D-newPlasticStrain);
-            //oldStaticData->SetPrevTotalEnergy(energy);
-
-           //! @brief plastic strain
-            oldStaticData->mPlasticStrain = newPlasticStrain;
-
-            // update the parts of the static data that are not related to the temporary updates
-            oldStaticData->mKappa = kappa;
-        }
-        return Error::SUCCESSFUL;
+		// update the parts of the static data that are not related to the temporary updates
+		oldStaticData->mKappa = kappa;
+	}
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... evaluate the constitutive relation in 2D
@@ -904,6 +988,8 @@ bool NuTo::StrainGradientDamagePlasticityEngineeringStress::CheckElementCompatib
 {
     switch (rElementType)
     {
+    case NuTo::Element::BOUNDARYGRADIENTDAMAGE1D:
+        return true;
     case NuTo::Element::BRICK8N:
         return false;
     case NuTo::Element::PLANE2D3N:

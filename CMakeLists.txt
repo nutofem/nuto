@@ -57,15 +57,12 @@ IF (ENABLE_SERIALIZATION)
     SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_SERIALIZATION")
 ENDIF(ENABLE_SERIALIZATION)
 
-##### parts added
 IF (ENABLE_NUMPY)
     ADD_DEFINITIONS("-DENABLE_NUMPY")
     SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_NUMPY" ${NuTo_DOXYGEN_PREDEFINED})
     SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_NUMPY")
 ENDIF(ENABLE_NUMPY)
 
-
-########
 IF (ENABLE_VERBOSELEVEL)
     ADD_DEFINITIONS("-DENABLE_VERBOSELEVEL")
     SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_VERBOSELEVEL" ${NuTo_DOXYGEN_PREDEFINED})
@@ -129,6 +126,10 @@ ELSE(ENABLE_OPENMP)
 ENDIF(ENABLE_OPENMP)
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7.0")
+    message(FATAL_ERROR "Insufficient gcc version (at least 4.7.0)")
+  endif()
+
   #-Wfatal-errors for not so long error messages
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long")
   # ISO standards mode does not work well on MinGW
@@ -141,18 +142,19 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   endif()
 ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
-###########Parts Added
-FIND_PACKAGE(Numpy)
+
+IF(ENABLE_NUMPY)
+FIND_PACKAGE(Numpy REQUIRED)
   if(NUMPY_FOUND)
-   INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_PATH})
-   #set (ENABLE_NUMPY TRUE)
-   
-   message (STATUS "Numpy found ")
+    INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_PATH})
+    message (STATUS "Numpy found ")
   else(NUMPY_FOUND)
     message (STATUS "Numpy not found ")
   endif(NUMPY_FOUND)
+ELSE(ENABLE_NUMPY)
+    message (STATUS "Numpy not activated ")
+ENDIF(ENABLE_NUMPY)
 
-#################
 
 # Python required for interface files c++ and python
 MESSAGE(STATUS "Checking for Python...")

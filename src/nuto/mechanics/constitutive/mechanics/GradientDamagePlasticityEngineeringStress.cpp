@@ -50,8 +50,8 @@ NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEnginee
     mCompressiveStrength = 0.;
     mBiaxialCompressiveStrength = 0.;
     mFractureEnergy = 0.;
-    mEpsilonF(0) = 0.01;
-    mEpsilonF(1) = 0.01;
+    mEpsilonF(0) = 0.02;
+    mEpsilonF(1) = 0.02;
     std::cout << "mEpsilonF has to be defined as material parameter " << std::endl;
     mYieldSurface = Constitutive::RANKINE_ROUNDED;
     mM = 1;

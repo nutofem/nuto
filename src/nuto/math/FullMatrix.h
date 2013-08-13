@@ -62,52 +62,38 @@ FullMatrix<T,rows,cols>::FullMatrix( int rNumRows, int rNumColumns)
 		this->resize ( rNumRows,rNumColumns );
 }
 
-/////////////////Parts added //////////////////
 // convert numpy array python to eign matrix c++
-
 #ifdef ENABLE_NUMPY
-template <class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::convrtfn(T * inData,int rowcount, int colcount)
-    {
-	int count =0;
-	for(int i=0;i< rowcount;i++)
+	template <class T, int rows, int cols>
+	void FullMatrix<T,rows,cols>::convrtfn(T * inData,int rRow, int rCol)
 	{
-	   for(int j=0;j<colcount;j++) 
-	    {
-		(*this)(i,j)=inData[count];
-		count++;
-	    }
+		int count =0;
+		for(int i=0;i< rRow;i++)
+		{
+		   for(int j=0;j<rCol;j++)
+			{
+			(*this)(i,j)=inData[count];
+			count++;
+			}
+		}
 	}
-    }
 
 
-// convert eign matrix from c++ to numpy array python
-template <class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::convrtToPy(T * in,int Rcount,int Ccount)
-     {
-   
-        int count=0;
-        for(int i=0;i<Rcount;i++)
-        {
-
-         for(int j=0;j<Ccount;j++)
-         {   
-           in[count]=(*this)(i,j);
-           count++;
-         }
-
-        }
-          
-      }
-
-//print eign matrix
-template <class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::printmatrix()
-    {
-      std::cout<<(*this)<<std::endl;
-    }
-#endif
-//////////////////////////////////////////////
+	// convert eign matrix from c++ to numpy array python
+	template <class T, int rows, int cols>
+	void FullMatrix<T,rows,cols>::convrtToPy(T * inData,int rRow,int rCol)
+	{
+		int count=0;
+		for(int i=0;i<rRow;i++)
+		{
+			for(int j=0;j<rCol;j++)
+			{
+			inData[count]=(*this)(i,j);
+			count++;
+			}
+		}
+	}
+#endif //ENABLE_NUMPY
 
 //! @brief ... constructor
 //! @param rEigenMatrix ... other matrix

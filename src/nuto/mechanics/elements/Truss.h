@@ -140,7 +140,7 @@ public:
     //! @param rNodeDamage nonlocal eq plastic strain values of the nodes
     //! @param rNonlocalEqentPlasticStrain return value
     void CalculateNonlocalEqPlasticStrain(const std::vector<double>& shapeFunctions,
-    		const std::vector<double>& rNodeEquivalentPlasticStrain, NonlocalEqPlasticStrain& rNonlocalEqentPlasticStrain);
+    		const std::vector<double>& rNodeEquivalentPlasticStrain, NonlocalEqPlasticStrain& rNonlocalEqentPlasticStrain)const;
 
     //! @brief stores the nonlocal total strain of the nodes
     //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
@@ -153,7 +153,7 @@ public:
     //! @param rNodeNonlocalTotalStrain nonlocal total strain values of the nodes
     //! @param rNonlocalTotalStrain return value
     void CalculateNonlocalTotalStrain(const std::vector<double>& shapeFunctions,
-    		const std::vector<double>& rNodeNonlocalTotalStrain, EngineeringStrain1D& rNonlocalTotalStrain);
+    		const std::vector<double>& rNodeNonlocalTotalStrain, EngineeringStrain1D& rNonlocalTotalStrain)const;
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -195,6 +195,12 @@ public:
     //! @return local dimension
     virtual int GetNumShapeFunctions()const=0;
 
+    //! @brief returns the number of shape functions for the interpolation of the nonlocal total strains
+    //! this is required for the calculation of the derivatives of the shape functions
+    //! whose size is GetLocalDimension*GetNumShapeFunctions
+    //! @return local dimension
+    virtual int GetNumShapeFunctionsNonlocalTotalStrain()const=0;
+
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
@@ -210,11 +216,22 @@ public:
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
     virtual void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
 
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes
+    virtual void CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
+
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
     virtual void CalculateDerivativeShapeFunctions(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const=0;
+
+    //! @brief calculates the derivative of the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const=0;
 
     //! @brief returns determinant of the Jacobian
     //! @param derivativeShapeFunctions derivatives of the shape functions
@@ -299,6 +316,16 @@ public:
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     void GetIntegrationPointVolume(std::vector<double>& rVolume)const;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual NodeBase* GetNodeNonlocalTotalStrain(int rLocalNodeNumber)=0;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual const NodeBase* GetNodeNonlocalTotalStrain(int rLocalNodeNumber)const=0;
 
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
     const Truss* AsTruss()const;

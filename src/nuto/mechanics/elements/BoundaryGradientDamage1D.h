@@ -133,8 +133,7 @@ public:
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw)const
-    {}
+    ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw)const;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
@@ -144,8 +143,7 @@ public:
     //! @brief returns the global coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
-    void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
-    {}
+    void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const;
 
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
@@ -164,16 +162,120 @@ public:
     //! this can be checked with an assertation
     void CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalTotalStrain)const;
 
+    //! @brief returns the local coordinates of an integration point on the boundary (in the real boundary element)
+    //! @param rCoordinates local coordinates (return value)
+    void GetLocalIntegrationPointCoordinatesReal(double& rCoordinates)const;
+
+    //! @brief returns the local coordinates of an integration point
+    //! @param rIpNum integration point
+    //! @param rCoordinates local coordinates (return value)
+    void GetLocalIntegrationPointCoordinatesVirt(int rIpNum, double& rCoordinates)const;
+
+    //! @brief returns determinant of the Jacobian
+    //! @param derivativeShapeFunctions derivatives of the shape functions
+    //! @param localCoord local coordinates
+    //! @return determinant of the Jacobian
+    double DetJacobian(const std::vector<double>& derivativeShapeFunctions,const std::vector<double>& localCoord)const;
+
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes
+    void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+
+    //! @brief calculates the derivative of the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes,
+    //! first all the directions for a single node, and then for the next node
+    void CalculateDerivativeShapeFunctions(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+
+    //! @brief returns the nonlocal eq plastic strain interpolated from the nodal values
+    //! @param shapeFunctionsGlobal shape functions
+    //! @param rNodeDamage nonlocal eq plastic strain values of the nodes
+    //! @param rNonlocalEqentPlasticStrain return value
+    void CalculateNonlocalEqPlasticStrain(const std::vector<double>& shapeFunctions,
+    		const std::vector<double>& rNodeEquivalentPlasticStrain, NonlocalEqPlasticStrain& rNonlocalEqentPlasticStrain)const;
+
+    //! @brief returns the nonlocal total strain interpolated from the nodal values
+    //! @param shapeFunctionsGlobal shape functions
+    //! @param rNodeNonlocalTotalStrain nonlocal total strain values of the nodes
+    //! @param rNonlocalTotalStrain return value
+    void CalculateNonlocalTotalStrain(const std::vector<double>& shapeFunctions,
+    		const std::vector<double>& rNodeNonlocalTotalStrain, EngineeringStrain1D& rNonlocalTotalStrain)const;
+
+    //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... one-dimensional local point coordinates
+    //! @param rGlobalCoordinates ... three-dimension global point coordinates
+    void InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const;
+
+    //! @brief add Kkk*omega+detJ*F (detJ is already included in Koo)
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rLocalTotalStrain local total strain values
+    //! @param rKkk stiffness matrix Kkk
+    //! @param rNodeNonlocalTotalStrain nodal nonlocal total strain values
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJRnonlocalTotalStrain(const std::vector<double>& rShapeFunctions,const EngineeringStrain1D& rLocalTotalStrain,
+    		const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
+    		const std::vector<double>& rNodeNonlocalTotalStrain, double rFactor, FullVector<double,Eigen::Dynamic>& rResult);
+
+    void Sub_K_epsilonNonlocalVirt_NonlocalVirt(
+    		double rFactorVirt,
+    		const std::vector<double>& rShapeFunctionsVirt,
+    		const FullMatrix<double,1,1>& tangentStrainVirtNonlocalTotalStrainVirt,
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+
+    //! @brief add Nt depsilonVirtdSigmaReal dSigmaRealdepsilonReal B
+    //! @param factorVirt factor
+    //! @param shapeFunctionsVirt
+    //! @param tangentStrainVirtStressReal
+    //! @param tangentStressRealStrainReal
+    //! @param derivativeShapeFunctionsLocalReal
+    //! @param rCol column where to add the submatrix
+    //! @param rResult return value (added)
+    void Sub_K_epsilonNonlocalVirt_DispReal
+      ( double factorVirt,
+        const std::vector<double>& shapeFunctionsVirt,
+    	const FullMatrix<double,1,1>& tangentStrainVirtStressReal,
+    	const FullMatrix<double,1,1>& tangentStressRealStrainReal,
+    	const std::vector<double>& derivativeShapeFunctionsLocalReal,
+    	int rCol,
+    	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+
+    //! @brief add Nt depsilonVirtdSigmaReal dSigmaRealdepsilonReal B
+    //! @param factorVirt factor
+    //! @param shapeFunctionsVirt
+    //! @param tangentStrainVirtStressReal
+    //! @param rTangentStressRealNonlocalStrainReal
+    //! @param rShapeFunctionsReal
+    //! @param rCol column where to add the submatrix
+    //! @param rResult return value (added)
+    void Sub_K_epsilonNonlocalVirt_NonlocalStrainReal
+      ( double factorVirt,
+        const std::vector<double>& rShapeFunctionsVirt,
+    	const FullMatrix<double,1,1>& rTangentStrainVirtStressReal,
+    	const FullMatrix<double,1,1>& rTangentStressRealNonlocalStrainReal,
+    	int rCol,
+    	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+
+    //! @brief calculates the Kkk matrix
+    //! @param shapeFunctions of the ip for all shape functions
+    //! @param derivativeShapeFunctions of the ip for all shape functions
+    //! @param c nonlocal gradient radius
+    //! @param factor multiplication factor (detJ area..)
+    //! @param Kkk return matrix with detJ * NtT+cBtB
+    void CalculateKkk(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
+
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
     NuTo::Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput);
 
     //! @brief cast the base pointer, otherwise throws an exception
-    const NuTo::BoundaryGradientDamage1D* AsBoundaryGradientDamage1D()const;
+    const NuTo::BoundaryGradientDamage1D* AsBoundaryGradientDamage1D()const override;
 
     //! @brief cast the base pointer, otherwise throws an exception
-    NuTo::BoundaryGradientDamage1D* AsBoundaryGradientDamage1D();
+    NuTo::BoundaryGradientDamage1D* AsBoundaryGradientDamage1D() override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -197,17 +299,11 @@ protected:
     //1 last node
     bool mEdgeRealBoundaryElement;
 
-    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
-    //! @param rGlobalRowDofs ... vector of global row dofs
-    //! @param rNumDisp ... number of displacement dofs
-    //! @param rNumTemp ... number of temperature dofs
-    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs) const;
+    // build global row dofs
+    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumNonlocalTotalStrainDofsVirt) const;
 
-    //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
-    //! @param rGlobalColumnDofs ... vector of global column dofs
-    //! @param rNumDisp ... number of displacement dofs
-    //! @param rNumTemp ... number of temperature dofs
-    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs) const;
+    // build global col dofs
+    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofsVirt, int rNumNonlocalTotalStrainDofsVirt, int rNumDispDofsReal) const;
 
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes()
