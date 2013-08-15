@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/array.hpp>
+
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 

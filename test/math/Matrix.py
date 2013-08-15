@@ -30,13 +30,16 @@ error = False
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #% start the real test file                                      %
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-a=nuto.DoubleFullMatrix(2,3,[1.2,2,3,4,5,6])
+v = nuto.DoubleVector(6)
+v=[1.2,2,3,4,5,6]
+a=nuto.DoubleFullMatrix(2,3,v)
 if (printResult):
    print "a"
    a.Info(5)  #width, precision
    print ""
-
-b=nuto.DoubleFullMatrix(3,2,(11.,12.,13.,14.,15.,16.))
+v2 = nuto.DoubleVector(6)
+v2=[11.,12.,13.,14.,15.,16.]
+b=nuto.DoubleFullMatrix(3,2,v2)
 if (printResult):
     print "b"
     print b

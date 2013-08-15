@@ -73,7 +73,7 @@ NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEnginee
     void NuTo::GradientDamagePlasticityEngineeringStress::serialize(Archive & ar, const unsigned int version)
     {
 #ifdef DEBUG_SERIALIZATION
-       rLogger << "start serialize GradientDamagePlasticityEngineeringStress" << "\n";
+       std::cout << "start serialize GradientDamagePlasticityEngineeringStress" << "\n";
 #endif
        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
           & BOOST_SERIALIZATION_NVP(mRho)
@@ -88,7 +88,7 @@ NuTo::GradientDamagePlasticityEngineeringStress::GradientDamagePlasticityEnginee
           & BOOST_SERIALIZATION_NVP(mM)
           & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
 #ifdef DEBUG_SERIALIZATION
-       rLogger << "finish serialize GradientDamagePlasticityEngineeringStress" << "\n";
+       std::cout << "finish serialize GradientDamagePlasticityEngineeringStress" << "\n";
 #endif
     }
     BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::GradientDamagePlasticityEngineeringStress)

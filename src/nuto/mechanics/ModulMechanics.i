@@ -11,6 +11,7 @@
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/base/Logger.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 %}
 
 
@@ -26,3 +27,5 @@
 %include "nuto/mechanics/structures/StructureBase.h"
 %include "nuto/mechanics/structures/unstructured/Structure.h"
 %include "nuto/mechanics/structures/grid/StructureGrid.h"
+%include "nuto/mechanics/elements/ElementEnum.h"
+

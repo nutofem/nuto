@@ -67,7 +67,7 @@ template<class Archive>
 void NuTo::NewmarkBase::serialize(Archive & ar, const unsigned int version)
 {
 	#ifdef DEBUG_SERIALIZATION
-	    mLogger << "start serialization of Newmark" << "\n";
+	    std::cout << "start serialization of Newmark" << "\n";
 	#endif
 	    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase)
 	       & BOOST_SERIALIZATION_NVP(mToleranceForce)
@@ -81,7 +81,7 @@ void NuTo::NewmarkBase::serialize(Archive & ar, const unsigned int version)
 
 
     #ifdef DEBUG_SERIALIZATION
-        mLogger << "finish serialization of Newmark" << "\n";
+       std::cout << "finish serialization of Newmark" << "\n";
     #endif
 }
 

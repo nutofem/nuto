@@ -69,7 +69,7 @@ NuTo::NonlocalDamagePlasticityEngineeringStress::NonlocalDamagePlasticityEnginee
     void NuTo::NonlocalDamagePlasticityEngineeringStress::serialize(Archive & ar, const unsigned int version)
     {
 #ifdef DEBUG_SERIALIZATION
-       rLogger << "start serialize NonlocalDamagePlasticityEngineeringStress" << "\n";
+       std::cout << "start serialize NonlocalDamagePlasticityEngineeringStress" << "\n";
 #endif
        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
           & BOOST_SERIALIZATION_NVP(mRho)
@@ -84,7 +84,7 @@ NuTo::NonlocalDamagePlasticityEngineeringStress::NonlocalDamagePlasticityEnginee
           & BOOST_SERIALIZATION_NVP(mDamage)
           & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
 #ifdef DEBUG_SERIALIZATION
-       rLogger << "finish serialize NonlocalDamagePlasticityEngineeringStress" << "\n";
+       std::cout << "finish serialize NonlocalDamagePlasticityEngineeringStress" << "\n";
 #endif
     }
     BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NonlocalDamagePlasticityEngineeringStress)

@@ -243,7 +243,7 @@ template<class Archive>
 void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    mLogger << "start serialization of TimeIntegrationBase" << "\n";
+    std::cout << "start serialization of TimeIntegrationBase" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
        & BOOST_SERIALIZATION_NVP(mConstraintLoad)
@@ -261,7 +261,7 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mResultDir)
        & BOOST_SERIALIZATION_NVP(mAutomaticTimeStepping);
 #ifdef DEBUG_SERIALIZATION
-    mLogger << "finish serialization of structure base" << "\n";
+    std::cout << "finish serialization of structure base" << "\n";
 #endif
 }
 #endif  // ENABLE_SERIALIZATION

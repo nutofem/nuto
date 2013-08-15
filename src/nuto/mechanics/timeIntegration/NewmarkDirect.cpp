@@ -53,12 +53,12 @@ template<class Archive>
 void NuTo::NewmarkDirect::serialize(Archive & ar, const unsigned int version)
 {
     #ifdef DEBUG_SERIALIZATION
-        mLogger << "start serialization of NewmarkDirect" << "\n";
+        std::cout << "start serialization of NewmarkDirect" << "\n";
     #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewmarkBase)
            & BOOST_SERIALIZATION_NVP(mMinLineSearchStep);
     #ifdef DEBUG_SERIALIZATION
-        mLogger << "finish serialization of NewmarkDirect" << "\n";
+        std::cout << "finish serialization of NewmarkDirect" << "\n";
     #endif
 }
 

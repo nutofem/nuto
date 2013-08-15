@@ -61,7 +61,7 @@ template<class Archive>
 void NuTo::MisesPlasticityEngineeringStress::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    rLogger << "start serialize MisesPlasticityEngineeringStress" << "\n";
+    std::cout << "start serialize MisesPlasticityEngineeringStress" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
        & BOOST_SERIALIZATION_NVP(mE)
@@ -71,7 +71,7 @@ void NuTo::MisesPlasticityEngineeringStress::serialize(Archive & ar, const unsig
        & BOOST_SERIALIZATION_NVP(mEnergyFlag)
        & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
 #ifdef DEBUG_SERIALIZATION
-    rLogger << "finish serialize MisesPlasticityEngineeringStress" << "\n";
+    std::cout << "finish serialize MisesPlasticityEngineeringStress" << "\n";
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::MisesPlasticityEngineeringStress)

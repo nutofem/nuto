@@ -47,8 +47,8 @@ public:
     FullMatrix<T,rows,cols> ( int rNumRows, int rNumColumns);
 
 #ifdef ENABLE_NUMPY
-    void convrtfn(T * inData,int rRow, int rCol);
-    void convrtToPy(T * inData,int rRow,int rCol);
+    void convrtNumpyToMatrix(T * inData,int rRow,int rCol);
+    void convrtMatrixToNumpy(T * indata,int rRow,int rCol);
 #endif
      
 #ifndef SWIG

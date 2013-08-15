@@ -1778,7 +1778,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] $EndElements not found.");
         }
     }
-/*
+
     else // binary format
     {
         if(double_size != sizeof(double))
@@ -1788,7 +1788,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 
         // close file and open as binary
         file.close();
-        file.open(file_name , std::ios::in | std::ios::binary);
+        file.open(rFileName.c_str() , std::ios::in | std::ios::binary);
         if (file.is_open() == false)
         {
         	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] Error opening input file for read access.");
@@ -1820,24 +1820,27 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] $Nodes not found.");
         }
 
+      
         // read number of nodes
-        getline (file, line);
-        if(parse(line.c_str(),(uint_p[assign_a(num_nodes)]),space_p).full == false)
-        {
-        	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] error reading number of nodes.");
-        }
+         file>>num_nodes;
+         getline(file,line); //endl
+         
 
         // read node data
-        node_data.resize(num_nodes);
+        nodes.resize(num_nodes);
+
         for(unsigned int node_count = 0; node_count < num_nodes; node_count++)
         {
-            file.read((char *)&node_data[node_count].id,sizeof(int));
-            file.read((char *)node_data[node_count].coordinates, 3 * sizeof(double));
+            file.read((char *)&nodes[node_count].id,sizeof(int));
+            file.read((char *)nodes[node_count].Coordinates, 3 * sizeof(double));
         }
-        file.seekg(1,std::ios::cur);
+        
+        //endl
+         getline(file,line);
+      
+       //$EndNodes
+         getline(file,line);
 
-        // end node section
-        getline (file, line);
         if(line != "$EndNodes")
         {
         	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] $EndNodes not found.");
@@ -1851,46 +1854,62 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         }
 
         // read number of elements
-        getline (file, line);
-        if(parse(line.c_str(),(uint_p[assign_a(num_elements)]),space_p).full == false)
-        {
-        	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] error reading number of elements.");
-        }
-        element_data.resize(num_elements);
+        file>>num_elements;
+        getline(file,line); //endl 
+              
+
+        elements.resize(num_elements);
 
         // read element data
-        unsigned int element_count = 0;
-        do
-        {
-            // read element header
-            unsigned int element_type;
-            file.read((char *)&element_type,sizeof(unsigned int));
-            unsigned int num_elm_follow;
-            file.read((char *)&num_elm_follow,sizeof(unsigned int));
-            unsigned int num_tags;
-            file.read((char *)&num_tags,sizeof(unsigned int));
-
-            unsigned int cur_num_elm_nodes = num_elm_nodes[element_type];
-            for(unsigned int elm_count = 0; elm_count < num_elm_follow; elm_count++)
-            {
-                file.read((char *)&element_data[element_count].id,sizeof(int));
-                element_data[element_count].type = element_type;
-                element_data[element_count].tags.resize(num_tags);
-                for(unsigned int tag_count = 0; tag_count < num_tags; tag_count++)
-                {
-                    file.read((char *)&element_data[element_count].tags[tag_count],sizeof(int));
-                }
-                element_data[element_count].nodes.resize(cur_num_elm_nodes);
-                for(unsigned int elem_node_count = 0; elem_node_count < cur_num_elm_nodes; elem_node_count++)
-                {
-                    file.read((char *)&element_data[element_count].nodes[elem_node_count],sizeof(int));
-                }
-                element_count++;
-            }
-            break;
-        }
-        while(element_count != num_elements);
-        file.seekg(1,std::ios::cur);
+         unsigned int element_type;
+         unsigned int num_elm_follow;
+         unsigned int num_tags;
+         unsigned int cur_num_elm_nodes;
+        
+   
+       for(int elemCount=0;elemCount<num_elements;elemCount++)
+       {
+         
+         // Read element type
+           file.read((char *)&element_type,sizeof(int));
+        
+        // Read num of Elem with the same header
+         file.read((char *)&num_elm_follow,sizeof(int));
+    
+        // set num_elemt_node
+         cur_num_elm_nodes=num_elm_nodes[element_type];
+       
+        // Read numOfTags
+         file.read((char *)&num_tags,sizeof(int));
+      
+      for (int indexH=0;indexH<num_elm_follow;indexH++)
+      {
+         
+          // set element type
+          elements[elemCount].type=element_type;
+          
+        // read element number
+        file.read((char *)&elements[elemCount].id,sizeof(int));
+         
+        
+        elements[elemCount].tags.resize(num_tags);
+        elements[elemCount].nodes.resize(cur_num_elm_nodes);
+        
+         //read tags
+        for(int tagCount=0;tagCount<num_tags;tagCount++)
+           file.read((char *)&elements[elemCount].tags[tagCount],sizeof(int));
+        
+        
+         //read nodes     
+         for(int nodeCount=0;nodeCount<cur_num_elm_nodes;nodeCount++)
+           file.read((char *)& elements[elemCount].nodes[nodeCount],sizeof(int));
+         
+        
+         elemCount+=indexH;
+      }
+      
+       }
+       getline (file, line); //endl
 
         // end element section
         getline (file, line);
@@ -1899,7 +1918,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         	throw MechanicsException("[NuTo::Structure::ImportFromGmsh] $EndElements not found.");
         }
     }
-*/
+///////////////end binary
     //create the nodes
 	NuTo::FullVector<double,Eigen::Dynamic> coordinates;
 	switch (mDimension)

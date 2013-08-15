@@ -361,11 +361,13 @@ public:
     //! @param rVirtualBoundary thickness of the virtual boundary element (related to the nonlocal radius)
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
-    void BoundaryElementsCreate (Element::eElementType rType,
+    void BoundaryElementsCreate (NuTo::Element::eElementType rType,
     		const Group<ElementBase>* rGroupElements, const Group<NodeBase>* rGroupBoundaryNodes,
     		int rOrder, double rVirtualBoundary,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+
 #endif //SWIG
+
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
