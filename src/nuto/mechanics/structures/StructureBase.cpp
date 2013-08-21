@@ -49,6 +49,8 @@ extern "C" {
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -104,6 +106,10 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss4Ip]=
         NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D4NGauss1Ip]=
+        NuTo::IntegrationType3D4NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D4NGauss4Ip]=
+        NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss1Ip]=
         NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip]=
@@ -607,7 +613,7 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName
 #endif
 }
 
-void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName)
+void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName, bool rXML)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -616,7 +622,10 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     VisualizeUnstructuredGrid visualize;
     this->DefineVisualizeElementData(visualize,mVisualizeComponents);
     this->ElementGroupAddToVisualize(rGroupIdent,visualize,mVisualizeComponents);
-    visualize.ExportVtkDataFile(rFileName);
+    if (rXML)
+        visualize.ExportVtuDataFile(rFileName);
+    else
+        visualize.ExportVtkDataFile(rFileName);
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -3382,10 +3391,10 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 
 	// calculating mass of the aggregates */
 	double massSumParticles = Vspecimen * rDensity * rRelParticleMass;
-
-	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> particles(rSpheresBoundary);
-
 	int numParticles(rSpheresBoundary.GetNumRows());
+	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> particles(0,4);
+	if (numParticles>0)
+		particles = rSpheresBoundary;
 
 	// random number generator
 	dsfmt_t randomNumberGenerator;
@@ -3396,7 +3405,12 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 	{
 		double dMin(rGradingCurve(gc,0));
 		double dMax(rGradingCurve(gc,1));
+        if (dMin>dMax)
+		    throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] the minimum radius is larger than the maximum radius.");
 		double massFrac(rGradingCurve(gc,2));
+		if (massFrac<0 || massFrac>1)
+	        throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] the mass fraction should be in the range [0,1].");
+
 		double particleDensity(rGradingCurve(gc,3));
 		numParticlesPerClass[gc]=0;
 

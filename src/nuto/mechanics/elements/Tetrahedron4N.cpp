@@ -75,8 +75,7 @@ void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocal(
 //! @brief returns the enum of the standard integration type for this element
 NuTo::IntegrationType::eIntegrationType NuTo::Tetrahedron4N::GetStandardIntegrationType()
 {
-    throw MechanicsException("Tetrahedron4N::getStandardIntegrationType: necessary integration type not implemented yet");
-    return IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
+    return IntegrationType::IntegrationType3D4NGauss1Ip;
 }
 
 //! @brief reorder element nodes

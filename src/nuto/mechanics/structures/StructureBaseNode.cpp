@@ -802,7 +802,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rV
 {
     for (unsigned int nodeCount = 0; nodeCount < rNodes.size(); nodeCount++)
     {
-        rNodes[nodeCount]->Visualize(rVisualize, rWhat);
+    	rNodes[nodeCount]->Visualize(rVisualize, rWhat);
     }
 }
 #endif //ENABLE_VISUALIZE

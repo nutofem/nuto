@@ -547,6 +547,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 		throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither coordinates in 1D, 2D or 3D.");
 	}
 	unsigned int PointId = rVisualize.AddPoint(coordinates);
+	std::cout << "add point " << PointId << std::endl;
 
     // store data
     boost::ptr_list<VisualizeComponentBase>::const_iterator WhatIter = rWhat.begin();

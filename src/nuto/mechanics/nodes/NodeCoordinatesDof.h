@@ -46,7 +46,59 @@ template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, i
 void NuTo::NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain>::
 Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
 {
+    //add nodes to visualize
+	double GlobalPointCoor[3];
+	switch (this->GetNumCoordinates())
+	{
+	case 1:
+		this->GetCoordinates1D(GlobalPointCoor);
+		GlobalPointCoor[1] = 0.;
+		GlobalPointCoor[2] = 0.;
+		break;
+	case 2:
+		this->GetCoordinates2D(GlobalPointCoor);
+		GlobalPointCoor[2] = 0.;
+		break;
+	case 3:
+		this->GetCoordinates3D(GlobalPointCoor);
+		break;
+	default:
+		throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
+	}
+	unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor);
 
+	// store data
+    for (auto WhatIter = rWhat.begin();WhatIter != rWhat.end(); WhatIter++)
+    {
+        switch (WhatIter->GetComponentEnum())
+        {
+        case NuTo::VisualizeBase::DISPLACEMENTS:
+			{
+				double displacements3D[3];
+				switch (this->GetNumDisplacements())
+				{
+				case 1:
+					this->GetDisplacements1D(displacements3D);
+					displacements3D[1] = 0.;
+					displacements3D[2] = 0.;
+					break;
+				case 2:
+					this->GetDisplacements2D(displacements3D);
+					displacements3D[2] = 0.;
+					break;
+				case 3:
+					this->GetDisplacements3D(displacements3D);
+					break;
+				default:
+					throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
+				}
+				rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements3D);
+			}
+        break;
+        default:
+        break;
+        }
+    }
 }
 #endif // ENABLE_VISUALIZE
 

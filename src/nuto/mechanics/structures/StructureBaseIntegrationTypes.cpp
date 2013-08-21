@@ -16,6 +16,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModTriangle.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
 
@@ -72,6 +73,9 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         break;
         case  NuTo::IntegrationType::IntegrationType3D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss1Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType3D4NGauss4Ip:
+            ptrIntegrationType = new NuTo::IntegrationType3D4NGauss4Ip();
         break;
         case  NuTo::IntegrationType::IntegrationType3D8NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NGauss1Ip();

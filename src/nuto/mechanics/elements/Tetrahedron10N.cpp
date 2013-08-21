@@ -58,22 +58,22 @@ void NuTo::Tetrahedron10N::CalculateShapeFunctions(const double rLocalCoordinate
     rShapeFunctions[3] =-t+2.*t*t;
 
     // node 5 (0.5,0,0)
-    rShapeFunctions[4] =4.*r*(1-r-s-t);
+    rShapeFunctions[4] =4.*r*(1.-r-s-t);
 
     // node 6 (0.5,0.5,0)
     rShapeFunctions[5] =4.*r*s;
 
     // node 7 (0,0.5,0)
-    rShapeFunctions[6] =4.*s*(1-r-s-t);
+    rShapeFunctions[6] =4.*s*(1.-r-s-t);
 
     // node 8 (0,0,0.5)
-    rShapeFunctions[7] =4.*t*(1-r-s-t);
+    rShapeFunctions[7] =4.*t*(1.-r-s-t);
 
-    // node 9 (0.5,0,0.5)
-    rShapeFunctions[8] =4.*r*t;
+    // node 9 (0,0.5,0.5)
+    rShapeFunctions[8] =4.*s*t;
 
-    // node 10 (0,0.5,0.5)
-    rShapeFunctions[9] =4.*s*t;
+    // node 10 (0.5,0,0.5)
+    rShapeFunctions[9] =4.*r*t;
 }
 
 //! @brief calculates the derivative of the shape functions with respect to local coordinates
@@ -90,46 +90,54 @@ void NuTo::Tetrahedron10N::CalculateDerivativeShapeFunctionsLocal(const double r
     t  =rLocalCoordinates[2];
 
     //node1
-    rDerivativeShapeFunctions[0]  = -3.+4.*(r+s+t);
-    rDerivativeShapeFunctions[1]  = -3.+4.*(s+r+t);
-    rDerivativeShapeFunctions[2]  = -3.+4.*(t+r+s);
+    rDerivativeShapeFunctions[0]  = -3.+ 4.*(r+s+t);
+    rDerivativeShapeFunctions[1]  = -3.+ 4.*(r+s+t);
+    rDerivativeShapeFunctions[2]  = -3.+ 4.*(r+s+t);
 
     //node2
     rDerivativeShapeFunctions[3]  = -1.+4.*r;
     rDerivativeShapeFunctions[4]  =  0;
     rDerivativeShapeFunctions[5]  =  0;
+
     //node3
     rDerivativeShapeFunctions[6]  =  0;
     rDerivativeShapeFunctions[7]  = -1.+4.*s;
     rDerivativeShapeFunctions[8]  =  0;
+
     //node4
     rDerivativeShapeFunctions[9]  =  0;
     rDerivativeShapeFunctions[10] =  0;
     rDerivativeShapeFunctions[11] = -1.+4.*t ;
+
     //node5
     rDerivativeShapeFunctions[12] =  4.-8.*r-4.*s-4.*t;
     rDerivativeShapeFunctions[13] = -4.*r;
     rDerivativeShapeFunctions[14] = -4.*r;
+
     //node6
     rDerivativeShapeFunctions[15] =  4.*s;
     rDerivativeShapeFunctions[16] =  4.*r;
     rDerivativeShapeFunctions[17] =  0.;
+
     //node7
     rDerivativeShapeFunctions[18] = -4.*s ;
     rDerivativeShapeFunctions[19] =  4.-8.*s-4.*r-4.*t;
     rDerivativeShapeFunctions[20] = -4.*s;
+
     //node8
     rDerivativeShapeFunctions[21] = -4.*t;
     rDerivativeShapeFunctions[22] = -4.*t;
     rDerivativeShapeFunctions[23] =  4.-8.*t-4.*r-4.*s;
+
     //node9
-    rDerivativeShapeFunctions[24] =  4.*t;
-    rDerivativeShapeFunctions[25] =  0;
-    rDerivativeShapeFunctions[26] =  4.*r;
+    rDerivativeShapeFunctions[24] =  0.;
+    rDerivativeShapeFunctions[25] =  4.*t;
+    rDerivativeShapeFunctions[26] =  4.*s;
+
     //node10
-    rDerivativeShapeFunctions[27] =  0.;
-    rDerivativeShapeFunctions[28] =  4.*t;
-    rDerivativeShapeFunctions[29] =  4.*s;
+    rDerivativeShapeFunctions[27] =  4.*t;
+    rDerivativeShapeFunctions[28] =  0;
+    rDerivativeShapeFunctions[29] =  4.*r;
 }
 
 
@@ -137,7 +145,7 @@ void NuTo::Tetrahedron10N::CalculateDerivativeShapeFunctionsLocal(const double r
 //! @brief returns the enum of the standard integration type for this element
 NuTo::IntegrationType::eIntegrationType NuTo::Tetrahedron10N::GetStandardIntegrationType()
 {
-    return NuTo::IntegrationType::IntegrationType3D4NGauss1Ip;
+    return NuTo::IntegrationType::IntegrationType3D4NGauss4Ip;
 }
 
 
@@ -149,9 +157,9 @@ void NuTo::Tetrahedron10N::ReorderNodes()
     this->mNodes[1] = this->mNodes[2];
     this->mNodes[2] = tmp;
 
-    // swap nodes 6 and 7
-    tmp = this->mNodes[5];
-    this->mNodes[5] = this->mNodes[6];
+    // swap nodes 5 and 7
+    tmp = this->mNodes[4];
+    this->mNodes[4] = this->mNodes[6];
     this->mNodes[6] = tmp;
 
     // swap nodes 9 and 10

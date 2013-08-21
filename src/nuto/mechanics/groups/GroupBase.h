@@ -45,6 +45,20 @@ public:
 
 	//! @brief gives the number of group members
 	//! @return number of group members
+	void SetName(const std::string& rName)
+	{
+		mName = rName;
+	}
+
+	//! @brief gives the number of group members
+	//! @return number of group members
+	std::string GetName()const
+	{
+		return mName;
+	}
+
+	//! @brief gives the number of group members
+	//! @return number of group members
 	virtual int GetNumMembers()const=0;
 
 	//! @brief gives the group type

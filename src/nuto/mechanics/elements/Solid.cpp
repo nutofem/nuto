@@ -677,6 +677,7 @@ void NuTo::Solid::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
                                  FullVector<double,Eigen::Dynamic>& rResult)const
 {
     const double *s = rEngineeringStress.GetData();
+
     double x1,y1,z1;
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {
@@ -1745,6 +1746,10 @@ void NuTo::Solid::CheckElement()
         if (detJacobian <= 0)
         {
             std::cout << "error due to detJac=" << detJacobian << std::endl;
+            for (int count=0; count<GetNumNodes(); count++)
+            {
+            	std::cout << "node " << count+1<< " coordinates : " << nodeCoord[3*count] << " " << nodeCoord[3*count+1] << " " << nodeCoord[3*count+2] << std::endl;
+            }
             throw MechanicsException("[NuTo::Solid::CheckElement] element is not properly defined by this nodes (zero or negative jacobian determinant).");
         }
         volume += this->GetIntegrationPointWeight(ipCount) * detJacobian;

@@ -59,7 +59,7 @@ void NuTo::IntegrationType3D4NGauss1Ip::GetVisualizationCells(
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
-    NumVisualizationPoints = 8;
+    NumVisualizationPoints = 4;
 
     // Point 0
     VisualizationPointLocalCoordinates.push_back(0);
@@ -89,7 +89,6 @@ void NuTo::IntegrationType3D4NGauss1Ip::GetVisualizationCells(
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(2);
     VisualizationCellsIncidence.push_back(3);
-    VisualizationCellsIncidence.push_back(4);
     VisualizationCellsIP.push_back(0);
 }
 #endif // ENABLE_VISUALIZE

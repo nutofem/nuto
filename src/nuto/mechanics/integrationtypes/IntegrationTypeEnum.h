@@ -22,6 +22,7 @@ enum eIntegrationType
     IntegrationType2D4NGauss1Ip,
     IntegrationType2D4NGauss4Ip,
     IntegrationType3D4NGauss1Ip,
+    IntegrationType3D4NGauss4Ip,
     IntegrationType3D8NGauss1Ip,
     IntegrationType3D8NGauss2x2x2Ip,
     NumIntegrationTypes

@@ -10,6 +10,7 @@
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
+#include "nuto/mechanics/elements/Tetrahedron4N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
@@ -456,6 +457,10 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
     {
     	elementType = NuTo::Element::PLANE2D6N;
     }
+    else if (upperCaseElementType=="TETRAHEDRON4N")
+    {
+    	elementType = NuTo::Element::TETRAHEDRON4N;
+    }
     else if (upperCaseElementType=="TETRAHEDRON10N")
     {
     	elementType = NuTo::Element::TETRAHEDRON10N;
@@ -585,6 +590,13 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
             throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D6N is a 2D element.");
         }
         ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
+        break;
+    case NuTo::Element::TETRAHEDRON4N:
+        if (this->mDimension != 3)
+        {
+            throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron4N is a 3D element.");
+        }
+        ptrElement = new NuTo::Tetrahedron4N(this, rNodeVector, rElementDataType, rIpDataType);
         break;
     case NuTo::Element::TETRAHEDRON10N:
         if (this->mDimension != 3)

@@ -1867,7 +1867,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
          unsigned int cur_num_elm_nodes;
         
    
-       for(int elemCount=0;elemCount<num_elements;elemCount++)
+       for(unsigned int elemCount=0;elemCount<num_elements;elemCount++)
        {
          
          // Read element type
@@ -1882,7 +1882,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         // Read numOfTags
          file.read((char *)&num_tags,sizeof(int));
       
-      for (int indexH=0;indexH<num_elm_follow;indexH++)
+      for (unsigned int indexH=0;indexH<num_elm_follow;indexH++)
       {
          
           // set element type
@@ -1896,12 +1896,12 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
         elements[elemCount].nodes.resize(cur_num_elm_nodes);
         
          //read tags
-        for(int tagCount=0;tagCount<num_tags;tagCount++)
+        for(unsigned int tagCount=0;tagCount<num_tags;tagCount++)
            file.read((char *)&elements[elemCount].tags[tagCount],sizeof(int));
         
         
          //read nodes     
-         for(int nodeCount=0;nodeCount<cur_num_elm_nodes;nodeCount++)
+         for(unsigned int nodeCount=0;nodeCount<cur_num_elm_nodes;nodeCount++)
            file.read((char *)& elements[elemCount].nodes[nodeCount],sizeof(int));
          
         
@@ -1967,6 +1967,9 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
      	case 9:
     		theElementId = ElementCreate("PLANE2D6N",nodeNumbers,rElementData, rIPData);
     		break;
+     	case 11:
+    		theElementId = ElementCreate("TETRAHEDRON10N",nodeNumbers,rElementData, rIPData);
+    		break;
     	default:
     		throw MechanicsException("[NuTo::Structure::ImportFromGmsh] Element type not implemented in the import routine.");
     	}
@@ -1980,7 +1983,13 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
 				GroupCreate(elements[elementCount].tags[0],NuTo::Groups::Elements);
 			}
 			rElementGroupIds.insert(elements[elementCount].tags[0]);
-			GroupAddElement(elements[elementCount].tags[0],theElementId);
+		    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(elements[elementCount].tags[0]);
+		    if (itGroup==mGroupMap.end())
+		        throw MechanicsException("[NuTo::StructureBase::ImportFromGmsh] Group with the given identifier does not exist, should not happen.");
+		    if (itGroup->second->GetType()!=Groups::Elements)
+		        throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group, should not happen.");
+
+		    itGroup->second->AddMember(theElementId, ElementGetElementPtr(theElementId));
     	}
     }
 }

@@ -176,11 +176,11 @@ public:
     //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
     void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML);
 
-    //! @brief ... export an element group to Vtk data file
+    //! @brief ... export an element group to Vtk/xml data file
     //! @param rGroupIdent ... group ident
     //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName);
+    //! @param rXML ... use xml or vtk format (true for xml)
+    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName, bool rXML);
 
 #ifndef SWIG
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot

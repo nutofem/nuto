@@ -95,6 +95,9 @@ public:
     //! @brief sets the minimum time step for the time integration procedure
     void SetGroupNodesReactionForces(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecGroupNodesReactionForces);
 
+    //! @brief sets the minimum time step for the time integration procedure
+    void SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups);
+
     //! @brief returns the g
     const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> GetVecGroupNodesReactionForces()const
     {
@@ -160,6 +163,8 @@ protected:
     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixAllLoadSteps;
     //output data for load steps that have a minimum distance of mMinTimeStepPlot
     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixSelectedLoadSteps;
+    //output data for load steps that have a minimum distance of mMinTimeStepPlot
+    FullVector<int,Eigen::Dynamic> mPlotElementGroups;
     //result directory
     std::string mResultDir;
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output

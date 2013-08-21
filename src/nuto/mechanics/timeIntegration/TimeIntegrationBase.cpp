@@ -183,49 +183,105 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 			//plot the solution vtk file
 			std::stringstream ssLoadStep;
 			ssLoadStep << curModLoadStep;
-			resultFile = mResultDir;
-			resultFile /= std::string("Elements")+ssLoadStep.str()+std::string(".vtu");
-			rStructure.ExportVtkDataFileElements(resultFile.string(),true);
+
 			resultFile = mResultDir;
 			resultFile /= std::string("Nodes")+ssLoadStep.str()+std::string(".vtu");
 			rStructure.ExportVtkDataFileNodes(resultFile.string(),true);
 
-			//write an additional pvd file
-			resultFile = mResultDir;
-			resultFile /= std::string("Elements.pvd");
-		    std::fstream file;
-		    if (curModLoadStep==1)
-		    {
-		    	file.open(resultFile.string(), std::fstream::out);
-		    }
-		    else
-		    {
-		    	file.open(resultFile.string(), std::fstream::out | std::fstream::in |std::ios_base::ate);
-		    }
+			if (mPlotElementGroups.GetNumRows()==0)
+			{
+				//plot all elements
+				resultFile = mResultDir;
+				resultFile /= std::string("Elements")+ssLoadStep.str()+std::string(".vtu");
+				rStructure.ExportVtkDataFileElements(resultFile.string(),true);
 
-		    if (!file.is_open())
-		    {
-		    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.string());
-		    }
-		    std::stringstream endOfXML;
-		    endOfXML << "</Collection>" << std::endl;
-		    endOfXML << "</VTKFile>" << std::endl;
-		    if (curModLoadStep==1)
-		    {
-				// header /////////////////////////////////////////////////////////////////
-				file << "<?xml version=\"1.0\"?>" << std::endl;
-				file << "<VTKFile type=\"Collection\">" << std::endl;
-				file << "<Collection>" << std::endl;
-				file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
-		    }
-		    else
-		    {
-			    //delete the last part of the xml file
-		    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
-				file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
-		    }
-		    file << endOfXML.str();
-		    file.close();
+				//write an additional pvd file
+				resultFile = mResultDir;
+				resultFile /= std::string("Elements.pvd");
+			    std::fstream file;
+			    if (curModLoadStep==1)
+			    {
+			    	file.open(resultFile.string(), std::fstream::out);
+			    }
+			    else
+			    {
+			    	file.open(resultFile.string(), std::fstream::out | std::fstream::in |std::ios_base::ate);
+			    }
+
+			    if (!file.is_open())
+			    {
+			    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.string());
+			    }
+			    std::stringstream endOfXML;
+			    endOfXML << "</Collection>" << std::endl;
+			    endOfXML << "</VTKFile>" << std::endl;
+			    if (curModLoadStep==1)
+			    {
+					// header /////////////////////////////////////////////////////////////////
+					file << "<?xml version=\"1.0\"?>" << std::endl;
+					file << "<VTKFile type=\"Collection\">" << std::endl;
+					file << "<Collection>" << std::endl;
+					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
+			    }
+			    else
+			    {
+				    //delete the last part of the xml file
+			    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
+					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
+			    }
+			    file << endOfXML.str();
+			    file.close();
+			}
+			else
+			{
+				//plot all groups separately
+				for (int countGroupElement=0; countGroupElement<mPlotElementGroups.GetNumRows();countGroupElement++)
+				{
+					std::stringstream ssGroup;
+					ssGroup << mPlotElementGroups(countGroupElement);
+
+					//plot all elements
+					resultFile = mResultDir;
+					resultFile /= std::string("Group") + ssGroup.str() + std::string("_Elements")+ssLoadStep.str()+std::string(".vtu");
+					rStructure.ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
+
+					//write an additional pvd file
+					resultFile = mResultDir;
+					resultFile /= std::string("Group") + ssGroup.str() + std::string("_ElementsAll")+std::string(".pvd");
+				    std::fstream file;
+				    if (curModLoadStep==1)
+				    {
+				    	file.open(resultFile.string(), std::fstream::out);
+				    }
+				    else
+				    {
+				    	file.open(resultFile.string(), std::fstream::out | std::fstream::in |std::ios_base::ate);
+				    }
+
+				    if (!file.is_open())
+				    {
+				    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.string());
+				    }
+				    std::stringstream endOfXML;
+				    endOfXML << "</Collection>" << std::endl;
+				    endOfXML << "</VTKFile>" << std::endl;
+				    if (curModLoadStep==1)
+				    {
+						// header /////////////////////////////////////////////////////////////////
+						file << "<?xml version=\"1.0\"?>" << std::endl;
+						file << "<VTKFile type=\"Collection\">" << std::endl;
+						file << "<Collection>" << std::endl;
+				    }
+				    else
+				    {
+					    //delete the last part of the xml file
+				    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
+				    }
+					file << "<DataSet timestep=\""<< mTime << "\" file=\"Group" << mPlotElementGroups(countGroupElement) << "_Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
+				    file << endOfXML.str();
+				    file.close();
+				}
+			}
 #endif
 			mLastTimePlot = mTime;
 		}
@@ -258,6 +314,7 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mLastTimePlot)
        & BOOST_SERIALIZATION_NVP(mPlotMatrixAllLoadSteps)
        & BOOST_SERIALIZATION_NVP(mPlotMatrixSelectedLoadSteps)
+       & BOOST_SERIALIZATION_NVP(mPlotElementGroups)
        & BOOST_SERIALIZATION_NVP(mResultDir)
        & BOOST_SERIALIZATION_NVP(mAutomaticTimeStepping);
 #ifdef DEBUG_SERIALIZATION
@@ -313,3 +370,10 @@ void NuTo::TimeIntegrationBase::SetGroupNodesReactionForces(NuTo::FullMatrix<int
 	mVecGroupNodesReactionForces = rVecGroupNodesReactionForces;
 }
 
+//! @brief sets the minimum time step for the time integration procedure
+void NuTo::TimeIntegrationBase::SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups)
+{
+	if (rPlotElementGroups.GetNumRows()<1)
+		throw MechanicsException("[NuTo::TimeIntegrationBase::SetPlotElementGroups] vector must have at least a single row.");
+	mPlotElementGroups = rPlotElementGroups;
+}
