@@ -155,16 +155,16 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
         double curTime  = 0;
 
         //apply constraints for last converged time step
-        double RHSConstraint;
-        RHSConstraint = ConstraintsCalculateRHS(curTime);
-        rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
-        plotHistory(0,1) = RHSConstraint;
+        double timeDependentConstraintFactor;
+        timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+        rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+        plotHistory(0,1) = timeDependentConstraintFactor;
         rStructure.ConstraintGetRHSAfterGaussElimination(bRHSprev);
         rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
         rStructure.ElementTotalUpdateTmpStaticData();
 
-        //calculate internal force
-        rStructure.BuildGlobalGradientInternalPotentialSubVectors(prevIntForce_j,prevIntForce_k);
+        //calculate internal force, update of history variables=false
+        rStructure.BuildGlobalGradientInternalPotentialSubVectors(prevIntForce_j,prevIntForce_k,false);
         prevResidual_j = prevIntForce_j;
         prevResidual_k = prevIntForce_k;
 
@@ -239,8 +239,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
         while (curTime < rTimeDelta)
         {
             //apply constraints for last converged time step
-            RHSConstraint = ConstraintsCalculateRHS(curTime);
-            rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
+            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+            rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
             rStructure.ConstraintGetRHSAfterGaussElimination(bRHSprev);
             rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
             rStructure.ElementTotalUpdateTmpStaticData();
@@ -278,22 +278,22 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             disp_j = lastConverged_disp_j;
             disp_k = lastConverged_disp_k;
 
-            //calculate internal force
-            rStructure.BuildGlobalGradientInternalPotentialSubVectors(prevIntForce_j,prevIntForce_k);
+            //calculate internal force, update of history variables=false
+            rStructure.BuildGlobalGradientInternalPotentialSubVectors(prevIntForce_j,prevIntForce_k,false);
             residual_j = prevIntForce_j;
             residual_k = prevIntForce_k;
 
             //increase time step by half and calculate the constraint matrix (used to approximate the velocity and acceleration of the rhs)
             if (this->IsDynamic())
             {
-                RHSConstraint = ConstraintsCalculateRHS(curTime-0.5*timeStep);
-                rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
+                timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+                rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
                 rStructure.ConstraintGetRHSAfterGaussElimination(bRHShalf);
             }
 
             //apply constraints for the new time step (modified bRHS)
-            RHSConstraint = ConstraintsCalculateRHS(curTime);
-            rStructure.ConstraintSetRHS(mConstraintLoad,RHSConstraint);
+            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+            rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
             rStructure.ConstraintGetRHSAfterGaussElimination(bRHSend);
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaBRHS(bRHSend-bRHSprev);
 
@@ -397,8 +397,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             rStructure.NodeMergeActiveDofValues(0,disp_j);
             rStructure.ElementTotalUpdateTmpStaticData();
 
-            //calculate internal force
-            rStructure.BuildGlobalGradientInternalPotentialSubVectors(intForce_j, intForce_k);
+            //calculate internal force, update of history variables=false
+            rStructure.BuildGlobalGradientInternalPotentialSubVectors(intForce_j, intForce_k,false);
             residual_j = intForce_j;
             residual_k = intForce_k;
             if (this->IsDynamic())
@@ -540,8 +540,8 @@ rStructure.NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                     rStructure.NodeMergeActiveDofValues(0,trial_disp_j);
                     rStructure.ElementTotalUpdateTmpStaticData();
 
-                    //calculate internal force
-                    rStructure.BuildGlobalGradientInternalPotentialSubVectors(intForce_j, intForce_k);
+                    //calculate internal force, update of history variables=false
+                    rStructure.BuildGlobalGradientInternalPotentialSubVectors(intForce_j, intForce_k,false);
                     residual_j = intForce_j;
                     residual_k = intForce_k;
 
@@ -644,7 +644,7 @@ rStructure.NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 
                 FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector(1,7);
                 plotVector(0,0) = mTime+timeStep;
-                plotVector(0,1) = RHSConstraint;
+                plotVector(0,1) = timeDependentConstraintFactor;
                 plotVector(0,2) = mInternalEnergy;
                 plotVector(0,3) = mKineticEnergy;
                 plotVector(0,4) = mDampedEnergy;
@@ -723,9 +723,6 @@ rStructure.NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 //std::cout << "plot Vector " << plotVector << std::endl;
                 //Postprocess the Newmark routine (boundary forces etc. are calculated and the visualization is called)
                 this->PostProcess(rStructure, plotVector);
-
-                //userdefined postprocessing using the overloaded routine of structurebase
-                rStructure.PostProcessDataAfterUpdate(plotHistory.GetNumRows()-1, iteration, mTime, timeStep, normResidual);
 
                 //eventually increase next time step
                 if (iteration<0.25*mMaxNumIterations)

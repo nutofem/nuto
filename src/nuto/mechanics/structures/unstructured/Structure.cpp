@@ -26,6 +26,7 @@
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/ElementOutputDummy.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
@@ -1095,7 +1096,184 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
     return errorGlobal;
 }
 
-NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector)
+//! @brief ... based on the global dofs build sub-vectors of the global lumped mass
+//! @param rActiveDofVector ... global lumped mass which corresponds to the active dofs
+//! @param rDependentDofVector ... global lumped mass which corresponds to the dependent dofs
+NuTo::Error::eError NuTo::Structure::BuildGlobalLumpedHession2(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofVector,
+		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofVector)
+{
+    // initialize vectors
+    assert(rActiveDofVector.GetNumRows() == this->mNumActiveDofs);
+    assert(rActiveDofVector.GetNumColumns() == 1);
+    for (int row = 0; row < rActiveDofVector.GetNumRows(); row ++)
+    {
+        rActiveDofVector(row,0) = 0.0;
+    }
+    assert(rDependentDofVector.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
+    assert(rDependentDofVector.GetNumColumns() == 1);
+    for (int row = 0; row < rDependentDofVector.GetNumRows(); row ++)
+    {
+        rDependentDofVector(row,0) = 0.0;
+    }
+
+    // define variables storing the element contribution
+	Error::eError errorGlobal (Error::SUCCESSFUL);
+
+	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+
+	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE );
+	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
+
+	// loop over all elements
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+    if (mUseMIS)
+    {
+		if (mMIS.size()==0)
+			throw MechanicsException("[NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors] maximum independent set not calculated.");
+		for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
+		{
+			std::vector<ElementBase*>::iterator elementIter;
+			#pragma omp parallel default(shared) private(elementIter) firstprivate(elementOutput)
+			for (elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
+			{
+				#pragma omp single nowait
+				{
+					ElementBase* elementPtr = *elementIter;
+					// calculate element contribution
+					Error::eError error = elementPtr->Evaluate(elementOutput);
+					if (error!=Error::SUCCESSFUL)
+					{
+						if (errorGlobal==Error::SUCCESSFUL)
+							errorGlobal = error;
+						else if (errorGlobal!=error)
+							throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+					}
+					else
+					{
+		            	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
+		    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+		    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+
+						// write element contribution to global vectors
+						for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+						{
+							int globalRowDof = elementVectorGlobalDofs[rowCount];
+							if (globalRowDof < this->mNumActiveDofs)
+							{
+								rActiveDofVector(globalRowDof) += elementVector(rowCount);
+							}
+							else
+							{
+								globalRowDof -= this->mNumActiveDofs;
+								assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+								rDependentDofVector(globalRowDof) += elementVector(rowCount);
+							}
+						}
+					}
+				}
+			}
+		}
+    }
+	else
+	{
+		//dont use MIS
+		//loop over all elements
+        #pragma omp parallel default(shared) firstprivate(elementOutput)
+		for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
+		{
+			#pragma omp single nowait
+			{
+				ElementBase* elementPtr = elementIter->second;
+				// calculate element contribution
+				Error::eError error = elementPtr->Evaluate(elementOutput);
+
+				if (error!=Error::SUCCESSFUL)
+
+				{
+					if (errorGlobal==Error::SUCCESSFUL)
+						errorGlobal = error;
+					else if (errorGlobal!=error)
+						throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+				}
+				else
+				{
+	            	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
+	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+
+					// write element contribution to global vectors
+					for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+					{
+						int globalRowDof = elementVectorGlobalDofs[rowCount];
+						if (globalRowDof < this->mNumActiveDofs)
+						{
+							#pragma omp critical (StructureBuildGlobalLumpedHession2_Active)
+							rActiveDofVector(globalRowDof) += elementVector(rowCount);
+						}
+						else
+						{
+							globalRowDof -= this->mNumActiveDofs;
+							assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+							#pragma omp critical (StructureBuildGlobalLumpedHession2_Dependent)
+							rDependentDofVector(globalRowDof) += elementVector(rowCount);
+						}
+					}
+				}
+			}
+		}
+	}
+#else
+	// loop over all elements
+	for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
+	{
+		ElementBase* elementPtr = elementIter->second;
+		// calculate element contribution
+		Error::eError error = elementPtr->Evaluate(elementOutput);
+
+		if (error!=Error::SUCCESSFUL)
+
+		{
+			if (errorGlobal==Error::SUCCESSFUL)
+				errorGlobal = error;
+			else if (errorGlobal!=error)
+				throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientSubMatrices0Symmetric] elements have returned multiple different error codes, can't handle that.");
+		}
+		else
+		{
+        	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
+			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+
+			// write element contribution to global vectors
+			for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+			{
+				int globalRowDof = elementVectorGlobalDofs[rowCount];
+				if (globalRowDof < this->mNumActiveDofs)
+				{
+					rActiveDofVector(globalRowDof) += elementVector(rowCount);
+				}
+				else
+				{
+					globalRowDof -= this->mNumActiveDofs;
+					assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+					rDependentDofVector(globalRowDof) += elementVector(rowCount);
+				}
+			}
+		}
+	}
+#endif
+
+    return errorGlobal;
+}
+
+
+NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
+		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables)
 {
     // initialize vectors
     assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
@@ -1118,7 +1296,10 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
 
 	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
 	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
-
+	if (rUpdateHistoryVariables)
+	{
+		boost::assign::ptr_map_insert<ElementOutputDummy>( elementOutput )( Element::UPDATE_STATIC_DATA );
+	}
     // loop over all elements
 #ifdef _OPENMP
 	if (mNumProcessors!=0)

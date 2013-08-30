@@ -30,7 +30,7 @@ class LoadNodeGroup : public LoadBase
 
 public:
     //! @brief constructor
-    LoadNodeGroup(const Group<NodeBase>* rGroup);
+    LoadNodeGroup(int rLoadCase, const Group<NodeBase>* rGroup);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints

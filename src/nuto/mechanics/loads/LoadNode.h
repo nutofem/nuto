@@ -28,7 +28,7 @@ class LoadNode : public LoadBase
 
 public:
     //! @brief constructor
-    LoadNode(const NodeBase* rNode);
+    LoadNode(int rLoadCase, const NodeBase* rNode);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

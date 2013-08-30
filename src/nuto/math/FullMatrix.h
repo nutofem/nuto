@@ -1362,7 +1362,7 @@ void  FullMatrix<T,rows,cols>::SetColumn ( int rI, const FullVector<T, Eigen::Dy
 //! @brief ... appends columns to this matrix
 //! @param rBlock ... matrix storing the columns
 template<class T, int rows, int cols>
-void  FullMatrix<T,rows,cols>::AppendColumns ( FullVector<T, Eigen::Dynamic> rBlock )
+void  FullMatrix<T,rows,cols>::AppendColumns (const FullVector<T, Eigen::Dynamic>& rBlock )
 {
 	if ( rBlock.rows() !=this->rows() )
 		throw MathException ( "FullMatrix::AppendColumns - number of rows for both matrices must be identical." );
@@ -1375,7 +1375,7 @@ void  FullMatrix<T,rows,cols>::AppendColumns ( FullVector<T, Eigen::Dynamic> rBl
 //! @brief ... appends columns to this matrix
 //! @param rBlock ... matrix storing the columns
 template<class T, int rows, int cols>
-void  FullMatrix<T,rows,cols>::AppendColumns ( FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> rBlock )
+void  FullMatrix<T,rows,cols>::AppendColumns (const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rBlock )
 {
 	if ( rBlock.rows() !=this->rows() )
 		throw MathException ( "FullMatrix::AppendColumns - number of rows for both matrices must be identical." );
@@ -1388,7 +1388,7 @@ void  FullMatrix<T,rows,cols>::AppendColumns ( FullMatrix<T, Eigen::Dynamic, Eig
 //! @brief ... appends rows to this matrix
 //! @param rBlock ... matrix storing the rows
 template<class T, int rows, int cols>
-void  FullMatrix<T,rows,cols>::AppendRows ( FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> rBlock )
+void  FullMatrix<T,rows,cols>::AppendRows (const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rBlock )
 {
 	if ( rBlock.cols() !=this->cols() )
 		throw MathException ( "FullMatrix::AppendRows - number of columns for both matrices must be identical." );

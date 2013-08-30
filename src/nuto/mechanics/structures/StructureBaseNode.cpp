@@ -788,6 +788,60 @@ void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::v
     throw MechanicsException("[NuTo::StructureBase::NodeGetElements] Not available for this structure type.");
 }
 
+
+//! @brief ... returns the (first) node that has the specified coordinates within the range
+//! @param ... rCoordinates
+//! @param ... rRange
+//! @return ... node id
+int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic>& rCoordinates, double rRange)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    std::vector<std::pair<int,NodeBase*> > nodeVector;
+    this->GetNodesTotal(nodeVector);
+
+    double nodeCoordinates[3];
+    double distance;
+
+    for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+    {
+    	NodeBase* nodePtr(nodeVector[countNode].second);
+    	if (nodePtr->GetNumCoordinates()<1)
+    		continue;
+    	switch (mDimension)
+    	{
+    	case 1:
+    	    nodePtr->GetCoordinates1D(nodeCoordinates);
+    	    distance = fabs(nodeCoordinates[0]-rCoordinates(0));
+    	    break;
+    	case 2:
+    	    nodePtr->GetCoordinates2D(nodeCoordinates);
+    	    distance = sqrt((nodeCoordinates[0]-rCoordinates(0))*(nodeCoordinates[0]-rCoordinates(0))+
+    	    		        (nodeCoordinates[1]-rCoordinates(1))*(nodeCoordinates[1]-rCoordinates(1)));
+    	    break;
+    	case 3:
+    	    nodePtr->GetCoordinates3D(nodeCoordinates);
+    	    distance = sqrt((nodeCoordinates[0]-rCoordinates(0))*(nodeCoordinates[0]-rCoordinates(0))+
+    	    		        (nodeCoordinates[1]-rCoordinates(1))*(nodeCoordinates[1]-rCoordinates(1))+
+	                        (nodeCoordinates[2]-rCoordinates(2))*(nodeCoordinates[2]-rCoordinates(2)));
+    	    break;
+    	default:
+    		throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] unsupported dimension of the structure.");
+    	}
+    	if (distance<rRange)
+    		return nodeVector[countNode].first;
+    }
+    throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] no node within the range could be found.");
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::NodeGetIdAtCoordinate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
 #ifdef ENABLE_VISUALIZE
 //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
 void NuTo::StructureBase::NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const

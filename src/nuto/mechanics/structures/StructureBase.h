@@ -65,6 +65,7 @@ class StructureBase : public NuToObject
 #endif // ENABLE_SERIALIZATION
     friend class NewmarkIndirect;
     friend class NewmarkDirect;
+    friend class VelocityVerlet;
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -281,12 +282,12 @@ public:
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector on independent dofs - C external load vector on dependent dofs
-    void BuildGlobalExternalLoadVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector_j);
+    void BuildGlobalExternalLoadVector(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rVector_j);
 
     //! @brief ... build global external load vector
     //! @param rVector ... external load vector on independent dofs
     //! @param rVector ... external load vector on dependent dofs
-    void BuildGlobalExternalLoadVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector_j, NuTo::FullVector<double,Eigen::Dynamic>& rVector_k);
+    void BuildGlobalExternalLoadVector(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rVector_j, NuTo::FullVector<double,Eigen::Dynamic>& rVector_k);
 
     //! @brief ... build global gradient of the internal potential (e.g. the internal forces)
     //! @param rVector ... global gradient of the internal potential (e.g. internal force vector)
@@ -319,11 +320,18 @@ public:
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
 
+    //! @brief ... based on the global dofs build sub-vectors of the global lumped mass
+    //! @param rActiveDofVector ... global lumped mass which corresponds to the active dofs
+    //! @param rDependentDofVector ... global lumped mass which corresponds to the dependent dofs
+    virtual Error::eError BuildGlobalLumpedHession2(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofVector,
+    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofVector) = 0;
+
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) = 0;
-
+    //! @param rUpdateHistoryVariables (update history variables after having calculated the response)
+    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
+    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables) = 0;
 //*************************************************
 //************ Node routines        ***************
 //***  defined in structures/StructureNode.cpp  ***
@@ -353,6 +361,11 @@ public:
     //! @return identifier
     virtual int NodeGetId(const NodeBase* rNode)const=0;
 #endif //SWIG
+    //! @brief ... returns the (first) node that has the specified coordinates within the range
+    //! @param ... rCoordinates
+    //! @param ... rRange
+    //! @return ... node id
+    int NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic>& rCoordinates, double rRange);
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
@@ -721,6 +734,11 @@ public:
     //! @param rEngineeringStrain  average strain (return value)
     void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
 
+    //! @brief calculates the volume of the elements
+    //! @param rGroupId  group number
+    //! @return volume of the structure in 3D /area in 2D/ length in 1D
+    double ElementGroupGetVolume(int rGroupId);
+
     //! @brief calculates the internal energy of the system
     //! @return total energy
     virtual double ElementTotalGetInternalEnergy();
@@ -732,6 +750,9 @@ public:
     //! @brief calculates the elastic energy of the system
     //! @return elastic energy
     double ElementTotalGetElasticEnergy();
+
+    //! @brief calculate the critical time step for all elements solving the generalized eigenvalue problem Ku=lambda Mu
+    double ElementTotalCalculateCriticalTimeStep();
 
     //*************************************************
     //************ Constraint routines     ***************
@@ -1014,18 +1035,30 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds a force for a node group
     //! @param rGroupIdent ... identifier for node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief delete load
     //! @param rIdent ... load identifier
     void LoadDelete(int rIdent);
+
+    //! @brief returns the number of load cases
+    void SetNumLoadCases(int rNumLoadCases)
+    {
+    	mNumLoadCases = rNumLoadCases;
+    }
+
+    //! @brief returns the number of load cases
+    int GetNumLoadCases()const
+    {
+    	return mNumLoadCases;
+    }
 
 #ifndef SWIG
     //! @brief adds a force for a node
@@ -1033,14 +1066,14 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds a force for a node grpup
     //! @param rNodeGroup ... pointer to node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief ... get the pointer to a load from the load identifier
     //! @param rIdent ... load identifier
@@ -1502,116 +1535,6 @@ public:
     //! @brief returns the a reference to the constraint matrix
     const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
 
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rToleranceResidualForce  convergence criterion for the norm of the residual force vector
-    void SetNewtonRaphsonToleranceResidualForce(double rToleranceResidualForce)
-    {
-    	if (rToleranceResidualForce<=0)
-    	{
-    		std::cout << "tolerance residual force " << rToleranceResidualForce << std::endl;
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonToleranceResidualForce] tolerance has to be positive.");
-    	}
-    	mToleranceResidualForce = rToleranceResidualForce;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rAutomaticLoadstepControl true, if the step length should be adapted
-    void SetNewtonRaphsonAutomaticLoadStepControl(bool rAutomaticLoadstepControl)
-    {
-    	mAutomaticLoadstepControl = rAutomaticLoadstepControl;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters maximum of the delta_step length
-    void SetNewtonRaphsonMaxDeltaLoadFactor(double rMaxDeltaLoadFactor)
-    {
-    	if (rMaxDeltaLoadFactor<=0 || rMaxDeltaLoadFactor>1)
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMaxDeltaLoadFactor] factor has to be in the internal (0,1].");
-    	mMaxDeltaLoadFactor = rMaxDeltaLoadFactor;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rMaxNumNewtonIterations maximum number of iterations per Newton step
-    void SetNewtonRaphsonMaxNumNewtonIterations(double rMaxNumNewtonIterations)
-    {
-    	if (rMaxNumNewtonIterations<=0)
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMaxDeltaLoadFactor] maximum number of newton iterations has to be positive.");
-    	mMaxNumNewtonIterations = rMaxNumNewtonIterations;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rDecreaseFactor decrease the load factor in case of no convergence with the prescribed number of Newton iterations
-    void SetNewtonRaphsonDecreaseFactor(double rDecreaseFactor)
-    {
-    	if (rDecreaseFactor<=0 || rDecreaseFactor>=1)
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonDecreaseFactor] factor has to be in the internal (0,1).");
-    	mDecreaseFactor= rDecreaseFactor;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters
-    void SetNewtonRaphsonMinNumNewtonIterations(double rMinNumNewtonIterations)
-    {
-    	if (rMinNumNewtonIterations<=0 )
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMinNumNewtonIterations] minimum number of newton iterations has to be positive.");
-    	mMinNumNewtonIterations = rMinNumNewtonIterations;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rIncreaseFactor if convergence is achieved in less than rMinNumNewtonIterations, the step length is increased
-    void SetNewtonRaphsonIncreaseFactor(double rIncreaseFactor)
-    {
-    	if (rIncreaseFactor<=1)
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonIncreaseFactor] factor has to be greater than 1.");
-    	mIncreaseFactor= rIncreaseFactor;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rMinDeltaLoadFactor if the load factor is smaller the procedure is assumed to diverge (throwing an exception)
-    void SetNewtonRaphsonMinDeltaLoadFactor(double rMinDeltaLoadFactor)
-    {
-    	if (rMinDeltaLoadFactor<=0 || rMinDeltaLoadFactor>=1)
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMinDeltaLoadFactor] factor has to be in the interval (0,1).");
-    	mMinDeltaLoadFactor= rMinDeltaLoadFactor;
-    }
-
-    //! @brief set parameters for the  Newton Raphson iteration
-    //! @parameters rMinLineSearchFactor smallest line search factor, if normResidual does not fulfill the linesearch criterion with d(t+1)=d(t)+alpha*delta(t), step size is reduced
-    void SetNewtonRaphsonMinLineSearchFactor(double rMinLineSearchFactor)
-    {
-    	if (rMinLineSearchFactor<=0 || rMinLineSearchFactor>=1)
-    		throw MechanicsException("[StructureBase::SetNewtonRaphsonMinLineSearchFactor] factor has to be in the interval (0,1).");
-    	mMinLineSearchFactor= rMinLineSearchFactor;
-    }
-
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control) no save for updates in between time steps
-    NuTo::Error::eError NewtonRaphson();
-
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
-    //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
-    //! @parameters rSaveStringStream stringstream the routine is saved to
-    //! @parameters rIsSaved return parameter describing, if the routine actually had to to a substepping and consequently had to store the initial state into rSaveStringStream
-    NuTo::Error::eError NewtonRaphson(bool rSaveStructureBeforeUpdate,
-            std::stringstream& rSaveStringStream,
-            bool& rIsSaved);
-
-    //! @brief performs a Newton Raphson iteration (displacement and/or load control)
-    //! @parameters rSaveStructureBeforeUpdate if set to true, save the structure (done in a separate routine to be implemented by the user) before an update is performed
-    //! @parameters rSaveStringStream stringstream the routine is saved to
-    //! @parameters rIsSaved return parameter describing, if the routine actually had to to a substepping and consequently had to store the initial state into rSaveStringStream
-    //! @parameters rInitialStateInEquilibrium is true, if the initial state (loadfactor=0) is inequilibrium, otherwise false
-    virtual NuTo::Error::eError NewtonRaphson(bool rSaveStructureBeforeUpdate,
-            std::stringstream& rSaveStringStream,
-            bool& rIsSaved,
-            bool rInitialStateInEquilibrium);
-
-    //! @brief performs an adaption of the model
-    //! @returns true, if the model has actually be changed, or false if no change has been made
-    virtual bool AdaptModel()
-    {
-    	return false;
-    }
-
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
@@ -1627,34 +1550,21 @@ public:
     	throw MechanicsException("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 
-    //! @brief set the load factor (load or displacement control) overload this function to use Newton Raphson
-    //! @param load factor
-    virtual void SetLoadFactor(double rLoadFactor);
+    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
+    //virtual void PostProcessDataAfterUpdate(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual);
 
     //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterUpdate(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual);
-
-    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual);
+    //virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual);
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullVector<double,Eigen::Dynamic>& rResidualVector);
+    //virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullVector<double,Eigen::Dynamic>& rResidualVector);
 
     //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    virtual void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual);
+    //virtual void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual);
 
     //! @brief initialize some stuff before a new load step (e.g. output directories for visualization, if required)
-    virtual void InitBeforeNewLoadStep(int rLoadStep);
+    //virtual void InitBeforeNewLoadStep(int rLoadStep);
 
-    //! @brief only for debugging, info at some stages of the Newton Raphson iteration
-    virtual void NewtonRaphsonInfo(int rVerboseLevel)const
-    {}
-
-    //! @brief is only true for structure used as multiscale (structure in a structure)
-    virtual void ScaleCoordinates(double rCoordinates[3])const
-    {
-    	throw MechanicsException("[NuTo::StructureBase::ScaleCoordinates] only implemented for multiscale structures.");
-    }
 
     void SetUpdateTmpStaticDataRequired()
     {
@@ -1717,6 +1627,7 @@ protected:
 
     //! @brief ... map storing node loads
     //! @sa LoadBase
+    int mNumLoadCases;        //number of load cases to be considered
     boost::ptr_map<int,LoadBase> mLoadMap;
 
     //! @brief ... map storing the groups and a pointer to the objects
@@ -1778,28 +1689,6 @@ protected:
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
     double mToleranceStiffnessEntries;
-
-    //*********************************************
-    //parameters of the Newton Raphson iteration
-    //! @brief convergence criterion for the force norm (or the maximum value of the residual force, both are checked)
-    double mToleranceResidualForce;
-    //! @brief use (true) automatic load step control (increase, decrease load step)
-    bool mAutomaticLoadstepControl;
-    //! @brief maximum delta load factor for automatic load step control
-    double mMaxDeltaLoadFactor;
-    //! @brief maximum number of Newton iterations before the loadstep is decreases (automatic load control) or error of no convergence
-    int mMaxNumNewtonIterations;
-    //! @brief decrease factor of automatic load control, if no convergence is achieved
-    double mDecreaseFactor;
-    //! @brief if number of Newton iterations is smaller than this value, the deltaLoadFactor is multiplied by mIncreaseFactor for the next iteration
-    int mMinNumNewtonIterations;
-    //! @brief see mMinNumNewtonIterations
-    double mIncreaseFactor;
-    //! @brief smallest load increment, if deltaLoadFactor<mMinDeltaLoadFactor -> no convergence
-    double mMinDeltaLoadFactor;
-    //! @brief smallest line search factor, if normResidual does not fulfill the linesearch criterion with d(t+1)=d(t)+alpha*delta(t), step size is reduced
-    double mMinLineSearchFactor;
-    //*********************************************
 
     //! @brief parameters of the time integration scheme indicating, if the hessian is constant (0 stiffness, 1 damping, 2 mass)
     //! note that if a matrix is constant, the corresponding term is no longer considered in the gradient calculation

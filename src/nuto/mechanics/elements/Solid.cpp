@@ -124,6 +124,9 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		//InvJacobian and determinant of Jacobian
 		double invJacobian[9], detJac;
 
+		//for the lumped mass calculation
+		double total_mass(0.);
+
 		//define inputs and outputs
 		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputList;
 		std::map< NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
@@ -186,7 +189,13 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				}
 			break;
 			case Element::HESSIAN_1_TIME_DERIVATIVE:
+				break;
 			case Element::HESSIAN_2_TIME_DERIVATIVE:
+				it->second->GetFullMatrixDouble().Resize(numDispDofs,numDispDofs);
+			break;
+			case Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+				it->second->GetFullVectorDouble().Resize(numDispDofs);
+			break;
 			case Element::UPDATE_STATIC_DATA:
 				constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
 			break;
@@ -343,16 +352,53 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				        {
 				            for (int count2=0; count2<GetNumShapeFunctions(); count2++)
 				            {
-				            	result(2*count,2*count2) += tmpMatrix(count,count2);
-				            	result(2*count+1,2*count2+1) += tmpMatrix(count,count2);
+				            	result(3*count,3*count2)     += tmpMatrix(count,count2);
+				            	result(3*count+1,3*count2+1) += tmpMatrix(count,count2);
+				            	result(3*count+2,3*count2+2) += tmpMatrix(count,count2);
 				            }
 				        }
                     }
                     if (numTempDofs>0)
                     {
-                            //no termperature terms
+                            //no temperature terms
                     }
                 break;
+				case Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+                    if (numDispDofs>0)
+                    {
+						this->CalculateShapeFunctions(localIPCoord, shapeFunctions);
+						// calculate local mass matrix (the nonlocal terms are zero)
+						// don't forget to include determinant of the Jacobian and area
+						// detJ * area * density * HtH, :
+				        double factor(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))*constitutivePtr->GetDensity());
+						FullVector<double,Eigen::Dynamic>& result(it->second->GetFullVectorDouble());
+						total_mass+=factor;
+            			//calculate for the translational dofs the diagonal entries
+						for (int count=0; count<GetNumShapeFunctions(); count++)
+						{
+							result(3*count)+=shapeFunctions[count]*shapeFunctions[count]*factor;
+						}
+
+						if (theIP+1==GetNumIntegrationPoints())
+						{
+							//calculate sum of diagonal entries (is identical for all directions, that's why only x direction is calculated
+							double sum_diagonal(0);
+							for (int count=0; count<GetNumShapeFunctions(); count++)
+							{
+								sum_diagonal+= result(3*count);
+							}
+
+							//scale so that the sum of the diagonals represents the full mass
+							double scaleFactor = total_mass/sum_diagonal;
+							for (int count=0; count<GetNumShapeFunctions(); count++)
+							{
+								result(3*count) *= scaleFactor;
+								result(3*count+1) = result(3*count);
+								result(3*count+2) = result(3*count);
+							}
+						}
+                    }
+				break;
 				case Element::UPDATE_STATIC_DATA:
 				case Element::UPDATE_TMP_STATIC_DATA:
 				break;
@@ -1729,7 +1775,11 @@ void NuTo::Solid::CheckElement()
     // reorder nodes if determinant is negative
     if (detJacobian < 0.0)
     {
-        this->ReorderNodes();
+        std::cout << "coordinates \n" << localIPCoord[0] << " " << localIPCoord[1] << " "<< localIPCoord[2]<< std::endl;
+        std::cout << "invJacobian \n" << invJacobian[0] << " " << invJacobian[3] << " "<< invJacobian[6]<< std::endl;
+        std::cout <<  invJacobian[1] << " " << invJacobian[4] << " "<< invJacobian[7]<< std::endl;
+        std::cout <<  invJacobian[2] << " " << invJacobian[5] << " "<< invJacobian[8] << std::endl;
+    	this->ReorderNodes();
         // recalculate node coordinates after renumbering
         this->CalculateCoordinates(nodeCoord);
         std::cout << "reorder element due to detJac=" << detJacobian << std::endl;

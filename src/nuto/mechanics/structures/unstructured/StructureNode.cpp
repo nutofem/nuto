@@ -776,7 +776,7 @@ void NuTo::Structure::NodeMergeActiveDofValues(int rTimeDerivative, const FullVe
 	this->mUpdateTmpStaticDataRequired=true;
 
     // calculate dependent dof values
-	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dependentDofValues;
+	FullVector<double,Eigen::Dynamic> dependentDofValues;
     if (mNumActiveDofs>0)
         dependentDofValues = this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
     else

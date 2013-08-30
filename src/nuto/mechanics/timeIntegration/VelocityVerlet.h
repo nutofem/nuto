@@ -1,20 +1,20 @@
 // $Id$
 
-#ifndef NEWMARKDIRECT_H
-#define NEWMARKDIRECT_H
+#ifndef VelocityVerlet_H
+#define VelocityVerlet_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/timeIntegration/NewmarkBase.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, NU
 //! @date February 2012
-//! @brief ... standard class for implicit timeintegration (static Newton Raphson or NewmarkDirect for dynamics)
-class NewmarkDirect : public NewmarkBase
+//! @brief ... standard class for implicit timeintegration (Newmark, but you can use it for statics as well with setting the flag isDynamic to false)
+class VelocityVerlet : public TimeIntegrationBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -23,18 +23,7 @@ class NewmarkDirect : public NewmarkBase
 public:
 
     //! @brief constructor
-    NewmarkDirect();
-
-    void SetMinLineSearchStep(double rMinLineSearchStep)
-    {
-    	mMinLineSearchStep = rMinLineSearchStep;
-    }
-
-    double GetMinLineSearchStep()const
-    {
-    	return mMinLineSearchStep;
-    }
-
+    VelocityVerlet();
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -68,18 +57,31 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    virtual std::string GetTypeId()const;
+    std::string GetTypeId()const;
+
+    //! @brief ... Return time step
+    double GetTimeStep()const
+    {
+    	return mTimeStep;
+    }
+
+    //! @brief ... Return time step
+    void SetTimeStep(double rTimeStep)
+    {
+    	mTimeStep = rTimeStep;
+    }
 
 protected:
-	double mMinLineSearchStep;
+	//time step for the time integration, be careful not to make it smaller than the critical time step
+    double mTimeStep;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NewmarkDirect)
+BOOST_CLASS_EXPORT_KEY(NuTo::VelocityVerlet)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
 
 
-#endif // NewmarkDirect_H
+#endif // VelocityVerlet_H

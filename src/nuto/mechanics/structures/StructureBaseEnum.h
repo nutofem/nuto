@@ -10,7 +10,8 @@ enum eMatrixType
 {
     STIFFNESS=0,
     DAMPING,
-    MASS
+    MASS,
+    LUMPED_MASS
 };
 }
 }

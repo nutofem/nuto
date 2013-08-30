@@ -12,7 +12,7 @@
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
 
 // adds a force for a node
-int NuTo::StructureBase::LoadCreateNodeForce(int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     // find node
     NodeBase* nodePtr;
@@ -30,10 +30,10 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rNodeIdent, const NuTo::FullMat
         throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
     }
 
-    return this->LoadCreateNodeForce(nodePtr,rDirection, rValue);
+    return this->LoadCreateNodeForce(rLoadCase,nodePtr,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     //find unused integer id
     int id(0);
@@ -49,13 +49,13 @@ int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::
     switch (this->mDimension)
     {
     case 1:
-        loadPtr = new NuTo::LoadNodeForces1D(rNode, rDirection(0,0), rValue);
+        loadPtr = new NuTo::LoadNodeForces1D(rLoadCase, rNode, rDirection(0,0), rValue);
         break;
     case 2:
-        loadPtr = new NuTo::LoadNodeForces2D(rNode, rDirection, rValue);
+        loadPtr = new NuTo::LoadNodeForces2D(rLoadCase, rNode, rDirection, rValue);
         break;
     case 3:
-        loadPtr = new NuTo::LoadNodeForces3D(rNode, rDirection, rValue);
+        loadPtr = new NuTo::LoadNodeForces3D(rLoadCase, rNode, rDirection, rValue);
         break;
     default:
         throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Incorrect dimension of the structure.");
@@ -66,7 +66,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const NuTo::
 }
 
 // adds a force for a node group
-int NuTo::StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     // find group in map
     boost::ptr_map<int,GroupBase>::iterator itGroup = this->mGroupMap.find(rGroupIdent);
@@ -82,10 +82,10 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const NuTo::F
         throw MechanicsException("[NuTo::Structure::LoadCreateNodeGroupForce] Group is not a node group.");
     }
 
-    return this->LoadCreateNodeGroupForce(nodeGroup,rDirection, rValue);
+    return this->LoadCreateNodeGroupForce(rLoadCase, nodeGroup,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
     //find unused integer id
     int id(0);
@@ -101,13 +101,13 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGr
     switch (this->mDimension)
     {
     case 1:
-        loadPtr = new NuTo::LoadNodeGroupForces1D(rNodeGroup, rDirection(0,0), rValue);
+        loadPtr = new NuTo::LoadNodeGroupForces1D(rLoadCase, rNodeGroup, rDirection(0,0), rValue);
         break;
     case 2:
-        loadPtr = new NuTo::LoadNodeGroupForces2D(rNodeGroup, rDirection, rValue);
+        loadPtr = new NuTo::LoadNodeGroupForces2D(rLoadCase, rNodeGroup, rDirection, rValue);
         break;
     case 3:
-        loadPtr = new NuTo::LoadNodeGroupForces3D(rNodeGroup, rDirection, rValue);
+        loadPtr = new NuTo::LoadNodeGroupForces3D(rLoadCase, rNodeGroup, rDirection, rValue);
         break;
     default:
         throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Incorrect dimension of the structure.");

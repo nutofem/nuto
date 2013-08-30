@@ -7,8 +7,8 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(const Group<NodeBase>* rGroup, double rDirection, double rValue) :
-        LoadNodeGroup(rGroup)
+NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(int rLoadCase, const Group<NodeBase>* rGroup, double rDirection, double rValue) :
+        LoadNodeGroup(rLoadCase,rGroup)
 {
     // set direction
     if (fabs(rDirection) < 1e-14)
@@ -22,8 +22,10 @@ NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(const Group<NodeBase>* rGroup
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
 {
+    if (rLoadCase!=mLoadCase)
+    	return;
     assert(rActiceDofsLoadVector.GetNumColumns()==1);
     assert(rDependentDofsLoadVector.GetNumColumns()==1);
     for (Group<NodeBase>::const_iterator itNode=this->mGroup->begin(); itNode!=this->mGroup->end(); itNode++)

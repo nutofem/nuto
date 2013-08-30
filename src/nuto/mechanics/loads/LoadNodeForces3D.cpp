@@ -5,8 +5,8 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 // constructor
-NuTo::LoadNodeForces3D::LoadNodeForces3D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
-        LoadNode(rNode)
+NuTo::LoadNodeForces3D::LoadNodeForces3D(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+        LoadNode(rLoadCase,rNode)
 {
     if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=3)
         throw MechanicsException("[NuTo::LoadNodeForces3D::LoadNodeForces3D] Dimension of the direction matrix must be equal to the dimension of the structure.");
@@ -26,8 +26,10 @@ NuTo::LoadNodeForces3D::LoadNodeForces3D(const NodeBase* rNode, const NuTo::Full
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeForces3D::AddLoadToGlobalSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeForces3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
 {
+    if (rLoadCase!=mLoadCase)
+    	return;
     assert(rActiceDofsLoadVector.GetNumColumns()==1);
     assert(rDependentDofsLoadVector.GetNumColumns()==1);
     try

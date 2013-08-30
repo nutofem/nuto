@@ -4,5 +4,5 @@
 
 
 //! @brief constructor
-NuTo::LoadNode::LoadNode(const NodeBase* rNode) : LoadBase(), mNode(rNode)
+NuTo::LoadNode::LoadNode(int rLoadCase, const NodeBase* rNode) : LoadBase(rLoadCase), mNode(rNode)
 {}

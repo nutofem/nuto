@@ -161,6 +161,7 @@ loads/LoadNodeForces3D.cpp
 loads/LoadNodeGroupForces1D.cpp
 loads/LoadNodeGroupForces2D.cpp
 loads/LoadNodeGroupForces3D.cpp
+loads/LoadSurfaceBase3D.cpp
 )
 
 SET(NuToMechanicsNodes_SOURCES
@@ -205,6 +206,7 @@ timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
 timeIntegration/NewmarkIndirect.cpp
 timeIntegration/TimeIntegrationBase.cpp
+timeIntegration/VelocityVerlet.cpp
 )
 
 

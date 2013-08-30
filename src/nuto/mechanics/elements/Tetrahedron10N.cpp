@@ -45,34 +45,34 @@ void NuTo::Tetrahedron10N::CalculateShapeFunctions(const double rLocalCoordinate
     s  =rLocalCoordinates[1];
     t  =rLocalCoordinates[2];
 
-    // node 1 (0,0,0)
+    // node 0 (0,0,0)
     rShapeFunctions[0] =1.-3.*(r+s+t)+2.*(r*r+s*s+t*t)+4.*(r*s+r*t+s*t);
 
-    // node 2 (1,0,0)
+    // node 1 (1,0,0)
     rShapeFunctions[1] =-r+2.*r*r;
 
-    // node 3 (0,1,0)
+    // node 2 (0,1,0)
     rShapeFunctions[2] =-s+2.*s*s;
 
-    // node 4 (0,0,1)
+    // node 3 (0,0,1)
     rShapeFunctions[3] =-t+2.*t*t;
 
-    // node 5 (0.5,0,0)
+    // node 4 (0.5,0,0)
     rShapeFunctions[4] =4.*r*(1.-r-s-t);
 
-    // node 6 (0.5,0.5,0)
+    // node 5 (0.5,0.5,0)
     rShapeFunctions[5] =4.*r*s;
 
-    // node 7 (0,0.5,0)
+    // node 6 (0,0.5,0)
     rShapeFunctions[6] =4.*s*(1.-r-s-t);
 
-    // node 8 (0,0,0.5)
+    // node 7 (0,0,0.5)
     rShapeFunctions[7] =4.*t*(1.-r-s-t);
 
-    // node 9 (0,0.5,0.5)
+    // node 8 (0,0.5,0.5)
     rShapeFunctions[8] =4.*s*t;
 
-    // node 10 (0.5,0,0.5)
+    // node 9 (0.5,0,0.5)
     rShapeFunctions[9] =4.*r*t;
 }
 
@@ -140,7 +140,45 @@ void NuTo::Tetrahedron10N::CalculateDerivativeShapeFunctionsLocal(const double r
     rDerivativeShapeFunctions[29] =  4.*r;
 }
 
+//! @brief calculates the shape functions for the surfaces (required for surface loads)
+//! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)
+//! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+void NuTo::Tetrahedron10N::CalculateShapeFunctionsSurface(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const
+{
 
+}
+
+//! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Tetrahedron10N::CalculateDerivativeShapeFunctionsLocalSurface(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
+{
+
+}
+
+//! @brief returns the surface nodes
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+void NuTo::Tetrahedron10N::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const
+{
+
+}
+
+//! @brief returns the number of external surfaces
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+int NuTo::Tetrahedron10N::GetNumSurfaces()const
+{
+    return 4;
+}
+
+//! @brief returns the order of the shape functions (required to determine the integration order for surface loads)
+//! @return polynomial order
+int NuTo::Tetrahedron10N::GetOrderOfShapeFunctions()const
+{
+    return 2;
+}
 
 //! @brief returns the enum of the standard integration type for this element
 NuTo::IntegrationType::eIntegrationType NuTo::Tetrahedron10N::GetStandardIntegrationType()
@@ -152,17 +190,17 @@ NuTo::IntegrationType::eIntegrationType NuTo::Tetrahedron10N::GetStandardIntegra
 //! @brief reorder element nodes
 void NuTo::Tetrahedron10N::ReorderNodes()
 {
-    // swap nodes 2 and 3
+    // swap nodes 1 and 2
     NodeBase* tmp = this->mNodes[1];
     this->mNodes[1] = this->mNodes[2];
     this->mNodes[2] = tmp;
 
-    // swap nodes 5 and 7
+    // swap nodes 4 and 6
     tmp = this->mNodes[4];
     this->mNodes[4] = this->mNodes[6];
     this->mNodes[6] = tmp;
 
-    // swap nodes 9 and 10
+    // swap nodes 8 and 9
     tmp = this->mNodes[8];
     this->mNodes[8] = this->mNodes[9];
     this->mNodes[9] = tmp;

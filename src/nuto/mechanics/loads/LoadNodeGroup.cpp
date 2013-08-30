@@ -5,8 +5,8 @@
 
 
 //! @brief constructor
-NuTo::LoadNodeGroup::LoadNodeGroup(const Group<NodeBase>* rGroup) :
-        LoadBase(), mGroup(rGroup)
+NuTo::LoadNodeGroup::LoadNodeGroup(int rLoadCase, const Group<NodeBase>* rGroup) :
+        LoadBase(rLoadCase), mGroup(rGroup)
 {
 
 }

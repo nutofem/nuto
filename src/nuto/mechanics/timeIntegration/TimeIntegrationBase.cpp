@@ -39,78 +39,82 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase()  : NuTo::NuToObject::NuToObject
     mMinTimeStepPlot = 0;
     mLastTimePlot = 0;
     mAutomaticTimeStepping = false;
+ 	mTimeDependentConstraint = -1;
+ 	mTimeDependentLoadCase = -1;
  	ResetForNextLoad();
 }
 
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 void NuTo::TimeIntegrationBase::ResetForNextLoad()
 {
-	mConstraintLoad = -1;
-	mConstraintRHS.Resize(0,0);
-	mLoadRHSFactor.Resize(0,0);
+	mTimeDependentConstraint = -1;
+	mTimeDependentConstraintFactor.Resize(0,0);
+ 	mTimeDependentLoadCase = -1;
+ 	mTimeDependentLoadFactor.Resize(0,0);
 }
 
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-//! @param rConstraintLoad ... constraint, whose rhs is increased as a function of time
-//! @param rConstraintRHS ... first row time, rhs of the constraint (linear interpolation in between afterwards, constant)
-void NuTo::TimeIntegrationBase::SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rConstraintRHS)
+//! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
+//! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards, constant)
+void NuTo::TimeIntegrationBase::SetTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTimeDependentConstraintFactor)
 {
-	if (rConstraintRHS.GetNumColumns()!=2)
+	if (rTimeDependentConstraintFactor.GetNumColumns()!=2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
-	if (rConstraintRHS.GetNumRows()<2)
+	if (rTimeDependentConstraintFactor.GetNumRows()<2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of rows must be at least 2.");
-	if (rConstraintRHS(0,0)!=0)
+	if (rTimeDependentConstraintFactor(0,0)!=0)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] the first time should always be zero.");
 
 	//check, if the time is monotonically increasing
-	for (int count=0; count<rConstraintRHS.GetNumRows()-1; count++)
+	for (int count=0; count<rTimeDependentConstraintFactor.GetNumRows()-1; count++)
 	{
-		if (rConstraintRHS(count,0)>=rConstraintRHS(count+1,0))
+		if (rTimeDependentConstraintFactor(count,0)>=rTimeDependentConstraintFactor(count+1,0))
 			throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] time has to increase monotonically.");
 	}
 
-	mConstraintLoad = rConstraintLoad;
-	mConstraintRHS = rConstraintRHS;
+	mTimeDependentConstraint = rTimeDependentConstraint;
+	mTimeDependentConstraintFactor = rTimeDependentConstraintFactor;
 }
 
 //! @brief sets a scalar time dependent multiplication factor for the external loads
-//! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
-void NuTo::TimeIntegrationBase::SetExternalLoads(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor)
+//! @param rTimeDependentLoadFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
+void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTimeDependentLoadFactor)
 {
-	if (rLoadRHSFactor.GetNumColumns()!=2)
+	if (rTimeDependentLoadFactor.GetNumColumns()!=2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetExternalLoads] number of columns must be 2, first column contains the time, second column contains the corresponding value.");
-	if (rLoadRHSFactor.GetNumRows()<2)
+	if (rTimeDependentLoadFactor.GetNumRows()<2)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetExternalLoads] number of rows must be at least 2.");
-	if (rLoadRHSFactor(0,0)!=0)
+	if (rTimeDependentLoadFactor(0,0)!=0)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetExternalLoads] the first time should always be zero.");
 
 	//check, if the time is monotonically increasing
-	for (int count=0; count<rLoadRHSFactor.GetNumRows()-1; count++)
+	for (int count=0; count<rTimeDependentLoadFactor.GetNumRows()-1; count++)
 	{
-		if (rLoadRHSFactor(count,0)>=rLoadRHSFactor(count+1,0))
+		if (rTimeDependentLoadFactor(count,0)>=rTimeDependentLoadFactor(count+1,0))
 			throw MechanicsException("[NuTo::TimeIntegrationBase::SetExternalLoads] time has to increase monotonically.");
 	}
 
-	mLoadRHSFactor = rLoadRHSFactor;
+	mTimeDependentLoadFactor = rTimeDependentLoadFactor;
+	mTimeDependentLoadCase = rTimeDependentLoadCase;
 }
 
 //! @brief apply the new rhs of the constraints as a function of the current time delta
-double NuTo::TimeIntegrationBase::ConstraintsCalculateRHS(double curTime)
+double NuTo::TimeIntegrationBase::CalculateTimeDependentConstraintFactor(double curTime)
 {
     //calculate the two corresponding time steps between which a linear interpolation is performed
-	if (mConstraintRHS.GetNumRows()!=0)
+	if (mTimeDependentConstraintFactor.GetNumRows()!=0)
 	{
         int curStep(0);
-        while (mConstraintRHS(curStep,0)<curTime && curStep<mConstraintRHS.GetNumRows()-1)
+        while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.GetNumRows()-1)
         	curStep++;
 		if (curStep==0)
 			curStep++;
 
 		//extract the two data points
-		double s1 = mConstraintRHS(curStep-1,1);
-		double s2 = mConstraintRHS(curStep,1);
-		double t1 = mConstraintRHS(curStep-1,0);
-		double t2 = mConstraintRHS(curStep,0);
+		double s1 = mTimeDependentConstraintFactor(curStep-1,1);
+		double s2 = mTimeDependentConstraintFactor(curStep,1);
+		double t1 = mTimeDependentConstraintFactor(curStep-1,0);
+		double t2 = mTimeDependentConstraintFactor(curStep,0);
 
 		return s1 + (s2-s1)/(t2-t1) * (curTime-t1);
 	}
@@ -123,30 +127,57 @@ double NuTo::TimeIntegrationBase::ConstraintsCalculateRHS(double curTime)
 //! @param rLoad_k ... external load vector for the dependent dofs
 void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k)
 {
-	if (mLoadRHSFactor.GetNumRows()!=0)
+	if (mLoadVectorStatic_j.GetNumRows()==0 && mLoadVectorStatic_k.GetNumRows()==0 &&
+		mLoadVectorTimeDependent_j.GetNumRows()==0 && mLoadVectorTimeDependent_k.GetNumRows()==0)
 	{
+		//build static and dynamic load vector
+		NuTo::FullVector<double,Eigen::Dynamic> tmp_j,tmp_k;
+
+		mLoadVectorStatic_j.Resize(rStructure.GetNumActiveDofs());
+		mLoadVectorStatic_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+		for (int count=0; count<rStructure.GetNumLoadCases(); count++)
+		{
+			rStructure.BuildGlobalExternalLoadVector(count,tmp_j,tmp_k);
+			if (count==mTimeDependentLoadCase)
+			{
+				mLoadVectorTimeDependent_j=tmp_j;
+				mLoadVectorTimeDependent_k=tmp_k;
+			}
+			else
+			{
+				mLoadVectorStatic_j+=tmp_j;
+				mLoadVectorStatic_k+=tmp_k;
+			}
+		}
+	}
+
+	if (mTimeDependentLoadCase!=-1)
+	{
+		if (mTimeDependentLoadFactor.GetNumRows()==0)
+		{
+			throw MechanicsException("[NuTo::TimeIntegrationBase::CalculateExternalLoad] TimeDependentLoadFactor not set.");
+		}
         int curStep(0);
-        while (mLoadRHSFactor(curStep,0)<curTime && curStep<mLoadRHSFactor.GetNumRows()-1)
+        while (mTimeDependentLoadFactor(curStep,0)<curTime && curStep<mTimeDependentLoadFactor.GetNumRows()-1)
         	curStep++;
 		if (curStep==0)
 			curStep++;
 
 		//extract the two data points
-		double s1 = mLoadRHSFactor(curStep-1,1);
-		double s2 = mLoadRHSFactor(curStep,1);
-		double t1 = mLoadRHSFactor(curStep-1,0);
-		double t2 = mLoadRHSFactor(curStep,0);
+		double s1 = mTimeDependentLoadFactor(curStep-1,1);
+		double s2 = mTimeDependentLoadFactor(curStep,1);
+		double t1 = mTimeDependentLoadFactor(curStep-1,0);
+		double t2 = mTimeDependentLoadFactor(curStep,0);
 
 		double s = 	s1 + (s2-s1)/(t2-t1) * (curTime-t1);
 
-		//in theory, this vector could be stored, but I guess the recalculation is in general not very expensive
-		rStructure.BuildGlobalExternalLoadVector(rLoad_j,rLoad_k);
-		rLoad_j*=s;
-		rLoad_k*=s;
+		rLoad_j=mLoadVectorStatic_j+mLoadVectorTimeDependent_j*s;
+		rLoad_k=mLoadVectorStatic_k+mLoadVectorTimeDependent_k*s;
 	}
 	else
 	{
-		rStructure.BuildGlobalExternalLoadVector(rLoad_j,rLoad_k);
+		rLoad_j=mLoadVectorStatic_j;
+		rLoad_k=mLoadVectorStatic_k;
 	}
 }
 
@@ -302,9 +333,14 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
     std::cout << "start serialization of TimeIntegrationBase" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-       & BOOST_SERIALIZATION_NVP(mConstraintLoad)
-       & BOOST_SERIALIZATION_NVP(mConstraintRHS)
-       & BOOST_SERIALIZATION_NVP(mLoadRHSFactor)
+       & BOOST_SERIALIZATION_NVP(mTimeDependentConstraint)
+       & BOOST_SERIALIZATION_NVP(mTimeDependentLoadFactor)
+       & BOOST_SERIALIZATION_NVP(mTimeDependentLoadCase)
+       & BOOST_SERIALIZATION_NVP(mTimeDependentLoadFactor)
+       & BOOST_SERIALIZATION_NVP(mLoadVectorStatic_j)
+       & BOOST_SERIALIZATION_NVP(mLoadVectorStatic_k)
+       & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent_j)
+       & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent_k)
        & BOOST_SERIALIZATION_NVP(mTime)
        & BOOST_SERIALIZATION_NVP(mLoadStep)
        & BOOST_SERIALIZATION_NVP(mMaxTimeStep)
@@ -368,6 +404,24 @@ void NuTo::TimeIntegrationBase::SetGroupNodesReactionForces(NuTo::FullMatrix<int
 	if (rVecGroupNodesReactionForces.GetNumRows()<1)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetGroupNodesReactionForces] vector must have at least a single row.");
 	mVecGroupNodesReactionForces = rVecGroupNodesReactionForces;
+}
+
+//! @brief sets the nodes, for which displacements are to be monitored
+void NuTo::TimeIntegrationBase::SetOutputDispNodes(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecOutputDispNodesInt)
+{
+	if (rVecOutputDispNodesInt.GetNumColumns()!=1)
+		throw MechanicsException("[NuTo::TimeIntegrationBase::SetOutputDispNodes] vector (must have a single column).");
+	if (rVecOutputDispNodesInt.GetNumRows()<1)
+		throw MechanicsException("[NuTo::TimeIntegrationBase::SetOutputDispNodes] vector must have at least a single row.");
+	mVecOutputDispNodesInt = rVecOutputDispNodesInt;
+}
+
+//! @brief sets the nodes, for which displacements are to be monitored
+void NuTo::TimeIntegrationBase::CalculateOutputDispNodesPtr(StructureBase& rStructure)
+{
+	mVecOutputDispNodesPtr.resize(mVecOutputDispNodesInt.GetNumRows());
+	for (int count=0; count<mVecOutputDispNodesInt.GetNumRows(); count++)
+		mVecOutputDispNodesPtr[count] = rStructure.NodeGetNodePtr(mVecOutputDispNodesInt(count,0));
 }
 
 //! @brief sets the minimum time step for the time integration procedure

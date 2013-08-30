@@ -33,6 +33,7 @@ enum eOutput
 	HESSIAN_0_TIME_DERIVATIVE,       //!<
 	HESSIAN_1_TIME_DERIVATIVE,       //!<
 	HESSIAN_2_TIME_DERIVATIVE,       //!<
+	LUMPED_HESSIAN_2_TIME_DERIVATIVE,//!<
 	UPDATE_STATIC_DATA,
 	UPDATE_TMP_STATIC_DATA,
 	IP_DATA,                         //!< this is primarily for plotting, give the 3D state  so for plane stress there is a z-component in the strain

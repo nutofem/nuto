@@ -107,6 +107,45 @@ void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCo
     rDerivativeShapeFunctions[23] =  0.125 *minus_r *plus_s;
 }
 
+//! @brief calculates the shape functions for the surfaces (required for surface loads)
+//! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)
+//! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+void NuTo::Brick8N::CalculateShapeFunctionsSurface(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const
+{
+
+}
+
+//! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocalSurface(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
+{
+
+}
+
+//! @brief returns the surface nodes
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+void NuTo::Brick8N::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const
+{
+
+}
+
+//! @brief returns the number of external surfaces
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+int NuTo::Brick8N::GetNumSurfaces()const
+{
+    return 6;
+}
+
+//! @brief returns the order of the shape functions (required to determine the integration order for surface loads)
+//! @return polynomial order
+int NuTo::Brick8N::GetOrderOfShapeFunctions()const
+{
+    return 2;
+}
 
 
 //! @brief returns the enum of the standard integration type for this element

@@ -30,15 +30,16 @@ class LoadBase
 
 public:
     //! @brief constructor
-    LoadBase();
+    LoadBase(int rLoadCase);
 
     //! @brief ... destructor
     virtual ~LoadBase(){};
 
     //! @brief adds the load to global sub-vectors
+    //! @param rLoadCase number of the current load case
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    virtual void AddLoadToGlobalSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const=0;
+    virtual void AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -46,12 +47,14 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {}
+    {
+        ar & BOOST_SERIALIZATION_NVP(mLoadCase);
+    }
 #endif // ENABLE_SERIALIZATION
 
 
 protected:
-
+    int mLoadCase;
 };
 }//namespace NuTo
 #endif //LOADBASE_H

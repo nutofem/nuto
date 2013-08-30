@@ -118,10 +118,18 @@ public:
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     NuTo::Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK);
 
+    //! @brief ... based on the global dofs build sub-vectors of the global lumped mass
+    //! @param rActiveDofVector ... global lumped mass which corresponds to the active dofs
+    //! @param rDependentDofVector ... global lumped mass which corresponds to the dependent dofs
+    Error::eError BuildGlobalLumpedHession2(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofVector,
+    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofVector);
+
     //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
     //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector);
+    //! @param rUpdateHistoryVariables (update history variables after having calculated the response)
+    NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
+    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables);
 
 //*************************************************
 //************ Node routines        ***************

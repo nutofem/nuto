@@ -384,15 +384,15 @@ public:
 
     //! @brief ... appends columns to this matrix
     //! @param rBlock ... matrix storing the columns
-    void  AppendColumns ( FullVector<T, Eigen::Dynamic> rBlock );
+    void  AppendColumns ( const FullVector<T, Eigen::Dynamic>& rBlock );
 
     //! @brief ... appends columns to this matrix
     //! @param rBlock ... matrix storing the columns
-    void  AppendColumns ( FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> rBlock );
+    void  AppendColumns ( const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rBlock );
 
     //! @brief ... appends rows to this matrix
     //! @param rBlock ... matrix storing the rows
-    void  AppendRows ( FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> rBlock );
+    void  AppendRows ( const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rBlock );
 
     //! @brief ... calculates the norm of this matrix, i.e. for vectors the Euclidean norm
     //! @return norm of this matrix

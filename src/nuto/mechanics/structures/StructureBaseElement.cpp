@@ -8,6 +8,8 @@
     #include <omp.h>
 # endif
 
+#include <eigen3/Eigen/Eigenvalues>
+
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
@@ -1951,6 +1953,126 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
 #endif
     return elasticEnergy;
 }
+
+
+//! @brief calculate the critical time step for all elements solving the generalized eigenvalue problem Ku=lambda Mu
+double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    std::vector< ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+
+    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+
+	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE );
+	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_0_TIME_DERIVATIVE );
+
+	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver;
+
+	double maxGlobalEigenValue(0);
+	for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+    {
+        try
+        {
+            elementVector[elementCount]->Evaluate(elementOutput);
+        }
+        catch(NuTo::MechanicsException &e)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            e.AddMessage("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error stiffness and mass for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            ss << ElementGetId(elementVector[elementCount]);
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error calculating stiffness and mass for element " + ss.str() + ".");
+        }
+
+    	NuTo::FullVector<double,Eigen::Dynamic>&  lumpedMass(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  stiffness(elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble());
+
+    	//assuming the stiffness matrix is symmetric
+
+    	//invert the lumped mass matrix
+    	eigenSolver.compute((lumpedMass.ElementwiseInverse()).asDiagonal()*stiffness);
+
+    	double maxElementEigenValue = eigenSolver.eigenvalues().maxCoeff();
+    	if (maxElementEigenValue>maxGlobalEigenValue)
+    		maxGlobalEigenValue = maxElementEigenValue;
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+
+	return 2./std::sqrt(maxGlobalEigenValue);
+
+}
+
+//! @brief calculates the volume of the elements
+//! @param rGroupId  group number
+//! @return volume of the structure in 3D /area in 2D/ length in 1D
+double NuTo::StructureBase::ElementGroupGetVolume(int rGroupId)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetVolume] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetVolume] Group is not an element group.");
+    const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
+    assert(elementGroup!=0);
+
+    double totalVolume(0);
+    std::vector<double> elementVolume;
+
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    {
+        try
+        {
+        	itElement->second->GetIntegrationPointVolume(elementVolume);
+        	for (unsigned int count=0; count<elementVolume.size(); count++)
+        	{
+        		totalVolume+=elementVolume[count];
+        	}
+        }
+        catch(NuTo::MechanicsException &e)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+            e.AddMessage("[NuTo::StructureBase::ElementGroupGetVolume] Error calculating volume for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementGroupGetVolume] Error calculating volume for element " + ss.str() + ".");
+        }
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupGetVolume] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+    return totalVolume;
+}
+
 
 #ifdef ENABLE_VISUALIZE
 //! @brief ... adds all the elements in the vector to the data structure that is finally visualized

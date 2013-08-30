@@ -20,6 +20,7 @@
 namespace NuTo
 {
 class StructureBase;
+class NodeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all mechanical structures
@@ -45,22 +46,25 @@ public:
     void ResetForNextLoad();
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-    //! @param rConstraintLoad ... constraint, whose rhs is increased as a function of time
-    //! @param rConstraintRHS ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-    void SetDisplacements(int rConstraintLoad, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rConstraintRHS);
+    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
+    //! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
+    void SetTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& mTimeDependentConstraintFactor);
 
     //! @brief sets a scalar time dependent multiplication factor for the external loads
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
-    void SetExternalLoads(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor);
+    void SetTimeDependentLoadCase(int rLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor);
 
     //! @brief apply calculate the new rhs of the constraints as a function of the current time delta
-    double ConstraintsCalculateRHS(double rTimeDelta);
+    double CalculateTimeDependentConstraintFactor(double rTimeDelta);
 
     //! @brief calculate the external force as a function of time delta
     //! @param curTime ... current time in the load step
     //! @param rLoad_j ... external load vector for the independent dofs
     //! @param rLoad_k ... external load vector for the dependent dofs
     void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k);
+
+    //! @brief sets the nodes, for which displacements are to be monitored
+    void CalculateOutputDispNodesPtr(StructureBase& rStructure);
 
     //! @brief calculate the external force as a function of time delta
     //! @ param rStructure ... structure
@@ -91,9 +95,24 @@ public:
     	return mMinTimeStep;
     }
 
+    //! @brief sets the minimum time step for the time integration procedure
+    void SetMinTimeStepPlot(double rMinTimeStepPlot)
+    {
+    	mMinTimeStepPlot = rMinTimeStepPlot;
+    }
+
+    //! @brief returns the minimum time step for the time integration procedure
+    double GetMinTimeStepPlot()const
+    {
+    	return mMinTimeStepPlot;
+    }
+
 
     //! @brief sets the minimum time step for the time integration procedure
     void SetGroupNodesReactionForces(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecGroupNodesReactionForces);
+
+    //! @brief sets the nodes, for which displacements are to be monitored
+    void SetOutputDispNodes(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecOutputDispNodes);
 
     //! @brief sets the minimum time step for the time integration procedure
     void SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups);
@@ -138,13 +157,17 @@ public:
     virtual void Info()const;
 protected:
     //constraint for displacement control (as a function of time)
-    int mConstraintLoad;
+    int mTimeDependentConstraint;
     //includes for each time step the rhs of the constraint mConstraintLoad
     //the time step is given by mTimeDelta/(mConstraintRHS.Rows()-1)
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mConstraintRHS;
-    //includes for each time step the scalar factor for the external load
-    //the time step is given by mTimeDelta/(mLoadRHSFactor()-1)
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mLoadRHSFactor;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentConstraintFactor;
+    //time dependent load case number
+    int mTimeDependentLoadCase;
+	//includes for each time step the scalar factor for the load case
+    //the time step is given relative to mTimeDelta
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentLoadFactor;
+    //external load vectors (static and time dependent)
+	NuTo::FullVector<double,Eigen::Dynamic> mLoadVectorStatic_j,mLoadVectorStatic_k,mLoadVectorTimeDependent_j,mLoadVectorTimeDependent_k;
 	//accumulated time (in case several loadings are looked at, one after another)
 	double mTime;
     //adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
@@ -169,6 +192,9 @@ protected:
     std::string mResultDir;
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
     NuTo::FullVector<int,Eigen::Dynamic> mVecGroupNodesReactionForces;
+    // vector of nodes for the output of the dofs
+    std::vector<NodeBase*> mVecOutputDispNodesPtr;
+    NuTo::FullVector<int,Eigen::Dynamic> mVecOutputDispNodesInt;
 
 };
 } //namespace NuTo
