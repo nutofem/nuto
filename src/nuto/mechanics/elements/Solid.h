@@ -184,11 +184,6 @@ public:
     //! @param surface nodes
     virtual int GetNumSurfaces()const=0;
 
-    //! @brief returns the order of the shape functions (required to determine the integration order for surface loads)
-    //! @return polynomial order
-    virtual int GetOrderOfShapeFunctions()const=0;
-
-
     //! @brief adds to a matrix the product B^tCB, where B contains the derivatives of the shape functions and C is the constitutive tangent
     //! eventually include also area/width of an element
     //! @param rDerivativeShapeFunctions derivatives of the shape functions with respect to global coordinates

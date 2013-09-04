@@ -1,6 +1,6 @@
 // $Id: LoadSurface3D.h 178 2009-12-11 20:53:12Z eckardt4 $
-#ifndef LoadSurface3D_H
-#define LoadSurface3D_H
+#ifndef LoadSurfaceBase3D_H
+#define LoadSurfaceBase3D_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -12,12 +12,14 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 
 namespace NuTo
 {
 class NodeBase;
 class Solid;
+class StructureBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all surface loads in 3D
@@ -29,13 +31,13 @@ class LoadSurfaceBase3D : public LoadBase
 
 public:
     //! @brief constructor
-    LoadSurfaceBase3D(int rLoadCase, const Group<ElementBase>* rElementGroup, const Group<NodeBase>* rNodeGroup);
+    LoadSurfaceBase3D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId);
 
     //! @brief adds the load to global sub-vectors
     //! @param rLoadCase number of the current load case
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const=0;
+    void AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const;
 
     //! @brief calculates the surface load as a function of the coordinates and the normal (for pressure)
     //! @param rCoordinates ... global coordinates
@@ -51,16 +53,20 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
-        //& BOOST_SERIALIZATION_NVP(mNode);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase)
+           & BOOST_SERIALIZATION_NVP(mVolumeElements)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType6NPtr);
     }
 #endif // ENABLE_SERIALIZATION
 
 protected:
     std::vector<std::pair<const Solid*, int> > mVolumeElements;
-    IntegrationTypeBase* mIntegrationTypePtr;
-
+    IntegrationTypeBase* mIntegrationType3NPtr;
+    IntegrationTypeBase* mIntegrationType4NPtr;
+    IntegrationTypeBase* mIntegrationType6NPtr;
 };
 }//namespace NuTo
-#endif //LoadSurface3D_H
+#endif //LoadSurfaceBase3D_H
 

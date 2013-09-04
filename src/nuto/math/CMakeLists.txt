@@ -26,6 +26,23 @@ SET(NuToMath_SWIG_MODULES
   ModulSparseSolver
 )
 
+SET(SWIG_MODULE_ModulFullMatrix_EXTRA_DEPS 
+  FullMatrix_Def.h
+)
+
+SET(SWIG_MODULE_ModulFullVectorx_EXTRA_DEPS 
+  FullVector_Def.h
+)
+
+SET(SWIG_MODULE_ModulSparseMatrix_EXTRA_DEPS 
+  SparseMatrix.h
+  SparseMatrixCSR.h
+  SparseMatrixCSRGeneral_Def.h
+  SparseMatrixCSRSymmetric_Def.h
+  SparseMatrixCSRVector2General_Def.h
+  SparseMatrixCSRVector2Symmetric_Def.h
+)
+
 # build static library
 ADD_LIBRARY(NuToMath ${NuToMath_SOURCES})
 TARGET_LINK_LIBRARIES(NuToMath NuToBase ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
@@ -48,9 +65,6 @@ message("Replacing text")
  FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/numpy.i "${MODIFIED_FILE_CONTENT}")
 
 
-                       ################
-
-include_directories(/home/Desktop/project/eigen)
 FIND_PACKAGE(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
@@ -64,12 +78,8 @@ SET_SOURCE_FILES_PROPERTIES(ModulFullMatrix.i PROPERTIES CPLUSPLUS ON)
 #### exist in NuToMacros.cmake ln98
 #SWIG_ADD_MODULE(ModulFullMatrix python ModulFullMatrix.i)
 #SWIG_LINK_LIBRARIES(ModulFullMatrix ${PYTHON_LIBRARIES})
-
-
-
-
-
 #####################################
+
 
 #TARGET_LINK_LIBRARIES(NuToMath NuToBase ${Boost_LIBRARIES})
 #SET_TARGET_PROPERTIES(NuToMath PROPERTIES LINK_FLAGS -Wl,-z,defs)

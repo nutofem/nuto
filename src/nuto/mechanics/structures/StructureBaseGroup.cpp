@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 void NuTo::StructureBase::GroupInfo(int rVerboseLevel)const
@@ -274,6 +275,78 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
     end=clock();
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::GroupAddNodeRadiusRange] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
+//! @brief ... Adds all elements to a group whose nodes are in the given node group
+//! @param ... rElementGroupId identifier for the element group
+//! @param ... rNodeGroupId idenbtifier for the node group
+void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    //get element group
+	Group<ElementBase> *elementGroup = this->GroupGetGroupPtr(rElementGroupId)->AsGroupElement();
+
+    //get node group
+	const Group<NodeBase> *nodeGroup = this->GroupGetGroupPtr(rNodeGroupId)->AsGroupNode();
+
+	//since the search is done via the id's, the element nodes are ptr, so make another set with the node ptrs
+	std::set<const NodeBase*> nodePtrSet;
+    for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+    {
+    	nodePtrSet.insert(itNode->second);
+    }
+
+    std::vector<std::pair<int,ElementBase*> > elementVector;
+    this->GetElementsTotal(elementVector);
+	std::vector<const NodeBase*> elementNodes;
+    for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+    {
+        try
+        {
+        	if (!elementGroup->Contain(elementVector[countElement].first))
+        	{
+        		bool elementAdded;
+        		int countNode;
+        		for (countNode=0, elementAdded=false;
+        				(countNode<elementVector[countElement].second->GetNumNodes()) && (elementAdded==false);
+        				countNode++)
+				{
+					if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode))!=nodePtrSet.end())
+					{
+						//add the element;
+						elementGroup->AddMember(elementVector[countElement].first, elementVector[countElement].second);
+						elementAdded=true;
+					}
+				}
+        	}
+        }
+        catch(NuTo::MechanicsException &e)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(elementVector[countElement].second)==elementVector[countElement].first);
+            ss << elementVector[countElement].first;
+            e.AddMessage("[NuTo::StructureBase::GroupAddElementsFromNodes] Error for element "  + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(elementVector[countElement].second)==elementVector[countElement].first);
+            ss << elementVector[countElement].first;
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::GroupAddElementsFromNodes] Error for element " + ss.str() + ".");
+        }
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddElementsFromNodes] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
 

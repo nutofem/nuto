@@ -1044,6 +1044,23 @@ public:
     //! @return integer id to delete or modify the load
     int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
+    //! @brief adds a surface load to 3D solid elements
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    // surface is considered to be loaded
+    //! @param rElementGroupId ... specifies the elements with surface loads
+    //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
+    //! @return integer id to delete or modify the load
+    int LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rNodeGroupId, int rElementGroupId,
+    		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector);
+
+    //! @brief adds a surface load (pressure) to 3D solid elements
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    // surface is considered to be loaded
+    //! @param rElementGroupId ... specifies the elements with surface loads
+    //! @param rPressure value ... normal to the surface, positive for compression
+    //! @return integer id to delete or modify the load
+    int LoadSurfacePressureCreate3D(int rLoadCase, int rNodeGroupId, int rElementGroupId, double rPressure);
+
     //! @brief delete load
     //! @param rIdent ... load identifier
     void LoadDelete(int rIdent);
@@ -1425,6 +1442,11 @@ public:
     //! @param ... rMin ... minimum value
     //! @param ... rMax ... maximum value
     void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
+
+    //! @brief ... Adds all elements to a group whose nodes are in the given node group
+    //! @param ... rElementGroupId identifier for the element group
+    //! @param ... rNodeGroupId idenbtifier for the node group
+    void GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId);
 
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
     //! @param ... rIdentGroup identifier for the group

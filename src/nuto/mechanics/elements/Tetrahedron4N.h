@@ -112,7 +112,7 @@ public:
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsLocalSurface(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const override;
+    void CalculateDerivativeShapeFunctionsLocalSurface(const double rLocalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const override;
 
     //! @brief returns the surface nodes
     //! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
@@ -123,10 +123,6 @@ public:
     //! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
     //! @param surface nodes
     int GetNumSurfaces()const override;
-
-    //! @brief returns the order of the shape functions (required to determine the integration order for surface loads)
-    //! @return polynomial order
-    int GetOrderOfShapeFunctions()const override;
 
     //! @brief returns the enum of the standard integration type for this element
     NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();

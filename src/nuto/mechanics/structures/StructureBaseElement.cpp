@@ -1960,60 +1960,109 @@ double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
     start=clock();
 #endif
     std::vector< ElementBase*> elementVector;
     GetElementsTotal(elementVector);
 
-    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    Error::eError errorGlobal (Error::SUCCESSFUL);
 
-	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE );
-	boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_0_TIME_DERIVATIVE );
-
-	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver;
+    int exception(0);
+    std::string exceptionStringTotal;
 
 	double maxGlobalEigenValue(0);
-	for (unsigned int elementCount=0; elementCount<elementVector.size();elementCount++)
+
+
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+    #pragma omp parallel default(shared)
+	{
+#endif //_OPENMP
+
+		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+
+		boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE );
+		boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_0_TIME_DERIVATIVE );
+
+		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver;
+
+
+#ifdef _OPENMP
+    	#pragma omp for schedule(dynamic,1) nowait
+#endif //_OPENMP
+		for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+		{
+			try
+			{
+				Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
+				if (error!=Error::SUCCESSFUL)
+#ifdef _OPENMP
+#pragma omp critical
+				{
+					if (errorGlobal==Error::SUCCESSFUL)
+						errorGlobal = error;
+					else if (errorGlobal!=error)
+						throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] multiple elements have returned different error codes, can't handle that.");
+				}
+#endif //_OPENMP
+
+				NuTo::FullVector<double,Eigen::Dynamic>&  lumpedMass(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
+				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  stiffness(elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble());
+
+				//assuming the stiffness matrix is symmetric
+
+				//invert the lumped mass matrix
+				eigenSolver.compute((lumpedMass.cwiseInverse()).asDiagonal()*stiffness);
+
+				double maxElementEigenValue = eigenSolver.eigenvalues().maxCoeff();
+				if (maxElementEigenValue>maxGlobalEigenValue)
+				{
+#ifdef _OPENMP
+#pragma omp critical
+					maxGlobalEigenValue = maxElementEigenValue;
+#endif //_OPENMP
+				}
+			}
+			catch(NuTo::Exception& e)
+			{
+				std::stringstream ss;
+				ss << ElementGetId(elementVector[countElement]);
+				std::string exceptionStringLocal(e.ErrorMessage()
+						+"[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error calculating critical time step for element " + ss.str() + ".\n");
+				exception+=1;
+				exceptionStringTotal+=exceptionStringLocal;
+			}
+			catch(...)
+			{
+				std::stringstream ss;
+				ss << ElementGetId(elementVector[countElement]);
+				std::string exceptionStringLocal("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error calculating critical time step for element " + ss.str() + ".\n");
+				exception+=1;
+				exceptionStringTotal+=exceptionStringLocal;
+			}
+		}
+	} //end of parallel region
+    if(exception>0)
     {
-        try
-        {
-            elementVector[elementCount]->Evaluate(elementOutput);
-        }
-        catch(NuTo::MechanicsException &e)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[elementCount]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error stiffness and mass for element "  + ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[elementCount]);
-            throw NuTo::MechanicsException
-               ("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error calculating stiffness and mass for element " + ss.str() + ".");
-        }
-
-    	NuTo::FullVector<double,Eigen::Dynamic>&  lumpedMass(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  stiffness(elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble());
-
-    	//assuming the stiffness matrix is symmetric
-
-    	//invert the lumped mass matrix
-    	eigenSolver.compute((lumpedMass.ElementwiseInverse()).asDiagonal()*stiffness);
-
-    	double maxElementEigenValue = eigenSolver.eigenvalues().maxCoeff();
-    	if (maxElementEigenValue>maxGlobalEigenValue)
-    		maxGlobalEigenValue = maxElementEigenValue;
+	    throw MechanicsException(exceptionStringTotal);
     }
-
 #ifdef SHOW_TIME
     end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+        mLogger<<"[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else //_OPENMP
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif //_OPENMP
+#endif // SHOW_TIME
 
-	return 2./std::sqrt(maxGlobalEigenValue);
+    return 2./std::sqrt(maxGlobalEigenValue);
 
 }
 

@@ -75,8 +75,12 @@ void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocal(
 //! @brief calculates the shape functions for the surfaces (required for surface loads)
 //! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)
 //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-void NuTo::Tetrahedron4N::CalculateShapeFunctionsSurface(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const
+void NuTo::Tetrahedron4N::CalculateShapeFunctionsSurface(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
+	assert(rShapeFunctions.size()==3);
+    rShapeFunctions[0] = 1.-rNaturalCoordinates[0]-rNaturalCoordinates[1];
+    rShapeFunctions[1] = rNaturalCoordinates[0];
+    rShapeFunctions[2] = rNaturalCoordinates[1];
 
 }
 
@@ -84,9 +88,17 @@ void NuTo::Tetrahedron4N::CalculateShapeFunctionsSurface(const double rLocalCoor
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
 //! first all the directions for a single node, and then for the next node
-void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocalSurface(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocalSurface(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
+	assert(rDerivativeShapeFunctions.size()==6);
+    rDerivativeShapeFunctions[0] = -1.0;
+    rDerivativeShapeFunctions[1] = -1.0;
 
+    rDerivativeShapeFunctions[2] = 1.0;
+    rDerivativeShapeFunctions[3] = 0.0;
+
+    rDerivativeShapeFunctions[4] = 0.0;
+    rDerivativeShapeFunctions[5] = 1.0;
 }
 
 //! @brief returns the surface nodes
@@ -94,7 +106,32 @@ void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocalSurface(const do
 //! @param surface nodes
 void NuTo::Tetrahedron4N::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const
 {
-
+	rSurfaceNodes.resize(3);
+    switch(rSurface)
+    {
+    case 0:
+    	rSurfaceNodes[0] = mNodes[0];
+    	rSurfaceNodes[1] = mNodes[1];
+    	rSurfaceNodes[2] = mNodes[3];
+    	break;
+    case 1:
+    	rSurfaceNodes[0] = mNodes[2];
+    	rSurfaceNodes[1] = mNodes[3];
+    	rSurfaceNodes[2] = mNodes[1];
+    	break;
+    case 2:
+    	rSurfaceNodes[0] = mNodes[1];
+    	rSurfaceNodes[1] = mNodes[0];
+    	rSurfaceNodes[2] = mNodes[2];
+    	break;
+    case 3:
+    	rSurfaceNodes[0] = mNodes[0];
+    	rSurfaceNodes[1] = mNodes[3];
+    	rSurfaceNodes[2] = mNodes[2];
+    	break;
+    default:
+    	throw MechanicsException("[NuTo::Tetrahedron4N::GetSurfaceNodes] there are only 4 surfaces for a tet4.");
+    }
 }
 
 //! @brief returns the number of external surfaces
@@ -103,13 +140,6 @@ void NuTo::Tetrahedron4N::GetSurfaceNodes(int rSurface, std::vector<const NodeBa
 int NuTo::Tetrahedron4N::GetNumSurfaces()const
 {
     return 4;
-}
-
-//! @brief returns the order of the shape functions (required to determine the integration order for surface loads)
-//! @return polynomial order
-int NuTo::Tetrahedron4N::GetOrderOfShapeFunctions()const
-{
-    return 1;
 }
 
 //! @brief returns the enum of the standard integration type for this element

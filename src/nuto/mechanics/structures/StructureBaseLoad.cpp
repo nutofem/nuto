@@ -10,6 +10,8 @@
 #include "nuto/mechanics/loads/LoadNodeGroupForces1D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces2D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
+#include "nuto/mechanics/loads/LoadSurfaceConstDirection3D.h"
+#include "nuto/mechanics/loads/LoadSurfacePressure3D.h"
 
 // adds a force for a node
 int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
@@ -112,6 +114,46 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<Nod
     default:
         throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Incorrect dimension of the structure.");
     }
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
+int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rNodeGroupId, int rElementGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
+{
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadSurfaceBase3D* loadPtr;
+    loadPtr = new NuTo::LoadSurfaceConstDirection3D(rLoadCase, &(*this), rNodeGroupId, rElementGroupId, rLoadVector);
+
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
+int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rNodeGroupId, int rElementGroupId, double rPressure)
+{
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadSurfaceBase3D* loadPtr;
+    loadPtr = new NuTo::LoadSurfacePressure3D(rLoadCase, &(*this), rNodeGroupId, rElementGroupId, rPressure);
+
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);
     return id;

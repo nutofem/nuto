@@ -110,17 +110,33 @@ void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCo
 //! @brief calculates the shape functions for the surfaces (required for surface loads)
 //! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)
 //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-void NuTo::Brick8N::CalculateShapeFunctionsSurface(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const
+void NuTo::Brick8N::CalculateShapeFunctionsSurface(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
-
+	assert(rShapeFunctions.size()==4);
+    rShapeFunctions[0] = 0.25*(1.-rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
+    rShapeFunctions[1] = 0.25*(1.+rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
+    rShapeFunctions[2] = 0.25*(1.+rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
+    rShapeFunctions[3] = 0.25*(1.-rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
 }
 
 //! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
 //! first all the directions for a single node, and then for the next node
-void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocalSurface(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocalSurface(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
+	assert(rDerivativeShapeFunctions.size()==8);
+    rDerivativeShapeFunctions[0] = -0.25*(1.-rNaturalCoordinates[1]);
+    rDerivativeShapeFunctions[1] = -0.25*(1.-rNaturalCoordinates[0]);
+
+    rDerivativeShapeFunctions[2] = +0.25*(1.-rNaturalCoordinates[1]);
+    rDerivativeShapeFunctions[3] = -0.25*(1.+rNaturalCoordinates[0]);
+
+    rDerivativeShapeFunctions[4] = +0.25*(1.+rNaturalCoordinates[1]);
+    rDerivativeShapeFunctions[5] = +0.25*(1.+rNaturalCoordinates[0]);
+
+    rDerivativeShapeFunctions[6] = -0.25*(1.+rNaturalCoordinates[1]);
+    rDerivativeShapeFunctions[7] = +0.25*(1.-rNaturalCoordinates[0]);
 
 }
 
@@ -129,6 +145,49 @@ void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocalSurface(const double r
 //! @param surface nodes
 void NuTo::Brick8N::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const
 {
+	rSurfaceNodes.resize(4);
+    std::cout << "check the surface node calculation for brick8 elements. It has not been verified." << std::endl;
+	switch(rSurface)
+    {
+    case 0:
+    	rSurfaceNodes[0] = mNodes[0];
+    	rSurfaceNodes[1] = mNodes[1];
+    	rSurfaceNodes[2] = mNodes[5];
+    	rSurfaceNodes[3] = mNodes[4];
+    	break;
+    case 1:
+    	rSurfaceNodes[0] = mNodes[1];
+    	rSurfaceNodes[1] = mNodes[2];
+    	rSurfaceNodes[2] = mNodes[6];
+    	rSurfaceNodes[3] = mNodes[5];
+    	break;
+    case 2:
+    	rSurfaceNodes[0] = mNodes[3];
+    	rSurfaceNodes[1] = mNodes[7];
+    	rSurfaceNodes[2] = mNodes[6];
+    	rSurfaceNodes[3] = mNodes[2];
+    	break;
+    case 3:
+    	rSurfaceNodes[0] = mNodes[0];
+    	rSurfaceNodes[1] = mNodes[4];
+    	rSurfaceNodes[2] = mNodes[7];
+    	rSurfaceNodes[3] = mNodes[3];
+    	break;
+    case 4:
+    	rSurfaceNodes[0] = mNodes[0];
+    	rSurfaceNodes[1] = mNodes[3];
+    	rSurfaceNodes[2] = mNodes[2];
+    	rSurfaceNodes[3] = mNodes[1];
+    	break;
+    case 5:
+    	rSurfaceNodes[0] = mNodes[4];
+    	rSurfaceNodes[1] = mNodes[5];
+    	rSurfaceNodes[2] = mNodes[6];
+    	rSurfaceNodes[3] = mNodes[7];
+    	break;
+    default:
+    	throw MechanicsException("[NuTo::Tetrahedron4N::GetSurfaceNodes] there are only 4 surfaces for a tet4.");
+    }
 
 }
 
@@ -137,16 +196,8 @@ void NuTo::Brick8N::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& 
 //! @param surface nodes
 int NuTo::Brick8N::GetNumSurfaces()const
 {
-    return 6;
+    return 4;
 }
-
-//! @brief returns the order of the shape functions (required to determine the integration order for surface loads)
-//! @return polynomial order
-int NuTo::Brick8N::GetOrderOfShapeFunctions()const
-{
-    return 2;
-}
-
 
 //! @brief returns the enum of the standard integration type for this element
 NuTo::IntegrationType::eIntegrationType NuTo::Brick8N::GetStandardIntegrationType()

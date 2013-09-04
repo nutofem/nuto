@@ -162,6 +162,8 @@ loads/LoadNodeGroupForces1D.cpp
 loads/LoadNodeGroupForces2D.cpp
 loads/LoadNodeGroupForces3D.cpp
 loads/LoadSurfaceBase3D.cpp
+loads/LoadSurfaceConstDirection3D.cpp
+loads/LoadSurfacePressure3D.cpp
 )
 
 SET(NuToMechanicsNodes_SOURCES
@@ -221,6 +223,14 @@ ${NuToMechanicsTimeIntegration_SOURCES}
 
 SET(NuToMechanics_SWIG_MODULES
   ModulMechanics
+)
+
+SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS 
+  structures/grid/MultiGridStructure.h
+  structures/StructureBase.h
+  structures/unstructured/Structure.h
+  structures/grid/StructureGrid.h
+  elements/ElementEnum.h
 )
 
 # build static library

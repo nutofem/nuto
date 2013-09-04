@@ -33,7 +33,7 @@ NuTo::Plane2D3N::Plane2D3N(NuTo::StructureBase* rStructure, std::vector<NuTo::No
 void NuTo::Plane2D3N::CalculateShapeFunctions(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
 	assert(rShapeFunctions.size()==3);
-    rShapeFunctions[0] = 1-rNaturalCoordinates[0]-rNaturalCoordinates[1];
+    rShapeFunctions[0] = 1.-rNaturalCoordinates[0]-rNaturalCoordinates[1];
     rShapeFunctions[1] = rNaturalCoordinates[0];
     rShapeFunctions[2] = rNaturalCoordinates[1];
 }

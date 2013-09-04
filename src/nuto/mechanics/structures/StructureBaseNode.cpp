@@ -839,6 +839,7 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::NodeGetIdAtCoordinate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
+    return -1;
 }
 
 

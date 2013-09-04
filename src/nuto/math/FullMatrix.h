@@ -1422,6 +1422,14 @@ double FullMatrix<T,rows,cols>::Norm(params<double, rows1, cols1>)const
 	return this->norm();
 }
 
+//! @brief ... computes the sum of all coefficients
+//! @return sum of the entries for each column
+template<class T, int rows, int cols>
+T FullMatrix<T,rows,cols>::Sum() const
+{
+	return this->sum();
+}
+
 //! @brief ... calculates the sum of the entries for each column
 //! @return sum of the entries for each column
 template<class T, int rows, int cols>

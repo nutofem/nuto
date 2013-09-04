@@ -148,6 +148,9 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 				mLoadVectorStatic_j+=tmp_j;
 				mLoadVectorStatic_k+=tmp_k;
 			}
+			//std::cout << "tmp_j\n" << tmp_j <<  std::endl;
+			//std::cout << "tmp_k\n" << tmp_k <<  std::endl;
+			std::cout << "sum of loads for loadcase " << count << " is " << tmp_j.ColumnwiseSum() + tmp_k.ColumnwiseSum() << std::endl;
 		}
 	}
 

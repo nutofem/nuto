@@ -398,6 +398,10 @@ public:
     //! @return norm of this matrix
     double  Norm() const;
 
+    //! @brief ... computes the sum of all coefficients
+    //! @return sum of the entries for each column
+    T Sum() const;
+
     //! @brief ... calculates the sum of the entries for each column
     //! @return sum of the entries for each column
     FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> ColumnwiseSum() const;
