@@ -27,6 +27,12 @@ public:
     //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
     SparseMatrixCSRSymmetric(int rDimension = 0, int rNumReserveEntries= 0);
 
+    //! @brief ... copy constructor
+    SparseMatrixCSRSymmetric(const SparseMatrixCSRSymmetric<T>& rOther);
+
+    //! @brief ... constructor
+    SparseMatrixCSRSymmetric(const SparseMatrixCSRVector2Symmetric<T>& rOther);
+
     //! @brief ... returns whether the matrix is symmetric or unsymmetric
     //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
     bool IsSymmetric() const;
@@ -40,6 +46,9 @@ public:
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
     void AddValue(int rRow, int rColumn, const T& rValue);
+
+    //! @brief ... return the matrix type
+    NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const;
 
     //! @brief ... print info about the object
     void Info() const;
@@ -72,6 +81,24 @@ public:
     //! @return ... the multiplied matrix (sparse csr storage)
 	SparseMatrixCSRSymmetric<T> operator* (const T& rScal) const;
 
+    //! @brief ... add sparse matrix
+    //! @param rMatrix ... sparse matrix
+    //! @return ... this
+#ifndef SWIG
+	SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T>& rMatrix) override;
+#else
+	SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T>& rMatrix);
+#endif// SWIG
+
+	//! @brief ... add sparse matrix
+    //! @param rMatrix ... sparse matrix
+    //! @return ... this
+#ifndef SWIG
+	SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix) override;
+#else
+	SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix);
+#endif
+
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
@@ -85,6 +112,18 @@ public:
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows=number of columns
     void Resize(int rRow);
+
+#ifndef SWIG
+    SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()override;
+#else
+    SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric();
+#endif
+
+#ifndef SWIG
+    const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const override;
+#else
+    const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const;
+#endif
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -25,6 +25,7 @@ class SparseMatrixCSRVector2Symmetric : public SparseMatrixCSRVector2<T>
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
+    friend class SparseMatrixCSRSymmetric<T>;
     friend class SparseMatrixCSRVector2General<T>;
 public:
     //! @brief ... constructor
@@ -65,6 +66,9 @@ public:
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
     void AddValue(int rRow, int rColumn, const T& rValue);
+
+    //! @brief ... return the matrix type
+    NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
@@ -151,6 +155,18 @@ public:
 
     //! @brief ... print info about the object
     void Info() const;
+
+#ifndef SWIG
+    NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()override;
+#else
+    NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric();
+#endif
+
+#ifndef SWIG
+   const NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const override;
+#else
+   const NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const;
+#endif
 
 protected:
 };

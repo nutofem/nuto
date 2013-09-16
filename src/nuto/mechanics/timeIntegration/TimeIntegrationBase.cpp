@@ -37,7 +37,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase()  : NuTo::NuToObject::NuToObject
 	mMinTimeStep = 0;
     mLoadStep = 0;
     mMinTimeStepPlot = 0;
-    mLastTimePlot = 0;
+    mLastTimePlot = -1e99;
     mAutomaticTimeStepping = false;
  	mTimeDependentConstraint = -1;
  	mTimeDependentLoadCase = -1;

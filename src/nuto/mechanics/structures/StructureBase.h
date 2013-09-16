@@ -1455,6 +1455,15 @@ public:
     //! @param ... rMax ... maximum radius
     void GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter, double rMin, double rMax);
 
+    //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rCenter center of the cylinder
+    //! @param ... rAxis axis of the cylinder
+    //! @param ... rMin ... minimum radius
+    //! @param ... rMax ... maximum radius
+    void GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter,
+    		 NuTo::FullVector<double,Eigen::Dynamic> rDirection, double rMin, double rMax);
+
     //! @brief ... Adds an element to an element group
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rIdentElement  identifier for the element

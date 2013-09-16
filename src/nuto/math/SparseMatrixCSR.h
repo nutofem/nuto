@@ -55,6 +55,13 @@ public:
         this->mColumns.reserve(rNumReserveEntries_);
     }
 
+    SparseMatrixCSR(const SparseMatrixCSR<T>& rOther) : SparseMatrix<T>(rOther)
+    {
+        this->mRowIndex = rOther.mRowIndex;
+        this->mValues = rOther.mValues;
+        this->mColumns = rOther.mColumns;
+    }
+
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
     void Resize(int rNumRows_)

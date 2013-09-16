@@ -287,7 +287,11 @@ public:
 
     //! @brief calculates the eigenvectors
     //! @param rEigenVectors ... eigenvectors
-    void EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors)const;
+    void EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors)const;
+
+    //! @brief calculates the eigenvectors
+    //! @param rEigenVectors ... eigenvectors
+    void GeneralizedEigenVectorsSymmetric(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rM, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors)const;
 
     //! @brief ... imports a matrix from a SLang ASCII file
     //! @param fileName ... file name
@@ -471,10 +475,16 @@ private:
     template<int rows1, int cols1> void EigenValuesSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, params<double, rows1, cols1>)const;
 
     //! @brief this is the inverse member function that is called for anything else than double
-    template<typename T1, int rows1, int cols1> void EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<T1, rows1, cols1>)const;
+    template<typename T1, int rows1, int cols1> void EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<T1, rows1, cols1>)const;
 
     //! @brief this is the inverse member function that is called for doubles
-    template<int rows1, int cols1> void EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<double, rows1, cols1>)const;
+    template<int rows1, int cols1> void EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<double, rows1, cols1>)const;
+
+    //! @brief this is the inverse member function that is called for anything else than double
+    template<typename T1, int rows1, int cols1> void GeneralizedEigenVectorsSymmetric(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rM,FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<T1, rows1, cols1>)const;
+
+    //! @brief this is the inverse member function that is called for doubles
+    template<int rows1, int cols1> void GeneralizedEigenVectorsSymmetric(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rM,FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<double, rows1, cols1>)const;
 
     //! @brief this is the SolveCholeskyLapack member function that is called for anything else than double
     template<typename T1, int rows1, int cols1>

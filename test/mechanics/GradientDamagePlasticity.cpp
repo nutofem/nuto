@@ -18,14 +18,14 @@ int main()
 {
 try
 {
-    bool flagForAllTests(false); //if you just work on one test, set this to false and change the single other variable
+    bool flagForAllTests(true); //if you just work on one test, set this to false and change the single other variable
 	bool testRoundedRankineYieldSurface3D(flagForAllTests);
     bool testDruckerPragerYieldSurface3D(flagForAllTests);
     bool testRoundedRankineYieldSurface1D(flagForAllTests);
     bool testDruckerPragerYieldSurface1D(flagForAllTests);
     bool testReturnMapping3D(flagForAllTests);
     bool testReturnMapping1D(flagForAllTests);
-    bool testTruss1D(true);
+    bool testTruss1D(false);
 
     NuTo::Logger logger;
 
@@ -782,6 +782,9 @@ try
     	myStructure.ConstraintLinearSetDisplacementNode(nodeLeft, directionConstraint, 0.0);
     	int constraintRight = myStructure.ConstraintLinearSetDisplacementNode(nodeRight, directionConstraint, 0.0);
 
+        //calculate maximum independent sets
+    	myStructure.CalculateMaximumIndependentSets();
+
     	NuTo::NewmarkDirect myIntegrationScheme;
 
     	//myIntegrationScheme.SetDampingCoefficientMass(0.05);
@@ -795,7 +798,7 @@ try
    		dispRHS << 0             , 0,
    				   simulationTime, finalDisplacement;
 
-   	    myIntegrationScheme.SetDisplacements(constraintRight, dispRHS);
+   	    myIntegrationScheme.SetTimeDependentConstraint(constraintRight, dispRHS);
    	    myIntegrationScheme.SetMaxTimeStep(simulationTime/numLoadSteps);
    	    myIntegrationScheme.SetAutomaticTimeStepping(true);
    	    myIntegrationScheme.SetMinTimeStep(1e-5*myIntegrationScheme.GetMaxTimeStep());

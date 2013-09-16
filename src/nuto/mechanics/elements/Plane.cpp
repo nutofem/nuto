@@ -205,6 +205,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			case Element::HESSIAN_0_TIME_DERIVATIVE:
 				{
 					it->second->GetFullMatrixDouble().Resize(numLocalDispDofs+numTempDofs,numNonlocalDispDofs+numTempDofs);
+					it->second->GetFullMatrixDouble().setZero();
 					it->second->SetSymmetry(true);
 					it->second->SetConstant(true);
 
@@ -839,6 +840,7 @@ void NuTo::Plane::AddDetJBtCB(const std::vector<double>& rLocalDerivativeShapeFu
     assert((int)rLocalDerivativeShapeFunctionsLocal.size()==2*GetNumShapeFunctions());
     const double *C = rConstitutiveTangent.data();
     double x1,x2,y1,y2,x1x2,y2x1,x2y1,y2y1;
+
     for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
     {
         int node1mul2 = 2*theNode1;

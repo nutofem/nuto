@@ -40,9 +40,9 @@ myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0,1)))
 myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0,0)))
 myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0.5,0)))
 myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.0,0.5,0)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0,0.5)))
-myNode9 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0,0.5)))
-myNode10 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0.5,0.5)))
+myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.0,0,0.5)))
+myNode9 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0.5,0.5)))
+myNode10 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0.0,0.5)))
 
 #create section
 mySection = myStructure.SectionCreate("Volume")
@@ -57,16 +57,31 @@ myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
 
 #assign constitutive law 
 #myStructure.ElementSetIntegrationType(myElement1,"3D4NGauss4Ip")
-
-
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 myStructure.ElementSetSection(myElement1,mySection)
 
+#make group of boundary nodes
+groupBoundaryNodes = myStructure.GroupCreate("Nodes")
+myStructure.GroupAddNode(groupBoundaryNodes,myNode1)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode3)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode4)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode7)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode8)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode9)
+
+#make group of boundary elements (in this case it is just one
+groupBoundaryElements = myStructure.GroupCreate("Elements")
+myStructure.GroupAddElementsFromNodes(groupBoundaryElements,groupBoundaryNodes);
+
+#create surface loads (0 - pressure on X, 1-const-direction Y)
+myStructure.LoadSurfacePressureCreate3D(0, groupBoundaryElements, groupBoundaryNodes, 2.);
+myStructure.LoadSurfaceConstDirectionCreate3D(1, groupBoundaryElements, groupBoundaryNodes, nuto.DoubleFullVector((0.,5.,0.)))
+
 #set displacements of right node
-myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullVector((0.5,0.,0.)))
-myStructure.NodeSetDisplacements(myNode5,nuto.DoubleFullVector((0.20805,0.,0.)))
-myStructure.NodeSetDisplacements(myNode6,nuto.DoubleFullVector((0.091168,0.,0.)))
-myStructure.NodeSetDisplacements(myNode9,nuto.DoubleFullVector((0.026560,0.,0.)))
+myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullVector((0.2,0.2,0.2)))
+myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullVector((0.2,0.2,0.2)))
+myStructure.NodeSetDisplacements(myNode6,nuto.DoubleFullVector((0.2,0.2,0.2)))
+myStructure.NodeSetDisplacements(myNode7,nuto.DoubleFullVector((0.2,0.2,0.2)))
 
 #calculate element stiffness matrix                                          
 Ke = nuto.DoubleFullMatrix(0,0)
@@ -146,38 +161,80 @@ EngineeringStrain = nuto.DoubleFullMatrix(6,1)
 myStructure.ElementGetEngineeringStrain(myElement1, EngineeringStrain)
 
 #correct strain
-EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,1,(
-0.117728,0,0,-0.116882,0,-0.18149,
+EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,4,(
+ -0.08944272, 0.37888544, -0.11055728,  0.28944272,  0.26832816, -0.20000000, 
+  0.26832816, 0.37888544, -0.11055728,  0.64721360,  0.26832816,  0.15777088, 
+ -0.08944272, 0.02111456, -0.46832816, -0.06832816, -0.44721360, -0.55777088, 
+ -0.08944272, 0.02111456, -0.11055728, -0.06832816, -0.08944272, -0.20000000 
 ))
 
 if (printResult):
     print "EngineeringStrainCorrect"
-    EngineeringStrainCorrect.Info()
+    EngineeringStrainCorrect.Info(10,8)
     print "EngineeringStrain"
-    EngineeringStrain.Info()
+    EngineeringStrain.Trans().Info(10,8)
 
-if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()>1e-7):
+if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()>1e-5):
         print '[' + system,sys.argv[0] + '] : strain is not correct.'
         error = True;
 
 #calculate engineering strain of myelement1 at all integration points
-EngineeringStress = nuto.DoubleFullMatrix(6,3)
+EngineeringStress = nuto.DoubleFullMatrix(6,1)
 myStructure.ElementGetEngineeringStress(myElement1, EngineeringStress)
 #correct stress
-EngineeringStressCorrect = nuto.DoubleFullMatrix(6,1,(
-1.41274,0.470912,0.470912,-0.467528,0.,-0.72596,
+EngineeringStressCorrect = nuto.DoubleFullMatrix(6,4,(
+ 0.00000000, 3.74662528 , -0.16891648 , 1.15777088 , 1.07331264 ,-0.80000000,
+ 4.29325056, 5.17770880 ,  1.26216704 , 2.58885440 , 1.07331264 , 0.63108352, 
+-2.86216704, -1.97770880, -5.89325056 ,-0.27331264 ,-1.78885440 ,-2.23108352, 
+-1.43108352, -0.54662528, -1.60000000 ,-0.27331264 ,-0.35777088 ,-0.80000000
 ))
 
 if (printResult):
     print "EngineeringStressCorrect"
-    EngineeringStressCorrect.Info()
+    EngineeringStressCorrect.Info(10,8)
     print "EngineeringStress"
-    EngineeringStress.Info()
+    EngineeringStress.Trans().Info(10,8)
 
 if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-5):
         print '[' + system,sys.argv[0] + '] : stress is not correct.'
         error = True;
 
+#calculate external force vector for the first load case (pressure)
+Fe1 = nuto.DoubleFullVector(0)
+Fe2 = nuto.DoubleFullVector(0) # no displacements are constrained so this vector is empty
+myStructure.BuildGlobalExternalLoadVector(0,Fe1,Fe2)
+
+if (printResult):
+    print "Fe1 for pressure load"
+    Fe1.Info()
+
+#correct external force for pressure load vector (sum up the load in x direction eveything else should be zero
+sumX = Fe1.Sum()
+if (abs(sumX-1.)>1e-8):
+        print '[' + system,sys.argv[0] + '] : pressure load is not correct.'
+        error = True;
+        
+#calculate external force vector for the second load cases (constDirection)
+myStructure.BuildGlobalExternalLoadVector(1,Fe1,Fe2)
+
+if (printResult):
+    print "Fe1 const direction load"
+    Fe1.Info()
+
+#correct external force for pressure load vector (sum up the load in x direction eveything else should be zero
+sumY = Fe1.Sum()
+if (abs(sumY-2.5)>1e-8):
+        print '[' + system,sys.argv[0] + '] : const direction load is not correct.'
+        error = True; 
+
+        
+# visualize results
+myStructure.AddVisualizationComponentDisplacements()
+myStructure.AddVisualizationComponentEngineeringStrain()
+myStructure.AddVisualizationComponentEngineeringStress()
+myStructure.ExportVtkDataFileElements("Tetrahedron10N.vtk")
+
+       
 if (error):
     sys.exit(-1)
 else:

@@ -207,7 +207,7 @@ try
 
 	//create a unit load on all the nodes on the left side
 //	myStructure.LoadCreateNodeGroupForce(grpNodes_Left,DirectionX , 1);
-	myStructure.LoadCreateNodeGroupForce(groupLeftBottomSupport,DirectionX, 1);
+	myStructure.LoadCreateNodeGroupForce(0,groupLeftBottomSupport,DirectionX, 1);
 
 	NuTo::NewmarkDirect myIntegrationScheme;
 
@@ -245,7 +245,7 @@ try
 
     myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Left,DirectionX,0);
     int constraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Right,DirectionX,0);
-    myIntegrationScheme.SetDisplacements(constraintRightDisp, dispRHS);
+    myIntegrationScheme.SetTimeDependentConstraint(constraintRightDisp, dispRHS);
 
     //5 timesteps to capture the quarter wave (5/quarter wave)
     //myIntegrationScheme.SetMaxTimeStep(period/20.);
@@ -275,27 +275,31 @@ try
 
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result;
     result.ReadFromFile(resultFile.string());
+    std::cout << "result" << std::endl;
     result.Info(15,12,true);
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef(1,11);
-	resultRef(0,0) = 0;
-	resultRef(0,1) = 0.1;
-	resultRef(0,2) = 1.500009228786e+01;
-	resultRef(0,3) = 6.452563911884e-02;
-	resultRef(0,4) = 1.700347727382e-02;
-	resultRef(0,5) = 1.508162134529e+01;
-	resultRef(0,6) = 0.;
-	resultRef(0,7) = -3.001683921119e+02;
-	resultRef(0,8) = 0.;
-	resultRef(0,9) = 3.016324269061e+02;
-	resultRef(0,10) = 0.;
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef(2,11);
+	resultRef(0,7) = -1; //load on fixed node
+	resultRef(1,0) = 10;
+	resultRef(1,1) = 0.1;
+	resultRef(1,2) = 1.500009228786e+01;
+	resultRef(1,3) = 6.452563911884e-02;
+	resultRef(1,4) = 1.700347727382e-02;
+	resultRef(1,5) = 1.508162134529e+01;
+	resultRef(1,6) = 0.;
+	resultRef(1,7) = -3.001683921119e+02;
+	resultRef(1,8) = 0.;
+	resultRef(1,9) = 3.016324269061e+02;
+	resultRef(1,10) = 0.;
 
     if ((resultRef-result).cwiseAbs().maxCoeff()>1e-4)
     {
     	std::cout << "difference " << (resultRef-result).cwiseAbs().maxCoeff() << "\n";
+        std::cout<< "real result" << std::endl;
     	result.Info();
-        std::cout<< "reference results" << std::endl;
+        std::cout<< "ref result" << std::endl;
         resultRef.Info();
+    	std::cout << "difference " << (resultRef-result) << "\n";
         std::cout << "[NewmarkPlane2D4N] result is not correct." << std::endl;
         return -1;
     }

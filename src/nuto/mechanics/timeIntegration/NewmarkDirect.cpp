@@ -231,6 +231,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
                     }
                 }
             }
+            std::cout << "reaction force for node group " <<  countGroup << " : " << reactionForce.Trans() << std::endl;
             plotVector0.AppendColumns(reactionForce);
         }
         PostProcess(rStructure, plotVector0);

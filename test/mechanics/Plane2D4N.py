@@ -177,11 +177,6 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : stress is not correct.'
         error = True;
 
-# visualize results
-myStructure.AddVisualizationComponentDisplacements()
-myStructure.AddVisualizationComponentEngineeringStrain()
-myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFileElements("Plane2D4N.vtk")
 
 if (error):
     sys.exit(-1)

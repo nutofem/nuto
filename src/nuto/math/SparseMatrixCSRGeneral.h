@@ -157,6 +157,13 @@ void NuTo::SparseMatrixCSRGeneral<T>::AddValue(int rRow, int rColumn, const T& r
     }
 }
 
+//! @brief ... return the matrix type
+template<class T>
+NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRGeneral<T>::GetSparseMatrixType()const
+{
+    return NuTo::SparseMatrixEnum::CSRGENERAL;
+}
+
 //! @brief ... print info about the object
 template <class T>
 void NuTo::SparseMatrixCSRGeneral<T>::Info() const
@@ -759,6 +766,18 @@ void NuTo::SparseMatrixCSRGeneral<T>::ReorderColumns(const std::vector<int>& rMa
 		while (swapFlag);
 	}
 
+}
+
+template <class T>
+NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::AsSparseMatrixCSRGeneral()
+{
+	return *this;
+}
+
+template <class T>
+const NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::AsSparseMatrixCSRGeneral()const
+{
+	return *this;
 }
 
 #endif // SPARSE_MATRIX_CSR_GENERAL_H

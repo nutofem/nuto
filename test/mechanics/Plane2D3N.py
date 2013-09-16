@@ -93,7 +93,8 @@ stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrixCSRVector2)
 
 # build global external load vector
 extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(extForceVector)
+#just as an example, but the vector is empty, since no load is added to loadcase 0
+myStructure.BuildGlobalExternalLoadVector(0,extForceVector)
 
 # calculate right hand side
 rhsVector = dispForceVector + extForceVector

@@ -1980,8 +1980,8 @@ double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
 	if (mNumProcessors!=0)
 		omp_set_num_threads(mNumProcessors);
     #pragma omp parallel default(shared)
-	{
 #endif //_OPENMP
+	{
 
 		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
 
@@ -2008,6 +2008,8 @@ double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
 					else if (errorGlobal!=error)
 						throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] multiple elements have returned different error codes, can't handle that.");
 				}
+#else //_OPENMP
+				errorGlobal = error;
 #endif //_OPENMP
 
 				NuTo::FullVector<double,Eigen::Dynamic>&  lumpedMass(elementOutput.find(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->second->GetFullVectorDouble());
@@ -2023,8 +2025,8 @@ double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
 				{
 #ifdef _OPENMP
 #pragma omp critical
-					maxGlobalEigenValue = maxElementEigenValue;
 #endif //_OPENMP
+					maxGlobalEigenValue = maxElementEigenValue;
 				}
 			}
 			catch(NuTo::Exception& e)
@@ -2049,6 +2051,10 @@ double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
     if(exception>0)
     {
 	    throw MechanicsException(exceptionStringTotal);
+    }
+    if (errorGlobal!=Error::SUCCESSFUL)
+    {
+	    throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] error calculating critical time step.");
     }
 #ifdef SHOW_TIME
     end=clock();

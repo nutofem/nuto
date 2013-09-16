@@ -149,14 +149,10 @@ displacementsDependentDOFsCheck.Info();
 myStructure.NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
 myStructure.ElementTotalUpdateTmpStaticData();
 
-#build global external load vector and RHS vector
-myStructure.BuildGlobalExternalLoadVector(extForceVector);
-#extForceVector.Info(10,13);
+#build RHS vector
 myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
 #intForceVector.Info(10,13);
-rhsVector = extForceVector + dispForceVector - intForceVector;
-print "extForceVector";
-extForceVector.Info();
+rhsVector = dispForceVector - intForceVector;
 print "dispForceVector";
 dispForceVector.Info();
 print "intForceVector";
@@ -235,7 +231,7 @@ while (not convergenceStatusLoadSteps):
             myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
             print "intForceVEctor ";
             intForceVector.Info();
-            rhsVector = extForceVector - intForceVector;
+            rhsVector =  intForceVector*(-1);
             normResidual = rhsVector.Norm();
             if (PRINTRESULT):
 		        print "alpha " , alpha , ", normResidual " , normResidual , ", normResidualInit ", normRHS , ", normRHS*(1-0.5*alpha) " , normRHS*(1-0.5*alpha);
@@ -387,7 +383,7 @@ while (not convergenceStatusLoadSteps):
         myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
 
         #update rhs vector for next Newton iteration
-        rhsVector = dispForceVector + extForceVector - intForceVector;
+        rhsVector = dispForceVector - intForceVector;
 
 PlotDataRef = nuto.DoubleFullMatrix (6,7);
 PlotDataRef.SetValue(0,0,0.0);

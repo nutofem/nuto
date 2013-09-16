@@ -44,11 +44,10 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, 
     {
         for (int col = 0; col < rFullMatrix.GetNumColumns(); col++)
         {
-            if (rFullMatrix(row,col) > tolerance)
+        	if (fabs(rFullMatrix(row,col)) > tolerance)
             {
                 this->mValues.push_back(rFullMatrix(row,col));
                 this->mColumns.push_back(col);
-
             }
         }
         assert(this->mValues.size() == this->mColumns.size());

@@ -69,6 +69,9 @@ public:
     //! @param rFileName ... file name
     void ImportFromSLangText(const char* rFileName);
 
+    //! @brief ... return the matrix type
+    NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const;
+
     //! @brief ... write nonzero matrix entries into a matrix
     //! @param rMatrix ... the matrix
     void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const;
@@ -177,6 +180,19 @@ public:
 
     //! @brief ... print info about the object
     void Info() const;
+
+#ifndef SWIG
+    NuTo::SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()override;
+#else
+    NuTo::SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General();
+#endif
+
+
+#ifndef SWIG
+    const NuTo::SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()const override;
+#else
+    const NuTo::SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()const;
+#endif
 
 protected:
     //! @brief ... number of columns

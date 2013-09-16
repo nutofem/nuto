@@ -15,9 +15,15 @@
 
 #include "nuto/math/Matrix.h"
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/SparseMatrixEnum.h"
 
 namespace NuTo
 {
+template<class T> class SparseMatrixCSRGeneral;
+template<class T> class SparseMatrixCSRSymmetric;
+template<class T> class SparseMatrixCSRVector2General;
+template<class T> class SparseMatrixCSRVector2Symmetric;
+
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... abstract base class for sparse matrices
@@ -34,6 +40,12 @@ public:
     {
         this->mOneBasedIndexing=false;
         this->mPositiveDefinite=false;
+    }
+
+    SparseMatrix(const SparseMatrix<T>& rOther)
+    {
+        this->mOneBasedIndexing=rOther.mOneBasedIndexing;
+        this->mPositiveDefinite=rOther.mPositiveDefinite;
     }
 
     //! @brief ... get number of non-zero entries
@@ -101,6 +113,9 @@ public:
         this->mPositiveDefinite = false;
     }
 
+    //! @brief ... return the matrix type
+    virtual NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const=0;
+
     //! @brief ... symmetry of the matrix
     //! @return ... true if the matrix is symmetric, false otherwise
     virtual bool IsSymmetric() const = 0;
@@ -117,6 +132,68 @@ public:
     {
     	return false;
     }
+
+    //! @brief ... multiply sparse matrix with a full matrix
+    //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
+    //! @return ... full matrix
+    virtual NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
+
+    //! @brief ... add sparse matrix
+    //! @param rMatrix ... sparse matrix
+    //! @return ... this
+	virtual NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix)
+	{
+    	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not implemented for this matrix type.");
+	}
+
+	//! @brief ... add sparse matrix
+    //! @param rMatrix ... sparse matrix
+    //! @return ... this
+	virtual NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T>& rMatrix)
+	{
+    	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] not implemented for this matrix type.");
+	}
+
+    virtual SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
+    }
+
+    virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
+    }
+
+    virtual SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
+    }
+
+    virtual const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
+    }
+
+    virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
+    }
+
+    virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()const
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
+    }
+
+    virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+    }
+
+    virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const
+    {
+    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

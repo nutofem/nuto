@@ -1129,7 +1129,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     //! @brief yield condition
     FullMatrix<double,2,1> yieldCondition;
     //! @brief yield condition in line search
-    FullMatrix<double,2,1> yieldConditionLS(0,0);
+    FullMatrix<double,2,1> yieldConditionLS;
     //! @brief yield condition at the first iteration
     FullMatrix<double,2,1> initYieldCondition;
     //! @brief (dF/dsigma)T * Hessian * dF/dsigma

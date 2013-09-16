@@ -64,6 +64,9 @@ public:
     //! @param rValue ... value of the nonzero entry
     void AddValue(int rRow, int rColumn, const T& rValue);
 
+    //! @brief ... return the matrix type
+    NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const;
+
     //! @brief ... print info about the object
     void Info() const;
 
@@ -145,6 +148,18 @@ public:
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering);
+
+#ifndef SWIG
+    SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()override;
+#else
+    SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral();
+#endif
+
+#ifndef SWIG
+    const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const override;
+#else
+    const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const;
+#endif //SWIG
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

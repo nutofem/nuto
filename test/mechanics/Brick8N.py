@@ -57,6 +57,21 @@ mySection = myStructure.SectionCreate("Volume")
 myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
 myStructure.ElementSetSection(myElement1,mySection)
 
+#make group of boundary nodes
+groupBoundaryNodes = myStructure.GroupCreate("Nodes")
+myStructure.GroupAddNode(groupBoundaryNodes,myNode1)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode4)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode5)
+myStructure.GroupAddNode(groupBoundaryNodes,myNode8)
+
+#make group of boundary elements (in this case it is just one
+groupBoundaryElements = myStructure.GroupCreate("Elements")
+myStructure.GroupAddElementsFromNodes(groupBoundaryElements,groupBoundaryNodes);
+
+#create surface loads (0 - pressure on X, 1-const-direction Y)
+myStructure.LoadSurfacePressureCreate3D(0, groupBoundaryElements, groupBoundaryNodes, 2.);
+myStructure.LoadSurfaceConstDirectionCreate3D(1, groupBoundaryElements, groupBoundaryNodes, nuto.DoubleFullVector((0.,5.,0.)))
+
 #set displacements of right node
 myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullVector((0.2,0.2,0.2)))
 myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullVector((0.2,0.2,0.2)))
@@ -88,13 +103,13 @@ else:
         print '[' + system,sys.argv[0] + '] : stiffness is not correct.'
         error = True;
 
-#calculate internal force vector
+#calculate internal force vector (this is only due to the prescribed displacements, not in equilibrium with external forces
 Fi = nuto.DoubleFullVector(0)
 rowIndex = nuto.IntFullVector(0)
 myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
 
 if (printResult):
-    print "Fe"
+    print "Fi"
     Fi.Info()
 
 #correct resforce vector
@@ -191,6 +206,35 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-8):
         print '[' + system,sys.argv[0] + '] : stress is not correct.'
         error = True;
 
+        
+#calculate external force vector for the first load case (pressure)
+Fe1 = nuto.DoubleFullVector(0)
+Fe2 = nuto.DoubleFullVector(0) # no displacements are constrained so this vector is empty
+myStructure.BuildGlobalExternalLoadVector(0,Fe1,Fe2)
+
+if (printResult):
+    print "Fe1 for pressure load"
+    Fe1.Info()
+
+#correct external force for pressure load vector (sum up the load in x direction eveything else should be zero
+sumX = Fe1.Sum()
+if (abs(sumX-8.)>1e-8):
+        print '[' + system,sys.argv[0] + '] : pressure load is not correct.'
+        error = True;
+        
+#calculate external force vector for the second load cases (constDirection)
+myStructure.BuildGlobalExternalLoadVector(1,Fe1,Fe2)
+
+if (printResult):
+    print "Fe1 const direction load"
+    Fe1.Info()
+
+#correct external force for pressure load vector (sum up the load in x direction eveything else should be zero
+sumY = Fe1.Sum()
+if (abs(sumY-20.)>1e-8):
+        print '[' + system,sys.argv[0] + '] : const direction load is not correct.'
+        error = True; 
+        
 if (error):
     sys.exit(-1)
 else:

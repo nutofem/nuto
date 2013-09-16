@@ -230,19 +230,20 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
                 	outputBase->SetLocalSolution(true);
                 	ConstitutiveTangentLocal<3,3>& tangent(outputBase->GetSubMatrix_3x3(0).AsConstitutiveTangentLocal_3x3());
                     //rLogger << "unloading local stiffness " << C11 << " "<< C12 << " " << C33 << " omega " << 1.-oneMinusOmega << "\n";
+
                     tangent.SetSymmetry(true);
                     tangent(0,0) = oneMinusOmega * C11;
-                    tangent(1,0) = oneMinusOmega * C12;
-                    tangent(2,0) = 0.;
+                    tangent(0,1) = oneMinusOmega * C12;
+                    tangent(0,2) = 0.;
 
-                    tangent(1,0) = tangent(1,0);
+                    tangent(1,0) = tangent(0,1);
                     tangent(1,1) = tangent(0,0);
                     tangent(1,2) = 0.;
 
                     tangent(2,0) = 0.;
                     tangent(2,1) = 0.;
                     tangent(2,2) = oneMinusOmega * C33;
-                }
+               }
                 else
                 {
                     //rLogger << "nonlocal stiffness, omega " << 1.-oneMinusOmega << "\n";

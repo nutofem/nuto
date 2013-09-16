@@ -1,5 +1,6 @@
 # $Id$
 SET(NuToMath_SOURCES
+  EigenSolverArpack.cpp
   FullMatrix.cpp
   Matrix.cpp
   MathException.cpp

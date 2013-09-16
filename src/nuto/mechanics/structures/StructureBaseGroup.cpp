@@ -278,6 +278,78 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
 #endif
 }
 
+//! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
+//! @param ... rIdentGroup identifier for the group
+//! @param ... rCenter center of the cylinder
+//! @param ... rAxis axis of the cylinder
+//! @param ... rMin ... minimum radius
+//! @param ... rMax ... maximum radius
+void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter,
+		 NuTo::FullVector<double,Eigen::Dynamic> rDirection, double rMin, double rMax)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+   boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=Groups::Nodes)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] A node can be added only to a node group.");
+
+    if (rCenter.GetNumRows()!=mDimension || rCenter.GetNumColumns()!=1)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] The center point must have the same number of coordinates as the dimension of the structure.");
+
+    if (rDirection.GetNumRows()!=mDimension || rDirection.GetNumColumns()!=1)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] The direction point must have the same number of coordinates as the dimension of the structure.");
+
+    if(rMin>rMax)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] The minimum radius must not be larger than the maximum radius.");
+
+    if (mDimension!=3)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] only implemented for 3D.");
+
+
+    std::vector<std::pair<int,NodeBase*> > nodeVector;
+    this->GetNodesTotal(nodeVector);
+    FullVector<double,3> coordinates;
+    FullVector<double,3> vecPtrCenter;
+    FullVector<double,3> vecPtrProjection;
+    FullVector<double,3> vecDelta;
+    double rMin2 = rMin*rMin;
+    double rMax2 = rMax*rMax;
+
+    //normalize Diretion Vector
+    rDirection*=1./rDirection.Norm();
+
+    for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+    {
+        NodeBase* nodePtr(nodeVector[countNode].second);
+        if (nodePtr->GetNumCoordinates()<1)
+            continue;
+        double r2(0.);
+		nodePtr->GetCoordinates3D(coordinates.data());
+		vecPtrCenter = coordinates - rCenter;
+
+		//get projection onto axis
+		double s = rDirection.transpose()*vecPtrCenter;
+		vecPtrProjection = rCenter+rDirection*s;
+		vecDelta = coordinates - vecPtrProjection;
+
+		r2 = (vecDelta(0)*vecDelta(0) + vecDelta(1)*vecDelta(1) + vecDelta(2)*vecDelta(2));
+
+		if (r2>=rMin2 && r2<=rMax2)
+		{
+            itGroup->second->AddMember(nodeVector[countNode].first,nodePtr);
+		}
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 
 //! @brief ... Adds all elements to a group whose nodes are in the given node group
 //! @param ... rElementGroupId identifier for the element group

@@ -335,9 +335,9 @@ FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<doub
         double* resultValues = result.data() + matrixCol * rMatrix.GetNumRows();
         for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
         {
-            for (int thisPos = this->mRowIndex[thisRow]; thisPos < this->mRowIndex[thisRow + 1]; thisPos++)
+            for (int thisPos = this->mRowIndex[thisRow]-mOneBasedIndexing; thisPos < this->mRowIndex[thisRow + 1]-mOneBasedIndexing; thisPos++)
             {
-            	int thisColumn = this->mColumns[thisPos];
+            	int thisColumn = this->mColumns[thisPos]-mOneBasedIndexing;
                 double thisValue = this->mValues[thisPos];
                 resultValues[thisRow] += thisValue * matrixValues[thisColumn];
                 if (thisRow != thisColumn)
@@ -366,6 +366,80 @@ SparseMatrixCSRSymmetric<double> SparseMatrixCSRSymmetric<double>::operator* (co
 		val *= rScal;
 	return result;
 }
+
+//! @brief ... add sparse matrix
+//! @param rMatrix ... sparse matrix
+//! @return ... this
+template<>
+SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator += (const SparseMatrixCSRSymmetric<int>& rMatrix)
+{
+    throw MathException("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
+}
+
+//! @brief ... add sparse matrix
+//! @param rMatrix ... sparse matrix
+//! @return ... this
+template<>
+SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator += (const SparseMatrixCSRSymmetric<double>& rOther)
+{
+    if (this->GetNumColumns() != rOther.GetNumColumns())
+    {
+        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of columns in input matrix.");
+    }
+    if (this->GetNumRows() != rOther.GetNumRows())
+    {
+        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of rows in input matrix.");
+    }
+
+
+    for (int otherRow = 0; otherRow < rOther.GetNumRows(); otherRow++)
+    {
+        for (int otherPos = rOther.mRowIndex[otherRow]-mOneBasedIndexing; otherPos < rOther.mRowIndex[otherRow + 1]-mOneBasedIndexing; otherPos++)
+        {
+        	this->AddValue(otherRow,rOther.mColumns[otherPos]-rOther.mOneBasedIndexing, rOther.mValues[otherPos]);
+        }
+    }
+
+    return *this;
+
+}
+
+//! @brief ... add sparse matrix
+//! @param rMatrix ... sparse matrix
+//! @return ... this
+template<>
+SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator += (const SparseMatrixCSRVector2Symmetric<int>& rMatrix)
+{
+    throw MathException("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
+}
+
+
+//! @brief ... add sparse matrix
+//! @param rMatrix ... sparse matrix
+//! @return ... this
+template<>
+SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator += (const SparseMatrixCSRVector2Symmetric<double>& rOther)
+{
+    if (this->GetNumColumns() != rOther.GetNumColumns())
+    {
+        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of columns in input matrix.");
+    }
+    if (this->GetNumRows() != rOther.GetNumRows())
+    {
+        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of rows in input matrix.");
+    }
+
+    for (int otherRow = 0; otherRow < rOther.GetNumRows(); otherRow++)
+    {
+        for (unsigned int otherPos = 0; otherPos<rOther.mValues[otherRow].size(); otherPos++)
+        {
+        	this->AddValue(otherRow,rOther.mColumns[otherRow][otherPos]-rOther.mOneBasedIndexing, rOther.mValues[otherRow][otherPos]);
+        }
+    }
+
+    return *this;
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 template<typename T>

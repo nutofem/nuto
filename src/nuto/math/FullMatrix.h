@@ -1071,16 +1071,16 @@ void FullMatrix<T,rows,cols>::EigenValuesSymmetric(FullMatrix<double, Eigen::Dyn
 //! @brief calculates the eigenvectors
 //! @param rEigenVectors ... eigenvectors
 template<class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors)const
+void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors)const
 {
-	return this->EigenValuesSymmetric(rEigenVectors, params<T,rows,cols>());
+	return this->EigenVectorsSymmetric(rEigenValues, rEigenVectors, params<T,rows,cols>());
 }
 
 
 //! @brief this is the EigenVectorsSymmetric member function that is called for anything else than double
 template<typename T, int rows, int cols>
 template<typename T1, int rows1, int cols1>
-void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<T1, rows1, cols1>)const
+void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<T1, rows1, cols1>)const
 {
 	throw MathException("[FullMatrix::EigenVectorsSymmetric] only implemented for double values.");
 }
@@ -1088,10 +1088,38 @@ void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dy
 //! @brief this is the EigenVectorsSymmetric member function that is called for doubles
 template<typename T, int rows, int cols>
 template<int rows1, int cols1>
-void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<double, rows1, cols1>)const
+void FullMatrix<T,rows,cols>::EigenVectorsSymmetric(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<double, rows1, cols1>)const
 {
 	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolver((*this));
-	rEigenVectors = FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(mySolver.eigenvectors());
+	rEigenValues  = mySolver.eigenvalues();
+	rEigenVectors = mySolver.eigenvectors();
+}
+
+//! @brief calculates the eigenvectors
+//! @param rEigenVectors ... eigenvectors
+template<class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::GeneralizedEigenVectorsSymmetric(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rM, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors)const
+{
+	return this->GeneralizedEigenVectorsSymmetric(rM, rEigenValues, rEigenVectors, params<T,rows,cols>());
+}
+
+
+//! @brief this is the EigenVectorsSymmetric member function that is called for anything else than double
+template<typename T, int rows, int cols>
+template<typename T1, int rows1, int cols1>
+void FullMatrix<T,rows,cols>::GeneralizedEigenVectorsSymmetric(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rM,FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<T1, rows1, cols1>)const
+{
+	throw MathException("[FullMatrix::GeneralizedEigenVectorsSymmetric] only implemented for double values.");
+}
+
+//! @brief this is the EigenVectorsSymmetric member function that is called for doubles
+template<typename T, int rows, int cols>
+template<int rows1, int cols1>
+void FullMatrix<T,rows,cols>::GeneralizedEigenVectorsSymmetric(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rM, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenValues, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rEigenVectors, params<double, rows1, cols1>)const
+{
+	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> mySolver((*this),rM);
+	rEigenValues  = mySolver.eigenvalues();
+	rEigenVectors = mySolver.eigenvectors();
 }
 
 //! @brief ... imports a matrix from a SLang ASCII file

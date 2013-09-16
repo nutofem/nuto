@@ -106,7 +106,7 @@ try
     //std::cout << "copy " << srcFile.string() << " to " << resultFile.string() << "\n";
     boost::filesystem::copy_file (srcFile, resultFile);
 
-    int mSeed=2;
+    //int mSeed=2;
 
     double D(0.05); //dog bone specimen
     std::stringstream streamD;
@@ -176,7 +176,7 @@ try
     double rho(myStructure.ConstitutiveLawGetDensity(myMat));
 
     double cs(sqrt(E/(2.*(1.+nu))/rho));
-    double kappaPlaneStrain(3.-4.*nu); //plane strain
+    //double kappaPlaneStrain(3.-4.*nu); //plane strain
     double kappaPlaneStress((3.-nu)/(1.+nu)); //plane stress
     double cp(cs*sqrt((kappaPlaneStress+1.)/(kappaPlaneStress-1.)));
 
@@ -313,7 +313,7 @@ try
 	//std::cout << "velocity " << velocity.Trans() << "\n";
 	//myStructure.NodeGroupSetVelocities(grpNodes_Top,velocity);
 
-    myIntegrationScheme.SetDisplacements(constraintTopDisp, dispRHS);
+    myIntegrationScheme.SetTimeDependentConstraint(constraintTopDisp, dispRHS);
     myIntegrationScheme.SetMaxTimeStep(simulationTime/numLoadSteps);
     myIntegrationScheme.SetAutomaticTimeStepping(true);
     myIntegrationScheme.SetMinTimeStep(1e-5*myIntegrationScheme.GetMaxTimeStep());
@@ -346,6 +346,7 @@ try
 
     boost::filesystem::path resultFileRef(resultFile.parent_path().parent_path());
     resultFileRef /= std::string("DogboneDirectNewmarkresultAllLoadStepsRef.dat");
+    result.WriteToFile(resultFileRef.string()," ");
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef;
 	resultRef.ReadFromFile(resultFileRef.string());
     std::cout << "result \n" << result << "\n";

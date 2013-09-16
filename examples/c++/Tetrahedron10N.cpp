@@ -53,13 +53,13 @@ int main()
     Coordinates(2) = 0.5;
     Incidence(7) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0) = 0.5;
-    Coordinates(1) = 0.0;
+    Coordinates(0) = 0.0;
+    Coordinates(1) = 0.5;
     Coordinates(2) = 0.5;
     Incidence(8) = myStructure.NodeCreate("displacements",Coordinates);
 
-    Coordinates(0) = 0.0;
-    Coordinates(1) = 0.5;
+    Coordinates(0) = 0.5;
+    Coordinates(1) = 0.0;
     Coordinates(2) = 0.5;
     Incidence(9) = myStructure.NodeCreate("displacements",Coordinates);
 
@@ -67,17 +67,31 @@ int main()
     int myElement1 = myStructure.ElementCreate("Tetrahedron10N",Incidence);
 
 	//create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
 
+	// create section
+	int mySection = myStructure.SectionCreate("Volume");
+
     // assign constitutive law
     myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
+    // assign section
+    myStructure.ElementSetSection(myElement1,mySection);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Ke;
     NuTo::FullVector<int,Eigen::Dynamic> rowIndex;
     NuTo::FullVector<int,Eigen::Dynamic> colIndex;
     myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
+
+    #ifdef ENABLE_VISUALIZE
+	// visualize results
+    myStructure.AddVisualizationComponentDisplacements();
+    myStructure.AddVisualizationComponentEngineeringStrain();
+    myStructure.AddVisualizationComponentEngineeringStress();
+	myStructure.ExportVtkDataFileElements("TetrahedronElements10N.vtu",true);
+	myStructure.ExportVtkDataFileNodes("TetrahedronNodes10N.vtu",true);
+#endif
 
 	return 0;
 }

@@ -119,6 +119,8 @@ public:
     		return mNodes[0];
     	if (rLocalNodeNumber==1)
     		return mNodes[2];
+    	throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalTotalStrain] the interpolation order is only linear for the total strain.");
+        return 0;
     }
 
     //! @brief returns a pointer to the i-th node of the element

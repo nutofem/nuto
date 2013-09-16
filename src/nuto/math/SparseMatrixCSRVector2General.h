@@ -50,9 +50,9 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(NuTo::Full
 	{
 		for (int col = 0; col < rFullMatrix.GetNumColumns(); col++)
 		{
-			if (rFullMatrix(row,col) > tolerance)
+			if (fabs(rFullMatrix(row,col)) > tolerance)
 			{
-				this->AddValue(rFullMatrix(row,col),row,col);
+				this->AddValue(row,col,rFullMatrix(row,col));
 			}
 		}
 	}
@@ -179,6 +179,13 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddValue(int rRow, int rColumn, con
 			this->mValues[rRow].insert(this->mValues[rRow].begin() + pos, rValue);
 		}
 	}
+}
+
+//! @brief ... return the matrix type
+template<class T>
+NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRVector2General<T>::GetSparseMatrixType()const
+{
+    return NuTo::SparseMatrixEnum::CSRVECTOR2GENERAL;
 }
 
 //! @brief ... import matrix from slang object stored in  a text file
@@ -905,4 +912,15 @@ void NuTo::SparseMatrixCSRVector2General<T>::Info() const
     }
 }
 
+template <class T>
+NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::AsSparseMatrixCSRVector2General()
+{
+	return *this;
+}
+
+template <class T>
+const NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::AsSparseMatrixCSRVector2General()const
+{
+	return *this;
+}
 #endif // SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H

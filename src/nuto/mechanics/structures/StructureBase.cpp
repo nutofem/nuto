@@ -2355,7 +2355,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 
 
 //! @brief is only true for structure used as multiscale (structure in a structure)
-//! @parameters rTypeOfSpecimen 0 box, 1 dogbone
+//! @parameters rTypeOfSpecimen 0 box, 1 dogbone, 2 cylinder
 //! @parameters rBoundingBox box for the spheres (3*2 matrix)
 //! @parameters rRelParticleMass percentage of particle mass inside the box
 //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
@@ -2413,8 +2413,10 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
     {
 		double D = rBoundingBox(0,1) - rBoundingBox(0,0);
     	Vspecimen =  M_PI*0.25*D*D*lBox[2];
-		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-D)>1e-10)
-			throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
+		if (fabs(lBox[0]-lBox[1])>1e-10)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the cylindern, the x and y dimension should be identical (Diameter).");
+		if (D<1e-10)
+			throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the cylindern, the x,y dimension should be positive (Diameter).");
     }
     break;
     default:

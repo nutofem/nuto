@@ -17,6 +17,43 @@ NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(int rDimension, int 
 {
 }
 
+//! @brief ... constructor
+//! @param rDimension_ ... dimension (number of rows and number of columns) of square matrix
+//! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
+template <class T>
+NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(const SparseMatrixCSRSymmetric<T>& rOther)
+         : SparseMatrixCSR<T>(rOther)
+{
+
+}
+
+//! @brief ... constructor
+//! @param rDimension_ ... dimension (number of rows and number of columns) of square matrix
+//! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
+template <class T>
+NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(const SparseMatrixCSRVector2Symmetric<T>& rOther) : SparseMatrixCSR<T>(rOther.GetNumRows())
+{
+	int numEntries = rOther.GetNumEntries();
+    this->mValues.resize(numEntries);
+    this->mColumns.resize(numEntries);
+
+    int theEntry(0);
+	assert(rOther.mValues.size() == rOther.mColumns.size());
+    for (int row = 0; row<rOther.GetNumRows(); row++)
+    {
+	    this->mRowIndex[row] = theEntry + this->mOneBasedIndexing;
+    	for (unsigned int colCount=0; colCount<rOther.mValues[row].size(); colCount++)
+    	{
+    		assert(rOther.mValues[row].size() == rOther.mColumns[row].size());
+    		assert(theEntry<numEntries);
+    		this->mValues[theEntry] = rOther.mValues[row][colCount];
+    		this->mColumns[theEntry] = rOther.mColumns[row][colCount]-rOther.mOneBasedIndexing+this->mOneBasedIndexing;
+      		theEntry++;
+    	}
+    }
+    this->mRowIndex[rOther.GetNumRows()] = theEntry + this->mOneBasedIndexing;
+}
+
 //! @brief ... returns whether the matrix is symmetric or unsymmetric
 //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
 template <class T>
@@ -107,6 +144,13 @@ void NuTo::SparseMatrixCSRSymmetric<T>::AddValue(int rRow, int rColumn, const T&
 	}
 }
 
+//! @brief ... return the matrix type
+template<class T>
+NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRSymmetric<T>::GetSparseMatrixType()const
+{
+    return NuTo::SparseMatrixEnum::CSRSYMMETRIC;
+}
+
 //! @brief ... print info about the object
 template <class T>
 void NuTo::SparseMatrixCSRSymmetric<T>::Info() const
@@ -188,4 +232,18 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows_, int rNumColumns_)
 	// resize
 	SparseMatrixCSR<T>::Resize(rNumRows_);
 }
+
+template <class T>
+NuTo::SparseMatrixCSRSymmetric<T>& NuTo::SparseMatrixCSRSymmetric<T>::AsSparseMatrixCSRSymmetric()
+{
+	return *this;
+}
+
+template <class T>
+const NuTo::SparseMatrixCSRSymmetric<T>& NuTo::SparseMatrixCSRSymmetric<T>::AsSparseMatrixCSRSymmetric()const
+{
+	return *this;
+}
+
+
 #endif // SPARSE_MATRIX_CSR_SYMMETRIC_H
