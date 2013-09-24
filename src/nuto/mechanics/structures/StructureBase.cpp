@@ -1019,7 +1019,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
         SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
 
         // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK);
+        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK);
         if (error!=Error::SUCCESSFUL)
             return error;
 
@@ -2357,15 +2357,17 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 //! @brief is only true for structure used as multiscale (structure in a structure)
 //! @parameters rTypeOfSpecimen 0 box, 1 dogbone, 2 cylinder
 //! @parameters rBoundingBox box for the spheres (3*2 matrix)
-//! @parameters rRelParticleMass percentage of particle mass inside the box
-//! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
+//! @parameters rRelParticleVolume percentage of particle volume inside the box
+//! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, volume percentage of that sieve size
 //! @parameters relativeDistance scaling factor to increase the diameter when inserting the sphere to ensure a minimum distance
-//! @parameters rDensity density of the mixture (concrete)
+//! @parameters absoluteDistance scaling value to increase the diameter when inserting the sphere to ensure a minimum distance
 //! @parameters rSeed seed for the random number generator
 //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
 //! @return ... matrix with spheres (coordinates x y z and radius)
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeOfSpecimen, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, double rRelParticleMass, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve,
-		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary)
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::CreateSpheresInSpecimen(int rTypeOfSpecimen,
+		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, double rRelParticleVolume,
+		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve, double relativeDistance, double absoluteDistance,
+		int rSeed, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary)
 {
     if (rBoundingBox.GetNumRows()!=3 && rBoundingBox.GetNumColumns()!=2)
     	throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] bounding box has to have the dimension [3,2]");
@@ -2429,7 +2431,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
     }
 
 	// calculating mass of the aggregates */
-	double massSumParticles = Vspecimen * rDensity * rRelParticleMass;
+	double volumeSumParticles = Vspecimen * rRelParticleVolume;
 	int numParticles(rSpheresBoundary.GetNumRows());
 	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> particles(0,4);
 	if (numParticles>0)
@@ -2446,15 +2448,14 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 		double dMax(rGradingCurve(gc,1));
         if (dMin>dMax)
 		    throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] the minimum radius is larger than the maximum radius.");
-		double massFrac(rGradingCurve(gc,2));
-		if (massFrac<0 || massFrac>1)
+		double volumeFrac(rGradingCurve(gc,2));
+		if (volumeFrac<0 || volumeFrac>1)
 	        throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] the mass fraction should be in the range [0,1].");
 
-		double particleDensity(rGradingCurve(gc,3));
 		numParticlesPerClass[gc]=0;
 
 		// calculate reference volume fraction of the mineral-size-class
-		Vsoll[gc] = massSumParticles * massFrac / particleDensity;
+		Vsoll[gc] = volumeSumParticles * volumeFrac;
 		if (gc>0)
 		{
 			Vsoll[gc] = Vsoll[gc] + (Vsoll[gc-1] - Vist[gc-1]);
@@ -2563,7 +2564,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 			    	double D = rBoundingBox(0,1) - rBoundingBox(0,0);
 					double deltaX = particles(countParticle,0)-(rBoundingBox(0,0)+0.5*D);
 					double deltaY = particles(countParticle,1)-(rBoundingBox(1,0)+0.5*D);
-					double sumR = 0.5*D-particles(countParticle,3);
+					double sumR = 0.5*D-particles(countParticle,3)*(1.+relativeDistance)-absoluteDistance;
 					if (sumR<0)
 						throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] that should not have happend.");
 					if (deltaX*deltaX+deltaY*deltaY>sumR*sumR)
@@ -2585,7 +2586,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 					double deltaX = particles(countParticle,0)-particles(otherEllipse,0);
 					double deltaY = particles(countParticle,1)-particles(otherEllipse,1);
 					double deltaZ = particles(countParticle,2)-particles(otherEllipse,2);
-					double sumR = particles(countParticle,3)*(1.+relativeDistance)+particles(otherEllipse,3);
+					double sumR = particles(countParticle,3)*(1.+relativeDistance)+absoluteDistance+particles(otherEllipse,3);
 					if (deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ<sumR*sumR)
 					{
 						noSeparation = false;
@@ -2607,8 +2608,8 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 				else
 				{
 					numTries++;
-					if (numTries>100000)
-						throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] unable to insert sphere after a 100000 tries.");
+					if (numTries>1e7)
+						throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] unable to insert sphere after a 1e7 tries.");
 				}
 			}
 		}

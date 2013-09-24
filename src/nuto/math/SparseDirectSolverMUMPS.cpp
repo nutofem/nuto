@@ -28,7 +28,6 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
 void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
 #ifdef HAVE_MUMPS
-	std::cout << "stiffness\n" << rMatrix.GetNumRows() << " " << rMatrix.GetNumColumns() << std::endl;
     Factorization(rMatrix);
     Solution(rRhs, rSolution);
     CleanUp();

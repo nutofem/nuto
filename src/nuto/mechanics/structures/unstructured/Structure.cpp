@@ -844,8 +844,9 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 	{
 		boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_2_TIME_DERIVATIVE );
 	}
+
 	else
-		throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral] matrix type not implemented (either stiffness or mass.");
+		throw MechanicsException("[NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric] matrix type not implemented (either stiffness or mass.");
 
 	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
 	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_COLUMN_DOF );

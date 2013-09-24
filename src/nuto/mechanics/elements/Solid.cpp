@@ -192,6 +192,8 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				break;
 			case Element::HESSIAN_2_TIME_DERIVATIVE:
 				it->second->GetFullMatrixDouble().Resize(numDispDofs,numDispDofs);
+				it->second->SetSymmetry(true);
+				it->second->SetConstant(true);
 			break;
 			case Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
 				it->second->GetFullVectorDouble().Resize(numDispDofs);

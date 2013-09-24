@@ -1617,15 +1617,15 @@ public:
     //! @brief is only true for structure used as multiscale (structure in a structure)
     //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
     //! @parameters rBoundingBox box for the spheres (3*2 matrix)
-    //! @parameters rRelParticleMass percentage of particle mass inside the box
-    //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, mass percentage of that sieve size and density of particles
+    //! @parameters rRelParticleVolume percentage of particle volume inside the specimen
+    //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, volume percentage of that sieve size
     //! @parameters relativeDistance scaling factor to increase the diameter when inserting the sphere to ensure a minimum distance
-    //! @parameters rDensity density of the mixture (concrete)
+    //! @parameters absoluteDistance distance to increase the diameter when inserting the sphere to ensure a minimum distance
     //! @parameters rSeed seed for the random number generator
     //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
     //! @return ... matrix with spheres (coordinates x y z and radius)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CreateSpheresInSpecimen(int rTypeOfSpecimen, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, double rRelParticleMass, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve,
-    		double relativeDistance, double rDensity, int rSeed, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CreateSpheresInSpecimen(int rTypeOfSpecimen, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, double rRelParticleVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve,
+    		double relativeDistance, double absoluteDistance, int rSeed, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary);
 
     //! @brief cut spheres at a given z-coordinate to create circles (in 2D)
     //! @parameters rSpheres matrix with the spheres (x,y,z,r)

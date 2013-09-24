@@ -805,6 +805,7 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     double nodeCoordinates[3];
     double distance;
 
+    int nodeId = -1;
     for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
     {
     	NodeBase* nodePtr(nodeVector[countNode].second);
@@ -831,15 +832,26 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     		throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] unsupported dimension of the structure.");
     	}
     	if (distance<rRange)
-    		return nodeVector[countNode].first;
+    	{
+    		if (nodeId==-1)
+    		{
+    			nodeId = nodeVector[countNode].first;
+    		}
+    		else
+    			throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] there is more than one node at that coordinate position.");
+    	}
     }
-    throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] no node within the range could be found.");
+    if (nodeId==-1)
+    {
+    	std::cout << "coordinate position " << rCoordinates.Trans() << std::endl;
+        throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] no node within the range could be found.");
+    }
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::NodeGetIdAtCoordinate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
-    return -1;
+    return nodeId;
 }
 
 
