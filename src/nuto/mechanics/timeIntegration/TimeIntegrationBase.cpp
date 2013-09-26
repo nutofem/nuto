@@ -41,6 +41,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase()  : NuTo::NuToObject::NuToObject
     mAutomaticTimeStepping = false;
  	mTimeDependentConstraint = -1;
  	mTimeDependentLoadCase = -1;
+ 	numUsedRowsPlotMatrixAllLoadSteps = 0;
  	ResetForNextLoad();
 }
 
@@ -193,17 +194,23 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 {
 	if (mResultDir.length()>0)
 	{
-		if (mPlotMatrixAllLoadSteps.GetNumRows()==0)
-			mPlotMatrixAllLoadSteps = rPlotVector;
-		else
-			mPlotMatrixAllLoadSteps.AppendRows(rPlotVector);
-		boost::filesystem::path resultFile(mResultDir);
-		resultFile /= std::string("resultAllLoadSteps.dat");
-		mPlotMatrixAllLoadSteps.WriteToFile(resultFile.string(), std::string("  "));
+		if (numUsedRowsPlotMatrixAllLoadSteps%10000==0)
+		{
+			mPlotMatrixAllLoadSteps.ConservativeResize(numUsedRowsPlotMatrixAllLoadSteps+10000,rPlotVector.GetNumColumns());
+		}
+
+		mPlotMatrixAllLoadSteps.SetRow(numUsedRowsPlotMatrixAllLoadSteps, rPlotVector);
+		numUsedRowsPlotMatrixAllLoadSteps++;
 
 		if (mTime-mLastTimePlot>=mMinTimeStepPlot)
 		{
-			if (mPlotMatrixSelectedLoadSteps.GetNumRows()==0)
+	        boost::filesystem::path resultFile(mResultDir);
+			resultFile /= std::string("resultAllLoadSteps.dat");
+	        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>tmpPlotMatrixAllLoadSteps
+	         = mPlotMatrixAllLoadSteps.block(0,0,numUsedRowsPlotMatrixAllLoadSteps,mPlotMatrixAllLoadSteps.GetNumColumns());
+	        tmpPlotMatrixAllLoadSteps.WriteToFile(resultFile.string(), std::string("  "));
+
+	        if (mPlotMatrixSelectedLoadSteps.GetNumRows()==0)
 				mPlotMatrixSelectedLoadSteps = rPlotVector;
 			else
 			    mPlotMatrixSelectedLoadSteps.AppendRows(rPlotVector);
@@ -352,6 +359,7 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mMinTimeStepPlot)
        & BOOST_SERIALIZATION_NVP(mLastTimePlot)
        & BOOST_SERIALIZATION_NVP(mPlotMatrixAllLoadSteps)
+       & BOOST_SERIALIZATION_NVP(numUsedRowsPlotMatrixAllLoadSteps)
        & BOOST_SERIALIZATION_NVP(mPlotMatrixSelectedLoadSteps)
        & BOOST_SERIALIZATION_NVP(mPlotElementGroups)
        & BOOST_SERIALIZATION_NVP(mResultDir)

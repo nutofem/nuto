@@ -184,6 +184,8 @@ protected:
     double mLastTimePlot;
     //output data for all load steps
     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixAllLoadSteps;
+    //the size of the matrix is allocated with 10e4 steps to avoid reallocating the matrix every iteration
+    int numUsedRowsPlotMatrixAllLoadSteps;
     //output data for load steps that have a minimum distance of mMinTimeStepPlot
     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixSelectedLoadSteps;
     //output data for load steps that have a minimum distance of mMinTimeStepPlot

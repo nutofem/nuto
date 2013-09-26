@@ -119,7 +119,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<Nod
     return id;
 }
 
-int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rNodeGroupId, int rElementGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
+int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
 {
     //find unused integer id
     int id(0);
@@ -132,14 +132,14 @@ int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rN
 
     // create load
     LoadSurfaceBase3D* loadPtr;
-    loadPtr = new NuTo::LoadSurfaceConstDirection3D(rLoadCase, &(*this), rNodeGroupId, rElementGroupId, rLoadVector);
+    loadPtr = new NuTo::LoadSurfaceConstDirection3D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rLoadVector);
 
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);
     return id;
 }
 
-int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rNodeGroupId, int rElementGroupId, double rPressure)
+int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure)
 {
     //find unused integer id
     int id(0);
@@ -152,7 +152,7 @@ int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rNodeGro
 
     // create load
     LoadSurfaceBase3D* loadPtr;
-    loadPtr = new NuTo::LoadSurfacePressure3D(rLoadCase, &(*this), rNodeGroupId, rElementGroupId, rPressure);
+    loadPtr = new NuTo::LoadSurfacePressure3D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rPressure);
 
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);

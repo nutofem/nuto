@@ -155,6 +155,8 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
             //**********************************************
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector(1,2);
             plotVector(0,0) = mTime+mTimeStep;
+
+            //temporarily change this
             plotVector(0,1) = timeDependentConstraintFactor;
 
             for (unsigned int countNode=0; countNode<mVecOutputDispNodesPtr.size(); countNode++)
