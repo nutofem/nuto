@@ -1,5 +1,7 @@
 #include <limits>       // std::numeric_limits
+#ifdef HAVE_ARPACK
 #include <Arpack/Arpack.h>
+#endif
 #include "nuto/math/EigenSolverArpack.h"
 #include "nuto/math/EigenSolverArpackEnum.h"
 #include "nuto/math/FullMatrix.h"
