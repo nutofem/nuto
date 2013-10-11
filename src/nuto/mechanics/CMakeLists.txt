@@ -198,6 +198,7 @@ structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
 structures/unstructured/StructureMesh.cpp
 structures/unstructured/StructureNode.cpp
+structures/grid/OctreeGrid.cpp
 structures/grid/MultiGridStructure.cpp
 structures/grid/StructureGrid.cpp
 structures/grid/StructureGridNode.cpp

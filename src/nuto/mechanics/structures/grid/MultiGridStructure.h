@@ -89,6 +89,11 @@ public:
 	void Gradient(std::vector<double>& rValues,std::vector<double>& rGradient);
     void Hessian(std::vector<double>&  rDiagHessian);
 
+    void HangingNodesCorrection(std::vector<double>& u)
+    {
+ 	   //not needed her, only for octree
+    }
+
     void SetUseMultiGridAsPreconditoner(bool rUseAsPreconditioner);
     bool GetUseMultiGridAsPreconditoner();
 

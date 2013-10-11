@@ -81,7 +81,7 @@ public:
 		throw OptimizeException("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
 	}
 
-	virtual void Hessian (std::vector<double>& rHessian)
+ 	virtual void Hessian (std::vector<double>& rHessian)
 	{
 		throw OptimizeException("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
 	}
@@ -92,6 +92,14 @@ public:
 	{
 		throw OptimizeException("[CallbackHandlerGrid::GetDisplacementConstaints] GetDisplacementConstaints function not implemented in CallbackHandlerGrid object.");
 	}
+
+	//! @brief correct solution for hanging nodes
+	//! @param displacement solution
+	virtual void HangingNodesCorrection(std::vector<double>& u)
+	{
+		throw OptimizeException("[CallbackHandlerGrid::HangingNodesCorrection] HangingNodesCorrection function not implemented in CallbackHandlerGrid object.");
+	}
+
 
 	virtual void SetMisesWielandt (bool rMisesWielandt)
 	{

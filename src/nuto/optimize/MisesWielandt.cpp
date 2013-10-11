@@ -17,10 +17,11 @@ int NuTo::MisesWielandt::Optimize()
     std::clock_t startOpt,endOpt;
     startOpt=clock();
 #endif
-    const double tol=1.; //1e-3
-	double lambda=0,
-		   prevLambda=0,
-		   norm=0;
+
+    const double tol=mAccuracyGradient;
+	double lambda=0.,		//norm = lambda
+		   prevLambda=0.,
+		   norm=0.;
 
     int numGradientCalls(0),   // number of gradient calls
 		curIteration(0);       //number of iterations
@@ -61,20 +62,34 @@ int NuTo::MisesWielandt::Optimize()
 			 //return MAXGRADIENTCALLS;
 		 }
 
-		prevLambda=lambda;
-		lambda=0.;
-		norm=0.;
 
 		// r set to zero in MatVec product
+//		std::cout<<"[MisesWielandt] ATTENTION: has to be D^-1.K not K matrix. \n";
+//		y=A*x;
 		mpCallbackHandlerGrid->Gradient(u,r);
+		// input p=r , output r_new=D^-1K r,
+		// r of matrix D^-1K
+//		y'=D^(-1)*y
+		mpCallbackHandlerGrid->Hessian(r);
+		// spectral shift -> does not work
+		// y=(D^(-1)K-lambda I)x
 
+		//for spetral radius of M=I-PA
+//		for(size_t i=0;i<mNumParameters;++i)
+//		{
+//			r[i]*=-1;
+//			r[i]+=u[i];
+//		}
+		norm=0.;
+		prevLambda=lambda;
+		lambda=0.;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
 			lambda+=r[i]*u[i];
 			norm+=r[i]*r[i];
 		}
-
 		norm=sqrt(norm);
+//		lambda=norm;
 		for(size_t i=0;i<mNumParameters;++i)
 			u[i]=r[i]/norm;
 
@@ -86,7 +101,7 @@ int NuTo::MisesWielandt::Optimize()
 				returnValue = DELTAOBJECTIVEBETWEENCYCLES;
 				break;
 			}
-			if((lambda-prevLambda)<0&&(lambda-prevLambda)>-tol)
+			else if((lambda-prevLambda)<0&&(lambda-prevLambda)>-tol)
 			{
 				converged = true;
 				returnValue = DELTAOBJECTIVEBETWEENCYCLES;
@@ -96,16 +111,13 @@ int NuTo::MisesWielandt::Optimize()
 	}
 
 
-	if (mVerboseLevel>3)
-	{
-		std::cout <<"[MisesWielandt] max eigenvalue "<<lambda << " prevLambda "<<prevLambda<<"\n";
-	}
 	isBuild = true;
 
 #ifdef SHOW_TIME
     endOpt=clock();
     if (mShowTime)
         std::cout<<"[NuTo::MisesWielandt::Optimize] " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << "sec" << std::endl;
+	std::cout <<"[MisesWielandt] max eigenvalue "<<lambda << " norm "<<norm<<"\n";
     outputTime.open(filename,std::fstream::out|std::fstream::app);
  	outputTime<<(difftime(endOpt,startOpt)/CLOCKS_PER_SEC)<<"   "<<curIteration<<"\n";
 	outputTime.close();

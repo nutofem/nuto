@@ -42,7 +42,6 @@ public:
         mMaxIterations = INT_MAX;
         mShowSteps = 100;
        	mUseDiagHessian =true;
-       	mUseMisesWielandt =true;
        	mNumParameters=rNumParameters;
 
 	}
@@ -63,7 +62,6 @@ public:
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
            & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-           & BOOST_SERIALIZATION_NVP(mUseMisesWielandt)
            & BOOST_SERIALIZATION_NVP(mNumParameters);
     }
 #endif // SWIG
@@ -105,10 +103,6 @@ public:
     {
     	mUseDiagHessian=rUseDiagHessian;
     }
-    void SetMisesWielandt (bool rMisesWielandt)
-    {
-    	mUseMisesWielandt=rMisesWielandt;
-    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
@@ -142,7 +136,6 @@ protected:
 	int    mMaxIterations;
 	int    mShowSteps;
     bool   mUseDiagHessian;
-    bool   mUseMisesWielandt;
 
    	size_t mNumParameters;
 };

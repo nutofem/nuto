@@ -18,14 +18,17 @@ int NuTo::ConjugateGradientGrid::Optimize()
 {
 #ifdef SHOW_TIME
     std::clock_t startOpt,endOpt;
+    std::clock_t startMatVec,endMatVec;
+    double sumMatVec=0.,sumHN=0.;
+    std::clock_t startHN,endHN;
     startOpt=clock();
 #endif
 	double alpha=0,
 		   beta=0,
 		   alphaNumerator=0,
 		   alphaDenominator=0,
-		   betaNumerator=0;
-//		   squaredNorm=0;
+		   betaNumerator=0,
+		   rNorm=0.;
 
     int numFunctionCalls(0),   // number of function calls
 		 numGradientCalls(0),   // number of gradient calls
@@ -47,7 +50,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	std::vector<double> &r=mpCallbackHandlerGrid->GetResidual();
 	std::vector<double> pr(mNumParameters);
 	std::vector<double> p(mNumParameters,1);
-	std::vector<double> h(mNumParameters);
+	std::vector<double> h(mNumParameters+3);
 	std::vector<double> d(mNumParameters+3);
 
 #pragma acc data copy(u),copyin(r,pr,p,h,d)
@@ -56,11 +59,12 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	int width = 10;
 	bool converged(false);
 	double rAccuracyGradientScaled = mAccuracyGradient;
+	double rAccuracyGradientSquare =rAccuracyGradientScaled*rAccuracyGradientScaled;
 //	if(mVerboseLevel>2)
 //		std::cout<<"[ConjugateGradientGrid::Optimize] gradient accuracy "<<rAccuracyGradientScaled <<std::endl;
 
 
-	int localMaxGradientCalls=(int) mNumParameters;
+	int localMaxGradientCalls=(int) mNumParameters/2;
 //	int localMaxGradientCalls=2*mNumParameters;
 	if (localMaxGradientCalls<mMaxGradientCalls)
 		SetMaxGradientCalls(localMaxGradientCalls);
@@ -71,22 +75,10 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		converged = true;
 		returnValue = MAXFUNCTIONCALLS;
 	}
-
-	// print r
-//			std::cout<<" r ";
-//			for(size_t i=0;i<mNumParameters;++i)
-//				std::cout<<r[i]<<" ";
-//			std::cout<<"\n";
-
-	mpCallbackHandlerGrid->Hessian(p);
+	//z=P*r, with P=D^-1 p=vec(D^-1)
+//	mpCallbackHandlerGrid->Hessian(p);
+//	std::cout<<"ConjugateGradient: no preconditioning.\n";
 	++numHessianCalls;
-
-//	 print p
-//	std::cout<<" p ";
-//	for(size_t i=0;i<mNumParameters;++i)
-//		std::cout<<p[i]<<" ";
-//	std::cout<<"\n";
-
 
 	double residualNorm0=0.;
 	while(!converged)
@@ -97,7 +89,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			 converged = true;
 			 returnValue = MAXGRADIENTCALLS;
 			 break;
-			 //return MAXGRADIENTCALLS;
 		 }
 
 //determine gradient
@@ -123,45 +114,75 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //			std::cout<<__FILE__<<" "<<__LINE__<<" help "<<help<<std::endl;
 			if (help==0)
 			{
+				startHN=clock();
+				mpCallbackHandlerGrid->HangingNodesCorrection(u);
+				endHN=clock();
+				sumHN+=difftime(endHN,startHN);
+
+				startMatVec=clock();
+				// set h to zero done in matrix-vector routine
 				mpCallbackHandlerGrid->Gradient(u,r);
+				endMatVec=clock();
+				sumMatVec+=difftime(endMatVec,startMatVec);
+
 				for(size_t i=0;i<mNumParameters;++i)
 				{
 //				if(help==0) //calculate r=f-Ku, multiply -1, else r=Ke positive Gradient needed
 					r[i]*=-1;
+					pr[i]=r[i];
 				}
 			}
 
+			mpCallbackHandlerGrid->Hessian(pr);
+
+//			std::cout<<" pr ";
+//			for(size_t i=0;i<mNumParameters;++i)
+//				std::cout<<pr[i]<<" ";
+//			std::cout<<"\n";
+//
 			// have to change sign --> next loop
 			// add external load
-
-
 //			pr=r;
 			for(size_t i=0;i<mNumParameters;++i)
 			{
 //				pr[i]=r[i];
- 				pr[i]=p[i]*r[i];
+// 				pr[i]=p[i]*r[i];
 				//upate for start solution
  				d[i]=pr[i];
 			}
 
+
 			alphaNumerator=0;
+			residualNorm0=0;
 			for(size_t i=0;i<mNumParameters;++i)
- 				alphaNumerator+=r[i]*pr[i];
+			{
+				alphaNumerator+=r[i]*pr[i];
+			}
 
 			residualNorm0=alphaNumerator;
 			curCycle = 0;
+			std::cout<<" residualNorm0 "<<residualNorm0<<"\n";
 		}
 
 
+
 		//begin with cycles bigger 0
-
-		// set h to zero done in matrix-vector routine
-		mpCallbackHandlerGrid->Gradient(d,h);
-
 //		std::cout<<" d ";
 //		for(size_t i=0;i<mNumParameters;++i)
 //			std::cout<<d[i]<<" ";
 //		std::cout<<"\n";
+
+		startHN=clock();
+		mpCallbackHandlerGrid->HangingNodesCorrection(d);
+		endHN=clock();
+		sumHN+=difftime(endHN,startHN);
+
+		startMatVec=clock();
+		// set h to zero done in matrix-vector routine
+		mpCallbackHandlerGrid->Gradient(d,h);
+		endMatVec=clock();
+		sumMatVec+=difftime(endMatVec,startMatVec);
+
 
 	    alphaDenominator=0.;
 //	    squaredNorm=0;
@@ -181,15 +202,33 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //			break;
 //		}
 //
+
 		betaNumerator =0;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
 			u[i]+= alpha*d[i];
 			r[i]-=alpha*h[i];
-
-			pr[i]=p[i]*r[i];
+			pr[i]=r[i];
+		}
+		mpCallbackHandlerGrid->Hessian(pr);
+		for(size_t i=0;i<mNumParameters;++i)
+		{
+//			pr[i]=p[i]*r[i];
 			betaNumerator+=r[i]*pr[i];
 		}
+
+//		std::cout <<"it: "<<curCycle<<" betaNumerator "<<betaNumerator<<" relNorm "<<betaNumerator/residualNorm0<<" tol: "<<rAccuracyGradientSquare<<std::endl;
+		std::cout.precision(precision);
+//		std::cout << " r ["<<curCycle<<"] ";
+//		for(size_t i=0;i<mNumParameters;++i)
+//			std::cout<< std::setw(width)<<r[i]<<" ";
+//		std::cout<<"\n";
+
+//			std::cout << " u ["<<curCycle<<"] ";
+//			for(size_t i=0;i<mNumParameters;++i)
+//				std::cout<< std::setw(width)<<u[i]<<" ";
+//			std::cout<<"\n";
+
 		beta = betaNumerator/ alphaNumerator;
 //		std::cout << std::setw(width)<<"alphaDenominator (dh) : "<<alphaDenominator<<" alphaNumerator (rz)_i : "<<alphaNumerator<<" betaNumerator (rz)_i+1 : "<<betaNumerator<< std::endl;
 		alphaNumerator = betaNumerator;
@@ -198,13 +237,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			d[i] *=beta;
 			d[i] +=pr[i];
 		}
-//		std::cout<<" d ";
-//		for(size_t i=0;i<mNumParameters;++i)
-//			std::cout<<d[i]<<" ";
-//		std::cout<<"\n";
-
-//		std::cout <<std::setw(width)<<"It.: "<<curIteration<<" i=3 -> h "<<h[3]<<" alpha "<<alpha<<" r "<<r[3]<<" p "<<p[3]<<" pr "<<pr[3]<<" b1 "<<betaNumerator<<" d "<<d[3]<<" u "<<u[3]<<"\n";
-
 
 //		if (mVerboseLevel>4)
 //		{
@@ -240,18 +272,18 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //				std::cout << std::setw(width)<<u[count] << "   " ;
 //			}
 //			std::cout << std::endl;
-
+//
 //		}
 
-//			std::cout << "betaNumerator "<<betaNumerator<< " tol: "<<rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0<< std::endl;
-		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0) ||
-				(betaNumerator<0 && betaNumerator>-rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0))
-//		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientScaled*rAccuracyGradientScaled) ||
-//				(betaNumerator<0 && betaNumerator>-rAccuracyGradientScaled*rAccuracyGradientScaled))
+//		std::cout << "betaNumerator "<<betaNumerator<< " tol: "<<rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0<< std::endl;
+		// relative norm
+//		std::cout<<" relative norm \n";
+		betaNumerator/=residualNorm0;
+		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientSquare) ||
+				(betaNumerator<0 && betaNumerator>-rAccuracyGradientSquare))
 		{
 			converged = true;
 			returnValue = NORMGRADIENT;
-			break;
 		}
 
 		if (beta<0)
@@ -267,8 +299,8 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //			std::cout<< "Iteration " << curIteration <<" with norm grad squared" << betaNumerator << std::endl;
 //		}
 
-//		std::cout<<" u ";
-//		for(size_t i=0;i<mNumParameters;i+=3)
+//		std::cout<<" uy ";
+//		for(size_t i=1;i<mNumParameters;i+=3)
 //			std::cout<<u[i]<<" ";
 //		std::cout<<"\n";
 
@@ -291,7 +323,12 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			break;
 		}
 	}
+
 	isBuild = true;
+//	startHN=clock();
+//	mpCallbackHandlerGrid->HangingNodesCorrection(u);
+//	endHN=clock();
+//	sumHN+=difftime(endHN,startHN);
 
 	// Get force vector
 //	r.clear();
@@ -306,7 +343,11 @@ int NuTo::ConjugateGradientGrid::Optimize()
 #ifdef SHOW_TIME
     endOpt=clock();
     if (mShowTime && mVerboseLevel>0)
-    		std::cout<< "[ConjugateGradientGrid::Optimize] Elapsed time (sec)............. " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << std::endl;
+    {
+    	std::cout<< "[ConjugateGradientGrid::Optimize] Elapsed time (sec)............. " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << std::endl;
+    	std::cout<< "[ConjugateGradientGrid::Optimize] MATVEC time (sec)............. " << sumMatVec/CLOCKS_PER_SEC << std::endl;
+    	std::cout<< "[ConjugateGradientGrid::Optimize] HangingNode time (sec)............. " << sumHN/CLOCKS_PER_SEC << std::endl;
+    }
 #endif
 	if (mVerboseLevel>0)
 	{
@@ -348,6 +389,14 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 		}
 		std::cout << std::endl;
+		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] mDisp " ;
+		for (size_t count=0; count<mNumParameters; count++)
+		{
+			std::cout << std::setw(width)<<mpCallbackHandlerGrid->GetParameters()[count] << "   " ;
+
+		}
+		std::cout << std::endl;
+
 	}
 	objective=sqrt(betaNumerator);
 	return returnValue;

@@ -12,7 +12,6 @@
 #include <iostream>
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
@@ -35,9 +34,9 @@ int main()
 #endif
 	// read entries
 	NuTo::StructureGrid myGrid(3); // also creates CallbackHandler
-	myGrid.SetVerboseLevel(2);
-	std::string inputFile="InputTest";
-//	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
+	myGrid.SetVerboseLevel(0);
+//	std::string inputFile="InputTest";
+	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
 	myGrid.ImportFromVtkASCIIFileHeader(inputFile);
 
 	//calculate one element stiffness matrix with E=1
@@ -105,13 +104,15 @@ int main()
 //
 	// end //
 
+	size_t numDofs=myGrid.GetNumNodes()*3;
+	size_t numNodes=myGrid.GetNumNodes();
 	//----------------------------------------------------------------------------------------//
 	// Boundary condition: x=0, ux=0; y=0, uy=0; z=0,uz=0;z0max,uz=-1
 	//----------------------------------------------------------------------------------------//
 
 	//	bool EnableDisplacementControl = false;
-	double BoundaryDisplacement = -1.0;
-//	double BoundaryDisplacement = -(myGrid.GetGridDimension()[2]*myGrid.GetVoxelSpacing()[2])/20.0;
+	double BoundaryDisplacement = 1.0;
+//	double BoundaryDisplacement = (double)(myGrid.GetGridDimension()[1])*0.01;
 	// diplacement vector plus one dof for calculation with non existing neighbor dofs
 	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
 	//for z=0,x,y -all ux=0
@@ -121,37 +122,87 @@ int main()
 	// rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
 	//x=0, ux=0
 	size_t direction=0;
+	// for symmetric
 	size_t rGridLocation[6]={1,1,1,rGridDimension[1],1,rGridDimension[2]};
+	// for hole plate with hole
+//	size_t rGridLocation[6]={rGridDimension[0]/2,rGridDimension[0]/2,1,rGridDimension[1],1,rGridDimension[2]};
+	// xmax
+//	size_t rGridLocation[6]={rGridDimension[0]-1,rGridDimension[0],0,rGridDimension[1]+1,0,rGridDimension[2]+1};
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
 	//y=0; uy=0
 	direction=1;
+	rGridLocation[0]=1;
 	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=1;
 	rGridLocation[3]=1;
+	rGridLocation[4]=1;
+	rGridLocation[5]=rGridDimension[2];
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,-1,rDisplVector);
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-	// z=0; uz=0;
+	//  uz=0; for all nodes
+//	direction=2;
+//	rGridLocation[0]=1;
+//	rGridLocation[1]=rGridDimension[0];
+//	rGridLocation[2]=1;
+//	rGridLocation[3]=rGridDimension[1];
+//	rGridLocation[4]=1;
+//	rGridLocation[5]=rGridDimension[2];
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+//	std::cout<<"constraints: ";
+//	for(size_t i=2;i<numDofs;i+=3)
+//		std::cout<<myGrid.GetDisplacementConstaints()[i]<<" ";
+//	std::cout<<"\n";
+
+
+//	//  uz=0; for one nodes
+//	direction=2;
+//	rGridLocation[0]=rGridDimension[0]-1;
+//	rGridLocation[1]=rGridDimension[0];
+//	rGridLocation[2]=rGridDimension[1]-1;
+//	rGridLocation[3]=rGridDimension[1];
+//	rGridLocation[4]=1;
+//	rGridLocation[5]=1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//  uz=0; for one plain
 	direction=2;
+	rGridLocation[0]=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=1;
 	rGridLocation[3]=rGridDimension[1];
+	rGridLocation[4]=1;
 	rGridLocation[5]=1;
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-	//z=zmax, uz=-1
+
+
+//	//z=zmax, uz=-1
+//	rValue=BoundaryDisplacement;
+//	rGridLocation[4]=rGridDimension[2]-1;
+//	rGridLocation[5]=rGridDimension[2]-1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//y=ymax, yz=-1
+	direction=1;
+	rGridLocation[0]=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=rGridDimension[1]-1;
+	rGridLocation[3]=rGridDimension[1];
+	rGridLocation[4]=1;
+	rGridLocation[5]=rGridDimension[2];
 	rValue=BoundaryDisplacement;
-	rGridLocation[4]=rGridDimension[2]-1;
-	rGridLocation[5]=rGridDimension[2]-1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,0,rDisplVector);
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-
-	myGrid.AnsysInput(rDisplVector);
-
-	size_t numDofs=myGrid.GetNumNodes()*3;
-	size_t numNodes=myGrid.GetNumNodes();
-	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
+//	myGrid.AnsysInput(rDisplVector);
 
 
-	myGrid.SetMisesWielandt(false);
-//	myGrid.SetWeightingFactor(1.);
+//	std::cout<<"constraints: ";
+//	for(size_t i=0;i<numDofs;++i)
+//		std::cout<<myGrid.GetDisplacementConstaints()[i]<<" ";
+//	std::cout<<"\n";
 
 #ifdef SHOW_TIME
 end=clock();
@@ -162,15 +213,28 @@ end=clock();
 	std::cout<<"Boundary displacement .......................... "<<BoundaryDisplacement<<"\n";
 	std::cout<<"Direction of external force/displacement ....... z\n";
 	std::cout<<"-----------------------------------------------------------------------------------\n";
-#ifdef SHOW_TIME
 	std::cout<<"Time for structure initialization............... "<<difftime(end,start)/CLOCKS_PER_SEC<<"(sec)\n";
-#endif
 	std::cout<<"Allocated memory ............................... "<<mem/1000.<<"(MB)\n";
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
+	// Convergenc test: lamda_max of M=I-PA <1
+	myGrid.SetMisesWielandt(false); // if not, get a infinite loop, for Hessian
+	NuTo::MisesWielandt myEigenCalculator(numNodes*3);
+	myEigenCalculator.SetVerboseLevel(1);
+	myEigenCalculator.SetAccuracyGradient(1e-6);
+	myGrid.SetWeightingFactor(1.);
+	myEigenCalculator.SetCallback((&myGrid));
+	myEigenCalculator.Optimize();
+	double lambda_max=myEigenCalculator.GetObjective();
+	int precision = 10;
+	std::cout.precision(precision);
+	std::cout<<"Spectral radius or eigenvalue of PK "<<lambda_max<<"\n";
+
+	myGrid.SetWeightingFactor(1.);
 	// start analysis
 	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
 	myOptimizer.SetVerboseLevel(1);
+	myGrid.SetMisesWielandt(false);
 	myOptimizer.SetCallback( (&myGrid));
 	myOptimizer.Info();
 	myOptimizer.Optimize();
@@ -199,12 +263,38 @@ end=clock();
 
 //	rDisplVector=myGrid.GetResidual();
 	rDisplVector=myGrid.GetParameters();
-	myGrid.ExportVTKStructuredDataFile("./outputFile.vtk");
 
 //	std::vector<double> rStrainVector;
 //	myGrid.GetEngineeringStrain(rDisplVector, rStrainVector);
+//	std::vector<double> rStressVector;
+//	myGrid.GetEngineeringStress(rStrainVector,rStressVector);
+//	double maxValue=0.;
+//	for(size_t i=4;i<numDofs;i+=69)
+//	{
+//		if(maxValue<rStressVector[i])
+//			maxValue=rStressVector[i];
+//		else if (maxValue<-1*rStressVector[i])
+//			maxValue=-rStressVector[i];
+//	std::cout<<"Value of sigma yy ="<<maxValue<<"\n";
+//
+//	}
+//	std::cout<<"maxValue of sigma yy ="<<maxValue<<"\n";
+//	size_t dof=0;
+//	double stress=0.;
+//	int count=0;
+//	for(size_t z=1;z<rGridDimension[2]+1;++z)
+//	{
+//		for(size_t i=rGridDimension[0]*rGridDimension[1]*z+1;i<rGridDimension[0]*rGridDimension[1]*z+rGridDimension[0]+1;i++)
+//		{
+//			dof=9*myGrid.GetNodeId(i)+4;
+//			stress+=rStressVector[dof];
+//			++count;
+//		}
+//	}
+//	stress/=count;
+//	std::cout<<"moyen value of sigma 0 "<<stress<<"\n";
 
-//	std::vector<double> rStressVector=myGrid.GetEngineeringStress();
+	myGrid.ExportVTKStructuredDataFile("./outputFile.vtk");
 
 	std::ofstream file;
 //	int precision = 15;
@@ -224,23 +314,6 @@ end=clock();
 //			file<<rStrainVector[i]<<"\n";
 //	file.close();
 
-	file.open("displVTK.txt");
- 	for(size_t i=0;i<numGridNodes;++i)
-	{
-		if (myGrid.GetNodeId(i)==numNodes)
-		{
-			file<<0.0<<"\n";
-			file<<0.0<<"\n";
-			file<<0.0<<"\n";
-		}
-		else
-		{
-			file<<rDisplVector[3*myGrid.GetNodeId(i)]<<"\n";
-			file<<rDisplVector[3*myGrid.GetNodeId(i)+1]<<"\n";
-			file<<rDisplVector[3*myGrid.GetNodeId(i)+2]<<"\n";
-		}
-	}
-	file.close();
 
 	//
 	std::vector<double> dispRef;

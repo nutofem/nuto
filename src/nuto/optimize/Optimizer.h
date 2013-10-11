@@ -90,9 +90,10 @@ public:
 
     void SetParameters(std::vector<double>& rParameters)
     {
-		assert(mParameters.size()==rParameters.size());
-		for(size_t i=0;i<mParameters.size();++i)
-			mParameters[i]=rParameters[i];
+    	mParameters=rParameters;
+//		assert(mParameters.size()==rParameters.size());
+//		for(size_t i=0;i<mParameters.size();++i)
+//			mParameters[i]=rParameters[i];
         isBuild = false;
     }
 

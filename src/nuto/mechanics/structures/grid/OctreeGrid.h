@@ -1,23 +1,32 @@
-// $Id$
-#ifndef STRUCTUREGRID_H
-#define STRUCTUREGRID_H
+// $Id $
+#ifndef OCTREEGRID_H
+#define OCTREEGRID_H
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include <boost/dynamic_bitset.hpp>
 #include <stdint.h>
+#include <map>
 
 namespace NuTo
 {
+struct data
+{
+	uint32_t id;
+	uint32_t level;
+	uint32_t constraint=0;
+	double weight;
+};
+
 //! @brief forward declaration to speed up compilation time
 //class NodeGrid3D;
 //class NodeGridDisplacements3D;
 //class Voxel8N;
 //class MultiGridStructure;
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
+//! @author Andrea Keßler, ISM
+//! @date Juni 2013
 //! @brief ... regular structure e.g. from pixel/voxel data
-class StructureGrid: public virtual CallbackHandlerGrid
+class OctreeGrid: public virtual CallbackHandlerGrid
 {
 friend class MultiGridStructure;
 #ifdef ENABLE_SERIALIZATION
@@ -26,12 +35,12 @@ friend class MultiGridStructure;
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
-    StructureGrid(int rDimension);
+    OctreeGrid(int rDimension);
 
-    StructureGrid(){}
+    OctreeGrid(){}
 
 
-    ~StructureGrid();
+    ~OctreeGrid();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -50,6 +59,7 @@ public:
     //! @param aType ... type of file, either BINARY, XML or TEXT
     void Restore (const std::string &filename, std::string rType );
 #endif // ENABLE_SERIALIZATION
+
 
     //! @brief import routine for basic grid data without StructureGrid data space
     void ImportFromVtkASCIIFileHeader(std::string rFileName,size_t *rGridDimension,double *rVoxelSpacing,double *rGridOrigin, size_t rNumVoxel);
@@ -72,7 +82,7 @@ public:
     //! @return    class name
     std::string GetTypeId()const
     {
-        return std::string("StructureGrid");
+        return std::string("OctreeGrid");
     }
     //! @brief returns dimension
      //! @return diension
@@ -84,7 +94,7 @@ public:
 
     //! @brief returns number of Voxels
     //! @return number of Voxels
-    int GetNumVoxels() const;
+    size_t GetNumVoxels() const;
 
     //! @brief returns  VoxelSpacing
     //! @return VoxelSpacing
@@ -113,15 +123,7 @@ public:
      //! @brief Set NumBasisMaterials
      void SetNumBasisMaterials(int rNumBasisMaterials);
 
-     //! @brief get id of node from grid node number
-     //! @param grid node number
-     //! @return node id
-     size_t GetNodeId(size_t rEdgeNumber)
-     {
-    	 return mNodeId[rEdgeNumber];
-     }
-
-	//! @brief Get CurrentGridNumber
+ 	//! @brief Get CurrentGridNumber
 	//! @return rCurrentGridNumber
 	const int GetCurrentGridNumber() const;
 
@@ -145,44 +147,12 @@ public:
     //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
     const std::vector<double>* GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const;
 
-    //! @brief set basis edge stiffnesses
-    //! @param rBasisMaterialNum ... number of material,
-    void SetBasisEdgeStiffnessMatrices(int rBasisMaterialNum);
-
-    //! @brief set general neighbor nodes for node-edge based routines
-    //! @brief in function of grid dimension
-    void SetNeighborNodesNE();
-
-    //! @brief ..calculate node numbers at one element
-    //! @param elementNumber ... number of the element
-    //! @param nodeNumbers ... nodes at element
-    void CalculateNodesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers)const;
-
-    //! @brief ..calculate node numbers and node coordinates at one element
-    //! @param elementNumber ... number of the element
-    //! @param nodeNumbers ... nodes at element
-    //! @param nodalCoords ... nodal coordinates at element
-    void CalculateNodalCoordinatesAtElement(size_t elementNumber,std::vector<size_t>& nodeNumbers,std::vector<double>& nodalCoord)const;
-
-    //! @brief set material number at edges for node-edge based routines
-    void SetMaterialNumberForEdges();
-
-    //! @brief get DisplacementConstaints
-    //! @return dynamic_bitset of constraints
-    const boost::dynamic_bitset<> GetDisplacementConstaints();
-
     //! @brief all nodes at one plane perpendicular to direction are constrained
     //! @param rDirection ... 0 = x,1 = y,2 = z
     //! @param rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
     //! @param rValue ... value of boundary displacement
     //! @param rDisplVector ... output initial displacement vector
     void SetDisplacementConstraints(size_t rDirection,size_t *rGridLocation,double rValue,std::vector<double> &rDisplVector);
-
-    //! @brief create grid data
-    //! @param rThresholdMaterialValue ... threshold between material one and two
-    //! @param fileName ... file containing image data
-    //! @param rColorToMaterialData ... vector of material data (Young's Modulus) mapped to color points
-   void CreateGrid(int rThresholdMaterialValue,std::string fileName, std::vector<double>& rColorToMaterialData);
 
    //! @brief get weighting factor for preconditioner
    //! @return rWeight ... weighting factor
@@ -197,99 +167,60 @@ public:
    //! @param ... u - parameters input, r - gradient output
    void CalculateMatrixVectorProductEBE(std::vector<double>& u,std::vector<double>& r)const;
 
-   //! @brief ... calculate matrix-vector-product in node-by-node way
-   //! @brief ... with local vectors
-   //! @param ... u - prarmeters input, r - gradient output
-   void CalculateMatrixVectorProductNBN(std::vector<double> &u,std::vector<double> &r)const;
-
-   void HangingNodesCorrection(std::vector<double>& u)
-   {
-	   //not needed her, only for octree
-   }
-
-	//! @brief ... calculate reaction forces in element-by-element way
+   //! @brief ... calculate reaction forces in element-by-element way
 	//! @param ... u - prarmeters input, f - forces output
 	void CalculateReactionForcesEBE(std::vector<double> &u,std::vector<double> &f)
 	{
-	       throw MechanicsException ( "[NuTo::StructureGrid::CalculateReactionForcesEBE] Routine is not implemented." );
+		throw MechanicsException ( "[NuTo::OctreeGrid::CalculateReactionForcesEBE] Routine is not implemented." );
 	}
 
 	void GetEngineeringStrain(const std::vector<double>& rDisplacements, std::vector<double>& rEngineeringStrain)const;
 
 	void GetEngineeringStress( std::vector<double>& rEngineeringStrain, std::vector<double>& rEngineeringStress)const;
 
-    //! @brief ... export to Vtk datafile
+    //! @brief ... export to Vtk rectilinear grid datafile
     //! @param rFilename ... filename
-    void ExportVTKStructuredDataFile(const std::string& rFilename) const;
+    void ExportVTKUnstructuredGridDataFile(const std::string& rFilename) const;
 
- 	//! @brief MultiGrid routines
+	//! @brief MultiGrid routines
 	//! @brief initialize on coarser grid
-	//! @param StructureGrid reference
-	void SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid);
+	//! @param OctreeGrid reference
+	void SetCoarserGridLevel(NuTo::OctreeGrid *rCoarseGrid);
 
 	//! @brief MultiGrid routines
 	//! @brief get pointer to coarser grid
-	NuTo::StructureGrid& GetCoarseGridPtr()
+	NuTo::OctreeGrid& GetCoarseGridPtr()
 	{
 		return mpCoarseGrid[0];
 	}
 
 	//! @brief MultiGrid routines
 	//! @brief Get pointer to finer grid
-	NuTo::StructureGrid& GetFineGridPtr()
+	NuTo::OctreeGrid& GetFineGridPtr()
 	{
 		return mpFineGrid[0];
 	}
 
 	//! @brief MultiGrid routines
 	//! @brief set pointer to coarser grid
-	void SetCoarseGridPtr(NuTo::StructureGrid* rCoarseGrid);
+	void SetCoarseGridPtr(NuTo::OctreeGrid* rCoarseGrid);
 
 	//! @brief MultiGrid routines
 	//! @brief set pointer to finer grid
-	void SetFineGridPtr(NuTo::StructureGrid* rFineGrid);
+	void SetFineGridPtr(NuTo::OctreeGrid* rFineGrid);
 
 	double GetElementYoungsModulus(size_t rElementNumber)
 	{
-		return mYoungsModulus[rElementNumber];
+		return mData[rElementNumber].weight;
 	}
 
-
- //*************************************************
-//************ Node routines        ***************
-//***  defined in structures/StructureGridNode.cpp  ***
-//*************************************************
     //! @brief returns the number of nodes
     //! @return number of nodes
     size_t GetNumNodes() const;
 
-//
-    //! @brief info about the nodes in the Structure
-    void NodeInfo(int mVerboseLevel) const;
-//
-//    void NodeCreate(int rNodeID, std::string rDOFs);
-//
-    int* GetCoincidenceVoxelIDs(int rNodeID);
-
-    //! @brief NodeGetConstraintSwitch
-    //! @param rGlobalDof
-    //! @return switch for constraint
-    bool NodeGetConstraintSwitch(int rGlobalDof);
-
-
-//*************************************************
-//************ Element routines     ***************
-//**  defined in structures/StructureGridElement.cpp **
-//***********************************************"elementVec",**
     //! @brief returns the number of elements
     //! @return number of elements
     int GetNumElements() const;
-
-    //! @brief info about the elements in the Structure
-    void ElementInfo(int mVerboseLevel) const;
-
-    void CreateElementGrid(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBaseCoefficientMatrix0,
-            const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rColorToMaterialData,const std::string& rElementType);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -309,9 +240,6 @@ public:
      {
      	return mUseDiagHessian;
      }
-
-     //! @brief set boolean for calculation of scling factor
-     //! @param rMisesWielandt ... switch MisesWielandt on/off
      void SetMisesWielandt (bool rMisesWielandt)
      {
      	mUseMisesWielandt=rMisesWielandt;
@@ -330,27 +258,33 @@ public:
     void CalculateMultiGridCorrolations(std::string restrictionType,std::vector<double>& rRestriction,std::vector<double>& rProlongation);
     void Restriction(std::vector<double> &rRestrictionFactor);
     void Prolongation(std::vector<double> &rProlongationFactor);
-    void AnsysInput(std::vector<double >&rDisplVector) const;
-    void LSDynaInput() const;
+    void CreateOctree(int rThresholdMaterialValue, std::string fileName,
+   		 std::vector<double>& rColorToMaterialData);
+    void HangingNodesSearch();
+	//! @brief correct solution for hanging nodes
+	//! @param displacement solution
+	void HangingNodesCorrection(std::vector<double>& u);
+
 protected:
 
 
     int mDimension;
     size_t mNumVoxel;  //number of voxels
+    size_t mNumElements;  //number of elements
     std::vector<double> mVoxelSpacing; //spacing between center of neighbor voxels / dimension of each voxel
     std::vector<size_t> mGridDimension; //dimension of the voxel model
     std::vector<double> mGridOrigin;// origin of the model , in the center of the first voxel
+    std::vector<size_t> mOctreeDimension; //dimension of the voxel model
     std::string mImageDataFile;
+    bool mMortonOrderIsTrue;
+    std::map<uint32_t,data> mData;
+    std::map<uint32_t,size_t> mKey; //map:  maps bitmap key to number of existing data
 	size_t mNumConstraintDofs;
     std::vector<std::vector<double> > mLocalCoefficientMatrix0;
     std::vector<std::vector<double> > mBasisEdgeCoefficientMatrix0;
     std::vector<double> mLocalDerivativeShapeFunctions;
     double mC11,mC12,mC44; //stiffness tensor coefficients with E=1
-    std::vector<int> mNeighborNodesNE;
-	std::vector<size_t> mEdgeId;		//saves the id of the edge of this fe node
-	std::vector<size_t> mNodeId;		//saves the id of the fe node of this edge
-	std::vector<size_t> mVoxelId;		//saves the id of the voxel of this element
-	boost::dynamic_bitset<> mDofIsConstraint; //0 = false, all 0 here
+ 	boost::dynamic_bitset<> mDofIsConstraint; //0 = false, all 0 here
 	std::vector<double> mDisplacements;
     int mNumMaterials;
     std::vector<double> mResidual;
@@ -359,7 +293,6 @@ protected:
     int mNumBasisMaterials;
     std::vector<double> mHessianDiag;
     double mPoissonsRatio;
-	std::vector<double> mYoungsModulus;
 	std::vector<double> mLinearElasticEngineeringStrains;
 	std::vector<double> mLinearElasticEngineeringStresses;
 	bool mUseDiagHessian;
@@ -369,8 +302,8 @@ protected:
 	size_t mCurrentGridNumber;
 	double mWeightingFactor;
 	std::vector<size_t> mFineEdgeId;
-	StructureGrid* mpFineGrid;
-	StructureGrid*  mpCoarseGrid;
+	OctreeGrid* mpFineGrid;
+	OctreeGrid*  mpCoarseGrid;
 };
 } //namespace NuTo
-#endif // STRUCTUREGRID_H
+#endif // OCTREEGRID_H
