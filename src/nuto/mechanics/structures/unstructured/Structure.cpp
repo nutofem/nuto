@@ -2153,6 +2153,7 @@ void NuTo::Structure::ImportFromGmshAux (const std::string& rFileName,
     		theElementId = ElementCreate("TETRAHEDRON10N",nodeNumbers,rElementData, rIPData);
     		break;
     	default:
+    		std::cout << "element type in gmsh " << elements[elementCount].type << std::endl;
     		throw MechanicsException("[NuTo::Structure::ImportFromGmsh] Element type not implemented in the import routine.");
     	}
     	if (rAddGroups)

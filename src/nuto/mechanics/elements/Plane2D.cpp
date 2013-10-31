@@ -331,6 +331,17 @@ double NuTo::Plane2D::CalculateCrackLength2D(double rAlpha)const
 			    (intersectionPoints[0][1]-intersectionPoints[1][1])*(intersectionPoints[0][1]-intersectionPoints[1][1]));
 }
 
+//! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
+const NuTo::Plane2D* NuTo::Plane2D::AsPlane2D()const
+{
+    return this;
+}
+
+//! @brief cast the base pointer to an Plane, otherwise throws an exception
+NuTo::Plane2D* NuTo::Plane2D::AsPlane2D()
+{
+    return this;
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

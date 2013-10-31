@@ -64,6 +64,64 @@ void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsNatural(const double rNat
     rDerivativeShapeFunctions[7] = +0.25*(1.-rNaturalCoordinates[0]);
 }
 
+//! @brief calculates the shape functions for the surfaces (required for surface loads)
+//! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)
+//! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+void NuTo::Plane2D4N::CalculateShapeFunctionsSurface(double rNaturalCoordinates, std::vector<double>& rShapeFunctions)const
+{
+    assert(rShapeFunctions.size()==2);
+    rShapeFunctions[0] = 0.5*(1.-rNaturalCoordinates);
+    rShapeFunctions[1] = 0.5*(1.+rNaturalCoordinates);
+}
+
+//! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsLocalSurface(double rNaturalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+{
+    assert(rDerivativeShapeFunctions.size()==2);
+    rDerivativeShapeFunctions[0] = -0.5;
+    rDerivativeShapeFunctions[1] = 0.5;
+}
+
+//! @brief returns the surface nodes
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+void NuTo::Plane2D4N::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const
+{
+	rSurfaceNodes.resize(2);
+	switch(rSurface)
+    {
+    case 0:
+    	rSurfaceNodes[0] = mNodes[0];
+    	rSurfaceNodes[1] = mNodes[1];
+    	break;
+    case 1:
+    	rSurfaceNodes[0] = mNodes[1];
+    	rSurfaceNodes[1] = mNodes[2];
+    	break;
+    case 2:
+    	rSurfaceNodes[0] = mNodes[2];
+    	rSurfaceNodes[1] = mNodes[3];
+    	break;
+    case 3:
+    	rSurfaceNodes[0] = mNodes[3];
+    	rSurfaceNodes[1] = mNodes[0];
+    	break;
+    default:
+    	throw MechanicsException("[NuTo::Plane2D4N::GetSurfaceNodes] there are only 4 surfaces for a Plane2D4N.");
+    }
+
+}
+
+//! @brief returns the number of external surfaces
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+int NuTo::Plane2D4N::GetNumSurfaces()const
+{
+    return 4;
+}
 
 //! @brief returns the enum of the standard integration type for this element
 NuTo::IntegrationType::eIntegrationType NuTo::Plane2D4N::GetStandardIntegrationType()

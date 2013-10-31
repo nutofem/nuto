@@ -974,25 +974,25 @@ const bool NuTo::ElementBase::IsCracked() const
 //! @brief cast the base pointer to a Plane, otherwise throws an exception
 const NuTo::Plane* NuTo::ElementBase::AsPlane()const
 {
-	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type ElementPlane.");
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type Plane.");
 }
 
 //! @brief cast the base pointer to a Plane, otherwise throws an exception
 NuTo::Plane* NuTo::ElementBase::AsPlane()
 {
-	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type ElementPlane.");
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type Plane.");
 }
 
-//! @brief cast the base pointer to a PlaneLattice, otherwise throws an exception
-const NuTo::Lattice2D* NuTo::ElementBase::AsLattice2D()const
+//! @brief cast the base pointer to a Plane, otherwise throws an exception
+const NuTo::Plane2D* NuTo::ElementBase::AsPlane2D()const
 {
-	throw NuTo::MechanicsException("[NuTo::ElementBase::AsLattice2D] Element is not of type ElementPlane.");
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsPlane2D] Element is not of type Plane2D.");
 }
 
-//! @brief cast the base pointer to a PlaneLattice, otherwise throws an exception
-NuTo::Lattice2D* NuTo::ElementBase::AsLattice2D()
+//! @brief cast the base pointer to a Plane, otherwise throws an exception
+NuTo::Plane2D* NuTo::ElementBase::AsPlane2D()
 {
-	throw NuTo::MechanicsException("[NuTo::ElementBase::AsLattice2D] Element is not of type ElementPlane.");
+	throw NuTo::MechanicsException("[NuTo::ElementBase::AsPlane2D] Element is not of type Plane2D.");
 }
 
 //! @brief cast the base pointer to a Solid, otherwise throws an exception

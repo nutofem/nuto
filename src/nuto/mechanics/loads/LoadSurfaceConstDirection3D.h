@@ -17,7 +17,6 @@
 namespace NuTo
 {
 class NodeBase;
-class Solid;
 class StructureBase;
 //! @author Jörg F. Unger, ISM
 //! @date August 2013

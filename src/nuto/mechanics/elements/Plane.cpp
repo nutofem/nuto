@@ -159,6 +159,9 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		//InvJacobian and determinant of Jacobian
 		double invJacobian[4], detJac;
 
+		//for the lumped mass calculation
+		double total_mass(0.);
+
 		//InvJacobian and determinant of Jacobian for nonlocal model
 		 double nonlocalInvJacobian[4], nonlocalDetJac;
 
@@ -256,6 +259,9 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				it->second->SetConstant(true);
 				//there is only a constant mass part for the mechanics problem
 	        }
+			break;
+			case Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+				it->second->GetFullVectorDouble().Resize(numLocalDispDofs);
 			break;
 			case Element::UPDATE_STATIC_DATA:
 				constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
@@ -497,6 +503,41 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							//no termperature terms
 					}
 				}
+				break;
+				case Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+                    if (numLocalDispDofs>0)
+                    {
+						this->CalculateShapeFunctions(naturalIPCoord, shapeFunctions);
+						// calculate local mass matrix (the nonlocal terms are zero)
+						// don't forget to include determinant of the Jacobian and area
+						// detJ * area * density * HtH, :
+				        double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))*constitutivePtr->GetDensity());
+						FullVector<double,Eigen::Dynamic>& result(it->second->GetFullVectorDouble());
+						total_mass+=factor;
+            			//calculate for the translational dofs the diagonal entries
+						for (int count=0; count<GetNumShapeFunctions(); count++)
+						{
+							result(2*count)+=shapeFunctions[count]*shapeFunctions[count]*factor;
+						}
+
+						if (theIP+1==GetNumIntegrationPoints())
+						{
+							//calculate sum of diagonal entries (is identical for all directions, that's why only x direction is calculated
+							double sum_diagonal(0);
+							for (int count=0; count<GetNumShapeFunctions(); count++)
+							{
+								sum_diagonal+= result(2*count);
+							}
+
+							//scale so that the sum of the diagonals represents the full mass
+							double scaleFactor = total_mass/sum_diagonal;
+							for (int count=0; count<GetNumShapeFunctions(); count++)
+							{
+								result(2*count) *= scaleFactor;
+								result(2*count+1) = result(2*count);
+							}
+						}
+                    }
 				break;
 				case Element::UPDATE_STATIC_DATA:
 				case Element::UPDATE_TMP_STATIC_DATA:

@@ -38,6 +38,7 @@ class ElementDataBase;
 class IntegrationTypeBase;
 class NodeBase;
 class Plane;
+class Plane2D;
 class Lattice2D;
 class SectionBase;
 template<class T>
@@ -332,11 +333,11 @@ public:
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual Plane* AsPlane();
 
-    //! @brief cast the base pointer to an ElementPlaneLattice, otherwise throws an exception
-    virtual const Lattice2D* AsLattice2D()const;
+    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
+    virtual const Plane2D* AsPlane2D()const;
 
-    //! @brief cast the base pointer to an ElementPlaneLattice, otherwise throws an exception
-    virtual Lattice2D* AsLattice2D();
+    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
+    virtual Plane2D* AsPlane2D();
 
     //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
     virtual const Solid* AsSolid()const;

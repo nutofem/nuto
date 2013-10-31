@@ -1044,6 +1044,15 @@ public:
     //! @return integer id to delete or modify the load
     int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
+    //! @brief adds a surface load to 2D plane elements (2D)
+    //! @param rElementGroupId ... specifies the elements with surface loads
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    // surface is considered to be loaded
+    //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
+    //! @return integer id to delete or modify the load
+    int LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId,
+    		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector);
+
     //! @brief adds a surface load to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
     //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
@@ -1052,6 +1061,14 @@ public:
     //! @return integer id to delete or modify the load
     int LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId,
     		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector);
+
+    //! @brief adds a surface load (pressure) to 3D solid elements
+    //! @param rElementGroupId ... specifies the elements with surface loads
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    // surface is considered to be loaded
+    //! @param rPressure value ... normal to the surface, positive for compression
+    //! @return integer id to delete or modify the load
+    int LoadSurfacePressureCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads

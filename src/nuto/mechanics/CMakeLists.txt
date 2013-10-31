@@ -161,8 +161,11 @@ loads/LoadNodeForces3D.cpp
 loads/LoadNodeGroupForces1D.cpp
 loads/LoadNodeGroupForces2D.cpp
 loads/LoadNodeGroupForces3D.cpp
+loads/LoadSurfaceBase2D.cpp
 loads/LoadSurfaceBase3D.cpp
+loads/LoadSurfaceConstDirection2D.cpp
 loads/LoadSurfaceConstDirection3D.cpp
+loads/LoadSurfacePressure2D.cpp
 loads/LoadSurfacePressure3D.cpp
 )
 

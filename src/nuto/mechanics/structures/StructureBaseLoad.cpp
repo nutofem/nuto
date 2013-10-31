@@ -10,7 +10,9 @@
 #include "nuto/mechanics/loads/LoadNodeGroupForces1D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces2D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
+#include "nuto/mechanics/loads/LoadSurfaceConstDirection2D.h"
 #include "nuto/mechanics/loads/LoadSurfaceConstDirection3D.h"
+#include "nuto/mechanics/loads/LoadSurfacePressure2D.h"
 #include "nuto/mechanics/loads/LoadSurfacePressure3D.h"
 
 // adds a force for a node
@@ -139,6 +141,26 @@ int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rE
     return id;
 }
 
+int NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
+{
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadSurfaceBase2D* loadPtr;
+    loadPtr = new NuTo::LoadSurfaceConstDirection2D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rLoadVector);
+
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
 int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure)
 {
     //find unused integer id
@@ -153,6 +175,26 @@ int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rElement
     // create load
     LoadSurfaceBase3D* loadPtr;
     loadPtr = new NuTo::LoadSurfacePressure3D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rPressure);
+
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
+int NuTo::StructureBase::LoadSurfacePressureCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure)
+{
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadSurfaceBase2D* loadPtr;
+    loadPtr = new NuTo::LoadSurfacePressure2D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rPressure);
 
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);

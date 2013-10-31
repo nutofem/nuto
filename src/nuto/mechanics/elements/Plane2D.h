@@ -68,6 +68,33 @@ public:
     //! @parameter alpha... angle of the crack
     virtual double CalculateCrackLength2D(double rAlpha)const;
 
+    //! @brief calculates the shape functions for the surfaces (required for surface loads)
+    //! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)
+    //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    virtual void CalculateShapeFunctionsSurface(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
+
+    //! @brief calculates the derivative of the shape functions with respect to local coordinates for the surfaces (required for surface loads)
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsLocalSurface(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const=0;
+
+    //! @brief returns the surface nodes
+    //! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+    //! @param surface nodes
+    virtual void GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const=0;
+
+    //! @brief returns the number of external surfaces
+    //! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+    //! @param surface nodes
+    virtual int GetNumSurfaces()const=0;
+
+    //! @brief cast the base pointer to an Plane, otherwise throws an exception
+    const Plane2D* AsPlane2D()const override;
+
+    //! @brief cast the base pointer to an Plane, otherwise throws an exception
+    Plane2D* AsPlane2D() override;
+
 protected:
     //! @brief ... just for serialization
     Plane2D(){};
