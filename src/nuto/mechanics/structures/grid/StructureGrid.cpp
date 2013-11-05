@@ -1432,6 +1432,11 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)
 		}
 		CalcScalingFactors(rProduct);
 		mHessianDiag=rProduct;
+		std::cout << " Hessian: ";
+		for(size_t i=0;i<numNodes*3;++i)
+			std::cout<< rProduct[i]<<" ";
+		std::cout<<"\n";
+
 	}
 	for (size_t para=0;para<numNodes*3;++para)
 		rHessianDiag[para]*=mHessianDiag[para];
@@ -1458,8 +1463,8 @@ void NuTo::StructureGrid::CalcScalingFactors(std::vector<double> &p)
 	//		scalefactor=2./(2-lambda_max-lambda_min);
 			// my scale factor
 	//		scalefactor=2./(lambda_max*lambda_max);
-			scalefactor=1e-2/lambda_max;
-//			scalefactor=1./lambda_max;
+//			scalefactor=1e-2/lambda_max;
+			scalefactor=1./lambda_max;
 			// damping Jacobi: lampda of D-1 K Arbenz_2007
 	//		scalefactor=4./(3.*lambda_max);
 			SetMisesWielandt(true);
@@ -2027,8 +2032,8 @@ void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restriction
 }
 void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 {
-	if(CallbackHandlerGrid::mVerboseLevel>2)
-		std::cout<<"[StructureGrid::Restriction] \n";
+//	if(CallbackHandlerGrid::mVerboseLevel>2)
+//		std::cout<<"[StructureGrid::Restriction] \n";
 	std::vector<size_t> rCoarseDimension=mpCoarseGrid->GetGridDimension();
 	std::vector<size_t> rFineDimension=GetGridDimension();
 
@@ -2085,7 +2090,7 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 
 void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor)
 {
-//		std::cout<<"[StructureGrid::Prolongation] \n";
+//	std::cout<<"[StructureGrid::Prolongation] \n";
 	size_t numFineNodes=mpFineGrid->GetNumNodes();
 	std::vector<size_t> rCoarseDimension=GetGridDimension();
 	std::vector<size_t> rFineDimension=mpFineGrid->GetGridDimension();

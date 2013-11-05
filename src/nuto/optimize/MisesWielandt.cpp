@@ -19,9 +19,10 @@ int NuTo::MisesWielandt::Optimize()
 #endif
 
     const double tol=mAccuracyGradient;
-	double lambda=0.,		//norm = lambda
+	double lambda=0.,		//lambda_min = lambda
 		   prevLambda=0.,
-		   norm=0.;
+		   norm=0.,
+		   prevNorm=0.;
 
     int numGradientCalls(0),   // number of gradient calls
 		curIteration(0);       //number of iterations
@@ -34,7 +35,7 @@ int NuTo::MisesWielandt::Optimize()
 	// u  = parameters
 	// r  = gradient
 
-	std::vector<double> u(mNumParameters+3,0.001);
+	std::vector<double> u(mNumParameters+3,1.);
 	std::vector<double> r(mNumParameters);
 
 	u[mNumParameters]=0.;
@@ -65,33 +66,40 @@ int NuTo::MisesWielandt::Optimize()
 
 		// r set to zero in MatVec product
 //		std::cout<<"[MisesWielandt] ATTENTION: has to be D^-1.K not K matrix. \n";
-//		y=A*x;
+//		r=Au;
 		mpCallbackHandlerGrid->Gradient(u,r);
 		// input p=r , output r_new=D^-1K r,
 		// r of matrix D^-1K
 //		y'=D^(-1)*y
-		mpCallbackHandlerGrid->Hessian(r);
+		if(mObjectiveType==MAX_EIGENVALUE_OF_PRECOND_MATRIX
+				|| mObjectiveType==SPECTRAL_RADIUS_OF_PRECOND_MATRIX
+				|| mObjectiveType==CONDITION_NUMBER_OF_PRECOND_MATRIX)
+		{
+			mpCallbackHandlerGrid->Hessian(r);
+		}
 		// spectral shift -> does not work
 		// y=(D^(-1)K-lambda I)x
 
-		//for spetral radius of M=I-PA
+		//for spectral radius of M=I-PA
 //		for(size_t i=0;i<mNumParameters;++i)
 //		{
 //			r[i]*=-1;
 //			r[i]+=u[i];
 //		}
+		prevNorm=norm;
 		norm=0.;
 		prevLambda=lambda;
 		lambda=0.;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
 			lambda+=r[i]*u[i];
-			norm+=r[i]*r[i];
+			norm+=(r[i]*r[i]); //norm
 		}
 		norm=sqrt(norm);
-//		lambda=norm;
 		for(size_t i=0;i<mNumParameters;++i)
 			u[i]=r[i]/norm;
+
+//		std::cout <<"[MisesWielandt] lambda - norm "<<lambda<<" "<<norm<<" " <<"\n";
 
 		if(numGradientCalls!=1)
 		{
@@ -109,6 +117,8 @@ int NuTo::MisesWielandt::Optimize()
 			}
 		}
 	}
+	// so far condition number equal max eigenvalue
+	objective=lambda;
 
 
 	isBuild = true;
@@ -117,7 +127,8 @@ int NuTo::MisesWielandt::Optimize()
     endOpt=clock();
     if (mShowTime)
         std::cout<<"[NuTo::MisesWielandt::Optimize] " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << "sec" << std::endl;
-	std::cout <<"[MisesWielandt] max eigenvalue "<<lambda << " norm "<<norm<<"\n";
+	std::cout <<"[MisesWielandt] lambda - norm "<<lambda<<" "<<norm<<" " <<"\n";
+	std::cout <<"[MisesWielandt] "<<mObjectiveType<<" "<<objective <<"\n";
     outputTime.open(filename,std::fstream::out|std::fstream::app);
  	outputTime<<(difftime(endOpt,startOpt)/CLOCKS_PER_SEC)<<"   "<<curIteration<<"\n";
 	outputTime.close();
@@ -144,7 +155,7 @@ int NuTo::MisesWielandt::Optimize()
 				std::cout<< "Maximum number of iterations reached." << std::endl;
 				break;
 			case NORMGRADIENT:
-				std::cout<< "Norm of preconditioned gradient smaller than prescribed value." << std::endl;
+				std::cout<< "lambda_min of preconditioned gradient smaller than prescribed value." << std::endl;
 				break;
 			case DELTAOBJECTIVEBETWEENCYCLES:
 				std::cout<< "Decrease in objective function between two consecutive cycles is smaller than prescribed value."<<std::endl;
@@ -155,7 +166,6 @@ int NuTo::MisesWielandt::Optimize()
 		}
 		std::cout << std::endl;
 	}
-	objective=lambda;
 	return returnValue;
 }
 

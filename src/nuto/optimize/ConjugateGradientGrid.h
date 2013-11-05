@@ -41,7 +41,6 @@ public:
         mMaxHessianCalls = INT_MAX,
         mMaxIterations = INT_MAX;
         mShowSteps = 100;
-       	mUseDiagHessian =true;
        	mNumParameters=rNumParameters;
 
 	}
@@ -61,7 +60,6 @@ public:
            & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
-           & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
            & BOOST_SERIALIZATION_NVP(mNumParameters);
     }
 #endif // SWIG
@@ -99,10 +97,6 @@ public:
     {
         mShowSteps = rShowSteps;
     }
-    void SetUseDiagHessian (bool rUseDiagHessian)
-    {
-    	mUseDiagHessian=rUseDiagHessian;
-    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
@@ -135,7 +129,6 @@ protected:
 	int    mMaxHessianCalls;
 	int    mMaxIterations;
 	int    mShowSteps;
-    bool   mUseDiagHessian;
 
    	size_t mNumParameters;
 };

@@ -53,8 +53,6 @@ int NuTo::Jacobi::Optimize()
 		SetMaxGradientCalls(localMaxGradientCalls);
 
 
-	// calculate Diag preonditioner;
-	mpCallbackHandlerGrid->Hessian(p);
 
 	boost::dynamic_bitset<> rDofIsConst=mpCallbackHandlerGrid->GetDisplacementConstaints();
 
@@ -96,11 +94,16 @@ int NuTo::Jacobi::Optimize()
 		 }
 		 // reset gNext to zero in gradient
 		 mpCallbackHandlerGrid->Gradient(g,gNext);
+		// multiply with point diagonal preconditoner
+		mpCallbackHandlerGrid->Hessian(gNext);
 		rErrorNorm=0.;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
 //			if(!rDofIsConst[i])
-			gNext[i]*=-mOmega*p[i];
+			// scaling direct on preconditioner
+			// plus omega?
+			// do not forget sign!!!
+			gNext[i]*=-mOmega;
 			gNext[i]+=g[i];
 			// if(help==0)
 			// gNext[i]+=mOmega*p[i]*f[i]; for forces

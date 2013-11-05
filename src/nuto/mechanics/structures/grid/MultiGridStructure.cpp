@@ -143,7 +143,7 @@ int NuTo::MultiGridStructure::MultiGridSolve()
 	double kappa=1.;
 
 	NuTo::StructureGrid* rGrid=mpStructureHandler;
-	int numPara=rGrid->GetNumNodes()*3;
+	size_t numPara=rGrid->GetNumNodes()*3;
 	double rAccuracySquare=1e-6/(double) numPara;
 
 	//	double rAccuracySquare=1e-6*1e-6;
@@ -242,14 +242,17 @@ int NuTo::MultiGridStructure::MultiGridSolve()
 void NuTo::MultiGridStructure::GridLevelSolve(int rGridLevel)
 {
 	int cylcetype=0;
+	NuTo::StructureGrid* rGrid;
+	if(rGridLevel==0)
+		rGrid=mpStructureHandler;
+	else
+		rGrid=GetGridPtr(rGridLevel-1);
+
+	// to avoid infinite loop
+	rGrid->SetUseDiagHessian(true);
+
 	while(mCycle[rGridLevel]>cylcetype++)
 	{
-		NuTo::StructureGrid* rGrid;
-		if(rGridLevel==0)
-			rGrid=mpStructureHandler;
-		else
-			rGrid=GetGridPtr(rGridLevel-1);
-
 		size_t numPara=rGrid->GetNumNodes()*3;
 
 		std::vector<double> &rResidual=rGrid->GetResidual();
@@ -260,11 +263,11 @@ void NuTo::MultiGridStructure::GridLevelSolve(int rGridLevel)
 // --------------------------------------------------------------------------
 //		std::cout<<" mg level "<<rGridLevel<<"\n";
 //		std::cout<<" mg r ";
-//		for(int i=0;i<numPara;++i)
+//		for(size_t i=0;i<numPara;++i)
 //			std::cout<<rResidual[i]<<" ";
 //		std::cout<<"\n";
 //		std::cout<<" mg u ";
-//		for(int i=0;i<numPara;++i)
+//		for(size_t i=0;i<numPara;++i)
 //			std::cout<<rParameters[i]<<" ";
 //		std::cout<<"\n";
 // --------------------------------------------------------------------------
@@ -357,6 +360,8 @@ void NuTo::MultiGridStructure::GridLevelSolve(int rGridLevel)
 		if(rGridLevel!=0) // do not prolongate finest grid
 			rGrid->Prolongation(mProlongation); // on coarse grid -> put paras to fine grid
 	}
+	// to reset initial boolean
+	rGrid->SetUseDiagHessian(false);
 }
 
 void NuTo::MultiGridStructure::Info()const

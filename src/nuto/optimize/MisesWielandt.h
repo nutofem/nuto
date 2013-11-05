@@ -37,6 +37,7 @@ public:
         mShowSteps = 100;
        	mUseDiagHessian =true;
        	mNumParameters=rNumParameters;
+       	mObjectiveType=CONDITION_NUMBER_OF_MATRIX;
 	}
 
 #ifdef ENABLE_SERIALIZATION
@@ -55,13 +56,56 @@ public:
            & BOOST_SERIALIZATION_NVP(mMaxIterations)
            & BOOST_SERIALIZATION_NVP(mShowSteps)
            & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-           & BOOST_SERIALIZATION_NVP(mNumParameters);
+           & BOOST_SERIALIZATION_NVP(mNumParameters)
+           & BOOST_SERIALIZATION_NVP(mObjectiveType);
     }
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
+	enum eObjectiveType
+	{
+		MAX_EIGENVALUE_OF_PRECOND_MATRIX,
+		MAX_EIGENVALUE_OF_MATRIX,
+		SPECTRAL_RADIUS_OF_MATRIX,
+		SPECTRAL_RADIUS_OF_PRECOND_MATRIX,
+		CONDITION_NUMBER_OF_MATRIX,
+		CONDITION_NUMBER_OF_PRECOND_MATRIX,
+	 };
 
     int Optimize();
+
+
+    void SetObjectiveType(std::string rObjectiveType)
+    {
+		std::string upperCaseObjectiveType;
+		 std::transform(rObjectiveType.begin(), rObjectiveType.end(), std::back_inserter(upperCaseObjectiveType), (int(*)(int)) toupper);
+
+		 if (upperCaseObjectiveType=="MAX_EIGENVALUE_OF_PRECOND_MATRIX")
+			mObjectiveType=MAX_EIGENVALUE_OF_PRECOND_MATRIX;
+		 else if(upperCaseObjectiveType=="MAX_EIGENVALUE_OF_MATRIX")
+			mObjectiveType=MAX_EIGENVALUE_OF_MATRIX;
+		 else if(upperCaseObjectiveType=="SPECTRAL_RADIUS_OF_MATRIX")
+			 mObjectiveType=SPECTRAL_RADIUS_OF_MATRIX;
+		 else if(upperCaseObjectiveType=="SPECTRAL_RADIUS_OF_PRECOND_MATRIX")
+			 mObjectiveType=SPECTRAL_RADIUS_OF_PRECOND_MATRIX;
+		 else if(upperCaseObjectiveType=="CONDITION_NUMBER_OF_MATRIX")
+			 mObjectiveType=CONDITION_NUMBER_OF_MATRIX;
+		 else if(upperCaseObjectiveType=="CONDITION_NUMBER_OF_PRECOND_MATRIX")
+			 mObjectiveType=CONDITION_NUMBER_OF_PRECOND_MATRIX;
+		else
+		{
+			throw OptimizeException("[NuTo::MisesWielandt::SetObjectiveType] ObjectiveType "+upperCaseObjectiveType +" does not exist.");
+		}
+    }
+
+	inline void SetObjectiveType(eObjectiveType rObjectiveType)
+    {
+			 mObjectiveType=rObjectiveType;
+    }
+	inline eObjectiveType GetObjectiveType()
+    {
+    	return mObjectiveType;
+    }
 
     inline void SetMaxGradientCalls(int rMaxGradientCalls)
     {
@@ -124,8 +168,10 @@ protected:
 	int    mMaxIterations;
 	int    mShowSteps;
     bool   mUseDiagHessian;
-
+    eObjectiveType 	mObjectiveType;
    	size_t mNumParameters;
+
+
 };
 } // namespace NuTo
 #endif // MISES_WIELANDT_H

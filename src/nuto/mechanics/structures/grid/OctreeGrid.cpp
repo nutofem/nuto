@@ -56,6 +56,7 @@ NuTo::OctreeGrid::OctreeGrid(int rDimension):  CallbackHandlerGrid ()
     mWeightingFactor=0.0;
     mpFineGrid=0;
     mpCoarseGrid=0;
+    mNumLevels=UINT32_MAX;
 }
 
 NuTo::OctreeGrid::~OctreeGrid()
@@ -136,7 +137,8 @@ void NuTo::OctreeGrid::serialize(Archive & ar, const unsigned int version)
        & BOOST_SERIALIZATION_NVP (mFineEdgeId)
        & BOOST_SERIALIZATION_NVP (mWeightingFactor)
        & BOOST_SERIALIZATION_NVP (mpFineGrid)
-       & BOOST_SERIALIZATION_NVP (mpCoarseGrid);
+       & BOOST_SERIALIZATION_NVP (mpCoarseGrid)
+       & BOOST_SERIALIZATION_NVP (mNumLevels);
 #ifdef DEBUG_SERIALIZATION
      std::cout << "finish serialization of grid structure" << std::endl;
 #endif
@@ -536,8 +538,10 @@ void NuTo::OctreeGrid::CreateOctree(int rThresholdMaterialValue, std::string fil
 	uint32_t x=0,y=0,z=0,
 			 level=0,
 			 fac=0;
-	size_t numElementsOld=numElements;
-	do
+	uint32_t rNumLevels=1; //one level is minimum
+	size_t numElementsOld=0;
+
+	while(numElements!=numElementsOld && rNumLevels<mNumLevels)
     {
 //    	std::cout<<"Coarsening of level "<<i<<"\n";
     	numElementsOld=numElements;
@@ -770,8 +774,8 @@ void NuTo::OctreeGrid::CreateOctree(int rThresholdMaterialValue, std::string fil
 				}
 			}
 		}
+		++rNumLevels;
 	}
-	while(numElements!=numElementsOld);
 
     mNumElements=numElements;
 //    std::cout<<"Number of elements "<<mNumElements<<"\n";
@@ -1161,7 +1165,7 @@ void NuTo::OctreeGrid::HangingNodesSearch()
 
 //! @brief correct solution for hanging nodes
 //! @param displacement solution
- void NuTo::OctreeGrid::HangingNodesCorrection(std::vector<double>& u)
+ void NuTo::OctreeGrid::HangingNodesCorrection(std::vector<double>& u)const
 {
 	assert(u.size()-3==mData.size()*3||u.size()==mData.size()*3);
 	// loop over "nodes" for check of constraint
@@ -1628,6 +1632,72 @@ void NuTo::OctreeGrid::SetDisplacementConstraints(size_t rDirection,size_t *rGri
 	}
 	rDisplVector=mDisplacements;
 }
+
+//! @brief Approximate condition number through max and min diagonal singular values
+//! @return approximate condition number
+double NuTo::OctreeGrid::ApproximateSystemConditionNumber()
+{
+	size_t numNodes=mData.size();
+	#pragma data present(mData,mLocalCoefficientMatrix0)
+	#pragma acc parallel loop
+	std::vector<double> rProduct(3*numNodes);
+	std::vector<size_t> nodeNumbers(8);
+
+	#pragma acc parallel loop
+	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+	{
+		double elemStiff=it->second.weight;
+		if(elemStiff>0)
+		{
+			elemStiff*=mLocalCoefficientMatrix0[0][0];
+			// get nodes
+
+			uint32_t key=it->first;
+			uint32_t x=0,y=0,z=0,
+					 level=it->second.level,
+					 neighbor,
+					 fac=0;
+			//level 1: 2^1=2 ~ <<0,level 2: 2^2=4 ~ <<1, ...
+			if(level==0)
+				fac=1;
+			else
+				fac=(2<<(level-1));
+
+			rProduct[3*(it->second.id)]+=elemStiff;
+			rProduct[3*(it->second.id)+1]+=elemStiff;
+			rProduct[3*(it->second.id)+2]+=elemStiff;
+			for(uint32_t node=1;node<8;++node)
+			{
+				x=MortonOrder::DecodeMorton3X(node)*fac;
+				y=MortonOrder::DecodeMorton3Y(node)*fac;
+				z=MortonOrder::DecodeMorton3Z(node)*fac;
+				neighbor=MortonOrder::Neighbor3D(key,x,y,z);
+				std::map<uint32_t,data>::const_iterator it_neighbor=mData.find(neighbor);
+				rProduct[3*(it_neighbor->second.id)]+=elemStiff;
+				rProduct[3*(it_neighbor->second.id)+1]+=elemStiff;
+				rProduct[3*(it_neighbor->second.id)+2]+=elemStiff;
+			}
+		}
+	}
+	double maxValue=0.;
+	double minValue=UINT32_MAX;
+
+	size_t numDOFs=mData.size()*3;
+	for (size_t i=0;i<numDOFs;++i)
+	{
+		if(maxValue<(rProduct[i]*rProduct[i]))
+			maxValue=rProduct[i]*rProduct[i];
+		if(minValue>(rProduct[i]*rProduct[i]))
+			minValue=(rProduct[i]*rProduct[i]);
+	}
+	maxValue=sqrt(maxValue);
+	minValue=sqrt(minValue);
+	std::cout<<"[OctreeGrid] Max. scalar diagonal value of matrix  : "<<maxValue<<"\n";
+	std::cout<<"[OctreeGrid] Min. scalar diagonal value of matrix  : "<<minValue<<"\n";
+	std::cout<<"[OctreeGrid] Approximate condition number of matrix: "<<maxValue/minValue<<"\n";
+	return (maxValue/minValue);
+}
+
 //! @brief Get LocalCoefficientMatrix0
 //! @param NumLocalCoefficientMatrix0 number of stiffness matrix
 const std::vector<double>* NuTo::OctreeGrid::GetLocalCoefficientMatrix0(int rNumLocalCoefficientMatrix0) const
@@ -1653,6 +1723,8 @@ void NuTo::OctreeGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,st
 #pragma acc parallel loop present(r[0:numParas])
 	for(size_t i=0;i<numParas;++i)
 		r[i]=0;
+	//hanging node correction
+	HangingNodesCorrection(u);
 
 	//----------------------------------------------//
 	// global external force vector (active dofs)
@@ -1742,6 +1814,281 @@ void NuTo::OctreeGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,st
 	}
 }
 
+void NuTo::OctreeGrid::BuildGlobalCoefficientMatrix(std::vector<double>& rKglob,std::vector<double>& rVector)const
+{
+	int dofsElem=24;
+
+	std::vector<double> residual (dofsElem);
+	uint32_t numNodes=8;
+	std::vector<size_t> constraint(numNodes);
+	std::vector<uint32_t> id(numNodes);
+	int dofs=3*mData.size();//Nbr of dofs=3*nodes
+	int freeDofs=0;
+	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+	{
+		if((it->second.constraint&1)!= 1 && (it->second.constraint&2)!= 2 && (it->second.constraint&4)!= 4)
+		{
+			if((it->second.constraint&8)!= 8) //   x-dir. is not constraint
+				++freeDofs;
+			if((it->second.constraint&16)!=16) //  y-dir. is not constraint
+				++freeDofs;
+			if((it->second.constraint&32)!=32) //  z-dir. is not constraint
+				++freeDofs;
+		}
+	}
+	rKglob.resize(dofs);
+	//loop over all elements
+	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+	{
+		uint32_t key=it->first;
+		uint32_t level=it->second.level;
+		double youngsModulus=it->second.weight;
+
+		if(youngsModulus>0) //element exist
+		{
+			//get nodes
+			uint32_t x=0,y=0,z=0,
+					nodeId=it->second.id,
+					node,
+					fac=0;
+			//level 1: 2^1=2 ~ <<0,level 2: 2^2=4 ~ <<1, ...
+			if(level==0)
+				fac=1;
+			else
+				fac=(2<<(level-1));
+			//first node: id equal element
+			id[0]=nodeId;
+//			std::cout<<"element "<<node<<" weight "<<youngsModulus<<" nodes "<<node<<"\n";
+//			key_nodes[0]=key;
+			constraint[0]=it->second.constraint;
+
+			std::map<uint32_t,data>::const_iterator it_node;
+
+			#pragma acc parallel loop
+//			std::cout<<"id : "<<id[0]<<" key "<<key<<" key nodes: \n";
+			for(uint32_t count=1;count<numNodes;++count)
+			{
+				x=MortonOrder::DecodeMorton3X(count)*fac;
+				y=MortonOrder::DecodeMorton3Y(count)*fac;
+				z=MortonOrder::DecodeMorton3Z(count)*fac;
+				node=MortonOrder::Neighbor3D(key,x,y,z);
+				it_node=mData.find(node);
+				id[count]=it_node->second.id;
+//				std::cout<<it_node->first<<" ";
+				constraint[count]=it_node->second.constraint;
+//				key_nodes[count]=it_node->first;
+			}
+
+			#pragma acc parallel loop //needed or for each thread initialized already with zero
+			for(uint32_t i=0;i<numNodes;++i)
+			{
+				// not an hanging node in any direction
+//				if((constraint[i]&1)!= 1 && (constraint[i]&2)!= 2 && (constraint[i]&4)!= 4)
+//				{
+					#pragma acc parallel loop
+					for(uint32_t j=0;j<numNodes;++j)
+					{
+//						if((constraint[i]&8)!= 8) //   x-dir. is not constraint
+//						{
+							for(int k=0;k<3;++k)
+								rKglob[dofs*3*id[i]+3*id[j]+k]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*3*i+3*j+k];
+//						}
+//						if((constraint[i]&16)!=16) //  y-dir. is not constraint
+//						{
+							for(int k=0;k<3;++k)
+								rKglob[dofs*3*id[i]+1+3*id[j]+k]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*3*i+1+3*j+k];
+//						}
+//						if((constraint[i]&32)!=32) //  z-dir. is not constraint
+//						{
+							for(int k=0;k<3;++k)
+							{
+								for(int k=0;k<3;++k)
+									rKglob[dofs*3*id[i]+3+3*id[j]+k]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*3*i+2+3*j+k];
+							}
+//						}
+					}
+//				}
+			}
+		}
+	}
+//	// new loop to add constraint stiffness parts and delete constraint dofs
+//	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+//	{
+//		//check for hanging node and store stiffness part at free dofs
+//		// for all six cases of constraint nodes
+//		// for all nodes not free
+//		uint32_t constraint0 = it->second.constraint;
+//		uint32_t id=it->second.id;
+//		std::map<uint32_t,data>::const_iterator it_node;
+//		uint32_t neighbor;
+//		uint32_t fac=0;
+//		//level 1: 2^1=2 ~ <<0,level 2: 2^2=4 ~ <<1, ...
+//		if(level==0)
+//			fac=1;
+//		else
+//			fac=(2<<(level-1));
+//
+//		int32_t xc=0,yc=0,zc=0;
+//		int32_t signA =-1;
+//		int32_t signB =-1;
+//		int32_t null=0;
+//		std::vector<int32_t *> signPlane(3);
+//
+//		// for all three cases of constraint nodes on planes extra
+//		if((constraint0&3)==3 || (constraint0&5)==5 ||	(constraint0&6)==6)
+//		{
+////			std::cout<<"\nplane - key "<<key<<"(constraint0= "<<constraint0<<") : ";
+//
+//
+//			if((constraint0&1)==1  ) // x
+//			{
+//				signPlane[0]=&signA;
+//				xc=fac;
+//				if ((constraint0&2)==2 ) // y
+//				{
+//					signPlane[1]=&signB;
+//					signPlane[2]=&null;
+//					yc=fac;zc=0;
+//				}
+//				else //z
+//				{
+//					signPlane[1]=&null;
+//					signPlane[2]=&signB;
+//					yc=0;zc=fac;
+//
+//				}
+//			}
+//			else
+//			{
+//				signPlane[0]=&null;
+//				signPlane[1]=&signA;
+//				signPlane[2]=&signB;
+//				xc=0;yc=fac;zc=fac;
+//			}
+//			//hanging node can not have boundary conditions
+//
+//			for(int helpA=0;helpA<2;++helpA) // two times loop
+//			{
+//				for(int helpB=0;helpB<2;++helpB) // two times loop
+//				{
+//					neighbor=MortonOrder::NegNeighbor3D(key,(*signPlane[0])*xc,*signPlane[1]*yc,*signPlane[2]*zc);
+////					std::cout<<neighbor<<" ";
+//					it_node=mData.find(neighbor);
+//					if(it_node!=mData.end())
+//					{
+//							rKglob[3*(it_node->second.id)*dofs+ 3*(it_node->second.id)]
+//							       +=rKglob[dofsElem*3*(it_node->key%((it_node->second.level+1)*8))+2+3*j+k]
+//							                                   [3*(it_node->second.id)]/4.;
+//					}
+//					//change sign
+//					signB*=-1;
+//				}
+//				//change sign
+//				signA*=-1;
+//			}
+//		}
+//		// for all three cases of constraint0 nodes on edges
+//		else if((constraint0&1)==1 || (constraint0&2)==2 || (constraint0&4)==4) //  110 | 010 =  110 != 010 -> result only equal value when constraint0 equal value
+//		{
+////			std::cout<<"\nedge - key "<<key<<"(constraint0= "<<constraint0<<") : ";
+//			if((constraint0&1)==1)
+//			{
+//				xc=fac;yc=0;zc=0;
+//			}
+//			else if((constraint0&2)==2)
+//			{
+//				xc=0;yc=fac;zc=0;
+//			}
+//			else if((constraint0&4)==4)
+//			{
+//				xc=0;yc=0;zc=fac;
+//			}
+//			if((constraint0&8)!= 8) //   x-dir. is not constraint0
+//				u[3*id  ]=0.;
+//			if((constraint0&16)!=16) //  y-dir. is not constraint0
+//				u[3*id+1]=0.;
+//			if((constraint0&32)!=32) //  z-dir. is not constraint0
+//				u[3*id+2]=0.;
+//
+//
+//			for(int help=0;help<2;++help) // two times loop
+//			{
+//				// only one value differs from zero
+//				neighbor=MortonOrder::NegNeighbor3D(key,signA*xc,signA*yc,signA*zc);
+////				std::cout<<neighbor<<" ";
+//
+//				it_node=mData.find(neighbor);
+//				if(it_node!=mData.end())
+//				{
+//					if((constraint0&8)!= 8) //   x-dir. is not constraint
+//						u[3*id  ]+=u[3*(it_node->second.id)  ]/2.;
+//					if((constraint0&16)!=16) //  y-dir. is not constraint
+//						u[3*id+1]+=u[3*(it_node->second.id)+1]/2.;
+//					if((constraint0&32)!=32) //  z-dir. is not constraint
+//						u[3*id+2]+=u[3*(it_node->second.id)+2]/2.;
+//				}
+//				//change sign
+//				signA*=-1;
+//			}
+//
+//		}
+//	}
+
+	// test
+	std::vector<int> myvector;
+
+	// set some values (from 1 to 10)
+	for (int i=1; i<=10; i++) myvector.push_back(i);
+
+	// erase the 6th element
+	myvector.erase (myvector.begin()+5);
+
+	// erase the first 3 elements:
+	myvector.erase (myvector.begin(),myvector.begin()+3);
+
+	std::cout << "myvector contains:";
+	for (unsigned i=0; i<myvector.size(); ++i)
+	std::cout << ' ' << myvector[i];
+	std::cout << '\n';
+
+
+	  // new loop to set stiffness parts of constraint dofs =0
+	// revers iterator
+	for(std::map<uint32_t,data>::const_reverse_iterator it=mData.rbegin();it!=mData.rend();++it)
+	{
+		uint32_t constraint0 = it->second.constraint;
+		uint32_t id=it->second.id;
+		std::cout<<"node "<<id<<"\n";
+		if((constraint0&32)== 32) //   z-dir. is constraint
+		{
+			rKglob.erase(rKglob.begin()+(3*id+2)*dofs,rKglob.begin()+(3*id+2)*dofs+dofs);
+			for(int i=dofs-1;i>=0;--i)
+				rKglob.erase(rKglob.begin()+i*dofs+3*id+2);
+
+			rVector.erase(rVector.begin()+3*id+2);
+			--dofs;
+		}
+		if((constraint0&16)== 16) //   y-dir. is constraint
+		{
+			rKglob.erase(rKglob.begin()+(3*id+1)*dofs,rKglob.begin()+(3*id+1)*dofs+dofs);
+			for(int i=dofs-1;i>=0;--i)
+				rKglob.erase(rKglob.begin()+i*dofs+3*id+1);
+
+			rVector.erase(rVector.begin()+3*id+1);
+			--dofs;
+		}
+
+		if((constraint0&8)== 8) //   x-dir. is constraint
+		{
+			rKglob.erase(rKglob.begin()+(3*id)*dofs,rKglob.begin()+(3*id)*dofs+dofs);
+			for(int i=dofs-1;i>=0;--i)
+				rKglob.erase(rKglob.begin()+i*dofs+3*id);
+
+			rVector.erase(rVector.begin()+3*id);
+			--dofs;
+		}
+	}
+}
 
 //! @brief get weighting factor for preconditioner
 //! @return rWeight ... weighting factor
@@ -1793,9 +2140,9 @@ void NuTo::OctreeGrid::HessianDiag(std::vector<double>& rHessianDiag)
 				else
 					fac=(2<<(level-1));
 
-				rProduct[3*(it->second.id)]+=elemStiff*fac;
-				rProduct[3*(it->second.id)+1]+=elemStiff*fac;
-				rProduct[3*(it->second.id)+2]+=elemStiff*fac;
+				rProduct[3*(it->second.id)]+=elemStiff;
+				rProduct[3*(it->second.id)+1]+=elemStiff;
+				rProduct[3*(it->second.id)+2]+=elemStiff;
 				for(uint32_t node=1;node<8;++node)
 				{
 					x=MortonOrder::DecodeMorton3X(node)*fac;
@@ -1804,9 +2151,9 @@ void NuTo::OctreeGrid::HessianDiag(std::vector<double>& rHessianDiag)
 					neighbor=MortonOrder::Neighbor3D(key,x,y,z);
 					std::map<uint32_t,data>::const_iterator it_neighbor=mData.find(neighbor);
 					// take into account the level of the element
-					rProduct[3*(it_neighbor->second.id)]+=elemStiff*fac;
-					rProduct[3*(it_neighbor->second.id)+1]+=elemStiff*fac;
-					rProduct[3*(it_neighbor->second.id)+2]+=elemStiff*fac;
+					rProduct[3*(it_neighbor->second.id)]+=elemStiff;
+					rProduct[3*(it_neighbor->second.id)+1]+=elemStiff;
+					rProduct[3*(it_neighbor->second.id)+2]+=elemStiff;
 				}
 			}
 		}
@@ -1824,9 +2171,13 @@ void NuTo::OctreeGrid::HessianDiag(std::vector<double>& rHessianDiag)
 		mHessianDiag=rProduct;
 
 		std::cout << " Hessian: ";
-		for(size_t i=0;i<numNodes*3;++i)
-			std::cout<< rProduct[i]<<" ";
-		std::cout<<"\n";
+//		for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+//		{
+//			if(it->second.constraint==0)
+//				std::cout<<rProduct[3*(it->second.id)]<<" "<<rProduct[3*(it->second.id)+1]<<" "<<rProduct[3*(it->second.id)+2]<<" ";
+//
+//		}
+//		std::cout<<"\n";
 	}
 	for (size_t para=0;para<numNodes*3;++para)
 		rHessianDiag[para]*=mHessianDiag[para];
@@ -1841,10 +2192,13 @@ void NuTo::OctreeGrid::CalcScalingFactors(std::vector<double> &p)
 		if (mUseMisesWielandt)
 		{
 			SetMisesWielandt(false); // if not, get a infinite loop
-			// scale factor is 2/(2-lambda_max-lambda_min) [Meister: Num. lin. GLS] for Jacobi-Relaxation-Method
 			NuTo::MisesWielandt myEigenCalculator(GetNumNodes()*3);
+			NuTo::MisesWielandt::eObjectiveType type=myEigenCalculator.GetObjectiveType();
+			myEigenCalculator.SetObjectiveType("MAX_EIGENVALUE_OF_PRECOND_MATRIX");
+			// scale factor is 2/(2-lambda_max-lambda_min) [Meister: Num. lin. GLS] for Jacobi-Relaxation-Method
 			myEigenCalculator.SetVerboseLevel(GetVerboseLevel());
 			myEigenCalculator.SetCallback(this);
+
 			myEigenCalculator.Optimize();
 			double lambda_max=myEigenCalculator.GetObjective();
 	//			double lambda_min=lambda_max/2.;
@@ -1856,6 +2210,8 @@ void NuTo::OctreeGrid::CalcScalingFactors(std::vector<double> &p)
 			// damping Jacobi: lampda of D-1 K Arbenz_2007
 	//		scalefactor=4./(3.*lambda_max);
 			SetMisesWielandt(true);
+			myEigenCalculator.SetObjectiveType(type);
+
 		}
 		else
 			// 1 is needed for MisesWielandt (Hessian), make sure it is 1 in standard
@@ -2314,4 +2670,236 @@ void NuTo::OctreeGrid::Restriction(std::vector<double> &rRestrictionFactor)
 void NuTo::OctreeGrid::Prolongation(std::vector<double> &rProlongationFactor)
 {
 	std::cout<<" todo \n";
+}
+
+void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
+{
+	// open file
+	std::ofstream file;
+    file.open("ansysInput");
+    file<<"fini \n/clear,nostart \n/prep7 \n";
+    file<<"!Ansys Input File: \n !DIM: "<<mGridDimension[0]<<" DOFS: "<<mData.size()*3<<"\n";
+    file<<"et,1,solid185 \nkeyopt,1,2,3 \n";
+
+    assert(mNumMaterials);
+    int mat=1;
+ 	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+    {
+    	if(it->second.weight>0)
+     	{
+    		file<<"mp,ex,"<<mat<<","<<it->second.weight<<" \n";
+    		file<<"mp,prxy,"<<mat<<",.2 \n";
+			++mat;
+     	}
+    }
+
+    // create nodes
+ 	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+ 		file<<"n,"<<(it->second.id)+1<<","<<MortonOrder::DecodeMorton3X(it->first)*mVoxelSpacing[0]<<","<<MortonOrder::DecodeMorton3Y(it->first)*mVoxelSpacing[1]<<"," 		<<MortonOrder::DecodeMorton3Z(it->first)*mVoxelSpacing[2]<<"\n";
+
+
+    // create elements
+    mat=1;
+    file<<"type,1 \n mat,"<<mat<<" \n";
+    std::vector<size_t> nodes(8);
+
+	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+	{
+     	if(it->second.weight>0)
+     	{
+     		uint32_t key=it->first;
+     		uint32_t level=it->second.level;
+     		uint32_t fac=level-1;
+ 			if(level==0)
+ 				fac=1;
+ 			else
+ 				fac=(2<<fac);
+			file<<"mat,"<<mat<<"\n";
+     		file<<"en,"<<mat<<","<<(it->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,fac,0,0))->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,fac,fac,0))->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,0,fac,0))->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,0,0,fac))->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,fac,0,fac))->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,fac,fac,fac))->second.id)+1<<","<<
+     				(mData.find(MortonOrder::Neighbor3D(key,0,fac,fac))->second.id)+1<<"\n";
+     		++mat;
+     	}
+
+    }
+
+ 	// create displacement constraints
+	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+	{
+		if((it->second.constraint&8)==8)
+		{
+			file<<"nsel,s,node,,"<<(it->second.id)+1<<"\n";
+			file<<"d,all,ux,"<<rDisplVector[3*(it->second.id)]<<"\n";
+		}
+		if((it->second.constraint&16)==16)
+		{
+			file<<"nsel,s,node,,"<<(it->second.id)+1<<"\n";
+			file<<"d,all,uy,"<<rDisplVector[3*(it->second.id)+1]<<"\n";
+		}
+		if((it->second.constraint&32)==32)
+		{
+			file<<"nsel,s,node,,"<<(it->second.id)+1<<"\n";
+			file<<"d,all,uz,"<<rDisplVector[3*(it->second.id)+2]<<"\n";
+		}
+	}
+    file<<"alls\n";
+
+    //create linear constraint equation
+    // no node is displacements constraint!!!
+    int count=0; //number of constraint equations
+	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+	{
+
+		//check for hanging node
+		// for all six cases of constraint nodes
+		// for all nodes not free
+		uint32_t constraint=it->second.constraint;
+		uint32_t id=it->second.id;
+		uint32_t key=it->first;
+		std::map<uint32_t,data>::const_iterator it_node;
+		uint32_t neighbor,
+				 level=it->second.level;
+		uint32_t fac=0;
+		//level 1: 2^1=2 ~ <<0,level 2: 2^2=4 ~ <<1, ...
+		if(level==0)
+			fac=1;
+		else
+			fac=(2<<(level-1));
+
+		int32_t xc=0,yc=0,zc=0;
+		int32_t signA =-1;
+		// for all three cases of constraint nodes on planes extra
+		if((constraint&3)==3 || (constraint&5)==5 ||	(constraint&6)==6)
+		{
+//			std::cout<<"\nplane - key "<<key<<"(constraint= "<<constraint<<") : ";
+			int32_t signB =-1;
+			int32_t null=0;
+			std::vector<int32_t *> signPlane(3);
+
+
+			if((constraint&1)==1  ) // x
+			{
+				signPlane[0]=&signA;
+				xc=fac;
+				if ((constraint&2)==2 ) // y
+				{
+					signPlane[1]=&signB;
+					signPlane[2]=&null;
+					yc=fac;zc=0;
+				}
+				else //z
+				{
+					signPlane[1]=&null;
+					signPlane[2]=&signB;
+					yc=0;zc=fac;
+
+				}
+			}
+			else
+			{
+				signPlane[0]=&null;
+				signPlane[1]=&signA;
+				signPlane[2]=&signB;
+				xc=0;yc=fac;zc=fac;
+			}
+			uint32_t planeNodes[4];
+			for(int helpA=0;helpA<2;++helpA) // two times loop
+			{
+				for(int helpB=0;helpB<2;++helpB) // two times loop
+				{
+					neighbor=MortonOrder::NegNeighbor3D(key,(*signPlane[0])*xc,*signPlane[1]*yc,*signPlane[2]*zc);
+//					std::cout<<neighbor<<" ";
+					it_node=mData.find(neighbor); // no check if node exist, have to
+					planeNodes[2*helpA+helpB]=it_node->second.id;
+					//change sign
+					signB*=-1;
+				}
+				//change sign
+				signA*=-1;
+			}
+			// CE,lhs,0,HNid,dof,factor,node,dof,0.25, ....
+			file<<"CE,"<<++count<<",0,"<<id+1<<",ux,-1,"<<planeNodes[0]+1<<",ux,0.25,"
+						<<planeNodes[1]+1<<",ux,0.25 \n";
+			file<<"CE,"<<count<<",0,"<<id+1<<",ux,-1,"<<planeNodes[2]+1<<",ux,0.25,"
+						<<planeNodes[3]+1<<",ux,0.25 \n";
+
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uy,-1,"<<planeNodes[0]+1<<",uy,0.25,"
+						<<planeNodes[1]+1<<",uy,0.25 \n";
+			file<<"CE,"<<count<<",0,"<<id+1<<",uy,-1,"<<planeNodes[2]+1<<",uy,0.25,"
+						<<planeNodes[3]+1<<",uy,0.25 \n";
+
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uz,-1,"<<planeNodes[0]+1<<",uz,0.25,"
+						<<planeNodes[1]+1<<",uz,0.25 \n";
+			file<<"CE,"<<count<<",0,"<<id+1<<",uz,-1,"<<planeNodes[2]+1<<",uz,0.25,"
+						<<planeNodes[3]+1<<",uz,0.25 \n";
+		}
+		// for all three cases of constraint nodes on edges
+		else if((constraint&1)==1 || (constraint&2)==2 || (constraint&4)==4) //  110 | 010 =  110 != 010 -> result only equal value when constraint equal value
+		{
+//			std::cout<<"\nedge - key "<<key<<"(constraint= "<<constraint<<") : ";
+			if((constraint&1)==1)
+			{
+				xc=fac;yc=0;zc=0;
+			}
+			else if((constraint&2)==2)
+			{
+				xc=0;yc=fac;zc=0;
+			}
+			else if((constraint&4)==4)
+			{
+				xc=0;yc=0;zc=fac;
+			}
+
+			uint32_t edgeNode[2];
+			for(int help=0;help<2;++help) // two times loop
+			{
+				// only one value differs from zero
+				neighbor=MortonOrder::NegNeighbor3D(key,signA*xc,signA*yc,signA*zc);
+//				std::cout<<neighbor<<" ";
+				it_node=mData.find(neighbor);
+				edgeNode[help]=it_node->second.id;
+				//change sign
+				signA*=-1;
+			}
+			// CE,lhs,0,HNid,dof,factor,node,dof,0.25, ....
+			file<<"CE,"<<++count<<",0,"<<id+1<<",ux,-1,"<<edgeNode[0]+1<<",ux,0.5,"
+						<<edgeNode[1]+1<<",ux,0.5 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uy,-1,"<<edgeNode[0]+1<<",uy,0.5,"
+						<<edgeNode[1]+1<<",uy,0.5 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uz,-1,"<<edgeNode[0]+1<<",uz,0.5,"
+						<<edgeNode[1]+1<<",uz,0.5 \n";
+
+		}
+	}
+
+	// solution
+	file<<"alls\n";
+	file<<"!nummeriert Knoten neu durch\n"
+			"!numcmp,node \n"
+			"/solu \n"
+			"! to get .full file \n"
+			"outr,all,all	! alle Zwischenergebnisse speichern  \n"
+			"solve	           	! Lösen des Gleichungssystems \n"
+			"finish	      ! Verlassen des Lösungsprozessors \n"
+			"/AUX2 \n"
+			" FILE,,full,		!DEFINE THE FILE \n"
+			"HBMAT,,,,ASCII,stiff,yes,		!DUMP MATRIX FILE IN HARWELL-BOEING FORMAT \n"
+			"FINISH \n";
+
+
+
+
+//	/post1
+//	!only for direct solver
+//	!*DMAT,mat_gl,D,import,FULL,file.full,STIFF
+//	!export,mat_gl,MMF,mat_gl.mmf,
+
+
+//	!plnsol,u,x
+    file.close();
 }

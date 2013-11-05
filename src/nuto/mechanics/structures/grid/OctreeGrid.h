@@ -162,6 +162,12 @@ public:
    //! @param rWeight ... weighting factor
    void  SetWeightingFactor(double rWeight);
 
+   //! @brief set maximal number of octree levels
+   //! @param rNumLevels ... number of levels
+   inline void  SetMaxOctreeLevels(uint32_t rNumLevels)
+   {
+	   mNumLevels=rNumLevels;
+   }
    //! @brief ... calculate matrix-vector-product in element-by-element way
    //! @brief ... with local vectors
    //! @param ... u - parameters input, r - gradient output
@@ -173,6 +179,8 @@ public:
 	{
 		throw MechanicsException ( "[NuTo::OctreeGrid::CalculateReactionForcesEBE] Routine is not implemented." );
 	}
+
+	void BuildGlobalCoefficientMatrix(std::vector<double>& rKglob,std::vector<double>& rVector)const;
 
 	void GetEngineeringStrain(const std::vector<double>& rDisplacements, std::vector<double>& rEngineeringStrain)const;
 
@@ -225,6 +233,9 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
 
+    //! @brief Approximate condition number through max and min diagonal singular values
+    //! @return approximate condition number
+    double ApproximateSystemConditionNumber();
 
 	// provide functions for iterative solution process
 	void Gradient(std::vector<double>& rValues,std::vector<double>& rGradient);
@@ -263,7 +274,9 @@ public:
     void HangingNodesSearch();
 	//! @brief correct solution for hanging nodes
 	//! @param displacement solution
-	void HangingNodesCorrection(std::vector<double>& u);
+	void HangingNodesCorrection(std::vector<double>& u)const;
+	void AnsysInput(std::vector<double> &rDisplVector) const;
+
 
 protected:
 
@@ -278,6 +291,7 @@ protected:
     std::string mImageDataFile;
     bool mMortonOrderIsTrue;
     std::map<uint32_t,data> mData;
+    uint32_t mNumLevels;
     std::map<uint32_t,size_t> mKey; //map:  maps bitmap key to number of existing data
 	size_t mNumConstraintDofs;
     std::vector<std::vector<double> > mLocalCoefficientMatrix0;

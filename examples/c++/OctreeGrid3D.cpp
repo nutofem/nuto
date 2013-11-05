@@ -57,6 +57,7 @@ int main()
 		myMapColorModul[count]=0.;
 
 	// create grid structure
+//	myGrid.SetMaxOctreeLevels(1);
 	myGrid.CreateOctree(thresholdMaterialValue,inputFile,myMapColorModul);
 	size_t numNodes=myGrid.GetNumNodes();
 
@@ -138,7 +139,7 @@ int main()
 	std::cout<<"\n";
 
 	myGrid.ExportVTKUnstructuredGridDataFile("./outputFileGeo.vtk");
-
+	myGrid.AnsysInput(rDisplVector);
 #ifdef SHOW_TIME
 end=clock();
 #endif
@@ -152,23 +153,23 @@ end=clock();
 	std::cout<<"Allocated memory ............................... "<<mem/1000.<<"(MB)\n";
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
+	double condNum=myGrid.ApproximateSystemConditionNumber();
+
 	// Convergenc test: lamda_max of M=I-PA <1
 	myGrid.SetMisesWielandt(false); // if not, get a infinite loop, for Hessian
 	NuTo::MisesWielandt myEigenCalculator(numNodes*3);
 	myEigenCalculator.SetVerboseLevel(1);
 	myEigenCalculator.SetAccuracyGradient(1e-6);
-	myGrid.SetWeightingFactor(1.);
+//	myGrid.SetWeightingFactor(1.);
 	myEigenCalculator.SetCallback((&myGrid));
+	myEigenCalculator.SetObjectiveType("MAX_EIGENVALUE_OF_PRECOND_MATRIX");
 	myEigenCalculator.Optimize();
 	double lambda_max=myEigenCalculator.GetObjective();
 	int precision = 10;
 	std::cout.precision(precision);
-	std::cout<<"Spectral radius or eigenvalue of PK "<<lambda_max<<"\n";
 //	if(lambda_max>=1)
 //		std::cout<<"Ill-conditioned matrix.";
 
-	myGrid.SetWeightingFactor(1.);
-//	myGrid.SetWeightingFactor(1./lambda_max);
 	// start analysis
 	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
 	myOptimizer.SetVerboseLevel(5);
@@ -180,6 +181,8 @@ end=clock();
 	myOptimizer.Optimize();
 
 	rDisplVector=myGrid.GetParameters();
+	//one last hanging node correction on u
+	myGrid.HangingNodesCorrection(rDisplVector);
 
 	std::ofstream file;
 //	int precision = 15;

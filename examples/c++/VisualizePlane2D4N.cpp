@@ -64,7 +64,7 @@ int main()
 		NuTo::FullVector<int,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences);
 
 	    // create constitutive law
-	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+	    int myMatLin = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
 	    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
 	    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
@@ -82,7 +82,7 @@ int main()
         myStructure.AddVisualizationComponentDisplacements();
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
-        myStructure.ExportVtkDataFile("Plane2D4N.vtk");
+        myStructure.ExportVtkDataFileElements("Plane2D4N.vtk");
 #endif
 	}
 	catch (NuTo::MathException& e)
