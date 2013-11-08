@@ -40,7 +40,8 @@ direction = nuto.DoubleFullMatrix(1,1,(1,))
 myStructure.ConstraintLinearSetDisplacementNode(1, direction, 0.0)
 id = myStructure.ConstraintLinearEquationCreate(2, "x_displacement", 1, 0)
 myStructure.ConstraintLinearEquationAddTerm(id, 3, "x_displacement", -1)
-myStructure.LoadCreateNodeForce(4, direction, 1)
+loadCase = 1;
+myStructure.LoadCreateNodeForce(loadCase, 4, direction, 1)
 
 #build maximum independent sets
 myStructure.CalculateMaximumIndependentSets()
@@ -58,7 +59,7 @@ stiffnessMatrix.RemoveZeroEntries(0,1e-14)
 # build global external load vector
 print "build external force vector"
 extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(extForceVector)
+myStructure.BuildGlobalExternalLoadVector(loadCase, extForceVector)
 
 # calculate right hand side
 print "build right-hand-side vector"

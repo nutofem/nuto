@@ -101,14 +101,14 @@ else:
             nodeForce = Force / (2 *NumElementsY * NumElementsZ)
         node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX
         #print "apply force to node: " + str(node) + " force: " + str(nodeForce)
-        myStructure.LoadCreateNodeForce(node, direction, nodeForce)
+        myStructure.LoadCreateNodeForce(1,node, direction, nodeForce)
         for yCount in range(1, NumElementsY):
             node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX
             print "apply force to node: " + str(node) + " force: " + str(2 * nodeForce)
-            myStructure.LoadCreateNodeForce(node, direction, 2 * nodeForce)
+            myStructure.LoadCreateNodeForce(1,node, direction, 2 * nodeForce)
         node = (zCount + 1) * (NumElementsX + 1) * (NumElementsY + 1) - 1
         #print "apply force to node: " + str(node) + " force: " + str(nodeForce)
-        myStructure.LoadCreateNodeForce(node, direction, nodeForce)
+        myStructure.LoadCreateNodeForce(1,node, direction, nodeForce)
 
 # start analysis
 # build global dof numbering
@@ -134,7 +134,7 @@ print "time required for assembling: " + str(curTime - oldTime) + " s"
 
 # build global external load vector
 extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(extForceVector)
+myStructure.BuildGlobalExternalLoadVector(1,extForceVector)
 oldTime = curTime
 curTime = time()
 print "time required for building external load vector: " + str(curTime - oldTime) + " s"

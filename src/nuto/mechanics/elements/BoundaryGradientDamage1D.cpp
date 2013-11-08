@@ -77,14 +77,14 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 			throw MechanicsException("[NuTo::BoundaryGradientDamage::Evaluate] no section allocated for real boundary element.");
 
 		//calculate coordinates
-		int numCoordinatesReal(mRealBoundaryElement->GetNumShapeFunctions());
+		int numCoordinatesReal(mRealBoundaryElement->GetNumNodesGeometry());
 		std::vector<double> localNodeCoordReal(numCoordinatesReal);
 		mRealBoundaryElement->CalculateLocalCoordinates(localNodeCoordReal);
 
 		//calculate local displacements, velocities and accelerations
 		//the difference between disp and dispdof is a problem where the displacements are fixed, but enter the constitutive equation
 		//for example in a two stage problem, first solve mechanics, then thermal and so on
-		int numDispReal(mRealBoundaryElement->GetNumShapeFunctions());
+		int numDispReal(mRealBoundaryElement->GetNumNodesField());
 		int numDispDofsReal = sectionReal->GetIsDisplacementDof() ? numDispReal : 0;
 
 		int numNonlocalTotalStrainReal(1); //only the value on the boundary is required, in 1D one value, in 2D all nodes on an edge
@@ -111,9 +111,9 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 		double localIPCoordReal;
 
 		//allocate space for local shape functions
-		std::vector<double> derivativeShapeFunctionsNaturalReal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctions());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsLocalReal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctions());    //allocate space for derivatives of shape functions
-		std::vector<double> shapeFunctionsReal(mRealBoundaryElement->GetNumShapeFunctions());                                       //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsNaturalReal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesField());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsLocalReal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesField());    //allocate space for derivatives of shape functions
+		std::vector<double> shapeFunctionsReal(mRealBoundaryElement->GetNumNodesField());                                       //allocate space for derivatives of shape functions
 
 		//allocate deformation gradient
 		DeformationGradient1D deformationGradientReal;
@@ -156,14 +156,14 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
         //Now calculate the relevant informations for the virtual boundary element within the element boundary (nodal values
     	//*****************************************************************************************************
 		//calculate coordinates
-		int numCoordinatesVirt(this->GetNumShapeFunctions());
+		int numCoordinatesVirt(this->GetNumNodesGeometry());
 		std::vector<double> localNodeCoordVirt(numCoordinatesVirt);
         this->CalculateLocalCoordinates(localNodeCoordVirt);
 
 		//calculate local displacements, velocities and accelerations
 		//the difference between disp and dispdof is a problem where the displacements are fixed, but enter the constitutive equation
 		//for example in a two stage problem, first solve mechanics, then thermal and so on
-		int numNonlocalTotalStrainVirt(this->GetNumShapeFunctions());
+		int numNonlocalTotalStrainVirt(this->GetNumNodesField());
 		int numNonlocalTotalStrainDofsVirt(sectionReal->GetIsNonlocalTotalStrainDof() ? numNonlocalTotalStrainVirt : 0);
 
 		std::vector<double> nodeNonlocalTotalStrainVirt;
@@ -178,9 +178,9 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 		double localIPCoordVirt;
 
 		//allocate space for local shape functions
-		std::vector<double> derivativeShapeFunctionsNaturalVirt(this->GetLocalDimension()*this->GetNumShapeFunctions());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsLocalVirt(this->GetLocalDimension()*this->GetNumShapeFunctions());    //allocate space for derivatives of shape functions
-		std::vector<double> shapeFunctionsVirt(this->GetNumShapeFunctions());                                             //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsNaturalVirt(this->GetLocalDimension()*this->GetNumNodesGeometry());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsLocalVirt(this->GetLocalDimension()*this->GetNumNodesGeometry());    //allocate space for derivatives of shape functions
+		std::vector<double> shapeFunctionsVirt(this->GetNumNodesGeometry());                                             //allocate space for derivatives of shape functions
 
 		//allocate nonlocal eq plastic strain (nodal dof value, input of constitutive relation)
 		EngineeringStrain1D nonlocalTotalStrainVirt;
@@ -323,7 +323,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
                 this->GetLocalIntegrationPointCoordinatesReal(localIPCoordReal);
 
 				//derivative in natural coordinate system
-				mRealBoundaryElement->CalculateDerivativeShapeFunctions(localIPCoordReal, derivativeShapeFunctionsNaturalReal);
+				mRealBoundaryElement->CalculateDerivativeShapeFunctionsGeometry(localIPCoordReal, derivativeShapeFunctionsNaturalReal);
 
 				//determinant of the Jacobian
 				double detJReal(mRealBoundaryElement->DetJacobian(derivativeShapeFunctionsNaturalReal,localNodeCoordReal));
@@ -337,7 +337,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 				if (numDispDofsReal)
 				{
 					// determine deformation gradient from the local Displacements and the derivative of the shape functions
-					mRealBoundaryElement->CalculateDeformationGradient(derivativeShapeFunctionsLocalReal, localNodeCoordReal, localNodeDispReal, deformationGradientReal);
+					mRealBoundaryElement->CalculateDeformationGradient(derivativeShapeFunctionsLocalReal, localNodeDispReal, deformationGradientReal);
 				}
 
 				if (numNonlocalTotalStrainDofsReal)
@@ -390,7 +390,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 				this->GetLocalIntegrationPointCoordinatesVirt(theIP, localIPCoordVirt);
 
 				//derivative in natural coordinate system
-				this->CalculateDerivativeShapeFunctions(localIPCoordVirt, derivativeShapeFunctionsNaturalVirt);
+				this->CalculateDerivativeShapeFunctionsGeometry(localIPCoordVirt, derivativeShapeFunctionsNaturalVirt);
 
 				//determinant of the Jacobian
 				double detJVirt(this->DetJacobian(derivativeShapeFunctionsNaturalVirt,localNodeCoordVirt));
@@ -403,7 +403,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 
 				if (numNonlocalTotalStrainDofsVirt)
 				{
-					this->CalculateShapeFunctions(localIPCoordVirt, shapeFunctionsVirt);
+					this->CalculateShapeFunctionsField(localIPCoordVirt, shapeFunctionsVirt);
 					this->CalculateNonlocalTotalStrain(shapeFunctionsVirt, nodeNonlocalTotalStrainVirt, nonlocalTotalStrainVirt);
 				}
 
@@ -533,7 +533,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 						localIPCoordVirt = 1;
 
 						//derivative in natural coordinate system
-						this->CalculateDerivativeShapeFunctions(localIPCoordVirt, derivativeShapeFunctionsNaturalVirt);
+						this->CalculateDerivativeShapeFunctionsGeometry(localIPCoordVirt, derivativeShapeFunctionsNaturalVirt);
 
 						//determinant of the Jacobian
 						double detJVirt(this->DetJacobian(derivativeShapeFunctionsNaturalVirt,localNodeCoordVirt));
@@ -546,12 +546,12 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 
 						if (numNonlocalTotalStrainDofsVirt)
 						{
-							this->CalculateShapeFunctions(localIPCoordVirt, shapeFunctionsVirt);
+							this->CalculateShapeFunctionsField(localIPCoordVirt, shapeFunctionsVirt);
 							this->CalculateNonlocalTotalStrain(shapeFunctionsVirt, nodeNonlocalTotalStrainVirt, nonlocalTotalStrainVirt);
 						}
 						//Calculate derivative of nonlocal total strain at the outer boundary
 						double derNonlocalTotalStrain(0);
-						for (int count=0; count<derivativeShapeFunctionsLocalVirt.size(); count++)
+						for (unsigned int count=0; count<derivativeShapeFunctionsLocalVirt.size(); count++)
 							derNonlocalTotalStrain+= derivativeShapeFunctionsLocalVirt[count] * nodeNonlocalTotalStrainVirt[count];
 						std::cout << "derNonlocalTotalStrain = " <<  derNonlocalTotalStrain << std::endl;
 					}
@@ -606,18 +606,18 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
 void NuTo::BoundaryGradientDamage1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const
 {
     // calculate shape functions
-    std::vector<double> ShapeFunctions(this->GetNumNodes());
-    this->CalculateShapeFunctions(rLocalCoordinates, ShapeFunctions);
+    std::vector<double> ShapeFunctions(this->GetNumNodesGeometry());
+    this->CalculateShapeFunctionsGeometry(rLocalCoordinates, ShapeFunctions);
 
     // start interpolation
     rGlobalCoordinates[0] = 0.0;
     rGlobalCoordinates[1] = 0.0;
     rGlobalCoordinates[2] = 0.0;
-    for (int theNode = 0; theNode < this->GetNumNodes(); theNode++)
+    for (int theNode = 0; theNode < this->GetNumNodesGeometry(); theNode++)
     {
         // get node coordinate
         double NodeCoordinate;
-        GetNode(theNode)->GetCoordinates1D(&NodeCoordinate);
+        GetNodeGeometry(theNode)->GetCoordinates1D(&NodeCoordinate);
 
         // add node contribution
         rGlobalCoordinates[0] += ShapeFunctions[theNode] *  NodeCoordinate;
@@ -631,9 +631,9 @@ void  NuTo::BoundaryGradientDamage1D::GetGlobalIntegrationPointCoordinates(int r
 {
     double naturalCoordinates;
     double nodeCoordinates[3];
-    std::vector<double> shapeFunctions(GetNumNodes());
+    std::vector<double> shapeFunctions(GetNumNodesGeometry());
     GetLocalIntegrationPointCoordinatesVirt(rIpNum, naturalCoordinates);
-    CalculateShapeFunctions(naturalCoordinates, shapeFunctions);
+    CalculateShapeFunctionsGeometry(naturalCoordinates, shapeFunctions);
     rCoordinates[0] = 0.;
     rCoordinates[1] = 0.;
     rCoordinates[2] = 0.;
@@ -641,9 +641,9 @@ void  NuTo::BoundaryGradientDamage1D::GetGlobalIntegrationPointCoordinates(int r
     nodeCoordinates[0] = 0;
     nodeCoordinates[1] = 0;
     nodeCoordinates[2] = 0;
-    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
-    	const NodeBase *nodePtr(GetNode(theNode));
+    	const NodeBase *nodePtr(GetNodeGeometry(theNode));
     	switch (nodePtr->GetNumCoordinates())
     	{
     	case 1:
@@ -672,8 +672,8 @@ void  NuTo::BoundaryGradientDamage1D::GetGlobalIntegrationPointCoordinates(int r
 //! this can be checked with an assertation
 void NuTo::BoundaryGradientDamage1D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const
 {
-    assert((int)rLocalCoordinates.size()==GetNumNodes());
-    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    assert((int)rLocalCoordinates.size()==GetNumNodesGeometry());
+    for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
         this->GetNode(theNode)->GetCoordinates1D(&(rLocalCoordinates[theNode]));
     }
@@ -715,15 +715,15 @@ void NuTo::BoundaryGradientDamage1D::CalculateNodalNonlocalEqPlasticStrain(int r
 {
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
-	assert((int)rNodalNonlocalEqPlasticStrain.size()==2*GetNumShapeFunctions());
+	assert((int)rNodalNonlocalEqPlasticStrain.size()==2*GetNumNodesField());
 	double nonlocalEqPlasticStrain[2];
-    for (int count=0; count<GetNumShapeFunctions(); count++)
+    for (int count=0; count<GetNumNodesField(); count++)
     {
-        if (GetNode(count)->GetNumNonlocalEqPlasticStrain()!=2)
+        if (GetNodeField(count)->GetNumNonlocalEqPlasticStrain()!=2)
             throw MechanicsException("[NuTo::BoundaryGradientDamage1D::CalculateNodalDamage] Damage is required as input to the constitutive model, but the node does not have this data.");
-        GetNode(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
+        GetNodeField(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
         rNodalNonlocalEqPlasticStrain[count] = nonlocalEqPlasticStrain[0];
-        rNodalNonlocalEqPlasticStrain[count+GetNumShapeFunctions()] = nonlocalEqPlasticStrain[1];
+        rNodalNonlocalEqPlasticStrain[count+GetNumNodesField()] = nonlocalEqPlasticStrain[1];
     }
 }
 
@@ -735,13 +735,13 @@ void NuTo::BoundaryGradientDamage1D::CalculateNodalNonlocalTotalStrain(int rTime
 {
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
-	assert((int)rNodalNonlocalTotalStrain.size()==GetNumShapeFunctions());
+	assert((int)rNodalNonlocalTotalStrain.size()==GetNumNodesField());
 	double nonlocalTotalStrain[1];
-    for (int count=0; count<GetNumShapeFunctions(); count++)
+    for (int count=0; count<GetNumNodesField(); count++)
     {
-        if (GetNode(count)->GetNumNonlocalTotalStrain()!=1)
+        if (GetNodeField(count)->GetNumNonlocalTotalStrain()!=1)
             throw MechanicsException("[NuTo::BoundaryGradientDamage1D::CalculateNodalNonlocalStrain] nonlocal strain is required as input to the constitutive model, but the node does not have this data.");
-        GetNode(count)->GetNonlocalTotalStrain1D(nonlocalTotalStrain);
+        GetNodeField(count)->GetNonlocalTotalStrain1D(nonlocalTotalStrain);
         rNodalNonlocalTotalStrain[count] = nonlocalTotalStrain[0];
     }
 }
@@ -749,7 +749,7 @@ void NuTo::BoundaryGradientDamage1D::CalculateNodalNonlocalTotalStrain(int rTime
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
-void NuTo::BoundaryGradientDamage1D::CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+void NuTo::BoundaryGradientDamage1D::CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
 	assert(rShapeFunctions.size()==mNodes.size());
 	switch (mNodes.size())
@@ -788,11 +788,19 @@ void NuTo::BoundaryGradientDamage1D::CalculateShapeFunctions(double rLocalCoordi
 
 }
 
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::BoundaryGradientDamage1D::CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+{
+	CalculateShapeFunctionsGeometry(rLocalCoordinates,rShapeFunctions);
+}
+
 //! @brief calculates the derivative of the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::BoundaryGradientDamage1D::CalculateDerivativeShapeFunctions(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::BoundaryGradientDamage1D::CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
 	assert(rDerivativeShapeFunctions.size()==mNodes.size());
 	switch (mNodes.size())
@@ -827,6 +835,15 @@ void NuTo::BoundaryGradientDamage1D::CalculateDerivativeShapeFunctions(double rL
 		throw MechanicsException("[NuTo::BoundaryGradientDamage1D::CalculateShapeFunctions] only implemented for 3 or 4 nodes.");
 	}
 
+}
+
+//! @brief calculates the derivative of the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::BoundaryGradientDamage1D::CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+{
+	CalculateDerivativeShapeFunctionsGeometry(rLocalCoordinates,rDerivativeShapeFunctions);
 }
 
 //! @brief returns determinant of the Jacobian

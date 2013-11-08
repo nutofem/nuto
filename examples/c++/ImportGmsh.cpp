@@ -158,7 +158,7 @@ try
 	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
 
 	// build global external load vector and RHS vector
-	myStructure.BuildGlobalExternalLoadVector(extForceVector);
+	myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
 	rhsVector = extForceVector + dispForceVector;
 
 	//calculate absolute tolerance for matrix entries to be not considered as zero

@@ -35,7 +35,33 @@ NuTo::Brick8N::Brick8N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBa
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
-void NuTo::Brick8N::CalculateShapeFunctions(const double rLocalCoordinates[3], std::vector<double>& rShapeFunctions)const
+void NuTo::Brick8N::CalculateShapeFunctionsGeometry(const double rLocalCoordinates[3], std::vector<double>& rShapeFunctions)const
+{
+    assert(rShapeFunctions.size()==8);
+    double plus_r,plus_s,plus_t,minus_r,minus_s,minus_t;
+
+    plus_r  =1.0+rLocalCoordinates[0];
+    plus_s  =1.0+rLocalCoordinates[1];
+    plus_t  =1.0+rLocalCoordinates[2];
+
+    minus_r =1.0-rLocalCoordinates[0];
+    minus_s =1.0-rLocalCoordinates[1];
+    minus_t =1.0-rLocalCoordinates[2];
+
+    rShapeFunctions[0] =0.125 *minus_r *minus_s *minus_t;
+    rShapeFunctions[1] =0.125 *plus_r  *minus_s *minus_t;
+    rShapeFunctions[2] =0.125 *plus_r  *plus_s  *minus_t;
+    rShapeFunctions[3] =0.125 *minus_r *plus_s  *minus_t;
+    rShapeFunctions[4] =0.125 *minus_r *minus_s *plus_t;
+    rShapeFunctions[5] =0.125 *plus_r  *minus_s *plus_t;
+    rShapeFunctions[6] =0.125 *plus_r  *plus_s  *plus_t;
+    rShapeFunctions[7] =0.125 *minus_r *plus_s  *plus_t;
+}
+
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Brick8N::CalculateShapeFunctionsField(const double rLocalCoordinates[3], std::vector<double>& rShapeFunctions)const
 {
     assert(rShapeFunctions.size()==8);
     double plus_r,plus_s,plus_t,minus_r,minus_s,minus_t;
@@ -62,7 +88,7 @@ void NuTo::Brick8N::CalculateShapeFunctions(const double rLocalCoordinates[3], s
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Brick8N::CalculateDerivativeShapeFunctionsGeometryNatural(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
 {
     assert(rDerivativeShapeFunctions.size()==24);
     double plus_r  =1.0+rLocalCoordinates[0];
@@ -105,6 +131,15 @@ void NuTo::Brick8N::CalculateDerivativeShapeFunctionsLocal(const double rLocalCo
     rDerivativeShapeFunctions[21] = -0.125 *plus_s  *plus_t;
     rDerivativeShapeFunctions[22] =  0.125 *minus_r *plus_t;
     rDerivativeShapeFunctions[23] =  0.125 *minus_r *plus_s;
+}
+
+//! @brief calculates the derivative of the shape functions with respect to local coordinates
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::Brick8N::CalculateDerivativeShapeFunctionsFieldNatural(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const
+{
+	CalculateDerivativeShapeFunctionsGeometryNatural(rLocalCoordinates,rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the shape functions for the surfaces (required for surface loads)

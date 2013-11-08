@@ -165,16 +165,16 @@ try
                 }
                 int node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX;
                 //std::cout << "apply force to node: " << node << " force: " << nodeForce << std::endl;
-                myStructure.LoadCreateNodeForce(node, direction, nodeForce);
+                myStructure.LoadCreateNodeForce(1, node, direction, nodeForce);
                 for(int yCount = 1; yCount < NumElementsY; yCount++)
                 {
                     node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX;
                     //std::cout << "apply force to node: " << node << " force: " << 2 * nodeForce << std::endl;
-                    myStructure.LoadCreateNodeForce(node, direction, 2 * nodeForce);
+                    myStructure.LoadCreateNodeForce(1, node, direction, 2 * nodeForce);
                 }
                 node = (zCount + 1) * (NumElementsX + 1) * (NumElementsY + 1) - 1;
                 //std::cout << "apply force to node: " << node << " force: " << nodeForce << std::endl;
-                myStructure.LoadCreateNodeForce(node, direction, nodeForce);
+                myStructure.LoadCreateNodeForce(1 ,node, direction, nodeForce);
             }
         }
 
@@ -195,7 +195,7 @@ try
 
         // build global external load vector
         NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-        myStructure.BuildGlobalExternalLoadVector(extForceVector);
+        myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
         //extForceVector.Info();
 
         // calculate right hand side

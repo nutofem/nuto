@@ -168,7 +168,7 @@ int main()
 
         // build global external load vector
         NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-        myStructure.BuildGlobalExternalLoadVector(extForceVector);
+        myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
         //extForceVector.Info();
 
         // calculate right hand side

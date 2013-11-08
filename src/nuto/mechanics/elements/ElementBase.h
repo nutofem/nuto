@@ -109,15 +109,43 @@ public:
     //! @return pointer to the node
     virtual NodeBase* GetNode(int rLocalNodeNumber)=0;
 
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual const NodeBase* GetNode(int rLocalNodeNumber)const=0;
+
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
     //! @param pointer to the node
     virtual void SetNode(int rLocalNodeNumber, NodeBase* rNode)=0;
 
+    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @return number of nodes
+    virtual int GetNumNodesGeometry()const=0;
+
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber)const=0;
+    virtual const NodeBase* GetNodeGeometry(int rLocalNodeNumber)const=0;
+
+    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    virtual NodeBase* GetNodeGeometry(int rLocalNodeNumber)=0;
+
+    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @return number of nodes
+    virtual int GetNumNodesField()const=0;
+
+    //! @brief returns a pointer to the i-th node of the element (field interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    virtual NodeBase* GetNodeField(int rLocalNodeNumber)=0;
+
+    //! @brief returns a pointer to the i-th node of the element (field interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    virtual const NodeBase* GetNodeField(int rLocalNodeNumber)const=0;
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical

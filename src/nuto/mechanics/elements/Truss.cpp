@@ -62,20 +62,20 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			throw MechanicsException("[NuTo::Truss::Evaluate] no section allocated for element.");
 
 		//calculate coordinates
-		int numCoordinates(GetNumShapeFunctions());
+		int numCoordinates(GetNumNodesGeometry());
 		std::vector<double> localNodeCoord(numCoordinates);
 		CalculateLocalCoordinates(localNodeCoord);
 
 		//calculate local displacements, velocities and accelerations
 		//the difference between disp and dispdof is a problem where the displacements are fixed, but enter the constitutive equation
 		//for example in a two stage problem, first solve mechanics, then thermal and so on
-		int numDisp(GetNumShapeFunctions());
+		int numDisp(GetNumNodesField());
 		int numDispDofs = section->GetIsDisplacementDof() ? numDisp : 0;
 
-		int numTemp(GetNumShapeFunctions());
+		int numTemp(GetNumNodesField());
 		int numTempDofs(section->GetIsTemperatureDof() ? numTemp : 0);
 
-		int numNonlocalEqPlasticStrain(2*GetNumShapeFunctions());
+		int numNonlocalEqPlasticStrain(2*GetNumNodesField());
 		int numNonlocalEqPlasticStrainDofs(section->GetIsNonlocalEqPlasticStrainDof() ? numNonlocalEqPlasticStrain : 0);
 
 		int numNonlocalTotalStrain(GetNumShapeFunctionsNonlocalTotalStrain());
@@ -110,11 +110,12 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		double localIPCoord;
 
 		//allocate space for local shape functions
-		std::vector<double> derivativeShapeFunctionsNatural(GetLocalDimension()*GetNumShapeFunctions());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsLocal(GetLocalDimension()*GetNumShapeFunctions());    //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsNaturalNonlocalTotalStrain(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsLocalNonlocalTotalStrain(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());    //allocate space for derivatives of shape functions
-		std::vector<double> shapeFunctions(GetNumShapeFunctions());                                       //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsGeometryNatural(GetLocalDimension()*GetNumNodesGeometry());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsFieldNatural(GetLocalDimension()*GetNumNodesField());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsFieldLocal(GetLocalDimension()*GetNumNodesField());    //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsNonlocalTotalStrainNatural(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());  //allocate space for derivatives of shape functions
+		std::vector<double> derivativeShapeFunctionsNonlocalTotalStrainLocal(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());    //allocate space for derivatives of shape functions
+		std::vector<double> shapeFunctionsField(GetNumNodesField());                                       //allocate space for derivatives of shape functions
 		std::vector<double> shapeFunctionsNonlocalTotalStrain(GetNumShapeFunctionsNonlocalTotalStrain());                                       //allocate space for derivatives of shape functions
 
 		//allocate deformation gradient
@@ -325,21 +326,35 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
 
 			//derivative in natural coordinate system
-			CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctionsNatural);
+			CalculateDerivativeShapeFunctionsGeometry(localIPCoord, derivativeShapeFunctionsGeometryNatural);
 
 			//determinant of the Jacobian
-			double detJ(this->DetJacobian(derivativeShapeFunctionsNatural,localNodeCoord));
+			double detJ(this->DetJacobian(derivativeShapeFunctionsGeometryNatural,localNodeCoord));
 
-			//derivative in local coordinate system
-			for (unsigned int count=0; count<derivativeShapeFunctionsNatural.size(); count++)
-			{
-				derivativeShapeFunctionsLocal[count] = derivativeShapeFunctionsNatural[count]/detJ;
-			}
+            if (GetNumNodesGeometry()==GetNumNodesField())
+            {
+            	//isoparametric element
+				//derivative in local coordinate system
+				for (unsigned int count=0; count<derivativeShapeFunctionsGeometryNatural.size(); count++)
+				{
+					derivativeShapeFunctionsFieldLocal[count] = derivativeShapeFunctionsGeometryNatural[count]/detJ;
+				}
+            }
+            else
+            {
+    			//derivative in natural coordinate system
+    			CalculateDerivativeShapeFunctionsField(localIPCoord, derivativeShapeFunctionsFieldNatural);
+				//derivative in local coordinate system
+				for (unsigned int count=0; count<derivativeShapeFunctionsFieldNatural.size(); count++)
+				{
+					derivativeShapeFunctionsFieldLocal[count] = derivativeShapeFunctionsFieldNatural[count]/detJ;
+				}
+            }
 
 			if (numDispDofs)
 			{
 				// determine deformation gradient from the local Displacements and the derivative of the shape functions
-				CalculateDeformationGradient(derivativeShapeFunctionsLocal, localNodeCoord, localNodeDisp, deformationGradient);
+				CalculateDeformationGradient(derivativeShapeFunctionsFieldLocal, localNodeDisp, deformationGradient);
 			}
 
 			if (numTempDofs)
@@ -358,8 +373,8 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 			if (numNonlocalEqPlasticStrainDofs)
 			{
-				CalculateShapeFunctions(localIPCoord, shapeFunctions);
-				CalculateNonlocalEqPlasticStrain(shapeFunctions, nodeNonlocalEqPlasticStrain, nonLocalEqPlasticStrain);
+				CalculateShapeFunctionsNonlocalTotalStrain(localIPCoord, shapeFunctionsNonlocalTotalStrain);
+				CalculateNonlocalEqPlasticStrain(shapeFunctionsNonlocalTotalStrain, nodeNonlocalEqPlasticStrain, nonLocalEqPlasticStrain);
 			}
 
 			if (numNonlocalTotalStrainDofs)
@@ -367,12 +382,12 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				CalculateShapeFunctionsNonlocalTotalStrain(localIPCoord, shapeFunctionsNonlocalTotalStrain);
 
 				//derivative in natural coordinate system
-				CalculateDerivativeShapeFunctionsNonlocalTotalStrain(localIPCoord, derivativeShapeFunctionsNaturalNonlocalTotalStrain);
+				CalculateDerivativeShapeFunctionsNonlocalTotalStrain(localIPCoord, derivativeShapeFunctionsNonlocalTotalStrainNatural);
 
 				//derivative in local coordinate system
-				for (unsigned int count=0; count<derivativeShapeFunctionsLocalNonlocalTotalStrain.size(); count++)
+				for (unsigned int count=0; count<derivativeShapeFunctionsNonlocalTotalStrainLocal.size(); count++)
 				{
-					derivativeShapeFunctionsLocalNonlocalTotalStrain[count] = derivativeShapeFunctionsNaturalNonlocalTotalStrain[count]/detJ;
+					derivativeShapeFunctionsNonlocalTotalStrainLocal[count] = derivativeShapeFunctionsNonlocalTotalStrainNatural[count]/detJ;
 				}
 
 				CalculateNonlocalTotalStrain(shapeFunctionsNonlocalTotalStrain, nodeNonlocalTotalStrain, nonlocalTotalStrain);
@@ -392,7 +407,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			{
 				//calculate Kkk detJ*(cBtB+NtN)
 				//the nonlocal radius is in a gradient formulation is different from the nonlocal radius in an integral formulation
-				CalculateKkk(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsLocalNonlocalTotalStrain,constitutivePtr->GetNonlocalRadius(),factor,Kkk);
+				CalculateKkk(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsNonlocalTotalStrainLocal,constitutivePtr->GetNonlocalRadius(),factor,Kkk);
 			}
 
 			//calculate output
@@ -408,7 +423,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 						if (numDispDofs>0)
 						{
-							AddDetJBtSigma(derivativeShapeFunctionsLocal,engineeringStress1D, factor, 0, it->second->GetFullVectorDouble());
+							AddDetJBtSigma(derivativeShapeFunctionsFieldLocal,engineeringStress1D, factor, 0, it->second->GetFullVectorDouble());
 						}
 						if (numTempDofs>0)
 						{
@@ -418,7 +433,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						if (numNonlocalEqPlasticStrainDofs>0)
 						{
 							//add Kkk*nonlocalEqPlasticStrain+detJ*F
-							AddDetJRnonlocalplasticStrain(shapeFunctions,localEqPlasticStrain, Kkk, nodeNonlocalEqPlasticStrain, factor, numDispDofs+numTempDofs, it->second->GetFullVectorDouble());
+							AddDetJRnonlocalplasticStrain(shapeFunctionsField,localEqPlasticStrain, Kkk, nodeNonlocalEqPlasticStrain, factor, numDispDofs+numTempDofs, it->second->GetFullVectorDouble());
 						}
 						if (numNonlocalTotalStrainDofs>0)
 						{
@@ -433,7 +448,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						if (numDispDofs>0)
 						{
 							//derivative of F(sigma) with respect to all unknowns
-							AddDetJBtCB(derivativeShapeFunctionsLocal, tangentStressStrain, factor, 0,0, it->second->GetFullMatrixDouble());
+							AddDetJBtCB(derivativeShapeFunctionsFieldLocal, tangentStressStrain, factor, 0,0, it->second->GetFullMatrixDouble());
 							if (tangentStressStrain.GetSymmetry()==false)
 								it->second->SetSymmetry(false);
 							if (tangentStressStrain.GetConstant()==false)
@@ -442,11 +457,11 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 								throw MechanicsException("[NuTo::Truss::Evaluate] mixed terms not yet implemented.");
 							if (numNonlocalEqPlasticStrainDofs>0)
 							{
-								AddDetJBtdSigmadNonlocalEqPlasticStrainN(derivativeShapeFunctionsLocal, tangentStressNonlocalEqPlasticStrain,shapeFunctions, factor, 0,numDispDofs+numTempDofs, it->second->GetFullMatrixDouble());
+								AddDetJBtdSigmadNonlocalEqPlasticStrainN(derivativeShapeFunctionsFieldLocal, tangentStressNonlocalEqPlasticStrain,shapeFunctionsField, factor, 0,numDispDofs+numTempDofs, it->second->GetFullMatrixDouble());
 							}
 							if (numNonlocalTotalStrainDofs>0)
 							{
-								AddDetJBtdSigmadNonlocalTotalStrainN(derivativeShapeFunctionsLocal, tangentStressNonlocalTotalStrain,shapeFunctionsNonlocalTotalStrain, factor, 0,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, it->second->GetFullMatrixDouble());
+								AddDetJBtdSigmadNonlocalTotalStrainN(derivativeShapeFunctionsNonlocalTotalStrainLocal, tangentStressNonlocalTotalStrain,shapeFunctionsNonlocalTotalStrain, factor, 0,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, it->second->GetFullMatrixDouble());
 							}
 						}
 						if (numTempDofs>0)
@@ -466,7 +481,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							//derivative of F(nonlocalEqPlasticStrain) with respect to all unknowns
 							if (numDispDofs>0)
 							{
-								AddDetJNtdLocalEqPlasticStraindEpsilonB(shapeFunctions,tangentLocalEqPlasticStrainStrain,derivativeShapeFunctionsLocal, factor, numDispDofs+numTempDofs, 0, it->second->GetFullMatrixDouble());
+								AddDetJNtdLocalEqPlasticStraindEpsilonB(shapeFunctionsField,tangentLocalEqPlasticStrainStrain,derivativeShapeFunctionsFieldLocal, factor, numDispDofs+numTempDofs, 0, it->second->GetFullMatrixDouble());
 							}
 							it->second->GetFullMatrixDouble().AddBlock(numDispDofs+numTempDofs,numDispDofs+numTempDofs,Kkk);
 							it->second->GetFullMatrixDouble().AddBlock(numDispDofs+numTempDofs+this->GetNumNodes(),numDispDofs+numTempDofs+this->GetNumNodes(),Kkk);
@@ -476,7 +491,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							//derivative of F(nonlocaltotalStrain) with respect to all unknowns
 							if (numDispDofs>0)
 							{
-								AddDetJNtB(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsLocal, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, 0, it->second->GetFullMatrixDouble());
+								AddDetJNtB(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsFieldLocal, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, 0, it->second->GetFullMatrixDouble());
 							}
 							it->second->GetFullMatrixDouble().AddBlock(numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs,Kkk);
 						}
@@ -514,13 +529,13 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					if (numDispDofs>0)
 					{
 						double density = constitutivePtr->GetDensity();
-						this->CalculateShapeFunctions(localIPCoord, shapeFunctions);
+						this->CalculateShapeFunctionsField(localIPCoord, shapeFunctionsField);
 
 						// calculate local mass matrix
 						// don't forget to include determinant of the Jacobian and area
 						// detJ * area * density * HtH, :
 						double factor2 (density * factor);
-						this->AddDetJHtH(shapeFunctions, factor2, it->second->GetFullMatrixDouble());
+						this->AddDetJHtH(shapeFunctionsField, factor2, it->second->GetFullMatrixDouble());
 
 						//if (numTemp>0) no mixed terms
 					}
@@ -755,8 +770,6 @@ void NuTo::Truss::CalculateKkk(const std::vector<double>& shapeFunctions,const s
 	}
 }
 
-
-
 //! @brief stores the temperatures of the nodes
 //! @param time derivative (0 temperature, 1 temperature rate, 2 second time derivative of temperature)
 //! @param temperature vector with already correct size allocated
@@ -765,8 +778,8 @@ void NuTo::Truss::CalculateNodalTemperatures(int rTimeDerivative, std::vector<do
 {
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
-	assert((int)rTemperatures.size()==GetNumShapeFunctions());
-    for (int count=0; count<GetNumShapeFunctions(); count++)
+	assert((int)rTemperatures.size()==GetNumNodesField());
+    for (int count=0; count<GetNumNodesField(); count++)
     {
         if (GetNode(count)->GetNumTemperatures()!=1)
             throw MechanicsException("[NuTo::Truss::CalculateTemperatures] Temperature is required as input to the constitutive model, but the node does not have this data.");
@@ -782,15 +795,15 @@ void NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std
 {
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
-	assert((int)rNodalNonlocalEqPlasticStrain.size()==2*GetNumShapeFunctions());
+	assert((int)rNodalNonlocalEqPlasticStrain.size()==2*GetNumNodesField());
 	double nonlocalEqPlasticStrain[2];
-    for (int count=0; count<GetNumShapeFunctions(); count++)
+    for (int count=0; count<GetNumNodesField(); count++)
     {
         if (GetNode(count)->GetNumNonlocalEqPlasticStrain()!=2)
             throw MechanicsException("[NuTo::Truss::CalculateNodalDamage] Damage is required as input to the constitutive model, but the node does not have this data.");
         GetNode(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
         rNodalNonlocalEqPlasticStrain[count] = nonlocalEqPlasticStrain[0];
-        rNodalNonlocalEqPlasticStrain[count+GetNumShapeFunctions()] = nonlocalEqPlasticStrain[1];
+        rNodalNonlocalEqPlasticStrain[count+GetNumNodesField()] = nonlocalEqPlasticStrain[1];
     }
 }
 
@@ -813,323 +826,24 @@ void NuTo::Truss::CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::ve
     }
 }
 
-//! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-//! for a mechanical problem, this corresponds to the stiffness matrix
-/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
-{
-    // get section information determining which input on the constitutive level should be used
-    const SectionBase* section(GetSection());
-    if (section==0)
-        throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_0] no section allocated for element.");
-
-    //calculate local coordinates
-    std::vector<double> localNodeCoord(GetNumShapeFunctions());
-    CalculateLocalCoordinates(localNodeCoord);
-
-    //calculate local displacements
-    int numDisp(GetNumShapeFunctions());
-    std::vector<double> localNodeDisp(numDisp);
-    if (section->GetInputConstitutiveIsDeformationGradient())
-    {
-        CalculateLocalDisplacements(localNodeDisp);
-    }
-    int numDisp(0);
-    if (section->GetIsDisplacementDof())
-        numDisp = numDisp;
-
-    //calculate temperatures
-    int numTemp(GetNumShapeFunctions());
-    std::vector<double> nodeTemp(numTemp);
-    if (section->GetInputConstitutiveIsTemperatureGradient() || section->GetInputConstitutiveIsTemperature())
-    {
-        throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_0] temperature not fully implemented.");
-    	//CalculateTemperatures(nodeTemp);
-    }
-    int numTemp(0);
-    if (section->GetIsTemperatureDof())
-        numTemp=numTemp;
-
-    //allocate space for local ip coordinates
-    double localIPCoord;
-
-    //allocate space for local shape functions
-    std::vector<double> derivativeShapeFunctions(GetLocalDimension()*GetNumShapeFunctions());
-
-    //allocate deformation gradient
-    DeformationGradient1D deformationGradient;
-
-    //allocate deformation gradient
-    TemperatureGradient1D temperatureGradient;
-
-    //allocate deformation gradient
-    ConstitutiveTangentLocal1x1 tangentStressStrain;
-
-    //allocate deformation gradient
-    ConstitutiveTangentLocal1x1 tangentFluxGradTemp;
-
-    //material pointer
-    const ConstitutiveEngineeringStressStrain *constitutivePtr;
-
-    //allocate and initialize result matrix
-    rCoefficientMatrix.Resize(GetNumLocalDofs(),GetNumLocalDofs());
-    bool areAllIpsSymmetric=(true);
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
-    {
-        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
-
-        CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
-
-        // determine deformation gradient from the local Displacements and the derivative of the shape functions
-        // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-        CalculateDeformationGradient(derivativeShapeFunctions, localNodeCoord, localNodeDisp, deformationGradient);
-
-        //call material law to calculate tangent
-        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
-        if (constitutivePtr==0)
-            throw MechanicsException("[NuTo::Solid::GetEngineeringStress] Constitutive law can not deal with engineering stresses and strains");
-        Error::eError error = constitutivePtr->GetTangent_EngineeringStress_EngineeringStrain(this, theIP,
-                deformationGradient, &tangentStressStrain);
-        if (error!=Error::SUCCESSFUL)
-        	return error;
-
-        areAllIpsSymmetric &= tangentStressStrain.GetSymmetry();
-
-        // calculate local stiffness matrix
-        // don't forget to include determinant of the Jacobian and area
-        // theoretically, the factor  is
-        // detJ * area*BtCB, but B includes 1/detJ, which finally gives:
-        double factor (mSection->GetArea()
-                       /DetJacobian(derivativeShapeFunctions,localNodeCoord)
-                       *(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
-
-        AddDetJBtCB(derivativeShapeFunctions,tangentStressStrain, factor, rCoefficientMatrix);
-    }
-
-    // eventually blow local matrix to full matrix - only relevant for
-    // truss in 2D and 3D
-    BlowLocalMatrixToGlobal(rCoefficientMatrix);
-
-    // symmetry flag
-    rSymmetry = areAllIpsSymmetric;
-
-    // calculate list of global dofs related to the entries in the element stiffness matrix
-    this->CalculateGlobalRowDofs(rGlobalDofsRow);
-	this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
-
-    return Error::SUCCESSFUL;
-}
-*/
-
-//! @brief calculates the gradient of the internal potential
-//! for a mechanical problem, this corresponds to the internal force vector
-/*NuTo::Error::eError NuTo::Truss::CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-        std::vector<int>& rGlobalDofs)const
-{
-    //calculate local coordinates
-    std::vector<double> localNodeCoord(GetNumLocalDofs());
-    CalculateLocalCoordinates(localNodeCoord);
-
-    //calculate local displacements
-    std::vector<double> localNodeDisp(GetNumLocalDofs());
-    CalculateLocalDisplacements(localNodeDisp);
-
-    //allocate space for local ip coordinates
-    double localIPCoord;
-
-    //allocate space for local shape functions
-    std::vector<double> derivativeShapeFunctions(GetLocalDimension()*GetNumShapeFunctions());
-
-    //allocate deformation gradient
-    DeformationGradient1D deformationGradient;
-
-    //allocate global engineering stress
-    EngineeringStress1D engineeringStress;
-
-    //material pointer
-    const ConstitutiveEngineeringStressStrain *constitutivePtr;
-
-    //allocate and initialize result matrix
-    rResult.Resize(GetNumLocalDofs(),1);
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
-    {
-        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
-
-        CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
-
-        // determine deformation gradient from the local Displacements and the derivative of the shape functions
-        // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-        CalculateDeformationGradient(derivativeShapeFunctions, localNodeCoord, localNodeDisp, deformationGradient);
-
-        //call material law to calculate stress
-        constitutivePtr = dynamic_cast<const ConstitutiveEngineeringStressStrain*>(GetConstitutiveLaw(theIP));
-        if (constitutivePtr==0)
-            throw MechanicsException("[NuTo::Truss::CalculateGradientInternalPotential] Constitutive law can not deal with engineering stresses and strains");
-        Error::eError error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP,
-                deformationGradient, engineeringStress);
-        if (error!=Error::SUCCESSFUL)
-        	return error;
-
-        // calculate local stiffness matrix
-        // theoretically, the factor  is
-        // detJ * area*BtSigma, but B includes 1/detJ, which finally gives:
-        double factor (mSection->GetArea()
-                       *(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
-
-        AddDetJBtSigma(derivativeShapeFunctions,engineeringStress, factor, rResult);
-    }
-
-    // eventually blow local matrix to full matrix - only relevant for
-    // truss in 2D and 3D
-    BlowLocalVectorToGlobal(rResult);
-
-    // calculate list of global dofs related to the entries in the element stiffness matrix
-    this->CalculateGlobalRowDofs(rGlobalDofs);
-
-    return Error::SUCCESSFUL;
-}
-*/
-
-//! @brief Update the static data of an element
-/*NuTo::Error::eError NuTo::Truss::UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)
-{
-
-	//calculate local coordinates
-    std::vector<double> localNodeCoord(GetNumLocalDofs());
-    CalculateLocalCoordinates(localNodeCoord);
-
-    //calculate local displacements
-    std::vector<double> localNodeDisp(GetNumLocalDofs());
-    CalculateLocalDisplacements(localNodeDisp);
-
-    //allocate space for local ip coordinates
-    double localIPCoord;
-
-    //allocate space for local shape functions
-    std::vector<double> derivativeShapeFunctions(GetLocalDimension()*GetNumShapeFunctions());
-
-    //allocate deformation gradient
-    DeformationGradient1D deformationGradient;
-
-    //material pointer
-    const ConstitutiveEngineeringStressStrain *constitutivePtr;
-
-    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
-    {
-        GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
-
-        CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
-
-        // determine deformation gradient from the local Displacements and the derivative of the shape functions
-        // this is not included in the AddIpStiffness to avoid reallocation of the deformation gradient for each IP
-        CalculateDeformationGradient(derivativeShapeFunctions, localNodeCoord, localNodeDisp, deformationGradient);
-
-        //call material law to update static data
-        constitutivePtr = GetConstitutiveLaw(theIP)->AsConstitutiveEngineeringStressStrain();
-        if (constitutivePtr==0)
-            throw MechanicsException("[NuTo::Truss::UpdateStaticData] Constitutive law can not deal with engineering stresses and strains");
-        Error::eError error;
-        switch(rUpdateType)
-        {
-        case NuTo::Element::STATICDATA:
-        	error = constitutivePtr->UpdateStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
-        break;
-        case NuTo::Element::TMPSTATICDATA:
-        	error = constitutivePtr->UpdateTmpStaticData_EngineeringStress_EngineeringStrain(this, theIP, deformationGradient);
-        break;
-        default:
-        	throw MechanicsException("[NuTo::Truss::UpdateStaticData] update static data flag not known (neither static not tmpstatic data");
-        }
-        if (error!=Error::SUCCESSFUL)
-        	return error;
-    }
-
-    return Error::SUCCESSFUL;
-}
-*/
-
 //! @brief calculates deformation gradient1D
 //! @param rRerivativeShapeFunctions derivatives of the shape functions
 //! @param rLocalDisp local displacements
 //! @param rConstitutiveInput (return value)
 void NuTo::Truss::CalculateDeformationGradient(const std::vector<double>& rDerivativeShapeFunctions,
-        const std::vector<double>& rLocalCoord,
         const std::vector<double>& rLocalDisp,
         DeformationGradient1D& rDeformationGradient)const
 {
-    assert((int)rLocalDisp.size()==GetNumNodes() && (int)rDerivativeShapeFunctions.size()==GetNumNodes());
+    assert((int)rLocalDisp.size()==GetNumNodesField() && (int)rDerivativeShapeFunctions.size()==GetNumNodesField());
     rDeformationGradient.mDeformationGradient = 0;
 
     //normally, the inverse Jacobian should be calculated, but for a truss element, it is sufficient to use the inverse of the Jacobian determinant
-    double factor(1./DetJacobian(rDerivativeShapeFunctions, rLocalCoord));
     for (int count=0; count<GetNumNodes(); count++)
     {
         rDeformationGradient.mDeformationGradient+=rLocalDisp[count]*rDerivativeShapeFunctions[count];
     }
-    rDeformationGradient.mDeformationGradient*=factor;
     rDeformationGradient.mDeformationGradient+=1.;
 }
-
-//! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
-//! for a mechanical problem, this corresponds to the damping matrix
-/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
-{
-    throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_1] to be implemented.");
-}
-*/
-
-//! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
-//! for a mechanical problem, this corresponds to the Mass matrix
-/*NuTo::Error::eError NuTo::Truss::CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix,
-        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const
-{
-    //calculate local coordinates
-    std::vector<double> localNodeCoord(this->GetNumLocalDofs());
-    this->CalculateLocalCoordinates(localNodeCoord);
-
-    //allocate space for local shape functions
-    std::vector<double> derivativeShapeFunctions(this->GetLocalDimension()*this->GetNumShapeFunctions());
-    std::vector<double> shapeFunctions(this->GetNumShapeFunctions());
-
-    //allocate and initialize result matrix
-    rCoefficientMatrix.Resize(this->GetNumLocalDofs(),this->GetNumLocalDofs());
-    for (int theIP=0; theIP<this->GetNumIntegrationPoints(); theIP++)
-    {
-    	double localIPCoord;
-        this->GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
-
-        this->CalculateShapeFunctions(localIPCoord, shapeFunctions);
-        this->CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
-
-        //call material law to calculate tangent
-        const ConstitutiveBase* constitutivePtr = this->GetConstitutiveLaw(theIP);
-        if (constitutivePtr==0)
-        {
-            throw MechanicsException("[NuTo::Truss::CalculateCoefficientMatrix_2] Constitutive law can not found at integration point.");
-        }
-        double density = constitutivePtr->GetDensity();
-
-        // calculate local mass matrix
-        // don't forget to include determinant of the Jacobian and area
-        // detJ * area * density * HtH, :
-        double factor (density * this->mSection->GetArea() * this->DetJacobian(derivativeShapeFunctions,localNodeCoord)
-                       *(this->mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
-        this->AddDetJHtH(shapeFunctions, factor, rCoefficientMatrix);
-    }
-
-    // eventually blow local matrix to full matrix - only relevant for
-    // truss in 2D and 3D
-    this->BlowLocalMatrixToGlobal(rCoefficientMatrix);
-
-    // calculate list of global dofs related to the entries in the element stiffness matrix
-    this->CalculateGlobalRowDofs(rGlobalDofsRow);
-    this->CalculateGlobalColumnDofs(rGlobalDofsColumn);
-    rSymmetry = true;
-
-    return Error::SUCCESSFUL;
-}
-*/
 
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point
@@ -1149,7 +863,7 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     double nodeCoordinates[3];
     std::vector<double> shapeFunctions(GetNumNodes());
     GetLocalIntegrationPointCoordinates(rIpNum, naturalCoordinates);
-    CalculateShapeFunctions(naturalCoordinates, shapeFunctions);
+    CalculateShapeFunctionsGeometry(naturalCoordinates, shapeFunctions);
     rCoordinates[0] = 0.;
     rCoordinates[1] = 0.;
     rCoordinates[2] = 0.;
@@ -1427,14 +1141,14 @@ void NuTo::Truss::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
 void NuTo::Truss::GetIntegrationPointVolume(std::vector<double>& rVolume)const
 {
     //calculate local coordinates
-    std::vector<double> localNodeCoord(GetNumLocalDofs());
+    std::vector<double> localNodeCoord(GetNumNodesGeometry());
     CalculateLocalCoordinates(localNodeCoord);
 
     //allocate space for local ip coordinates
     double localIPCoord;
 
     //allocate space for local shape functions
-    std::vector<double> derivativeShapeFunctions(GetLocalDimension()*GetNumShapeFunctions());
+    std::vector<double> derivativeShapeFunctions(GetNumNodesGeometry());
 
 	rVolume.resize(GetNumIntegrationPoints());
 
@@ -1442,7 +1156,7 @@ void NuTo::Truss::GetIntegrationPointVolume(std::vector<double>& rVolume)const
     {
         GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
 
-        CalculateDerivativeShapeFunctions(localIPCoord, derivativeShapeFunctions);
+        CalculateDerivativeShapeFunctionsGeometry(localIPCoord, derivativeShapeFunctions);
 
 		//attention in 1D, this is just the length, but that is required for the nonlocal model
 		rVolume[theIP] = DetJacobian(derivativeShapeFunctions,localNodeCoord)

@@ -1481,11 +1481,6 @@ public:
     void GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter,
     		 NuTo::FullVector<double,Eigen::Dynamic> rDirection, double rMin, double rMax);
 
-    //! @brief ... Adds an element to an element group
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rIdentElement  identifier for the element
-    void GroupAddElement(int rIdentGroup, int rIdElement);
-
     //! @brief ... Returns the number of members in a group
     //! @param ... rIdentGroup identifier for the group
     //! @return ... number of members

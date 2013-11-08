@@ -82,13 +82,13 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatri
 	{
 		const BoundaryGradientDamage1D* elementPtr (mParentElement->AsBoundaryGradientDamage1D());
 		// add constraint to constrain matrix
-		int numNonlocalTotalStrain(elementPtr->GetNumShapeFunctions());
+		int numNonlocalTotalStrain(elementPtr->GetNumNodesField());
 
 		std::vector<double> derivativeShapeFunctionsNaturalNonlocalTotalStrain(numNonlocalTotalStrain);  //allocate space for derivatives of shape functions
 		//std::vector<double> derivativeShapeFunctionsLocalNonlocalTotalStrain(numNonlocalTotalStrain);    //allocate space for derivatives of shape functions
 
 		//derivative in natural coordinate system
-		elementPtr->CalculateDerivativeShapeFunctions(mLocalIpCoordinate, derivativeShapeFunctionsNaturalNonlocalTotalStrain);
+		elementPtr->CalculateDerivativeShapeFunctionsField(mLocalIpCoordinate, derivativeShapeFunctionsNaturalNonlocalTotalStrain);
 
 		//derivative in local coordinate system
 		//for (unsigned int count=0; count<derivativeShapeFunctionsLocalNonlocalTotalStrain.size(); count++)

@@ -111,6 +111,7 @@ elements/Plane.cpp
 elements/Plane2D.cpp
 elements/Plane2D3N.cpp
 elements/Plane2D4N.cpp
+elements/Plane2D4NSpectralOrder2.cpp
 elements/Plane2D6N.cpp
 elements/Solid.cpp
 elements/Tetrahedron10N.cpp
@@ -134,12 +135,14 @@ integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp
 integrationtypes/IntegrationType1D2NGauss3Ip.cpp
+integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
 integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D3NGauss1Ip.cpp
 integrationtypes/IntegrationType2D3NGauss3Ip.cpp
 integrationtypes/IntegrationType2D4NConstVariableIp.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp
+integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
 integrationtypes/IntegrationType2D4NModTriangle.cpp
 integrationtypes/IntegrationType2D4NModVariableIp.cpp
 integrationtypes/IntegrationType2DMod.cpp
@@ -199,6 +202,7 @@ structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
+structures/unstructured//StructureGroup.cpp
 structures/unstructured/StructureMesh.cpp
 structures/unstructured/StructureNode.cpp
 structures/grid/OctreeGrid.cpp

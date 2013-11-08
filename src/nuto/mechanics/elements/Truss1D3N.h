@@ -35,7 +35,85 @@ public:
     //! @return number of nodes
     int GetNumNodes()const
     {
+        return 3;
+    }
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNode(int rLocalNodeNumber)
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNode(int rLocalNodeNumber)const
+    {
+    	assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        return mNodes[rLocalNodeNumber];
+    }
+
+
+    //! @brief sets the rLocalNodeNumber-th node of the element
+    //! @param local node number
+    //! @param pointer to the node
+    void SetNode(int rLocalNodeNumber, NodeBase* rNode)
+    {
+    	assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        mNodes[rLocalNodeNumber] = rNode;
+    }
+
+    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @return number of nodes
+    int GetNumNodesGeometry()const
+    {
     	return 3;
+    }
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNodeGeometry(int rLocalNodeNumber)const
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNodeGeometry(int rLocalNodeNumber)
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @return number of nodes
+    int GetNumNodesField()const
+    {
+    	return 3;
+    }
+
+    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNodeField(int rLocalNodeNumber)const
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns a pointer to the i-th node of the element (field interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNodeField(int rLocalNodeNumber)
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
+        return mNodes[rLocalNodeNumber];
     }
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -43,15 +121,6 @@ public:
     //! @param rOldPtr old node ptr
     //! @param rNewPtr new node ptr
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr);
-
-    //! @brief returns the number of shape functions
-    //! this is required for the calculation of the derivatives of the shape functions
-    //! whose size is GetLocalDimension*GetNumShapeFunctions
-    //! @return local dimension
-    virtual int GetNumShapeFunctions()const
-    {
-    	return 3;
-    }
 
     //! @brief returns the number of shape functions
     //! this is required for the calculation of the derivatives of the shape functions
@@ -65,7 +134,12 @@ public:
     //! @brief calculates the shape functions
 	//! @param rLocalCoordinates local coordinates of the integration point
 	//! @param shape functions for all the nodes
-	void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+	void CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+
+	//! @brief calculates the shape functions
+	//! @param rLocalCoordinates local coordinates of the integration point
+	//! @param shape functions for all the nodes
+	void CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
 	//! @brief calculates the shape functions
 	//! @param rLocalCoordinates local coordinates of the integration point
@@ -76,38 +150,19 @@ public:
 	//! @param rLocalCoordinates local coordinates of the integration point
 	//! @param derivative of the shape functions for all the nodes,
 	//! first all the directions for a single node, and then for the next node
-	void CalculateDerivativeShapeFunctions(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+	void CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+
+	//! @brief calculates the derivative of the shape functions
+	//! @param rLocalCoordinates local coordinates of the integration point
+	//! @param derivative of the shape functions for all the nodes,
+	//! first all the directions for a single node, and then for the next node
+	void CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
-
-    //! @brief returns the number of local degrees of freedom
-    //! @return number of local degrees of freedom
-    inline int GetNumLocalDofs()const
-    {
-    	return 3;
-    }
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber)
-    {
-    	assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 || rLocalNodeNumber==2);
-    	return mNodes[rLocalNodeNumber];
-    }
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber)const
-    {
-    	assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 || rLocalNodeNumber==2);
-    	return mNodes[rLocalNodeNumber];
-    }
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
@@ -135,16 +190,6 @@ public:
     		return mNodes[2];
     	throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalTotalStrain] the interpolation order is only linear for the total strain.");
         return 0;
-    }
-
-
-    //! @brief sets the rLocalNodeNumber-th node of the element
-    //! @param local node number
-    //! @param pointer to the node
-    void SetNode(int rLocalNodeNumber, NodeBase* rNode)
-    {
-    	assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 || rLocalNodeNumber==2);
-    	mNodes[rLocalNodeNumber] = rNode;
     }
 
 	//! @brief calculate list of global dofs related to the entries in the element stiffness matrix

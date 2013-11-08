@@ -33,7 +33,7 @@ NuTo::Plane2D6N::Plane2D6N(NuTo::StructureBase* rStructure, std::vector<NuTo::No
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
-void NuTo::Plane2D6N::CalculateShapeFunctions(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+void NuTo::Plane2D6N::CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
 	assert(rShapeFunctions.size()==6);
     double r(rNaturalCoordinates[0]);
@@ -47,11 +47,19 @@ void NuTo::Plane2D6N::CalculateShapeFunctions(const double rNaturalCoordinates[2
     rShapeFunctions[5] = -4.*s*(s+r-1.);
 }
 
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Plane2D6N::CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+{
+	CalculateShapeFunctionsGeometry(rNaturalCoordinates,rShapeFunctions);
+}
+
 //! @brief calculates the derivative of the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
 	assert(rDerivativeShapeFunctions.size()==12);
     double r(rNaturalCoordinates[0]);
@@ -75,6 +83,15 @@ void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsNatural(const double rNat
     rDerivativeShapeFunctions[10] = -4.*s;;
     rDerivativeShapeFunctions[11] = -8.*s-4.*r+4.;
 
+}
+
+//! @brief calculates the derivative of the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+{
+	CalculateDerivativeShapeFunctionsGeometryNatural(rNaturalCoordinates,rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the shape functions for the surfaces (required for surface loads)

@@ -46,30 +46,6 @@ public:
     Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rConstitutiveOutput);
 
 
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the stiffness matrix
-    //! @param rResult ... coefficient matrix
-    //! @param rGlobalDofsRow ... row numbers in global system
-    //! @param rGlobalDofsColumn ... column numbers in global system
-    //! @param rSymmetry ... matrix is symmetric or not (in the symmetric case the full matrix is also stored
-    //Error::eError CalculateCoefficientMatrix_0(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
-
-    //! @brief calculates the coefficient matrix for the 1-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the damping matrix
-    //Error::eError CalculateCoefficientMatrix_1(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
-
-    //! @brief calculates the coefficient matrix for the 2-th derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the Mass matrix
-    //Error::eError CalculateCoefficientMatrix_2(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-    //        std::vector<int>& rGlobalDofsRow, std::vector<int>& rGlobalDofsColumn, bool& rSymmetry)const;
-
-    //! @brief calculates the gradient of the internal potential
-    //! for a mechanical problem, this corresponds to the internal force vector
-    //Error::eError CalculateGradientInternalPotential(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-    //                                        std::vector<int>& rGlobalDofs)const;
-
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section
@@ -127,12 +103,6 @@ public:
                            double rInvJacobian[9],
                            double& rDetJac)const;
 
-    //! @brief returns the number of shape functions
-    //! this is required for the calculation of the derivatives of the shape functions
-    //! whose size is GetLocalDimension*GetNumShapeFunctions
-    //! @return local dimension
-    virtual int GetNumShapeFunctions()const=0;
-
     //! @brief returns the coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
@@ -143,17 +113,27 @@ public:
     //! @param rCoordinates coordinates to be returned
     virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const;
 
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    virtual void CalculateShapeFunctionsGeometry(const double rLocalCoordinates[3], std::vector<double>& rShapeFunctions)const=0;
 
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-    virtual void CalculateShapeFunctions(const double rLocalCoordinates[3], std::vector<double>& rShapeFunctions)const=0;
+    virtual void CalculateShapeFunctionsField(const double rLocalCoordinates[3], std::vector<double>& rShapeFunctions)const=0;
 
     //! @brief calculates the derivative of the shape functions with respect to local coordinates
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
-    virtual void CalculateDerivativeShapeFunctionsLocal(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const=0;
+    virtual void CalculateDerivativeShapeFunctionsGeometryNatural(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const=0;
+
+    //! @brief calculates the derivative of the shape functions with respect to local coordinates
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsFieldNatural(const double rLocalCoordinates[3], std::vector<double>& rDerivativeShapeFunctions)const=0;
 
     //! @brief calculates the derivative of the shape functions with respect to global coordinates
     //! @param std::vector<double>& rDerivativeShapeFunctions derivatives of the shape functions

@@ -33,7 +33,21 @@ NuTo::Tetrahedron4N::~Tetrahedron4N()
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
-void NuTo::Tetrahedron4N::CalculateShapeFunctions(const double rLocalCoordinates[3],
+void NuTo::Tetrahedron4N::CalculateShapeFunctionsGeometry(const double rLocalCoordinates[3],
+        std::vector <double> &rShapeFunctions) const
+{
+    assert(rShapeFunctions.size()==4);
+    rShapeFunctions[0] = 1.0 - rLocalCoordinates[0]- rLocalCoordinates[1]
+                         - rLocalCoordinates[2];
+    rShapeFunctions[1] = rLocalCoordinates[0];
+    rShapeFunctions[2] = rLocalCoordinates[1];
+    rShapeFunctions[3] = rLocalCoordinates[2];
+}
+
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Tetrahedron4N::CalculateShapeFunctionsField(const double rLocalCoordinates[3],
         std::vector <double> &rShapeFunctions) const
 {
     assert(rShapeFunctions.size()==4);
@@ -48,7 +62,35 @@ void NuTo::Tetrahedron4N::CalculateShapeFunctions(const double rLocalCoordinates
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsLocal(
+void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsGeometryNatural(
+    const double rLocalCoordinates[3],
+    std::vector <double> &rDerivativeShapeFunctions) const
+{
+    assert(rDerivativeShapeFunctions.size()==12);
+
+    //node1
+    rDerivativeShapeFunctions[0] = -1.0;
+    rDerivativeShapeFunctions[1] = -1.0;
+    rDerivativeShapeFunctions[2] = -1.0;
+    //node2
+    rDerivativeShapeFunctions[3] = 1.0;
+    rDerivativeShapeFunctions[4] = 0.0;
+    rDerivativeShapeFunctions[5] = 0.0;
+    //node3
+    rDerivativeShapeFunctions[6] = 0.0;
+    rDerivativeShapeFunctions[7] = 1.0;
+    rDerivativeShapeFunctions[8] = 0.0;
+    //node4
+    rDerivativeShapeFunctions[9] = 0.0;
+    rDerivativeShapeFunctions[10] = 0.0;
+    rDerivativeShapeFunctions[11] = 1.0;
+}
+
+//! @brief calculates the derivative of the shape functions with respect to local coordinates
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::Tetrahedron4N::CalculateDerivativeShapeFunctionsFieldNatural(
     const double rLocalCoordinates[3],
     std::vector <double> &rDerivativeShapeFunctions) const
 {

@@ -126,16 +126,6 @@ public:
                            double rInvJacobian[4],
                            double& rDetJac)const;
 
-    //! @brief returns the number of degrees of freedom
-    //! @return number of degrees of freedom in the local coordinate system
-    virtual int GetNumLocalDofs()const=0;
-
-    //! @brief returns the number of shape functions
-    //! this is required for the calculation of the derivatives of the shape functions
-    //! whose size is GetLocalDimension*GetNumShapeFunctions
-    //! @return local dimension
-    virtual int GetNumShapeFunctions()const=0;
-
     //! @brief returns the coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
@@ -149,15 +139,26 @@ public:
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-    virtual void CalculateShapeFunctions(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const=0;
+    virtual void CalculateShapeFunctionsGeometry(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const=0;
+
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    virtual void CalculateShapeFunctionsField(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const=0;
 
     //! @brief calculates the derivative of the shape functions with respect to local coordinates
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
-    virtual void CalculateDerivativeShapeFunctionsNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const=0;
+    virtual void CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const=0;
 
-    //! @brief calculates the derivative of the shape functions with respect to global coordinates
+    //! @brief calculates the derivative of the shape functions with respect to local coordinates
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const=0;
+
+    //! @brief calculates the derivative of the shape functions with respect to local coordinates (Jacobi transformation)
     //! @param std::vector<double>& rDerivativeShapeFunctions derivatives of the shape functions
     //! @param rJacInv inverse of the Jacobian
     //! @param rDerivativeShapeFunctionsGlobal derivaties of the shape functions with respect to global coordinates

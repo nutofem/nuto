@@ -134,7 +134,7 @@ try
     }
 
 	//build global external load vector and RHS vector
-	myStructure.BuildGlobalExternalLoadVector(extForceVector);
+	myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
 	//extForceVector.Info(10,13);
     myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
     //intForceVector.Info(10,13);

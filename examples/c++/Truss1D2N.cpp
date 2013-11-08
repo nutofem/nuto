@@ -61,7 +61,7 @@ int main()
 	else
 	{
 		std::cout << "Load control" << std::endl;
-		myStructure.LoadCreateNodeForce(NumElements, direction, Force);
+		myStructure.LoadCreateNodeForce(1,NumElements, direction, Force);
 	}
 
 	// start analysis
@@ -75,7 +75,7 @@ int main()
 
 	// build global external load vector
 	NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-	myStructure.BuildGlobalExternalLoadVector(extForceVector);
+	myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
 
 	// calculate right hand side
 	NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;

@@ -163,7 +163,7 @@ try
 
 			// build global external load vector
 			NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-			myStructure.BuildGlobalExternalLoadVector(extForceVector);
+			myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
 			//std::cout<<"extForceVector" << std::endl;
 			//extForceVector.Trans().Info();
 

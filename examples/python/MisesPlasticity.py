@@ -105,8 +105,8 @@ for i in range(0, num_steps):
     
     if (numActiveDofs==0):
         numActiveDofs = myStructure.GetNumActiveDofs()
-        intForceVector.Resize(numActiveDofs,1)
-        displacementVector.Resize(numActiveDofs,1)
+        intForceVector.Resize(numActiveDofs)
+        displacementVector.Resize(numActiveDofs)
 
     #do while loop does not exist in python
     iteration = 0
@@ -118,7 +118,7 @@ for i in range(0, num_steps):
         myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 
         # build global external load vector
-        myStructure.BuildGlobalExternalLoadVector(extForceVector)
+        myStructure.BuildGlobalExternalLoadVector(1,extForceVector)
 
         # calculate right hand side
         rhsVector = dispForceVector + extForceVector - intForceVector

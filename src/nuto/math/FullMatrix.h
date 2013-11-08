@@ -285,7 +285,7 @@ void FullMatrix<T,rows,cols>::SetValue (int i, int j, const T& value )
 template<class T, int rows, int cols>
 void FullMatrix<T,rows,cols>::SetValue (int i, const T& value )
 {
-	if ( i>=GetNumRows() || i<0 || GetNumColumns()!=0)
+	if ( i>=GetNumRows() || i<0 || GetNumColumns()!=1)
 	{
 		throw MathException ( std::string ( "[FullMatrix::SetValue] Row or column number out of range." ) );
 	}
@@ -313,7 +313,7 @@ T FullMatrix<T,rows,cols>::GetValue (int i, int j ) const
 template<class T, int rows, int cols>
 T FullMatrix<T,rows,cols>::GetValue (int i) const
 {
-	if ( i>=GetNumRows() || i<0 || GetNumColumns()!=0)
+	if ( i>=GetNumRows() || i<0 || GetNumColumns()!=1)
 	{
 		throw MathException ( std::string ( "[FullMatrix::GetValue] Row number out of range or not a vector." ) );
 	}

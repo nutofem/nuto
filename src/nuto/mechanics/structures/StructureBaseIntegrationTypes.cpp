@@ -8,11 +8,13 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModTriangle.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
@@ -59,6 +61,9 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         case  NuTo::IntegrationType::IntegrationType1D2NGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss3Ip();
         break;
+        case  NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto3Ip();
+        break;
         case  NuTo::IntegrationType::IntegrationType2D3NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss1Ip();
         break;
@@ -70,6 +75,9 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         break;
         case  NuTo::IntegrationType::IntegrationType2D4NGauss4Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NGauss4Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType2D4NLobatto9Ip:
+            ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto9Ip();
         break;
         case  NuTo::IntegrationType::IntegrationType3D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss1Ip();

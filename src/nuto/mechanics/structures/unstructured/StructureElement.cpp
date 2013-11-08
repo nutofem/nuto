@@ -3,12 +3,14 @@
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/elements/BoundaryGradientDamage1D.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
+#include "nuto/mechanics/elements/Plane2D4NSpectralOrder2.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron4N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
@@ -430,47 +432,10 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
         nodeVector.push_back(NodeGetNodePtr(rNodeNumbers(count,0)));
     }
 
-    // get element type
-    std::string upperCaseElementType;
-    std::transform(rElementType.begin(), rElementType.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
-
-    Element::eElementType elementType;
-    if (upperCaseElementType=="TRUSS1D2N")
-    {
-    	elementType = NuTo::Element::TRUSS1D2N;
-    }
-    else if (upperCaseElementType=="TRUSS1D3N")
-	{
-    	elementType = NuTo::Element::TRUSS1D3N;
-	}
-    else if (upperCaseElementType=="BRICK8N")
-    {
-    	elementType = NuTo::Element::BRICK8N;
-    }
-    else if (upperCaseElementType=="PLANE2D3N")
-    {
-    	elementType = NuTo::Element::PLANE2D3N;
-    }
-    else if (upperCaseElementType=="PLANE2D4N")
-    {
-    	elementType = NuTo::Element::PLANE2D4N;
-    }
-    else if (upperCaseElementType=="PLANE2D6N")
-    {
-    	elementType = NuTo::Element::PLANE2D6N;
-    }
-    else if (upperCaseElementType=="TETRAHEDRON4N")
-    {
-    	elementType = NuTo::Element::TETRAHEDRON4N;
-    }
-    else if (upperCaseElementType=="TETRAHEDRON10N")
-    {
-    	elementType = NuTo::Element::TETRAHEDRON10N;
-    }
-    else
-    {
-    	throw MechanicsException("[NuTo::Structure::ElementCreate] Element type "+upperCaseElementType +" does not exist.");
-    }
+    //! @brief Returns the internal enum (number) for the element types
+    //! @param Element name in Nuto
+    //! @return enum
+    Element::eElementType elementType = this->ElementTypeGetEnum(rElementType);
 
     // check element data
     std::string upperCaseElementDataType;
@@ -521,6 +486,59 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
 
 }
 
+//! @brief Returns the internal enum (number) for the element types
+//! @param Element name in Nuto
+//! @return enum
+NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::string& rElementType)
+{
+	// get element type
+	std::string upperCaseElementType;
+	std::transform(rElementType.begin(), rElementType.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
+
+	Element::eElementType elementType;
+	if (upperCaseElementType=="TRUSS1D2N")
+	{
+		elementType = NuTo::Element::TRUSS1D2N;
+	}
+	else if (upperCaseElementType=="TRUSS1D3N")
+	{
+		elementType = NuTo::Element::TRUSS1D3N;
+	}
+	else if (upperCaseElementType=="BRICK8N")
+	{
+		elementType = NuTo::Element::BRICK8N;
+	}
+	else if (upperCaseElementType=="PLANE2D3N")
+	{
+		elementType = NuTo::Element::PLANE2D3N;
+	}
+	else if (upperCaseElementType=="PLANE2D4N")
+	{
+		elementType = NuTo::Element::PLANE2D4N;
+	}
+	else if (upperCaseElementType=="PLANE2D4NSPECTRALORDER2")
+	{
+		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER2;
+	}
+	else if (upperCaseElementType=="PLANE2D6N")
+	{
+		elementType = NuTo::Element::PLANE2D6N;
+	}
+	else if (upperCaseElementType=="TETRAHEDRON4N")
+	{
+		elementType = NuTo::Element::TETRAHEDRON4N;
+	}
+	else if (upperCaseElementType=="TETRAHEDRON10N")
+	{
+		elementType = NuTo::Element::TETRAHEDRON10N;
+	}
+	else
+	{
+		throw MechanicsException("[NuTo::Structure::ElementCreate] Element type "+upperCaseElementType +" does not exist.");
+	}
+	return elementType;
+}
+
 //! @brief Creates an element
 //! @param rElementNumber element number
 //! @param rElementType element type
@@ -552,65 +570,90 @@ int NuTo::Structure::ElementCreate(Element::eElementType rType,
 void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rType,
         std::vector<NodeBase*> rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
-	ElementBase* ptrElement(0);
-    switch (rType)
-	{
-    case NuTo::Element::TRUSS1D2N:
-		if (1!=mDimension)
-			throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D2N.");
-		ptrElement = new NuTo::Truss1D2N(this, rNodeVector, rElementDataType, rIpDataType);
-		break;
-    case NuTo::Element::TRUSS1D3N:
-		if (1!=mDimension)
-			throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D3N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D3N.");
-		ptrElement = new NuTo::Truss1D3N(this, rNodeVector, rElementDataType, rIpDataType);
-		break;
-    case NuTo::Element::BRICK8N:
-        if (this->mDimension != 3)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] Brick8N is a 3D element.");
-        }
-        ptrElement = new NuTo::Brick8N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-    case NuTo::Element::PLANE2D3N:
-        if (this->mDimension != 2)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D3N is a 2D element.");
-        }
-        ptrElement = new NuTo::Plane2D3N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-    case NuTo::Element::PLANE2D4N:
-        if (this->mDimension != 2)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4N is a 2D element.");
-        }
-        ptrElement = new NuTo::Plane2D4N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-    case NuTo::Element::PLANE2D6N:
-        if (this->mDimension != 2)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D6N is a 2D element.");
-        }
-        ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-    case NuTo::Element::TETRAHEDRON4N:
-        if (this->mDimension != 3)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron4N is a 3D element.");
-        }
-        ptrElement = new NuTo::Tetrahedron4N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-    case NuTo::Element::TETRAHEDRON10N:
-        if (this->mDimension != 3)
-        {
-            throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron10N is a 3D element.");
-        }
-        ptrElement = new NuTo::Tetrahedron10N(this, rNodeVector, rElementDataType, rIpDataType);
-        break;
-	default:
-		throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Invalid element type.");
-	}
-    mElementMap.insert(rElementNumber, ptrElement);
+    try
+    {
+		ElementBase* ptrElement(0);
+		switch (rType)
+		{
+		case NuTo::Element::TRUSS1D2N:
+			if (1!=mDimension)
+				throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D2N.");
+			ptrElement = new NuTo::Truss1D2N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::TRUSS1D3N:
+			if (1!=mDimension)
+				throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D3N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D3N.");
+			ptrElement = new NuTo::Truss1D3N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::BRICK8N:
+			if (this->mDimension != 3)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] Brick8N is a 3D element.");
+			}
+			ptrElement = new NuTo::Brick8N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D3N:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D3N is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D3N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D4N:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4N is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D4N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D4NSPECTRALORDER2:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4NSPECTRALORDER2 is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D4NSpectralOrder2(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D6N:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D6N is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D6N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::TETRAHEDRON4N:
+			if (this->mDimension != 3)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron4N is a 3D element.");
+			}
+			ptrElement = new NuTo::Tetrahedron4N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::TETRAHEDRON10N:
+			if (this->mDimension != 3)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] Tetrahedron10N is a 3D element.");
+			}
+			ptrElement = new NuTo::Tetrahedron10N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		default:
+			throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Invalid element type.");
+		}
+		mElementMap.insert(rElementNumber, ptrElement);
+    }
+    catch(NuTo::MechanicsException &e)
+    {
+        std::stringstream ss;
+        ss << rElementNumber;
+        e.AddMessage("[NuTo::Structure::ElementCreate] Error creating element "
+        	+ ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementNumber;
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::Structure::ElementCreate] Error creating element " + ss.str() + ".");
+    }
 }
 
 //! @brief creates multiple elements
@@ -824,5 +867,229 @@ void NuTo::Structure::GetElementsTotal(std::vector<std::pair<int, ElementBase*> 
     	rElements.push_back(std::pair<int, ElementBase*>(ElementIter->first,ElementIter->second));
         ElementIter++;
     }
+}
+
+//! @param rGroupNumberElements group for elements (Plane2D4N) to be converted
+//! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
+//! @param number of boxes to increase the search speed for the neighbor search
+void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumberElements,
+		double rNodeDistanceMerge, double rMeshSize)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	int order = 2;
+	double nodeDistanceMerge2 = rNodeDistanceMerge*rNodeDistanceMerge;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    	throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] Group is not an element group.");
+    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
+    assert(elementGroup!=0);
+
+	//calculate bounding box for all existing nodes of the elements
+	double bb[2][2];
+	double coordinates[2];
+	NodeBase* theNode = elementGroup->begin()->second->GetNode(0);
+	if (theNode->GetNumCoordinates()!=2)
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] coordinate dimension of node is not 2.)");
+	theNode->GetCoordinates2D(coordinates);
+	bb[0][0] = coordinates[0];
+	bb[0][1] = coordinates[1];
+	bb[1][0] = coordinates[0];
+	bb[1][1] = coordinates[1];
+	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+	{
+		for (int count=0; count<itElement->second->GetNumNodes(); count++)
+		{
+			theNode = itElement->second->GetNode(count);
+			if (theNode->GetNumCoordinates()!=2)
+				throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] coordinate dimension of node is not 2.)");
+			theNode->GetCoordinates2D(coordinates);
+			if (coordinates[0]<bb[0][0])
+				bb[0][0] = coordinates[0];
+			if (coordinates[0]>bb[0][1])
+				bb[0][1] = coordinates[0];
+			if (coordinates[1]<bb[1][0])
+				bb[1][0] = coordinates[1];
+			if (coordinates[1]>bb[1][1])
+				bb[1][1] = coordinates[1];
+		}
+	}
+
+	//create boxes for the additional nodes
+	double deltaBox[2];
+	int numBoxes1D[2];
+	numBoxes1D[0] = (bb[0][1]-bb[0][0])/rMeshSize;
+	numBoxes1D[1] = (bb[1][1]-bb[1][0])/rMeshSize;
+	deltaBox[0] = (bb[0][1]-bb[0][0])/numBoxes1D[0];
+	deltaBox[1] = (bb[1][1]-bb[1][0])/numBoxes1D[1];
+
+	std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
+	std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
+	std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
+	std::vector<std::vector<NodeBase*> >nodeBoxes(numBoxes1D[0]*numBoxes1D[1]);
+
+	if (rNodeDistanceMerge>deltaBox[0] || rNodeDistanceMerge>deltaBox[1])
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] The merge distance is larger than the mesh size, that should not happen.");
+	}
+
+	Element::eElementType elementType;
+	NuTo::IntegrationTypeBase* integrationType1D;
+	switch (order)
+	{
+	case 2:
+		integrationType1D = this->GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip);
+		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER2;
+		break;
+	default:
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] only order 2 implemented.");
+	}
+
+	//Get natural coordinates (1D)
+	std::vector<double> newNodeCoordinatesNatural1D(integrationType1D->GetNumIntegrationPoints());
+
+	//Get local coordinates (1D, 2D is just the tensor product) of the integration points/new node coordinates
+	for (int theIP=0; theIP<integrationType1D->GetNumIntegrationPoints(); theIP++)
+	{
+		integrationType1D->GetLocalIntegrationPointCoordinates1D(theIP, newNodeCoordinatesNatural1D[theIP]);
+	}
+
+	//add the additional nodes and create the elements
+	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+	{
+		try
+		{
+	        ElementBase* theElement = itElement->second;
+
+			std::vector<NuTo::NodeBase* > newNodeVector(integrationType1D->GetNumIntegrationPoints()*integrationType1D->GetNumIntegrationPoints());
+            int curNode(0);
+			for (int countX=0; countX<integrationType1D->GetNumIntegrationPoints(); countX++)
+			{
+				for (int countY=0; countY<integrationType1D->GetNumIntegrationPoints(); countY++)
+				{
+					if ((countX%(integrationType1D->GetNumIntegrationPoints()-1)==0) && (countY%(integrationType1D->GetNumIntegrationPoints()-1)==0))
+					{
+						//corner nodes already exist
+						if (countX==0)
+						{
+							if (countY==0)
+							{
+								newNodeVector[curNode] = theElement->GetNode(0);
+							}
+							else
+							{
+								newNodeVector[curNode] = theElement->GetNode(3);
+
+							}
+						}
+						else
+						{
+							if (countY==0)
+							{
+								newNodeVector[curNode] = theElement->GetNode(1);
+							}
+							else
+							{
+								newNodeVector[curNode] = theElement->GetNode(2);
+
+							}
+						}
+					}
+					else
+					{
+						double newNodeCoordinatesNatural[2];
+						newNodeCoordinatesNatural[0] = newNodeCoordinatesNatural1D[countX];
+						newNodeCoordinatesNatural[1] = newNodeCoordinatesNatural1D[countY];
+
+						//calculate global coordinates
+						double newNodeCoordinatesGlobal[3]; //this is a global routine for 3D, though z should always be zero
+						theElement->InterpolateCoordinatesFrom2D(newNodeCoordinatesNatural,newNodeCoordinatesGlobal);
+
+						//check if node already exists
+						//calculate corresponding box
+						int theBoxX = (newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0];
+						int theBoxY = (newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1];
+						int theBox = theBoxX + theBoxY*numBoxes1D[0];
+
+						//check distance to all nodes in this box and the neighboring boxes
+						//(assuming that the merge distance is less than the box dimensions
+						newNodeVector[curNode] = 0;
+						for (int countX=-1; countX<2 && newNodeVector[curNode] == 0; countX++)
+						{
+							int curBoxX = theBoxX+countX;
+							if (curBoxX<0 || curBoxX==numBoxes1D[0])
+								continue;
+
+							for (int countY=-1; countY<2 && newNodeVector[curNode] == 0; countY++)
+							{
+								int curBoxY = theBoxY+countY;
+								if (curBoxY<0 || curBoxY==numBoxes1D[1])
+									continue;
+
+								int curBox = curBoxX+ theBoxY*numBoxes1D[0];
+								//loop over all nodes in the box and get the distance of those nodes to the new node position
+								for (unsigned int countNode=0; countNode<nodeBoxes[curBox].size() && newNodeVector[curNode] == 0;countNode++)
+								{
+									double coordinates[2];
+									nodeBoxes[curBox][countNode]->GetCoordinates2D(coordinates);
+									double deltaX = coordinates[0]-newNodeCoordinatesGlobal[0];
+									double deltaY = coordinates[1]-newNodeCoordinatesGlobal[1];
+									double dist2 = deltaX*deltaX+deltaY*deltaY;
+									if (dist2<nodeDistanceMerge2)
+									{
+										//node already exists, use the existing node
+										assert(newNodeVector[curNode]==0);
+										newNodeVector[curNode] = nodeBoxes[curBox][countNode];
+									}
+								}
+							}
+						}
+
+						//if node does not exist, create new node by copying the first node of the element
+						// using the same dofs etc.
+						if (newNodeVector[curNode] == 0)
+						{
+							newNodeVector[curNode] = theElement->GetNode(0)->Clone();
+
+							//set coordinates
+							newNodeVector[curNode]->SetCoordinates2D(newNodeCoordinatesGlobal);
+
+							nodeBoxes[theBox].push_back(newNodeVector[curNode]);
+						}
+					}
+					curNode++;
+				}
+			}
+			//delete old element, but store the information related to id, element data and ipdata first
+			int id = itElement->first;
+			ElementData::eElementDataType elementDataType(theElement->GetElementDataType());
+			IpData::eIpDataType ipDataType(theElement->GetIpDataType(0));
+
+			this->ElementDeleteInternal(id);
+
+			//create new element with same id
+			this->ElementCreate (id, elementType,newNodeVector , elementDataType, ipDataType);
+		}
+		catch(NuTo::MechanicsException &e)
+		{
+			e.AddMessage("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] Error converting element.");
+			throw e;
+		}
+		catch(...)
+		{
+			throw NuTo::MechanicsException
+			   ("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] error converting element.");
+		}
+	}
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupDelete] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 }
 

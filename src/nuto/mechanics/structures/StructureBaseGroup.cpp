@@ -422,30 +422,6 @@ void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNo
 #endif
 }
 
-
-//! @brief ... Adds a node to a node group
-//! @param ... rIdentGroup identifier for the group
-//! @param ... rIdentNode  identifier for the node
-void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::GroupAddElement] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=Groups::Elements)
-        throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group.");
-
-    itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::GroupAddElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-}
-
 //! @brief ... Unites two groups and stores the result in a new group
 //! @param ... rIdentGroup1 identifier for the first group
 //! @param ... rIdentGroup2 identifier for the second group

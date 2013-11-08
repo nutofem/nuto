@@ -142,10 +142,10 @@ if EnableDisplacementControl:
 	myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYNeg, directionY, -1.0*BoundaryDisplacement)
 else:
 	print "Load control"
-	myStructure.LoadCreateNodeGroupForce(LoadNodesXPos, directionX, Force)
-	myStructure.LoadCreateNodeGroupForce(LoadNodesXNeg, directionX, -1*Force)
-	myStructure.LoadCreateNodeGroupForce(LoadNodesYPos, directionY, Force)
-	myStructure.LoadCreateNodeGroupForce(LoadNodesYNeg, directionY, -1*Force)
+	myStructure.LoadCreateNodeGroupForce(1,LoadNodesXPos, directionX, Force)
+	myStructure.LoadCreateNodeGroupForce(1,LoadNodesXNeg, directionX, -1*Force)
+	myStructure.LoadCreateNodeGroupForce(1,LoadNodesYPos, directionY, Force)
+	myStructure.LoadCreateNodeGroupForce(1,LoadNodesYNeg, directionY, -1*Force)
           
 
 # some Infos
@@ -207,7 +207,7 @@ if ElementType == "PLANE2D4Nb":
 
 # build global external load vector
 extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(extForceVector)
+myStructure.BuildGlobalExternalLoadVector(1,extForceVector)
 oldTime = curTime
 curTime = time()
 print "time required for building external load vector: " + str(curTime - oldTime) + " s"

@@ -48,7 +48,7 @@ if EnableDisplacementControl:
     myStructure.ConstraintLinearSetDisplacementNode(NumElements, direction, BoundaryDisplacement)
 else:
     print "Load control"
-    myStructure.LoadCreateNodeForce(NumElements, direction, Force)
+    myStructure.LoadCreateNodeForce(1,NumElements, direction, Force)
 
 #build maximum independent sets
 myStructure.CalculateMaximumIndependentSets()
@@ -64,7 +64,7 @@ myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 
 # build global external load vector
 extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(extForceVector)
+myStructure.BuildGlobalExternalLoadVector(1,extForceVector)
 
 # calculate right hand side
 rhsVector = dispForceVector + extForceVector

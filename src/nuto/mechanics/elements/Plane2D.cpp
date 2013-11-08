@@ -33,8 +33,8 @@ NuTo::Plane2D::Plane2D(const NuTo::StructureBase* rStructure, ElementData::eElem
 //! this can be checked with an assertation
 void NuTo::Plane2D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const
 {
-	assert((int)rLocalCoordinates.size()==2*GetNumNodes());
-    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+	assert((int)rLocalCoordinates.size()==2*GetNumNodesGeometry());
+    for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
         GetNode(theNode)->GetCoordinates2D(&(rLocalCoordinates[2*theNode]));
     }
@@ -45,7 +45,7 @@ void NuTo::Plane2D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
 //! this can be checked with an assertation
 void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDisplacements)const
 {
-	assert((int)rLocalDisplacements.size()==2*GetNumNodes());
+	assert((int)rLocalDisplacements.size()==2*GetNumNodesField());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
         GetNode(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
@@ -226,11 +226,11 @@ double NuTo::Plane2D::CalculateCrackLength2D(double rAlpha)const
 {
 	//get all nodes and calculate mean
 	std::vector<boost::array<double,3> > coordinates;
-	coordinates.resize(GetNumNodes());
+	coordinates.resize(GetNumNodesGeometry());
 	boost::array<double,2> mean = {{0.,0.}};
-	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	for (int theNode = 0; theNode<GetNumNodesGeometry(); theNode++)
 	{
-		GetNode(theNode)->GetCoordinates2D(&(coordinates[theNode][0]));
+		GetNodeGeometry(theNode)->GetCoordinates2D(&(coordinates[theNode][0]));
 		mean[0]+=coordinates[theNode][0];
 		mean[1]+=coordinates[theNode][1];
 	}
@@ -264,7 +264,7 @@ double NuTo::Plane2D::CalculateCrackLength2D(double rAlpha)const
 	coordinates[GetNumNodes()] = coordinates[0];
 	boost::array<double,2> centerOfGravity = {{0.,0.}};
 	double area(0);
-	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	for (int theNode = 0; theNode<GetNumNodesGeometry(); theNode++)
 	{
 		double tmp(coordinates[theNode][0]*coordinates[theNode+1][1]-coordinates[theNode+1][0]*coordinates[theNode][1]);
 		area += tmp;
@@ -289,7 +289,7 @@ double NuTo::Plane2D::CalculateCrackLength2D(double rAlpha)const
     double denom;
     double intersectionPoints[2][2];
     int numIntersectionPoints(0);
-	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	for (int theNode = 0; theNode<GetNumNodesGeometry(); theNode++)
 	{
         u[0] = coordinates[theNode+1][0]-coordinates[theNode][0];
         u[1] = coordinates[theNode+1][1]-coordinates[theNode][1];

@@ -119,14 +119,17 @@ for theLoadStep in range(0,1):
     else:
         rightDisp = 0.6
 
+    print "test1"
     matrixRightDisp = nuto.DoubleFullVector(2)
     matrixRightDisp.SetValue(0,0,rightDisp)
     matrixRightDisp.SetValue(1,0,0.)
 
+    print "test2"
     myStructure.NodeSetDisplacements(node3,matrixRightDisp)
     myStructure.NodeSetDisplacements(node6,matrixRightDisp)
     myStructure.NodeSetDisplacements(node9,matrixRightDisp)
 
+    print "test3"
     matrixCenterDisp = nuto.DoubleFullVector(2)
     if theLoadStep!=2:
         matrixCenterDisp.SetValue(0,0,0.5*rightDisp)
@@ -138,6 +141,7 @@ for theLoadStep in range(0,1):
     myStructure.NodeSetDisplacements(node5,matrixCenterDisp)
     myStructure.NodeSetDisplacements(node8,matrixCenterDisp)
 
+    print "test4"
     matrixLeftDisp = nuto.DoubleFullVector(2)
     matrixLeftDisp.SetValue(0,0,0.0)
     matrixLeftDisp.SetValue(1,0,0.)
@@ -151,10 +155,13 @@ for theLoadStep in range(0,1):
     #matrixLeftDispNode1.SetValue(1,0,0.)
     #myStructure.NodeSetDisplacements(node1,matrixLeftDispNode1)
 
+    print "test5"
     myStructure.ElementTotalUpdateTmpStaticData()
 
+    print "test6"
     myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
     stiffnessMatrix.RemoveZeroEntries(0,1e-14)
+    print "test7"
 
     fullStiffnessMatrix = nuto.DoubleFullMatrix(stiffnessMatrix)
 

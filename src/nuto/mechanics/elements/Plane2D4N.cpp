@@ -35,7 +35,7 @@ NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::No
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param shape functions for all the nodes
-void NuTo::Plane2D4N::CalculateShapeFunctions(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+void NuTo::Plane2D4N::CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
 	assert(rShapeFunctions.size()==4);
     rShapeFunctions[0] = 0.25*(1.-rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
@@ -44,11 +44,19 @@ void NuTo::Plane2D4N::CalculateShapeFunctions(const double rNaturalCoordinates[2
     rShapeFunctions[3] = 0.25*(1.-rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
 }
 
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Plane2D4N::CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+{
+	CalculateShapeFunctionsGeometry(rNaturalCoordinates,rShapeFunctions);
+}
+
 //! @brief calculates the derivative of the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
 	assert(rDerivativeShapeFunctions.size()==8);
     rDerivativeShapeFunctions[0] = -0.25*(1.-rNaturalCoordinates[1]);
@@ -62,6 +70,15 @@ void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsNatural(const double rNat
 
     rDerivativeShapeFunctions[6] = -0.25*(1.+rNaturalCoordinates[1]);
     rDerivativeShapeFunctions[7] = +0.25*(1.-rNaturalCoordinates[0]);
+}
+
+//! @brief calculates the derivative of the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+{
+	CalculateDerivativeShapeFunctionsGeometryNatural(rNaturalCoordinates,rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the shape functions for the surfaces (required for surface loads)
@@ -164,14 +181,14 @@ bool NuTo::Plane2D4N::GetLocalPointCoordinates(const double rGlobCoords[2],  dou
 	double diffCoords[2] = {0.0,0.0};
 	const double accuracy=1e-14;
 	const unsigned int maxIter=100;
-    std::vector<double> derivativeShapeFunctionsNatural(2*GetNumShapeFunctions());
+    std::vector<double> derivativeShapeFunctionsNatural(2*GetNumNodesGeometry());
 
 	//! initialize local coordinates (starting value: center of element)
 	rLocCoords[0] = 0.0;
 	rLocCoords[1] = 0.0;
 
 	//! get nodal coordinates
-    std::vector<double> localNodeCoord(GetNumLocalDofs());
+    std::vector<double> localNodeCoord(2*GetNumNodesGeometry());
     CalculateLocalCoordinates(localNodeCoord);
 
 	//! check if node is inside this element
@@ -195,7 +212,7 @@ bool NuTo::Plane2D4N::GetLocalPointCoordinates(const double rGlobCoords[2],  dou
 			return true;
 
 		//! get inverse jacobian matrix
-        CalculateDerivativeShapeFunctionsNatural(iterPoint, derivativeShapeFunctionsNatural);
+        CalculateDerivativeShapeFunctionsGeometryNatural(iterPoint, derivativeShapeFunctionsNatural);
         try
         {
         	CalculateJacobian(derivativeShapeFunctionsNatural,localNodeCoord, invJacobian, detJacobian);

@@ -361,6 +361,12 @@ public:
     		int rOrder, double rVirtualBoundary,
     		const std::string& rElementDataType, const std::string& rIpDataType);
 
+    //! @param rGroupNumberElements group for elements (Plane2D4N) to be converted
+    //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
+    //! @param approximate size of the elements
+    void ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumberElements,
+    		double rNodeDistanceMerge, double meshSize);
+
 #ifndef SWIG
     //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
     //! @param rGroupNumberElements group for elements on the real boundary
@@ -404,6 +410,11 @@ public:
     //! @param rNodeIdents pointers to the corresponding nodes
     void ElementCreate(int rElementNumber, Element::eElementType rType, std::vector<NodeBase*> rNodeVector,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+
+    //! @brief Returns the internal enum (number) for the element types
+    //! @param Element name in Nuto
+    //! @return enum
+    NuTo::Element::eElementType ElementTypeGetEnum(const std::string& rElementType);
 
 #endif //SWIG
 
@@ -547,6 +558,17 @@ public:
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
     void CopyAndTranslate(NuTo::FullVector<double,Eigen::Dynamic>& rOffset);
+
+    //! @brief ... Adds an element to an element group
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rIdentElement  identifier for the element
+    void GroupAddElement(int rIdentGroup, int rIdElement);
+
+    //! @brief ... Adds all elements to a group based on the type
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rElemTypeStr  identifier for the element type
+    void GroupAddElementFromType(int rIdentGroup, std::string rElemTypeStr);
+
 
     //*************************************************
     //************ Info routine         ***************

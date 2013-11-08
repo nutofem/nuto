@@ -169,16 +169,12 @@ public:
     const SectionBase* GetSection()const;
 
     //! @brief calculates the input of the constitutive relation (probably deformation gradient in 1D, 2D or 3D)
-    //! @param rRerivativeShapeFunctions derivatives of the shape functions
+    //! @param rRerivativeShapeFunctions derivatives of the shape functions (local coordinates)
     //! @param rLocalDisp local displacements
     //! @param rConstitutiveInput (return value)
     void CalculateDeformationGradient(const std::vector<double>& rDerivativeShapeFunctions,
-                                      const std::vector<double>& rLocalCoord, const std::vector<double>& rLocalDisp,
+                                      const std::vector<double>& rLocalDisp,
                                       DeformationGradient1D& rDeformationGradient)const;
-
-    //! @brief returns the number of local degrees of freedom
-    //! @return number of local degrees of freedom
-    virtual int GetNumLocalDofs()const=0;
 
     //! @brief returns the local dimension of the element
     //! this is required for the calculation of the derivatives of the shape functions
@@ -188,12 +184,6 @@ public:
     {
         return 1;
     }
-
-    //! @brief returns the number of shape functions
-    //! this is required for the calculation of the derivatives of the shape functions
-    //! whose size is GetLocalDimension*GetNumShapeFunctions
-    //! @return local dimension
-    virtual int GetNumShapeFunctions()const=0;
 
     //! @brief returns the number of shape functions for the interpolation of the nonlocal total strains
     //! this is required for the calculation of the derivatives of the shape functions
@@ -214,7 +204,12 @@ public:
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-    virtual void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
+    virtual void CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
+
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    virtual void CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const=0;
 
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
@@ -225,7 +220,13 @@ public:
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
-    virtual void CalculateDerivativeShapeFunctions(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const=0;
+    virtual void CalculateDerivativeShapeFunctionsGeometry(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const=0;
+
+    //! @brief calculates the derivative of the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsField(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const=0;
 
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point

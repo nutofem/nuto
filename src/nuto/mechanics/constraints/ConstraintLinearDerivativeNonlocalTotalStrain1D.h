@@ -7,6 +7,7 @@
 
 namespace NuTo
 {
+class ElementBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for all constraints with displacements applied to a single node in 1D

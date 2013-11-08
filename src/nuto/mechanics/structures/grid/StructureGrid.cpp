@@ -675,7 +675,7 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 			mLocalDerivativeShapeFunctions.resize(24);
 			NuTo::Brick8N* myElementPointer;
 			myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
-			myElementPointer->CalculateDerivativeShapeFunctionsLocal( rLocalCoordinates, mLocalDerivativeShapeFunctions);
+			myElementPointer->CalculateDerivativeShapeFunctionsGeometryNatural( rLocalCoordinates, mLocalDerivativeShapeFunctions);
 //			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
 //			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[21]<<" "<<mLocalDerivativeShapeFunctions[22]<<" "<<mLocalDerivativeShapeFunctions[23]<<"\n";
 #ifdef PLANESTRESS

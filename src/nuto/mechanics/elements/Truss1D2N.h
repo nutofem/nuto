@@ -1,5 +1,4 @@
 // $Id$
-#undef Truss1D2N_H
 #ifndef Truss1D2N_H
 #define Truss1D2N_H
 
@@ -39,20 +38,89 @@ public:
         return 2;
     }
 
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNode(int rLocalNodeNumber)
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNode(int rLocalNodeNumber)const
+    {
+    	assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        return mNodes[rLocalNodeNumber];
+    }
+
+
+    //! @brief sets the rLocalNodeNumber-th node of the element
+    //! @param local node number
+    //! @param pointer to the node
+    void SetNode(int rLocalNodeNumber, NodeBase* rNode)
+    {
+    	assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        mNodes[rLocalNodeNumber] = rNode;
+    }
+
+    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @return number of nodes
+    int GetNumNodesGeometry()const
+    {
+    	return 2;
+    }
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNodeGeometry(int rLocalNodeNumber)const
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNodeGeometry(int rLocalNodeNumber)
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @return number of nodes
+    int GetNumNodesField()const
+    {
+    	return 2;
+    }
+
+    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNodeField(int rLocalNodeNumber)const
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        return mNodes[rLocalNodeNumber];
+    }
+
+    //! @brief returns a pointer to the i-th node of the element (field interpolation)
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNodeField(int rLocalNodeNumber)
+    {
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<2);
+        return mNodes[rLocalNodeNumber];
+    }
+
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
     //! @param rOldPtr old node ptr
     //! @param rNewPtr new node ptr
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr);
-
-    //! @brief returns the number of shape functions
-    //! this is required for the calculation of the derivatives of the shape functions
-    //! whose size is GetLocalDimension*GetNumShapeFunctions
-    //! @return local dimension
-    virtual int GetNumShapeFunctions()const
-    {
-        return 2;
-    }
 
     //! @brief returns the number of shape functions
     //! this is required for the calculation of the derivatives of the shape functions
@@ -66,7 +134,12 @@ public:
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes
-    void CalculateShapeFunctions(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+    void CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes
+    void CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
@@ -77,7 +150,13 @@ public:
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes,
     //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctions(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+    void CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+
+    //! @brief calculates the derivative of the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes,
+    //! first all the directions for a single node, and then for the next node
+    void CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
@@ -90,24 +169,6 @@ public:
     inline int GetNumLocalDofs()const
     {
         return 2;
-    }
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber)
-    {
-        assert(rLocalNodeNumber==0 || rLocalNodeNumber==1);
-        return mNodes[rLocalNodeNumber];
-    }
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber)const
-    {
-        assert(rLocalNodeNumber==0 || rLocalNodeNumber==1);
-        return mNodes[rLocalNodeNumber];
     }
 
     //! @brief returns a pointer to the i-th node of the element
@@ -126,16 +187,6 @@ public:
     {
         assert(rLocalNodeNumber==0 || rLocalNodeNumber==1);
         return mNodes[rLocalNodeNumber];
-    }
-
-
-    //! @brief sets the rLocalNodeNumber-th node of the element
-    //! @param local node number
-    //! @param pointer to the node
-    void SetNode(int rLocalNodeNumber, NodeBase* rNode)
-    {
-        assert(rLocalNodeNumber==0 || rLocalNodeNumber==1);
-        mNodes[rLocalNodeNumber] = rNode;
     }
 
     //! @brief returns the enum of the standard integration type for this element
