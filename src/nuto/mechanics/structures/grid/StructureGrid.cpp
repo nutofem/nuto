@@ -25,14 +25,18 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/MortonOrder.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/MisesWielandt.h"
-
+#endif //ENABLE_OPTIMIZE
 #include <algorithm>
 
 //#define PLANESTRESS
 
-
+#ifdef ENABLE_OPTIMIZE
 NuTo::StructureGrid::StructureGrid(int rDimension):  CallbackHandlerGrid ()
+#else
+NuTo::StructureGrid::StructureGrid(int rDimension)
+#endif
 {
    if (rDimension!=3)
 	{
@@ -1091,8 +1095,7 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
  	std::vector<size_t> nodeNumbers(8);
  	std::vector<double> nodalCoord(8*3);
 
- 	mResidual.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
-	mExtForces.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
+ 	mRightHandSide.resize(3*(mEdgeId.size()+1),0.0);// initialized with zero
 
  	if(mVerboseLevel>1)
 	{
@@ -1120,7 +1123,7 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 		std::cout<<"\n";
 	}
 
-#pragma acc data copyin(mVoxelId,mYoungsModulus,mLocalCoefficientMatrix0,mResidual)
+#pragma acc data copyin(mVoxelId,mYoungsModulus,mLocalCoefficientMatrix0,mRightHandSide)
 }
 
 //! @brief set displacement boundary conditions
@@ -1212,9 +1215,6 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u
 	for(size_t i=0;i<numParas;++i)
 		r[i]=0;
 }
-	//----------------------------------------------//
-	// global external force vector (active dofs)
-    //	std::vector<double>  force(mNumParameters,1);
 
 	//move local data in loop for acc ?
 	#pragma acc firstprivate(residual[0,24],displacement[0,24],nodeNumbers[0,numNodes],youngsModulus)
@@ -1280,7 +1280,7 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductNBN(std::vector<double> &u
 //	if (mVerboseLevel>3)
 //		std::cout<<"[StructureGrid::CalculateMatrixVectorProductNBN] "<<std::endl;
 
-	// make sure residual vector is reset with zero //
+	// make sure RightHandSide vector is reset with zero //
 	for(size_t i=0;i<r.size();++i)
 		r[i]=0;
 	//----------------------------------------------//
@@ -1362,7 +1362,7 @@ void NuTo::StructureGrid::Hessian(std::vector<double>&  rDiagHessian)
 	else
 	{
 		std::cout<<"Implement\n";
-		//set residual in structure as input
+		//set RightHandSide in structure as input
 //		MultiGridSolve();
 	}
 
@@ -1443,10 +1443,11 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)
 }
 void NuTo::StructureGrid::CalcScalingFactors(std::vector<double> &p)
 {
-    //diagonal scaling with scaling factor
+	//diagonal scaling with scaling factor
 	double scalefactor=GetWeightingFactor();
 	if(scalefactor==0.)
 	{
+#ifdef ENABLE_OPTIMIZE
 		if (mUseMisesWielandt)
 		{
 			SetMisesWielandt(false); // if not, get a infinite loop, for Hessian
@@ -1470,6 +1471,7 @@ void NuTo::StructureGrid::CalcScalingFactors(std::vector<double> &p)
 			SetMisesWielandt(true);
 		}
 		else
+#endif //ENABLE_OPTIMIZE
 			// 1 is needed for MisesWielandt (Hessian), make sure it is 1 in standard
 			scalefactor=1.;
 			//   scalefactor=1./(double) mNumParameters;
@@ -1713,7 +1715,7 @@ void NuTo::StructureGrid::ExportVTKStructuredDataFile(const std::string& rFilena
 		if(mNodeId[i]<numNodes)
 		{
 			file<<mDisplacements[3*mNodeId[i]]<<" " <<mDisplacements[3*mNodeId[i]+1]<<" "<<mDisplacements[3*mNodeId[i]+2]<<"\n";
-//			file<<mResidual[3*mNodeId[i]]<<" " <<mResidual[3*mNodeId[i]+1]<<" "<<mResidual[3*mNodeId[i]+2]<<"\n";
+//			file<<mRightHandSide[3*mNodeId[i]]<<" " <<mRightHandSide[3*mNodeId[i]+1]<<" "<<mRightHandSide[3*mNodeId[i]+2]<<"\n";
 			++countNodes;
 		}
 		else
@@ -1797,30 +1799,19 @@ std::vector<double>&  NuTo::StructureGrid::GetParameters()
 {
 	return mDisplacements;
 }
-std::vector<double>&  NuTo::StructureGrid::GetResidual()
+std::vector<double>&  NuTo::StructureGrid::GetRightHandSide()
 {
-	return mResidual;
+	return mRightHandSide;
 }
-std::vector<double>&  NuTo::StructureGrid::GetExtForces()
-{
-	return mExtForces;
-}
-
 void NuTo::StructureGrid::SetParameters(std::vector<double>& rParameters)
 {
 	mDisplacements=rParameters;
 }
 
-void NuTo::StructureGrid::SetResidual(std::vector<double>& rResidual)
+void NuTo::StructureGrid::SetRightHandSide(std::vector<double>& rRightHandSide)
 {
-	mResidual=rResidual;
+	mRightHandSide=rRightHandSide;
 }
-
-void NuTo::StructureGrid::SetExtForces(std::vector<double>& rExtForces)
-{
-	mExtForces=rExtForces;
-}
-
 //! @brief MultiGrid routines
 //! @brief initialize on coarser grid
 //! @param StructureGrid reference
@@ -1837,7 +1828,7 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 
 
 	if(!mCurrentGridNumber)
-		mResidual.resize((GetNumNodes()+1)*3,0.);
+		mRightHandSide.resize((GetNumNodes()+1)*3,0.);
 
 	size_t voxel=0;
 	size_t edge=0;
@@ -1944,7 +1935,7 @@ void NuTo::StructureGrid::SetCoarserGridLevel(NuTo::StructureGrid *rCoarseGrid)
 	size_t fineEdge=0;
 	rCoarseGrid->mDofIsConstraint.resize(numNodes*3,false);
 	rCoarseGrid->mDisplacements.resize((numNodes+1)*3,0.);
-	rCoarseGrid->mResidual.resize((numNodes+1)*3,0.);
+	rCoarseGrid->mRightHandSide.resize((numNodes+1)*3,0.);
 	rCoarseGrid->mFineEdgeId.resize(numNodes);
 	rCoarseGrid->mpFineGrid=this;
 	for(size_t dim2=1;dim2<rGridDimension[2];++dim2)
@@ -2030,7 +2021,8 @@ void NuTo::StructureGrid::CalculateMultiGridCorrolations(std::string restriction
 	}
 
 }
-void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
+void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor,
+		std::vector<double> & rResidual,std::vector<double> &rResidualCoarser)
 {
 //	if(CallbackHandlerGrid::mVerboseLevel>2)
 //		std::cout<<"[StructureGrid::Restriction] \n";
@@ -2043,16 +2035,10 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 
 	int fineGridEdge=0;
 	int rNumNodes=mpCoarseGrid->GetNumNodes();
+	rResidualCoarser.resize(rNumNodes*3+3);
+
 	for (int node = 0; node < rNumNodes; ++node)
 	{
-		mpCoarseGrid->mDisplacements[3*node+0]=0;
-		mpCoarseGrid->mDisplacements[3*node+1]=0;
-		mpCoarseGrid->mDisplacements[3*node+2]=0;
-
-		mpCoarseGrid->mResidual[3*node+0]=0;
-		mpCoarseGrid->mResidual[3*node+1]=0;
-		mpCoarseGrid->mResidual[3*node+2]=0;
-
 		std::vector<double> help={0,0,0};
 		//corresponding fine grid node
 		fineGridEdge=(int) mpCoarseGrid->mFineEdgeId[node];
@@ -2061,9 +2047,9 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 			for (int i = 0; i < 27; ++i)
 			{
 				if(mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[0]+=mResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]]*rRestrictionFactor[i];
+					help[0]+=rResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]]*rRestrictionFactor[i];
 			}
-			mpCoarseGrid->mResidual[3*node]=help[0];
+			rResidualCoarser[3*node]=help[0];
 		}
 
 		if(!mpCoarseGrid->mDofIsConstraint[3*node+1])
@@ -2071,9 +2057,9 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 			for (int i = 0; i < 27; ++i)
 			{
 				if(mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[1]+=mResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]+1]*rRestrictionFactor[i];
+					help[1]+=rResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]+1]*rRestrictionFactor[i];
 			}
-			mpCoarseGrid->mResidual[3*node+1]=help[1];
+			rResidualCoarser[3*node+1]=help[1];
 
 		}
 		if(!mpCoarseGrid->mDofIsConstraint[3*node+2])
@@ -2081,45 +2067,43 @@ void NuTo::StructureGrid::Restriction(std::vector<double> &rRestrictionFactor)
 			for (int i = 0; i < 27; ++i)
 			{
 				if(mNodeId[fineGridEdge+mNeighborNodesNE[i]]<GetNumNodes())
-					help[2]+=mResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]+2]*rRestrictionFactor[i];
+					help[2]+=rResidual[3*mNodeId[fineGridEdge+mNeighborNodesNE[i]]+2]*rRestrictionFactor[i];
 			}
-			mpCoarseGrid->mResidual[3*node+2]=help[2];
+			rResidualCoarser[3*node+2]=help[2];
 		}
 	}
 }
 
-void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor)
+void NuTo::StructureGrid::Prolongation(std::vector<double> &rProlongationFactor,std::vector<double>& rParameters,std::vector<double>& rParametersFine)
 {
 //	std::cout<<"[StructureGrid::Prolongation] \n";
-	size_t numFineNodes=mpFineGrid->GetNumNodes();
-	std::vector<size_t> rCoarseDimension=GetGridDimension();
-	std::vector<size_t> rFineDimension=mpFineGrid->GetGridDimension();
+	size_t numFineNodes=GetNumNodes();
+	std::vector<size_t> rCoarseDimension=mpCoarseGrid->GetGridDimension();
+	std::vector<size_t> rFineDimension=GetGridDimension();
 	// 27 neighbor nodes
-	if (mpFineGrid->mNeighborNodesNE.empty())
+	if (mNeighborNodesNE.empty())
 		SetNeighborNodesNE();
-	size_t numNeighbors=mpFineGrid->mNeighborNodesNE.size();
+	size_t numNeighbors=mNeighborNodesNE.size();
 	size_t fineGridEdge=0;
-	int numNodes=GetNumNodes();
+	int numNodes=mpCoarseGrid->GetNumNodes();
 	for (int node = 0; node < numNodes; ++node)
 	{
 		//corresponding fine grid node
-		fineGridEdge=mFineEdgeId[node];
+		fineGridEdge=mpCoarseGrid->mFineEdgeId[node];
 		for (size_t i = 0; i < numNeighbors; ++i)
 		{
-			size_t nodeId=mpFineGrid->mNodeId[fineGridEdge+mpFineGrid->mNeighborNodesNE[i]];
+			size_t nodeId=mNodeId[fineGridEdge+mNeighborNodesNE[i]];
 			if (nodeId<numFineNodes)
 			{
-				if(!mpFineGrid->mDofIsConstraint[3*nodeId])
-					mpFineGrid->mDisplacements[3*nodeId]+=mDisplacements[3*node]*rProlongationFactor[i];
-				if(!mpFineGrid->mDofIsConstraint[3*nodeId+1])
-					mpFineGrid->mDisplacements[3*nodeId+1]+=mDisplacements[3*node+1]*rProlongationFactor[i];
-				if(!mpFineGrid->mDofIsConstraint[3*nodeId+2])
-					mpFineGrid->mDisplacements[3*nodeId+2]+=mDisplacements[3*node+2]*rProlongationFactor[i];
+				if(!mDofIsConstraint[3*nodeId])
+					rParametersFine[3*nodeId]+=rParameters[3*node]*rProlongationFactor[i];
+				if(!mDofIsConstraint[3*nodeId+1])
+					rParametersFine[3*nodeId+1]+=rParameters[3*node+1]*rProlongationFactor[i];
+				if(!mDofIsConstraint[3*nodeId+2])
+					rParametersFine[3*nodeId+2]+=rParameters[3*node+2]*rProlongationFactor[i];
 			}
 		}
 	}
-	for (size_t dof=0;dof < 3*(numFineNodes+1);++dof)
-		mpFineGrid->mResidual[dof]=0;
 }
 
 void  NuTo::StructureGrid::AnsysInput(std::vector<double> &rDisplVector) const

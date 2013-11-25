@@ -1,3 +1,4 @@
+// $Id $
 #ifdef ENABLE_SERIALIZATION
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 #else
@@ -14,8 +15,11 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/grid/MultiGridStructure.h"
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/Jacobi.h"
+#include "nuto/optimize/ConjugateGradientGrid.h"
+#endif //ENABLE_OPTIMIZE
 
 int main()
 {
@@ -69,45 +73,12 @@ int main()
 	}
 
 	//----------------------------------------------------------------------------------------//
-	// Boundary condition: all nodes with z=0
-	// Boundary condition: set x,y,z direction zero
-	//----------------------------------------------------------------------------------------//
-
-////	bool EnableDisplacementControl = false;
-//	double BoundaryDisplacement = -1.0;
-////	double BoundaryDisplacement = -(rGridDimension[2]*rVoxelSpacing[2]*microTomm)/20.0;
-//	std::cout<<"[MultiGrid3D]  Boundary Displacement: "<<BoundaryDisplacement<<std::endl;
-////	for z=0,x,y -all ux=0
-//	const std::vector<size_t> rGridDimension=myGrid.GetGridDimension();
-//	size_t direction=0;
-//	// Attention: consider frame nodes
-//	size_t rGridLocation[6]={1,rGridDimension[0]-1,1,rGridDimension[1]-1,1,1};
-//	double rValue=0;
-//	// diplacement vector plus one dof for calculation with non existing neighbor dofs
-//	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-//
-//	//for z=0,x,y -all uy=0
-//	direction=1;
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-//
-//	//for z=0,x,y -all uz=0
-//	direction=2;
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-//
-//	//for z=zmax,x,y -all uz=-1
-//	direction=2;
-//	rGridLocation[4]=rGridDimension[2]-1;
-//	rGridLocation[5]=rGridDimension[2]-1;
-//	rValue=BoundaryDisplacement;
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-
-	//----------------------------------------------------------------------------------------//
 	// Boundary condition: x=0, ux=0; y=0, uy=0; z=0,uz=0;z0max,uz=-1
 	//----------------------------------------------------------------------------------------//
 
-	double BoundaryDisplacement = -1.0;
-//	double BoundaryDisplacement = -(myGrid.GetGridDimension()[2]*myGrid.GetVoxelSpacing()[2])/20.0;
+	//	bool EnableDisplacementControl = false;
+	double BoundaryDisplacement = 1.0;
+//	double BoundaryDisplacement = (double)(myGrid.GetGridDimension()[1])*0.01;
 	// diplacement vector plus one dof for calculation with non existing neighbor dofs
 	std::vector<double> rDisplVector(3*(3*myGrid.GetNumNodes()+1),0.0);// initialized with zero
 	//for z=0,x,y -all ux=0
@@ -117,29 +88,87 @@ int main()
 	// rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
 	//x=0, ux=0
 	size_t direction=0;
+	// for symmetric
 	size_t rGridLocation[6]={1,1,1,rGridDimension[1],1,rGridDimension[2]};
+	// for hole plate with hole
+//	size_t rGridLocation[6]={rGridDimension[0]/2,rGridDimension[0]/2,1,rGridDimension[1],1,rGridDimension[2]};
+	// xmax
+//	size_t rGridLocation[6]={rGridDimension[0]-1,rGridDimension[0],0,rGridDimension[1]+1,0,rGridDimension[2]+1};
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
 	//y=0; uy=0
 	direction=1;
+	rGridLocation[0]=1;
 	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=1;
 	rGridLocation[3]=1;
+	rGridLocation[4]=1;
+	rGridLocation[5]=rGridDimension[2];
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,-1,rDisplVector);
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-	// z=0; uz=0;
+	//  uz=0; for all nodes
+//	direction=2;
+//	rGridLocation[0]=1;
+//	rGridLocation[1]=rGridDimension[0];
+//	rGridLocation[2]=1;
+//	rGridLocation[3]=rGridDimension[1];
+//	rGridLocation[4]=1;
+//	rGridLocation[5]=rGridDimension[2];
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+//	std::cout<<"constraints: ";
+//	for(size_t i=2;i<numDofs;i+=3)
+//		std::cout<<myGrid.GetDisplacementConstaints()[i]<<" ";
+//	std::cout<<"\n";
+
+
+//	//  uz=0; for one nodes
+//	direction=2;
+//	rGridLocation[0]=rGridDimension[0]-1;
+//	rGridLocation[1]=rGridDimension[0];
+//	rGridLocation[2]=rGridDimension[1]-1;
+//	rGridLocation[3]=rGridDimension[1];
+//	rGridLocation[4]=1;
+//	rGridLocation[5]=1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//  uz=0; for one plain
 	direction=2;
+	rGridLocation[0]=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=1;
 	rGridLocation[3]=rGridDimension[1];
+	rGridLocation[4]=1;
 	rGridLocation[5]=1;
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-	//z=zmax, uz=-1
+
+
+//	//z=zmax, uz=-1
+//	rValue=BoundaryDisplacement;
+//	rGridLocation[4]=rGridDimension[2]-1;
+//	rGridLocation[5]=rGridDimension[2]-1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//y=ymax, yz=-1
+	direction=1;
+	rGridLocation[0]=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=rGridDimension[1]-1;
+	rGridLocation[3]=rGridDimension[1];
+	rGridLocation[4]=1;
+	rGridLocation[5]=rGridDimension[2];
 	rValue=BoundaryDisplacement;
-	rGridLocation[4]=rGridDimension[2]-1;
-	rGridLocation[5]=rGridDimension[2]-1;
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,0,rDisplVector);
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-
 //	myGrid.AnsysInput(rDisplVector);
+
+
+//	std::cout<<"constraints: ";
+//	for(size_t i=0;i<numDofs;++i)
+//		std::cout<<myGrid.GetDisplacementConstaints()[i]<<" ";
+//	std::cout<<"\n";
 
 
 	size_t numDofs=myGrid.GetNumNodes()*3;
@@ -160,89 +189,93 @@ end=clock();
 
 	std::cout<<"[MultiGrid3D] number of dofs "<<numDofs<<" free: "<<numDofs-myGrid.GetNumConstraints()<<" constraint: "<<myGrid.GetNumConstraints()<<"\n";
 	// start analysis
-//	std::cout<<__FILE__<<" "<<__LINE__<<"  start analysis"<<std::endl;
-	myGrid.SetVerboseLevel(0);
+
+	myGrid.SetVerboseLevel(5);
 	myGrid.SetMisesWielandt(false);
 	size_t numNodes=myGrid.GetNumNodes();
 
 	NuTo::MultiGridStructure myMultiGrid;
-	myMultiGrid.SetVerboseLevel(3);
+	myMultiGrid.SetVerboseLevel(5);
 	myMultiGrid.SetStructure(&myGrid);
 	myMultiGrid.SetUseMultiGridAsPreconditoner(false);
-	myMultiGrid.SetMaxCycle(numNodes);
+	myMultiGrid.SetMaxCycle(numDofs/10);
 	myMultiGrid.SetNumPreSmoothingSteps(1);
 	myMultiGrid.SetNumPostSmoothingSteps(1);
-	// for test purpose of mg
-//	std::ifstream test;
-//	test.open("result.txt");
-//	if(test)	// file is open
-//	{
-//		rDisplVector.clear();
-//		double help=0;
-//		size_t count=0;
-//		while(!test.eof()) // keep reading untill end-of-file
-//		{
-//			test>>help;
-//			rDisplVector.push_back(help);
-//			++count;
-//		}
-//		test.close();
-//		--count; // for last empty line
-//
-//		if (count!=numDofs)
-//			std::cout<<"[MultiGrid3D] Wrong input file.\n";
-//	rDisplVector.push_back(0.0);
-//	rDisplVector.push_back(0.0);
-//	rDisplVector.push_back(0.0);
-//	myMultiGrid.SetParameters(rDisplVector);
-//	}
 
 	myMultiGrid.Initialize();
 	myMultiGrid.Info();
-//	std::vector<double> residual(numNodes*3);
-//	myGrid.Gradient(rDisplVector,residual);
-//	rDisplVector.assign((numNodes+1)*3, 0.0);
-//	myGrid.SetParameters(rDisplVector);
-//	for(size_t i=0;i<numNodes*3;++i)
-//		residual[i]*=-1;
-//	myGrid.SetResidual(residual);
-////	myMultiGrid.ExportVTKStructuredDataFile(0,"outputGrid0.vtk");
-////	myMultiGrid.ExportVTKStructuredDataFile(1,"outputGrid1.vtk");
-//
-//	std::vector<double> error;
-//	std::ifstream input2;
-//	double help2=0;
-//	// result file only with existing nodes
-//	input2.open("result.txt");
-//	if(input2)	// file is open
-//	{
-//		size_t count=0;
-//		while(!input2.eof()) // keep reading untill end-of-file
-//		{
-//			input2>>help2;
-//			error.push_back(help2);
-//			++count;
-//		}
-//		input2.close();
-//		--count; // for last empty line
-//	}
-//	myGrid.Gradient(error,residual);
-//	std::cout<<"MG: residual of error ";
-//	for(size_t i=0;i<numNodes*3;++i)
-//		std::cout<<" "<<residual[i];
-//	std::cout<<"\n";
-//
 
-	myMultiGrid.MultiGridSolve();
+#ifdef ENABLE_OPTIMIZE
+	enum SolMethod // enum for solution method
+	{
+		MG, 	// multigrid method
+		EMG, 	//error equation -  multigrid method  -- does not work so far
+		MGCG, 	//multigrid preconditioned conjugate gradient method
+	} solMeth=MGCG;
 
-// test jacobi
-//	NuTo::Jacobi myOptimizer(numNodes*3);
-//	myOptimizer.SetVerboseLevel(5);
-//	myOptimizer.SetCallback(&myGrid);
-//	myOptimizer.Optimize();
+	if(solMeth==MG)
+	{
+		std::cout<<"[MultiGrid3D] Solution method is multigrid method. \n";
+		std::vector<double> rhs(rDisplVector.size());
+		myMultiGrid.MultiGridSolve(rDisplVector,rhs);
+	}
+	else if(solMeth==EMG)
+	{
+		std::cout<<"[MultiGrid3D] Solution method is multigrid with error equation. \n";
+		std::vector<double> residual(rDisplVector.size());
+		std::vector<double> error(rDisplVector.size());
 
-//	rDisplVector=myMultiGrid.GetParameters();
-	rDisplVector=myGrid.GetParameters();
+//		NuTo::Jacobi myOptimizer(numNodes*3);
+//		myOptimizer.SetVerboseLevel(1);
+//		myOptimizer.SetCallback( (&myGrid));
+//		myOptimizer.Info();
+//		myGrid.SetMisesWielandt(false);
+//		myGrid.SetRightHandSide(residual);
+//		myOptimizer.SetParameters(rDisplVector);
+//		myOptimizer.SetMaxIterations(5);
+//		myOptimizer.Optimize();
+//		rDisplVector=myOptimizer.GetParametersVec();
+
+		myGrid.Gradient(rDisplVector,residual);
+		for(size_t i=0;i<numNodes*3;++i)
+			residual[i]*=-1;
+		std::cout<<"[MultiGrid3D] start residual: ";
+		for(size_t i=0;i<numNodes;++i)
+			std::cout<<residual[3*i+1]<<" ";
+		std::cout<<"\n";
+		myMultiGrid.MultiGridSolve(error,residual);
+		std::cout<<"[MultiGrid3D] solution: ";
+		for(size_t i=0;i<numNodes*3;++i)
+		{
+			rDisplVector[i]+=error[i];
+			std::cout<<rDisplVector[i]<<" ";
+		}
+		std::cout<<"\n";
+	}
+	else if(solMeth==MGCG)
+	{
+		std::cout<<"[MultiGrid3D] Solution method is multigrid preconditioned conjugate gradient method. \n";
+		NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(1);
+		myGrid.SetMisesWielandt(false);
+		std::vector<double> rhs(rDisplVector.size());
+		myGrid.SetParameters(rDisplVector);
+		myGrid.SetRightHandSide(rhs);
+		myMultiGrid.SetUseMultiGridAsPreconditoner(true);
+		myMultiGrid.SetMaxCycle(2);
+		myOptimizer.SetCallback( (&myMultiGrid));
+		myOptimizer.Info();
+		myOptimizer.Optimize();
+
+		rDisplVector=myGrid.GetParameters();
+	}
+#else //ENABLE_OPTIMIZE
+	std::cout<<"[MultiGrid3D] Solution is not possible. Module optimize is not loaded.\n";
+#endif //ENABLE_OPTIMIZE
+
+//	myMultiGrid.ExportVTKStructuredDataFile(0,"outputGrid0.vtk");
+//	myMultiGrid.ExportVTKStructuredDataFile(1,"outputGrid1.vtk");
+
 
 	std::ofstream file;
     file.open("displacementsMG.txt");
@@ -297,6 +330,7 @@ end=clock();
 			double squareRefNorm=0;
 			std::ofstream diffFile;
 			diffFile.open("displDiff.txt");
+			std::cout<<"[MultiGrid3D]  ref Solution ";
 			for(size_t i=0;i<numNodes;++i)
 			{
 					diffFile<<rDisplVector[3*i]-dispRef[3*i]<<"\n";
@@ -308,8 +342,10 @@ end=clock();
 				squareRefNorm+=(dispRef[3*i])*(dispRef[3*i]);
 				squareRefNorm+=(dispRef[3*i+1])*(dispRef[3*i+1]);
 				squareRefNorm+=(dispRef[3*i+2])*(dispRef[3*i+2]);
+				std::cout<<dispRef[3*i]<<" "<<dispRef[3*i+1]<<" "<<dispRef[3*i+2]<<" ";
 			}
-		std::cout<<"[MultiGrid3D] squared diff norm " <<squareDiffNorm<<std::endl;
+
+		std::cout<<"\n[MultiGrid3D] squared diff norm " <<squareDiffNorm<<std::endl;
 		std::cout<<"[MultiGrid3D] error " <<sqrt(squareDiffNorm)/sqrt(squareRefNorm)*100<<" %"<<std::endl;
 		}
 		else

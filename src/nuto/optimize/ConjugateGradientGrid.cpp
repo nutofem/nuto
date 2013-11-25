@@ -18,23 +18,20 @@ int NuTo::ConjugateGradientGrid::Optimize()
 {
 #ifdef SHOW_TIME
     std::clock_t startOpt,endOpt;
-    std::clock_t startMatVec,endMatVec;
-    double sumMatVec=0.,sumHN=0.;
-    std::clock_t startHN,endHN;
     startOpt=clock();
 #endif
 	double alpha=0,
 		   beta=0,
 		   alphaNumerator=0,
 		   alphaDenominator=0,
-		   betaNumerator=0,
-		   rNorm=0.;
+		   norm=0.,
+		   betaNumerator=0;
 
     int numFunctionCalls(0),   // number of function calls
 		 numGradientCalls(0),   // number of gradient calls
 		 numHessianCalls(0),    // number of hessian calls
 		 curIteration(0),       //number of iterations
-		 repeatInitial(10),		// number after which the inital error is recomputed
+//		 repeatInitial(10),		// number after which the inital error is recomputed
 		 curCycle(0);           //number of iterations without restart
 
 
@@ -47,15 +44,28 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	// d  = search direction
 	// h  = scaled search direction = K d
 
-	std::vector<double> &u=mpCallbackHandlerGrid->GetParameters();
-	std::vector<double> &r=mpCallbackHandlerGrid->GetResidual();
+	std::vector<double> &v=mpCallbackHandlerGrid->GetParameters();
+	std::vector<double> &f=mpCallbackHandlerGrid->GetRightHandSide();
 	std::vector<double> rInitial(mNumParameters+3);
-	std::vector<double> pr=mpCallbackHandlerGrid->GetResidual();
+	std::vector<double> r(mNumParameters+3);
+	std::vector<double> pr(mNumParameters+3);
 //	std::cout<<"pr[numpar]="<<pr[mNumParameters-1]<<"\n";
 	std::vector<double> h(mNumParameters+3);
 	std::vector<double> d(mNumParameters+3);
 
-#pragma acc data copy(u),copyin(r,pr,h,d)
+	if (mVerboseLevel>0)
+	{
+		std::cout<<"CG r ";
+		for(size_t i=0;i<mNumParameters;++i)
+			std::cout<<r[i]<<" ";
+		std::cout<<"\n";
+		std::cout<<"CG v ";
+		for(size_t i=0;i<mNumParameters;++i)
+			std::cout<<v[i]<<" ";
+		std::cout<<"\n";
+	}
+
+#pragma acc data copy(v),copyin(r,pr,h,d)
 
 	int precision = 6;
 	int width = 10;
@@ -77,9 +87,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		converged = true;
 		returnValue = MAXFUNCTIONCALLS;
 	}
-	//z=P*r, with P=D^-1 p=vec(D^-1)
-//	std::cout<<"[ConjugateGradientGrid]: no preconditioning.\n";
-	++numHessianCalls;
+
 
 	double residualNorm0=0.;
 	while(!converged)
@@ -92,7 +100,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			 break;
 		 }
 
-//determine gradient
 
 		// all  mNumParameters repeat start equations
 //		if (curCycle%repeatInial==0)
@@ -107,69 +114,48 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			}
 
 			double help=0.0;
-			//calculate gradient as a start solution
 			for(size_t i=0;i<mNumParameters;++i)
 			{
-				help+=r[i]*r[i];
+				help+=v[i]*v[i];
 			}
 //			std::cout<<__FILE__<<" "<<__LINE__<<" help "<<help<<std::endl;
-			// help is only unequal zero when the starting residual is not zero
-			if (help==0)
+			// help is only zero when the starting with error equation Ke=r
+			if (help!=0)
 			{
 				// set h to zero done in matrix-vector routine
-				mpCallbackHandlerGrid->Gradient(u,r);
+				mpCallbackHandlerGrid->Gradient(v,r);
 
 				for(size_t i=0;i<mNumParameters;++i)
 				{
 //				if(help==0) //calculate r=f-Ku, multiply -1, else r=Ke positive Gradient needed
 					r[i]*=-1;
-					pr[i]=r[i];
 				}
 			}
-
-			mpCallbackHandlerGrid->Hessian(pr);
-
-//			std::cout<<" pr ";
-//			for(size_t i=0;i<mNumParameters;++i)
-//				std::cout<<pr[i]<<" ";
-//			std::cout<<"\n";
-
-			// have to change sign --> next loop
-			// add external load
-//			pr=r;
-			for(size_t i=0;i<mNumParameters;++i)
-			{
-//				pr[i]=r[i];
-// 				pr[i]=p[i]*r[i];
-				//upate for start solution
- 				d[i]=pr[i];
-			}
-
-
 			alphaNumerator=0;
 			residualNorm0=0;
 			for(size_t i=0;i<mNumParameters;++i)
 			{
+				r[i]+=f[i];
+				pr[i]=r[i];
+			}
+			mpCallbackHandlerGrid->Hessian(pr);
+			++numHessianCalls;
+
+			for(size_t i=0;i<mNumParameters;++i)
+			{
+				//upate for start solution
+ 				d[i]=pr[i];
 				alphaNumerator+=r[i]*pr[i];
+				residualNorm0+=r[i]*r[i];
 			}
 
-			residualNorm0=alphaNumerator;
+//			residualNorm0=alphaNumerator;
 		//	curCycle = 0;
 //			std::cout<<" residualNorm0 "<<residualNorm0<<"\n";
 		}
 
-
-		//begin with cycles bigger 0
-//		std::cout<<" d ";
-//		for(size_t i=0;i<mNumParameters;++i)
-//			std::cout<<d[i]<<" ";
-//		std::cout<<"\n";
-
-
 		// set h to zero done in matrix-vector routine
-//		std::cout <<"it: "<<curCycle<<"\n";
 		mpCallbackHandlerGrid->Gradient(d,h);
-
 
 	    alphaDenominator=0.;
 //	    squaredNorm=0;
@@ -184,30 +170,66 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //			for(size_t i=0;i<mNumParameters;++i)
 //				normDirection+=d[i]*d[i];
 //			for(size_t i=0;i<mNumParameters;++i)
-//				u[i]=d[i]/normDirection;
+//				v[i]=d[i]/normDirection;
 //			converged=true;
 //			break;
 //		}
 //
 		betaNumerator =0;
+		norm =0;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
-			u[i]+= alpha*d[i];
+			v[i]+= alpha*d[i];
 			r[i]-=alpha*h[i];
 			pr[i]=r[i];
+			norm+=r[i]*r[i];
 		}
 		mpCallbackHandlerGrid->Hessian(pr);
+		++numHessianCalls;
+
+		for(size_t i=0;i<mNumParameters;++i)
+			betaNumerator+=r[i]*pr[i];
+
+		if (mVerboseLevel>0)
+		{
+			std::cout<<"Cycle "<<curCycle<<"\n";
+			std::cout<<"CG r ";
+			for(size_t i=0;i<mNumParameters;++i)
+				std::cout<<r[i]<<" ";
+			std::cout<<"\n";
+
+			std::cout<<"CG pr ";
+			for(size_t i=0;i<mNumParameters;++i)
+				std::cout<<pr[i]<<" ";
+			std::cout<<"\n";
+			std::cout<<"CG v ";
+			for(size_t i=0;i<mNumParameters;++i)
+				std::cout<<v[i]<<" ";
+			std::cout<<"\n";
+		}
+
+		beta = betaNumerator/ alphaNumerator;
+		alphaNumerator = betaNumerator;
+
+		if (beta<0)
+		{
+//			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero not done" << std::endl;
+			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero " << std::endl;
+			beta=0;
+		}
+
 		for(size_t i=0;i<mNumParameters;++i)
 		{
-//			pr[i]=p[i]*r[i];
-			betaNumerator+=r[i]*pr[i];
+			d[i] *=beta;
+			d[i] +=pr[i];
 		}
+
 
 		// new convergence criteria
 //		if(curCycle>0 && curCycle%repeatInitial==0)
 //		{
 //			// set h to zero done in matrix-vector routine
-//			mpCallbackHandlerGrid->Gradient(u,rInitial);
+//			mpCallbackHandlerGrid->Gradient(v,rInitial);
 //
 //			for(size_t i=0;i<mNumParameters;++i)
 //			{
@@ -235,109 +257,23 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //
 //		}
 
-//		std::cout <<"it: "<<curCycle<<" betaNumerator "<<betaNumerator<<" relNorm "<<betaNumerator/residualNorm0<<" tol: "<<rAccuracyGradientSquare<<std::endl;
-//		std::cout.precision(precision);
-//		std::cout << " dy ["<<curCycle<<"] ";
-//		for(size_t i=1;i<mNumParameters;i+=3)
-//			std::cout<<d[i]<<" ";
-//		std::cout<<"\n";
-//		std::cout << " hy ["<<curCycle<<"] ";
-//		for(size_t i=1;i<mNumParameters;i+=3)
-//			std::cout<<h[i]<<" ";
-//		std::cout<<"\n";
-//
-//		std::cout << " ry ["<<curCycle<<"] ";
-//		for(size_t i=1;i<mNumParameters;i+=3)
-//			std::cout<<r[i]<<" ";
-//		std::cout<<"\n";
-//		std::cout << " uy ["<<curCycle<<"] ";
-//		for(size_t i=1;i<mNumParameters;i+=3)
-//			std::cout<<u[i]<<" ";
-//		std::cout<<"\n";
-
-//			std::cout << " u ["<<curCycle<<"] ";
-//			for(size_t i=0;i<mNumParameters;++i)
-//				std::cout<< std::setw(width)<<u[i]<<" ";
-//			std::cout<<"\n";
-
-		beta = betaNumerator/ alphaNumerator;
-//		std::cout << std::setw(width)<<"alphaDenominator (dh) : "<<alphaDenominator<<" alphaNumerator (rz)_i : "<<alphaNumerator<<" betaNumerator (rz)_i+1 : "<<betaNumerator<< std::endl;
-		alphaNumerator = betaNumerator;
-		for(size_t i=0;i<mNumParameters;++i)
-		{
-			d[i] *=beta;
-			d[i] +=pr[i];
-		}
-
-//		if (mVerboseLevel>4)
-//		{
-//			std::cout.precision(precision);
-//			std::cout <<std::setw(width)<<"[ConjugateGradientGrid::Optimize]  It.: "<< curIteration<< " norm gradient squared (betaNumerator)"<<betaNumerator<<std::endl;
-//			std::cout << std::setw(width)<< "pr " ;
-//			for (size_t count=0; count<mNumParameters; count++)
-//			{
-//				std::cout << std::setw(width)<< pr[count] << "   " ;
-//			}
-//			std::cout << std::endl;
-//			std::cout << std::setw(width)<< "r " ;
-//			for (size_t count=0; count<mNumParameters; count++)
-//			{
-//				std::cout << std::setw(width)<< r[count] << "   " ;
-//			}
-//			std::cout << std::endl;
-//			std::cout << std::setw(width)<< "h " ;
-//			for (size_t count=0; count<mNumParameters; count++)
-//			{
-//				std::cout << std::setw(width)<< h[count] << "   " ;
-//			}
-//			std::cout << std::endl;
-//			std::cout << std::setw(width)<< "d " ;
-//			for (size_t count=0; count<mNumParameters; count++)
-//			{
-//				std::cout << std::setw(width)<< d[count] << "   " ;
-//			}
-//			std::cout << std::endl;
-//			std::cout << std::setw(width)<< "u " ;
-//			for (size_t count=0; count<mNumParameters; count++)
-//			{
-//				std::cout << std::setw(width)<<u[count] << "   " ;
-//			}
-//			std::cout << std::endl;
-//
-//		}
-
 //		std::cout << "betaNumerator "<<betaNumerator<< " tol: "<<rAccuracyGradientScaled*rAccuracyGradientScaled*residualNorm0<< std::endl;
 		// relative norm
 //		std::cout<<" relative norm \n";
-		betaNumerator/=residualNorm0;
-		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientSquare) ||
-				(betaNumerator<0 && betaNumerator>-rAccuracyGradientSquare))
+//		betaNumerator/=residualNorm0;
+		norm/=residualNorm0;
+
+//		if ((betaNumerator>0 && betaNumerator<rAccuracyGradientSquare) ||
+//				(betaNumerator<0 && betaNumerator>-rAccuracyGradientSquare))
+		//increase iteration and curCycle
+		curCycle++;
+		curIteration++;
+		if (norm<rAccuracyGradientSquare)
 		{
 			converged = true;
 			returnValue = NORMGRADIENT;
 		}
 
-		if (beta<0)
-		{
-			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero " << std::endl;
-			beta=0;
-		}
-
-
-//		if (mVerboseLevel>1 && curIteration%mShowSteps==0)
-//		if ( curIteration%mShowSteps==0)
-//		{
-//			std::cout<< "Iteration " << curIteration <<" with norm grad squared" << betaNumerator << std::endl;
-//		}
-
-//		std::cout<<" uy ";
-//		for(size_t i=1;i<mNumParameters;i+=3)
-//			std::cout<<u[i]<<" ";
-//		std::cout<<"\n";
-
-		//increase iteration and curCycle
-		curCycle++;
-		curIteration++;
 
 		if (curIteration>mMaxIterations)
 		{
@@ -356,28 +292,12 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	}
 
 	isBuild = true;
-//	startHN=clock();
-//	mpCallbackHandlerGrid->HangingNodesCorrection(u);
-//	endHN=clock();
-//	sumHN+=difftime(endHN,startHN);
-
-	// Get force vector
-//	r.clear();
-//	CalculateReactionForcesEBE(u,r);
-//	std::cout<<" Reaction forces \n";
-//	for (size_t count=0; count<mNumParameters; count++)
-//	{
-//		std::cout << std::setw(width)<< r[count] << "\n   " ;
-//	}
-//	std::cout<<"\n";
 
 #ifdef SHOW_TIME
     endOpt=clock();
     if (mShowTime && mVerboseLevel>0)
     {
     	std::cout<< "[ConjugateGradientGrid::Optimize] Elapsed time (sec)............. " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << std::endl;
-    	std::cout<< "[ConjugateGradientGrid::Optimize] MATVEC time (sec)............. " << sumMatVec/CLOCKS_PER_SEC << std::endl;
-    	std::cout<< "[ConjugateGradientGrid::Optimize] HangingNode time (sec)............. " << sumHN/CLOCKS_PER_SEC << std::endl;
     }
 #endif
 	if (mVerboseLevel>0)
@@ -385,9 +305,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		std::cout<< " "  << std::endl;
 		std::cout<< "[ConjugateGradientGrid::Optimize] "  << std::endl;
 		std::cout<< "Number of Iterations............. " << curIteration << std::endl;
-//		std::cout<< "Number of Function Calls......... " << numFunctionCalls << std::endl;
-//		std::cout<< "Number of Gradient Calls......... " << numGradientCalls << std::endl;
-//		std::cout<< "Number of Hessian Calls.......... " << numHessianCalls << std::endl;
 		std::cout<< "Active convergence criterion..... " ;
 		switch (returnValue)
 		{
@@ -419,18 +336,10 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] displacements " ;
 		for (size_t count=0; count<mNumParameters; count++)
 		{
-			std::cout << std::setw(width)<<u[count] << "   " ;
+			std::cout << std::setw(width)<<v[count] << "   " ;
 
 		}
 		std::cout << std::endl;
-		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] mDisp " ;
-		for (size_t count=0; count<mNumParameters; count++)
-		{
-			std::cout << std::setw(width)<<mpCallbackHandlerGrid->GetParameters()[count] << "   " ;
-
-		}
-		std::cout << std::endl;
-
 	}
 	objective=sqrt(betaNumerator);
 	return returnValue;

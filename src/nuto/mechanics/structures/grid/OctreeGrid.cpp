@@ -25,13 +25,17 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/MortonOrder.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/MisesWielandt.h"
-
+#endif //ENABLE_OPTIMIZE
 #include <algorithm>
 
 //#define PLANESTRESS
-
+#ifdef ENABLE_OPTIMIZE
 NuTo::OctreeGrid::OctreeGrid(int rDimension):  CallbackHandlerGrid ()
+#else //ENABLE_OPTIMIZE
+NuTo::OctreeGrid::OctreeGrid(int rDimension)
+#endif //ENABLE_OPTIMIZE
 {
    if (rDimension!=3)
 	{
@@ -858,7 +862,6 @@ void NuTo::OctreeGrid::CreateOctree(int rThresholdMaterialValue, std::string fil
 //! @brief search for hanging nodes and saves key of nodes to which it is constraints
 void NuTo::OctreeGrid::HangingNodesSearch()
 {
-	int element=0;
 	for(std::map<uint32_t,data>::iterator it=mData.begin();it!=mData.end();++it)
 	{
 		if(it->second.weight>0) // is an element
@@ -2184,11 +2187,12 @@ void NuTo::OctreeGrid::HessianDiag(std::vector<double>& rHessianDiag)
 }
 void NuTo::OctreeGrid::CalcScalingFactors(std::vector<double> &p)
 {
-    //diagonal scaling with scaling factor
+	//diagonal scaling with scaling factor
 	double scalefactor=GetWeightingFactor();
 	std::cout<<"OctreeGrid: Weighting factor "<<scalefactor<<"\n";
 	if(scalefactor==0.)
 	{
+#ifdef ENABLE_OPTIMIZE
 		if (mUseMisesWielandt)
 		{
 			SetMisesWielandt(false); // if not, get a infinite loop
@@ -2214,6 +2218,7 @@ void NuTo::OctreeGrid::CalcScalingFactors(std::vector<double> &p)
 
 		}
 		else
+#endif //ENABLE_OPTIMIZE
 			// 1 is needed for MisesWielandt (Hessian), make sure it is 1 in standard
 			scalefactor=1.;
 			//   scalefactor=1./(double) mNumParameters;
@@ -2683,14 +2688,38 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
 
     assert(mNumMaterials);
     int mat=1;
+    std::map<int,double> E;
+    double weight=0;
+    bool newMat=true;
+    std::map<uint32_t,data>::const_iterator it=mData.begin();
+	E[mat]=it->second.weight;
+	file<<"mp,ex,"<<mat<<","<<it->second.weight<<" \n";
+	file<<"mp,prxy,"<<mat<<",.2 \n";
+	++mat;
+
  	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
     {
-    	if(it->second.weight>0)
+ 		weight=it->second.weight;
+ 		if(weight>0)
      	{
-    		file<<"mp,ex,"<<mat<<","<<it->second.weight<<" \n";
-    		file<<"mp,prxy,"<<mat<<",.2 \n";
-			++mat;
-     	}
+			for(std::map<int,double>::iterator it_e=E.begin(); it_e==E.end();++it_e)
+			{
+				if(it_e->second==weight)
+				{
+					newMat=false;
+					it_e=E.end();
+				}
+			}
+			if(newMat) //true
+			{
+				E[mat]=weight;
+				file<<"mp,ex,"<<mat<<","<<weight<<" \n";
+				file<<"mp,prxy,"<<mat<<",.2 \n";
+				++mat;
+				newMat=false;
+			}
+
+      	}
     }
 
     // create nodes
@@ -2701,11 +2730,13 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
     // create elements
     mat=1;
     file<<"type,1 \n mat,"<<mat<<" \n";
-    std::vector<size_t> nodes(8);
+   std::vector<size_t> nodes(8);
+    int elem=1;
 
 	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
 	{
-     	if(it->second.weight>0)
+     	weight=it->second.weight;
+		if(weight>0)
      	{
      		uint32_t key=it->first;
      		uint32_t level=it->second.level;
@@ -2714,8 +2745,18 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
  				fac=1;
  			else
  				fac=(2<<fac);
-			file<<"mat,"<<mat<<"\n";
-     		file<<"en,"<<mat<<","<<(it->second.id)+1<<","<<
+
+ 			// set mat
+			for(std::map<int,double>::iterator it_e=E.begin(); it_e==E.end();++it_e)
+			{
+				if(it_e->second==weight)
+				{
+					if(it_e->first!=mat)
+						file<<"mat,"<<it_e->first<<"\n";
+					it_e==E.end();
+				}
+			}
+     		file<<"en,"<<elem<<","<<(it->second.id)+1<<","<<
      				(mData.find(MortonOrder::Neighbor3D(key,fac,0,0))->second.id)+1<<","<<
      				(mData.find(MortonOrder::Neighbor3D(key,fac,fac,0))->second.id)+1<<","<<
      				(mData.find(MortonOrder::Neighbor3D(key,0,fac,0))->second.id)+1<<","<<
@@ -2723,12 +2764,34 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
      				(mData.find(MortonOrder::Neighbor3D(key,fac,0,fac))->second.id)+1<<","<<
      				(mData.find(MortonOrder::Neighbor3D(key,fac,fac,fac))->second.id)+1<<","<<
      				(mData.find(MortonOrder::Neighbor3D(key,0,fac,fac))->second.id)+1<<"\n";
-     		++mat;
+     		++elem;
      	}
 
     }
 
  	// create displacement constraints
+	// by hand
+	///////////////////////////////////////////////////////
+	// x=0;ux=0
+//	file<<"nsel,s,node,loc,x,0\n";
+//	file<<"d,all,ux,0.\n";
+//
+//	// y=0;uy=0
+//	file<<"nsel,s,node,loc,y,0\n";
+//	file<<"d,all,uy,0.\n";
+//
+//	// z=0;uz=0
+//	file<<"nsel,s,node,loc,z,0\n";
+//	file<<"d,all,uz,0.\n";
+//
+//	// y=max;uy=1
+//
+//	file<<"alls \n"
+//		"*GET,umax,node,,mxloc,y\n";
+//	file<<"nsel,s,node,loc,y,umax\n";
+//	file<<"d,all,uy,1.\n";
+//	file<<"alls\n";
+// 	// create displacement constraints
 	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
 	{
 		if((it->second.constraint&8)==8)
@@ -2823,20 +2886,20 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
 				signA*=-1;
 			}
 			// CE,lhs,0,HNid,dof,factor,node,dof,0.25, ....
-			file<<"CE,"<<++count<<",0,"<<id+1<<",ux,-1,"<<planeNodes[0]+1<<",ux,0.25,"
-						<<planeNodes[1]+1<<",ux,0.25 \n";
-			file<<"CE,"<<count<<",0,"<<id+1<<",ux,-1,"<<planeNodes[2]+1<<",ux,0.25,"
-						<<planeNodes[3]+1<<",ux,0.25 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",ux,1,"<<planeNodes[0]+1<<",ux,-0.25,"
+						<<planeNodes[1]+1<<",ux,-0.25 \n";
+			file<<"CE,"<<count<<",0,"<<id+1<<",ux,1,"<<planeNodes[2]+1<<",ux,-0.25,"
+						<<planeNodes[3]+1<<",ux,-0.25 \n";
 
-			file<<"CE,"<<++count<<",0,"<<id+1<<",uy,-1,"<<planeNodes[0]+1<<",uy,0.25,"
-						<<planeNodes[1]+1<<",uy,0.25 \n";
-			file<<"CE,"<<count<<",0,"<<id+1<<",uy,-1,"<<planeNodes[2]+1<<",uy,0.25,"
-						<<planeNodes[3]+1<<",uy,0.25 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uy,1,"<<planeNodes[0]+1<<",uy,-0.25,"
+						<<planeNodes[1]+1<<",uy,-0.25 \n";
+			file<<"CE,"<<count<<",0,"<<id+1<<",uy,1,"<<planeNodes[2]+1<<",uy,-0.25,"
+						<<planeNodes[3]+1<<",uy,-0.25 \n";
 
-			file<<"CE,"<<++count<<",0,"<<id+1<<",uz,-1,"<<planeNodes[0]+1<<",uz,0.25,"
-						<<planeNodes[1]+1<<",uz,0.25 \n";
-			file<<"CE,"<<count<<",0,"<<id+1<<",uz,-1,"<<planeNodes[2]+1<<",uz,0.25,"
-						<<planeNodes[3]+1<<",uz,0.25 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uz,1,"<<planeNodes[0]+1<<",uz,-0.25,"
+						<<planeNodes[1]+1<<",uz,-0.25 \n";
+			file<<"CE,"<<count<<",0,"<<id+1<<",uz,1,"<<planeNodes[2]+1<<",uz,-0.25,"
+						<<planeNodes[3]+1<<",uz,-0.25 \n";
 		}
 		// for all three cases of constraint nodes on edges
 		else if((constraint&1)==1 || (constraint&2)==2 || (constraint&4)==4) //  110 | 010 =  110 != 010 -> result only equal value when constraint equal value
@@ -2867,12 +2930,12 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
 				signA*=-1;
 			}
 			// CE,lhs,0,HNid,dof,factor,node,dof,0.25, ....
-			file<<"CE,"<<++count<<",0,"<<id+1<<",ux,-1,"<<edgeNode[0]+1<<",ux,0.5,"
-						<<edgeNode[1]+1<<",ux,0.5 \n";
-			file<<"CE,"<<++count<<",0,"<<id+1<<",uy,-1,"<<edgeNode[0]+1<<",uy,0.5,"
-						<<edgeNode[1]+1<<",uy,0.5 \n";
-			file<<"CE,"<<++count<<",0,"<<id+1<<",uz,-1,"<<edgeNode[0]+1<<",uz,0.5,"
-						<<edgeNode[1]+1<<",uz,0.5 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",ux,1,"<<edgeNode[0]+1<<",ux,-0.5,"
+						<<edgeNode[1]+1<<",ux,-0.5 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uy,1,"<<edgeNode[0]+1<<",uy,-0.5,"
+						<<edgeNode[1]+1<<",uy,-0.5 \n";
+			file<<"CE,"<<++count<<",0,"<<id+1<<",uz,1,"<<edgeNode[0]+1<<",uz,-0.5,"
+						<<edgeNode[1]+1<<",uz,-0.5 \n";
 
 		}
 	}
@@ -2882,8 +2945,10 @@ void  NuTo::OctreeGrid::AnsysInput(std::vector<double> &rDisplVector) const
 	file<<"!nummeriert Knoten neu durch\n"
 			"!numcmp,node \n"
 			"/solu \n"
+			"eqslv,sparse	! solve with sparse direct sover \n"
 			"! to get .full file \n"
 			"outr,all,all	! alle Zwischenergebnisse speichern  \n"
+			"wrfull,on		! stops analysis after writing file \n"
 			"solve	           	! Lösen des Gleichungssystems \n"
 			"finish	      ! Verlassen des Lösungsprozessors \n"
 			"/AUX2 \n"

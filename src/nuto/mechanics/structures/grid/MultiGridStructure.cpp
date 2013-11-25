@@ -5,8 +5,8 @@
 
 #include "nuto/mechanics/structures/grid/MultiGridStructure.h"
 
-#include "nuto/optimize/Jacobi.h"
-#include "nuto/optimize/ConjugateGradientGrid.h"
+//#include "nuto/optimize/Jacobi.h"
+//#include "nuto/optimize/ConjugateGradientGrid.h"
 
 void NuTo::MultiGridStructure::SetStructure(NuTo::StructureGrid* rpStructureHandler)
 {
@@ -19,12 +19,10 @@ void NuTo::MultiGridStructure::Hessian(std::vector<double>&  rDiagHessian)
 {
 	if(mUseAsPreconditioner)
 	{
-		// set parameter for solution as preconditioner
-		mpStructureHandler->SetResidual(rDiagHessian);
 		std::vector<double> rParameters(rDiagHessian.size(),0.);
-		mpStructureHandler->SetParameters(rParameters);
-		MultiGridSolve();
-		rDiagHessian=mpStructureHandler->GetParameters();
+		MultiGridSolve(rParameters,rDiagHessian);
+		for(size_t i=0;i<rDiagHessian.size();++i)
+			rDiagHessian[i]=rParameters[i];
 	}
 	else
 		mpStructureHandler->HessianDiag(rDiagHessian);
@@ -41,9 +39,9 @@ std::vector<double>&  NuTo::MultiGridStructure::GetParameters()
 {
 	return mpStructureHandler->GetParameters();
 }
-std::vector<double>&  NuTo::MultiGridStructure::GetResidual()
+std::vector<double>&  NuTo::MultiGridStructure::GetRightHandSide()
 {
-	return mpStructureHandler->GetResidual();
+	return mpStructureHandler->GetRightHandSide();
 }
 
 void NuTo::MultiGridStructure::SetParameters(std::vector<double>& rParameters)
@@ -51,9 +49,9 @@ void NuTo::MultiGridStructure::SetParameters(std::vector<double>& rParameters)
 	mpStructureHandler->SetParameters(rParameters);
 }
 
-void NuTo::MultiGridStructure::SetResidual(std::vector<double>& rResidual)
+void NuTo::MultiGridStructure::SetRightHandSide(std::vector<double>& rRightHandSide)
 {
-	mpStructureHandler->SetResidual(rResidual);
+	mpStructureHandler->SetRightHandSide(rRightHandSide);
 }
 
 int NuTo::MultiGridStructure::Initialize()
@@ -133,7 +131,8 @@ int NuTo::MultiGridStructure::Initialize()
 	}
 	return 0;
 }
-int NuTo::MultiGridStructure::MultiGridSolve()
+int NuTo::MultiGridStructure::MultiGridSolve(std::vector<double>& rSolution,
+		std::vector<double>& rRightHandSide)
 {
 #ifdef SHOW_TIME
     std::clock_t startMG,endMG;
@@ -141,69 +140,93 @@ int NuTo::MultiGridStructure::MultiGridSolve()
 #endif
 	int cycle=0;
 	double kappa=1.;
-
+	std::cout<<"MultiGridSolve\n";
 	NuTo::StructureGrid* rGrid=mpStructureHandler;
 	size_t numPara=rGrid->GetNumNodes()*3;
-	double rAccuracySquare=1e-6/(double) numPara;
-
-	//	double rAccuracySquare=1e-6*1e-6;
-	std::vector<double> rResidual(numPara+3);
-	std::vector<double> rParameters(numPara+3);
-	///////////////////////////
-	// for MG-PCG
-	rResidual=rGrid->GetResidual();
-	rParameters=rGrid->GetParameters();
-
+	double rAccuracySquare=1e-6*1e-6;
+//	double rAccuracySquare=1e-6/(double) numPara;
 	double rIntialNorm=0.;
-	for(int i=0;i<numPara;++i)
-		rIntialNorm+=rResidual[i]*rResidual[i];
+	std::vector<double> rResidual(rSolution.size(),0.);
+	std::vector<double> rError(rSolution.size(),0.);
 
-	if (rIntialNorm==0)
+
+	rGrid->Gradient(rSolution,rResidual);
+
+	for(size_t i=0;i<numPara;++i)
 	{
-		rGrid->Gradient(rParameters,rResidual);
-		for(int i=0;i<numPara;++i)
-			rIntialNorm+=(rResidual[i]*rResidual[i]);
+		rResidual[i]*=-1;
+		rResidual[i]+=rRightHandSide[i];
+		rIntialNorm+=(rResidual[i]*rResidual[i]);
 	}
-	else
-		rGrid->SetExtForces(rResidual);
+	// --------------------------------------------------------------------------
+//	std::cout<<"\n start residual "<<__LINE__<<"\n";
+//	std::cout <<" mg r ";
+//	for(size_t i=1;i<numPara;i+=3)
+//		std::cout<<rResidual[i]<<" ";
+//	std::cout<<"\n";
+//	// --------------------------------------------------------------------------
+	std::cout<<" rIntialNorm "<<rIntialNorm<<"\n";
 
-	// relative norm
-//	rAccuracySquare*=rIntialNorm;
 
-	while(cycle++<mMaxCycles && kappa>rAccuracySquare)
+	while(++cycle<mMaxCycles && kappa>rAccuracySquare)
 	{
+		rError.assign((numPara+1)*3,0.);
 		if(mCycle[0]==0)//FMV- cycle
 		{
+			std::cout<<"Attention: add restiction to the level.\n";
 			for(int rGridLevel=mNumGrids-1;rGridLevel>0;--rGridLevel)
-				GridLevelSolve(rGridLevel);
+				GridLevelSolve(rGridLevel,rError,rResidual);
 		}
 		else
-			GridLevelSolve(0);
-		rParameters=rGrid->GetParameters();
-		// residual is set zero in gradient routine
-		rGrid->Gradient(rParameters,rResidual);
+			GridLevelSolve(0,rError,rResidual);
+//			GridLevelSolve(0,rSolution,rRightHandSide);
+
+//		// update parameters
+		for(size_t i=0;i<numPara;++i)
+			rSolution[i]+=rError[i];
+
+		rGrid->Gradient(rSolution,rResidual);
+		for(size_t i=0;i<numPara;++i)
+		{
+			rResidual[i]*=-1;
+			rResidual[i]+=rRightHandSide[i];
+		}
+//		// --------------------------------------------------------------------------
+//		std::cout<<"\n next rhs "<<__LINE__<<"\n";
+//		std::cout <<" mg r ";
+//		for(size_t i=1;i<numPara;i+=3)
+//			std::cout<<rResidual[i]<<" ";
+//		std::cout<<"\n";
+//		std::cout <<" mg v ";
+//		for(size_t i=1;i<numPara;i+=3)
+//			std::cout<<rSolution[i]<<" ";
+//		std::cout<<"\n";
+//		// --------------------------------------------------------------------------
 
 		kappa=0.;
-		for(int i=0;i<numPara;++i)
+		for(size_t i=0;i<numPara;++i)
 			kappa+=(rResidual[i]*rResidual[i]);
+
+		// relative norm
+//		rAccuracySquare*=rIntialNorm;
+		kappa/=rIntialNorm;
 		std::cout<<"MultiGridSolve relative error "<<kappa<<" vs. norm "<<rAccuracySquare<<"\n";
 	}
 #ifdef SHOW_TIME
     endMG=clock();
     if (mShowTime && mVerboseLevel>0)
-//    if (mShowTime )
 		std::cout<< "[MultiGridSolve] Elapsed time (sec)............. " << difftime(endMG,startMG)/CLOCKS_PER_SEC << std::endl;
 #endif
 
 	int returnValue=0;
 	if (kappa<rAccuracySquare)
 		returnValue = NORMGRADIENT;
-	else if(cycle>mMaxCycles)
+	else if(cycle>=mMaxCycles)
 		returnValue = MAXCYCLES;
 
 	if (mVerboseLevel>0)
 	{
-		std::cout<<"MultiGridSolve relative error "<<kappa<<"\n";
+		std::cout<<"MultiGridSolve relative error "<<kappa<<" vs. norm "<<rAccuracySquare<<"\n";
 		std::cout<< " "  << std::endl;
 		std::cout<< "[MultiGridSolve] "  << std::endl;
 		std::cout<< "Number of Cylces............. " << cycle << std::endl;
@@ -227,9 +250,9 @@ int NuTo::MultiGridStructure::MultiGridSolve()
 		std::cout.precision(precision);
 		std::cout << std::setw(width)<< "[MultiGridSolve] displacements " ;
 
-		for (int count=0; count<numPara; count++)
+		for (size_t count=0; count<numPara; count++)
 		{
-			std::cout << std::setw(width)<<rParameters[count] << "   " ;
+			std::cout << std::setw(width)<<rSolution[count] << "   " ;
 
 		}
 		std::cout << std::endl;
@@ -238,15 +261,19 @@ int NuTo::MultiGridStructure::MultiGridSolve()
 
 	return returnValue;
 }
-//int NuTo::MultiGridStructure::MultiGridSolve(int rGridLevel,std::vector<double>& rParameter,std::vector<double>& rGradient)
-void NuTo::MultiGridStructure::GridLevelSolve(int rGridLevel)
+
+void NuTo::MultiGridStructure::GridLevelSolve(int rGridLevel,std::vector<double>& rParameters,
+		std::vector<double>& rRightHandSide)
 {
+#ifdef ENABLE_OPTIMIZE
 	int cylcetype=0;
 	NuTo::StructureGrid* rGrid;
 	if(rGridLevel==0)
 		rGrid=mpStructureHandler;
 	else
 		rGrid=GetGridPtr(rGridLevel-1);
+
+	std::vector<double> rResidual(rParameters.size(),0.);
 
 	// to avoid infinite loop
 	rGrid->SetUseDiagHessian(true);
@@ -255,115 +282,70 @@ void NuTo::MultiGridStructure::GridLevelSolve(int rGridLevel)
 	{
 		size_t numPara=rGrid->GetNumNodes()*3;
 
-		std::vector<double> &rResidual=rGrid->GetResidual();
-		std::vector<double> &rParameters=rGrid->GetParameters();
-		std::vector<double> &rExtForces=rGrid->GetExtForces();
-//		std::vector<double> rGradient(numPara);
-
-// --------------------------------------------------------------------------
-//		std::cout<<" mg level "<<rGridLevel<<"\n";
-//		std::cout<<" mg r ";
-//		for(size_t i=0;i<numPara;++i)
-//			std::cout<<rResidual[i]<<" ";
-//		std::cout<<"\n";
-//		std::cout<<" mg u ";
-//		for(size_t i=0;i<numPara;++i)
-//			std::cout<<rParameters[i]<<" ";
-//		std::cout<<"\n";
-// --------------------------------------------------------------------------
-
-		NuTo::Jacobi rOptiJacobi(numPara);
-		rOptiJacobi.SetCallback(rGrid);
-		rOptiJacobi.SetVerboseLevel(0);
-		rOptiJacobi.SetMaxGradientCalls(mNumPreSmoothingSteps);
-
-		// test with cg
-
-//		NuTo::ConjugateGradientGrid rOptiCG(numPara);
-//		rOptiCG.SetCallback(rGrid);
-//		rOptiCG.SetVerboseLevel(0);
-
 		if(rGridLevel==mNumGrids-1) // coarsest grid - exact solution
 		{
 			NuTo::ConjugateGradientGrid rOptiCG(numPara);
 			rOptiCG.SetCallback(rGrid);
+			// CG takes parameter and rightHandSide from grid structure
+			rGrid->SetRightHandSide(rRightHandSide);
+			rGrid->SetParameters(rParameters);
 			rOptiCG.SetVerboseLevel(0);
 			rOptiCG.SetMaxGradientCalls(numPara);
 			rOptiCG.Optimize();
-
-// --------------------------------------------------------------------------
-			std::cout<<" mg level "<<rGridLevel<<"\n";
-			std::cout<<" mg r ";
-			for(size_t i=0;i<numPara;++i)
-				std::cout<<rResidual[i]<<" ";
-			std::cout<<"\n";
-			std::cout<<" mg u ";
-			for(size_t i=0;i<numPara;++i)
-				std::cout<<rParameters[i]<<" ";
-			std::cout<<"\n";
-// --------------------------------------------------------------------------
+			// needed?
+			rParameters=rGrid->GetParameters();
 		}
 		else
 		{
-			//smoothing of u or r, the one which is not zero, when both, then r
-			rOptiJacobi.Optimize();
-//			rOptiCG.SetMaxIterations(mNumPreSmoothingSteps);
-//			rOptiCG.Optimize();
+			NuTo::Jacobi rOptiJacobi(numPara);
+			rOptiJacobi.SetCallback(rGrid);
+			rOptiJacobi.SetVerboseLevel(0);
+			rOptiJacobi.SetMaxGradientCalls(mNumPreSmoothingSteps);
+			rOptiJacobi.Optimize(rParameters,rRightHandSide);
+			// get residual of smoothed error or parameters
+			// compute residual =rhs - Kv
+			rGrid->Gradient(rParameters,rResidual);
 
-			if(rGridLevel==0)
+			//res=rhs of smoothed e
+			for(size_t i=0;i<numPara;++i)
 			{
-				//			//calculate new residual
-				//to be independant of start or error equation
-				//r=r-Ke or r=f-Ku , with f=r;
-				rGrid->Gradient(rParameters,rResidual); // is zero for error equation
-				for(size_t i=0;i<numPara;++i)
-				{
-					rResidual[i]*=-1.0;
-					rResidual[i]+=rExtForces[i];
-				}
-	//			rGrid->Gradient(rParameters,rGradient);
-	//			for(size_t i=0;i<numPara;++i)
-	//				rResidual[i]=rExtForces[i]-rGradient[i];
+				rResidual[i]*=-1.0;
+				rResidual[i]+=rRightHandSide[i];
 			}
 
-			int width=10;
-			int precision=6;
-			std::cout.precision(precision);
-			std::cout<<"\n mg level "<<rGridLevel<<"\n";
-//			std::cout <<" mg f ";
-//			for(size_t i=0;i<numPara;++i)
-//				std::cout << std::setw(width)<<rExtForces[i]<<" ";
-//			std::cout<<"\n";
-//			std::cout <<" mg g ";
-//			for(size_t i=0;i<numPara;++i)
-//				std::cout << std::setw(width)<<rGradient[i]<<" ";
-//			std::cout<<"\n";
-			std::cout <<" mg r ";
-			for(size_t i=0;i<numPara;++i)
-				std::cout << std::setw(width)<<rResidual[i]<<" ";
-			std::cout<<"\n";
-				std::cout<<" mg u ";
-			for(size_t i=0;i<numPara;++i)
-				std::cout << std::setw(width)<<rParameters[i]<<" ";
-			std::cout<<"\n";
-
 			//restriction
-			rGrid->Restriction(mRestriction);
-			//corase grid correction/solution
-			GridLevelSolve(rGridLevel+1);
-		}
-		// post smoothing
-		rOptiJacobi.SetMaxGradientCalls(mNumPostSmoothingSteps);
-		rOptiJacobi.Optimize();
+			std::vector<double> rResidualCoarser;// set size in restriction
+			// compute corase rhs from residual
+			rGrid->Restriction(mRestriction,rResidual,rResidualCoarser);
 
-		//prolongaton and correction
-		if(rGridLevel!=0) // do not prolongate finest grid
-			rGrid->Prolongation(mProlongation); // on coarse grid -> put paras to fine grid
+			std::vector<double> rParametersCoarser(rResidualCoarser.size(),0.);
+			//corase grid correction/solution Ke=r
+			GridLevelSolve(rGridLevel+1,rParametersCoarser,rResidualCoarser);
+			//prolongaton and correction
+			// v <- v +v coarse
+			rGrid->Prolongation(mProlongation,rParametersCoarser,rParameters); // on coarse grid -> put paras to fine grid
+			// --------------------------------------------------------------------------
+//			std::cout<<"\n mg level "<<rGridLevel<<" before smoothing; Line: "<<__LINE__<<"\n";
+//			std::cout<<" mg r ";
+//			for(size_t i=1;i<numPara;i+=3)
+//				std::cout<<rResidual[i]<<" ";
+//			std::cout<<"\n";
+//			std::cout<<" mg u ";
+//			for(size_t i=1;i<numPara;i+=3)
+//				std::cout<<rParameters[i]<<" ";
+//			std::cout<<"\n";
+			// --------------------------------------------------------------------------
+
+			rOptiJacobi.SetMaxGradientCalls(mNumPostSmoothingSteps);
+			rOptiJacobi.Optimize(rParameters,rRightHandSide);
+		}
 	}
 	// to reset initial boolean
 	rGrid->SetUseDiagHessian(false);
+#else //ENABLE_OPTIMIZE
+	std::cout<<"\n GridlevelSolve needs enabled Module Optimize.\n";
+#endif //ENABLE_OPTIMIZE
 }
-
 void NuTo::MultiGridStructure::Info()const
 {
 	std::cout<<"\nMultiGrid Info\n "
@@ -521,8 +503,8 @@ void NuTo::MultiGridStructure::ExportVTKStructuredDataFile(int rGridLevel, const
 //		file << "SCALARS coarser_grid_"<<rGridLevel<<" int 1\n";
 //		file << "LOOKUP_TABLE default\n";
 		size_t numVoxels=rGrid->GetNumVoxels();
-		size_t numNodes=rGrid->GetNumNodes();
-		size_t numEdges=(rGrid->mGridDimension[0]+1)*(rGrid->mGridDimension[1]+1)*(rGrid->mGridDimension[2]+1);
+//		size_t numNodes=rGrid->GetNumNodes();
+//		size_t numEdges=(rGrid->mGridDimension[0]+1)*(rGrid->mGridDimension[1]+1)*(rGrid->mGridDimension[2]+1);
 
 		size_t element=0;
 //		for(size_t voxel=0;voxel<numVoxels;++voxel)
@@ -551,22 +533,6 @@ void NuTo::MultiGridStructure::ExportVTKStructuredDataFile(int rGridLevel, const
 			else
 				file<<"0.\n";
 		}
-		file << "POINT_DATA "<<numEdges<<"\n";
-		file << "VECTORS residuals double \n";
-		countNodes=0;
-		for (size_t i=0;i<numEdges;++i) // loop over grid points
-		{
-			if(rGrid->mNodeId[i]<numNodes)
-			{
-				file<<rGrid->GetResidual()[3*rGrid->mNodeId[i]]<<" " <<rGrid->GetResidual()[3*rGrid->mNodeId[i]+1]<<" "<<rGrid->GetResidual()[3*rGrid->mNodeId[i]+2]<<"\n";
-				++countNodes;
-			}
-			else
-				file<<"0.0 0.0 0.0\n";
-		}
-		assert(countNodes==numNodes);
-
-
 	}
 	size_t numNodes=rGrid->GetNumNodes();
 	size_t numEdges=(rGrid->mGridDimension[0]+1)*(rGrid->mGridDimension[1]+1)*(rGrid->mGridDimension[2]+1);

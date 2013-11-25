@@ -1,9 +1,11 @@
 // $Id $
 #ifndef OCTREEGRID_H
 #define OCTREEGRID_H
-#include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
+#ifdef ENABLE_OPTIMIZE
+#include "nuto/optimize/CallbackHandlerGrid.h"
+#endif //ENABLE_OPTIMIZE
 #include <boost/dynamic_bitset.hpp>
 #include <stdint.h>
 #include <map>
@@ -26,7 +28,11 @@ struct data
 //! @author Andrea Keßler, ISM
 //! @date Juni 2013
 //! @brief ... regular structure e.g. from pixel/voxel data
+#ifdef ENABLE_OPTIMIZE
 class OctreeGrid: public virtual CallbackHandlerGrid
+#else
+class OctreeGrid: public virtual  NuToObject
+#endif
 {
 friend class MultiGridStructure;
 #ifdef ENABLE_SERIALIZATION

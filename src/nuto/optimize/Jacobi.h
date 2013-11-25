@@ -64,6 +64,8 @@ public:
 
     int Optimize();
 
+    int Optimize(std::vector<double> &v,std::vector<double> &f);
+
     inline void SetMaxGradientCalls(int rMaxGradientCalls)
     {
         mMaxGradientCalls = rMaxGradientCalls;

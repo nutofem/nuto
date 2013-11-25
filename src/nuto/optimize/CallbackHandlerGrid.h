@@ -62,18 +62,18 @@ public:
 		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in CallbackHandlerGrid object.");
     }
 
-    virtual std::vector<double>&  GetResidual()
+    virtual std::vector<double>&  GetRightHandSide()
     {
-		throw OptimizeException("[CallbackHandlerGrid::SetParameters] GetResidual function not implemented in CallbackHandlerGrid object.");
+		throw OptimizeException("[CallbackHandlerGrid::GetRightHandSide] GetRightHandSide function not implemented in CallbackHandlerGrid object.");
     }
     virtual void SetParameters(std::vector<double>& rParameters)
     {
 		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in CallbackHandlerGrid object.");
     }
 
-    virtual void SetResidual(std::vector<double>& rResidual)
+    virtual void SetRightHandSide(std::vector<double>& rRightHandSide)
     {
-		throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetResidual function not implemented in CallbackHandlerGrid object.");
+		throw OptimizeException("[CallbackHandlerGrid::SetRightHandSide] SetRightHandSide function not implemented in CallbackHandlerGrid object.");
     }
 
     virtual void Gradient (std::vector<double>& rValue,std::vector<double>& rGradient)

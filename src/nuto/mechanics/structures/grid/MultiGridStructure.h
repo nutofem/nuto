@@ -9,14 +9,19 @@
 #include "nuto/base/NuToObject.h"
 
 #include <boost/ptr_container/ptr_vector.hpp>
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/CallbackHandlerGrid.h"
+#endif //ENABLE_OPTIMIZE
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 
-class Jacobi;
 class StructureGrid;
 namespace NuTo
 {
+#ifdef ENABLE_OPTIMIZE
 class MultiGridStructure : public virtual CallbackHandlerGrid
+#else //ENABLE_OPTIMIZE
+class MultiGridStructure : public virtual NuToObject
+#endif //ENABLE_OPTIMIZE
 {
 public:
    typedef enum
@@ -63,9 +68,8 @@ public:
     void Info()const;
     void SetStructure(NuTo::StructureGrid* rpStructureHandler);
  	int Initialize();
- 	int MultiGridSolve();
-// 	int GridLevelSolve(std::vector<double>& rGradient);
- 	void GridLevelSolve(int rGridLevel);
+ 	int MultiGridSolve(std::vector<double>& rSolution,std::vector<double>& rRightHandSide);
+ 	void GridLevelSolve(int rGridLevel,std::vector<double>& rSolution,std::vector<double>& rRightHandSide);
  	StructureGrid* GetGridPtr(int rIdent);
 
    #ifdef ENABLE_SERIALIZATION
@@ -101,9 +105,9 @@ public:
     int GetMaxCycle();
 
     std::vector<double>&  GetParameters();
-    std::vector<double>&  GetResidual();
+    std::vector<double>&  GetRightHandSide();
     void SetParameters(std::vector<double>& rParameters);
-    void SetResidual(std::vector<double>& rResidual);
+    void SetRightHandSide(std::vector<double>& rRightHandSide);
 
     //! @brief gives number of relaxation iterations - smoothing on fine grid
     //! @return number of relaxation iterations

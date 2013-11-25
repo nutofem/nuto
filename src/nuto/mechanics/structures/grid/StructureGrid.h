@@ -1,7 +1,9 @@
 // $Id$
 #ifndef STRUCTUREGRID_H
 #define STRUCTUREGRID_H
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/CallbackHandlerGrid.h"
+#endif //ENABLE_OPTIMIZE
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include <boost/dynamic_bitset.hpp>
@@ -17,12 +19,18 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... regular structure e.g. from pixel/voxel data
+#ifdef ENABLE_OPTIMIZE
 class StructureGrid: public virtual CallbackHandlerGrid
+#else
+class StructureGrid: public virtual NuToObject
+#endif
 {
-friend class MultiGridStructure;
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
+
+friend class MultiGridStructure;
+
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -322,14 +330,12 @@ public:
      	return mUseMisesWielandt;
      }
     std::vector<double>&  GetParameters();
-    std::vector<double>&  GetResidual();
-    std::vector<double>&  GetExtForces();
+    std::vector<double>&  GetRightHandSide();
     void SetParameters(std::vector<double>& rParameters);
-    void SetResidual(std::vector<double>& rResidual);
-    void SetExtForces(std::vector<double>& rExtForces);
+    void SetRightHandSide(std::vector<double>& rRightHandSide);
     void CalculateMultiGridCorrolations(std::string restrictionType,std::vector<double>& rRestriction,std::vector<double>& rProlongation);
-    void Restriction(std::vector<double> &rRestrictionFactor);
-    void Prolongation(std::vector<double> &rProlongationFactor);
+    void Restriction(std::vector<double> &rRestrictionFactor,std::vector<double> & rResidual,std::vector<double> &rResidualCoarser);
+    void Prolongation(std::vector<double> &rProlongationFactor,std::vector<double>& rParameters,std::vector<double>& rParametersFine);
     void AnsysInput(std::vector<double >&rDisplVector) const;
     void LSDynaInput() const;
 protected:
@@ -353,9 +359,8 @@ protected:
 	boost::dynamic_bitset<> mDofIsConstraint; //0 = false, all 0 here
 	std::vector<double> mDisplacements;
     int mNumMaterials;
-    std::vector<double> mResidual;
+    std::vector<double> mRightHandSide;
 	bool mMatrixFreeMethod;
-    std::vector<double> mExtForces;
     int mNumBasisMaterials;
     std::vector<double> mHessianDiag;
     double mPoissonsRatio;

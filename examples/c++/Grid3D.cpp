@@ -14,10 +14,12 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/CallbackHandlerGrid.h"
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/Jacobi.h"
 #include "nuto/optimize/MisesWielandt.h"
+#endif
 
 int main()
 {
@@ -107,7 +109,7 @@ int main()
 	size_t numDofs=myGrid.GetNumNodes()*3;
 	size_t numNodes=myGrid.GetNumNodes();
 	//----------------------------------------------------------------------------------------//
-	// Boundary condition: x=0, ux=0; y=0, uy=0; z=0,uz=0;z0max,uz=-1
+	// Boundary condition: x=0, ux=0; y=0, uy=0; z=0,uz=0;uymax,uy=-1
 	//----------------------------------------------------------------------------------------//
 
 	//	bool EnableDisplacementControl = false;
@@ -141,31 +143,6 @@ int main()
 //	myGrid.SetDisplacementConstraints(direction,rGridLocation,-1,rDisplVector);
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-	//  uz=0; for all nodes
-//	direction=2;
-//	rGridLocation[0]=1;
-//	rGridLocation[1]=rGridDimension[0];
-//	rGridLocation[2]=1;
-//	rGridLocation[3]=rGridDimension[1];
-//	rGridLocation[4]=1;
-//	rGridLocation[5]=rGridDimension[2];
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-//	std::cout<<"constraints: ";
-//	for(size_t i=2;i<numDofs;i+=3)
-//		std::cout<<myGrid.GetDisplacementConstaints()[i]<<" ";
-//	std::cout<<"\n";
-
-
-//	//  uz=0; for one nodes
-//	direction=2;
-//	rGridLocation[0]=rGridDimension[0]-1;
-//	rGridLocation[1]=rGridDimension[0];
-//	rGridLocation[2]=rGridDimension[1]-1;
-//	rGridLocation[3]=rGridDimension[1];
-//	rGridLocation[4]=1;
-//	rGridLocation[5]=1;
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
-
 	//  uz=0; for one plain
 	direction=2;
 	rGridLocation[0]=1;
@@ -176,13 +153,6 @@ int main()
 	rGridLocation[5]=1;
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-
-
-//	//z=zmax, uz=-1
-//	rValue=BoundaryDisplacement;
-//	rGridLocation[4]=rGridDimension[2]-1;
-//	rGridLocation[5]=rGridDimension[2]-1;
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
 	//y=ymax, yz=-1
 	direction=1;
@@ -196,6 +166,64 @@ int main()
 //	myGrid.SetDisplacementConstraints(direction,rGridLocation,0,rDisplVector);
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
+/*
+ *
+	//new boundary conditions min. free  dofs
+	//-------------------------------------------------------------------------------------//
+	//	bool EnableDisplacementControl = false;
+	double BoundaryDisplacement = 1.0;
+	// diplacement vector plus one dof for calculation with non existing neighbor dofs
+	std::vector<double> rDisplVector(3*(3*numNodes+1),0.0);// initialized with zero
+	//for z=0,x,y -all ux=0
+	const std::vector<size_t> rGridDimension=myGrid.GetGridDimension();
+	// Attention: no considering of frame nodes for octree
+	double rValue=0.;
+	// rGridLocation ... region of constrained nodes xmin,xmax,ymin,ymax,zmin,zmax
+	size_t rGridLocation[6]={0};
+
+	//ux=0 all x
+	size_t direction=0;
+	rGridLocation[0]=0;
+	rGridLocation[1]=rGridDimension[0]+1;
+	rGridLocation[2]=0;
+	rGridLocation[3]=rGridDimension[1]+1;
+	rGridLocation[4]=0;
+	rGridLocation[5]=rGridDimension[2]+1;
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//y=0; uy=0
+	direction=1;
+	rGridLocation[0]=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=1;
+	rGridLocation[3]=3;
+	rGridLocation[4]=1;
+	rGridLocation[5]=rGridDimension[2];
+
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+	//  uz=0 all z
+	direction=2;
+	rGridLocation[0]=0;
+	rGridLocation[1]=rGridDimension[0]+1;
+	rGridLocation[2]=0;
+	rGridLocation[3]=rGridDimension[1]+1;
+	rGridLocation[4]=0;
+	rGridLocation[5]=rGridDimension[2]+1;
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
+
+//y=max, uy=-1
+	direction=1;
+	rGridLocation[0]=1;
+	rGridLocation[1]=rGridDimension[0];
+	rGridLocation[2]=rGridDimension[1]-3;
+	rGridLocation[3]=rGridDimension[1];
+	rGridLocation[4]=1;
+	rGridLocation[5]=rGridDimension[2];
+	rValue=BoundaryDisplacement;
+	myGrid.SetDisplacementConstraints(direction,rGridLocation,1,rDisplVector);
+//	myGrid.SetDisplacementConstraints(direction,rGridLocation,0,rDisplVector);
+*/
 //	myGrid.AnsysInput(rDisplVector);
 
 
@@ -217,52 +245,125 @@ end=clock();
 	std::cout<<"Allocated memory ............................... "<<mem/1000.<<"(MB)\n";
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
-	// Convergenc test: lamda_max of M=I-PA <1
-	myGrid.SetMisesWielandt(false); // if not, get a infinite loop, for Hessian
-	NuTo::MisesWielandt myEigenCalculator(numNodes*3);
-	myEigenCalculator.SetVerboseLevel(1);
-	myEigenCalculator.SetAccuracyGradient(1e-6);
-	myGrid.SetWeightingFactor(1.);
-	myEigenCalculator.SetCallback((&myGrid));
-	myEigenCalculator.Optimize();
-	double lambda_max=myEigenCalculator.GetObjective();
-	int precision = 10;
-	std::cout.precision(precision);
-	std::cout<<"Spectral radius or eigenvalue of PK "<<lambda_max<<"\n";
+#ifdef ENABLE_OPTIMIZE
+	enum SolMethod // enum for solution method
+	{
+		JCG, 	// jacobi preconditioned conjugate gradient
+		WJCG, 	// weighted jacobi preconditioned conjugate gradient
+		EJCG,   // error equation - jacobi conjugate gradient
+		J, 		// jacobi method
+		EJ, 	//error equation - jacobi method
+		M,		//mises method for max. eigenvalue
+	} solMeth=EJCG;
 
-	myGrid.SetWeightingFactor(1.);
 	// start analysis
-	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
-	myOptimizer.SetVerboseLevel(1);
-	myGrid.SetMisesWielandt(false);
-	myOptimizer.SetCallback( (&myGrid));
-	myOptimizer.Info();
-	myOptimizer.Optimize();
+	if(solMeth==JCG)
+	{
+		std::cout<<"[Grid3D] Solution method jacobi preconditioned conjugate cradient \n";
+		NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(1);
+		myGrid.SetMisesWielandt(false);
+		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.Info();
 
-//	std::vector<double> &residual=myGrid.GetResidual();
-//	myGrid.Gradient(rDisplVector,residual);
-//	rDisplVector.assign((numNodes+1)*3, 0.0);
-//
-//	myGrid.SetParameters(rDisplVector);
-//	for(size_t i=0;i<numNodes*3;++i)
-//		residual[i]*=-1;
-//	myGrid.SetResidual(residual);
-//	myOptimizer.Optimize();
+		myOptimizer.Optimize();
+		rDisplVector=myGrid.GetParameters();
+	}
+	else if(solMeth==WJCG)
+	{
+		std::cout<<"[Grid3D] Solution method weighted jacobi preconditioned conjugate cradient \n";
+		NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(1);
+		myGrid.SetMisesWielandt(true);
+		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.Info();
 
-//	//test jacobi solver
-//	NuTo::Jacobi myOptimizer(numNodes*3);
-//	myOptimizer.SetVerboseLevel(1);
-//	myOptimizer.SetCallback( (&myGrid));
-//	myOptimizer.Info();
-//	std::vector<double> &res=myGrid.GetResidual();
-//	myGrid.Gradient(rDisplVector,res);
-//	for(size_t i=0;i<numNodes*3;++i)
-//		res[i]*=-1;
-//	myGrid.SetResidual(res);
-//	myOptimizer.Optimize();
+		myOptimizer.Optimize();
+		rDisplVector=myGrid.GetParameters();
+	}
+	else if (solMeth==EJCG)
+	{
+		std::cout<<"[Grid3D] Solution method jacobi conjugate cradient with error equation. \n";
+		NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(1);
+		myGrid.SetMisesWielandt(false);
+		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.Info();
 
-//	rDisplVector=myGrid.GetResidual();
-	rDisplVector=myGrid.GetParameters();
+		std::vector<double> residual(rDisplVector.size(),0.);
+		std::vector<double> error(rDisplVector.size(),0.);
+		myGrid.Gradient(rDisplVector,residual);
+		for(size_t i=0;i<numNodes*3;++i)
+			residual[i]*=-1;
+
+		myGrid.SetParameters(error);
+		myGrid.SetRightHandSide(residual);
+		myOptimizer.Optimize();
+		error=myGrid.GetParameters();
+		for(size_t i=0;i<numNodes*3;++i)
+			rDisplVector[i]+=error[i];
+
+	}
+	else if(solMeth==J)
+	{
+		std::cout<<"[Grid3D] Solution method jacobi. \n";
+		//test jacobi solver
+		NuTo::Jacobi myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(1);
+		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.Info();
+		myGrid.SetMisesWielandt(false);
+		std::vector<double> residual(rDisplVector.size(),0.);
+		// so
+		myGrid.SetRightHandSide(residual);
+		myOptimizer.SetParameters(rDisplVector);
+		myOptimizer.Optimize();
+		rDisplVector=myOptimizer.GetParametersVec();
+		// or so
+//		myOptimizer.Optimize(rDisplVector,residual);
+
+	}
+	else if(solMeth==EJ)
+	{
+		std::cout<<"[Grid3D] Solution method jacobi with error equation. \n";
+		//test jacobi solver
+		NuTo::Jacobi myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(1);
+		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.Info();
+		// res has address of grid residual
+		std::vector<double> res((numNodes+1)*3, 0);
+		std::vector<double> error((numNodes+1)*3, 0);
+		myOptimizer.SetParameters(error);
+		myGrid.Gradient(rDisplVector,res);
+		for(size_t i=0;i<numNodes*3;++i)
+			res[i]*=-1;
+		// needed by Jacobi
+		myGrid.SetRightHandSide(res);
+		myGrid.SetMisesWielandt(false);
+		myOptimizer.Optimize();
+		error=myOptimizer.GetParametersVec();
+		for(size_t i=0;i<numNodes*3;++i)
+			rDisplVector[i]=error[i];
+	}
+	else if(solMeth==M)
+	{
+		// Convergenc test: lamda_max of M=I-PA <1
+		myGrid.SetMisesWielandt(false); // if not, get a infinite loop, for Hessian
+		NuTo::MisesWielandt myEigenCalculator(numNodes*3);
+		myEigenCalculator.SetVerboseLevel(1);
+		myEigenCalculator.SetAccuracyGradient(1e-6);
+		myGrid.SetWeightingFactor(1.);
+		myEigenCalculator.SetCallback((&myGrid));
+		myEigenCalculator.Optimize();
+		double lambda_max=myEigenCalculator.GetObjective();
+		int precision = 10;
+		std::cout.precision(precision);
+		std::cout<<"Max. eigenvalue of preconditioned matrix "<<lambda_max<<"\n";
+	}
+#else //ENABLE_OPTIMIZE
+	std::cout<<"[Grid3D] Solution is not possible. Module optimize is not loaded.\n";
+#endif //ENABLE_OPTIMIZE
 
 //	std::vector<double> rStrainVector;
 //	myGrid.GetEngineeringStrain(rDisplVector, rStrainVector);

@@ -12,12 +12,26 @@
 
 #define tol 1e-8
 
-//! @brief ... Optimize routine - optimize displacement or residual according to input
+//! @brief ... Optimize routine - optimize displacement or error according to input
 //! @brief ... Optimize residual if $|r|\inequal 0$
-//! @brief ... Optimize displacements if |r|=0
+//! @brief ... Optimize displacements if |r|=0, forces have to be added (at place of residuals)
 int NuTo::Jacobi::Optimize()
 {
+	std::vector<double> &v=GetParametersVec();
+	std::vector<double> &f=mpCallbackHandlerGrid->GetRightHandSide();
 
+	int returnValue=Optimize(v,f);
+
+	return returnValue;
+}
+
+//! @brief ... Optimize routine - optimize solution vector (displacements or error)
+//! @brief ... equation system: Kv=f or Ke=r
+//! @brief ... $v \leftarrow v - \omega D^{-1} K v + \omega D^{-1} f
+//! @param ... v - solution vector, f - right hand sight vector
+//! @return ... optimization_return_attribute
+int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
+{
 #ifdef SHOW_TIME
     std::clock_t startJac,endJac;
     startJac=clock();
@@ -27,20 +41,11 @@ int NuTo::Jacobi::Optimize()
     int  numGradientCalls(0),   // number of gradient calls
 		 curIteration(0);      //number of iterations
 
+    optimization_return_attributes returnValue;
 
-	optimization_return_attributes returnValue;
 
-	std::fstream outputTime;
-	std::string filename = "timeOutput";
-
-	// u  = parameters
-	// p  = preconditioner D^-1 as vector
-
-	std::vector<double> &u=mpCallbackHandlerGrid->GetParameters();
-	std::vector<double> &r=mpCallbackHandlerGrid->GetResidual();
-	std::vector<double> gNext(mNumParameters,0.);
-	std::vector<double> g(mNumParameters,0.);
-	std::vector<double> p(mNumParameters,0.);
+	std::vector<double> vNext(mNumParameters+3,0.);
+	std::vector<double> rhs=f;
 
 	int precision = 6;
 	int width = 10;
@@ -52,27 +57,10 @@ int NuTo::Jacobi::Optimize()
 	if (localMaxGradientCalls<mMaxGradientCalls)
 		SetMaxGradientCalls(localMaxGradientCalls);
 
-
-
-	boost::dynamic_bitset<> rDofIsConst=mpCallbackHandlerGrid->GetDisplacementConstaints();
-
-	double help=0;
+	mpCallbackHandlerGrid->Hessian(rhs);
+	// weighting factor (normally at Hessian())
 	for(size_t i=0;i<mNumParameters;++i)
-	{
-		help+=r[i]*r[i];
-	}
-	if (help!=0) //residual vector is not zero, optimize residual
-	{
-		for(size_t i=0;i<mNumParameters;++i)
-			g[i]=r[i];
-	}
-	else //optimize displacements
-	{
-		for(size_t i=0;i<mNumParameters;++i)
-			g[i]=u[i];
-	}
-
-
+		rhs[i]*=mOmega;
 
 	while(!converged)
 	{
@@ -93,22 +81,17 @@ int NuTo::Jacobi::Optimize()
 			 //return MAXGRADIENTCALLS;
 		 }
 		 // reset gNext to zero in gradient
-		 mpCallbackHandlerGrid->Gradient(g,gNext);
+		 mpCallbackHandlerGrid->Gradient(v,vNext);
 		// multiply with point diagonal preconditoner
-		mpCallbackHandlerGrid->Hessian(gNext);
+		mpCallbackHandlerGrid->Hessian(vNext);
 		rErrorNorm=0.;
 		for(size_t i=0;i<mNumParameters;++i)
 		{
-//			if(!rDofIsConst[i])
-			// scaling direct on preconditioner
-			// plus omega?
 			// do not forget sign!!!
-			gNext[i]*=-mOmega;
-			gNext[i]+=g[i];
-			// if(help==0)
-			// gNext[i]+=mOmega*p[i]*f[i]; for forces
-			rErrorNorm+=(gNext[i]-g[i])*(gNext[i]-g[i]);
-			g[i]=gNext[i];
+			vNext[i]*=-mOmega;
+			vNext[i]+=rhs[i];
+			rErrorNorm+=(vNext[i])*(vNext[i]);
+			v[i]+=vNext[i];
 		}
 
 		if (rErrorNorm < mAccuracyGradient*mAccuracyGradient)
@@ -117,43 +100,13 @@ int NuTo::Jacobi::Optimize()
 			returnValue = DELTAOBJECTIVEBETWEENCYCLES;
 			break;
 		}
-
-//		if (mVerboseLevel>4 && curIteration==100)
-//		{
-//			std::cout.precision(precision);
-//			std::cout <<std::setw(width)<<"[Jacobi::Optimize]  It.: "<< curIteration<< " norm squared "<<rErrorNorm<<std::endl;
-//		if (help!=0)
-//			std::cout << std::setw(width)<< "[Jacobi::Optimize] residual " ;
-//		else
-//			std::cout << std::setw(width)<< "[Jacobi::Optimize] displacements " ;
-//			for (size_t count=0; count<mNumParameters; count++)
-//			{
-//				std::cout << std::setw(width)<< g[count] << "   " ;
-//			}
-//			std::cout << std::endl;
-//		}
 	}
 
 	isBuild = true;
-	if (help!=0) //residual vector is not zero, optimize residual
-	{
-		for(size_t i=0;i<mNumParameters;++i)
-			r[i]=g[i];
-	}
-	else //optimize displacements
-	{
-		for(size_t i=0;i<mNumParameters;++i)
-			u[i]=g[i];
-	}
-
 #ifdef SHOW_TIME
     endJac=clock();
 	if (mShowTime &&mVerboseLevel>0 )
 		std::cout<< "[Jacobi::Optimize] Elapsed time (sec)............. " << difftime(endJac,startJac)/CLOCKS_PER_SEC << std::endl;
-    outputTime.open(filename,std::fstream::out|std::fstream::app);
- 	outputTime<<(difftime(endJac,startJac)/CLOCKS_PER_SEC)<<"   "<<curIteration<<"\n";
-	outputTime.close();
-
 #endif
 	if (mVerboseLevel>0)
 	{
@@ -178,15 +131,10 @@ int NuTo::Jacobi::Optimize()
 		std::cout << std::endl;
 
 		std::cout.precision(precision);
-		if(help==0)
-			std::cout << std::setw(width)<< "[Jacobi::Optimize] displacements optimized\n "
-					"displacements " ;
-		else
-			std::cout << std::setw(width)<< "[Jacobi::Optimize] residual optimized\n "
-					"residual " ;
+			std::cout << std::setw(width)<< "[Jacobi::Optimize] parameters " ;
 		for (size_t count=0; count<mNumParameters; count++)
 		{
-			std::cout << std::setw(width)<<g[count] << "   " ;
+			std::cout << std::setw(width)<<v[count] << "   " ;
 
 		}
 		std::cout << std::endl;

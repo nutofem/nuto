@@ -97,11 +97,9 @@ public:
         isBuild = false;
     }
 
-	void GetParameters(std::vector<double>& rParameters)const
+    std::vector<double>& GetParametersVec()
 	{
-		assert(mParameters.size()==rParameters.size());
-		for(size_t i=0;i<mParameters.size();++i)
-			rParameters[i]=mParameters[i];
+		return mParameters;
 	}
 
     inline int GetNumParameters()
