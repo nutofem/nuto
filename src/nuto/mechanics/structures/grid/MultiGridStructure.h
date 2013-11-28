@@ -11,6 +11,8 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/CallbackHandlerGrid.h"
+#include "nuto/optimize/ConjugateGradientGrid.h"
+#include "nuto/optimize/Jacobi.h"
 #endif //ENABLE_OPTIMIZE
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 

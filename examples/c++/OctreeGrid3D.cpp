@@ -12,8 +12,10 @@
 #include <iostream>
 #include "nuto/base/NuToObject.h"
 #include "nuto/mechanics/structures/grid/OctreeGrid.h"
+#ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/MisesWielandt.h"
+#endif
 
 int main()
 {
@@ -153,6 +155,7 @@ end=clock();
 	std::cout<<"Allocated memory ............................... "<<mem/1000.<<"(MB)\n";
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
+#ifdef ENABLE_OPTIMIZE
 	double condNum=myGrid.ApproximateSystemConditionNumber();
 
 	// Convergenc test: lamda_max of M=I-PA <1
@@ -180,6 +183,9 @@ end=clock();
 	myOptimizer.Info();
 	myOptimizer.Optimize();
 
+#else //ENABLE_OPTIMIZE
+	std::cout<<"[OctreeGrid3D] Solution is not possible. Module optimize is not loaded.\n";
+#endif //ENABLE_OPTIMIZE
 	rDisplVector=myGrid.GetParameters();
 	//one last hanging node correction on u
 	myGrid.HangingNodesCorrection(rDisplVector);
