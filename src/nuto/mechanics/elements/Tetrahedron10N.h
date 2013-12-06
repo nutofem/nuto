@@ -20,7 +20,7 @@ class Tetrahedron10N : public Solid
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    Tetrahedron10N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

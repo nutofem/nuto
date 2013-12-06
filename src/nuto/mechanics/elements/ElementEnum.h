@@ -10,9 +10,12 @@ enum eElementType
 {
     BOUNDARYGRADIENTDAMAGE1D=0, //!< boundary element for gradient models
     BRICK8N,                    //!< three-dimensional brick element with 8 nodes
+    PLANE2D10N,                  //!< two-dimensional plane element with 10 nodes
     PLANE2D3N,                  //!< two-dimensional plane element with 3 nodes
     PLANE2D4N,                  //!< two-dimensional plane element with 4 nodes
-    PLANE2D4NSPECTRALORDER2,    //!< two-dimensional plane element with 4 nodes for geometry interpolation and 3x3 for field interpolation
+    PLANE2D4NSPECTRALORDER2,    //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 3x3 for field interpolation
+    PLANE2D4NSPECTRALORDER3,    //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 4x4 for field interpolation
+    PLANE2D4NSPECTRALORDER4,    //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 5x5 for field interpolation
     PLANE2D6N,                  //!< two-dimensional plane element with 6 nodes
     TETRAHEDRON4N,              //!< three-dimensional tetrahedron element with 4 nodes
     TETRAHEDRON10N,             //!< three-dimensional tetrahedron element with 10 nodes

@@ -317,14 +317,14 @@ public:
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
     //! @return element number
-    int ElementCreate (const std::string& rElementType, const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers);
+    int ElementCreate (const std::string& rElementType, const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers);
 
     //! @brief Creates an element
     //! @param rElementIdent identifier for the element
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes
     void ElementCreate (int rElementNumber, const std::string& rElementType,
-            const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers);
+            const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers);
 
     //! @brief Creates an element
     //! @param rElementNumber element number
@@ -334,13 +334,13 @@ public:
     //! @param rIpDataType data of the ip (static data, nonlocal data,..)
     //! @return element number
     void ElementCreate (int rElementNumber, const std::string& rElementType,
-    		const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    		const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief creates multiple elements
     //! @param rElementType element type
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @return a NuTo::FullVector<int,Eigen::Dynamic> containing the element numbers
-    NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> &rNodeNumbers);
+    NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodeNumbers);
 
     //! @brief creates multiple elements
     //! @param rElementType element type
@@ -348,7 +348,7 @@ public:
     //! @param rElementDataType Element data for the elements
     //! @param rIpDataType Integration point data for the elements
     //! @return a NuTo::FullVector<int,Eigen::Dynamic> containing the element numbers
-    NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> & rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @param rGroupNumberElements group for elements on the real boundary
     //! @param rGroupNumberBoundaryNodes nodes on the boundary
@@ -362,10 +362,18 @@ public:
     		const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @param rGroupNumberElements group for elements (Plane2D4N) to be converted
+    //! @param rOder, order of the elements (2,3 or 4 is implemented)
     //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
     //! @param approximate size of the elements
     void ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumberElements,
-    		double rNodeDistanceMerge, double meshSize);
+    		int rOrder, double rNodeDistanceMerge, double meshSize);
+
+    //! @param rGroupNumberElements group for elements (Plane2D4N) to be converted
+    //! @param rElementTypeStr new element type (must be a triangular type)
+    //! @param rNodeDistanceMerge distance between nodes for merging
+    //! @param rMeshSize for creation of a more efficient neighbor search
+    void ElementConvertPlane2D3N (int rGroupNumberElements,
+    		std::string rElementTypeStr, double rNodeDistanceMerge, double rMeshSize);
 
 #ifndef SWIG
     //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
@@ -401,14 +409,14 @@ public:
     //! @param rElementType element type
     //! @param rNodeIdents pointers to the corresponding nodes
     //! @return int rElementNumber
-    int ElementCreate(Element::eElementType rType, std::vector<NodeBase*> rNodeVector,
+    int ElementCreate(Element::eElementType rType, const std::vector<NodeBase*>& rNodeVector,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
     //! @brief Creates an element
     //! @param rElementNumber element number
     //! @param rElementType element type
     //! @param rNodeIdents pointers to the corresponding nodes
-    void ElementCreate(int rElementNumber, Element::eElementType rType, std::vector<NodeBase*> rNodeVector,
+    void ElementCreate(int rElementNumber, Element::eElementType rType, const std::vector<NodeBase*>& rNodeVector,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
     //! @brief Returns the internal enum (number) for the element types

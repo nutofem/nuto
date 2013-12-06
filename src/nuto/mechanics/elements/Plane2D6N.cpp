@@ -9,12 +9,13 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <array>
+#include <assert.h>
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include <assert.h>
 
-NuTo::Plane2D6N::Plane2D6N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+NuTo::Plane2D6N::Plane2D6N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Plane2D::Plane2D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {
@@ -92,6 +93,35 @@ void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsGeometryNatural(const dou
 void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
 	CalculateDerivativeShapeFunctionsGeometryNatural(rNaturalCoordinates,rDerivativeShapeFunctions);
+}
+
+//! @brief calculate the natural coordinates in 2D of all nodes
+void NuTo::Plane2D6N::CalculateNaturalNodeCoordinates(std::vector< std::array<double,2> >& rNaturalNodeCoordinates)
+{
+	rNaturalNodeCoordinates.resize(6);
+	//node 0
+	(rNaturalNodeCoordinates[0])[0] = 0.0;
+	rNaturalNodeCoordinates[0][1] = 0.0;
+
+	//node 1
+	rNaturalNodeCoordinates[1][0] = 1.0;
+	rNaturalNodeCoordinates[1][1] = 0.0;
+
+	//node 2
+	rNaturalNodeCoordinates[2][0] = 1.0;
+	rNaturalNodeCoordinates[2][1] = 0.0;
+
+	//node 3
+	rNaturalNodeCoordinates[3][0] = 0.5;
+	rNaturalNodeCoordinates[3][1] = 0.0;
+
+	//node 4
+	rNaturalNodeCoordinates[4][0] = 0.5;
+	rNaturalNodeCoordinates[4][1] = 0.5;
+
+	//node 5
+	rNaturalNodeCoordinates[5][0] = 0.0;
+	rNaturalNodeCoordinates[5][1] = 0.5;
 }
 
 //! @brief calculates the shape functions for the surfaces (required for surface loads)

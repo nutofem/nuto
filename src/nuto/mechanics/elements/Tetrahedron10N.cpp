@@ -13,7 +13,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
 
-NuTo::Tetrahedron10N::Tetrahedron10N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+NuTo::Tetrahedron10N::Tetrahedron10N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {

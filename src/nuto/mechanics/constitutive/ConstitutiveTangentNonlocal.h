@@ -139,6 +139,7 @@ public:
         std::cout << "finish serialize ConstitutiveTangentLocal" << std::endl;
     #endif
     }
+#endif // ENABLE_SERIALIZATION
 
     //! @brief return number of nonlocal matrices (one for each nonlocal integration point)
     int GetNumSubMatrices()const override
@@ -156,7 +157,6 @@ public:
     	return mLocalSolution;
     }
 
-#endif // ENABLE_SERIALIZATION
 private:
      //! @brief ... tangent matrices
     std::vector<ConstitutiveTangentLocal<TNumRows,TNumColumns> > mMatrices;

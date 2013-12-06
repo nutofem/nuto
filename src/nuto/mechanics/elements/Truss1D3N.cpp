@@ -14,7 +14,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include <assert.h>
 
-NuTo::Truss1D3N::Truss1D3N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+NuTo::Truss1D3N::Truss1D3N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Truss1D::Truss1D(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {

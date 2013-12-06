@@ -28,7 +28,7 @@ class Brick8N : public Solid
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    Brick8N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    Brick8N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
 #ifdef ENABLE_SERIALIZATION

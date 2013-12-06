@@ -395,7 +395,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
     	    case Section::PLANE_STRESS:
     	    	engineeringStrain3D[0] = engineeringStrain[0];
     	    	engineeringStrain3D[1] = engineeringStrain[1];
-    	    	engineeringStrain3D[2] = mNu*(mNu+1.)/(mNu-1.)*(engineeringStrain[0]+engineeringStrain[1]);
+    	    	engineeringStrain3D[2] = mNu/(mNu-1.)*(engineeringStrain[0]+engineeringStrain[1]);
     	    	engineeringStrain3D[3] = engineeringStrain[2];
     	    	engineeringStrain3D[4] = 0.;
     	    	engineeringStrain3D[5] = 0.;
@@ -722,9 +722,17 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     {
     case NuTo::Element::BRICK8N:
         return true;
+    case NuTo::Element::PLANE2D10N:
+        return true;
     case NuTo::Element::PLANE2D3N:
         return true;
     case NuTo::Element::PLANE2D4N:
+        return true;
+    case NuTo::Element::PLANE2D4NSPECTRALORDER2:
+        return true;
+    case NuTo::Element::PLANE2D4NSPECTRALORDER3:
+        return true;
+    case NuTo::Element::PLANE2D4NSPECTRALORDER4:
         return true;
     case NuTo::Element::PLANE2D6N:
         return true;

@@ -36,7 +36,7 @@ void NuTo::Plane2D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
 	assert((int)rLocalCoordinates.size()==2*GetNumNodesGeometry());
     for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
-        GetNode(theNode)->GetCoordinates2D(&(rLocalCoordinates[2*theNode]));
+        GetNodeGeometry(theNode)->GetCoordinates2D(&(rLocalCoordinates[2*theNode]));
     }
 }
 
@@ -48,7 +48,7 @@ void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDispl
 	assert((int)rLocalDisplacements.size()==2*GetNumNodesField());
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
-        GetNode(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
+        GetNodeField(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
     }
 }
 
@@ -56,9 +56,9 @@ void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDispl
 void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int numDispDofs, int numTempDofs) const
 {
     rGlobalRowDofs.resize(numDispDofs+numTempDofs);
-    for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
+    for (int nodeCount = 0; nodeCount < this->GetNumNodesField(); nodeCount++)
     {
-        const NodeBase * nodePtr(GetNode(nodeCount));
+        const NodeBase * nodePtr(GetNodeField(nodeCount));
         if (nodePtr->GetNumDisplacements()>0 && numDispDofs>0)
         {
             rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
@@ -87,19 +87,19 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
             const ElementBase* nonlocalElement(nonlocalElements[theNonlocalElement]);
         	for (int nodeCount = 0; nodeCount < nonlocalElement->GetNumNodes(); nodeCount++)
             {
-                const NodeBase *nodePtr = nonlocalElement->GetNode(nodeCount);
+                const NodeBase *nodePtr = nonlocalElement->GetNodeField(nodeCount);
                 if (nodePtr->GetNumDisplacements()>0 && numDispDofs>0)
                 {
 					rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
 					rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
                 }
             }
-            shift+=2*nonlocalElement->GetNumNodes();
+            shift+=2*nonlocalElement->GetNumNodesField();
         }
         assert(shift==numDispDofs);
-        for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
+        for (int nodeCount = 0; nodeCount < this->GetNumNodesField(); nodeCount++)
         {
-            const NodeBase * nodePtr(GetNode(nodeCount));
+            const NodeBase * nodePtr(GetNodeField(nodeCount));
             if (nodePtr->GetNumTemperatures()>0 && numTempDofs>0)
             {
             	rGlobalColumnDofs[numDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
@@ -114,13 +114,13 @@ double NuTo::Plane2D::CalculateArea()const
 {
     double coordinates1[2];
     double coordinates2[2];
-    GetNode(GetNumNodes()-1)->GetCoordinates2D(coordinates2);
+    GetNodeGeometry(GetNumNodesGeometry()-1)->GetCoordinates2D(coordinates2);
 	double area(0);
-	for (int theNode = 0; theNode<GetNumNodes(); theNode++)
+	for (int theNode = 0; theNode<GetNumNodesGeometry(); theNode++)
 	{
 		coordinates1[0] = coordinates2[0];
 		coordinates1[1] = coordinates2[1];
-		GetNode(theNode)->GetCoordinates2D(coordinates2);
+		GetNodeGeometry(theNode)->GetCoordinates2D(coordinates2);
 		area += coordinates1[0]*coordinates2[1] - coordinates1[1]*coordinates2[0];
 	}
     return 0.5*area;

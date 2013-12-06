@@ -7,10 +7,11 @@
 #include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/elements/BoundaryGradientDamage1D.h"
 #include "nuto/mechanics/elements/Brick8N.h"
+#include "nuto/mechanics/elements/Plane2D10N.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
-#include "nuto/mechanics/elements/Plane2D4NSpectralOrder2.h"
+#include "nuto/mechanics/elements/Plane2D4NSpectral.h"
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron4N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
@@ -408,13 +409,13 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 	return elementNumber;
 }
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
-        const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers)
+        const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers)
 {
 	ElementCreate(rElementNumber,rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA"));
 }
 
 void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rElementType,
-        const NuTo::FullVector<int,Eigen::Dynamic> &rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
+        const NuTo::FullVector<int,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
 {
 	// check node number
 	boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(rElementNumber);
@@ -508,6 +509,10 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
 	{
 		elementType = NuTo::Element::BRICK8N;
 	}
+	else if (upperCaseElementType=="PLANE2D10N")
+	{
+		elementType = NuTo::Element::PLANE2D10N;
+	}
 	else if (upperCaseElementType=="PLANE2D3N")
 	{
 		elementType = NuTo::Element::PLANE2D3N;
@@ -519,6 +524,14 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
 	else if (upperCaseElementType=="PLANE2D4NSPECTRALORDER2")
 	{
 		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER2;
+	}
+	else if (upperCaseElementType=="PLANE2D4NSPECTRALORDER3")
+	{
+		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER3;
+	}
+	else if (upperCaseElementType=="PLANE2D4NSPECTRALORDER4")
+	{
+		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER4;
 	}
 	else if (upperCaseElementType=="PLANE2D6N")
 	{
@@ -545,7 +558,7 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
 //! @param rNodeIdents pointers to the corresponding nodes
 //! @return int rElementNumber
 int NuTo::Structure::ElementCreate(Element::eElementType rType,
-        std::vector<NodeBase*> rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+        const std::vector<NodeBase*>& rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
 	//find unused integer id
 	int elementNumber(mElementMap.size());
@@ -568,7 +581,7 @@ int NuTo::Structure::ElementCreate(Element::eElementType rType,
 //! @param rNodeIdents pointers to the corresponding nodes
 //! @return element number
 void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rType,
-        std::vector<NodeBase*> rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+        const std::vector<NodeBase*>& rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
     try
     {
@@ -592,6 +605,13 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
 			}
 			ptrElement = new NuTo::Brick8N(this, rNodeVector, rElementDataType, rIpDataType);
 			break;
+		case NuTo::Element::PLANE2D10N:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D10N is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D10N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
 		case NuTo::Element::PLANE2D3N:
 			if (this->mDimension != 2)
 			{
@@ -611,7 +631,21 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
 			{
 				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4NSPECTRALORDER2 is a 2D element.");
 			}
-			ptrElement = new NuTo::Plane2D4NSpectralOrder2(this, rNodeVector, rElementDataType, rIpDataType);
+			ptrElement = new NuTo::Plane2D4NSpectral<2>(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D4NSPECTRALORDER3:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4NSPECTRALORDER2 is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D4NSpectral<3>(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D4NSPECTRALORDER4:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D4NSPECTRALORDER2 is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D4NSpectral<4>(this, rNodeVector, rElementDataType, rIpDataType);
 			break;
 		case NuTo::Element::PLANE2D6N:
 			if (this->mDimension != 2)
@@ -873,13 +907,12 @@ void NuTo::Structure::GetElementsTotal(std::vector<std::pair<int, ElementBase*> 
 //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
 //! @param number of boxes to increase the search speed for the neighbor search
 void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumberElements,
-		double rNodeDistanceMerge, double rMeshSize)
+		int rOrder, double rNodeDistanceMerge, double rMeshSize)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-	int order = 2;
 	double nodeDistanceMerge2 = rNodeDistanceMerge*rNodeDistanceMerge;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
     if (itGroup==mGroupMap.end())
@@ -892,7 +925,16 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 	//calculate bounding box for all existing nodes of the elements
 	double bb[2][2];
 	double coordinates[2];
-	NodeBase* theNode = elementGroup->begin()->second->GetNode(0);
+	if (elementGroup->GetNumMembers()==0)
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] number of elements in group to convert is zero");
+	}
+	if (elementGroup->begin()->second->GetNumNodesGeometry()==0)
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] number of nodes for geometry interpolation in first element to convert is zero");
+	}
+
+	NodeBase* theNode = elementGroup->begin()->second->GetNodeGeometry(0);
 	if (theNode->GetNumCoordinates()!=2)
 		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] coordinate dimension of node is not 2.)");
 	theNode->GetCoordinates2D(coordinates);
@@ -922,14 +964,14 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 	//create boxes for the additional nodes
 	double deltaBox[2];
 	int numBoxes1D[2];
-	numBoxes1D[0] = (bb[0][1]-bb[0][0])/rMeshSize;
-	numBoxes1D[1] = (bb[1][1]-bb[1][0])/rMeshSize;
+	numBoxes1D[0] = (bb[0][1]-bb[0][0])/rMeshSize+1;
+	numBoxes1D[1] = (bb[1][1]-bb[1][0])/rMeshSize+1;
 	deltaBox[0] = (bb[0][1]-bb[0][0])/numBoxes1D[0];
 	deltaBox[1] = (bb[1][1]-bb[1][0])/numBoxes1D[1];
 
-	std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
-	std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
-	std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
+	//std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
+	//std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
+	//std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
 	std::vector<std::vector<NodeBase*> >nodeBoxes(numBoxes1D[0]*numBoxes1D[1]);
 
 	if (rNodeDistanceMerge>deltaBox[0] || rNodeDistanceMerge>deltaBox[1])
@@ -939,14 +981,22 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 
 	Element::eElementType elementType;
 	NuTo::IntegrationTypeBase* integrationType1D;
-	switch (order)
+	switch (rOrder)
 	{
 	case 2:
 		integrationType1D = this->GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip);
 		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER2;
 		break;
+	case 3:
+		integrationType1D = this->GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip);
+		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER3;
+		break;
+	case 4:
+		integrationType1D = this->GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip);
+		elementType = NuTo::Element::PLANE2D4NSPECTRALORDER4;
+		break;
 	default:
-		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] only order 2 implemented.");
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] only order 2,3 and 4 implemented.");
 	}
 
 	//Get natural coordinates (1D)
@@ -958,18 +1008,30 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 		integrationType1D->GetLocalIntegrationPointCoordinates1D(theIP, newNodeCoordinatesNatural1D[theIP]);
 	}
 
-	//add the additional nodes and create the elements
+	//copy the "old" element pointer, since they are removed in the following loop
+	// without the copy, the iterator over the group is no longer valid
+	std::vector<std::pair<int,ElementBase*> > oldElements(elementGroup->GetNumMembers());
+	unsigned int countElement(0);
 	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+	{
+		oldElements[countElement].first = itElement->first;
+		oldElements[countElement].second = itElement->second;
+		countElement++;
+	}
+
+	//add the additional nodes and create the elements
+	for (countElement=0; countElement<oldElements.size(); countElement++)
 	{
 		try
 		{
-	        ElementBase* theElement = itElement->second;
+	        ElementBase* theElement = oldElements[countElement].second;
+	        //std::cout << "start converting element " << oldElements[countElement].first << std::endl;
 
 			std::vector<NuTo::NodeBase* > newNodeVector(integrationType1D->GetNumIntegrationPoints()*integrationType1D->GetNumIntegrationPoints());
             int curNode(0);
-			for (int countX=0; countX<integrationType1D->GetNumIntegrationPoints(); countX++)
+			for (int countY=0; countY<integrationType1D->GetNumIntegrationPoints(); countY++)
 			{
-				for (int countY=0; countY<integrationType1D->GetNumIntegrationPoints(); countY++)
+				for (int countX=0; countX<integrationType1D->GetNumIntegrationPoints(); countX++)
 				{
 					if ((countX%(integrationType1D->GetNumIntegrationPoints()-1)==0) && (countY%(integrationType1D->GetNumIntegrationPoints()-1)==0))
 					{
@@ -998,6 +1060,7 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 
 							}
 						}
+						//std::cout << "use new node (local) " << curNode << " with global id " <<  NodeGetId(newNodeVector[curNode]) << std::endl;
 					}
 					else
 					{
@@ -1011,9 +1074,10 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 
 						//check if node already exists
 						//calculate corresponding box
-						int theBoxX = (newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0];
-						int theBoxY = (newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1];
+						int theBoxX = ((int)((newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]-1);
+						int theBoxY = ((int)((newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]-1);
 						int theBox = theBoxX + theBoxY*numBoxes1D[0];
+						//std::cout << "theBox "<< theBox << " x "<< theBoxX << " y " << theBoxY << std::endl;
 
 						//check distance to all nodes in this box and the neighboring boxes
 						//(assuming that the merge distance is less than the box dimensions
@@ -1030,7 +1094,8 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 								if (curBoxY<0 || curBoxY==numBoxes1D[1])
 									continue;
 
-								int curBox = curBoxX+ theBoxY*numBoxes1D[0];
+								int curBox = curBoxX+ curBoxY*numBoxes1D[0];
+								//std::cout << "curBox "<< curBox << " x "<< curBoxX << " y " << curBoxY << std::endl;
 								//loop over all nodes in the box and get the distance of those nodes to the new node position
 								for (unsigned int countNode=0; countNode<nodeBoxes[curBox].size() && newNodeVector[curNode] == 0;countNode++)
 								{
@@ -1043,6 +1108,7 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 									{
 										//node already exists, use the existing node
 										assert(newNodeVector[curNode]==0);
+										//std::cout << "merge new node (local) " << curNode << " with global node " <<  NodeGetId(nodeBoxes[curBox][countNode]) << std::endl;
 										newNodeVector[curNode] = nodeBoxes[curBox][countNode];
 									}
 								}
@@ -1058,6 +1124,22 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 							//set coordinates
 							newNodeVector[curNode]->SetCoordinates2D(newNodeCoordinatesGlobal);
 
+							//find unused integer id
+						    int id(mNodeMap.size());
+						    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
+						    while (it!=mNodeMap.end())
+						    {
+						        id++;
+						        it = mNodeMap.find(id);
+						    }
+
+						    //insert into map
+						    this->mNodeMap.insert(id, newNodeVector[curNode]);
+
+						    //std::cout << "create new node (local) " << curNode << " with global id " <<  NodeGetId(newNodeVector[curNode]);
+						    //std::cout << " with coordinates " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
+
+
 							nodeBoxes[theBox].push_back(newNodeVector[curNode]);
 						}
 					}
@@ -1065,13 +1147,14 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 				}
 			}
 			//delete old element, but store the information related to id, element data and ipdata first
-			int id = itElement->first;
+			int id = oldElements[countElement].first;
 			ElementData::eElementDataType elementDataType(theElement->GetElementDataType());
 			IpData::eIpDataType ipDataType(theElement->GetIpDataType(0));
 
 			this->ElementDeleteInternal(id);
 
 			//create new element with same id
+			//std::cout << "create element " << id << std::endl;
 			this->ElementCreate (id, elementType,newNodeVector , elementDataType, ipDataType);
 		}
 		catch(NuTo::MechanicsException &e)
@@ -1093,3 +1176,262 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 #endif
 }
 
+
+//! @param rGroupNumberElements group for elements (Plane2D4N) to be converted
+//! @param rElementTypeStr new element type (must be a triangular type)
+//! @param rNodeDistanceMerge distance between nodes for merging
+//! @param rMeshSize for creation of a more efficient neighbor search
+void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
+		std::string rElementTypeStr, double rNodeDistanceMerge, double rMeshSize)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	double nodeDistanceMerge2 = rNodeDistanceMerge*rNodeDistanceMerge;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    	throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] Group is not an element group.");
+    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
+    assert(elementGroup!=0);
+
+	// get element type
+	std::string upperCaseElementType;
+	std::transform(rElementTypeStr.begin(), rElementTypeStr.end(), std::back_inserter(upperCaseElementType), (int(*)(int)) toupper);
+
+	Element::eElementType elementType;
+	std::vector< std::array<double,2> > naturalNodeCoordinates;
+	if (upperCaseElementType=="PLANE2D10N")
+	{
+		elementType = NuTo::Element::PLANE2D10N;
+		NuTo::Plane2D10N::CalculateNaturalNodeCoordinates(naturalNodeCoordinates);
+	}
+	else if (upperCaseElementType=="PLANE2D6N")
+	{
+		elementType = NuTo::Element::PLANE2D6N;
+		NuTo::Plane2D6N::CalculateNaturalNodeCoordinates(naturalNodeCoordinates);
+	}
+	else
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] only conversion from plane3N to 6N and 10N implemented.");
+	}
+
+	//calculate bounding box for all existing nodes of the elements
+	double bb[2][2];
+	double coordinates[2];
+	if (elementGroup->GetNumMembers()==0)
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] number of elements in group to convert is zero");
+	}
+	if (elementGroup->begin()->second->GetNumNodesGeometry()==0)
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] number of nodes for geometry interpolation in first element to convert is zero");
+	}
+
+	NodeBase* theNode = elementGroup->begin()->second->GetNodeGeometry(0);
+	if (theNode->GetNumCoordinates()!=2)
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] coordinate dimension of node is not 2.)");
+	theNode->GetCoordinates2D(coordinates);
+	bb[0][0] = coordinates[0];
+	bb[0][1] = coordinates[1];
+	bb[1][0] = coordinates[0];
+	bb[1][1] = coordinates[1];
+	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+	{
+		for (int count=0; count<itElement->second->GetNumNodes(); count++)
+		{
+			theNode = itElement->second->GetNode(count);
+			if (theNode->GetNumCoordinates()!=2)
+				throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] coordinate dimension of node is not 2.)");
+			theNode->GetCoordinates2D(coordinates);
+			if (coordinates[0]<bb[0][0])
+				bb[0][0] = coordinates[0];
+			if (coordinates[0]>bb[0][1])
+				bb[0][1] = coordinates[0];
+			if (coordinates[1]<bb[1][0])
+				bb[1][0] = coordinates[1];
+			if (coordinates[1]>bb[1][1])
+				bb[1][1] = coordinates[1];
+		}
+	}
+
+	//create boxes for the additional nodes
+	double deltaBox[2];
+	int numBoxes1D[2];
+	numBoxes1D[0] = (bb[0][1]-bb[0][0])/rMeshSize+1;
+	numBoxes1D[1] = (bb[1][1]-bb[1][0])/rMeshSize+1;
+	deltaBox[0] = (bb[0][1]-bb[0][0])/numBoxes1D[0];
+	deltaBox[1] = (bb[1][1]-bb[1][0])/numBoxes1D[1];
+
+	//std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
+	//std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
+	//std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
+	std::vector<std::vector<NodeBase*> >nodeBoxes(numBoxes1D[0]*numBoxes1D[1]);
+
+	if (rNodeDistanceMerge>deltaBox[0] || rNodeDistanceMerge>deltaBox[1])
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] The merge distance is larger than the mesh size, that should not happen.");
+	}
+
+	//copy the "old" element pointer, since they are removed in the following loop
+	// without the copy, the iterator over the group is no longer valid
+	std::vector<std::pair<int,ElementBase*> > oldElements(elementGroup->GetNumMembers());
+	unsigned int countElement(0);
+	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+	{
+		oldElements[countElement].first = itElement->first;
+		oldElements[countElement].second = itElement->second;
+		countElement++;
+	}
+
+	//add the additional nodes and create the elements
+	for (countElement=0; countElement<oldElements.size(); countElement++)
+	{
+		try
+		{
+	        ElementBase* theElement = oldElements[countElement].second;
+	        //std::cout << "start converting element " << oldElements[countElement].first << std::endl;
+
+			std::vector<NuTo::NodeBase* > newNodeVector(naturalNodeCoordinates.size());
+			for (int curNode=0; curNode<naturalNodeCoordinates.size(); curNode++)
+			{
+				newNodeVector[curNode] = 0;
+
+				//corner nodes already exist
+				std::cout << "naturalCoordinates " << naturalNodeCoordinates[curNode][0] << " " << naturalNodeCoordinates[curNode][1] << std::endl;
+				if (fabs(naturalNodeCoordinates[curNode][0]<1e-8))
+				{
+					if (fabs(naturalNodeCoordinates[curNode][1])<1e-8)
+					{
+						newNodeVector[curNode] = theElement->GetNode(0);
+					}
+					if (fabs(naturalNodeCoordinates[curNode][1]-1.)<1e-8)
+					{
+						newNodeVector[curNode] = theElement->GetNode(2);
+					}
+				}
+				else
+				{
+					if (fabs(naturalNodeCoordinates[curNode][0]-1.)<1e-8 &&
+					    fabs(naturalNodeCoordinates[curNode][1])<1e-8)
+					{
+						newNodeVector[curNode] = theElement->GetNode(1);
+					}
+				}
+
+				if (newNodeVector[curNode] != 0)
+				{
+					double newNodeCoordinatesGlobal[2]; //this is a global routine for 3D, though z should always be zero
+					newNodeVector[curNode]->GetCoordinates2D(newNodeCoordinatesGlobal);
+					std::cout << "coordinates of old/new " << curNode << ". " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
+				}
+				else
+				{
+					//calculate global coordinates
+					double newNodeCoordinatesGlobal[3]; //this is a global routine for 3D, though z should always be zero
+					theElement->InterpolateCoordinatesFrom2D(&(naturalNodeCoordinates[curNode][0]),newNodeCoordinatesGlobal);
+
+					//check if node already exists
+					//calculate corresponding box
+					int theBoxX = ((int)((newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]-1);
+					int theBoxY = ((int)((newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]-1);
+					int theBox = theBoxX + theBoxY*numBoxes1D[0];
+					//std::cout << "theBox "<< theBox << " x "<< theBoxX << " y " << theBoxY << std::endl;
+
+					//check distance to all nodes in this box and the neighboring boxes
+					//(assuming that the merge distance is less than the box dimensions
+					newNodeVector[curNode] = 0;
+					for (int countX=-1; countX<2 && newNodeVector[curNode] == 0; countX++)
+					{
+						int curBoxX = theBoxX+countX;
+						if (curBoxX<0 || curBoxX==numBoxes1D[0])
+							continue;
+
+						for (int countY=-1; countY<2 && newNodeVector[curNode] == 0; countY++)
+						{
+							int curBoxY = theBoxY+countY;
+							if (curBoxY<0 || curBoxY==numBoxes1D[1])
+								continue;
+
+							int curBox = curBoxX+ curBoxY*numBoxes1D[0];
+							//std::cout << "curBox "<< curBox << " x "<< curBoxX << " y " << curBoxY << std::endl;
+							//loop over all nodes in the box and get the distance of those nodes to the new node position
+							for (unsigned int countNode=0; countNode<nodeBoxes[curBox].size() && newNodeVector[curNode] == 0;countNode++)
+							{
+								double coordinates[2];
+								nodeBoxes[curBox][countNode]->GetCoordinates2D(coordinates);
+								double deltaX = coordinates[0]-newNodeCoordinatesGlobal[0];
+								double deltaY = coordinates[1]-newNodeCoordinatesGlobal[1];
+								double dist2 = deltaX*deltaX+deltaY*deltaY;
+								if (dist2<nodeDistanceMerge2)
+								{
+									//node already exists, use the existing node
+									assert(newNodeVector[curNode]==0);
+									//std::cout << "merge new node (local) " << curNode << " with global node " <<  NodeGetId(nodeBoxes[curBox][countNode]) << std::endl;
+									newNodeVector[curNode] = nodeBoxes[curBox][countNode];
+								}
+							}
+						}
+					}
+
+					//if node does not exist, create new node by copying the first node of the element
+					// using the same dofs etc.
+					if (newNodeVector[curNode] == 0)
+					{
+						newNodeVector[curNode] = theElement->GetNode(0)->Clone();
+
+						//set coordinates
+						newNodeVector[curNode]->SetCoordinates2D(newNodeCoordinatesGlobal);
+						std::cout << "coordinates of new " << curNode << "  " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
+
+						//find unused integer id
+						int id(mNodeMap.size());
+						boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
+						while (it!=mNodeMap.end())
+						{
+							id++;
+							it = mNodeMap.find(id);
+						}
+
+						//insert into map
+						this->mNodeMap.insert(id, newNodeVector[curNode]);
+
+						//std::cout << "create new node (local) " << curNode << " with global id " <<  NodeGetId(newNodeVector[curNode]);
+						//std::cout << " with coordinates " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
+
+
+						nodeBoxes[theBox].push_back(newNodeVector[curNode]);
+					}
+				}
+			}
+			//delete old element, but store the information related to id, element data and ipdata first
+			int id = oldElements[countElement].first;
+			ElementData::eElementDataType elementDataType(theElement->GetElementDataType());
+			IpData::eIpDataType ipDataType(theElement->GetIpDataType(0));
+
+			this->ElementDeleteInternal(id);
+
+			//create new element with same id
+			//std::cout << "create element " << id << std::endl;
+			this->ElementCreate (id, elementType,newNodeVector , elementDataType, ipDataType);
+		}
+		catch(NuTo::MechanicsException &e)
+		{
+			e.AddMessage("[NuTo::Structure::ElementConvertPlane2D3N] Error converting element.");
+			throw e;
+		}
+		catch(...)
+		{
+			throw NuTo::MechanicsException
+			   ("[NuTo::Structure::ElementConvertPlane2D3N] error converting element.");
+		}
+	}
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementConvertPlane2D3N] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}

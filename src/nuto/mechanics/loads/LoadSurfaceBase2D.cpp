@@ -1,4 +1,5 @@
 // $Id: LoadLoadSurfaceBase2D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
+#include <set>
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -74,12 +75,13 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
             throw NuTo::MechanicsException
                ("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
         }
-
     }
 
     //set standard integration types for triangles and quads, this can be modified according to the needs
     mIntegrationType2NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss1Ip);
     mIntegrationType3NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss2Ip);
+    mIntegrationType4NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss2Ip);
+    mIntegrationType5NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss3Ip);
 }
 
 //! @brief adds the load to global sub-vectors
@@ -106,8 +108,14 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 		case 3:
 			integrationType = mIntegrationType3NPtr;
 			break;
+		case 4:
+			integrationType = mIntegrationType4NPtr;
+			break;
+		case 5:
+			integrationType = mIntegrationType5NPtr;
+			break;
 		default:
-			throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 3 4 and 6 nodes implemented.");
+			throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
 		}
 
 		//loop over surface integration points
@@ -117,9 +125,14 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 			//get local ip coordinates
         	double naturalIpCoordinates;
         	integrationType->GetLocalIntegrationPointCoordinates1D(countIp,naturalIpCoordinates);
+			//std::cout << "naturalIpCoordinates " << naturalIpCoordinates << std::endl;
 
 			//calculate shape functions
         	planeElementPtr->CalculateShapeFunctionsSurface(naturalIpCoordinates, shapeFunctions);
+			//std::cout << "  shape functions " << std::endl;
+			//for (unsigned int count=0; count<shapeFunctions.size(); count++)
+			//	std::cout << shapeFunctions[count] << " ";
+			//std::cout << std::endl;
 
 			//calculate derivatives of shape functions
         	planeElementPtr->CalculateDerivativeShapeFunctionsLocalSurface(naturalIpCoordinates, derivativeShapeFunctionsLocal);
@@ -159,7 +172,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 			//std::cout << "load vector \n" << loadVector << std::endl;
 			//std::cout << "  detJ " << detJ << " weight " << integrationType->GetIntegrationPointWeight(countIp) << std::endl;
 			//std::cout << "  shape functions " << std::endl;
-			//for (int count=0; count<shapeFunctions.size(); count++)
+			//for (unsigned int count=0; count<shapeFunctions.size(); count++)
 			//	std::cout << shapeFunctions[count] << " ";
 			//std::cout << std::endl;
 

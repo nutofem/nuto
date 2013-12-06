@@ -56,7 +56,9 @@ public:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase)
            & BOOST_SERIALIZATION_NVP(mPlaneElements)
            & BOOST_SERIALIZATION_NVP(mIntegrationType2NPtr)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr);
+           & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType5NPtr);
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -64,6 +66,8 @@ protected:
     std::vector<std::pair<const Plane2D*, int> > mPlaneElements;
     IntegrationTypeBase* mIntegrationType2NPtr;
     IntegrationTypeBase* mIntegrationType3NPtr;
+    IntegrationTypeBase* mIntegrationType4NPtr;
+    IntegrationTypeBase* mIntegrationType5NPtr;
 };
 }//namespace NuTo
 #endif //LoadSurfaceBase2D_H

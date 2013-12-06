@@ -14,7 +14,7 @@
 #include "nuto/mechanics/elements/Tetrahedron4N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
-NuTo::Tetrahedron4N::Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+NuTo::Tetrahedron4N::Tetrahedron4N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {

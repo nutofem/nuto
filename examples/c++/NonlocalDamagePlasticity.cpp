@@ -112,7 +112,7 @@ int main()
 	myStructure.BuildNonlocalData(myMatDamage);
 
 	//Calculate maximum independent sets for parallelization (openmp)
-    myStructure.CalculateMaximumIndependentSets();
+    //myStructure.CalculateMaximumIndependentSets();
 
 	// visualize results
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement1,0);
@@ -267,6 +267,11 @@ int main()
 
 		//update the structure, and then recalculate stiffness
 		myStructure.ElementTotalUpdateStaticData();
+
+		if (error)
+		{
+			throw NuTo::Exception("Error calling NonlocalDamagePlasticity.");
+		}
     }
 
 	myStructure.AddVisualizationComponentDisplacements();

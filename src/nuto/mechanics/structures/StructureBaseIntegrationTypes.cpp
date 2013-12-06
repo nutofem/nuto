@@ -9,12 +9,17 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModTriangle.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
@@ -64,6 +69,15 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         case  NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto3Ip();
         break;
+        case  NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto4Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto5Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType2D3NGauss13Ip:
+            ptrIntegrationType = new NuTo::IntegrationType2D3NGauss13Ip();
+        break;
         case  NuTo::IntegrationType::IntegrationType2D3NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss1Ip();
         break;
@@ -78,6 +92,12 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         break;
         case  NuTo::IntegrationType::IntegrationType2D4NLobatto9Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto9Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType2D4NLobatto16Ip:
+            ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto16Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip:
+            ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto25Ip();
         break;
         case  NuTo::IntegrationType::IntegrationType3D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss1Ip();
@@ -95,6 +115,10 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
             throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Enum of integration type does not exist.");
         }
         // insert new integration type with mMappingIntEnum2String[rEnumIntegrationType] being the string identifier
+        if (mMappingIntEnum2String[rEnumIntegrationType].length()==0)
+        {
+            throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Enum to String mapping of integration type does not exist, check constructor of StructureBase.");
+        }
         it = mIntegrationTypeMap.insert(mMappingIntEnum2String[rEnumIntegrationType], ptrIntegrationType).first;
         return it->second;
     }

@@ -30,7 +30,7 @@ class BoundaryGradientDamage1D : public ElementBase
 public:
     //! @brief constructor
     BoundaryGradientDamage1D(const StructureBase* rStructure,
-    		std::vector<NuTo::NodeBase* >& rNodes,
+    		const std::vector<NuTo::NodeBase* >& rNodes,
     		Truss* rRealBoundaryElement,
     		bool rEdgeRealBoundaryElement,
     		ElementData::eElementDataType rElementDataType,

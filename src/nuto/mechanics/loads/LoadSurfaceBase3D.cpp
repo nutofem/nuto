@@ -1,4 +1,6 @@
 // $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
+
+#include <set>
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"

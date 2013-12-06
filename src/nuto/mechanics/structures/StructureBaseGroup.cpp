@@ -1,5 +1,7 @@
 // $Id$
 
+#include <set>
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/elements/ElementBase.h"

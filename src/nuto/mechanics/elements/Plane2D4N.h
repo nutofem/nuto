@@ -15,7 +15,7 @@ class Plane2D4N : public Plane2D
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Plane2D4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    Plane2D4N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

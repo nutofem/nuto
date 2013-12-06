@@ -14,7 +14,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include <assert.h>
 
-NuTo::Brick8N::Brick8N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+NuTo::Brick8N::Brick8N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
 		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType) :
         NuTo::Solid::Solid(rStructure, rElementDataType, GetStandardIntegrationType(),rIpDataType)
 {

@@ -24,6 +24,7 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, std::string rElem
 	    {
 			if (ElementIter->second->GetEnumType()==elementType)
 				itGroup->second->AddMember(ElementIter->first, ElementIter->second);
+			ElementIter++;
 	    }
     }
     catch(NuTo::MechanicsException &e)

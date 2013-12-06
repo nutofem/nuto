@@ -14,7 +14,7 @@ public:
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
-    Tetrahedron4N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    Tetrahedron4N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
     virtual ~Tetrahedron4N();
 

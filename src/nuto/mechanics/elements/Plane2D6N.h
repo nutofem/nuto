@@ -14,7 +14,7 @@ class Plane2D6N : public Plane2D
 #endif // ENABLE_SERIALIZATION
 
 public:
-    Plane2D6N(NuTo::StructureBase* rStructure, std::vector<NuTo::NodeBase* >& rNodes,
+    Plane2D6N(NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase* >& rNodes,
     		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -115,6 +115,9 @@ public:
     {
         return NuTo::Element::PLANE2D6N;
     }
+
+    //! @brief calculate the natural coordinates in 2D of all nodes
+    static void CalculateNaturalNodeCoordinates(std::vector<std::array<double,2> >& rNaturalNodeCoordinates);
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical

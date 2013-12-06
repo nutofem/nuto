@@ -11,7 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -140,10 +140,10 @@ myStructure.ElementGetEngineeringStrain(myElement1, EngineeringStrain)
 
 #correct strain
 EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,4,(
-0.0,0.1,-0.04166666667,0.05,0,0,
-0.0,0.1,-0.04166666667,0.05,0,0,
-0.0,0.1,-0.04166666667,0.05,0,0,
-0.0,0.1,-0.04166666667,0.05,0,0,
+0.0,0.1,-0.03333333333333,0.05,0,0,
+0.0,0.1,-0.03333333333333,0.05,0,0,
+0.0,0.1,-0.03333333333333,0.05,0,0,
+0.0,0.1,-0.03333333333333,0.05,0,0,
 ))
 
 if (printResult):
@@ -182,7 +182,7 @@ if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-8):
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFileElements(testName+".vtk")
+myStructure.ExportVtkDataFileElements("Plane2D4N_planeStress.vtk")
 
 if (error):
     sys.exit(-1)

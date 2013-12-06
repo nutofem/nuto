@@ -153,7 +153,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			}
 		}
 
-		ConstitutiveTangentNonlocal<3,3> nonlocalTangentStressStrain;
+		NuTo::ConstitutiveTangentNonlocal<3,3> nonlocalTangentStressStrain;
 		//ConstitutiveTangentNonlocal<3,1> nonlocalTangentStressTemperature(NumNonlocalIps)[3];
 		ConstitutiveTangentLocal<2,2> tangentHeatFluxTemperatureGradient;
 		ConstitutiveTangentLocal<2,1> tangentHeatFluxTemperatureRate;
@@ -216,6 +216,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 					if (numLocalDispDofs>0)
 					{
+						std::cout << "ELEMENT_::PLANE::EVALATE nonlocal elements "<< NumNonlocalElements << std::endl;
 						if (NumNonlocalElements==0)
 						{
 							nonlocalTangentStressStrain.SetNumSubMatrices(1);
@@ -223,6 +224,7 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						}
 						else
 						{
+							std::cout << "ELEMENT_::PLANE::EVALATE give nonlocal matrix "<< std::endl;
 							nonlocalTangentStressStrain.SetNumSubMatrices(NumNonlocalIps);
 							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &nonlocalTangentStressStrain;
 						}
@@ -782,11 +784,11 @@ void NuTo::Plane::CalculateJacobian(const std::vector<double>& rDerivativeShapeF
            j0, j2,
            j1, j3 */
 
-    assert((int)rDerivativeShapeFunctions.size()==2*GetNumNodes() && (int)rNodeCoordinates.size()==2*GetNumNodes());
+    assert((int)rDerivativeShapeFunctions.size()==2*GetNumNodesGeometry() && (int)rNodeCoordinates.size()==2*GetNumNodesGeometry());
     double  j0(0.),j1(0.),j2(0.),j3(0.),x,y;
 
     int theDerivative(0);
-    for (int count = 0; count < GetNumNodes(); count++)
+    for (int count = 0; count < GetNumNodesGeometry(); count++)
     {
         x = rNodeCoordinates[theDerivative];
         y = rNodeCoordinates[theDerivative+1];
@@ -823,8 +825,10 @@ void NuTo::Plane::CalculateJacobian(const std::vector<double>& rDerivativeShapeF
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<double>& rDerivativeShapeFunctionsNatural, const double rJacInv[4], std::vector<double>& rDerivativeShapeFunctionsLocal)const
 {
-    assert(rDerivativeShapeFunctionsLocal.size()==rDerivativeShapeFunctionsNatural.size());
-    for (int count=0; count<GetNumNodes(); count++)
+    int numShapeFunctions = rDerivativeShapeFunctionsLocal.size()/2;
+    assert(rDerivativeShapeFunctionsLocal.size()==2*numShapeFunctions);
+    assert(rDerivativeShapeFunctionsNatural.size()==2*numShapeFunctions);
+    for (int count=0; count<numShapeFunctions; count++)
     {
         int mul2count = 2*count;
         int mul2countplus1 = mul2count+1;
@@ -1220,9 +1224,9 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], 
 void NuTo::Plane::CheckElement()
 {
     // check nodes
-    for (int nodeCount = 0; nodeCount < this->GetNumNodes(); nodeCount++)
+    for (int nodeCount = 0; nodeCount < this->GetNumNodesGeometry(); nodeCount++)
     {
-        int numCoordinates(GetNode(nodeCount)->GetNumCoordinates());
+        int numCoordinates(GetNodeGeometry(nodeCount)->GetNumCoordinates());
         if (numCoordinates<2 || numCoordinates>3)
         {
             throw MechanicsException("[NuTo::Plane::CheckElement] invalid node type (check node definition for coordinates).");
@@ -1233,7 +1237,7 @@ void NuTo::Plane::CheckElement()
     // calculate coordinates
     std::vector<double> nodeCoord(2*this->GetNumNodesGeometry());
     this->CalculateLocalCoordinates(nodeCoord);
-    /*for (int count=0; count<GetNumNodes(); count++)
+    /*for (int count=0; count<GetNumNodesGeometry(); count++)
     {
         std::cout << "Node " << count+1 << " with coordinates " << nodeCoord[2*count]<<","
                 << nodeCoord[2*count+1]<<std::endl;
