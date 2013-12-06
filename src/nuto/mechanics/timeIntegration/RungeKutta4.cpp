@@ -55,6 +55,8 @@ double NuTo::RungeKutta4::GetStageTimeFactor(int rStage)const
 	case 3:
 		s = 1.0;
 		break;
+	default:
+        throw MechanicsException ( "[NuTo::RungeKutta4::GetStageTimeFactor] rStage>3 not implemented." );
 	}
 	return s;
 }
@@ -79,6 +81,8 @@ bool NuTo::RungeKutta4::HasTimeChanged(int rStage)const
 	case 3:
 		s = true;
 		break;
+	default:
+        throw MechanicsException ( "[NuTo::RungeKutta4::HasTimeChanged] rStage>3 not implemented." );
 	}
 	return s;
 }
@@ -105,6 +109,8 @@ void NuTo::RungeKutta4::GetStageDerivativeFactor(std::vector<double>& rWeight, i
 		rWeight[1] = 0.0;
 		rWeight[2] = 1.0;
 		break;
+	default:
+        throw MechanicsException ( "[NuTo::RungeKutta4::GetStageDerivativeFactor] rStage>3 not implemented." );
 	}
 }
 
@@ -127,6 +133,8 @@ double NuTo::RungeKutta4::GetStageWeights(int rStage)const
 	case 3:
 		s = 1./6.;
 		break;
+	default:
+        throw MechanicsException ( "[NuTo::RungeKutta4::GetStageWeights] rStage>3 not implemented." );
 	}
 	return s;
 }
