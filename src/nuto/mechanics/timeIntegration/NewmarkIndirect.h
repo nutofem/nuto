@@ -24,7 +24,7 @@ class NewmarkIndirect : public NewmarkBase
 public:
 
     //! @brief constructor
-    NewmarkIndirect();
+    NewmarkIndirect(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

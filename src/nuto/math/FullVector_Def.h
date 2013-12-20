@@ -47,6 +47,10 @@ public:
     //! @param rows ... number of rows
     void Resize ( int rRows);
 
+    //! @brief ... resize matrix (the existing data is kept)
+    //! @param rows ... number of rows
+    void ConservativeResize ( int rRows);
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

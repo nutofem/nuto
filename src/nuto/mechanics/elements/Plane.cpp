@@ -216,7 +216,6 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 					if (numLocalDispDofs>0)
 					{
-						std::cout << "ELEMENT_::PLANE::EVALATE nonlocal elements "<< NumNonlocalElements << std::endl;
 						if (NumNonlocalElements==0)
 						{
 							nonlocalTangentStressStrain.SetNumSubMatrices(1);
@@ -224,7 +223,6 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						}
 						else
 						{
-							std::cout << "ELEMENT_::PLANE::EVALATE give nonlocal matrix "<< std::endl;
 							nonlocalTangentStressStrain.SetNumSubMatrices(NumNonlocalIps);
 							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &nonlocalTangentStressStrain;
 						}
@@ -1166,18 +1164,18 @@ NuTo::ConstitutiveStaticDataBase* NuTo::Plane::AllocateStaticData(const Constitu
 void NuTo::Plane::InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], double rGlobalCoordinates[3]) const
 {
     // calculate shape functions
-    std::vector<double> ShapeFunctions(this->GetNumNodes());
-    this->CalculateShapeFunctionsField(rNaturalCoordinates, ShapeFunctions);
+    std::vector<double> ShapeFunctions(this->GetNumNodesGeometry());
+    this->CalculateShapeFunctionsGeometry(rNaturalCoordinates, ShapeFunctions);
 
     // start interpolation
     rGlobalCoordinates[0] = 0.0;
     rGlobalCoordinates[1] = 0.0;
     rGlobalCoordinates[2] = 0.0;
-    for (int NodeCount = 0; NodeCount < this->GetNumNodes(); NodeCount++)
+    for (int NodeCount = 0; NodeCount < this->GetNumNodesGeometry(); NodeCount++)
     {
         // get node coordinate
         double NodeCoordinate[3];
-        const NodeBase *nodePtr(GetNode(NodeCount));
+        const NodeBase *nodePtr(GetNodeGeometry(NodeCount));
         if (nodePtr->GetNumCoordinates()==2)
             nodePtr->GetCoordinates2D(NodeCoordinate);
         else

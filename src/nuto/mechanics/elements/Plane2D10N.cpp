@@ -239,7 +239,7 @@ void NuTo::Plane2D10N::ReorderNodes()
 //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
 void NuTo::Plane2D10N::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
 {
-    for (int count=0; count<19; count++)
+    for (int count=0; count<10; count++)
     {
         if (this->mNodes[count]==rOldPtr)
         {

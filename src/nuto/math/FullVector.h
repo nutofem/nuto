@@ -78,6 +78,14 @@ void FullVector<T,rows>::Resize ( int rRows)
 		this->resize ( rRows);
 }
 
+//! @brief ... resize matrix (everything is deleted, attention, the eigenroutine is not setting everything to zero)
+//! @param rows ... number of rows
+template<class T, int rows>
+void FullVector<T,rows>::ConservativeResize ( int rRows)
+{
+	this->conservativeResize ( rRows );
+}
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

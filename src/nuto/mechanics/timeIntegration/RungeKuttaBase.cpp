@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::RungeKuttaBase::RungeKuttaBase ()  : TimeIntegrationBase ()
+NuTo::RungeKuttaBase::RungeKuttaBase (StructureBase& rStructure)  : TimeIntegrationBase (rStructure)
 {
     mTimeStep = 0.;
 }
@@ -83,9 +83,6 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(StructureBase& rStructure, doubl
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
 
-        //calculate the node ptrs for the postprocessing routines
-        CalculateOutputDispNodesPtr(rStructure);
-
         //renumber dofs and build constraint matrix
         rStructure.NodeBuildGlobalDofs();
 
@@ -122,7 +119,7 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(StructureBase& rStructure, doubl
         rStructure.BuildGlobalLumpedHession2(intForce_j,tmp_k);
 
         //check the sum of all entries
-        std::cout << "the total mass is " << intForce_j.sum()/3. +  tmp_k.sum()/3. << std::endl;
+        std::cout << "the total mass is " << intForce_j.sum()/((double)rStructure.GetDimension()) +  tmp_k.sum()/((double)rStructure.GetDimension()) << std::endl;
 
         //invert the mass matrix
         invMassMatrix_j = intForce_j.cwiseInverse();
@@ -247,8 +244,12 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(StructureBase& rStructure, doubl
 				}
 			}
 
-			//postprocess data for plotting
-            this->PostProcess(rStructure, plotVector);
+			// postprocess data for plotting (the acceleration of the nodes k is zero
+			// -> inertia term need not be considered in the reaction term
+			assert(CmatT.GetNumEntries() > 0);
+
+			std::cout << "postprocess individual things first " << std::endl;
+            this->PostProcess();
         }
     }
     catch (MechanicsException& e)

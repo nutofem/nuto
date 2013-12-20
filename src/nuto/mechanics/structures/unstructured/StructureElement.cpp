@@ -1294,13 +1294,19 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 	        ElementBase* theElement = oldElements[countElement].second;
 	        //std::cout << "start converting element " << oldElements[countElement].first << std::endl;
 
+	        //check element type
+	        if (theElement->GetEnumType() != NuTo::Element::PLANE2D3N)
+	        {
+	        	//std::cout << "num nodes = " << theElement->GetNumNodes() << std::endl;
+	        	throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] the elements to be converted are not of the type PLANE2D3N.");
+	        }
 			std::vector<NuTo::NodeBase* > newNodeVector(naturalNodeCoordinates.size());
 			for (int curNode=0; curNode<naturalNodeCoordinates.size(); curNode++)
 			{
 				newNodeVector[curNode] = 0;
 
 				//corner nodes already exist
-				std::cout << "naturalCoordinates " << naturalNodeCoordinates[curNode][0] << " " << naturalNodeCoordinates[curNode][1] << std::endl;
+				//std::cout << "naturalCoordinates " << naturalNodeCoordinates[curNode][0] << " " << naturalNodeCoordinates[curNode][1] << std::endl;
 				if (fabs(naturalNodeCoordinates[curNode][0]<1e-8))
 				{
 					if (fabs(naturalNodeCoordinates[curNode][1])<1e-8)
@@ -1325,7 +1331,7 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 				{
 					double newNodeCoordinatesGlobal[2]; //this is a global routine for 3D, though z should always be zero
 					newNodeVector[curNode]->GetCoordinates2D(newNodeCoordinatesGlobal);
-					std::cout << "coordinates of old/new " << curNode << ". " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
+					//std::cout << "coordinates of old/new " << curNode << ". " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
 				}
 				else
 				{
@@ -1384,7 +1390,7 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 
 						//set coordinates
 						newNodeVector[curNode]->SetCoordinates2D(newNodeCoordinatesGlobal);
-						std::cout << "coordinates of new " << curNode << "  " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
+						//std::cout << "coordinates of new " << curNode << "  " << newNodeCoordinatesGlobal[0] << " " << newNodeCoordinatesGlobal[1] << std::endl;
 
 						//find unused integer id
 						int id(mNodeMap.size());

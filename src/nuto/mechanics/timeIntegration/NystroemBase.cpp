@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NystroemBase::NystroemBase ()  : TimeIntegrationBase ()
+NuTo::NystroemBase::NystroemBase (StructureBase& rStructure)  : TimeIntegrationBase (rStructure)
 {
     mTimeStep = 0.;
 }
@@ -82,9 +82,6 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(StructureBase& rStructure, double 
 
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
-
-        //calculate the node ptrs for the postprocessing routines
-        CalculateOutputDispNodesPtr(rStructure);
 
         //renumber dofs and build constraint matrix
         rStructure.NodeBuildGlobalDofs();
@@ -243,7 +240,8 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(StructureBase& rStructure, double 
 			}
 
 			//postprocess data for plotting
-            this->PostProcess(rStructure, plotVector);
+			//, NuTo::FullVector<double,Eigen::Dynamic>(intForce_k-extForce_k)
+            this->PostProcess();
         }
     }
     catch (MechanicsException& e)

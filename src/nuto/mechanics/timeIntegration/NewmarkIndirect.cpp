@@ -30,7 +30,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NewmarkIndirect::NewmarkIndirect ()  : NewmarkBase ()
+NuTo::NewmarkIndirect::NewmarkIndirect (StructureBase& rStructure)  : NewmarkBase (rStructure)
 {
 }
 

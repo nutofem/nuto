@@ -9,7 +9,7 @@
 #
 # variables defined by this module
 #   EIGEN_FOUND - defines whether eigen was found or not
-#   EIGEN_INCLUDE_DIR - mersenne include directory
+#   EIGEN_INCLUDE_DIR - eigen include directory
 
 
 # initialize variables

@@ -29,7 +29,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NewmarkDirect::NewmarkDirect ()  : NewmarkBase ()
+NuTo::NewmarkDirect::NewmarkDirect (StructureBase& rStructure)  : NewmarkBase (rStructure)
 {
     mMinLineSearchStep = 0.01;
 }
@@ -155,9 +155,12 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
         double curTime  = 0;
 
         //apply constraints for last converged time step
-        double timeDependentConstraintFactor;
-        timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-        rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+        double timeDependentConstraintFactor(0);
+        if (mTimeDependentConstraint!=-1)
+        {
+            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+            rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+        }
         plotHistory(0,1) = timeDependentConstraintFactor;
         rStructure.ConstraintGetRHSAfterGaussElimination(bRHSprev);
         rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
@@ -234,14 +237,74 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             //std::cout << "reaction force for node group " <<  countGroup << " : " << reactionForce.Trans() << std::endl;
             plotVector0.AppendColumns(reactionForce);
         }
-        PostProcess(rStructure, plotVector0);
+
+        //perform Postprocessing
+        for (auto itResult=mResultMap.begin(); itResult!=mResultMap.end(); itResult++)
+        {
+        	switch (itResult->second->GetResultType())
+			{
+/*        	case REACTION_DOF_GROUP:
+			{
+				//interpret as ReactionForceNodeGroup
+				ResultReactionForceNodeGroup* resultPtr(itResult->second->AsReactionForceOfNodeGroup());
+
+				resultPtr->CalculateAndAddValues(rResidual_k);
+			}
+
+
+				//allocate standard output
+				FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> reactionForce(1,rStructure.GetDimension());
+
+                boost::ptr_map<int,GroupBase>::iterator itGroup = rStructure.mGroupMap.find(resultPtr->GetGroupId());
+                if (itGroup==rStructure.mGroupMap.end())
+                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] node group with the given identifier for the reaction forces does not exist.");
+                if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] Group is not a node group (reaction forces).");
+                Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+                assert(nodeGroup!=0);
+
+                //all nodes have to have the same dimension
+                if(nodeGroup->GetNumMembers()<1)
+                    throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] Group has no members.");
+
+                //std::cout << "residual k " << residual_k.transpose() << std::endl;
+                for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+                {
+                    for (int countDimension=0; countDimension<rStructure.GetDimension(); countDimension++)
+                    {
+                        int theDof = itNode->second->GetDofDisplacement(countDimension);
+                        if (theDof<rStructure.GetNumActiveDofs())
+                        {
+                            reactionForce(0,countDimension)+=residual_j(theDof);
+                        }
+                        else
+                        {
+                            reactionForce(0,countDimension)+=residual_k(theDof-rStructure.GetNumActiveDofs());
+                        }
+                    }
+                }
+
+				resultPtr->AddValues(reactionForce);
+				break;
+			}
+			*/
+        	default:
+        	   //do nothing, most of the stuff should be done in the PostProcess
+        		break;
+			}
+        }
+
+        PostProcess();
 
         double timeStep = mMaxTimeStep;
         while (curTime < rTimeDelta)
         {
             //apply constraints for last converged time step
-            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-            rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+            if (mTimeDependentConstraint!=-1)
+            {
+				timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+				rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+            }
             rStructure.ConstraintGetRHSAfterGaussElimination(bRHSprev);
             rStructure.NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
             rStructure.ElementTotalUpdateTmpStaticData();
@@ -287,14 +350,20 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(StructureBase& rStructure, double
             //increase time step by half and calculate the constraint matrix (used to approximate the velocity and acceleration of the rhs)
             if (this->IsDynamic())
             {
-                timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-                rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+                if (mTimeDependentConstraint!=-1)
+                {
+					timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+					rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+                }
                 rStructure.ConstraintGetRHSAfterGaussElimination(bRHShalf);
             }
 
             //apply constraints for the new time step (modified bRHS)
-            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-            rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+            if (mTimeDependentConstraint!=-1)
+            {
+				timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+				rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+            }
             rStructure.ConstraintGetRHSAfterGaussElimination(bRHSend);
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaBRHS(bRHSend-bRHSprev);
 
@@ -723,7 +792,7 @@ rStructure.NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 std::cout << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
                 //std::cout << "plot Vector " << plotVector << std::endl;
                 //Postprocess the Newmark routine (boundary forces etc. are calculated and the visualization is called)
-                this->PostProcess(rStructure, plotVector);
+                this->PostProcess();
 
                 //eventually increase next time step
                 if (iteration<0.25*mMaxNumIterations)

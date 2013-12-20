@@ -11,11 +11,14 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <boost/ptr_container/ptr_map.hpp>
+
 #include "nuto/base/NuToObject.h"
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
+#include "nuto/mechanics/timeIntegration/ResultBase.h"
 
 namespace NuTo
 {
@@ -31,7 +34,7 @@ class TimeIntegrationBase : public NuToObject
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    TimeIntegrationBase();
+    TimeIntegrationBase(StructureBase& rStructure);
 
     //! @brief deconstructor
     virtual ~TimeIntegrationBase()
@@ -66,10 +69,8 @@ public:
     //! @brief sets the nodes, for which displacements are to be monitored
     void CalculateOutputDispNodesPtr(StructureBase& rStructure);
 
-    //! @brief calculate the external force as a function of time delta
-    //! @ param rStructure ... structure
-    //! @ param rPlotVector... data to be plotted, is append to the matrix and written to a file
-    void PostProcess(StructureBase& rStructure, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rPlotVector);
+    //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
+    void PostProcess();
 
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
@@ -123,6 +124,17 @@ public:
     	return mVecGroupNodesReactionForces;
     }
 
+    //! @brief monitor the displacements of a node
+    //! @param rNodeId id of the node
+    //! @param rResultId string identifying the result, this is used for the output file
+    //! @return id of the result, so that it could be modified afterwards
+    int AddResultNodeDisplacements(int rNodeId, const std::string& rResultStr);
+
+    //! @brief monitor the time
+    //! @param rResultId string identifying the result, this is used for the output file
+    //! @return id of the result, so that it could be modified afterwards
+    int AddResultTime(const std::string& rResultStr);
+
     //! @brief sets the result directory
     //! @param if delete is set, all the content of the directory will be removed
     void SetResultDirectory(std::string rResultDir, bool rDelete);
@@ -156,6 +168,8 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const;
 protected:
+    //structure belonging to the time integration scheme
+    StructureBase& mStructure;
     //constraint for displacement control (as a function of time)
     int mTimeDependentConstraint;
     //includes for each time step the rhs of the constraint mConstraintLoad
@@ -176,22 +190,32 @@ protected:
 	double mMaxTimeStep;
     //minimum time step (for adaptive simulations)
 	double mMinTimeStep;
+
+	//************************
+	//* PostProcessing Stuff *
+	//************************
+    //result directory
+    std::string mResultDir;
+
+	//specifies what to plot (displacements, reaction forces, etc.)
+    boost::ptr_map<int,ResultBase> mResultMap;
+
 	//load step number is increased after each converged step (used for successive output)
     int mLoadStep;
+    //time step number is increased each time a value is added to the result matrices
+    int mTimeStepResult;
+    //time step number is increased each time a vtk file is extracted
+    int mTimeStepVTK;
 	//if the time between the current time step and the previous plotted step is larger than mMaxDeltaTimeStepPlot a vtk plot is performed
     double mMinTimeStepPlot;
     //last time when a vtk file was plotted
     double mLastTimePlot;
-    //output data for all load steps
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixAllLoadSteps;
-    //the size of the matrix is allocated with 10e4 steps to avoid reallocating the matrix every iteration
-    int numUsedRowsPlotMatrixAllLoadSteps;
-    //output data for load steps that have a minimum distance of mMinTimeStepPlot
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mPlotMatrixSelectedLoadSteps;
-    //output data for load steps that have a minimum distance of mMinTimeStepPlot
+    //groups of elements to be plotted separately
     FullVector<int,Eigen::Dynamic> mPlotElementGroups;
-    //result directory
-    std::string mResultDir;
+
+    //the size of allocated result matrices
+    int numUsedRowsPlotMatrixAllLoadSteps;
+
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
     NuTo::FullVector<int,Eigen::Dynamic> mVecGroupNodesReactionForces;
     // vector of nodes for the output of the dofs

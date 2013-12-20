@@ -23,7 +23,7 @@ class NewmarkDirect : public NewmarkBase
 public:
 
     //! @brief constructor
-    NewmarkDirect();
+    NewmarkDirect(StructureBase& rStructure);
 
     void SetMinLineSearchStep(double rMinLineSearchStep)
     {

@@ -23,7 +23,7 @@ class RungeKuttaCashKarp : public RungeKuttaBase
 public:
 
     //! @brief constructor
-    RungeKuttaCashKarp();
+    RungeKuttaCashKarp(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

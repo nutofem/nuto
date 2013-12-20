@@ -225,6 +225,10 @@ timeIntegration/NewmarkDirect.cpp
 timeIntegration/NewmarkIndirect.cpp
 timeIntegration/NystroemBase.cpp
 timeIntegration/NystroemQinZhu.cpp
+timeIntegration/ResultBase.cpp
+timeIntegration/ResultNodeDisp.cpp
+timeIntegration/ResultNodeDof.cpp
+timeIntegration/ResultTime.cpp
 timeIntegration/RungeKutta38.cpp
 timeIntegration/RungeKutta4.cpp
 timeIntegration/RungeKuttaCashKarp.cpp

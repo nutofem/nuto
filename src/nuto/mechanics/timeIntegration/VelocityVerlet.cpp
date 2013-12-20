@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::VelocityVerlet::VelocityVerlet ()  : TimeIntegrationBase ()
+NuTo::VelocityVerlet::VelocityVerlet (StructureBase& rStructure)  : TimeIntegrationBase (rStructure)
 {
     mTimeStep = 0.;
 }
@@ -79,9 +79,6 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
 
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
-
-        //calculate the node ptrs for the postprocessing routines
-        CalculateOutputDispNodesPtr(rStructure);
 
         //renumber dofs and build constraint matrix
         rStructure.NodeBuildGlobalDofs();
@@ -190,7 +187,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
             }
 
             //postprocess data for plotting
-            this->PostProcess(rStructure, plotVector);
+            this->PostProcess();
 
             //calculate new accelerations and velocities of independent dofs
             acc_new_j = invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j);

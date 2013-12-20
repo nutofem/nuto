@@ -23,7 +23,7 @@ class RungeKutta4 : public RungeKuttaBase
 public:
 
     //! @brief constructor
-    RungeKutta4();
+    RungeKutta4(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

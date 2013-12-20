@@ -55,6 +55,7 @@ try
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.2);
+    myStructure.ConstitutiveLawSetDensity(myMatLin,2.);
 
     //create section
     int mySection = myStructure.SectionCreate("Plane_Stress");
@@ -190,6 +191,22 @@ try
 			}
 		}
     }
+    //calculate lumped mass matrix
+    NuTo::FullVector<double,Eigen::Dynamic> diagMassMatrix_j(myStructure.GetNumActiveDofs());
+    NuTo::FullVector<double,Eigen::Dynamic> diagMassMatrix_k(myStructure.GetNumDofs()-myStructure.GetNumActiveDofs());
+    myStructure.BuildGlobalLumpedHession2(diagMassMatrix_j,diagMassMatrix_k);
+
+    //check the sum of all entries
+	if (!PRINTRESULT)
+	{
+        std::cout << "the total mass is " << diagMassMatrix_j.sum()/2.  +  diagMassMatrix_k.sum()/2. << std::endl;
+	}
+
+	if (fabs(diagMassMatrix_j.sum()/2.  +  diagMassMatrix_k.sum()/2. - 200.)>1e-5)
+	{
+		std::cout << "[Plane2D10N] : total mass is not correct" << std::endl;
+		error = true;
+	}
 
     // visualize results
     myStructure.AddVisualizationComponentDisplacements();

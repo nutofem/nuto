@@ -23,7 +23,7 @@ class RungeKuttaDormandPrince : public RungeKuttaBase
 public:
 
     //! @brief constructor
-    RungeKuttaDormandPrince();
+    RungeKuttaDormandPrince(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

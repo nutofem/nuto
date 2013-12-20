@@ -23,7 +23,7 @@ class VelocityVerlet : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    VelocityVerlet();
+    VelocityVerlet(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

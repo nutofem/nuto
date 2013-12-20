@@ -24,7 +24,7 @@ class NystroemQinZhu : public NystroemBase
 public:
 
     //! @brief constructor
-    NystroemQinZhu();
+    NystroemQinZhu(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

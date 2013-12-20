@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NystroemQinZhu::NystroemQinZhu ()  : NystroemBase ()
+NuTo::NystroemQinZhu::NystroemQinZhu (StructureBase& rStructure)  : NystroemBase (rStructure)
 {
 }
 

@@ -27,9 +27,11 @@
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
+#include "nuto/mechanics/timeIntegration/ResultTime.h"
 
 
-NuTo::TimeIntegrationBase::TimeIntegrationBase()  : NuTo::NuToObject::NuToObject()
+NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase& rStructure) : NuTo::NuToObject::NuToObject(), mStructure(rStructure)
 {
 	mTime = 0.;
 	mLoadStep = 1;
@@ -37,6 +39,8 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase()  : NuTo::NuToObject::NuToObject
 	mMinTimeStep = 0;
     mLoadStep = 0;
     mMinTimeStepPlot = 0;
+    mTimeStepResult = 0;
+    mTimeStepVTK = 0;
     mLastTimePlot = -1e99;
     mAutomaticTimeStepping = false;
  	mTimeDependentConstraint = -1;
@@ -185,62 +189,114 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 	}
 }
 
+//! @brief monitor the displacements of a node
+//! @param rNodeId id of the node
+//! @param rResultId string identifying the result, this is used for the output file
+//! @return id of the result, so that it could be modified afterwards
+int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(int rNodeId, const std::string& rResultStr)
+{
+	//find unused integer id
+	int resultNumber(mResultMap.size());
+	boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+	while (it!=mResultMap.end())
+	{
+		resultNumber++;
+		it = mResultMap.find(resultNumber);
+	}
+	NodeBase* nodePtr(mStructure.NodeGetNodePtr(rNodeId));
 
+	mResultMap.insert(resultNumber, new ResultNodeDisp(rResultStr,nodePtr));
+
+	return resultNumber;
+}
+
+//! @brief monitor the time
+//! @param rResultId string identifying the result, this is used for the output file
+//! @return id of the result, so that it could be modified afterwards
+int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
+{
+	//find unused integer id
+	int resultNumber(mResultMap.size());
+	boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+	while (it!=mResultMap.end())
+	{
+		resultNumber++;
+		it = mResultMap.find(resultNumber);
+	}
+
+	mResultMap.insert(resultNumber, new ResultTime(rResultStr));
+
+	return resultNumber;
+}
 
 //! @brief calculate the external force as a function of time delta
 //! @ param rStructure ... structure
-//! @ param rPlotVector... data to be plotted, is append to the matrix and written to a file
-void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rPlotVector)
+//! @ param rOutOfBalanceFoce_k... out of balance force (or equivalent for other physics) for constraint dofs (not the active dofs)
+void NuTo::TimeIntegrationBase::PostProcess()
 {
-	if (mResultDir.length()>0)
+	if (mResultDir.length()==0)
 	{
-		if (numUsedRowsPlotMatrixAllLoadSteps%10000==0)
-		{
-			mPlotMatrixAllLoadSteps.ConservativeResize(numUsedRowsPlotMatrixAllLoadSteps+10000,rPlotVector.GetNumColumns());
-		}
-
-		mPlotMatrixAllLoadSteps.SetRow(numUsedRowsPlotMatrixAllLoadSteps, rPlotVector);
-		numUsedRowsPlotMatrixAllLoadSteps++;
+		throw MechanicsException("[NuTo::TimeIntegrationBase::PostProcess] Set the result directory first.");
+	}
+	else
+	{
+        //perform Postprocessing
+        for (auto itResult=mResultMap.begin(); itResult!=mResultMap.end(); itResult++)
+        {
+        	//if the output has already been calculated in the method for the specific integration type, no need to to do it again
+        	if (itResult->second->IsCalculated()==false)
+        	{
+				switch (itResult->second->GetResultType())
+				{
+				case TimeIntegration::TIME:
+				{
+					ResultTime* resultPtr(itResult->second->AsResultTime());
+					resultPtr->CalculateAndAddValues(mTimeStepResult,mTime);
+					break;
+				}
+				case TimeIntegration::NODE_DOF:
+				{
+					ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
+					resultPtr->CalculateAndAddValues(mTimeStepResult);
+					break;
+				}
+				default:
+					throw MechanicsException("[NuTo::NewmarkDirect::Solve] Unknown component in postprocessing.");
+				}
+        	}
+        	//reset all values to zero for the next postprocessing round
+    		itResult->second->SetCalculated(false);
+        }
 
 		if (mTime-mLastTimePlot>=mMinTimeStepPlot)
 		{
-	        boost::filesystem::path resultFile(mResultDir);
-			resultFile /= std::string("resultAllLoadSteps.dat");
-	        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>tmpPlotMatrixAllLoadSteps
-	         = mPlotMatrixAllLoadSteps.block(0,0,numUsedRowsPlotMatrixAllLoadSteps,mPlotMatrixAllLoadSteps.GetNumColumns());
-	        tmpPlotMatrixAllLoadSteps.WriteToFile(resultFile.string(), std::string("  "));
-
-	        if (mPlotMatrixSelectedLoadSteps.GetNumRows()==0)
-				mPlotMatrixSelectedLoadSteps = rPlotVector;
-			else
-			    mPlotMatrixSelectedLoadSteps.AppendRows(rPlotVector);
-			boost::filesystem::path resultFileMod(mResultDir);
-			resultFileMod /= std::string("resultSelectedLoadSteps.dat");
-			mPlotMatrixSelectedLoadSteps.WriteToFile(resultFileMod.string(), std::string("  "));
-
-			int curModLoadStep=mPlotMatrixSelectedLoadSteps.GetNumRows();
+	        //write the results to files
+			for (auto itResult=mResultMap.begin(); itResult!=mResultMap.end(); itResult++)
+	        {
+				itResult->second->WriteToFile(mResultDir,mTimeStepResult);
+	        }
 
 #ifdef ENABLE_VISUALIZE
 			//plot the solution vtk file
-			std::stringstream ssLoadStep;
-			ssLoadStep << curModLoadStep;
+			std::stringstream ssTimeStepVTK;
+			ssTimeStepVTK << mTimeStepVTK;
 
-			resultFile = mResultDir;
-			resultFile /= std::string("Nodes")+ssLoadStep.str()+std::string(".vtu");
-			rStructure.ExportVtkDataFileNodes(resultFile.string(),true);
+			boost::filesystem::path resultFile(mResultDir);
+			resultFile /= std::string("Nodes")+ssTimeStepVTK.str()+std::string(".vtu");
+			mStructure.ExportVtkDataFileNodes(resultFile.string(),true);
 
 			if (mPlotElementGroups.GetNumRows()==0)
 			{
 				//plot all elements
 				resultFile = mResultDir;
-				resultFile /= std::string("Elements")+ssLoadStep.str()+std::string(".vtu");
-				rStructure.ExportVtkDataFileElements(resultFile.string(),true);
+				resultFile /= std::string("Elements")+ssTimeStepVTK.str()+std::string(".vtu");
+				mStructure.ExportVtkDataFileElements(resultFile.string(),true);
 
 				//write an additional pvd file
 				resultFile = mResultDir;
 				resultFile /= std::string("Elements.pvd");
 			    std::fstream file;
-			    if (curModLoadStep==1)
+			    if (mTimeStepVTK==0)
 			    {
 			    	file.open(resultFile.string(), std::fstream::out);
 			    }
@@ -256,19 +312,19 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 			    std::stringstream endOfXML;
 			    endOfXML << "</Collection>" << std::endl;
 			    endOfXML << "</VTKFile>" << std::endl;
-			    if (curModLoadStep==1)
+			    if (mTimeStepVTK==0)
 			    {
 					// header /////////////////////////////////////////////////////////////////
 					file << "<?xml version=\"1.0\"?>" << std::endl;
 					file << "<VTKFile type=\"Collection\">" << std::endl;
 					file << "<Collection>" << std::endl;
-					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
+					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << mTimeStepVTK << ".vtu\"/>" << std::endl;
 			    }
 			    else
 			    {
 				    //delete the last part of the xml file
 			    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
-					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
+					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << mTimeStepVTK << ".vtu\"/>" << std::endl;
 			    }
 			    file << endOfXML.str();
 			    file.close();
@@ -283,14 +339,14 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 
 					//plot all elements
 					resultFile = mResultDir;
-					resultFile /= std::string("Group") + ssGroup.str() + std::string("_Elements")+ssLoadStep.str()+std::string(".vtu");
-					rStructure.ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
+					resultFile /= std::string("Group") + ssGroup.str() + std::string("_Elements")+ssTimeStepVTK.str()+std::string(".vtu");
+					mStructure.ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
 
 					//write an additional pvd file
 					resultFile = mResultDir;
 					resultFile /= std::string("Group") + ssGroup.str() + std::string("_ElementsAll")+std::string(".pvd");
 				    std::fstream file;
-				    if (curModLoadStep==1)
+				    if (mTimeStepVTK==0)
 				    {
 				    	file.open(resultFile.string(), std::fstream::out);
 				    }
@@ -306,7 +362,7 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 				    std::stringstream endOfXML;
 				    endOfXML << "</Collection>" << std::endl;
 				    endOfXML << "</VTKFile>" << std::endl;
-				    if (curModLoadStep==1)
+				    if (mTimeStepVTK==0)
 				    {
 						// header /////////////////////////////////////////////////////////////////
 						file << "<?xml version=\"1.0\"?>" << std::endl;
@@ -318,14 +374,16 @@ void NuTo::TimeIntegrationBase::PostProcess(StructureBase& rStructure, FullMatri
 					    //delete the last part of the xml file
 				    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
 				    }
-					file << "<DataSet timestep=\""<< mTime << "\" file=\"Group" << mPlotElementGroups(countGroupElement) << "_Elements" << curModLoadStep << ".vtu\"/>" << std::endl;
+					file << "<DataSet timestep=\""<< mTime << "\" file=\"Group" << mPlotElementGroups(countGroupElement) << "_Elements" << mTimeStepVTK << ".vtu\"/>" << std::endl;
 				    file << endOfXML.str();
 				    file.close();
 				}
 			}
 #endif
+			mTimeStepVTK++;
 			mLastTimePlot = mTime;
 		}
+        mTimeStepResult++;
     }
 }
 
@@ -352,6 +410,8 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent_j)
        & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent_k)
        & BOOST_SERIALIZATION_NVP(mTime)
+       & BOOST_SERIALIZATION_NVP(mTimeStepResult)
+       & BOOST_SERIALIZATION_NVP(mTimeStepVTK)
        & BOOST_SERIALIZATION_NVP(mLoadStep)
        & BOOST_SERIALIZATION_NVP(mMaxTimeStep)
        & BOOST_SERIALIZATION_NVP(mMinTimeStep)

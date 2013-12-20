@@ -24,7 +24,7 @@ class NystroemBase : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    NystroemBase();
+    NystroemBase(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

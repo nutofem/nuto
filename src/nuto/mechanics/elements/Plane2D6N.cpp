@@ -108,8 +108,8 @@ void NuTo::Plane2D6N::CalculateNaturalNodeCoordinates(std::vector< std::array<do
 	rNaturalNodeCoordinates[1][1] = 0.0;
 
 	//node 2
-	rNaturalNodeCoordinates[2][0] = 1.0;
-	rNaturalNodeCoordinates[2][1] = 0.0;
+	rNaturalNodeCoordinates[2][0] = 0.0;
+	rNaturalNodeCoordinates[2][1] = 1.0;
 
 	//node 3
 	rNaturalNodeCoordinates[3][0] = 0.5;

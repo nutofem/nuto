@@ -23,7 +23,7 @@ class RungeKuttaBase : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    RungeKuttaBase();
+    RungeKuttaBase(StructureBase& rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

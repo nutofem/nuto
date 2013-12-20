@@ -23,7 +23,7 @@ class NewmarkBase : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    NewmarkBase();
+    NewmarkBase(StructureBase& rStructure);
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
