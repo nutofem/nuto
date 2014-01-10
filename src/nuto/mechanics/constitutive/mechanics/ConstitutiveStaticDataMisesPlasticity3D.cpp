@@ -35,7 +35,7 @@ NuTo::ConstitutiveStaticDataMisesPlasticity3D::ConstitutiveStaticDataMisesPlasti
 NuTo::ConstitutiveStaticDataMisesPlasticity3D& NuTo::ConstitutiveStaticDataMisesPlasticity3D::operator= (ConstitutiveStaticDataMisesPlasticity3D const& rOther)
 {
     NuTo::ConstitutiveStaticDataBase::operator= (rOther);
-	mEpsilonPEq = mEpsilonPEq;
+	mEpsilonPEq = rOther.mEpsilonPEq;
 
 	mEpsilonP[0] = rOther.mEpsilonP[0] ;
 	mEpsilonP[1] = rOther.mEpsilonP[1] ;
