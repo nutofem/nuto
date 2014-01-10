@@ -10,6 +10,7 @@
 #endif
 
 #include <iostream>
+#include "stdlib.h"
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
@@ -21,7 +22,8 @@
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #endif //ENABLE_OPTIMIZE
 
-int main()
+// arguments for MGCG: nbr of cycles, nbr of pre , nbr of post smooting steps
+int main(int argc, char *argv[])
 {
 	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
 //	bool matrixFreeMethod=1; //0 -EBE, 1- NBN
@@ -190,12 +192,12 @@ end=clock();
 	std::cout<<"[MultiGrid3D] number of dofs "<<numDofs<<" free: "<<numDofs-myGrid.GetNumConstraints()<<" constraint: "<<myGrid.GetNumConstraints()<<"\n";
 	// start analysis
 
-	myGrid.SetVerboseLevel(5);
+	myGrid.SetVerboseLevel(1);
 	myGrid.SetMisesWielandt(false);
 	size_t numNodes=myGrid.GetNumNodes();
 
 	NuTo::MultiGridStructure myMultiGrid;
-	myMultiGrid.SetVerboseLevel(5);
+	myMultiGrid.SetVerboseLevel(0);
 	myMultiGrid.SetStructure(&myGrid);
 	myMultiGrid.SetUseMultiGridAsPreconditoner(false);
 	myMultiGrid.SetMaxCycle(numDofs/10);
@@ -203,7 +205,6 @@ end=clock();
 	myMultiGrid.SetNumPostSmoothingSteps(1);
 
 	myMultiGrid.Initialize();
-	myMultiGrid.Info();
 
 #ifdef ENABLE_OPTIMIZE
 	enum SolMethod // enum for solution method
@@ -213,10 +214,20 @@ end=clock();
 		MGCG, 	//multigrid preconditioned conjugate gradient method
 	} solMeth=MGCG;
 
+	if(argc==1)//nothing added after programm name
+	{
+		solMeth==MG;
+	}
+	else
+		solMeth==MGCG;
+
 	if(solMeth==MG)
 	{
 		std::cout<<"[MultiGrid3D] Solution method is multigrid method. \n";
 		std::vector<double> rhs(rDisplVector.size());
+		myMultiGrid.SetVerboseLevel(1);
+		myMultiGrid.Info();
+
 		myMultiGrid.MultiGridSolve(rDisplVector,rhs);
 	}
 	else if(solMeth==EMG)
@@ -243,6 +254,9 @@ end=clock();
 		for(size_t i=0;i<numNodes;++i)
 			std::cout<<residual[3*i+1]<<" ";
 		std::cout<<"\n";
+		myMultiGrid.SetVerboseLevel(1);
+		myMultiGrid.Info();
+
 		myMultiGrid.MultiGridSolve(error,residual);
 		std::cout<<"[MultiGrid3D] solution: ";
 		for(size_t i=0;i<numNodes*3;++i)
@@ -262,20 +276,61 @@ end=clock();
 		myGrid.SetParameters(rDisplVector);
 		myGrid.SetRightHandSide(rhs);
 		myMultiGrid.SetUseMultiGridAsPreconditoner(true);
-		myMultiGrid.SetMaxCycle(2);
+		if(argc==4)
+		{
+			std::cout<<" test "<<argv[1]<<" "<<argv[3]<<"\n";
+			myMultiGrid.SetMaxCycle(atoi(argv[1]));
+			myMultiGrid.SetNumPreSmoothingSteps(atoi(argv[2]));
+			myMultiGrid.SetNumPostSmoothingSteps(atoi(argv[3]));
+		}
+		else if(argc==3)
+		{
+			myMultiGrid.SetMaxCycle(atoi(argv[1]));
+			myMultiGrid.SetNumPreSmoothingSteps(atoi(argv[2]));
+			myMultiGrid.SetNumPostSmoothingSteps(atoi(argv[2]));
+
+		}
+		else
+		{
+			myMultiGrid.SetMaxCycle(2);
+			myMultiGrid.SetNumPreSmoothingSteps(5);
+			myMultiGrid.SetNumPostSmoothingSteps(5);
+		}
 		myOptimizer.SetCallback( (&myMultiGrid));
+		myMultiGrid.Info();
 		myOptimizer.Info();
+
+		std::ofstream file;
+		file.open("sumOutput",std::ofstream::out|std::ofstream::app);
+		if(file)
+		{
+			//output : voxels in one direction - dofs -
+			// nbr grids - solMeth - nbr cycles -nbr pre -nbr post - time -its
+			file<<rGridDimension[0]-2<<" "<<numDofs<<" "<<
+					myMultiGrid.GetNumGrids()<<" ";
+			if(solMeth==MG)
+				file<<"  MG";
+			else if(solMeth==EMG)
+				file<<" EMG";
+			else if(solMeth==MGCG)
+				file<<"MGCG";
+			file<<" "<<myMultiGrid.GetMaxCycle()<<" "
+							""<<myMultiGrid.GetNumPreSmoothingSteps()<<" "<<myMultiGrid.GetNumPostSmoothingSteps()<<" ";
+			file.close();
+		}
+
 		myOptimizer.Optimize();
 
 		rDisplVector=myGrid.GetParameters();
+
+		myMultiGrid.ExportVTKStructuredDataFile(0,"outputGrid0.vtk");
+	//	myMultiGrid.ExportVTKStructuredDataFile(1,"outputGrid1.vtk");
+
+
 	}
 #else //ENABLE_OPTIMIZE
 	std::cout<<"[MultiGrid3D] Solution is not possible. Module optimize is not loaded.\n";
 #endif //ENABLE_OPTIMIZE
-
-//	myMultiGrid.ExportVTKStructuredDataFile(0,"outputGrid0.vtk");
-//	myMultiGrid.ExportVTKStructuredDataFile(1,"outputGrid1.vtk");
-
 
 	std::ofstream file;
     file.open("displacementsMG.txt");
@@ -286,26 +341,26 @@ end=clock();
 			file<<rDisplVector[3*i+2]<<"\n";
 	}
 	file.close();
-
-	file.open("displVTK.txt");
-	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
-	for(size_t i=0;i<numGridNodes;++i)
-	{
-		size_t nodeId=myGrid.GetNodeId(i);
-		if (nodeId==(size_t) myGrid.GetNumNodes())
-		{
-			file<<0.0<<"\n";
-			file<<0.0<<"\n";
-			file<<0.0<<"\n";
-		}
-		else
-		{
-			file<<rDisplVector[3*nodeId]<<"\n";
-			file<<rDisplVector[3*nodeId+1]<<"\n";
-			file<<rDisplVector[3*nodeId+2]<<"\n";
-		}
-	}
-	file.close();
+//
+//	file.open("displVTK.txt");
+//	size_t numGridNodes=(myGrid.GetGridDimension()[0]+1)*(myGrid.GetGridDimension()[1]+1)*(myGrid.GetGridDimension()[2]+1);
+//	for(size_t i=0;i<numGridNodes;++i)
+//	{
+//		size_t nodeId=myGrid.GetNodeId(i);
+//		if (nodeId==(size_t) myGrid.GetNumNodes())
+//		{
+//			file<<0.0<<"\n";
+//			file<<0.0<<"\n";
+//			file<<0.0<<"\n";
+//		}
+//		else
+//		{
+//			file<<rDisplVector[3*nodeId]<<"\n";
+//			file<<rDisplVector[3*nodeId+1]<<"\n";
+//			file<<rDisplVector[3*nodeId+2]<<"\n";
+//		}
+//	}
+//	file.close();
 
 	std::vector<double> dispRef;
 	std::ifstream input;
@@ -329,20 +384,20 @@ end=clock();
 			double squareDiffNorm=0;
 			double squareRefNorm=0;
 			std::ofstream diffFile;
-			diffFile.open("displDiff.txt");
-			std::cout<<"[MultiGrid3D]  ref Solution ";
+//			diffFile.open("displDiff.txt");
+//			std::cout<<"[MultiGrid3D]  ref Solution ";
 			for(size_t i=0;i<numNodes;++i)
 			{
-					diffFile<<rDisplVector[3*i]-dispRef[3*i]<<"\n";
-					diffFile<<rDisplVector[3*i+1]-dispRef[3*i+1]<<"\n";
-					diffFile<<rDisplVector[3*i+2]-dispRef[3*i+2]<<"\n";
+//					diffFile<<rDisplVector[3*i]-dispRef[3*i]<<"\n";
+//					diffFile<<rDisplVector[3*i+1]-dispRef[3*i+1]<<"\n";
+//					diffFile<<rDisplVector[3*i+2]-dispRef[3*i+2]<<"\n";
 				squareDiffNorm+=(rDisplVector[3*i]-dispRef[3*i])*(rDisplVector[3*i]-dispRef[3*i]);
 				squareDiffNorm+=(rDisplVector[3*i+1]-dispRef[3*i+1])*(rDisplVector[3*i+1]-dispRef[3*i+1]);
 				squareDiffNorm+=(rDisplVector[3*i+2]-dispRef[3*i+2])*(rDisplVector[3*i+2]-dispRef[3*i+2]);
 				squareRefNorm+=(dispRef[3*i])*(dispRef[3*i]);
 				squareRefNorm+=(dispRef[3*i+1])*(dispRef[3*i+1]);
 				squareRefNorm+=(dispRef[3*i+2])*(dispRef[3*i+2]);
-				std::cout<<dispRef[3*i]<<" "<<dispRef[3*i+1]<<" "<<dispRef[3*i+2]<<" ";
+//				std::cout<<dispRef[3*i]<<" "<<dispRef[3*i+1]<<" "<<dispRef[3*i+2]<<" ";
 			}
 
 		std::cout<<"\n[MultiGrid3D] squared diff norm " <<squareDiffNorm<<std::endl;

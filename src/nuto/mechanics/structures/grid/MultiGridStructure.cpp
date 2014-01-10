@@ -140,7 +140,7 @@ int NuTo::MultiGridStructure::MultiGridSolve(std::vector<double>& rSolution,
 #endif
 	int cycle=0;
 	double kappa=1.;
-	std::cout<<"MultiGridSolve\n";
+//	std::cout<<"MultiGridSolve\n";
 	NuTo::StructureGrid* rGrid=mpStructureHandler;
 	size_t numPara=rGrid->GetNumNodes()*3;
 	double rAccuracySquare=1e-6*1e-6;
@@ -165,7 +165,7 @@ int NuTo::MultiGridStructure::MultiGridSolve(std::vector<double>& rSolution,
 //		std::cout<<rResidual[i]<<" ";
 //	std::cout<<"\n";
 //	// --------------------------------------------------------------------------
-	std::cout<<" rIntialNorm "<<rIntialNorm<<"\n";
+//	std::cout<<" rIntialNorm "<<rIntialNorm<<"\n";
 
 
 	while(++cycle<mMaxCycles && kappa>rAccuracySquare)
@@ -210,7 +210,7 @@ int NuTo::MultiGridStructure::MultiGridSolve(std::vector<double>& rSolution,
 		// relative norm
 //		rAccuracySquare*=rIntialNorm;
 		kappa/=rIntialNorm;
-		std::cout<<"MultiGridSolve relative error "<<kappa<<" vs. norm "<<rAccuracySquare<<"\n";
+//		std::cout<<"MultiGridSolve relative error "<<kappa<<" vs. norm "<<rAccuracySquare<<"\n";
 	}
 #ifdef SHOW_TIME
     endMG=clock();
@@ -451,7 +451,7 @@ void NuTo::MultiGridStructure::ExportVTKStructuredDataFile(int rGridLevel, const
 		file << "SPACING "<<rGrid->GetVoxelSpacing()[0]<<" "<<rGrid->GetVoxelSpacing()[1]<<" "<<rGrid->GetVoxelSpacing()[2]<<"\n";
 		file << "ORIGIN "<<rGrid->GetGridOrigin()[0]<<" "<<rGrid->GetGridOrigin()[1]<<" "<<rGrid->GetGridOrigin()[2]<<"\n";
 		file << "CELL_DATA "<<rGrid->GetNumVoxels()<<"\n";
-		file << "SCALARS scalars int 1\n";
+		file << "SCALARS imageData int 1\n";
 		file << "LOOKUP_TABLE default\n";
 		using namespace boost::spirit::classic;
 	   std::ifstream input(rGrid->mImageDataFile, std::ios::in);
@@ -534,22 +534,22 @@ void NuTo::MultiGridStructure::ExportVTKStructuredDataFile(int rGridLevel, const
 				file<<"0.\n";
 		}
 	}
-	size_t numNodes=rGrid->GetNumNodes();
-	size_t numEdges=(rGrid->mGridDimension[0]+1)*(rGrid->mGridDimension[1]+1)*(rGrid->mGridDimension[2]+1);
-
-	countNodes=0;
-	file << "POINT_DATA "<<numEdges<<"\n";
-	file << "VECTORS constraints int \n";
-	for (size_t i=0;i<numEdges;++i) // loop over grid points
-	{
-		if(rGrid->mNodeId[i]<numNodes)
-		{
-			file<<rGrid->mDofIsConstraint[3*rGrid->mNodeId[i]]<<" " <<rGrid->mDofIsConstraint[3*rGrid->mNodeId[i]+1]<<" "<<rGrid->mDofIsConstraint[3*rGrid->mNodeId[i]+2]<<"\n";
-			++countNodes;
-		}
-		else
-			file<<"5 5 5\n";
-	}
-	assert(countNodes==numNodes);
+//	size_t numNodes=rGrid->GetNumNodes();
+//	size_t numEdges=(rGrid->mGridDimension[0]+1)*(rGrid->mGridDimension[1]+1)*(rGrid->mGridDimension[2]+1);
+//
+//	countNodes=0;
+//	file << "POINT_DATA "<<numEdges<<"\n";
+//	file << "VECTORS constraints int \n";
+//	for (size_t i=0;i<numEdges;++i) // loop over grid points
+//	{
+//		if(rGrid->mNodeId[i]<numNodes)
+//		{
+//			file<<rGrid->mDofIsConstraint[3*rGrid->mNodeId[i]]<<" " <<rGrid->mDofIsConstraint[3*rGrid->mNodeId[i]+1]<<" "<<rGrid->mDofIsConstraint[3*rGrid->mNodeId[i]+2]<<"\n";
+//			++countNodes;
+//		}
+//		else
+//			file<<"5 5 5\n";
+//	}
+//	assert(countNodes==numNodes);
     file.close();
 }

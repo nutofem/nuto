@@ -1432,10 +1432,10 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)
 		}
 		CalcScalingFactors(rProduct);
 		mHessianDiag=rProduct;
-		std::cout << " Hessian: ";
-		for(size_t i=0;i<numNodes*3;++i)
-			std::cout<< rProduct[i]<<" ";
-		std::cout<<"\n";
+//		std::cout << " Hessian: ";
+//		for(size_t i=0;i<numNodes*3;++i)
+//			std::cout<< rProduct[i]<<" ";
+//		std::cout<<"\n";
 
 	}
 	for (size_t para=0;para<numNodes*3;++para)
@@ -1724,72 +1724,72 @@ void NuTo::StructureGrid::ExportVTKStructuredDataFile(const std::string& rFilena
 	assert(countNodes==numNodes);
 
 //
-	std::vector<double> rStrainVector(0);
-	GetEngineeringStrain(mDisplacements,rStrainVector);
-//	for(size_t i=0;i<rStrainVector.size();++i)
+//	std::vector<double> rStrainVector(0);
+//	GetEngineeringStrain(mDisplacements,rStrainVector);
+////	for(size_t i=0;i<rStrainVector.size();++i)
+////	{
+////		if(rStrainVector[i]!=0.)
+////			std::cout<<" strain["<<i<<"]="<<rStrainVector[i]<<"\n";
+////	}
+//	std::vector<double> rStressVector(0);
+//	GetEngineeringStress(rStrainVector,rStressVector);
+//
+////	for (size_t i=0;i<rStrainVector.size();++i)
+////	{
+////		if(abs(rStrainVector[i])<minDigit)
+////			rStrainVector[i]=0.0;
+////		if(abs(rStressVector[i])<minDigit)
+////			rStressVector[i]=0.0;
+////	}
+//    file << "CELL_DATA "<<mNumVoxel<<"\n";
+//	file << "TENSORS strains double \n";
+//	size_t j=0;
+//	for (size_t i=0;i<mNumVoxel;++i)
 //	{
-//		if(rStrainVector[i]!=0.)
-//			std::cout<<" strain["<<i<<"]="<<rStrainVector[i]<<"\n";
+//		if(mVoxelId[j]==i)
+//		{
+//			file<<rStrainVector[6*j]<<" "<<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+4]<<"\n"
+//			  <<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+1]<<" "<<rStrainVector[6*j+3]<<"\n"
+//			  <<rStrainVector[6*j+4]<<" "<<rStrainVector[6*j+3]<<" "<<rStrainVector[6*j+2]<<"\n";
+//			++j;
+//		}
+//		else
+//			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
 //	}
-	std::vector<double> rStressVector(0);
-	GetEngineeringStress(rStrainVector,rStressVector);
-
-//	for (size_t i=0;i<rStrainVector.size();++i)
+//
+//	file << "TENSORS stress double \n";
+//	j=0;
+//	for (size_t i=0;i<mNumVoxel;++i)
 //	{
-//		if(abs(rStrainVector[i])<minDigit)
-//			rStrainVector[i]=0.0;
-//		if(abs(rStressVector[i])<minDigit)
-//			rStressVector[i]=0.0;
+//		if(mVoxelId[j]==i)
+//		{
+//			file<<rStressVector[6*j]<<" "<<rStressVector[6*j+5]<<" "<<rStressVector[6*j+4]<<"\n"
+//			  <<rStressVector[6*j+5]<<" "<<rStressVector[6*j+1]<<" "<<rStressVector[6*j+3]<<"\n"
+//			  <<rStressVector[6*j+4]<<" "<<rStressVector[6*j+3]<<" "<<rStressVector[6*j+2]<<"\n";
+//			++j;
+//		}
+//		else
+//			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
 //	}
-    file << "CELL_DATA "<<mNumVoxel<<"\n";
-	file << "TENSORS strains double \n";
-	size_t j=0;
-	for (size_t i=0;i<mNumVoxel;++i)
-	{
-		if(mVoxelId[j]==i)
-		{
-			file<<rStrainVector[6*j]<<" "<<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+4]<<"\n"
-			  <<rStrainVector[6*j+5]<<" "<<rStrainVector[6*j+1]<<" "<<rStrainVector[6*j+3]<<"\n"
-			  <<rStrainVector[6*j+4]<<" "<<rStrainVector[6*j+3]<<" "<<rStrainVector[6*j+2]<<"\n";
-			++j;
-		}
-		else
-			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
-	}
-
-	file << "TENSORS stress double \n";
-	j=0;
-	for (size_t i=0;i<mNumVoxel;++i)
-	{
-		if(mVoxelId[j]==i)
-		{
-			file<<rStressVector[6*j]<<" "<<rStressVector[6*j+5]<<" "<<rStressVector[6*j+4]<<"\n"
-			  <<rStressVector[6*j+5]<<" "<<rStressVector[6*j+1]<<" "<<rStressVector[6*j+3]<<"\n"
-			  <<rStressVector[6*j+4]<<" "<<rStressVector[6*j+3]<<" "<<rStressVector[6*j+2]<<"\n";
-			++j;
-		}
-		else
-			file<<"0.0 0.0 0.0 \n0.0 0.0 0.0 \n0.0 0.0 0.0 \n";
-	}
-	file << "POINT_DATA "<<numEdges<<"\n";
-	file << "VECTORS constraints int \n";
-	for (size_t i=0;i<numEdges;++i) // loop over grid points
-	{
-		if(mNodeId[i]<numNodes)
-		{
-			file<<mDofIsConstraint[3*mNodeId[i]]<<" " <<mDofIsConstraint[3*mNodeId[i]+1]<<" "<<mDofIsConstraint[3*mNodeId[i]+2]<<"\n";
-		}
-		else
-			file<<"0 0 0\n";
-	}
-
-	file << "POINT_DATA "<<numEdges<<"\n";
-	file << "SCALARS id int \n";
-    file << "LOOKUP_TABLE default\n";
-	for (size_t i=0;i<numEdges;++i) // loop over grid points
-	{
-		file<<mNodeId[i]<<"\n";
-	}
+//	file << "POINT_DATA "<<numEdges<<"\n";
+//	file << "VECTORS constraints int \n";
+//	for (size_t i=0;i<numEdges;++i) // loop over grid points
+//	{
+//		if(mNodeId[i]<numNodes)
+//		{
+//			file<<mDofIsConstraint[3*mNodeId[i]]<<" " <<mDofIsConstraint[3*mNodeId[i]+1]<<" "<<mDofIsConstraint[3*mNodeId[i]+2]<<"\n";
+//		}
+//		else
+//			file<<"0 0 0\n";
+//	}
+//
+//	file << "POINT_DATA "<<numEdges<<"\n";
+//	file << "SCALARS id int \n";
+//    file << "LOOKUP_TABLE default\n";
+//	for (size_t i=0;i<numEdges;++i) // loop over grid points
+//	{
+//		file<<mNodeId[i]<<"\n";
+//	}
 
 
     file.close();

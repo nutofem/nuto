@@ -4,7 +4,6 @@
 //! @author Andrea Keßler, ISM
 //! @brief ... conjugate gradient method without global matrix matrix-vector product
 
-
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/MisesWielandt.h"
 //#include "nuto/optimize/MultiGrid.h"
@@ -52,18 +51,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //	std::cout<<"pr[numpar]="<<pr[mNumParameters-1]<<"\n";
 	std::vector<double> h(mNumParameters+3);
 	std::vector<double> d(mNumParameters+3);
-
-	if (mVerboseLevel>0)
-	{
-		std::cout<<"CG r ";
-		for(size_t i=0;i<mNumParameters;++i)
-			std::cout<<r[i]<<" ";
-		std::cout<<"\n";
-		std::cout<<"CG v ";
-		for(size_t i=0;i<mNumParameters;++i)
-			std::cout<<v[i]<<" ";
-		std::cout<<"\n";
-	}
 
 #pragma acc data copy(v),copyin(r,pr,h,d)
 
@@ -190,32 +177,32 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		for(size_t i=0;i<mNumParameters;++i)
 			betaNumerator+=r[i]*pr[i];
 
-		if (mVerboseLevel>0)
-		{
-			std::cout<<"Cycle "<<curCycle<<"\n";
-			std::cout<<"CG r ";
-			for(size_t i=0;i<mNumParameters;++i)
-				std::cout<<r[i]<<" ";
-			std::cout<<"\n";
-
-			std::cout<<"CG pr ";
-			for(size_t i=0;i<mNumParameters;++i)
-				std::cout<<pr[i]<<" ";
-			std::cout<<"\n";
-			std::cout<<"CG v ";
-			for(size_t i=0;i<mNumParameters;++i)
-				std::cout<<v[i]<<" ";
-			std::cout<<"\n";
-		}
+//		if (mVerboseLevel>0)
+//		{
+//			std::cout<<"Cycle "<<curCycle<<"\n";
+//			std::cout<<"CG r ";
+//			for(size_t i=0;i<mNumParameters;++i)
+//				std::cout<<r[i]<<" ";
+//			std::cout<<"\n";
+//
+//			std::cout<<"CG pr ";
+//			for(size_t i=0;i<mNumParameters;++i)
+//				std::cout<<pr[i]<<" ";
+//			std::cout<<"\n";
+//			std::cout<<"CG v ";
+//			for(size_t i=0;i<mNumParameters;++i)
+//				std::cout<<v[i]<<" ";
+//			std::cout<<"\n";
+//		}
 
 		beta = betaNumerator/ alphaNumerator;
 		alphaNumerator = betaNumerator;
 
 		if (beta<0)
 		{
-//			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero not done" << std::endl;
-			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero " << std::endl;
-			beta=0;
+			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero not done" << std::endl;
+//			std::cout<< "[ConjugateGradientGrid::Optimize] Set beta ("<< beta <<") to zero " << std::endl;
+//			beta=0;
 		}
 
 		for(size_t i=0;i<mNumParameters;++i)
@@ -298,6 +285,15 @@ int NuTo::ConjugateGradientGrid::Optimize()
     if (mShowTime && mVerboseLevel>0)
     {
     	std::cout<< "[ConjugateGradientGrid::Optimize] Elapsed time (sec)............. " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << std::endl;
+		std::ofstream file;
+		file.open("sumOutput",std::ofstream::out|std::ofstream::app);
+		if(file)
+		{
+			//output : voxels in one direction - dofs -
+			// nbr grids - solMeth - nbr cycles -nbr pre -nbr post - time -its
+			file<< difftime(endOpt,startOpt)/CLOCKS_PER_SEC <<" "<<curIteration<<"\n";
+			file.close();
+		}
     }
 #endif
 	if (mVerboseLevel>0)
@@ -332,14 +328,14 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		}
 		std::cout << std::endl;
 
-		std::cout.precision(precision);
-		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] displacements " ;
-		for (size_t count=0; count<mNumParameters; count++)
-		{
-			std::cout << std::setw(width)<<v[count] << "   " ;
-
-		}
-		std::cout << std::endl;
+//		std::cout.precision(precision);
+//		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] displacements " ;
+//		for (size_t count=0; count<mNumParameters; count++)
+//		{
+//			std::cout << std::setw(width)<<v[count] << "   " ;
+//
+//		}
+//		std::cout << std::endl;
 	}
 	objective=sqrt(betaNumerator);
 	return returnValue;

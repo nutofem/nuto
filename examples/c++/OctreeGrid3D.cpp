@@ -12,6 +12,7 @@
 #include <iostream>
 #include "nuto/base/NuToObject.h"
 #include "nuto/mechanics/structures/grid/OctreeGrid.h"
+#include "nuto/mechanics/structures/grid/MultiGridStructure.h"
 #ifdef ENABLE_OPTIMIZE
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #include "nuto/optimize/MisesWielandt.h"
@@ -89,17 +90,6 @@ int main()
 	rGridLocation[5]=rGridDimension[2]+1;
 	myGrid.SetDisplacementConstraints(direction,rGridLocation,rValue,rDisplVector);
 
-//	//x=max; ux=0
-//	direction=0;
-//	rGridLocation[0]=rGridDimension[0];
-//	rGridLocation[1]=rGridDimension[0]+1;
-//	rGridLocation[2]=0;
-//	rGridLocation[3]=rGridDimension[1]+1;
-//	rGridLocation[4]=0;
-//	rGridLocation[5]=rGridDimension[2]+1;
-//	myGrid.SetDisplacementConstraints(direction,rGridLocation,1,rDisplVector);
-
-
 	//y=0; uy=0
 	direction=1;
 	rGridLocation[0]=0;
@@ -156,32 +146,39 @@ end=clock();
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
 #ifdef ENABLE_OPTIMIZE
-	double condNum=myGrid.ApproximateSystemConditionNumber();
+	enum SolMethod // enum for solution method
+	{
+		MG, 	// multigrid method
+		JCG, 	// jacobi conjugate gradient method
+		MGCG, 	//multigrid preconditioned conjugate gradient method
+	} solMeth=JCG;
 
-	// Convergenc test: lamda_max of M=I-PA <1
-	myGrid.SetMisesWielandt(false); // if not, get a infinite loop, for Hessian
-	NuTo::MisesWielandt myEigenCalculator(numNodes*3);
-	myEigenCalculator.SetVerboseLevel(1);
-	myEigenCalculator.SetAccuracyGradient(1e-6);
-//	myGrid.SetWeightingFactor(1.);
-	myEigenCalculator.SetCallback((&myGrid));
-	myEigenCalculator.SetObjectiveType("MAX_EIGENVALUE_OF_PRECOND_MATRIX");
-	myEigenCalculator.Optimize();
-	double lambda_max=myEigenCalculator.GetObjective();
-	int precision = 10;
-	std::cout.precision(precision);
-//	if(lambda_max>=1)
-//		std::cout<<"Ill-conditioned matrix.";
+	if(solMeth==MG)
+	{
 
-	// start analysis
-	NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
-	myOptimizer.SetVerboseLevel(5);
-	myGrid.SetMisesWielandt(false);
-//	myGrid.SetWeightingFactor(1);
+//		NuTo::MultiGridStructure myMultiGrid;
+//		myMultiGrid.SetVerboseLevel(0);
+//		myMultiGrid.SetStructure(&myGrid);
+//		myMultiGrid.SetUseMultiGridAsPreconditoner(false);
+//		myMultiGrid.SetMaxCycle(numDofs/10);
+//		myMultiGrid.SetNumPreSmoothingSteps(1);
+//		myMultiGrid.SetNumPostSmoothingSteps(1);
+//
+//		myMultiGrid.Initialize();
+//		myMultiGrid.Info();
+	}
+	else if(solMeth==JCG)
+	{
+		// start analysis
+		NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
+		myOptimizer.SetVerboseLevel(5);
+		myGrid.SetMisesWielandt(false);
+	//	myGrid.SetWeightingFactor(1);
 
-	myOptimizer.SetCallback( (&myGrid));
-	myOptimizer.Info();
-	myOptimizer.Optimize();
+		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.Info();
+		myOptimizer.Optimize();
+	}
 
 #else //ENABLE_OPTIMIZE
 	std::cout<<"[OctreeGrid3D] Solution is not possible. Module optimize is not loaded.\n";

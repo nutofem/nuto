@@ -246,6 +246,9 @@ end=clock();
 	std::cout<<"-----------------------------------------------------------------------------------\n";
 
 #ifdef ENABLE_OPTIMIZE
+	double accuracy=1e-6;
+	int precision = 6;
+
 	enum SolMethod // enum for solution method
 	{
 		JCG, 	// jacobi preconditioned conjugate gradient
@@ -254,7 +257,22 @@ end=clock();
 		J, 		// jacobi method
 		EJ, 	//error equation - jacobi method
 		M,		//mises method for max. eigenvalue
-	} solMeth=EJCG;
+	} solMeth=JCG;
+
+	std::ofstream file;
+	file.open("sumOutput",std::ofstream::out|std::ofstream::app);
+	if(file)
+	{
+		//output : voxels in one direction - dofs -
+		// nbr grids - solMeth - nbr cycles -nbr pre -nbr post - time -its
+		file<<rGridDimension[0]-2<<" "<<numDofs<<" 1 ";
+		if(solMeth==JCG)
+			file<<" JCG";
+		else
+			file<<"  nd";
+		file<<" - - - ";
+		file.close();
+	}
 
 	// start analysis
 	if(solMeth==JCG)
@@ -264,6 +282,7 @@ end=clock();
 		myOptimizer.SetVerboseLevel(1);
 		myGrid.SetMisesWielandt(false);
 		myOptimizer.SetCallback( (&myGrid));
+		myOptimizer.SetAccuracyGradient(accuracy);
 		myOptimizer.Info();
 
 		myOptimizer.Optimize();
@@ -397,10 +416,9 @@ end=clock();
 
 	myGrid.ExportVTKStructuredDataFile("./outputFile.vtk");
 
-	std::ofstream file;
-//	int precision = 15;
-//	std::cout.precision(precision);
-    file.open("displacements.txt");
+//	std::ofstream file;
+	file.precision(precision);
+	file.open("displacements.txt");
 	for(size_t i=0;i<numNodes;++i)
 	{
 			file<<rDisplVector[3*i]<<"\n";

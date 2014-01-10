@@ -15,6 +15,7 @@
 #include "nuto/optimize/Jacobi.h"
 #endif //ENABLE_OPTIMIZE
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
+#include "nuto/mechanics/structures/grid/OctreeGrid.h"
 
 class StructureGrid;
 namespace NuTo
@@ -135,7 +136,9 @@ protected:
 
 private:
     StructureGrid* mpStructureHandler; // for unregular structures an extra pointer has to be added
+    OctreeGrid* mpOctreeHandler; // for unregular structures an extra pointer has to be added
     boost::ptr_vector<StructureGrid> mpGridPtr; // for unregular structures an extra pointer has to be added
+    boost::ptr_vector<OctreeGrid> mpOctreePtr; // for unregular structures an extra pointer has to be added
     //! @brief number of grids
     int mNumGrids;
     //! @brief current grid dimensions (elements) in each direction
