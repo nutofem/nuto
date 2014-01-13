@@ -8,6 +8,7 @@
 #include "nuto/mechanics/elements/BoundaryGradientDamage1D.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D10N.h"
+#include "nuto/mechanics/elements/Plane2D15N.h"
 #include "nuto/mechanics/elements/Plane2D3N.h"
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
@@ -513,6 +514,10 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
 	{
 		elementType = NuTo::Element::PLANE2D10N;
 	}
+	else if (upperCaseElementType=="PLANE2D15N")
+	{
+		elementType = NuTo::Element::PLANE2D15N;
+	}
 	else if (upperCaseElementType=="PLANE2D3N")
 	{
 		elementType = NuTo::Element::PLANE2D3N;
@@ -611,6 +616,13 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
 				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D10N is a 2D element.");
 			}
 			ptrElement = new NuTo::Plane2D10N(this, rNodeVector, rElementDataType, rIpDataType);
+			break;
+		case NuTo::Element::PLANE2D15N:
+			if (this->mDimension != 2)
+			{
+				throw MechanicsException("[NuTo::Structure::ElementCreate] PLANE2D15N is a 2D element.");
+			}
+			ptrElement = new NuTo::Plane2D15N(this, rNodeVector, rElementDataType, rIpDataType);
 			break;
 		case NuTo::Element::PLANE2D3N:
 			if (this->mDimension != 2)
@@ -1203,7 +1215,12 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 
 	Element::eElementType elementType;
 	std::vector< std::array<double,2> > naturalNodeCoordinates;
-	if (upperCaseElementType=="PLANE2D10N")
+	if (upperCaseElementType=="PLANE2D15N")
+	{
+		elementType = NuTo::Element::PLANE2D15N;
+		NuTo::Plane2D15N::CalculateNaturalNodeCoordinates(naturalNodeCoordinates);
+	}
+	else if (upperCaseElementType=="PLANE2D10N")
 	{
 		elementType = NuTo::Element::PLANE2D10N;
 		NuTo::Plane2D10N::CalculateNaturalNodeCoordinates(naturalNodeCoordinates);
@@ -1215,7 +1232,7 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 	}
 	else
 	{
-		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] only conversion from plane3N to 6N and 10N implemented.");
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] only conversion from plane3N to 6N, 10N and 15N implemented.");
 	}
 
 	//calculate bounding box for all existing nodes of the elements
@@ -1301,7 +1318,7 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 	        	throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D3N] the elements to be converted are not of the type PLANE2D3N.");
 	        }
 			std::vector<NuTo::NodeBase* > newNodeVector(naturalNodeCoordinates.size());
-			for (int curNode=0; curNode<naturalNodeCoordinates.size(); curNode++)
+			for (unsigned int curNode=0; curNode<naturalNodeCoordinates.size(); curNode++)
 			{
 				newNodeVector[curNode] = 0;
 
@@ -1341,8 +1358,17 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
 
 					//check if node already exists
 					//calculate corresponding box
-					int theBoxX = ((int)((newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]-1);
-					int theBoxY = ((int)((newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]-1);
+					int theBoxX,theBoxY;
+
+					if (numBoxes1D[0]==1)
+						theBoxX = 0;
+					else
+						theBoxX = ((int)((newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]-1);
+					if (numBoxes1D[1]==1)
+						theBoxY = 0;
+					else
+						theBoxY = ((int)((newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]-1);
+
 					int theBox = theBoxX + theBoxY*numBoxes1D[0];
 					//std::cout << "theBox "<< theBox << " x "<< theBoxX << " y " << theBoxY << std::endl;
 

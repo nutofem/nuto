@@ -20,6 +20,7 @@ enum eIntegrationType
     IntegrationType1D2NLobatto4Ip,
     IntegrationType1D2NLobatto5Ip,
     IntegrationType2D3NGauss13Ip,
+    IntegrationType2D3NGauss16Ip,
     IntegrationType2D3NGauss1Ip,
     IntegrationType2D3NLattice3Ip,
     IntegrationType2D3NGauss3Ip,

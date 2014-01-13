@@ -81,7 +81,7 @@ void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsGeometryNatural(const dou
     rDerivativeShapeFunctions[8] = 4.*s;
     rDerivativeShapeFunctions[9] = 4.*r;
 
-    rDerivativeShapeFunctions[10] = -4.*s;;
+    rDerivativeShapeFunctions[10] = -4.*s;
     rDerivativeShapeFunctions[11] = -8.*s-4.*r+4.;
 
 }

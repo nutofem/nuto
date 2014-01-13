@@ -23,7 +23,7 @@ class RungeKuttaBase : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    RungeKuttaBase(StructureBase& rStructure);
+    RungeKuttaBase(StructureBase* rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -36,9 +36,8 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
-    //! @param rStructure ... structure
     //! @param rTimeDelta ... length of the simulation
-    NuTo::Error::eError Solve(StructureBase& rStructure, double rTimeDelta);
+    NuTo::Error::eError Solve(double rTimeDelta);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -71,6 +70,8 @@ public:
     virtual bool HasTimeChanged(int rStage)const=0;
 
 protected:
+    //empty private construct required for serialization
+    RungeKuttaBase(){};
 	//time step for the time integration, be careful not to make it smaller than the critical time step
     double mTimeStep;
 };

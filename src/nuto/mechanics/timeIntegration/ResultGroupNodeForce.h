@@ -1,7 +1,7 @@
 // $Id: $
 
-#ifndef ResultNodeDof_H
-#define ResultNodeDof_H
+#ifndef ResultGroupNodeForce_H
+#define ResultGroupNodeForce_H
 
 #include <ctime>
 #include <array>
@@ -11,9 +11,8 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/timeIntegration/ResultBase.h"
+#include "nuto/mechanics/timeIntegration/ResultGroupNodeDof.h"
 #include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
@@ -23,26 +22,31 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
-class NodeBase;
-class ResultNodeDof : public ResultBase
+class ResultGroupNodeForce : public ResultGroupNodeDof
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-
     //! @brief constructor
-    ResultNodeDof(const std::string& rIdent, int rNodeId);
+    ResultGroupNodeForce(const std::string& rIdent, int rGroupNodeId);
 
-    //! @brief calculate the relevant nodal dofs and add to the internal routine
-    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
+    //! @brief number of dofs (e.g. number of displacement components of a node
+    int GetNumData(const StructureBase& rStructure)const;
 
-    //! @brief calculate the relevant nodal dofs
-    virtual void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const=0;
-
-    ResultNodeDof* AsResultNodeDof()
+    NuTo::TimeIntegration::eResultType GetResultType()const
     {
-    	return this;
+    	return NuTo::TimeIntegration::GROUP_NODE_FORCE;
+    }
+
+    void CalculateValues(const StructureBase& rStructure,
+    		const FullVector<double,Eigen::Dynamic>& rResidual_j,
+    		const FullVector<double,Eigen::Dynamic>& rResidual_k,
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+
+    std::string GetTypeId() const
+    {
+    	return std::string("ResultGroupNodeForce");
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -54,10 +58,12 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info()const
+    {
+
+    }
 
 protected:
-    int mNodeId;
 };
 }
 
@@ -65,7 +71,7 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
 #include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultNodeDof)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultGroupNodeForce)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // ResultNodeDof_H
+#endif // ResultGroupNodeForce_H

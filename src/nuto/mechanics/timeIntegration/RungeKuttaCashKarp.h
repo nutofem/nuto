@@ -23,7 +23,7 @@ class RungeKuttaCashKarp : public RungeKuttaBase
 public:
 
     //! @brief constructor
-    RungeKuttaCashKarp(StructureBase& rStructure);
+    RungeKuttaCashKarp(StructureBase* rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -73,6 +73,8 @@ public:
     bool HasTimeChanged(int rStage)const;
 
 protected:
+    //empty private construct required for serialization
+    RungeKuttaCashKarp(){};
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -24,7 +24,7 @@ class NystroemBase : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    NystroemBase(StructureBase& rStructure);
+    NystroemBase(StructureBase* rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -37,9 +37,8 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
-    //! @param rStructure ... structure
     //! @param rTimeDelta ... length of the simulation
-    NuTo::Error::eError Solve(StructureBase& rStructure, double rTimeDelta);
+    NuTo::Error::eError Solve(double rTimeDelta);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -77,7 +76,9 @@ public:
     virtual bool HasTimeChanged(int rStage)const=0;
 
 protected:
-	//time step for the time integration, be careful not to make it smaller than the critical time step
+    //empty private construct required for serialization
+    NystroemBase(){};
+    //time step for the time integration, be careful not to make it smaller than the critical time step
     double mTimeStep;
 };
 } //namespace NuTo

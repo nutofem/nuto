@@ -1,7 +1,7 @@
 // $Id: $
 
-#ifndef ResultNodeDof_H
-#define ResultNodeDof_H
+#ifndef ResultGroupNodeDof_H
+#define ResultGroupNodeDof_H
 
 #include <ctime>
 #include <array>
@@ -13,7 +13,6 @@
 
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
 #include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
@@ -23,8 +22,12 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
+template <class T>
+class Group;
+
 class NodeBase;
-class ResultNodeDof : public ResultBase
+
+class ResultGroupNodeDof : public ResultBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -32,18 +35,22 @@ class ResultNodeDof : public ResultBase
 public:
 
     //! @brief constructor
-    ResultNodeDof(const std::string& rIdent, int rNodeId);
+    ResultGroupNodeDof(const std::string& rIdent, int rNodeGroupId);
 
-    //! @brief calculate the relevant nodal dofs and add to the internal routine
-    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
-
-    //! @brief calculate the relevant nodal dofs
-    virtual void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const=0;
-
-    ResultNodeDof* AsResultNodeDof()
+    NuTo::ResultGroupNodeDof* AsResultGroupNodeDof()override
     {
     	return this;
     }
+
+    virtual void CalculateValues(const StructureBase& rStructure,
+    		   const FullVector<double,Eigen::Dynamic>& rResidual_j, const FullVector<double,Eigen::Dynamic>& rResidual_k,
+    		   FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const=0;
+
+    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot,
+    		const FullVector<double,Eigen::Dynamic>& rResidual_j,
+    		const FullVector<double,Eigen::Dynamic>& rResidual_k);
+
+    const NuTo::Group<NodeBase>* GetGroupNodePtr(const StructureBase& rStructure)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -57,7 +64,7 @@ public:
     void Info()const;
 
 protected:
-    int mNodeId;
+    int mGroupNodeId;
 };
 }
 
@@ -65,7 +72,7 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
 #include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultNodeDof)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultGroupNodeDof)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // ResultNodeDof_H
+#endif // ResultGroupNodeDof_H

@@ -724,6 +724,8 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
         return true;
     case NuTo::Element::PLANE2D10N:
         return true;
+    case NuTo::Element::PLANE2D15N:
+        return true;
     case NuTo::Element::PLANE2D3N:
         return true;
     case NuTo::Element::PLANE2D4N:

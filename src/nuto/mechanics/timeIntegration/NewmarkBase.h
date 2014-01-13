@@ -23,7 +23,7 @@ class NewmarkBase : public TimeIntegrationBase
 public:
 
     //! @brief constructor
-    NewmarkBase(StructureBase& rStructure);
+    NewmarkBase(StructureBase* rStructure);
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
@@ -98,6 +98,8 @@ public:
 
 
 protected:
+    //empty private construct required for serialization
+    NewmarkBase(){};
     //damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
 	double mMuDampingMass;
     //NewtonRaphson parameters

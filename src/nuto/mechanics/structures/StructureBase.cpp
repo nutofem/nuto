@@ -49,6 +49,7 @@ extern "C" {
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
@@ -113,6 +114,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType1D2NLobatto5Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss13Ip]=
         NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss16Ip]=
+        NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss1Ip]=
         NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss3Ip]=
@@ -153,7 +156,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
 
 }
 
-int NuTo::StructureBase::GetDimension()
+int NuTo::StructureBase::GetDimension()const
 {
     return mDimension;
 }

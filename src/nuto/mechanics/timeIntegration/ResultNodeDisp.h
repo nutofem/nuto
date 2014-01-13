@@ -29,13 +29,18 @@ class ResultNodeDisp : public ResultNodeDof
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    ResultNodeDisp(const std::string& rIdent, const NodeBase* rNodePtr);
+    ResultNodeDisp(const std::string& rIdent, int rNodeId);
 
     //! @brief calculate the relevant nodal dofs
-    void CalculateValues(NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)override;
+    void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const override;
 
-    //! @brief number of dofs (e.g. number of displacement components of a node
-    int GetNumDofs()const;
+    //! @brief number of data points per time step (e.g. number of displacement components of a node
+    int GetNumData(const StructureBase& rStructure)const;
+
+    NuTo::TimeIntegration::eResultType GetResultType()const
+    {
+    	return NuTo::TimeIntegration::NODE_DISPLACEMENT;
+    }
 
     std::string GetTypeId() const
     {

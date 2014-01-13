@@ -1,4 +1,4 @@
-// $Id: IntegrationType2D3NGauss13Ip.cpp 309 2010-09-22 22:21:24Z unger3 $
+// $Id: IntegrationType2D3NGauss16Ip.cpp 309 2010-09-22 22:21:24Z unger3 $
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -9,21 +9,21 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include <assert.h>
 
 
 //! @brief constructor
-NuTo::IntegrationType2D3NGauss13Ip::IntegrationType2D3NGauss13Ip()
+NuTo::IntegrationType2D3NGauss16Ip::IntegrationType2D3NGauss16Ip()
 {
 }
 
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-void NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+void NuTo::IntegrationType2D3NGauss16Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
 {
-    assert(rIpNum>=0 && rIpNum<13);
+    assert(rIpNum>=0 && rIpNum<16);
     switch (rIpNum)
     {
     case  0  :
@@ -31,134 +31,155 @@ void NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates2D(i
         rCoordinates[1]=  0.333333333333 ;
         break;
     case  1  :
-        rCoordinates[0]=  0.0523383720927 ;
-        rCoordinates[1]=  0.473830813954 ;
+        rCoordinates[0]=  0.0814148234146 ;
+        rCoordinates[1]=  0.459292588293 ;
         break;
     case  2  :
-        rCoordinates[0]=  0.473830813954 ;
-        rCoordinates[1]=  0.473830813954 ;
+        rCoordinates[0]=  0.459292588293 ;
+        rCoordinates[1]=  0.459292588293 ;
         break;
     case  3  :
-        rCoordinates[0]=  0.473830813954 ;
-        rCoordinates[1]=  0.0523383720927 ;
+        rCoordinates[0]=  0.459292588293 ;
+        rCoordinates[1]=  0.0814148234146 ;
         break;
     case  4  :
-        rCoordinates[0]=  0.655764660738 ;
-        rCoordinates[1]=  0.172117669631 ;
+        rCoordinates[0]=  0.898905543366 ;
+        rCoordinates[1]=  0.050547228317 ;
         break;
     case  5  :
-        rCoordinates[0]=  0.172117669631 ;
-        rCoordinates[1]=  0.172117669631 ;
+        rCoordinates[0]=  0.050547228317 ;
+        rCoordinates[1]=  0.050547228317 ;
         break;
     case  6  :
-        rCoordinates[0]=  0.172117669631 ;
-        rCoordinates[1]=  0.655764660738 ;
+        rCoordinates[0]=  0.050547228317 ;
+        rCoordinates[1]=  0.898905543366 ;
         break;
     case  7  :
-        rCoordinates[0]=  0.0 ;
-        rCoordinates[1]=  0.865307354083 ;
+        rCoordinates[0]=  0.658861384496 ;
+        rCoordinates[1]=  0.170569307752 ;
         break;
     case  8  :
-        rCoordinates[0]=  0.0 ;
-        rCoordinates[1]=  0.134692645917 ;
+        rCoordinates[0]=  0.170569307752 ;
+        rCoordinates[1]=  0.170569307752 ;
         break;
     case  9  :
-        rCoordinates[0]=  0.865307354083 ;
-        rCoordinates[1]=  0.0 ;
+        rCoordinates[0]=  0.170569307752 ;
+        rCoordinates[1]=  0.658861384496 ;
         break;
     case  10  :
-        rCoordinates[0]=  0.865307354083 ;
-        rCoordinates[1]=  0.134692645917 ;
+        rCoordinates[0]=  0.00839477740996 ;
+        rCoordinates[1]=  0.728492392955 ;
         break;
     case  11  :
-        rCoordinates[0]=  0.134692645917 ;
-        rCoordinates[1]=  0.0 ;
+        rCoordinates[0]=  0.00839477740996 ;
+        rCoordinates[1]=  0.263112829635 ;
         break;
     case  12  :
-        rCoordinates[0]=  0.134692645917 ;
-        rCoordinates[1]=  0.865307354083 ;
+        rCoordinates[0]=  0.728492392955 ;
+        rCoordinates[1]=  0.00839477740996 ;
+        break;
+    case  13  :
+        rCoordinates[0]=  0.728492392955 ;
+        rCoordinates[1]=  0.263112829635 ;
+        break;
+    case  14  :
+        rCoordinates[0]=  0.263112829635 ;
+        rCoordinates[1]=  0.00839477740996 ;
+        break;
+    case  15  :
+        rCoordinates[0]=  0.263112829635 ;
+        rCoordinates[1]=  0.728492392955 ;
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType2D3NGauss16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D3NGauss13Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D3NGauss16Ip::GetNumIntegrationPoints()const
 {
-    return 13;
+    return 16;
 }
 
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D3NGauss13Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D3NGauss16Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    assert(rIpNum>=0 && rIpNum<13);
+    assert(rIpNum>=0 && rIpNum<16);
     switch (rIpNum)
     {
     case  0  :
-        return  0.0763544833942 ;
+        return  0.0721578038389 ;
         break;
     case  1  :
-        return  0.0490679340394 ;
+        return  0.0475458171336 ;
         break;
     case  2  :
-        return  0.0490679340394 ;
+        return  0.0475458171336 ;
         break;
     case  3  :
-        return  0.0490679340394 ;
+        return  0.0475458171336 ;
         break;
     case  4  :
-        return  0.0647842146403 ;
+        return  0.0162292488116 ;
         break;
     case  5  :
-        return  0.0647842146403 ;
+        return  0.0162292488116 ;
         break;
     case  6  :
-        return  0.0647842146403 ;
+        return  0.0162292488116 ;
         break;
     case  7  :
-        return  0.0136815117611 ;
+        return  0.0516086852674 ;
         break;
     case  8  :
-        return  0.0136815117611 ;
+        return  0.0516086852674 ;
         break;
     case  9  :
-        return  0.0136815117611 ;
+        return  0.0516086852674 ;
         break;
     case  10  :
-        return  0.0136815117611 ;
+        return  0.0136151570872 ;
         break;
     case  11  :
-        return  0.0136815117611 ;
+        return  0.0136151570872 ;
         break;
     case  12  :
-        return  0.0136815117611 ;
+        return  0.0136151570872 ;
+        break;
+    case  13  :
+        return  0.0136151570872 ;
+        break;
+    case  14  :
+        return  0.0136151570872 ;
+        break;
+    case  15  :
+        return  0.0136151570872 ;
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType2D3NGauss16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
 //! @brief returns a string with the identifier of the integration type
 //! @return identifier
-std::string NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifier()const
+std::string NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
 //! @brief returns a string with the identifier of the integration type
 //! @return identifier
-std::string NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic()
+std::string NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifierStatic()
 {
-    return std::string("2D3NGAUSS13IP");
+    return std::string("2D3NGAUSS16IP");
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D3NGauss13Ip::GetVisualizationCells(
+void NuTo::IntegrationType2D3NGauss16Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
@@ -212,7 +233,7 @@ void NuTo::IntegrationType2D3NGauss13Ip::GetVisualizationCells(
     VisualizationCellsIncidence.push_back(2);
     VisualizationCellsIncidence.push_back(5);
     VisualizationCellsIncidence.push_back(4);
-    VisualizationCellsIP.push_back(4);
+    VisualizationCellsIP.push_back(6);
 
     // cell 2
     VisualizationCellType.push_back(NuTo::CellBase::QUAD);
@@ -220,28 +241,28 @@ void NuTo::IntegrationType2D3NGauss13Ip::GetVisualizationCells(
     VisualizationCellsIncidence.push_back(5);
     VisualizationCellsIncidence.push_back(6);
     VisualizationCellsIncidence.push_back(3);
-    VisualizationCellsIP.push_back(6);
+    VisualizationCellsIP.push_back(4);
 }
 #endif // ENABLE_VISUALIZE
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
-template void NuTo::IntegrationType2D3NGauss13Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss13Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss13Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss13Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss13Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss13Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D3NGauss16Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D3NGauss16Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D3NGauss16Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D3NGauss16Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D3NGauss16Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::IntegrationType2D3NGauss16Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::IntegrationType2D3NGauss13Ip::serialize(Archive & ar, const unsigned int version)
+void NuTo::IntegrationType2D3NGauss16Ip::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType2D3NGauss13Ip" << std::endl;
+    std::cout << "start serialize IntegrationType2D3NGauss16Ip" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType2D3NGauss13Ip" << std::endl;
+    std::cout << "finish serialize IntegrationType2D3NGauss16Ip" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType2D3NGauss13Ip)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType2D3NGauss16Ip)
 #endif // ENABLE_SERIALIZATION

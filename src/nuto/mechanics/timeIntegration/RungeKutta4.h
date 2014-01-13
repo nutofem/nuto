@@ -23,7 +23,7 @@ class RungeKutta4 : public RungeKuttaBase
 public:
 
     //! @brief constructor
-    RungeKutta4(StructureBase& rStructure);
+    RungeKutta4(StructureBase* rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -73,6 +73,8 @@ public:
     bool HasTimeChanged(int rStage)const;
 
 protected:
+    //empty private construct required for serialization
+    RungeKutta4(){};
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

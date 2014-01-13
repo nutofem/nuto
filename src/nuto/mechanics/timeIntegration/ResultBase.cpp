@@ -4,14 +4,13 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <boost/filesystem.hpp>
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
-
-
+#include "nuto/mechanics/structures/StructureBase.h"
 //! @brief constructor
-NuTo::ResultBase::ResultBase(const std::string& rIdent) : NuToObject()
+NuTo::ResultBase::ResultBase(const std::string& rIdent)
 {
 	mIdent = rIdent;
-	mCalculated = false;
 }
 
 //! @brief deconstructor
@@ -29,12 +28,21 @@ std::string NuTo::ResultBase::GetIdent()const
 	return mIdent;
 }
 
-bool NuTo::ResultBase::IsCalculated() const
+void NuTo::ResultBase::WriteToFile(const std::string& rResultDir, int rTimeStepPlot)const
 {
-	return mCalculated;
+	boost::filesystem::path resultFileName(rResultDir);
+	resultFileName /= mIdent+".dat";
+	mData.GetBlock(0,0,rTimeStepPlot+1,mData.GetNumColumns()).WriteToFile(resultFileName.string(), "  ");
 }
 
-void NuTo::ResultBase::SetCalculated(bool rCalculated)
+void NuTo::ResultBase::Resize(const StructureBase& rStructure, int rNumTimeSteps, bool rInitValues)
 {
-	mCalculated = rCalculated;
+	if (rInitValues==true)
+	{
+		mData.Resize(rNumTimeSteps,this->GetNumData(rStructure));
+	}
+	else
+	{
+		mData.ConservativeResize(rNumTimeSteps,this->GetNumData(rStructure));
+	}
 }

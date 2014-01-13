@@ -27,11 +27,12 @@
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
 #include "nuto/mechanics/timeIntegration/ResultTime.h"
 
 
-NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase& rStructure) : NuTo::NuToObject::NuToObject(), mStructure(rStructure)
+NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo::NuToObject::NuToObject(), mStructure(rStructure)
 {
 	mTime = 0.;
 	mLoadStep = 1;
@@ -45,7 +46,6 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase& rStructure) : NuTo
     mAutomaticTimeStepping = false;
  	mTimeDependentConstraint = -1;
  	mTimeDependentLoadCase = -1;
- 	numUsedRowsPlotMatrixAllLoadSteps = 0;
  	ResetForNextLoad();
 }
 
@@ -193,7 +193,7 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 //! @param rNodeId id of the node
 //! @param rResultId string identifying the result, this is used for the output file
 //! @return id of the result, so that it could be modified afterwards
-int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(int rNodeId, const std::string& rResultStr)
+int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId )
 {
 	//find unused integer id
 	int resultNumber(mResultMap.size());
@@ -203,9 +203,8 @@ int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(int rNodeId, const std
 		resultNumber++;
 		it = mResultMap.find(resultNumber);
 	}
-	NodeBase* nodePtr(mStructure.NodeGetNodePtr(rNodeId));
 
-	mResultMap.insert(resultNumber, new ResultNodeDisp(rResultStr,nodePtr));
+	mResultMap.insert(resultNumber, new ResultNodeDisp(rResultStr,rNodeId));
 
 	return resultNumber;
 }
@@ -229,10 +228,33 @@ int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
 	return resultNumber;
 }
 
-//! @brief calculate the external force as a function of time delta
-//! @ param rStructure ... structure
-//! @ param rOutOfBalanceFoce_k... out of balance force (or equivalent for other physics) for constraint dofs (not the active dofs)
-void NuTo::TimeIntegrationBase::PostProcess()
+//! @brief monitor the time
+//! @param rResultId string identifying the result, this is used for the output file
+//! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be calculated
+//! @return id of the result, so that it could be modified afterwards
+int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResultStr,int rGroupNodeId)
+{
+	//find unused integer id
+	int resultNumber(mResultMap.size());
+	boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+	while (it!=mResultMap.end())
+	{
+		resultNumber++;
+		it = mResultMap.find(resultNumber);
+	}
+
+	std::cout << "check if group exists " << std::endl;
+
+	mResultMap.insert(resultNumber, new ResultGroupNodeForce(rResultStr, rGroupNodeId));
+
+	return resultNumber;
+}
+
+//! @brief postprocess (nodal dofs etc. and visualize a vtk file)
+//! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
+//! @param rOutOfBalance_k ... out of balance values of the dependent dofs
+void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dynamic>& rOutOfBalance_j,
+		                                    const FullVector<double, Eigen::Dynamic>& rOutOfBalance_k)
 {
 	if (mResultDir.length()==0)
 	{
@@ -243,29 +265,31 @@ void NuTo::TimeIntegrationBase::PostProcess()
         //perform Postprocessing
         for (auto itResult=mResultMap.begin(); itResult!=mResultMap.end(); itResult++)
         {
-        	//if the output has already been calculated in the method for the specific integration type, no need to to do it again
-        	if (itResult->second->IsCalculated()==false)
-        	{
-				switch (itResult->second->GetResultType())
-				{
-				case TimeIntegration::TIME:
-				{
-					ResultTime* resultPtr(itResult->second->AsResultTime());
-					resultPtr->CalculateAndAddValues(mTimeStepResult,mTime);
-					break;
-				}
-				case TimeIntegration::NODE_DOF:
-				{
-					ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
-					resultPtr->CalculateAndAddValues(mTimeStepResult);
-					break;
-				}
-				default:
-					throw MechanicsException("[NuTo::NewmarkDirect::Solve] Unknown component in postprocessing.");
-				}
-        	}
-        	//reset all values to zero for the next postprocessing round
-    		itResult->second->SetCalculated(false);
+			switch (itResult->second->GetResultType())
+			{
+			case TimeIntegration::TIME:
+			{
+				ResultTime* resultPtr(itResult->second->AsResultTime());
+				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult,mTime);
+				break;
+			}
+			case TimeIntegration::NODE_DISPLACEMENT:
+			{
+				ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
+				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
+				break;
+			}
+			case TimeIntegration::GROUP_NODE_FORCE:
+			{
+				ResultGroupNodeDof* resultPtr(
+						itResult->second->AsResultGroupNodeDof());
+				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance_j,rOutOfBalance_k);
+				break;
+
+			}
+			default:
+				throw MechanicsException("[NuTo::NewmarkDirect::Solve] Unknown component in postprocessing.");
+			}
         }
 
 		if (mTime-mLastTimePlot>=mMinTimeStepPlot)
@@ -283,14 +307,14 @@ void NuTo::TimeIntegrationBase::PostProcess()
 
 			boost::filesystem::path resultFile(mResultDir);
 			resultFile /= std::string("Nodes")+ssTimeStepVTK.str()+std::string(".vtu");
-			mStructure.ExportVtkDataFileNodes(resultFile.string(),true);
+			mStructure->ExportVtkDataFileNodes(resultFile.string(),true);
 
 			if (mPlotElementGroups.GetNumRows()==0)
 			{
 				//plot all elements
 				resultFile = mResultDir;
 				resultFile /= std::string("Elements")+ssTimeStepVTK.str()+std::string(".vtu");
-				mStructure.ExportVtkDataFileElements(resultFile.string(),true);
+				mStructure->ExportVtkDataFileElements(resultFile.string(),true);
 
 				//write an additional pvd file
 				resultFile = mResultDir;
@@ -340,7 +364,7 @@ void NuTo::TimeIntegrationBase::PostProcess()
 					//plot all elements
 					resultFile = mResultDir;
 					resultFile /= std::string("Group") + ssGroup.str() + std::string("_Elements")+ssTimeStepVTK.str()+std::string(".vtu");
-					mStructure.ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
+					mStructure->ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
 
 					//write an additional pvd file
 					resultFile = mResultDir;
@@ -418,9 +442,6 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mLoadStep)
        & BOOST_SERIALIZATION_NVP(mMinTimeStepPlot)
        & BOOST_SERIALIZATION_NVP(mLastTimePlot)
-       & BOOST_SERIALIZATION_NVP(mPlotMatrixAllLoadSteps)
-       & BOOST_SERIALIZATION_NVP(numUsedRowsPlotMatrixAllLoadSteps)
-       & BOOST_SERIALIZATION_NVP(mPlotMatrixSelectedLoadSteps)
        & BOOST_SERIALIZATION_NVP(mPlotElementGroups)
        & BOOST_SERIALIZATION_NVP(mResultDir)
        & BOOST_SERIALIZATION_NVP(mAutomaticTimeStepping);
@@ -465,34 +486,6 @@ void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool 
 		}
 
     }
-}
-
-//! @brief sets the minimum time step for the time integration procedure
-void NuTo::TimeIntegrationBase::SetGroupNodesReactionForces(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecGroupNodesReactionForces)
-{
-	if (rVecGroupNodesReactionForces.GetNumColumns()!=1)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetGroupNodesReactionForces] vector (must have a single column).");
-	if (rVecGroupNodesReactionForces.GetNumRows()<1)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetGroupNodesReactionForces] vector must have at least a single row.");
-	mVecGroupNodesReactionForces = rVecGroupNodesReactionForces;
-}
-
-//! @brief sets the nodes, for which displacements are to be monitored
-void NuTo::TimeIntegrationBase::SetOutputDispNodes(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecOutputDispNodesInt)
-{
-	if (rVecOutputDispNodesInt.GetNumColumns()!=1)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetOutputDispNodes] vector (must have a single column).");
-	if (rVecOutputDispNodesInt.GetNumRows()<1)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetOutputDispNodes] vector must have at least a single row.");
-	mVecOutputDispNodesInt = rVecOutputDispNodesInt;
-}
-
-//! @brief sets the nodes, for which displacements are to be monitored
-void NuTo::TimeIntegrationBase::CalculateOutputDispNodesPtr(StructureBase& rStructure)
-{
-	mVecOutputDispNodesPtr.resize(mVecOutputDispNodesInt.GetNumRows());
-	for (int count=0; count<mVecOutputDispNodesInt.GetNumRows(); count++)
-		mVecOutputDispNodesPtr[count] = rStructure.NodeGetNodePtr(mVecOutputDispNodesInt(count,0));
 }
 
 //! @brief sets the minimum time step for the time integration procedure

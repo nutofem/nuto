@@ -26,7 +26,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::RungeKuttaCashKarp::RungeKuttaCashKarp (StructureBase& rStructure)  : RungeKuttaBase (rStructure)
+NuTo::RungeKuttaCashKarp::RungeKuttaCashKarp (StructureBase* rStructure)  : RungeKuttaBase (rStructure)
 {
 }
 

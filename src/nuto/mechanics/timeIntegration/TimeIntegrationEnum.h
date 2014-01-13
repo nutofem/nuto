@@ -16,8 +16,8 @@ enum eConvergenceState
 enum eResultType
 {
 	TIME=0,                         //!< time
-	NODE_DOF,                       //!< nodal dof (diplacement, temperature etc..)
-	REACTION_DOF_GROUP              //!< sum of reaction of nodal group (reaction force, heat flow, ..
+	NODE_DISPLACEMENT,              //!< nodal diplacement
+	GROUP_NODE_FORCE
 };
 
 }

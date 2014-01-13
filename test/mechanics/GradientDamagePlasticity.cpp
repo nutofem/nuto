@@ -785,7 +785,7 @@ try
         //calculate maximum independent sets
     	myStructure.CalculateMaximumIndependentSets();
 
-    	NuTo::NewmarkDirect myIntegrationScheme;
+    	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
     	//myIntegrationScheme.SetDampingCoefficientMass(0.05);
     	myIntegrationScheme.SetDynamic(false);
@@ -810,10 +810,9 @@ try
    	    //myStructure.SetNumProcessors(8);
 
    	    //set output to be calculated at the left and right nodes
-   	    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> groupNodesReactionForces(2,1);
-   	    groupNodesReactionForces(0,0) = grpNodes_Left;
-   	    groupNodesReactionForces(1,0) = grpNodes_Right;
-   	    myIntegrationScheme.SetGroupNodesReactionForces(groupNodesReactionForces);
+   		myIntegrationScheme.AddResultTime("Time");
+   		myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Left",grpNodes_Left);
+   		myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Right",grpNodes_Right);
 
    	    //set result directory
    	    bool deleteDirectory(false);
@@ -821,7 +820,7 @@ try
    	    myIntegrationScheme.SetResultDirectory(resultDir,deleteDirectory);
 
    	    //solve (perform Newton raphson iteration
-   	    myIntegrationScheme.Solve(myStructure, simulationTime);
+   	    myIntegrationScheme.Solve( simulationTime);
         std::cout << "end of calculation " << std::endl;
 
         //extract the coordinates and damage values of all the nodes

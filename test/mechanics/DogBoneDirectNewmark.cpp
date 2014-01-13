@@ -271,7 +271,7 @@ try
 
 	myStructure.Info();
 
-	NuTo::NewmarkDirect myIntegrationScheme;
+	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.0);
 	myIntegrationScheme.SetDynamic(true);
@@ -325,43 +325,94 @@ try
     //myStructure.SetNumProcessors(8);
 
     //set output to be calculated at the left and right nodes
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> groupNodesReactionForces(2,1);
-    groupNodesReactionForces(0,0) = grpNodes_Top;
-    groupNodesReactionForces(1,0) = grpNodes_Bottom;
-    myIntegrationScheme.SetGroupNodesReactionForces(groupNodesReactionForces);
+	myIntegrationScheme.AddResultTime("Time");
+	myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Top",grpNodes_Top);
+	myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Bottom",grpNodes_Bottom);
 
     //set result directory
     bool deleteDirectory(false);
     myIntegrationScheme.SetResultDirectory(resultDir,deleteDirectory);
 
     //solve (perform Newton raphson iteration
-    myIntegrationScheme.Solve(myStructure, simulationTime);
-    //read in the result file
-	resultFile = resultDir;
-	resultFile /= std::string("resultAllLoadSteps.dat");
+    myIntegrationScheme.Solve(simulationTime);
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result;
-    result.ReadFromFile(resultFile.string());
-    //result.Info(15,12,true);
+    //read in the result file top
+    boost::filesystem::path resultFile_top = resultDir;
+    resultFile_top /= std::string("Forces_GroupNodes_Top.dat");
 
-    boost::filesystem::path resultFileRef(resultFile.parent_path().parent_path());
-    resultFileRef /= std::string("DogboneDirectNewmarkresultAllLoadStepsRef.dat");
-    result.WriteToFile(resultFileRef.string()," ");
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef;
-	resultRef.ReadFromFile(resultFileRef.string());
-    std::cout << "result \n" << result << "\n";
-    std::cout << "resultFileRef \n" << resultRef << "\n";
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_top;
+    std::cout<< "resultFile_top: " << resultFile_top.string() << std::endl;
+    result_top.ReadFromFile(resultFile_top.string());
+    result_top.Info(15,12,true);
 
-    if ((resultRef-result).cwiseAbs().maxCoeff()>1e-4)
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_topRef(3,2);
+    result_topRef(1,1) = 1.520649832722e+04;
+    result_topRef(2,1) = 3.196164047493e+04;
+
+    if ((result_topRef-result_top).cwiseAbs().maxCoeff()>1e-4)
     {
-    	std::cout << "difference " << (resultRef-result).cwiseAbs().maxCoeff() << "\n";
-    	result.Info();
-        std::cout<< "reference results" << std::endl;
-        resultRef.Info();
-        std::cout << "[DogboneDirectNewmark] result is not correct." << std::endl;
+    	std::cout << "difference " << (result_topRef-result_top).cwiseAbs().maxCoeff() << "\n";
+        std::cout<< "real result" << std::endl;
+        result_top.Info();
+        std::cout<< "ref result" << std::endl;
+        result_topRef.Info();
+    	std::cout << "difference " << (result_topRef-result_topRef) << "\n";
+        std::cout << "[NewmarkPlane2D4N] result for top displacements is not correct." << std::endl;
         return -1;
     }
 
+    //read in the result file bottom
+    boost::filesystem::path resultFile_bottom = resultDir;
+    resultFile_bottom /= std::string("Forces_GroupNodes_Bottom.dat");
+
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_bottom;
+    std::cout<< "resultFile_bottom: " << resultFile_bottom.string() << std::endl;
+    result_bottom.ReadFromFile(resultFile_bottom.string());
+    result_bottom.Info(15,12,true);
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_bottomRef(3,2);
+    result_bottomRef(1,0) = -2.854143041762e+00;
+    result_bottomRef(1,1) = -1.519706049850e+04;
+    result_bottomRef(2,0) =  5.359737922992e+00;
+    result_bottomRef(2,1) = -3.198753026409e+04;
+
+    if ((result_bottomRef-result_bottom).cwiseAbs().maxCoeff()>1e-4)
+    {
+    	std::cout << "difference " << (result_bottomRef-result_bottom).cwiseAbs().maxCoeff() << "\n";
+        std::cout<< "real result" << std::endl;
+        result_bottom.Info();
+        std::cout<< "ref result" << std::endl;
+        result_bottomRef.Info();
+    	std::cout << "difference " << (result_bottomRef-result_bottomRef) << "\n";
+        std::cout << "[NewmarkPlane2D4N] result for bottom displacements is not correct." << std::endl;
+        return -1;
+    }
+
+    //read in the result file time
+    boost::filesystem::path resultFile_time = resultDir;
+    resultFile_time /= std::string("Time.dat");
+
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_time;
+    std::cout<< "resultFile_time: " << resultFile_time.string() << std::endl;
+    result_time.ReadFromFile(resultFile_time.string());
+    result_time.Info(15,12,true);
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_timeRef(3,1);
+    result_timeRef(0,0) = 0.;
+    result_timeRef(1,0) = 1e-3;
+    result_timeRef(2,0) = 2e-3;
+
+    if ((result_timeRef-result_time).cwiseAbs().maxCoeff()>1e-10)
+    {
+    	std::cout << "difference " << (result_timeRef-result_time).cwiseAbs().maxCoeff() << "\n";
+        std::cout<< "real result" << std::endl;
+        result_time.Info();
+        std::cout<< "ref result" << std::endl;
+        result_timeRef.Info();
+    	std::cout << "difference " << (result_timeRef-result_timeRef) << "\n";
+        std::cout << "[NewmarkPlane2D4N] result for time displacements is not correct." << std::endl;
+        return -1;
+    }
 }
 catch (NuTo::MechanicsException& e)
 {

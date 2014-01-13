@@ -23,7 +23,7 @@ class NewmarkDirect : public NewmarkBase
 public:
 
     //! @brief constructor
-    NewmarkDirect(StructureBase& rStructure);
+    NewmarkDirect(StructureBase* rStructure);
 
     void SetMinLineSearchStep(double rMinLineSearchStep)
     {
@@ -58,9 +58,8 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
-    //! @param rStructure ... structure
     //! @param rTimeDelta ... length of the simulation
-    NuTo::Error::eError Solve(StructureBase& rStructure, double rTimeDelta);
+    NuTo::Error::eError Solve(double rTimeDelta);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -71,6 +70,8 @@ public:
     virtual std::string GetTypeId()const;
 
 protected:
+    //empty private construct required for serialization
+    NewmarkDirect(){};
 	double mMinLineSearchStep;
 };
 } //namespace NuTo

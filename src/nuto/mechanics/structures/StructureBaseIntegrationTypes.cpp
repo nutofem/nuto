@@ -12,6 +12,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
@@ -77,6 +78,9 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         break;
         case  NuTo::IntegrationType::IntegrationType2D3NGauss13Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss13Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType2D3NGauss16Ip:
+            ptrIntegrationType = new NuTo::IntegrationType2D3NGauss16Ip();
         break;
         case  NuTo::IntegrationType::IntegrationType2D3NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss1Ip();

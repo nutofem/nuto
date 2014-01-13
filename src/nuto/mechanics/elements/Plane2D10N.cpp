@@ -44,16 +44,16 @@ void NuTo::Plane2D10N::CalculateShapeFunctionsGeometry(const double rNaturalCoor
     double r(rNaturalCoordinates[0]);
     double s(rNaturalCoordinates[1]);
 
-    rShapeFunctions[0] =  + 1.0 -6.76014311053 * r -6.76014311053 * s + 11.5202862211 * r*r + 25.5608586632 * r*s + 11.5202862211 * s*s -5.76014311053 * r*r*r -19.8007155526 * r*r*s -19.8007155526 * r*s*s -5.76014311053 * s*s*s;
-    rShapeFunctions[1] =  + 8.09016994375 * r -18.5103667207 * r*r -21.940482998 * r*s + 10.420196777 * r*r*r + 24.2705098312 * r*r*s + 13.8503130543 * r*s*s;
-    rShapeFunctions[2] =  -2.33002683322 * r + 12.7502236102 * r*r -1.10008944408 * r*s -10.420196777 * r*r*r -6.99008049967 * r*r*s + 3.4301162773 * r*s*s;
-    rShapeFunctions[3] =  + 1.0 * r -5.76014311053 * r*r + 2.52028622105 * r*s + 5.76014311053 * r*r*r -2.52028622105 * r*r*s -2.52028622105 * r*s*s;
-    rShapeFunctions[4] =  + 8.09016994375 * s -21.940482998 * r*s -18.5103667207 * s*s + 13.8503130543 * r*r*s + 24.2705098312 * r*s*s + 10.420196777 * s*s*s;
-    rShapeFunctions[5] =  + 27.0 * r*s -27.0 * r*r*s -27.0 * r*s*s;
-    rShapeFunctions[6] =  -5.76014311053 * r*s + 13.8503130543 * r*r*s + 3.4301162773 * r*s*s;
-    rShapeFunctions[7] =  -2.33002683322 * s -1.10008944408 * r*s + 12.7502236102 * s*s + 3.4301162773 * r*r*s -6.99008049967 * r*s*s -10.420196777 * s*s*s;
-    rShapeFunctions[8] =  -5.76014311053 * r*s + 3.4301162773 * r*r*s + 13.8503130543 * r*s*s;
-    rShapeFunctions[9] =  + 1.0 * s + 2.52028622105 * r*s -5.76014311053 * s*s -2.52028622105 * r*r*s -2.52028622105 * r*s*s + 5.76014311053 * s*s*s;
+    rShapeFunctions[0] =  + 1.0 -5.5*r -5.5*s + 9.0*r*r + 18.0*r*s + 9.0*s*s -4.5*r*r*r -13.5*r*r*s -13.5*r*s*s -4.5*s*s*s;
+    rShapeFunctions[1] =  + 9.0*r -22.5*r*r -22.5*r*s + 13.5*r*r*r + 27.0*r*r*s + 13.5*r*s*s;
+    rShapeFunctions[2] =  -4.5*r + 18.0*r*r + 4.5*r*s -13.5*r*r*r -13.5*r*r*s;
+    rShapeFunctions[3] =  + 1.0*r -4.5*r*r + 4.5*r*r*r;
+    rShapeFunctions[4] =  + 9.0*s -22.5*r*s -22.5*s*s + 13.5*r*r*s + 27.0*r*s*s + 13.5*s*s*s;
+    rShapeFunctions[5] =  + 27.0*r*s -27.0*r*r*s -27.0*r*s*s;
+    rShapeFunctions[6] =  -4.5*r*s + 13.5*r*r*s;
+    rShapeFunctions[7] =  -4.5*s + 4.5*r*s + 18.0*s*s -13.5*r*s*s -13.5*s*s*s;
+    rShapeFunctions[8] =  -4.5*r*s + 13.5*r*s*s;
+    rShapeFunctions[9] =  + 1.0*s -4.5*s*s + 4.5*s*s*s;
 }
 
 //! @brief calculates the shape functions
@@ -74,26 +74,26 @@ void NuTo::Plane2D10N::CalculateDerivativeShapeFunctionsGeometryNatural(const do
     double r(rNaturalCoordinates[0]);
     double s(rNaturalCoordinates[1]);
 
-    rDerivativeShapeFunctions[0] = -6.76014311053 + 23.0405724421*r + 25.5608586632*s-17.2804293316*r*r-39.6014311053*r*s-19.8007155526*s*s;
-    rDerivativeShapeFunctions[1] = -6.76014311053 + 25.5608586632*r + 23.0405724421*s-19.8007155526*r*r-39.6014311053*r*s-17.2804293316*s*s;
-    rDerivativeShapeFunctions[2] =  + 8.09016994375-37.0207334414*r-21.940482998*s + 31.2605903309*r*r + 48.5410196625*r*s + 13.8503130543*s*s;
-    rDerivativeShapeFunctions[3] = -21.940482998*r + 24.2705098312*r*r + 27.7006261086*r*s;
-    rDerivativeShapeFunctions[4] = -2.33002683322 + 25.5004472204*r-1.10008944408*s-31.2605903309*r*r-13.9801609993*r*s + 3.4301162773*s*s;
-    rDerivativeShapeFunctions[5] = -1.10008944408*r-6.99008049967*r*r + 6.8602325546*r*s;
-    rDerivativeShapeFunctions[6] =  + 1.0-11.5202862211*r + 2.52028622105*s + 17.2804293316*r*r-5.0405724421*r*s-2.52028622105*s*s;
-    rDerivativeShapeFunctions[7] =  + 2.52028622105*r-2.52028622105*r*r-5.0405724421*r*s;
-    rDerivativeShapeFunctions[8] = -21.940482998*s + 27.7006261086*r*s + 24.2705098312*s*s;
-    rDerivativeShapeFunctions[9] =  + 8.09016994375-21.940482998*r-37.0207334414*s + 13.8503130543*r*r + 48.5410196625*r*s + 31.2605903309*s*s;
+    rDerivativeShapeFunctions[0] = -5.5 + 18.0*r + 18.0*s-13.5*r*r-27.0*r*s-13.5*s*s;
+    rDerivativeShapeFunctions[1] = -5.5 + 18.0*r + 18.0*s-13.5*r*r-27.0*r*s-13.5*s*s;
+    rDerivativeShapeFunctions[2] =  + 9.0-45.0*r-22.5*s + 40.5*r*r + 54.0*r*s + 13.5*s*s;
+    rDerivativeShapeFunctions[3] = -22.5*r + 27.0*r*r + 27.0*r*s;
+    rDerivativeShapeFunctions[4] = -4.5 + 36.0*r + 4.5*s-40.5*r*r-27.0*r*s;
+    rDerivativeShapeFunctions[5] =  + 4.5*r-13.5*r*r;
+    rDerivativeShapeFunctions[6] =  + 1.0-9.0*r + 13.5*r*r;
+    rDerivativeShapeFunctions[7] = 0.;
+    rDerivativeShapeFunctions[8] = -22.5*s + 27.0*r*s + 27.0*s*s;
+    rDerivativeShapeFunctions[9] =  + 9.0-22.5*r-45.0*s + 13.5*r*r + 54.0*r*s + 40.5*s*s;
     rDerivativeShapeFunctions[10] =  + 27.0*s-54.0*r*s-27.0*s*s;
     rDerivativeShapeFunctions[11] =  + 27.0*r-27.0*r*r-54.0*r*s;
-    rDerivativeShapeFunctions[12] = -5.76014311053*s + 27.7006261086*r*s + 3.4301162773*s*s;
-    rDerivativeShapeFunctions[13] = -5.76014311053*r + 13.8503130543*r*r + 6.8602325546*r*s;
-    rDerivativeShapeFunctions[14] = -1.10008944408*s + 6.8602325546*r*s-6.99008049967*s*s;
-    rDerivativeShapeFunctions[15] = -2.33002683322-1.10008944408*r + 25.5004472204*s + 3.4301162773*r*r-13.9801609993*r*s-31.2605903309*s*s;
-    rDerivativeShapeFunctions[16] = -5.76014311053*s + 6.8602325546*r*s + 13.8503130543*s*s;
-    rDerivativeShapeFunctions[17] = -5.76014311053*r + 3.4301162773*r*r + 27.7006261086*r*s;
-    rDerivativeShapeFunctions[18] =  + 2.52028622105*s-5.0405724421*r*s-2.52028622105*s*s;
-    rDerivativeShapeFunctions[19] =  + 1.0 + 2.52028622105*r-11.5202862211*s-2.52028622105*r*r-5.0405724421*r*s + 17.2804293316*s*s;
+    rDerivativeShapeFunctions[12] = -4.5*s + 27.0*r*s;
+    rDerivativeShapeFunctions[13] = -4.5*r + 13.5*r*r;
+    rDerivativeShapeFunctions[14] =  + 4.5*s-13.5*s*s;
+    rDerivativeShapeFunctions[15] = -4.5 + 4.5*r + 36.0*s-27.0*r*s-40.5*s*s;
+    rDerivativeShapeFunctions[16] = -4.5*s + 13.5*s*s;
+    rDerivativeShapeFunctions[17] = -4.5*r + 27.0*r*s;
+    rDerivativeShapeFunctions[18] = 0.;
+    rDerivativeShapeFunctions[19] =  + 1.0-9.0*s + 13.5*s*s;
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -118,11 +118,11 @@ void NuTo::Plane2D10N::CalculateNaturalNodeCoordinates(std::vector< std::array<d
 	rNaturalNodeCoordinates[0][1] = 0.0;
 
 	//node 1
-	rNaturalNodeCoordinates[1][0] = sqrt(1./20.);
+	rNaturalNodeCoordinates[1][0] = 1./3.;//sqrt(1./20.);
 	rNaturalNodeCoordinates[1][1] = 0.0;
 
 	//node 2
-	rNaturalNodeCoordinates[2][0] = 1.-sqrt(1./20.);
+	rNaturalNodeCoordinates[2][0] = 2./3.;//1.-sqrt(1./20.);
 	rNaturalNodeCoordinates[2][1] = 0.0;
 
 	//node 3
@@ -131,23 +131,23 @@ void NuTo::Plane2D10N::CalculateNaturalNodeCoordinates(std::vector< std::array<d
 
 	//node 4
 	rNaturalNodeCoordinates[4][0] = 0.;
-	rNaturalNodeCoordinates[4][1] = sqrt(1./20.);
+	rNaturalNodeCoordinates[4][1] = 1./3.;//sqrt(1./20.);
 
 	//node 5
 	rNaturalNodeCoordinates[5][0] = 1./3.;
 	rNaturalNodeCoordinates[5][1] = 1./3.;
 
 	//node 6
-	rNaturalNodeCoordinates[6][0] = 1.-sqrt(1./20.);
-	rNaturalNodeCoordinates[6][1] = sqrt(1./20.);
+	rNaturalNodeCoordinates[6][0] = 2./3.;//1.-sqrt(1./20.);
+	rNaturalNodeCoordinates[6][1] = 1./3.;//sqrt(1./20.);
 
 	//node 7
 	rNaturalNodeCoordinates[7][0] = 0;
-	rNaturalNodeCoordinates[7][1] = 1.-sqrt(1./20.);
+	rNaturalNodeCoordinates[7][1] = 2./3.;//1.-sqrt(1./20.);
 
 	//node 8
-	rNaturalNodeCoordinates[8][0] = sqrt(1./20.);
-	rNaturalNodeCoordinates[8][1] = 1.-sqrt(1./20.);
+	rNaturalNodeCoordinates[8][0] = 1./3.;//sqrt(1./20.);
+	rNaturalNodeCoordinates[8][1] = 2./3.;//1.-sqrt(1./20.);
 
 	//node 9
 	rNaturalNodeCoordinates[9][0] = 0.;
@@ -163,10 +163,10 @@ void NuTo::Plane2D10N::CalculateShapeFunctionsSurface(double rNaturalCoordinates
 	double r(rNaturalCoordinates);
     double r2(rNaturalCoordinates*rNaturalCoordinates);
     double r3(r2*rNaturalCoordinates);
-    rShapeFunctions[0] =  -0.220017888816 + 0.220017888816*r + 0.720017888816*r2 -0.720017888816*r3;
-    rShapeFunctions[1] =  + 0.720017888816 -1.30252459712*r -0.720017888816*r2 + 1.30252459712*r3;
-    rShapeFunctions[2] =  + 0.720017888816 + 1.30252459712*r -0.720017888816*r2 -1.30252459712*r3;
-    rShapeFunctions[3] =  -0.220017888816 -0.220017888816*r + 0.720017888816*r2 + 0.720017888816*r3;
+    rShapeFunctions[0] =  -0.0625 + 0.0625*r + 0.5625*r2 -0.5625*r3;
+    rShapeFunctions[1] =  + 0.5625 -1.6875*r -0.5625*r2 + 1.6875*r3;
+    rShapeFunctions[2] =  + 0.5625 + 1.6875*r -0.5625*r2 -1.6875*r3;
+    rShapeFunctions[3] =  -0.0625 -0.0625*r + 0.5625*r2 + 0.5625*r3;
 }
 
 //! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
@@ -178,10 +178,11 @@ void NuTo::Plane2D10N::CalculateDerivativeShapeFunctionsLocalSurface(double rNat
 	assert(rDerivativeShapeFunctions.size()==4);
 	double r(rNaturalCoordinates);
     double r2(rNaturalCoordinates*rNaturalCoordinates);
-    rDerivativeShapeFunctions[0] =  + 0.220017888816 + 1.44003577763*r-2.16005366645*r2;
-    rDerivativeShapeFunctions[1] = -1.30252459712-1.44003577763*r + 3.90757379136*r2;
-    rDerivativeShapeFunctions[2] =  + 1.30252459712-1.44003577763*r-3.90757379136*r2;
-    rDerivativeShapeFunctions[3] = -0.220017888816 + 1.44003577763*r + 2.16005366645*r2;                                                                        }
+    rDerivativeShapeFunctions[0] =  + 0.0625 + 1.125*r-1.6875*r2;
+    rDerivativeShapeFunctions[1] = -1.6875-1.125*r + 5.0625*r2;
+    rDerivativeShapeFunctions[2] =  + 1.6875-1.125*r-5.0625*r2;
+    rDerivativeShapeFunctions[3] = -0.0625 + 1.125*r + 1.6875*r2;
+}
 
 //! @brief returns the surface nodes
 //! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)

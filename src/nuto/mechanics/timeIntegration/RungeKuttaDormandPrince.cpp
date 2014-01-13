@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::RungeKuttaDormandPrince::RungeKuttaDormandPrince (StructureBase& rStructure)  : RungeKuttaBase (rStructure)
+NuTo::RungeKuttaDormandPrince::RungeKuttaDormandPrince (StructureBase* rStructure)  : RungeKuttaBase (rStructure)
 {
 }
 

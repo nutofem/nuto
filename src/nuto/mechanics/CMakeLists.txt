@@ -110,6 +110,7 @@ elements/IpDataWeightBase.cpp
 elements/Plane.cpp
 elements/Plane2D.cpp
 elements/Plane2D10N.cpp
+elements/Plane2D15N.cpp
 elements/Plane2D3N.cpp
 elements/Plane2D4N.cpp
 elements/Plane2D4NSpectralOrder2.cpp
@@ -143,6 +144,7 @@ integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
 integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D3NGauss13Ip.cpp
+integrationtypes/IntegrationType2D3NGauss16Ip.cpp
 integrationtypes/IntegrationType2D3NGauss1Ip.cpp
 integrationtypes/IntegrationType2D3NGauss3Ip.cpp
 integrationtypes/IntegrationType2D4NConstVariableIp.cpp
@@ -222,10 +224,11 @@ structures/grid/StructureGridElement.cpp
 SET(NuToMechanicsTimeIntegration_SOURCES
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
-timeIntegration/NewmarkIndirect.cpp
 timeIntegration/NystroemBase.cpp
 timeIntegration/NystroemQinZhu.cpp
 timeIntegration/ResultBase.cpp
+timeIntegration/ResultGroupNodeForce.cpp
+timeIntegration/ResultGroupNodeDof.cpp
 timeIntegration/ResultNodeDisp.cpp
 timeIntegration/ResultNodeDof.cpp
 timeIntegration/ResultTime.cpp

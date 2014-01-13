@@ -23,7 +23,7 @@ class RungeKuttaDormandPrince : public RungeKuttaBase
 public:
 
     //! @brief constructor
-    RungeKuttaDormandPrince(StructureBase& rStructure);
+    RungeKuttaDormandPrince(StructureBase* rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -73,6 +73,8 @@ public:
     bool HasTimeChanged(int rStage)const;
 
 protected:
+    //empty private construct required for serialization
+    RungeKuttaDormandPrince(){};
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

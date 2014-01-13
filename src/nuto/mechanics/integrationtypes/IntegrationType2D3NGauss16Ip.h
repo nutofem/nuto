@@ -1,6 +1,6 @@
-// $Id: IntegrationType2D3NGauss13Ip.h 309 2010-09-22 22:21:24Z unger3 $
-#ifndef IntegrationType2D3NGauss13Ip_H
-#define IntegrationType2D3NGauss13Ip_H
+// $Id: IntegrationType2D3NGauss16Ip.h 309 2010-09-22 22:21:24Z unger3 $
+#ifndef IntegrationType2D3NGauss16Ip_H
+#define IntegrationType2D3NGauss16Ip_H
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -13,8 +13,8 @@ namespace NuTo
 {
 //! @author Joerg F. Unger
 //! @date June 2010
-//! @brief ... integration types in 2D with three nodes Gauss integration and 13 integration points (degree 6)
-class IntegrationType2D3NGauss13Ip : public IntegrationType2D
+//! @brief ... integration types in 2D with three nodes Gauss integration and 16 integration point (degree 8)
+class IntegrationType2D3NGauss16Ip : public IntegrationType2D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -22,7 +22,7 @@ class IntegrationType2D3NGauss13Ip : public IntegrationType2D
 
 public:
     //! @brief constructor
-    IntegrationType2D3NGauss13Ip();
+    IntegrationType2D3NGauss16Ip();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -71,7 +71,7 @@ protected:
 };
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D3NGauss13Ip)
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D3NGauss16Ip)
 #endif // ENABLE_SERIALIZATION
 
-#endif //IntegrationType2D3NGauss13Ip_H
+#endif //IntegrationType2D3NGauss16Ip_H

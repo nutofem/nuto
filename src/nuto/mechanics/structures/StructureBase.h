@@ -85,7 +85,7 @@ public:
 
     //! @brief gives the dimension of the Structure
     //! @return Structural dimension (1,2 or 3)
-    int GetDimension();
+    int GetDimension()const;
 
 #ifdef ENABLE_VISUALIZE
     //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command

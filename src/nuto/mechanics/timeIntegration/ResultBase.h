@@ -20,12 +20,13 @@
 namespace NuTo
 {
 class ResultNodeDof;
-class ResultReactionNodeDofGroup;
+class ResultGroupNodeDof;
 class ResultTime;
+class StructureBase;
 //! @author Jörg F. Unger, BAM
 //! @date December 2013
 //! @brief ... standard abstract class for all results
-class ResultBase : public NuToObject
+class ResultBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -41,13 +42,12 @@ public:
 
     std::string GetIdent()const;
 
-    bool IsCalculated() const;
+    void Resize(const StructureBase& rStructure, int rNumResultSteps, bool rInitialize);
 
-    void SetCalculated(bool rCalculated);
+    void WriteToFile(const std::string& rResultDir, int rNumTimeSteps)const;
 
-    virtual void Resize(int rNumResultSteps, bool rInitialize)=0;
-
-    virtual void WriteToFile(const std::string& rResultDir, int rNumTimeSteps)const=0;
+    //! @brief number of data points per time step (e.g. number of displacement components of a node)
+    virtual int GetNumData(const StructureBase& rStructure)const=0;
 
     virtual NuTo::TimeIntegration::eResultType GetResultType()const = 0;
 
@@ -61,11 +61,11 @@ public:
     	throw MechanicsException("[NutO::ResultBase::AsResultTime] object is not of this type.");
     }
 
-/*    virtual ResultReactionNodeDofGroup* AsResultReactionNodeDofGroup()
+    virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
-    	throw MechanicsException("[NutO::ResultBase::AsResultNodalDof] object is not of this type.");
+    	throw MechanicsException("[NutO::ResultBase::ResultNodeGroupDof] object is not of this type.");
     }
-*/
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -83,7 +83,7 @@ public:
 
 protected:
     std::string mIdent;
-    bool mCalculated;
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mData;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

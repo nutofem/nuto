@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::RungeKutta38::RungeKutta38 (StructureBase& rStructure)  : RungeKuttaBase (rStructure)
+NuTo::RungeKutta38::RungeKutta38 (StructureBase* rStructure)  : RungeKuttaBase (rStructure)
 {
 }
 

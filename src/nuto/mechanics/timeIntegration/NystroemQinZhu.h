@@ -24,7 +24,7 @@ class NystroemQinZhu : public NystroemBase
 public:
 
     //! @brief constructor
-    NystroemQinZhu(StructureBase& rStructure);
+    NystroemQinZhu(StructureBase* rStructure);
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -77,6 +77,8 @@ public:
     bool HasTimeChanged(int rStage)const;
 
 protected:
+    //empty private construct required for serialization
+    NystroemQinZhu(){};
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

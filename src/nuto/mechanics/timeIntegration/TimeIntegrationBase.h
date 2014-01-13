@@ -34,16 +34,15 @@ class TimeIntegrationBase : public NuToObject
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
-    TimeIntegrationBase(StructureBase& rStructure);
+    TimeIntegrationBase(StructureBase* rStructure);
 
     //! @brief deconstructor
     virtual ~TimeIntegrationBase()
     {}
 
     //! @brief perform the time integration
-    //! @param rStructure ... structure
     //! @param rTimeDelta ... length of the simulation
-    virtual NuTo::Error::eError Solve(StructureBase& rStructure, double rTimeDelta)=0;
+    virtual NuTo::Error::eError Solve(double rTimeDelta)=0;
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     void ResetForNextLoad();
@@ -70,7 +69,10 @@ public:
     void CalculateOutputDispNodesPtr(StructureBase& rStructure);
 
     //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
-    void PostProcess();
+    //! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
+    //! @param rOutOfBalance_k ... residual of the  dependent dofs
+     void PostProcess(const FullVector<double,Eigen::Dynamic>& rOutOfBalance_j,
+    		          const FullVector<double,Eigen::Dynamic>& rOutOfBalance_k);
 
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
@@ -108,13 +110,6 @@ public:
     	return mMinTimeStepPlot;
     }
 
-
-    //! @brief sets the minimum time step for the time integration procedure
-    void SetGroupNodesReactionForces(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecGroupNodesReactionForces);
-
-    //! @brief sets the nodes, for which displacements are to be monitored
-    void SetOutputDispNodes(NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> rVecOutputDispNodes);
-
     //! @brief sets the minimum time step for the time integration procedure
     void SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups);
 
@@ -128,7 +123,13 @@ public:
     //! @param rNodeId id of the node
     //! @param rResultId string identifying the result, this is used for the output file
     //! @return id of the result, so that it could be modified afterwards
-    int AddResultNodeDisplacements(int rNodeId, const std::string& rResultStr);
+    int AddResultNodeDisplacements(const std::string& rResultStr,int rNodeId);
+
+    //! @brief monitor the time
+    //! @param rResultId string identifying the result, this is used for the output file
+    //! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be calculated
+    //! @return id of the result, so that it could be modified afterwards
+    int AddResultGroupNodeForce(const std::string& rResultStr,int rGroupNodeId);
 
     //! @brief monitor the time
     //! @param rResultId string identifying the result, this is used for the output file
@@ -168,8 +169,10 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const;
 protected:
+    //empty private construct required for serialization
+    TimeIntegrationBase(){};
     //structure belonging to the time integration scheme
-    StructureBase& mStructure;
+    StructureBase* mStructure;
     //constraint for displacement control (as a function of time)
     int mTimeDependentConstraint;
     //includes for each time step the rhs of the constraint mConstraintLoad
@@ -212,9 +215,6 @@ protected:
     double mLastTimePlot;
     //groups of elements to be plotted separately
     FullVector<int,Eigen::Dynamic> mPlotElementGroups;
-
-    //the size of allocated result matrices
-    int numUsedRowsPlotMatrixAllLoadSteps;
 
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
     NuTo::FullVector<int,Eigen::Dynamic> mVecGroupNodesReactionForces;

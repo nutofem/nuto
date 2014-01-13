@@ -29,23 +29,22 @@ public:
     //! @brief constructor
     ResultTime(const std::string& rIdent);
 
-    void WriteToFile(const std::string& rResultDir, int rTimeStepPlot)const override;
-
-    //! @brief resize the data (to avoid reallocation every time step, a certain number of
-    //! @param rNumTimeSteps ... number of time steps to allocate the matrix for
-    //! @param rInitValues ... true set all the values to zero, false - leave the values as is
-    void Resize(int rNumTimeSteps, bool rInitValues);
-
     std::string GetTypeId() const
     {
     	return std::string("ResultTime");
     }
 
-    void CalculateAndAddValues(int rTimeStepPlot, double rTime);
+    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot, double rTime);
 
     NuTo::TimeIntegration::eResultType GetResultType()const
     {
     	return NuTo::TimeIntegration::TIME;
+    }
+
+    //! @brief number of data points per time step (e.g. number of displacement components of a node)
+    int GetNumData(const StructureBase& rStructure)const
+    {
+    	return 1;
     }
 
     ResultTime* AsResultTime()
@@ -65,7 +64,6 @@ public:
     void Info()const;
 
 protected:
-    FullVector<double, Eigen::Dynamic> mData;
 };
 }
 

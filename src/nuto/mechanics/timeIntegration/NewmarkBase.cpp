@@ -29,7 +29,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NewmarkBase::NewmarkBase (StructureBase& rStructure)  : TimeIntegrationBase (rStructure)
+NuTo::NewmarkBase::NewmarkBase (StructureBase* rStructure)  : TimeIntegrationBase (rStructure)
 {
 	mMuDampingMass = 0.;
 	mToleranceForce = 1e-6;

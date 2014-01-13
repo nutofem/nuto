@@ -24,7 +24,7 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::VelocityVerlet::VelocityVerlet (StructureBase& rStructure)  : TimeIntegrationBase (rStructure)
+NuTo::VelocityVerlet::VelocityVerlet (StructureBase* rStructure)  : TimeIntegrationBase (rStructure)
 {
     mTimeStep = 0.;
 }
@@ -63,7 +63,7 @@ void NuTo::VelocityVerlet::serialize(Archive & ar, const unsigned int version)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, double rTimeDelta)
+NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -75,17 +75,17 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
     try
     {
         if (mTimeStep==0.)
-            mTimeStep = rStructure.ElementTotalCalculateCriticalTimeStep();
+            mTimeStep = mStructure->ElementTotalCalculateCriticalTimeStep();
 
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
 
         //renumber dofs and build constraint matrix
-        rStructure.NodeBuildGlobalDofs();
+        mStructure->NodeBuildGlobalDofs();
 
         //calculate constraint matrix
         NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
-        rStructure.ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
+        mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
         NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
         FullVector<double,Eigen::Dynamic> bRHS, bRHSdot, bRHSddot;
@@ -95,22 +95,24 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
         }
 
         //calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use asDiagonal()
-        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j(rStructure.GetNumActiveDofs());
+        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j(mStructure->GetNumActiveDofs());
+        NuTo::FullVector<double,Eigen::Dynamic> massMatrix_k;
 
         //extract displacements, velocities and accelerations
         NuTo::FullVector<double,Eigen::Dynamic> disp_j, vel_j, acc_j,acc_new_j,tmp_k;
         NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k;
-        NuTo::FullVector<double,Eigen::Dynamic> intForce_j(rStructure.GetNumActiveDofs()),
-        		                                intForce_k(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs());
+        NuTo::FullVector<double,Eigen::Dynamic> outOfBalance_j(mStructure->GetNumActiveDofs()), outOfBalance_k;
+        NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()),
+        		                                intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 
         //store last converged displacements, velocities and accelerations
-        rStructure.NodeExtractDofValues(0,disp_j,tmp_k);
-        rStructure.NodeExtractDofValues(1,vel_j,tmp_k);
-        rStructure.NodeExtractDofValues(2,acc_j,tmp_k);
+        mStructure->NodeExtractDofValues(0,disp_j,tmp_k);
+        mStructure->NodeExtractDofValues(1,vel_j,tmp_k);
+        mStructure->NodeExtractDofValues(2,acc_j,tmp_k);
 
         //calculate lumped mass matrix
         //intForce_j is just used as a tmp variable
-        rStructure.BuildGlobalLumpedHession2(intForce_j,tmp_k);
+        mStructure->BuildGlobalLumpedHession2(intForce_j,massMatrix_k);
 
         //check the sum of all entries
         std::cout << "the total mass is " << intForce_j.sum()/3. +  tmp_k.sum()/3. << std::endl;
@@ -131,63 +133,46 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
             if (mTimeDependentConstraint!=-1)
             {
                 timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-                rStructure.ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-				rStructure.ConstraintGetRHSAfterGaussElimination(bRHS);
+                mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+				mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
             }
 
             //calculate new displacement approximation (disp_k is calculated internally when NodeMerge is called
             disp_j += vel_j * mTimeStep +  acc_j * (mTimeStep*mTimeStep);
 
-            rStructure.NodeMergeActiveDofValues(0,disp_j);
-			rStructure.ElementTotalUpdateTmpStaticData();
+            mStructure->NodeMergeActiveDofValues(0,disp_j);
+			mStructure->ElementTotalUpdateTmpStaticData();
 
 			//calculate external force
-			CalculateExternalLoad(rStructure, curTime, extForce_j, extForce_k);
+			CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
 
             //calculate internal force (with update of history variables = true)
-            rStructure.BuildGlobalGradientInternalPotentialSubVectors(intForce_j,intForce_k,true);
+            mStructure->BuildGlobalGradientInternalPotentialSubVectors(intForce_j,intForce_k,true);
 
             //**********************************************
             //PostProcessing
             //**********************************************
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector(1,2);
-            plotVector(0,0) = mTime+mTimeStep;
+        	if (CmatT.GetNumEntries() > 0)
+	        {
+	            throw MechanicsException("[NuTo::NystroemBase::Solve] not implemented for constrained systems including multiple dofs.");
+	        }
+	        else
+	        {
+	        	// outOfBalance_j is automatically zero
+			    //outOfBalance_j.Resize(intForce_j.GetNumRows());
+	        	//the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
+	        	//this is calculated using finite differencs
+				if (mTimeDependentConstraint!=-1)
+				{
+					throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
+				}
 
-            //temporarily change this
-            plotVector(0,1) = timeDependentConstraintFactor;
-
-            for (unsigned int countNode=0; countNode<mVecOutputDispNodesPtr.size(); countNode++)
-            {
-                switch(mVecOutputDispNodesPtr[countNode] -> GetNumDisplacements())
-                {
-                case 1:
-                {
-                	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacements(1,1);
-                	mVecOutputDispNodesPtr[countNode]->GetDisplacements1D(displacements.data());
-                    plotVector.AppendColumns(displacements);
-                }
-                break;
-                case 2:
-                {
-                	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacements(1,2);
-                	mVecOutputDispNodesPtr[countNode]->GetDisplacements2D(displacements.data());
-                    plotVector.AppendColumns(displacements);
-                }
-                break;
-                case 3:
-                {
-                	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> displacements(1,3);
-                	mVecOutputDispNodesPtr[countNode]->GetDisplacements3D(displacements.data());
-                    plotVector.AppendColumns(displacements);
-                }
-                break;
-                default:
-                    break;
-                }
-            }
+				//acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
+	        	//outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
+	        }
 
             //postprocess data for plotting
-            this->PostProcess();
+            this->PostProcess(outOfBalance_j, outOfBalance_k);
 
             //calculate new accelerations and velocities of independent dofs
             acc_new_j = invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j);
@@ -196,7 +181,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
 			//update new accelarations
             acc_j = acc_new_j;
 
-			//update time, this is different from curTime if several load cycles are sequentially
+			//update time, this is different from curTime if several load cycles are sequentially added
             mTime+=mTimeStep;
         }
     }
@@ -210,10 +195,10 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(StructureBase& rStructure, doubl
 #ifdef _OPENMP
     double wend = omp_get_wtime ( );
     if (mShowTime)
-        rStructure.GetLogger()<<"[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+        mStructure->GetLogger()<<"[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
 #else
     if (mShowTime)
-        rStructure.GetLogger()<< "[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mStructure->GetLogger()<< "[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
     return NuTo::Error::SUCCESSFUL;

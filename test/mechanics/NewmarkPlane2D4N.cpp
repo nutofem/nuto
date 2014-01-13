@@ -209,7 +209,7 @@ try
 //	myStructure.LoadCreateNodeGroupForce(grpNodes_Left,DirectionX , 1);
 	myStructure.LoadCreateNodeGroupForce(0,groupLeftBottomSupport,DirectionX, 1);
 
-	NuTo::NewmarkDirect myIntegrationScheme;
+	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.05);
 	myIntegrationScheme.SetDynamic(true);
@@ -256,51 +256,87 @@ try
     myStructure.SetShowTime(false);
     myStructure.SetNumProcessors(8);
 
-    //set output to be calculated at the left and right nodes
-    NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mGroupNodesReactionForces(2,1);
-    mGroupNodesReactionForces(0,0) = grpNodes_Left;
-    mGroupNodesReactionForces(1,0) = grpNodes_Right;
-    myIntegrationScheme.SetGroupNodesReactionForces(mGroupNodesReactionForces);
+	myIntegrationScheme.AddResultTime("Time");
+	myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Left",grpNodes_Left);
+	myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Right",grpNodes_Right);
 
     //set result directory
     bool deleteResultDirectoryFirst(true);
     myIntegrationScheme.SetResultDirectory(resultDir,deleteResultDirectoryFirst);
 
     //solve (perform Newton raphson iteration
-    myIntegrationScheme.Solve(myStructure, simulationTime);
+    myIntegrationScheme.Solve(simulationTime);
 
-    //read in the result file
-	resultFile = resultDir;
-	resultFile /= std::string("resultAllLoadSteps.dat");
+    //read in the result file left
+    boost::filesystem::path resultFile_left = resultDir;
+    resultFile_left /= std::string("Forces_GroupNodes_Left.dat");
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result;
-    result.ReadFromFile(resultFile.string());
-    std::cout << "result" << std::endl;
-    result.Info(15,12,true);
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_left;
+	result_left.ReadFromFile(resultFile_left.string());
+    std::cout << "result_left" << std::endl;
+    result_left.Info(15,12,true);
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> resultRef(2,11);
-	resultRef(0,7) = -1; //load on fixed node
-	resultRef(1,0) = 10;
-	resultRef(1,1) = 0.1;
-	resultRef(1,2) = 1.500009228786e+01;
-	resultRef(1,3) = 6.452563911884e-02;
-	resultRef(1,4) = 1.700347727382e-02;
-	resultRef(1,5) = 1.508162134529e+01;
-	resultRef(1,6) = 0.;
-	resultRef(1,7) = -3.001683921119e+02;
-	resultRef(1,8) = 0.;
-	resultRef(1,9) = 3.016324269061e+02;
-	resultRef(1,10) = 0.;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_leftRef(2,2);
+    result_leftRef(0,0) = -1; //disp on fixed node
+    result_leftRef(1,0) = -3.001683921119e+02;
 
-    if ((resultRef-result).cwiseAbs().maxCoeff()>1e-4)
+    if ((result_leftRef-result_left).cwiseAbs().maxCoeff()>1e-4)
     {
-    	std::cout << "difference " << (resultRef-result).cwiseAbs().maxCoeff() << "\n";
+    	std::cout << "difference " << (result_leftRef-result_left).cwiseAbs().maxCoeff() << "\n";
         std::cout<< "real result" << std::endl;
-    	result.Info();
+        result_left.Info();
         std::cout<< "ref result" << std::endl;
-        resultRef.Info();
-    	std::cout << "difference " << (resultRef-result) << "\n";
-        std::cout << "[NewmarkPlane2D4N] result is not correct." << std::endl;
+        result_leftRef.Info();
+    	std::cout << "difference " << (result_leftRef-result_leftRef) << "\n";
+        std::cout << "[NewmarkPlane2D4N] result for left displacements is not correct." << std::endl;
+        return -1;
+    }
+
+    //read in the result file right
+    boost::filesystem::path resultFile_right = resultDir;
+    resultFile_right /= std::string("Forces_GroupNodes_Right.dat");
+
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_right;
+	result_right.ReadFromFile(resultFile_right.string());
+    std::cout << "result_right" << std::endl;
+    result_right.Info(15,12,true);
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_rightRef(2,2);
+    result_rightRef(1,0) = 3.016324269061e+02;
+
+    if ((result_rightRef-result_right).cwiseAbs().maxCoeff()>1e-4)
+    {
+    	std::cout << "difference " << (result_rightRef-result_right).cwiseAbs().maxCoeff() << "\n";
+        std::cout<< "real result" << std::endl;
+        result_right.Info();
+        std::cout<< "ref result" << std::endl;
+        result_rightRef.Info();
+    	std::cout << "difference " << (result_rightRef-result_rightRef) << "\n";
+        std::cout << "[NewmarkPlane2D4N] result for right displacements is not correct." << std::endl;
+        return -1;
+    }
+
+    //read in the result file time
+    boost::filesystem::path resultFile_time = resultDir;
+    resultFile_time /= std::string("Time.dat");
+
+	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_time;
+	result_time.ReadFromFile(resultFile_time.string());
+    std::cout << "result_time" << std::endl;
+    result_time.Info(15,12,true);
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_timeRef(2,1);
+    result_timeRef(1,0) = 10;
+
+    if ((result_timeRef-result_time).cwiseAbs().maxCoeff()>1e-4)
+    {
+    	std::cout << "difference " << (result_timeRef-result_time).cwiseAbs().maxCoeff() << "\n";
+        std::cout<< "real result" << std::endl;
+        result_time.Info();
+        std::cout<< "ref result" << std::endl;
+        result_timeRef.Info();
+    	std::cout << "difference " << (result_timeRef-result_timeRef) << "\n";
+        std::cout << "[NewmarkPlane2D4N] result for time is not correct." << std::endl;
         return -1;
     }
 }

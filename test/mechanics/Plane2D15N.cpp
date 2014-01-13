@@ -44,10 +44,10 @@ try
 
     myStructure.ElementsCreate("PLANE2D3N", elementIncidence);
 
-    //convert 3N into 10N elements
+    //convert 3N into 15N elements
     int elementGroup1 = myStructure.GroupCreate("Elements");
     myStructure.GroupAddElementFromType(elementGroup1, "PLANE2D3N");
-    myStructure.ElementConvertPlane2D3N(elementGroup1,"PLANE2D10N",1e-5,1.);
+    myStructure.ElementConvertPlane2D3N(elementGroup1,"PLANE2D15N",1e-5,1.);
 
     //Calculate maximum independent sets for parallelization (openmp)
     myStructure.CalculateMaximumIndependentSets();
