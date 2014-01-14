@@ -14,7 +14,7 @@ namespace NuTo
 //! @author Jörg F. Unger, NU
 //! @date November 2013
 //! @brief ... class for explicit time integration using a fourth order Nystroem method according to
-//! "Modeling the scalar wave equation with Nyström methods" by Jing-Bo Chen, Geophysics
+//! "Modeling the scalar wave equation with Nyström methods" by Jing-Bo Chen, Geophysics, 2006
 class NystroemQinZhu : public NystroemBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -25,6 +25,16 @@ public:
 
     //! @brief constructor
     NystroemQinZhu(StructureBase* rStructure);
+
+    //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
+    bool HasCriticalTimeStep()const
+    {
+    	return true;
+    }
+
+    //! @brief calculate the critical time step for explicit routines
+    //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+    double CalculateCriticalTimeStep()const;
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

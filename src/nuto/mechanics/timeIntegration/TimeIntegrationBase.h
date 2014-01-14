@@ -158,6 +158,13 @@ public:
     	return mAutomaticTimeStepping;
     }
 
+    //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
+    virtual bool HasCriticalTimeStep()const = 0;
+
+    //! @brief calculate the critical time step for explicit routines
+    //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+    virtual double CalculateCriticalTimeStep()const = 0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

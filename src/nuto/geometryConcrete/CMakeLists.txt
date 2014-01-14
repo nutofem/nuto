@@ -8,14 +8,14 @@ ${NuToGeometryConcreteCollision_SOURCES}
 )
 
 # build static library
-ADD_LIBRARY(NuToGeometryConcreteCollision ${NuToGeometryConcreteCollision_SOURCES})
-TARGET_LINK_LIBRARIES(NuToGeometryConcreteCollision ${Boost_LIBRARIES})
+ADD_LIBRARY(NuToGeometryConcrete ${NuToGeometryConcrete_SOURCES})
+TARGET_LINK_LIBRARIES(NuToGeometryConcrete ${Boost_LIBRARIES})
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  SET_TARGET_PROPERTIES(NuToGeometryConcreteCollision PROPERTIES COMPILE_FLAGS "-fPIC")
+  SET_TARGET_PROPERTIES(NuToGeometryConcrete PROPERTIES COMPILE_FLAGS "-fPIC")
 ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
 
 # install library
-INSTALL(TARGETS NuToGeometryConcreteCollision
+INSTALL(TARGETS NuToGeometryConcrete
         ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
 	LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
 

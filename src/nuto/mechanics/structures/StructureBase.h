@@ -751,8 +751,9 @@ public:
     //! @return elastic energy
     double ElementTotalGetElasticEnergy();
 
-    //! @brief calculate the critical time step for all elements solving the generalized eigenvalue problem Ku=lambda Mu
-    double ElementTotalCalculateCriticalTimeStep();
+    //! @brief calculate the largest element eigenvalue for all elements solving the generalized eigenvalue problem Ku=lambda Mu
+    //! this is used for the estimation of the critical time step
+    double ElementTotalCalculateLargestElementEigenvalue();
 
     //*************************************************
     //************ Constraint routines     ***************

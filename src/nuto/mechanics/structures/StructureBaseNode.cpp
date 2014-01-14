@@ -843,13 +843,12 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     }
     if (nodeId==-1)
     {
-    	std::cout << "coordinate position " << rCoordinates.Trans() << std::endl;
-        throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] no node within the range could be found.");
+    	mLogger << "[NuTo::StructureBase::NodeGetIdAtCoordinate] no node could be found, return -1 as node id\n";
     }
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::NodeGetIdAtCoordinate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    	mLogger <<"[NuTo::StructureBase::NodeGetIdAtCoordinate] " << difftime(end,start)/CLOCKS_PER_SEC << "sec\n";
 #endif
     return nodeId;
 }

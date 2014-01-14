@@ -1956,7 +1956,7 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
 
 
 //! @brief calculate the critical time step for all elements solving the generalized eigenvalue problem Ku=lambda Mu
-double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
+double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -2068,7 +2068,7 @@ double NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep()
 #endif //_OPENMP
 #endif // SHOW_TIME
 
-    return 2./std::sqrt(maxGlobalEigenValue);
+    return maxGlobalEigenValue;
 
 }
 

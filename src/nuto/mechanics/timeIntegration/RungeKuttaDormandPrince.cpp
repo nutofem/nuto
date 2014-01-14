@@ -35,6 +35,15 @@ void NuTo::RungeKuttaDormandPrince::Info()const
 	TimeIntegrationBase::Info();
 }
 
+//! @brief calculate the critical time step for explicit routines
+//! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+//! this is the critical time step from velocity verlet, the real one is certainly larger
+double NuTo::RungeKuttaDormandPrince::CalculateCriticalTimeStep()const
+{
+	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
+	return 2./std::sqrt(maxGlobalEigenValue);
+}
+
 //! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
 // so essentially it's c_n-c_(n-1)
 double NuTo::RungeKuttaDormandPrince::GetStageTimeFactor(int rStage)const

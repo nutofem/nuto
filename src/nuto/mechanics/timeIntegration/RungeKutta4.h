@@ -25,6 +25,16 @@ public:
     //! @brief constructor
     RungeKutta4(StructureBase* rStructure);
 
+    //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
+    bool HasCriticalTimeStep()const
+    {
+    	return true;
+    }
+
+    //! @brief calculate the critical time step for explicit routines
+    //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+    double CalculateCriticalTimeStep()const;
+
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class

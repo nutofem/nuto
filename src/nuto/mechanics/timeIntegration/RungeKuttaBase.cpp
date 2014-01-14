@@ -75,7 +75,16 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     try
     {
         if (mTimeStep==0.)
-            mTimeStep = mStructure->ElementTotalCalculateCriticalTimeStep();
+        {
+        	if (this->HasCriticalTimeStep())
+        	{
+        		mTimeStep = this->CalculateCriticalTimeStep();
+        	}
+        	else
+        	{
+                throw MechanicsException("[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
+        	}
+        }
 
         std::cout << "modify computation of critical time step to include the dependence on the time integration scheme." <<std::endl;
         //calculate instead the smallest eigenfrequency, depending on the time integration this gives the critical time step

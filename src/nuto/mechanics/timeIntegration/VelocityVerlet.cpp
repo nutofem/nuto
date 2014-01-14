@@ -36,6 +36,14 @@ void NuTo::VelocityVerlet::Info()const
 	TimeIntegrationBase::Info();
 }
 
+//! @brief calculate the critical time step for explicit routines
+//! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+double NuTo::VelocityVerlet::CalculateCriticalTimeStep()const
+{
+	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
+	return 2./std::sqrt(maxGlobalEigenValue);
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::VelocityVerlet::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -75,7 +83,16 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
     try
     {
         if (mTimeStep==0.)
-            mTimeStep = mStructure->ElementTotalCalculateCriticalTimeStep();
+        {
+        	if (this->HasCriticalTimeStep())
+        	{
+        		mTimeStep = this->CalculateCriticalTimeStep();
+        	}
+        	else
+        	{
+                throw MechanicsException("[NuTo::VelocityVerlet::Solve] time step not set for unconditional stable algorithm.");
+        	}
+        }
 
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;

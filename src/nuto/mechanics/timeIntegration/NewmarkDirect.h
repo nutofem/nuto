@@ -35,6 +35,19 @@ public:
     	return mMinLineSearchStep;
     }
 
+    //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
+    bool HasCriticalTimeStep()const
+    {
+    	return false;
+    }
+
+    //! @brief calculate the critical time step for explicit routines
+    //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+    double CalculateCriticalTimeStep()const
+    {
+    	return 0;
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

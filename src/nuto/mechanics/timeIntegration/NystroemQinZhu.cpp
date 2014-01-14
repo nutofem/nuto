@@ -147,6 +147,16 @@ double NuTo::NystroemQinZhu::GetStageWeights2(int rStage)const
 	return s;
 }
 
+//! @brief calculate the critical time step for explicit routines
+//! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
+//! this is the critical time step from velocity verlet, the real one is certainly larger
+double NuTo::NystroemQinZhu::CalculateCriticalTimeStep()const
+{
+	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
+	return 2./std::sqrt(maxGlobalEigenValue);
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::NystroemQinZhu::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
