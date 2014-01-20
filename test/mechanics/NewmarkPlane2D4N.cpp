@@ -249,6 +249,7 @@ try
 
     //5 timesteps to capture the quarter wave (5/quarter wave)
     //myIntegrationScheme.SetMaxTimeStep(period/20.);
+    myIntegrationScheme.SetTimeStep(10);
     myIntegrationScheme.SetMaxTimeStep(10);
     myIntegrationScheme.SetMinTimeStep(0.001*myIntegrationScheme.GetMaxTimeStep());
 

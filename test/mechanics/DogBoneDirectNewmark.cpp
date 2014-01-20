@@ -315,6 +315,7 @@ try
 
     myIntegrationScheme.SetTimeDependentConstraint(constraintTopDisp, dispRHS);
     myIntegrationScheme.SetMaxTimeStep(simulationTime/numLoadSteps);
+    myIntegrationScheme.SetTimeStep(simulationTime/numLoadSteps);
     myIntegrationScheme.SetAutomaticTimeStepping(true);
     myIntegrationScheme.SetMinTimeStep(1e-5*myIntegrationScheme.GetMaxTimeStep());
     myIntegrationScheme.SetToleranceForce(1e-5);
