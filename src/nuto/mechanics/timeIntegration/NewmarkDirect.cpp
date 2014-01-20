@@ -238,7 +238,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
         PostProcess(prevResidual_j, prevResidual_k);
 
-        double timeStep = mMaxTimeStep;
+        double timeStep = mTimeStep;
         while (curTime < rTimeDelta)
         {
             //apply constraints for last converged time step
@@ -706,7 +706,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 				PostProcess(prevResidual_j, prevResidual_k);
 
                 //eventually increase next time step
-                if (iteration<0.25*mMaxNumIterations)
+                if (mAutomaticTimeStepping && iteration<0.25*mMaxNumIterations)
                 {
                     timeStep*=1.5;
                     if (timeStep>mMaxTimeStep)

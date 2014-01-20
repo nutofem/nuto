@@ -36,6 +36,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo
 {
 	mTime = 0.;
 	mLoadStep = 1;
+	mTimeStep = 0;
 	mMaxTimeStep = 1;
 	mMinTimeStep = 0;
     mLoadStep = 0;
@@ -437,6 +438,7 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mTimeStepResult)
        & BOOST_SERIALIZATION_NVP(mTimeStepVTK)
        & BOOST_SERIALIZATION_NVP(mLoadStep)
+       & BOOST_SERIALIZATION_NVP(mTimeStep)
        & BOOST_SERIALIZATION_NVP(mMaxTimeStep)
        & BOOST_SERIALIZATION_NVP(mMinTimeStep)
        & BOOST_SERIALIZATION_NVP(mLoadStep)

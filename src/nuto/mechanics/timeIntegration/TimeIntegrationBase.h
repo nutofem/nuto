@@ -71,8 +71,20 @@ public:
     //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
     //! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
     //! @param rOutOfBalance_k ... residual of the  dependent dofs
-     void PostProcess(const FullVector<double,Eigen::Dynamic>& rOutOfBalance_j,
+    void PostProcess(const FullVector<double,Eigen::Dynamic>& rOutOfBalance_j,
     		          const FullVector<double,Eigen::Dynamic>& rOutOfBalance_k);
+
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    void SetTimeStep(double rTimeStep)
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    double GetTimeStep()const
+    {
+        return mTimeStep;
+    }
 
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
@@ -196,7 +208,9 @@ protected:
 	double mTime;
     //adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
 	bool mAutomaticTimeStepping;
-    //maximum time step (that's what we start with)
+	//initial time step (or at the end this is the last time step used)
+	double mTimeStep;
+    //maximum time step (for adaptive simulations)
 	double mMaxTimeStep;
     //minimum time step (for adaptive simulations)
 	double mMinTimeStep;

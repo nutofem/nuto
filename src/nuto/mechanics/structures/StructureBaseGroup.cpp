@@ -308,42 +308,85 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
     if(rMin>rMax)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] The minimum radius must not be larger than the maximum radius.");
 
-    if (mDimension!=3)
-        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] only implemented for 3D.");
-
-
-    std::vector<std::pair<int,NodeBase*> > nodeVector;
-    this->GetNodesTotal(nodeVector);
-    FullVector<double,3> coordinates;
-    FullVector<double,3> vecPtrCenter;
-    FullVector<double,3> vecPtrProjection;
-    FullVector<double,3> vecDelta;
-    double rMin2 = rMin*rMin;
-    double rMax2 = rMax*rMax;
-
-    //normalize Diretion Vector
-    rDirection*=1./rDirection.Norm();
-
-    for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+    switch (mDimension)
     {
-        NodeBase* nodePtr(nodeVector[countNode].second);
-        if (nodePtr->GetNumCoordinates()<1)
-            continue;
-        double r2(0.);
-		nodePtr->GetCoordinates3D(coordinates.data());
-		vecPtrCenter = coordinates - rCenter;
+    case 2:
+    {
+        std::vector<std::pair<int,NodeBase*> > nodeVector;
+        this->GetNodesTotal(nodeVector);
+        FullVector<double,2> coordinates;
+        FullVector<double,2> vecPtrCenter;
+        FullVector<double,2> vecPtrProjection;
+        FullVector<double,2> vecDelta;
+        double rMin2 = rMin*rMin;
+        double rMax2 = rMax*rMax;
 
-		//get projection onto axis
-		double s = rDirection.transpose()*vecPtrCenter;
-		vecPtrProjection = rCenter+rDirection*s;
-		vecDelta = coordinates - vecPtrProjection;
+        //normalize Diretion Vector
+        rDirection*=1./rDirection.Norm();
 
-		r2 = (vecDelta(0)*vecDelta(0) + vecDelta(1)*vecDelta(1) + vecDelta(2)*vecDelta(2));
+        for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+        {
+            NodeBase* nodePtr(nodeVector[countNode].second);
+            if (nodePtr->GetNumCoordinates()!=2)
+                continue;
+            double r2(0.);
+    		nodePtr->GetCoordinates2D(coordinates.data());
+    		vecPtrCenter = coordinates - rCenter;
 
-		if (r2>=rMin2 && r2<=rMax2)
-		{
-            itGroup->second->AddMember(nodeVector[countNode].first,nodePtr);
-		}
+    		//get projection onto axis
+    		double s = rDirection.transpose()*vecPtrCenter;
+    		vecPtrProjection = rCenter+rDirection*s;
+    		vecDelta = coordinates - vecPtrProjection;
+
+    		r2 = (vecDelta(0)*vecDelta(0) + vecDelta(1)*vecDelta(1));
+
+    		if (r2>=rMin2 && r2<=rMax2)
+    		{
+                itGroup->second->AddMember(nodeVector[countNode].first,nodePtr);
+    		}
+        }
+    	break;
+    }
+    case 3:
+    {
+        std::vector<std::pair<int,NodeBase*> > nodeVector;
+        this->GetNodesTotal(nodeVector);
+        FullVector<double,3> coordinates;
+        FullVector<double,3> vecPtrCenter;
+        FullVector<double,3> vecPtrProjection;
+        FullVector<double,3> vecDelta;
+        double rMin2 = rMin*rMin;
+        double rMax2 = rMax*rMax;
+
+        //normalize Diretion Vector
+        rDirection*=1./rDirection.Norm();
+
+        for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+        {
+            NodeBase* nodePtr(nodeVector[countNode].second);
+            if (nodePtr->GetNumCoordinates()!=3)
+                continue;
+            double r2(0.);
+    		nodePtr->GetCoordinates3D(coordinates.data());
+    		vecPtrCenter = coordinates - rCenter;
+
+    		//get projection onto axis
+    		double s = rDirection.transpose()*vecPtrCenter;
+    		vecPtrProjection = rCenter+rDirection*s;
+    		vecDelta = coordinates - vecPtrProjection;
+
+    		r2 = (vecDelta(0)*vecDelta(0) + vecDelta(1)*vecDelta(1) + vecDelta(2)*vecDelta(2));
+
+    		if (r2>=rMin2 && r2<=rMax2)
+    		{
+                itGroup->second->AddMember(nodeVector[countNode].first,nodePtr);
+    		}
+        }
+    	break;
+    }
+    default:
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] Only implemented for 2D and 3D.");
+
     }
 #ifdef SHOW_TIME
     end=clock();

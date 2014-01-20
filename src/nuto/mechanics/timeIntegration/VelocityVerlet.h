@@ -69,23 +69,9 @@ public:
     //! @return    class name
     std::string GetTypeId()const;
 
-    //! @brief ... Return time step
-    double GetTimeStep()const
-    {
-    	return mTimeStep;
-    }
-
-    //! @brief ... Return time step
-    void SetTimeStep(double rTimeStep)
-    {
-    	mTimeStep = rTimeStep;
-    }
-
 protected:
     //empty private construct required for serialization
     VelocityVerlet(){};
-	//time step for the time integration, be careful not to make it smaller than the critical time step
-    double mTimeStep;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
