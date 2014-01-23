@@ -43,6 +43,7 @@ public:
 		{
 			throw MechanicsException("[NuTo::Plane2D4NSpectral::Plane2D4NSpectral] Number of nodes and integration points must be identical for spectral elements.");
 		}
+
 		//calculate coordinates
 		int numLocalCoordinates(2*GetNumNodesGeometry());
 		std::vector<double> localNodeCoord(numLocalCoordinates);
@@ -413,7 +414,7 @@ public:
 			break;
     	case 3:
 			{
-				int theNode=GetNumNodesField()-GetNumNodesField1D()-1;
+				int theNode=GetNumNodesField()-GetNumNodesField1D();
 				for (int count=0; count<GetNumNodesField1D(); count++)
 				{
 					rSurfaceNodes[count] = mNodes[theNode];

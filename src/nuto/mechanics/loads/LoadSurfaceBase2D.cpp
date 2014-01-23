@@ -47,7 +47,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
         		{
         			if (nodePtrSet.find(surfaceNodes[countNode])==nodePtrSet.end())
         			{
-        				//this surface has at least on node that is not in the list, continue
+        				//this surface has at least one node that is not in the list, continue
         				addSurface=false;
         			}
         		}
@@ -93,7 +93,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 {
     if (rLoadCase!=mLoadCase)
     	return;
-	for (unsigned int countPlaneElement=0; countPlaneElement<mPlaneElements.size(); countPlaneElement++)
+    for (unsigned int countPlaneElement=0; countPlaneElement<mPlaneElements.size(); countPlaneElement++)
 	{
 		const Plane2D* planeElementPtr = mPlaneElements[countPlaneElement].first;
 
@@ -155,7 +155,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 				basisVector1(0) +=derivativeShapeFunctionsLocal[countNode]*nodeCoordinates[0];
 				basisVector1(1) +=derivativeShapeFunctionsLocal[countNode]*nodeCoordinates[1];
         	}
-			//std::cout << "globalIpCoordinates " << globalIpCoordinates[0] << " " << globalIpCoordinates[1]<< std::endl;
+//			std::cout << "globalIpCoordinates " << globalIpCoordinates[0] << " " << globalIpCoordinates[1]<< std::endl;
 
 			//calculate basis vectors (in the plane) and determinant of Jacobian using the cross product of the basis vectors
         	basisVector2(0) = basisVector1(1);
@@ -169,9 +169,10 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 			//calculate surface load
         	FullVector<double,2> loadVector;
 			CalculateSurfaceLoad(globalIpCoordinates, basisVector2, loadVector);
-			loadVector*=factor;
-
 			//std::cout << "load vector \n" << loadVector << std::endl;
+			loadVector*=factor;
+			//std::cout << "load vector with weights \n" << loadVector << std::endl;
+
 			//std::cout << "  detJ " << detJ << " weight " << integrationType->GetIntegrationPointWeight(countIp) << std::endl;
 			//std::cout << "  shape functions " << std::endl;
 			//for (unsigned int count=0; count<shapeFunctions.size(); count++)

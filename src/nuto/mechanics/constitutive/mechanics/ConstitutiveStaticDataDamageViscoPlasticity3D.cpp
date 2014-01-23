@@ -75,9 +75,10 @@ void NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::serialize(Archive & ar
     std::cout << "start serialize ConstitutiveStaticDataDamageViscoPlasticity3D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain3D)
-       & BOOST_SERIALIZATION_NVP(mOmega)
-       & BOOST_SERIALIZATION_NVP(mKappa)
-       & BOOST_SERIALIZATION_NVP(mEpsilonP);
+       & BOOST_SERIALIZATION_NVP(mKappaP)
+       & BOOST_SERIALIZATION_NVP(mOmegaP)
+       & BOOST_SERIALIZATION_NVP(mEpsilonP)
+       & BOOST_SERIALIZATION_NVP(mVP);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataDamageViscoPlasticity3D" << std::endl;
 #endif

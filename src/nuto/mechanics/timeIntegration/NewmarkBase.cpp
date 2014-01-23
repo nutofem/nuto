@@ -42,6 +42,7 @@ NuTo::NewmarkBase::NewmarkBase (StructureBase* rStructure)  : TimeIntegrationBas
 	mDampedEnergy = 0.;
 
 	mIsDynamic = false;
+	mUseLumpedMass = false;
 }
 
 bool NuTo::NewmarkBase::IsDynamic()const
@@ -77,7 +78,10 @@ void NuTo::NewmarkBase::serialize(Archive & ar, const unsigned int version)
 	       & BOOST_SERIALIZATION_NVP(mInternalEnergy)
 	       & BOOST_SERIALIZATION_NVP(mExternalEnergy)
 	       & BOOST_SERIALIZATION_NVP(mKineticEnergy)
-	       & BOOST_SERIALIZATION_NVP(mDampedEnergy);
+	       & BOOST_SERIALIZATION_NVP(mDampedEnergy)
+	       & BOOST_SERIALIZATION_NVP(mIsDynamic)
+	       & BOOST_SERIALIZATION_NVP(mUseLumpedMass);
+
 
 
     #ifdef DEBUG_SERIALIZATION

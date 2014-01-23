@@ -139,6 +139,11 @@ public:
     //! @return ... transpose of this matrix (sparse csr storage)
     SparseMatrixCSRVector2General<T> Transpose() const;
 
+    //! @brief ... add the scaled other diagonal matrix
+    //! @param rOther ... other vector interpreted as diagonal matrix
+    //! @param rFactor ... scalar factor
+    void AddScalDiag(const NuTo::FullVector<T, Eigen::Dynamic> &rOther, double rFactor);
+
     //! @brief ... add the scaled other matrix
     //! @param rOther ... other matrix
     //! @param rFactor ... scalar factor

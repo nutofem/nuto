@@ -111,7 +111,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
 
         //calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use asDiagonal()
         NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j(mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> massMatrix_k;
+        NuTo::FullVector<double,Eigen::Dynamic> massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 
         //extract displacements, velocities and accelerations
         NuTo::FullVector<double,Eigen::Dynamic> disp_j, vel_j, acc_j,acc_new_j,tmp_k;

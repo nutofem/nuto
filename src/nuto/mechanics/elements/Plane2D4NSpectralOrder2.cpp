@@ -28,9 +28,9 @@ template<>
 void NuTo::Plane2D4NSpectral<2>::CalculateShapeFunctionsField1D(double rNaturalCoordinate, std::vector<double>& rShapeFunctions)const
 {
 	assert(((int)rShapeFunctions.size())==GetNumNodesField1D());
-	rShapeFunctions[0] = 0.5*rNaturalCoordinate*(1.+rNaturalCoordinate);
+	rShapeFunctions[0] = 0.5*rNaturalCoordinate*(-1.+rNaturalCoordinate);
 	rShapeFunctions[1] = 1.-(rNaturalCoordinate*rNaturalCoordinate);
-	rShapeFunctions[2] = 0.5*rNaturalCoordinate*(-1.+rNaturalCoordinate);
+	rShapeFunctions[2] = 0.5*rNaturalCoordinate*(1.+rNaturalCoordinate);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -41,9 +41,9 @@ template<>
 void NuTo::Plane2D4NSpectral<2>::CalculateDerivativeShapeFunctionsFieldNatural1D(double rNaturalCoordinate, std::vector<double>& rDerivativeShapeFunctions)const
 {
 	assert(((int)rDerivativeShapeFunctions.size())==GetNumNodesField1D());
-	rDerivativeShapeFunctions[0] = 0.5+rNaturalCoordinate;
+	rDerivativeShapeFunctions[0] = -0.5+rNaturalCoordinate;
 	rDerivativeShapeFunctions[1] = -2.*rNaturalCoordinate;
-	rDerivativeShapeFunctions[2] = -0.5+rNaturalCoordinate;
+	rDerivativeShapeFunctions[2] = 0.5+rNaturalCoordinate;
 }
 
 

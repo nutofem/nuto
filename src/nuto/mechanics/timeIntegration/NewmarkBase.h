@@ -82,6 +82,16 @@ public:
     	mIsDynamic = rIsDynamic;
     }
 
+    bool GetUseLumpedMass()const
+    {
+    	return mUseLumpedMass;
+    }
+
+    void SetUseLumpedMass(bool rUseLumpedMass)
+    {
+    	mUseLumpedMass = rUseLumpedMass;
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -114,6 +124,7 @@ protected:
 	double mDampedEnergy;
 
 	bool mIsDynamic;
+	bool mUseLumpedMass;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

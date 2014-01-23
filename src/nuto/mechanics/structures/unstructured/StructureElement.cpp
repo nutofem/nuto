@@ -981,9 +981,9 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 	deltaBox[0] = (bb[0][1]-bb[0][0])/numBoxes1D[0];
 	deltaBox[1] = (bb[1][1]-bb[1][0])/numBoxes1D[1];
 
-	//std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
-	//std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
-	//std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
+	std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
+	std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
+	std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
 	std::vector<std::vector<NodeBase*> >nodeBoxes(numBoxes1D[0]*numBoxes1D[1]);
 
 	if (rNodeDistanceMerge>deltaBox[0] || rNodeDistanceMerge>deltaBox[1])
@@ -1026,6 +1026,8 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 	unsigned int countElement(0);
 	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
 	{
+		if (itElement->second->GetEnumType()!=NuTo::Element::PLANE2D4N)
+			throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] only plane2D4N elements can be converted.");
 		oldElements[countElement].first = itElement->first;
 		oldElements[countElement].second = itElement->second;
 		countElement++;
@@ -1086,8 +1088,8 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 
 						//check if node already exists
 						//calculate corresponding box
-						int theBoxX = ((int)((newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]-1);
-						int theBoxY = ((int)((newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]-1);
+						int theBoxX = ((int)((newNodeCoordinatesGlobal[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]);
+						int theBoxY = ((int)((newNodeCoordinatesGlobal[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]);
 						int theBox = theBoxX + theBoxY*numBoxes1D[0];
 						//std::cout << "theBox "<< theBox << " x "<< theBoxX << " y " << theBoxY << std::endl;
 

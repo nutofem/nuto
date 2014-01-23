@@ -604,6 +604,22 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 	}
 	return result;
 }
+//! @brief ... add the scaled other diagonal matrix
+//! @param rOther ... other vector interpreted as diagonal matrix
+//! @param rFactor ... scalar factor
+template<class T>
+void NuTo::SparseMatrixCSRVector2General<T>::AddScalDiag(const NuTo::FullVector<T, Eigen::Dynamic> &rOther, double rFactor)
+{
+	if ((this->GetNumColumns() != rOther.GetNumRows()) || (this->GetNumRows() != rOther.GetNumRows()))
+	{
+		throw MathException("[SparseMatrixCSRVector2General::AddScal] invalid matrix dimensions.");
+	}
+	for (int row = 0; row < rOther.GetNumRows(); row++)
+	{
+		this->AddValue(row, row, rFactor*rOther[row]);
+	}
+}
+
 
 //! @brief ... add the scaled other matrix
 //! @param rOther ... other matrix
