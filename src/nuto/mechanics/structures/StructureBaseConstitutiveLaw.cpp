@@ -3,6 +3,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
@@ -41,6 +42,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "STRAINGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS")
     {
         ConstitutiveLawType = Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
+    }
+    else if (ConstitutiveLawTypeString == "DAMAGEVISCOPLASTICITYENGINEERINGSTRESS")
+    {
+        ConstitutiveLawType = Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS;
     }
     else
     {
@@ -88,6 +93,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();
+            break;
+        case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityEngineeringStress();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");

@@ -19,7 +19,8 @@ enum eConstitutiveType
     LATTICE_CONCRETE,          //!< material law for lattice model
     LINEAR_HEAT_FLUX,           //!< material law for lattice model
     GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< gradient damage plasticity model
-    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
+    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
+    DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS //!< viscoplastic damage model
 };
 
 enum eNonlocalDamageYieldSurface

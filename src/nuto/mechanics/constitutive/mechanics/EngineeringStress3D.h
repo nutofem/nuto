@@ -10,6 +10,7 @@
 
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+
 namespace NuTo
 {
 class LinearElastic;
@@ -88,6 +89,15 @@ public:
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const;
+
+    //! @brief ... calculates the norm of the stress tensor in 3D case
+    double Norm() const;
+
+    double YieldSurfaceDruckerPrager3D(double rBeta, double rHP) const;
+
+    bool YieldSurfaceDruckerPrager3DDerivatives(
+    		NuTo::FullVector<double,6>& rdF_dSigma,
+    		NuTo::FullMatrix<double,6,6>& rd2F_d2Sigma, double rBETA) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

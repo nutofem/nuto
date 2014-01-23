@@ -303,7 +303,6 @@ public:
     //! @return ... see brief explanation
     virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const;
 
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

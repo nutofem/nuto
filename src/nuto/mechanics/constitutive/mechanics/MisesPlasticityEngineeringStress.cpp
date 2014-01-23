@@ -120,7 +120,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
     	CheckParameters();
     }
 
-    //Calulate strain
+    //Calculate strain
     EngineeringStrain3D engineeringStrain;
 	// calculate engineering strain
     auto itDeformationGradient = rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D);
@@ -129,7 +129,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
 	const DeformationGradient3D& deformationGradient(itDeformationGradient->second->GetDeformationGradient3D());
 	deformationGradient.GetEngineeringStrain(engineeringStrain);
 
-	//substract thermal strain
+	//subtract thermal strain
 	EngineeringStrain3D elasticEngineeringStrain(engineeringStrain);
 	// if temperature is an input, subtract thermal strains to get elastic strains
 	if (section->GetInputConstitutiveIsTemperature())

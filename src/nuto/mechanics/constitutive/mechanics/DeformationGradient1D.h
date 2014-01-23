@@ -216,6 +216,11 @@ public:
     //! @param rGreenStrain ... Green strain components
     void GetGreenLagrangeStrain(NuTo::GreenLagrangeStrain3D&  rGreenLagrangeStrain) const;
 
+    void SetData(double rData)
+    {
+    	mDeformationGradient = rData;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
