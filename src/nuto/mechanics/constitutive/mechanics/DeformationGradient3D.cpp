@@ -66,6 +66,15 @@ void NuTo::DeformationGradient3D::SetDeformationGradient3D(const double* rDeform
     }
 }
 
+// info routine
+void NuTo::DeformationGradient3D::Info() const
+{
+    std::cout << "    components of deformation gradient (vector notation, columns): " << std::endl
+              << mDeformationGradient[0] << ", " << mDeformationGradient[3] << ", " << mDeformationGradient[6] << ", " << std::endl
+              << mDeformationGradient[1] << ", " << mDeformationGradient[4] << ", " << mDeformationGradient[7] << ", " << std::endl
+              << mDeformationGradient[2] << ", " << mDeformationGradient[5] << ", " << mDeformationGradient[8] << std::endl;
+}
+
 // calculate engineering strain
 void NuTo::DeformationGradient3D::GetEngineeringStrain(NuTo::EngineeringStrain3D& rEngineeringStrain) const
 {

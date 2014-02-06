@@ -90,6 +90,8 @@ enum eOutput
 	ENGINEERING_STRAIN_2D,           //!<
 	ENGINEERING_STRAIN_3D,           //!<
 	ENGINEERING_PLASTIC_STRAIN_3D,   //!<
+	ENGINEERING_VISCOPLASTIC_STRAIN_3D,  	//!<
+	ENGINEERING_TOTAL_INELASTIC_STRAIN_3D,  //!<
 	ENGINEERING_STRESS_1D,           //!<
 	ENGINEERING_STRESS_2D,           //!<
 	ENGINEERING_STRESS_3D,           //!<
@@ -131,6 +133,8 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::ENGINEERING_STRAIN_2D, "ENGINEERING_STRAIN_2D" )
                               (Output::ENGINEERING_STRAIN_3D, "ENGINEERING_STRAIN_3D" )
                               (Output::ENGINEERING_PLASTIC_STRAIN_3D, "ENGINEERING_PLASTIC_STRAIN_3D" )
+                              (Output::ENGINEERING_VISCOPLASTIC_STRAIN_3D, "ENGINEERING_VISCOPLASTIC_STRAIN_3D" )
+                              (Output::ENGINEERING_TOTAL_INELASTIC_STRAIN_3D, "ENGINEERING_TOTAL_INELASTIC_STRAIN_3D" )
                               (Output::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
                               (Output::ENGINEERING_STRESS_2D,"ENGINEERING_STRESS_2D")
                               (Output::ENGINEERING_STRESS_3D,"ENGINEERING_STRESS_3D")

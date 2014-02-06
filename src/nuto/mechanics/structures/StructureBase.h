@@ -1560,6 +1560,18 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const;
 
+    //! @brief set the beginning of the time increment to the structure
+    void SetPrevTime(double rPrevTime);
+
+    //! @brief get the beginning of the time increment of the structure
+    double GetPrevTime() const;
+
+    //! @brief set the end of the time increment to the structure (current time)
+    void SetTime(double rTime);
+
+    //! @brief get the end of the time increment of the structure (current time)
+    double GetTime() const;
+
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
     void SetToleranceStiffnessEntries(double rToleranceStiffnessEntries);
@@ -1659,6 +1671,12 @@ public:
 
 
 protected:
+    //! @brief ... storing the beginning of the time increment
+	double mPrevTime;
+
+    //! @brief ... storing the end of the time increment (current time)
+	double mTime;
+
     int mDimension;
 
     //! @brief ... map storing the name and the pointer to the constitutive law

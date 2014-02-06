@@ -16,7 +16,7 @@
 //! @brief constructor
 NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::ConstitutiveStaticDataDamageViscoPlasticity3D() : ConstitutiveStaticDataPrevEngineeringStressStrain3D()
 {
-	mOmegaP = 0.;
+	mOmegaCompr = 0.;
 	mKappaP = 0.;
 	mVP     = 0.;
 
@@ -31,7 +31,7 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::ConstitutiveStaticDataDamag
 NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D& NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::operator= (NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D const& rOther)
 {
     NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::operator= (rOther);
-    mOmegaP = rOther.mOmegaP;
+    mOmegaCompr = rOther.mOmegaCompr;
     mKappaP= rOther.mKappaP;
     mVP = rOther.mVP;
     mEpsilonP[0] = rOther.mEpsilonP[0];
@@ -58,6 +58,18 @@ bool NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::CheckConstitutiveCompa
 		return false;
 }
 
+//!@ brief reinterpret as damage viscoplasticity 3D static data
+NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D* NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::AsDamageViscoPlasticity3D()
+{
+    return this;
+}
+
+//!@ brief reinterpret as damage viscoplasticity 3D static data
+const NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D* NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::AsDamageViscoPlasticity3D()const
+{
+    return this;
+}
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive
@@ -75,8 +87,8 @@ void NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::serialize(Archive & ar
     std::cout << "start serialize ConstitutiveStaticDataDamageViscoPlasticity3D" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain3D)
+       & BOOST_SERIALIZATION_NVP(mOmegaCompr)
        & BOOST_SERIALIZATION_NVP(mKappaP)
-       & BOOST_SERIALIZATION_NVP(mOmegaP)
        & BOOST_SERIALIZATION_NVP(mEpsilonP)
        & BOOST_SERIALIZATION_NVP(mVP);
 #ifdef DEBUG_SERIALIZATION

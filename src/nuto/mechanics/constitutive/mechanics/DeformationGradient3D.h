@@ -61,6 +61,9 @@ public:
     //! @sa mDeformationGradient
     void SetDeformationGradient3D(const double* rDeformationGradient);
 
+    //! @brief ... prints the components of deformation gradient by columns
+    void Info() const;
+
     //! @brief ... calculate engineering (Cauchy) strain from deformation gradient
     /*!
      *  In the three-dimensional case the components of the engineering strain tensor read

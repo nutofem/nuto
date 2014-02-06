@@ -17,7 +17,7 @@ class ConstitutiveStaticDataDamageViscoPlasticity3D : public ConstitutiveStaticD
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ConstitutiveStaticDataMisesPlasticity3D;
+    friend class DamageViscoPlasticityEngineeringStress;
 public:
 	//! @brief constructor
     ConstitutiveStaticDataDamageViscoPlasticity3D();
@@ -40,6 +40,12 @@ public:
     //! @brief check, if the static data is compatible with a given element and a given constitutive model
     virtual bool CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const;
 
+    //!@ brief reinterpret as damage viscoplasticity static data
+    ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D();
+
+    //!@ brief reinterpret as damage viscoplasticity static data
+    const ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D()const;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -52,11 +58,11 @@ protected:
     //! @brief accumulated plastic strain
     double mKappaP;
 
-    //! @brief local damage variable associated with plastic strain
-    double mOmegaP;
+    //! @brief local damage variable associated with plastic strain (compressive damage)
+    double mOmegaCompr;
 
     //! @brief plastic strain
-    double mEpsilonP[6];
+    EngineeringStrain3D mEpsilonP;
 
     //! @brief plasticity state variable
     double mVP;

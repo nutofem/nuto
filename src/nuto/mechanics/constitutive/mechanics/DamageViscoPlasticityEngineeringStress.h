@@ -7,6 +7,9 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
+
 //#include "nuto/optimize/NewtonRaphson.h"
 
 using namespace std;
@@ -81,7 +84,7 @@ public:
     		EngineeringStress3D* rNewStress,
     		ConstitutiveTangentLocal<6,6>* rNewTangent,
     		ConstitutiveStaticDataDamageViscoPlasticity3D* rNewStaticData,
-    		Logger& rLogger)const;
+    		Logger& rLogger) const;
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -234,45 +237,192 @@ protected:
 
 private:
 
+#define Plus(rVP) ((rVP >= 0.)?rVP:0.)				// define McCauley brackets
+#define Sgn(rVP) ((rVP >= 0.)?1.:0.)				// define sgn function
+#define DELTA(i, j) ((i==j)?1:0)					// define Kronecker Symbol
+#define mTOLF 1.0e-07*this->mE/100.					// define tolerance for Newton
+
+
     //! @brief ... calculates the residual vector of an incremental formulation
     //! @brief ... rElasticEngineeringStrain ... elastic engineering strain at the end of time increment
-    NuTo::FullVector<double,Eigen::Dynamic> Residual(NuTo::FullVector<double,Eigen::Dynamic> rz) const
+    NuTo::FullVector<double,Eigen::Dynamic> Residual(
+    		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
 //    		const EngineeringStrain3D& rElasticEngineeringStrain) const
 		{
-			NuTo::FullVector<double,Eigen::Dynamic> residual(rz.GetNumRows());
+			NuTo::FullVector<double,Eigen::Dynamic> residual(rUnknown.GetNumRows());
 
-			residual[0] = 2.*rz[1]*rz[2] + 2.*rz[0]*rz[1];
-			residual[1] = rz[1]*rz[1] + 2.*rz[0]*rz[2];
-			residual[2] = rz[1]*rz[1] + rz[2]*rz[2] -3.;
+			EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
+			EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
+			double rDeltaTime, rBeta, rHP;			// time increment, rBeta, rP
+
+			EngineeringStress3D rDeltaStress;		// stress increment
+			double rVP;								// state variable, its positive counterpart is cumulative plastic strain rate
+
+			// initialization of physical values from the vectors rParameter and rUnknown = rz
+			for (int i = 0; i < 6; i++) {
+				rDeltaStrain[i] = rParameter[i];	// rParameter(0:5) increment of mechanical strain
+				rPrevStress[i] = rParameter[i+6];	// rParameter(6:11) stress at the beginning of the time increment
+				rDeltaStress[i] =rUnknown[i];		// rUnknown(0:5) stress increment
+			}
+
+			rDeltaTime = rParameter[12]; 			// rParameter(12) time increment itself
+			rBeta = rParameter[13];					// rParameter(13) rBeta
+			rHP = rParameter[14];					// rParameter(14) rHP
+
+			rVP = rUnknown[6];						// rUnknown(6) is the state variable associated with cumulative plastic flow rate
+
+			// elastic stiffness
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+			double C11, C12, C44;
+			this->CalculateCoefficients3D(C11, C12, C44);
+			ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
+								C12, C11, C12,  0., 0.,  0.,
+								C12, C12, C11,  0., 0.,  0.,
+								 0.,  0.,  0., C44, 0.,  0.,
+								 0.,  0.,  0.,  0., C44, 0.,
+								 0.,  0.,  0.,  0., 0., C44;
+
+			NuTo::FullMatrix<double,6,6> rd2F_d2Sigma;	// The second derivative of the flow surface by the stress
+			NuTo::FullVector<double,6> rdF_dSigma;		// The firtst derivatife of the flow surface by the stress
+			EngineeringStress3D rStress;				// Stress at the end of the time increment
+
+			// calculate rStress and derivatives of the flow surface by the rStress
+			rStress = rPrevStress + rDeltaStress;
+			rStress.YieldSurfaceDruckerPrager3DDerivatives(rdF_dSigma,rd2F_d2Sigma, rBeta);
+
+			// calculate residual with respect to the stress increments, that is residual(0:5)
+			residual.segment<6>(0) = rDeltaStress - ElasticStiffness*
+					(rDeltaStrain - rDeltaTime*Plus(rVP)*rdF_dSigma);
+
+			// calculate residual with respect to the cumulative plastic strain rate, that is residual(6)
+			residual[6] = this->mE*rDeltaTime*(rVP - Plus(rVP)) -
+					rStress.YieldSurfaceDruckerPrager3D(rBeta, rHP);
+
+
+//			residual[0] = 2.*rUnknown[1]*rUnknown[2] + 2.*rUnknown[0]*rUnknown[1];
+//			residual[1] = rUnknown[1]*rUnknown[1] + 2.*rUnknown[0]*rUnknown[2];
+//			residual[2] = rUnknown[1]*rUnknown[1] + rUnknown[2]*rUnknown[2] -3.;
 
 			return residual;
 		}
 
+    //! @brief ... calculates the analytical matrix:= derivative of the Residual by dEngineeringStress3D
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualDEpsAn(NuTo::FullVector<double,Eigen::Dynamic> rz) const
+		{
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rz.GetNumRows(),6);
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    	double C11, C12, C44;
+    	this->CalculateCoefficients3D(C11, C12, C44);
+    	ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
+    						C12, C11, C12,  0., 0.,  0.,
+    						C12, C12, C11,  0., 0.,  0.,
+    						 0.,  0.,  0., C44, 0.,  0.,
+    						 0.,  0.,  0.,  0., C44, 0.,
+    						 0.,  0.,  0.,  0., 0., C44;
+
+    	for (int i = 0; i < 6; ++i) {
+			for (int j = 0; j < 6; ++j) {
+				deriv(i,j) = -ElasticStiffness(i,j);
+			}
+		}
+
+		for (int j = 0; j < 6; ++j) {
+			deriv(6,j) = 0.;
+		}
+
+        return deriv;
+		}
+
     //! @brief ... calculates the analytical Jacobi matrix:= derivative of the Residual
     //! @brief ... rElasticEngineeringStrain ... elastic engineering strain at the end of time increment
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualAn(NuTo::FullVector<double,Eigen::Dynamic> rz) const
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualAn(
+    		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
 //    		const EngineeringStrain3D& rElasticEngineeringStrain) const
 		{
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rz.GetNumRows(),rz.GetNumRows());
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.GetNumRows(),rUnknown.GetNumRows());
 
-			deriv(0,0) = 2*rz[1];
-			deriv(0,1) = 2*rz[0] + 2*rz[2];
-			deriv(0,2) = 2*rz[1];
+			EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
+			EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
+			double rDeltaTime, rBeta, rHP;		  // time increment, rBeta, rP
 
-			deriv(1,0) = 2*rz[2];
-			deriv(1,1) = 2*rz[1];
-			deriv(1,2) = 2*rz[0];
+			EngineeringStress3D rDeltaStress;		// stress increment
+			double rVP;								// state variable, its positive counterpart is cumulative plastic strain rate
 
-			deriv(2,0) = 0.;
-			deriv(2,1) = 2*rz[1];
-			deriv(2,2) = 2*rz[2];
+			// initialization of physical values from the vectors rParameter and rUnknown = rz
+			for (int i = 0; i < 6; i++) {
+				rDeltaStrain[i] = rParameter[i];	// rParameter(0:5) increment of mechanical strain
+				rPrevStress[i] = rParameter[i+6];	// rParameter(6:11) stress at the beginning of the time increment
+				rDeltaStress[i] =rUnknown[i];		// rUnknown(0:5) stress increment
+			}
+
+			rDeltaTime = rParameter[12]; 			// rParameter(12) time increment itself
+			rBeta = rParameter[13];					// rParameter(13) rBeta
+			rHP = rParameter[14];					// rParameter(14) rHP
+
+			rVP = rUnknown[6];						// rUnknown(6) is the state variable associated with cumulative plastic flow rate
+
+			// elastic stiffness
+			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+			double C11, C12, C44;
+			this->CalculateCoefficients3D(C11, C12, C44);
+			ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
+								C12, C11, C12,  0., 0.,  0.,
+								C12, C12, C11,  0., 0.,  0.,
+								 0.,  0.,  0., C44, 0.,  0.,
+								 0.,  0.,  0.,  0., C44, 0.,
+								 0.,  0.,  0.,  0., 0., C44;
+
+			NuTo::FullMatrix<double,6,6> rd2F_d2Sigma;		// The second derivative of the flow surface by the stress
+			NuTo::FullVector<double,6> rdF_dSigma, rTemp;	// The firtst derivatife of the flow surface by the stress, rTemp temporary vector
+			EngineeringStress3D rStress;					// Stress at the end of the time increment
+
+			// calculate rStress and derivatives of the flow surface by the rStress
+			rStress = rPrevStress + rDeltaStress;
+			rStress.YieldSurfaceDruckerPrager3DDerivatives(rdF_dSigma,rd2F_d2Sigma, rBeta);
+
+			rTemp.Zero();
+
+			// components DResidualAn(0:5,0:5)
+			for (int j = 0; j < 6; j++) {
+		    	rTemp = ElasticStiffness*rd2F_d2Sigma.col(j);
+		    	for (int i = 0; i < 6; i++) {
+		    		deriv(i,j) = DELTA(i, j) + rDeltaTime*Plus(rVP)*rTemp[i];
+				}
+			}
+			// components DResidualAn(0:5,6)
+			rTemp = ElasticStiffness*rdF_dSigma;
+			for (int i = 0; i < 6; i++) {
+				deriv(i,6) = rDeltaTime*Sgn(rVP)*rTemp[i];
+			}
+			// components DResidualAn(6,0:5)
+			for (int j = 0; j < 6; j++) {
+				deriv(6,j) = -rdF_dSigma[j];
+			}
+			// component DResidualAn(6,6)
+			deriv(6,6) = this->mE*rDeltaTime*(1. - Sgn(rVP));
+
+//			deriv(0,0) = 2*rUnknown[1];
+//			deriv(0,1) = 2*rUnknown[0] + 2*rUnknown[2];
+//			deriv(0,2) = 2*rUnknown[1];
+//
+//			deriv(1,0) = 2*rUnknown[2];
+//			deriv(1,1) = 2*rUnknown[1];
+//			deriv(1,2) = 2*rUnknown[0];
+//
+//			deriv(2,0) = 0.;
+//			deriv(2,1) = 2*rUnknown[1];
+//			deriv(2,2) = 2*rUnknown[2];
+
 
 			return deriv;
 		}
 
     //! @brief ... calculates 0.5*Residual^2 and updates fvec = Residual(rz)
-    double Fmin(NuTo::FullVector<double,Eigen::Dynamic> rz, NuTo::FullVector<double,Eigen::Dynamic> &fvec) const {
-    	fvec = this->Residual(rz);
+    double Fmin(const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> rz, NuTo::FullVector<double,Eigen::Dynamic> &fvec) const {
+    	fvec = this->Residual(rParameter,rz);
     	double sum=0;
 		sum = fvec.dot(fvec);
 		return 0.5*sum;
@@ -280,7 +430,8 @@ private:
 
     //! @brief ... calculates the numerical Jacobi matrix:= derivative of the Residual
     //! @brief ... rElasticEngineeringStrain ... elastic engineering strain at the end of time increment
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(NuTo::FullVector<double,Eigen::Dynamic> rz,
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> rz,
     		NuTo::FullVector<double,Eigen::Dynamic> &fvec) const {
     	const double EPS = 1.0e-8;
     	int n=rz.GetNumRows();
@@ -292,7 +443,7 @@ private:
     	   	if (h == 0.0) h=EPS;
     	   		xh[j]=temp+h;
     	   		h=xh[j]-temp;
-    	   		NuTo::FullVector<double,Eigen::Dynamic> f=this->Residual(xh);
+    	   		NuTo::FullVector<double,Eigen::Dynamic> f=this->Residual(rParameter,xh);
     	   		xh[j]=temp;
     	   		for (int i=0;i<n;i++)
     	   			deriv(i,j)=(f[i]-fvec[i])/h;
@@ -302,13 +453,14 @@ private:
 
     //! @brief ... the routine performs line search correction of the Newton step
 // NR    template <class T>
-    void LineSearch(NuTo::FullVector<double,Eigen::Dynamic> &xold,
+    void LineSearch(const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> &xold,
     		const double fold,
     		NuTo::FullVector<double,Eigen::Dynamic> &g,
     		NuTo::FullVector<double,Eigen::Dynamic> &p,
     		NuTo::FullVector<double,Eigen::Dynamic> &x,
 // NR    		double &f, const double stpmax, bool &check, T &func) {
-		double &f, const double stpmax, bool &check, NuTo::FullVector<double,Eigen::Dynamic> &fvec) {  // AnstattNR
+		double &f, const double stpmax, bool &check, NuTo::FullVector<double,Eigen::Dynamic> &fvec) const {  // AnstattNR
     	const double ALF=1.0e-4, TOLX=numeric_limits<double>::epsilon();
     	double a,alam,alam2=0.0,alamin,b,disc,f2=0.0;
     	double rhs1,rhs2,slope=0.0,sum=0.0,test,tmplam;
@@ -349,7 +501,7 @@ private:
     //		for (i=0;i<n;i++) x[i]=xold[i]+alam*p[i];  // OPTIMIZED
     		x = xold + alam*p; 						// OPTIMIZED
     // NR		f=func(x);
-    		f = this->Fmin(x,fvec);
+    		f = this->Fmin(rParameter,x,fvec);
     		if (alam < alamin) {
     //												// OPTIMIZED
     //			for (i=0;i<n;i++) x[i]=xold[i]; 	// OPTIMIZED
@@ -384,12 +536,14 @@ private:
 
     //! @brief ... the routine performs Newton-Raphson integration
 //NR    template <class T>
-    void Newton(NuTo::FullVector<double,Eigen::Dynamic> &x, bool &check,
+    void Newton(const NuTo::FullVector<double,Eigen::Dynamic>& rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> &x, bool &check,
 //NR    		T &vecfunc,
    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-    	(DamageViscoPlasticityEngineeringStress::*fdjacAn)(NuTo::FullVector<double,Eigen::Dynamic>) const = 0) {
+    	(DamageViscoPlasticityEngineeringStress::*fdjacAn)(const NuTo::FullVector<double,Eigen::Dynamic>&,
+    			NuTo::FullVector<double,Eigen::Dynamic>) const = 0) const{
     	const int MAXITS=200;
-    	const double TOLF=1.0e-8,TOLMIN=1.0e-12,STPMX=100.0;
+    	const double TOLF = mTOLF, TOLMIN=1.0e-12, STPMX=100.0;
     	const double TOLX=numeric_limits<double>::epsilon();
     	int its,n=x.GetNumRows();
     	double den,f,fold,stpmax,test;
@@ -399,9 +553,8 @@ private:
 //NR    	NRfdjac<T> fdjac(vecfunc);
 //NR    	NuTo::FullVector<double,Eigen::Dynamic> &fvec=fmin.fvec;
     	NuTo::FullVector<double,Eigen::Dynamic> fvec;   // AnstattNR
-
 //NR    	f=fmin(x);
-    	f = this->Fmin(x, fvec); // AnstattNR
+    	f = this->Fmin(rParameter, x, fvec); // AnstattNR
     //												// OPTIMIZED
     //	test=0.0;
     //	for (i=0;i<n;i++)							// OPTIMIZED
@@ -420,11 +573,11 @@ private:
     	for (its=0;its<MAXITS;its++) {
     		cout<< "===== Iteration =====" << its <<endl;   // Test
     		if (fdjacAn != 0) {         			// if analytical Jacobi is there
-    			fjac = (this->*fdjacAn)(x);   			// analytical Jacobi matrix
+    			fjac = (this->*fdjacAn)(rParameter,x);     	// analytical Jacobi matrix
     			cout<<"*** Analytical ***"<<endl;  	// Test
     			cout << fjac << endl;             	// Test
     		} else {                   				// if not analytic -> take numeric
-    			fjac=this->DResidualNum(x,fvec);    // numerical Jacobi matrix
+    			fjac=this->DResidualNum(rParameter,x,fvec); // numerical Jacobi matrix
     			cout<<"*** Numerical ***"<<endl;   	// Test
     			cout << fjac << endl;	           	// Test
     		}
@@ -453,7 +606,7 @@ private:
     //															// SVD SOLVER
     //		p = fjac.jacobiSvd().solve(-fvec).transpose();      // SVD SOLVER
 //NR    		LineSearch(xold,fold,g,p,x,f,stpmax,check,fmin);
-    		LineSearch(xold,fold,g,p,x,f,stpmax,check,fvec);    // AnstattNR
+    		LineSearch(rParameter,xold,fold,g,p,x,f,stpmax,check,fvec);    // AnstattNR
 
     //												// OPTIMIZED
     //		test=0.0;								// OPTIMIZED
@@ -492,11 +645,63 @@ private:
     	throw("MAXITS exceeded in newt");
     }
 
+    //! @brief ... calculates the numerical algorithmic tangent:= derivative of stress by the strain
+    //! @brief ... rParameter the list of parameters, containing rEngineeringStrain engineering strain at the end of time increment
+    //! @brief ... rUnknown, state variables (unknowns), which correspond to rParameter. rUnknown contains stress at the end of the time increment
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DStressDEpsNum(const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
+    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown, const int rDimension) const {
+    	const double EPS = 1.0e-8;
+    	int n=rDimension;  // 3D n = 6, 2D n = 4, 1D n = 1;
+		EngineeringStrain3D rDeltaStrain;   // mechanical strain increment (strain increment without thermal component)
+		EngineeringStress3D rDeltaStress;	// stress increment respective to rDeltaStrain
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(n,n);
+
+		// initialization of rDeltaStrain and rDeltaStress from the vectors rParameter and rUnknown respectively
+		for (int i = 0; i < n; i++) {
+			rDeltaStrain[i] = rParameter[i];	// rParameter(0:n-1) increment of mechanical strain
+			rDeltaStress[i] = rUnknown[i];		// rUnknown(0:n-1) stress increment
+		}
+
+		NuTo::FullVector<double,Eigen::Dynamic> rParameterPert(rParameter); // perturbated strain increment
+		NuTo::FullVector<double,Eigen::Dynamic> rUnknownPert(rUnknown);    	// respective perturbated stress increment
+		EngineeringStress3D rDeltaStressPert;								// respective perturbated stress increment
+
+    	for (int j=0;j<n;j++) {
+    		double temp = rDeltaStrain[j];
+    	   	double h = EPS;
+
+    	   	rDeltaStrain[j] = temp+h;				// perturbation of strain
+    	   	h = rDeltaStrain[j] - temp;				// remove the roundoff error
+    	   	rParameterPert[j] = rDeltaStrain[j];	// update rParameter to rParameterPert
+
+    	   	// prepare starting Newton
+    	   	bool check;
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityEngineeringStress::*fdjacAn)
+            	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+
+            // set Jacobi to analytical Jacobi
+            fdjacAn = &DamageViscoPlasticityEngineeringStress::DResidualAn;
+
+            this->Newton(rParameterPert,rUnknownPert,check,fdjacAn);
+
+    		for (int i = 0; i < n; i++) {
+    			rDeltaStressPert[i] = rUnknownPert[i];		// rUnknownPert(0:n-1), perturbated stress increment
+    		}
+
+    	   	for (int i=0;i<n;i++) {
+    	   		deriv(i,j)=(rDeltaStressPert[i]-rDeltaStress[i])/h;
+    	   	}
+
+    	   	rDeltaStrain[j] = temp;
+    	   	rParameterPert[j] = rDeltaStrain[j];
+    	   	rUnknownPert = rUnknown;
+    	}
+    	return deriv;
+    }
+
 };
 
-
 }
-
 
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::DamageViscoPlasticityEngineeringStress)

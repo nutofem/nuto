@@ -60,6 +60,27 @@ void NuTo::EngineeringStrain3D::SetData(const double rData[6])
 	(*this)[5] = rData[5];
 }
 
+//! @brief ... calculates the norm of the stress tensor in 3D case
+#define sqrt_2div3 0.81649658
+double NuTo::EngineeringStrain3D::Norm() const
+{
+	NuTo::FullVector<double,6> Strain;
+	Strain(0) = (*this)[0];  // Strain(0) = eps_11
+	Strain(1) = (*this)[1];  // Strain(1) = eps_22
+	Strain(2) = (*this)[2];  // Strain(2) = eps_33
+	Strain(3) = (*this)[3];  // Strain(3) = 2*eps_23
+	Strain(4) = (*this)[4];  // Strain(4) = 2*eps_13
+	Strain(5) = (*this)[5];  // Strain(5) = 2*eps_12
+
+    //*******************************************************************
+    //*    NorM = sqrt ( (2/3) * Strain : Strain)                                                *
+    //*******************************************************************
+    double invariante_2 = Strain(0)*Strain(0) + Strain(1)*Strain(1) + Strain(2)*Strain(2) +
+    		0.5*(Strain(3)*Strain(3) + Strain(4)*Strain(4) + Strain(5)*Strain(5));
+
+    return sqrt_2div3*std::sqrt(invariante_2);
+}
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive
