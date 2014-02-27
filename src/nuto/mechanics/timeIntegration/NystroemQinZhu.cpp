@@ -153,7 +153,7 @@ double NuTo::NystroemQinZhu::GetStageWeights2(int rStage)const
 double NuTo::NystroemQinZhu::CalculateCriticalTimeStep()const
 {
 	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
-	return 2./std::sqrt(maxGlobalEigenValue);
+	return 2.45/std::sqrt(maxGlobalEigenValue);
 }
 
 

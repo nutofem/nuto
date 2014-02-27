@@ -367,6 +367,8 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 					resultFile /= std::string("Group") + ssGroup.str() + std::string("_Elements")+ssTimeStepVTK.str()+std::string(".vtu");
 					mStructure->ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
 
+					std::cout << "export group " << mPlotElementGroups(countGroupElement) << " with " <<  mStructure->GroupGetNumMembers(mPlotElementGroups(countGroupElement)) << std::endl;
+
 					//write an additional pvd file
 					resultFile = mResultDir;
 					resultFile /= std::string("Group") + ssGroup.str() + std::string("_ElementsAll")+std::string(".pvd");

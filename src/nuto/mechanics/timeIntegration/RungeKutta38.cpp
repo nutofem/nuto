@@ -41,7 +41,7 @@ void NuTo::RungeKutta38::Info()const
 double NuTo::RungeKutta38::CalculateCriticalTimeStep()const
 {
 	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
-	return 2./std::sqrt(maxGlobalEigenValue);
+	return 2.8/std::sqrt(maxGlobalEigenValue);
 }
 
 //! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
