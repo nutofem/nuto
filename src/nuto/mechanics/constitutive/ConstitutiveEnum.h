@@ -46,6 +46,9 @@ enum eInput
 	DEFORMATION_GRADIENT_1D,           //!<
 	DEFORMATION_GRADIENT_2D,           //!<
 	DEFORMATION_GRADIENT_3D,           //!<
+	ENGINEERING_STRAIN_1D,           //!<
+	ENGINEERING_STRAIN_2D,           //!<
+	ENGINEERING_STRAIN_3D,
 	TEMPERATURE,                       //!<
 	TEMPERATURE_GRADIENT_1D,           //!<
 	TEMPERATURE_GRADIENT_2D,           //!<
@@ -65,6 +68,9 @@ static inline std::string InputToString ( const Input::eInput& e )
     boost::assign::map_list_of(Input::DEFORMATION_GRADIENT_1D, "DEFORMATION_GRADIENT_1D")
                               (Input::DEFORMATION_GRADIENT_2D, "DEFORMATION_GRADIENT_2D")
                               (Input::DEFORMATION_GRADIENT_3D,"DEFORMATION_GRADIENT_3D")
+                              (Input::ENGINEERING_STRAIN_1D, "ENGINEERING_STRAIN_1D")
+                              (Input::ENGINEERING_STRAIN_2D, "ENGINEERING_STRAIN_2D")
+                              (Input::ENGINEERING_STRAIN_3D,"ENGINEERING_STRAIN_3D")
                               (Input::TEMPERATURE,"TEMPERATURE")
                               (Input::TEMPERATURE_GRADIENT_1D,"TEMPERATURE_GRADIENT_1D")
                               (Input::TEMPERATURE_GRADIENT_2D,"TEMPERATURE_GRADIENT_2D")

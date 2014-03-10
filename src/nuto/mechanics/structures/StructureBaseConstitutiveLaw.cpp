@@ -674,7 +674,7 @@ void NuTo::StructureBase::ConstitutiveLawSetThermalConductivity(int rIdent, doub
     }
     catch (NuTo::MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetThermalConductivity] error setting density.");
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetThermalConductivity] error setting thermal conductivity.");
         throw e;
     }
 }
@@ -690,8 +690,106 @@ double NuTo::StructureBase::ConstitutiveLawGetThermalConductivity(int rIdent) co
     }
     catch (NuTo::MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDensity] error getting density.");
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetThermalConductivity] error getting thermal conductivity.");
         throw e;
     }
     return thermalConductivity;
 }
+
+// set viscosity
+void NuTo::StructureBase::ConstitutiveLawSetViscosity(int rIdent, double rViscosity)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetViscosity(rViscosity);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetViscosity] error setting viscosity.");
+        throw e;
+    }
+}
+
+// get viscosity
+double NuTo::StructureBase::ConstitutiveLawGetViscosity(int rIdent) const
+{
+    double Viscosity;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        Viscosity = ConstitutiveLawPtr->GetViscosity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetViscosity] error getting viscosity.");
+        throw e;
+    }
+    return Viscosity;
+}
+
+// set damage distribution
+void NuTo::StructureBase::ConstitutiveLawSetDamageDistribution(int rIdent, double rDamageDistribution)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetDamageDistribution(rDamageDistribution);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDamageDistribution] error setting damage distribution.");
+        throw e;
+    }
+}
+
+// get damage distribution
+double NuTo::StructureBase::ConstitutiveLawGetDamageDistribution(int rIdent) const
+{
+    double DamageDistribution;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        DamageDistribution = ConstitutiveLawPtr->GetDamageDistribution();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDamageDistribution] error getting damage distribution.");
+        throw e;
+    }
+    return DamageDistribution;
+}
+
+//****************************
+// set viscosity
+void NuTo::StructureBase::ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetViscoplasticYieldSurfaceOffset(rViscoplasticYieldSurfaceOffset);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetViscoplasticYieldSurfaceOffset] error setting viscoplastic yield surface offset.");
+        throw e;
+    }
+}
+
+// get viscosity
+double NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int rIdent) const
+{
+    double ViscoplasticYieldSurfaceOffset;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ViscoplasticYieldSurfaceOffset = ConstitutiveLawPtr->GetViscoplasticYieldSurfaceOffset();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset] error getting viscoplastic yield surface offset.");
+        throw e;
+    }
+    return ViscoplasticYieldSurfaceOffset;
+}
+

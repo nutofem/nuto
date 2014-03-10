@@ -17,7 +17,7 @@
 NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::ConstitutiveStaticDataDamageViscoPlasticity3D() : ConstitutiveStaticDataPrevEngineeringStressStrain3D()
 {
 	mOmegaCompr = 0.;
-	mKappaP = 0.;
+	mKappaInelastic = 0.;
 	mVP     = 0.;
 
 	mEpsilonP[0] = 0.;
@@ -26,20 +26,35 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::ConstitutiveStaticDataDamag
 	mEpsilonP[3] = 0.;
 	mEpsilonP[4] = 0.;
 	mEpsilonP[5] = 0.;
+
+	mEpsilonVp[0] = 0.;
+	mEpsilonVp[1] = 0.;
+	mEpsilonVp[2] = 0.;
+	mEpsilonVp[3] = 0.;
+	mEpsilonVp[4] = 0.;
+	mEpsilonVp[5] = 0.;
 }
 
 NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D& NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::operator= (NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D const& rOther)
 {
     NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::operator= (rOther);
     mOmegaCompr = rOther.mOmegaCompr;
-    mKappaP= rOther.mKappaP;
+    mKappaInelastic = rOther.mKappaInelastic;
     mVP = rOther.mVP;
+
     mEpsilonP[0] = rOther.mEpsilonP[0];
     mEpsilonP[1] = rOther.mEpsilonP[1];
     mEpsilonP[2] = rOther.mEpsilonP[2];
     mEpsilonP[3] = rOther.mEpsilonP[3];
     mEpsilonP[4] = rOther.mEpsilonP[4];
     mEpsilonP[5] = rOther.mEpsilonP[5];
+
+    mEpsilonVp[0] = rOther.mEpsilonVp[0];
+    mEpsilonVp[1] = rOther.mEpsilonVp[1];
+    mEpsilonVp[2] = rOther.mEpsilonVp[2];
+    mEpsilonVp[3] = rOther.mEpsilonVp[3];
+    mEpsilonVp[4] = rOther.mEpsilonVp[4];
+    mEpsilonVp[5] = rOther.mEpsilonVp[5];
     return *this;
 }
 
@@ -88,8 +103,9 @@ void NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::serialize(Archive & ar
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain3D)
        & BOOST_SERIALIZATION_NVP(mOmegaCompr)
-       & BOOST_SERIALIZATION_NVP(mKappaP)
+       & BOOST_SERIALIZATION_NVP(mKappaInelastic)
        & BOOST_SERIALIZATION_NVP(mEpsilonP)
+       & BOOST_SERIALIZATION_NVP(mEpsilonVp)
        & BOOST_SERIALIZATION_NVP(mVP);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataDamageViscoPlasticity3D" << std::endl;

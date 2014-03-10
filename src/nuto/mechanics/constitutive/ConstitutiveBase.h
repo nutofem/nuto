@@ -241,8 +241,32 @@ public:
     virtual double GetThermalConductivity() const;
 
     //! @brief ... set thermal conductivity
-    //! @param rRho ... thermal conductivity
+    //! @param ... thermal conductivity
     virtual void SetThermalConductivity(double rThermalConductivity);
+
+    //! @brief ... get viscosity
+    //! @return ... viscosity
+    virtual double GetViscosity() const;
+
+    //! @brief ... set viscosity
+    //! @param ... viscosity
+    virtual void SetViscosity(double rViscosity);
+
+    //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+    //! @return ... damage distribution
+    virtual double GetDamageDistribution() const;
+
+    //! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+    //! @param ... damage distribution
+    virtual void SetDamageDistribution(double rDamageDistribution);
+
+    //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
+    //! @return ... viscoplastic yield surface offset
+    virtual double GetViscoplasticYieldSurfaceOffset() const;
+
+    //! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
+    //! @param ... viscoplastic yield surface offset
+    virtual void SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset);
 
     ///////////////////////////////////////////////////////////////////////////
 

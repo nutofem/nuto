@@ -55,14 +55,17 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    //! @brief accumulated plastic strain
-    double mKappaP;
+    //! @brief distributed accumulated inelastic strain
+    double mKappaInelastic;
 
     //! @brief local damage variable associated with plastic strain (compressive damage)
     double mOmegaCompr;
 
     //! @brief plastic strain
     EngineeringStrain3D mEpsilonP;
+
+    //! @brief viscoplastic strain
+    EngineeringStrain3D mEpsilonVp;
 
     //! @brief plasticity state variable
     double mVP;

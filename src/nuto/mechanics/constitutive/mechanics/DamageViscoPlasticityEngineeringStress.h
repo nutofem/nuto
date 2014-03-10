@@ -93,6 +93,10 @@ public:
     void CalculateCoefficients2DPlainStress(double& C11, double& C12, double& C33) const;
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
+    //! @brief ... calculate the ductility parameter
+    //! @brief ... return ductility
+    double CalculateDuctility()const;
+
     // parameters /////////////////////////////////////////////////////////////
     //! @brief ... get density
     //! @return ... density
@@ -128,27 +132,59 @@ public:
 
     //! @brief ... get tensile strength
     //! @return ... tensile strength
-    double GetTensileStrength() const;
+    double GetTensileStrength() const override;
 
     //! @brief ... set tensile strength
     //! @param rTensileStrength...  tensile strength
-    void SetTensileStrength(double rTensileStrength);
+    void SetTensileStrength(double rTensileStrength) override;
 
     //! @brief ... get compressive strength
     //! @return ... compressive strength
-    double GetCompressiveStrength() const;
+    double GetCompressiveStrength() const override;
 
     //! @brief ... set compressive strength
     //! @param rCompressiveStrength...  compressive strength
-    void SetCompressiveStrength(double rCompressiveStrength);
+    void SetCompressiveStrength(double rCompressiveStrength) override;
 
     //! @brief ... get biaxial compressive strength
     //! @return ... biaxial compressive strength
-    double GetBiaxialCompressiveStrength() const;
+    double GetBiaxialCompressiveStrength() const override;
 
     //! @brief ... set biaxial compressive strength
     //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
-    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength);
+    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) override;
+
+    //! @brief ... get viscosity
+    //! @return ... viscosity
+    double GetViscosity() const override;
+
+    //! @brief ... set viscosity
+    //! @param rViscosity ... viscosity
+    void SetViscosity(double rViscosity) override;
+
+    //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+    //! @return ... damage distribution
+    double GetDamageDistribution() const override;
+
+    //! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+    //! @param rDamageDistribution... damage distribution
+    void SetDamageDistribution(double rDamageDistribution) override;
+
+    //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
+    //! @return ... viscoplastic yield surface offset
+    double GetViscoplasticYieldSurfaceOffset() const override;
+
+    //! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
+    //! @param rViscoplasticYieldSurfaceOffset... viscoplastic yield surface offset
+    void SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset) override;
+
+    //! @brief ... get fracture energy
+    //! @return ... fracture energy
+    double GetFractureEnergy() const;
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy... fracture energy
+    void SetFractureEnergy(double rFractureEnergy);
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -207,6 +243,21 @@ protected:
     //! @param ... Biaxial Compressive Strength \f$ \BiaxialCompressiveStrength \f$
     double mBiaxialCompressiveStrength;
 
+    //! @param ... Viscosity \f$ \Viscosity \f$
+    double mViscosity;
+
+    //! @param ... Damage Distribution (determines the portion of damage via viscoplasticity and plasticity) \f$ \Damage Distribution \f$
+    double mDamageDistribution;
+
+    //! @param ... Viscoplastic Yield Surface Offset with respect to the plastic yield surface \f$ \Viscoplastic Yield Surface Offset \f$
+    double mViscoplasticYieldSurfaceOffset;
+
+    //! @param ... Fracture energy \f$ \Fracture energy \f$
+    double mFractureEnergy;
+
+    //! @brief ... either use a pure plasticity model (false) or add softening using the damage model (true)
+    bool mDamage;
+
     //! @brief ... check if density is positive
     //! @param rRho ... density
     void CheckDensity(double rRho) const;
@@ -235,12 +286,28 @@ protected:
     //! @param rBiaxialCompressiveStrength ... biaxial compressive strength
     void CheckBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) const;
 
+    //! @brief ... check if viscosity is positive
+    //! @param rViscosity ... viscosity
+    void CheckViscosity(double rViscosity) const;
+
+    //! @brief ... check whether the damage distribution ranges between 0 and 1
+    //! @param rDamageDistribution ... damage distribution
+    void CheckDamageDistribution(double rDamageDistribution) const;
+
+    //! @brief ... check whether the viscoplastic yield surface offset is negative
+    //! @param rViscoplasticYieldSurfaceOffset ... viscoplastic yield surface offset
+    void CheckViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset) const;
+
+    //! @brief ... check whether fracture energy is positive
+    //! @param rFractureEnergy ... fracture energy
+    void CheckFractureEnergy(double rFractureEnergy) const;
+
 private:
 
 #define Plus(rVP) ((rVP >= 0.)?rVP:0.)				// define McCauley brackets
-#define Sgn(rVP) ((rVP >= 0.)?1.:0.)				// define sgn function
+#define Sgn(rVP) ((rVP >= 0.)?1.:0.)				// define positive sgn function
 #define DELTA(i, j) ((i==j)?1:0)					// define Kronecker Symbol
-#define mTOLF 1.0e-07*this->mE/100.					// define tolerance for Newton
+#define mTOLF 1.0e-12*this->mE						// define tolerance for Newton
 
 
     //! @brief ... calculates the residual vector of an incremental formulation
@@ -248,29 +315,33 @@ private:
     NuTo::FullVector<double,Eigen::Dynamic> Residual(
     		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
     		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
-//    		const EngineeringStrain3D& rElasticEngineeringStrain) const
 		{
 			NuTo::FullVector<double,Eigen::Dynamic> residual(rUnknown.GetNumRows());
 
 			EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
 			EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
-			double rDeltaTime, rBeta, rHP;			// time increment, rBeta, rP
+			double rDeltaTime, rBeta, rHP, rHVP, rViscosity;  // time increment, rBeta, rHP, rHVP, rViscosity
 
-			EngineeringStress3D rDeltaStress;		// stress increment
-			double rVP;								// state variable, its positive counterpart is cumulative plastic strain rate
+			EngineeringStress3D rDeltaStress, rDeltaProjStress;		// stress increment, projection stress increment
+			double rVP, rVviscoP;					// state variable, its positive counterpart is cumulative plastic and viscoplastic
+													// strain rate respectively
 
-			// initialization of physical values from the vectors rParameter and rUnknown = rz
+			// initialization of physical values from the vectors rParameter and rUnknown
 			for (int i = 0; i < 6; i++) {
 				rDeltaStrain[i] = rParameter[i];	// rParameter(0:5) increment of mechanical strain
 				rPrevStress[i] = rParameter[i+6];	// rParameter(6:11) stress at the beginning of the time increment
-				rDeltaStress[i] =rUnknown[i];		// rUnknown(0:5) stress increment
+				rDeltaStress[i] = rUnknown[i];		// rUnknown(0:5) stress increment
+				rDeltaProjStress[i] = rUnknown[i+6];// rUnknown(6:11) projection stress increment
 			}
 
 			rDeltaTime = rParameter[12]; 			// rParameter(12) time increment itself
 			rBeta = rParameter[13];					// rParameter(13) rBeta
 			rHP = rParameter[14];					// rParameter(14) rHP
+			rHVP = rParameter[15];					// rParameter(15) rHVP
+			rViscosity = rParameter[16];			// rParameter(16) rViscosity
 
-			rVP = rUnknown[6];						// rUnknown(6) is the state variable associated with cumulative plastic flow rate
+			rVP = rUnknown[12];						// rUnknown(12) is the state variable associated with cumulative plastic flow rate
+			rVviscoP = rUnknown[13];				// rUnknown(13) is the state variable associated with cumulative viscoplastic flow rate
 
 			// elastic stiffness
 			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
@@ -283,21 +354,32 @@ private:
 								 0.,  0.,  0.,  0., C44, 0.,
 								 0.,  0.,  0.,  0., 0., C44;
 
-			NuTo::FullMatrix<double,6,6> rd2F_d2Sigma;	// The second derivative of the flow surface by the stress
-			NuTo::FullVector<double,6> rdF_dSigma;		// The firtst derivatife of the flow surface by the stress
-			EngineeringStress3D rStress;				// Stress at the end of the time increment
+			NuTo::FullMatrix<double,6,6> d2F_d2Sigma;	// The second derivative of the flow surface by the stress
+			NuTo::FullVector<double,6> dF_dSigma;		// The firtst derivatife of the flow surface by the stress
+			EngineeringStress3D Stress, ProjStress;	// Stress and projection stress at the end of the time increment
 
-			// calculate rStress and derivatives of the flow surface by the rStress
-			rStress = rPrevStress + rDeltaStress;
-			rStress.YieldSurfaceDruckerPrager3DDerivatives(rdF_dSigma,rd2F_d2Sigma, rBeta);
+			// calculate Stress and derivatives of the flow surface by the Stress
+			Stress = rPrevStress + rDeltaStress;
+			ProjStress = rPrevStress + rDeltaProjStress;
+			Stress.YieldSurfaceDruckerPrager3DDerivatives(dF_dSigma,d2F_d2Sigma,rBeta);
 
 			// calculate residual with respect to the stress increments, that is residual(0:5)
-			residual.segment<6>(0) = rDeltaStress - ElasticStiffness*
-					(rDeltaStrain - rDeltaTime*Plus(rVP)*rdF_dSigma);
+			residual.segment<6>(0) = rDeltaStress + rDeltaTime*Sgn(Stress.YieldSurfaceDruckerPrager3D(rBeta, rHVP))*
+					(rDeltaStress - rDeltaProjStress)/rViscosity - ElasticStiffness*
+					(rDeltaStrain - rDeltaTime*Plus(rVP)*dF_dSigma);
 
-			// calculate residual with respect to the cumulative plastic strain rate, that is residual(6)
-			residual[6] = this->mE*rDeltaTime*(rVP - Plus(rVP)) -
-					rStress.YieldSurfaceDruckerPrager3D(rBeta, rHP);
+			// calculate residual with respect to the projection stress increments, that is residual(6:11)
+			ProjStress.YieldSurfaceDruckerPrager3DDerivatives(dF_dSigma,d2F_d2Sigma,rBeta);
+			residual.segment<6>(6) = rDeltaProjStress - ElasticStiffness*
+					(rDeltaStrain - rDeltaTime*Plus(rVviscoP)*dF_dSigma);
+
+			// calculate residual with respect to the cumulative plastic strain rate, that is residual(12)
+			residual[12] = this->mE*rDeltaTime*(rVP - Plus(rVP)) -
+					Stress.YieldSurfaceDruckerPrager3D(rBeta, rHP);
+
+			// calculate residual with respect to the cumulative viscoplastic strain rate, that is residual(13)
+			residual[13] = this->mE*rDeltaTime*(rVviscoP - Plus(rVviscoP)) -
+					ProjStress.YieldSurfaceDruckerPrager3D(rBeta, rHVP);
 
 
 //			residual[0] = 2.*rUnknown[1]*rUnknown[2] + 2.*rUnknown[0]*rUnknown[1];
@@ -308,9 +390,9 @@ private:
 		}
 
     //! @brief ... calculates the analytical matrix:= derivative of the Residual by dEngineeringStress3D
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualDEpsAn(NuTo::FullVector<double,Eigen::Dynamic> rz) const
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualDEpsAn(NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
 		{
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rz.GetNumRows(),6);
+    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.GetNumRows(),6);
     	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
     	double C11, C12, C44;
     	this->CalculateCoefficients3D(C11, C12, C44);
@@ -324,11 +406,13 @@ private:
     	for (int i = 0; i < 6; ++i) {
 			for (int j = 0; j < 6; ++j) {
 				deriv(i,j) = -ElasticStiffness(i,j);
+				deriv(i+6,j) = -ElasticStiffness(i,j);
 			}
 		}
 
 		for (int j = 0; j < 6; ++j) {
-			deriv(6,j) = 0.;
+			deriv(12,j) = 0.;
+			deriv(13,j) = 0.;
 		}
 
         return deriv;
@@ -339,69 +423,108 @@ private:
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualAn(
     		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
     		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
-//    		const EngineeringStrain3D& rElasticEngineeringStrain) const
 		{
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.GetNumRows(),rUnknown.GetNumRows());
+    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.GetNumRows(),rUnknown.GetNumRows());
 
-			EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
-			EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
-			double rDeltaTime, rBeta, rHP;		  // time increment, rBeta, rP
+    		EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
+    		EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
+    		double rDeltaTime, rBeta, rHP, rHVP, rViscosity;  // time increment, rBeta, rHP, rHVP, rViscosity
 
-			EngineeringStress3D rDeltaStress;		// stress increment
-			double rVP;								// state variable, its positive counterpart is cumulative plastic strain rate
+    		EngineeringStress3D rDeltaStress, rDeltaProjStress;		// stress increment, projection stress increment
+    		double rVP, rVviscoP;					// state variable, its positive counterpart is cumulative plastic and viscoplastic
+												// strain rate respectively
 
-			// initialization of physical values from the vectors rParameter and rUnknown = rz
-			for (int i = 0; i < 6; i++) {
-				rDeltaStrain[i] = rParameter[i];	// rParameter(0:5) increment of mechanical strain
-				rPrevStress[i] = rParameter[i+6];	// rParameter(6:11) stress at the beginning of the time increment
-				rDeltaStress[i] =rUnknown[i];		// rUnknown(0:5) stress increment
-			}
+    		// initialization of physical values from the vectors rParameter and rUnknown
+    		for (int i = 0; i < 6; i++) {
+    			rDeltaStrain[i] = rParameter[i];	// rParameter(0:5) increment of mechanical strain
+    			rPrevStress[i] = rParameter[i+6];	// rParameter(6:11) stress at the beginning of the time increment
+    			rDeltaStress[i] = rUnknown[i];		// rUnknown(0:5) stress increment
+    			rDeltaProjStress[i] = rUnknown[i+6];// rUnknown(6:11) projection stress increment
+    		}
 
-			rDeltaTime = rParameter[12]; 			// rParameter(12) time increment itself
-			rBeta = rParameter[13];					// rParameter(13) rBeta
-			rHP = rParameter[14];					// rParameter(14) rHP
+    		rDeltaTime = rParameter[12]; 			// rParameter(12) time increment itself
+    		rBeta = rParameter[13];					// rParameter(13) rBeta
+    		rHP = rParameter[14];					// rParameter(14) rHP
+    		rHVP = rParameter[15];					// rParameter(15) rHVP
+    		rViscosity = rParameter[16];			// rParameter(16) rViscosity
 
-			rVP = rUnknown[6];						// rUnknown(6) is the state variable associated with cumulative plastic flow rate
+    		rVP = rUnknown[12];						// rUnknown(12) is the state variable associated with cumulative plastic flow rate
+    		rVviscoP = rUnknown[13];				// rUnknown(13) is the state variable associated with cumulative viscoplastic flow rate
 
-			// elastic stiffness
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
-			double C11, C12, C44;
-			this->CalculateCoefficients3D(C11, C12, C44);
-			ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
+    		// elastic stiffness
+    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		double C11, C12, C44;
+    		this->CalculateCoefficients3D(C11, C12, C44);
+    		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
 								C12, C11, C12,  0., 0.,  0.,
 								C12, C12, C11,  0., 0.,  0.,
-								 0.,  0.,  0., C44, 0.,  0.,
-								 0.,  0.,  0.,  0., C44, 0.,
-								 0.,  0.,  0.,  0., 0., C44;
+								0.,  0.,  0., C44, 0.,  0.,
+								0.,  0.,  0.,  0., C44, 0.,
+								0.,  0.,  0.,  0., 0., C44;
 
-			NuTo::FullMatrix<double,6,6> rd2F_d2Sigma;		// The second derivative of the flow surface by the stress
-			NuTo::FullVector<double,6> rdF_dSigma, rTemp;	// The firtst derivatife of the flow surface by the stress, rTemp temporary vector
-			EngineeringStress3D rStress;					// Stress at the end of the time increment
+    		NuTo::FullMatrix<double,6,6> d2F_d2Sigma;	 	// The second derivative of the flow surface by the stress
+    		NuTo::FullVector<double,6> dF_dSigma, Temp;	// The firtst derivatife of the flow surface by the stress
+    		EngineeringStress3D Stress, ProjStress;		// Stress and projection stress at the end of the time increment
 
-			// calculate rStress and derivatives of the flow surface by the rStress
-			rStress = rPrevStress + rDeltaStress;
-			rStress.YieldSurfaceDruckerPrager3DDerivatives(rdF_dSigma,rd2F_d2Sigma, rBeta);
+    		// calculate Stress and derivatives of the flow surface by the Stress
+    		Stress = rPrevStress + rDeltaStress;
+    		ProjStress = rPrevStress + rDeltaProjStress;
+    		Stress.YieldSurfaceDruckerPrager3DDerivatives(dF_dSigma,d2F_d2Sigma,rBeta);
 
-			rTemp.Zero();
+			deriv.Zero(14,14);
+    		Temp.Zero();
 
 			// components DResidualAn(0:5,0:5)
 			for (int j = 0; j < 6; j++) {
-		    	rTemp = ElasticStiffness*rd2F_d2Sigma.col(j);
+		    	Temp = ElasticStiffness*d2F_d2Sigma.col(j);
 		    	for (int i = 0; i < 6; i++) {
-		    		deriv(i,j) = DELTA(i, j) + rDeltaTime*Plus(rVP)*rTemp[i];
+		    		deriv(i,j) = DELTA(i, j) *(1. + rDeltaTime*Sgn(Stress.YieldSurfaceDruckerPrager3D(rBeta, rHVP))/rViscosity) +
+		    				rDeltaTime*Plus(rVP)*Temp[i];
 				}
 			}
-			// components DResidualAn(0:5,6)
-			rTemp = ElasticStiffness*rdF_dSigma;
+			// components DResidualAn(0:5,6:11)
+			for (int j = 6; j < 12; j++) {
+		    	for (int i = 0; i < 6; i++) {
+		    		deriv(i,j) = - DELTA(i, j-6) * rDeltaTime*Sgn(Stress.YieldSurfaceDruckerPrager3D(rBeta, rHVP))/rViscosity;
+				}
+			}
+			// components DResidualAn(0:5,12)
+			Temp = ElasticStiffness*dF_dSigma;
 			for (int i = 0; i < 6; i++) {
-				deriv(i,6) = rDeltaTime*Sgn(rVP)*rTemp[i];
+				deriv(i,12) = rDeltaTime*Sgn(rVP)*Temp[i];
 			}
-			// components DResidualAn(6,0:5)
+			// components DResidualAn(12,0:5)
 			for (int j = 0; j < 6; j++) {
-				deriv(6,j) = -rdF_dSigma[j];
+				deriv(12,j) = -dF_dSigma[j];
 			}
-			// component DResidualAn(6,6)
-			deriv(6,6) = this->mE*rDeltaTime*(1. - Sgn(rVP));
+			// components DResidualAn(0:5,13) are already zeroed
+			// components DResidualAn(6:11,0:5) are already zeroed
+			// components DResidualAn(6:11,6:11)
+			ProjStress.YieldSurfaceDruckerPrager3DDerivatives(dF_dSigma,d2F_d2Sigma,rBeta);
+			for (int j = 6; j < 12; j++) {
+		    	Temp = ElasticStiffness*d2F_d2Sigma.col(j-6);
+		    	for (int i = 6; i < 12; i++) {
+		    		deriv(i,j) = DELTA(i, j) + rDeltaTime*Plus(rVviscoP)*Temp[i-6];
+				}
+			}
+			// components DResidualAn(6:11,12) are already zeroed
+			// components DResidualAn(12,6:11) are already zeroed
+			// components DResidualAn(6:11,13)
+			Temp = ElasticStiffness*dF_dSigma;
+			for (int i = 6; i < 12; i++) {
+				deriv(i,13) = rDeltaTime*Sgn(rVviscoP)*Temp[i-6];
+			}
+			// components DResidualAn(12,12)
+			deriv(12,12) = this->mE*rDeltaTime*(1. - Sgn(rVP));
+			// components DResidualAn(12,13) is already zeroed
+			// components DResidualAn(13,12) is already zeroed
+			// components DResidualAn(13,0:5) are already zeroed
+			// components DResidualAn(13,6:11)
+			for (int j = 6; j < 12; j++) {
+				deriv(13,j) = -dF_dSigma[j-6];
+			}
+			// components DResidualAn(13,13)
+			deriv(13,13) = this->mE*rDeltaTime*(1. - Sgn(rVviscoP));
 
 //			deriv(0,0) = 2*rUnknown[1];
 //			deriv(0,1) = 2*rUnknown[0] + 2*rUnknown[2];
@@ -414,7 +537,6 @@ private:
 //			deriv(2,0) = 0.;
 //			deriv(2,1) = 2*rUnknown[1];
 //			deriv(2,2) = 2*rUnknown[2];
-
 
 			return deriv;
 		}
@@ -431,12 +553,12 @@ private:
     //! @brief ... calculates the numerical Jacobi matrix:= derivative of the Residual
     //! @brief ... rElasticEngineeringStrain ... elastic engineering strain at the end of time increment
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
-    		NuTo::FullVector<double,Eigen::Dynamic> rz,
+    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown,
     		NuTo::FullVector<double,Eigen::Dynamic> &fvec) const {
     	const double EPS = 1.0e-8;
-    	int n=rz.GetNumRows();
+    	int n=rUnknown.GetNumRows();
     	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(n,n);
-    	NuTo::FullVector<double,Eigen::Dynamic> xh=rz;
+    	NuTo::FullVector<double,Eigen::Dynamic> xh=rUnknown;
     	for (int j=0;j<n;j++) {
     		double temp=xh[j];
     		double h=EPS*fabs(temp);
@@ -574,12 +696,12 @@ private:
     		cout<< "===== Iteration =====" << its <<endl;   // Test
     		if (fdjacAn != 0) {         			// if analytical Jacobi is there
     			fjac = (this->*fdjacAn)(rParameter,x);     	// analytical Jacobi matrix
-    			cout<<"*** Analytical ***"<<endl;  	// Test
-    			cout << fjac << endl;             	// Test
+//    			cout<<"*** Analytical ***"<<endl;  	// Test
+//    			cout << fjac << endl;             	// Test
     		} else {                   				// if not analytic -> take numeric
     			fjac=this->DResidualNum(rParameter,x,fvec); // numerical Jacobi matrix
-    			cout<<"*** Numerical ***"<<endl;   	// Test
-    			cout << fjac << endl;	           	// Test
+//    			cout<<"*** Numerical ***"<<endl;   	// Test
+//    			cout << fjac << endl;	           	// Test
     		}
     //												// OPTIMIZED
     //		for (i=0;i<n;i++) {						// OPTIMIZED
@@ -596,7 +718,7 @@ private:
     //		for (i=0;i<n;i++) p[i] = -fvec[i];      // OPTIMIZED
     		p = -fvec;								// OPTIMIZED
     //												// Test
-    		cout << "fvec = " << fvec.transpose()<<endl;   // Test
+    		cout << "fvec before solve= " << fvec.transpose()<<endl;   // Test
     		cout << "p = " << fjac.fullPivLu().solve(-fvec).transpose()<<endl;   // Test
 
     //												// OPTIMIZED
@@ -607,7 +729,7 @@ private:
     //		p = fjac.jacobiSvd().solve(-fvec).transpose();      // SVD SOLVER
 //NR    		LineSearch(xold,fold,g,p,x,f,stpmax,check,fmin);
     		LineSearch(rParameter,xold,fold,g,p,x,f,stpmax,check,fvec);    // AnstattNR
-
+    		cout << "fvec after solve= " << fvec.transpose()<<endl;   // Test
     //												// OPTIMIZED
     //		test=0.0;								// OPTIMIZED
     //		for (i=0;i<n;i++)						// OPTIMIZED
@@ -616,6 +738,7 @@ private:
 
     		if (test < TOLF) {
     			check=false;
+    			cout << "iter = " << its << " ORDENARY RETURN, test = " << test << " TOLF = " << TOLF << endl;
     			return;
     		}
 

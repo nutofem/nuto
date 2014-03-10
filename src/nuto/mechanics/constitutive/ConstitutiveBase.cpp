@@ -328,10 +328,52 @@ double NuTo::ConstitutiveBase::GetThermalConductivity() const
 }
 
 //! @brief ... set thermal conductivity
-//! @param rRho ... thermal conductivity
+//! @param ... thermal conductivity
 void NuTo::ConstitutiveBase::SetThermalConductivity(double rThermalConductivity)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetThermalConductivity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get viscosity
+//! @return ... viscosity
+double NuTo::ConstitutiveBase::GetViscosity() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetViscosity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set viscosity
+//! @param ... viscosity
+void NuTo::ConstitutiveBase::SetViscosity(double rViscosity)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscosity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+//! @return ... damage distribution
+double NuTo::ConstitutiveBase::GetDamageDistribution() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDamageDistribution] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+//! @param ... damage distribution
+void NuTo::ConstitutiveBase::SetDamageDistribution(double rDamageDistribution)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDamageDistribution] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
+//! @return ... viscoplastic yield surface offset
+double NuTo::ConstitutiveBase::GetViscoplasticYieldSurfaceOffset() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetViscoplasticYieldSurfaceOffset] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
+//! @param ... viscoplastic yield surface offset
+void NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset] The constitutive relationship does not have this parameter.");
 }
 
 // modify parameter validity flag

@@ -1284,6 +1284,30 @@ public:
     //! @brief ... get thermal conductivity
     double ConstitutiveLawGetThermalConductivity(int rIdent) const;
 
+    //! @brief ... get viscosity
+    //! @return ... viscosity
+    double ConstitutiveLawGetViscosity(int rIdent) const;
+
+    //! @brief ... set viscosity
+    //! @param ... viscosity
+    void ConstitutiveLawSetViscosity(int rIdent, double rViscosity);
+
+    //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+    //! @return ... damage distribution
+    double ConstitutiveLawGetDamageDistribution(int rIdent) const;
+
+    //! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
+    //! @param ... damage distribution
+    void ConstitutiveLawSetDamageDistribution(int rIdent, double rDamageDistribution);
+
+    //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
+    //! @return ... viscoplastic yield surface offset
+    double ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int rIdent) const;
+
+    //! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
+    //! @param ... viscoplastic yield surface offset
+    void ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset);
+
     #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
