@@ -1,19 +1,22 @@
-%module(package="nuto") ModulMechanics
+%module(package="nuto") ModulGeometryConcrete
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
-#include "nuto/math/SparseMatrix.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/structures/grid/OctreeGrid.h"
-#include "nuto/mechanics/structures/grid/MultiGridStructure.h"
-#include "nuto/mechanics/structures/grid/StructureGrid.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/base/Logger.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
+#include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
+#include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
+#include "nuto/geometryConcrete/collision/collidables/CollidableWallPhysical.h"
+#include "nuto/geometryConcrete/collision/Event.h"
+#include "nuto/geometryConcrete/collision/SubBox.h"
+#include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
 %}
+
+%apply int& OUTPUT { int& rType };
+double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableParticleSphere& rSphere, int& rType);
+double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableWallPhysical& rWall, int& rType);
+
 
 // convert python string to std::string
 %include "std_string.i"
@@ -22,9 +25,15 @@
 %ignore Exception;
 %include "nuto/base/ModulNuToBase.i"
 
-%include "nuto/mechanics/structures/grid/OctreeGrid.h"
-%include "nuto/mechanics/structures/grid/MultiGridStructure.h"
-%include "nuto/mechanics/structures/StructureBase.h"
-%include "nuto/mechanics/structures/unstructured/Structure.h"
-%include "nuto/mechanics/structures/grid/StructureGrid.h"
-%include "nuto/mechanics/elements/ElementEnum.h"
+
+%include "nuto/geometryConcrete/collision/Event.h"
+%include "nuto/geometryConcrete/collision/SubBox.h"
+%include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
+%include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
+%include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
+%include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
+%include "nuto/geometryConcrete/collision/collidables/CollidableWallPhysical.h"
+%include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
+
+//%include "nuto/visualize/VisualizeUnstructuredGrid.h"
+
