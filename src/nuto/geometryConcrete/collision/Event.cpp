@@ -9,9 +9,9 @@
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
 #include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"
+#include <algorithm>
 
 const double NuTo::Event::EVENTNULL = -1.;
-
 
 NuTo::Event::Event(const double rTime, CollidableBase* rFirst,
 		CollidableBase* rSecond, const int rType)
@@ -30,7 +30,14 @@ NuTo::Event::Event(const Event& rEvent)
 
 NuTo::Event::~Event()
 {
-	RemoveLocalEvent();
+	auto& local1st = mFirst->mLocalEvents;
+	auto& local2nd = mSecond->mLocalEvents;
+
+	auto newEnd = std::remove(local1st.begin(), local1st.end(), this);
+	local1st.erase(newEnd, local1st.end());
+
+	newEnd = std::remove(local2nd.begin(), local2nd.end(), this);
+	local2nd.erase(newEnd, local2nd.end());
 }
 
 const double NuTo::Event::GetTime() const
@@ -45,26 +52,21 @@ void NuTo::Event::PerformCollision() const
 	mFirst->PerformCollision(*mSecond);
 }
 
-double NuTo::Event::AddNewEventsLocalAndGlobal(
-		EventListHandler& rEvents) const
+void NuTo::Event::AddNewEvents(EventListHandler& rEvents) const
 		{
 	// get boxes involved
 
-	auto boxesFirst = mFirst->GetSubBoxes();
-	auto boxesSecond = mSecond->GetSubBoxes();
+	auto& boxesFirst = mFirst->GetSubBoxes();
+	auto& boxesSecond = mSecond->GetSubBoxes();
 
-	double time;
+	for(unsigned int iBox = 0; iBox < boxesFirst.size(); ++iBox)
+		boxesFirst[iBox]->CreateEvents(rEvents, *mFirst);
 
-	for (auto box : boxesFirst)
-		time += box->CreateEvents(rEvents, *mFirst);
-
-	for (auto box : boxesSecond)
-		time += box->CreateEvents(rEvents, *mSecond);
-
-	return time;
+	for(unsigned int iBox = 0; iBox < boxesSecond.size(); ++iBox)
+		boxesSecond[iBox]->CreateEvents(rEvents, *mSecond);
 }
 
-void NuTo::Event::EraseOldEventsLocalAndGlobal(
+void NuTo::Event::EraseOldEvents(
 		EventListHandler& rEvents) const
 		{
 
@@ -136,31 +138,6 @@ const int NuTo::Event::GetType() const
 	return mType;
 }
 
-std::size_t NuTo::Event::GetHash() const
-{
-	std::size_t seed = 0;
-	boost::hash_combine(seed, mTime);
-	int index1 = mFirst->GetIndex();
-	int index2 = mSecond->GetIndex();
-	if (index1 < index2){
-		int& tmp = index1;
-		index1 = index2;
-		index2 = tmp;
-	}
-
-
-	boost::hash_combine(seed, index1);
-	boost::hash_combine(seed, index2);
-	return seed;
-}
-
-
-void NuTo::Event::RemoveLocalEvent()
-{
-	mFirst->mLocalEvents.remove(this);
-	mSecond->mLocalEvents.remove(this);
-}
-
 void NuTo::Event::Print(std::ostream& rOutStream) const
 		{
 	int indexWidth = 6;
@@ -173,10 +150,6 @@ void NuTo::Event::Print(std::ostream& rOutStream) const
 
 namespace NuTo
 {
-std::size_t hash_value(const NuTo::Event& rEvent)
-{
-	return rEvent.GetHash();
-}
 
 std::ostream& operator <<(std::ostream& rOutStream, const Event& rEvent)
 {

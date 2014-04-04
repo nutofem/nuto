@@ -17,6 +17,10 @@ class ParticleCreator
 {
 public:
 
+	ParticleCreator();
+
+	ParticleCreator(const bool rIs2D, const double rShrinkage);
+
 	//! @brief ... creates randomly distributed, non-overlapping particles
 	//! @param rTypeOfSpecimen ... 0 box, 1 dogbone, 2 cylinder
 	//! @param rBoundingBox ... box for the spheres (3*2 matrix)
@@ -28,97 +32,89 @@ public:
 	//! @param rSpheresBoundary ... particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
 	//! @param rShrinkage ... absolute value (mm) of particle shrinkage, allows temporary higher particle densities
 	//! @return ... matrix with spheres (coordinates x y z and radius)
-	static FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CreateSpheresInSpecimen(
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> CreateSpheresInSpecimen(
 			const int rTypeOfSpecimen,
-			const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
 			const double rRelParticleVolume,
-			const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve,
 			const double rRelativeDistance,
 			const double rAbsoluteDistance,
 			const int rSeed,
-			const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary,
-			const double rShrinkage);
-
-	//! @brief ... creates randomly distributed, non-overlapping particles
-	//! @param rInput ... NuTo::InputReader object
-	//! @param rSeed ... seed for the random number generator
-	//! @return ... matrix with spheres (coordinates x y z and radius)
-	static FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CreateSpheresInSpecimen(
-			const InputReader& rInput, const int rSeed);
-
-
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary) const;
 
 	//! @brief ... cut spheres at a given z-coordinate to create circles (in 2D)
 	//! @param rSpheres matrix with the spheres (x,y,z,r)
 	//! @param rZCoord z coordinate (where to cut)
 	//! @param rMinRadius minimal radius of the circle
 	//! @return ... matrix with the circles (x,y,r)
-	static FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> CutSpheresZ(
-			FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres,
-			double rZCoord, double rMinRadius);
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> CutSpheresZ(
+			NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres,
+			double rZCoord, double rMinRadius) const;
 
 	//! @brief ... calculates the volume of the specimen
 	//! @param rTypeOfSpecimen ... 0 box, 1 dogbone, 2 cylinder
 	//! @param rBoundingBox ... box for the spheres (3*2 matrix)
 	//! @return volume of the specimen
-	static const double GetSpecimenVolume(
+	const double GetSpecimenVolume(
 			int rTypeOfSpecimen,
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox);
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const;
 
 	//! @brief ... performs the "take"-of the "take-and-place" algorithm
 	//! @return ... matrix with sphere radii according to the grading curve
-	static FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> PerformTakePhase(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve,
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary,
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> PerformTakePhase(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary,
 			const double rVolumeSpecimen,
-			const double rRelParticleVolume);
+			const double rRelParticleVolume) const;
 
 	//! @brief ... performs the "place"-of the "take-and-place" algorithm
 	//! @return ... matrix with randomly distributed, non-overlapping particles
-	static void PerformPlacePhase(
-			FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
+	void PerformPlacePhase(
+			NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
 			const int rTypeOfSpecimen,
 			const double rRelativeDistance,
-			const double rAbsoluteDistance);
+			const double rAbsoluteDistance) const;
 
 private:
 
-
-
 	//! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
-	static void InsertParticleIntoBox(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
+	void InsertParticleIntoBox(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
 			const int rTheParticle,
 			std::vector<std::vector<int> >& rSubBox,
-			const FullVector<int, 3>& rNSubBox,
-			const FullVector<double, 3>& rLSubBox,
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox);
+			const NuTo::FullVector<int, 3>& rNSubBox,
+			const NuTo::FullVector<double, 3>& rLSubBox,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const;
 
-	static void CheckBoundingBox(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox);
+	void CheckBoundingBox(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const;
 
-	static void CheckGradingCurve(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve);
+	void CheckGradingCurve(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve) const;
 
-	static FullVector<double, 3> GetBoxLength(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox);
+	NuTo::FullVector<double, 3> GetBoxLength(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const;
 
 	//! @brief ... collision check with specimen boundary
-	static bool CollidesWithBoundary(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
+	bool CollidesWithBoundary(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
 			const int rTypeOfSpecimen,
-			const FullVector<double, 4> rParticle,
+			const NuTo::FullVector<double, 4>& rParticle,
 			const double rRelativeDistance,
-			const double rAbsoluteDistance);
+			const double rAbsoluteDistance) const;
 
 	//! @brief ... recalculate size classes != grading curve classes for better performance
-	static const std::vector<double> GetSizeClasses(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles);
+	const std::vector<double> GetSizeClasses(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles) const;
 
-	static const std::vector<double> GetNumParticlesPerSizeClass(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
-			const std::vector<double>& rSizes);
+	const std::vector<double> GetNumParticlesPerSizeClass(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
+			const std::vector<double>& rSizes) const;
+	double GetVolume(double radius) const;
+
+	const bool mIs2D;
+	const double mShrinkage;
 };
 
 } /* namespace NuTo */

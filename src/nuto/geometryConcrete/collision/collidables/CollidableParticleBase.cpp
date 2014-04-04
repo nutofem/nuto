@@ -11,19 +11,12 @@ NuTo::CollidableParticleBase::CollidableParticleBase(
 		FullVector<double, Eigen::Dynamic> rPosition,
 		FullVector<double, Eigen::Dynamic> rVelocity,
 		const int rIndex)
-		: CollidableBase(rIndex)
+		: CollidableBase(rIndex), mPosition(rPosition), mVelocity(rVelocity)
 {
 
-	if (rPosition.GetNumRows() != 3)
+	if (mPosition.GetNumRows() != 3)
 		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] position vector must have exactly 3 rows");
 
-	if (rVelocity.GetNumRows() != 3)
+	if (mVelocity.GetNumRows() != 3)
 		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] velocity vector must have exactly 3 rows");
-
-	mPosition = rPosition;
-	mVelocity = rVelocity;
-}
-
-void NuTo::CollidableParticleBase::Print(std::ostream& rReturnStream) const
-{
 }

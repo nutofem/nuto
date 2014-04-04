@@ -21,32 +21,41 @@ namespace NuTo
 class CollidableBase;
 class EventListHandler;
 
+
+//! @brief ... class for storing events
 class Event
 {
 public:
 
 	typedef boost::ptr_set<Event> GlobalEvents;
-//	typedef boost::ptr_unordered_set<Event> GlobalEvents;
 
-	typedef std::list<Event*> LocalEvents;
+	typedef std::vector<Event*> LocalEvents;
 
+	//! @brief ... identifier for null events
 	static const double EVENTNULL;
 
-	bool operator<(const Event& rOther) const;
-	bool operator==(Event const& rRhs) const;
-	bool operator!=(Event const& rRhs) const;
-
-
-	//! @brief ... constructor
-	//! initialized with the two CollidableBase objects  involved in this collision
-	//! adds itself (this) to the local event lists of both collidables
+	//! @brief ... constructor, initialized with the two CollidableBase objects  involved in this collision
 	//! @param rTime ... event time
 	//! @param rFirst ... first CollidableBase involved
 	//! @param rSecond ... second CollidableBase involved
 	Event(const double rTime, CollidableBase* rFirst,
 			CollidableBase* rSecond, const int rType);
 
+	//! @brief ... copy constructor
 	Event(const Event& rEvent);
+
+
+	//! @brief ... important operator for the event list sorting
+	//! ... sort priority: time >> collidables
+	bool operator<(const Event& rOther) const;
+
+	//! @brief ... determines, whether two events are equal
+	bool operator==(Event const& rRhs) const;
+
+	//! @brief ... determines, whether two events are unequal
+	bool operator!=(Event const& rRhs) const;
+
+
 
 	//! @brief ... destructor
 	//! removes itself (this) from the local event lists of both collidables
@@ -62,25 +71,19 @@ public:
 	//! stores them to the global event list
 	//! @param rEvents ... global event list
 	//! @param rCollidables ... global collidable list
-	double AddNewEventsLocalAndGlobal(EventListHandler& rEvents) const;
+	void AddNewEvents(EventListHandler& rEvents) const;
 
-
-	void EraseOldEventsLocalAndGlobal(EventListHandler& rEvents) const;
+	//! @brief ... removes all events in the local event lists of rEvent
+	void EraseOldEvents(EventListHandler& rEvents) const;
 
 	//! @brief ... performs the collision of mFirst vs. mSecond
 	void PerformCollision() const;
 
 	//! @brief adds itself (this) to the local event lists of both collidables
 	void AddLocalEvent();
+
+	//! @brief ... getter for type
 	const int GetType() const;
-
-
-	std::size_t GetHash() const;
-
-#ifndef SWIG
-	friend std::size_t hash_value(const Event& rEvent);
-#endif
-
 
 protected:
 
@@ -92,10 +95,10 @@ protected:
 
 private:
 
-
-
 	//! @brief ... event time
 	const double mTime;
+
+	//! @brief ... member of CollidableBase::EventType
 	const int mType;
 
 #ifndef SWIG
@@ -103,10 +106,10 @@ private:
 			const Event& rEvent);
 #endif
 
+	//! @brief ... output
+	//! @param rOutStream ... return argument, gets modified
 	virtual void Print(std::ostream& rOutStream) const;
 
-	//! @brief removes itself (this) from the local event lists of both collidables
-	void RemoveLocalEvent();
 };
 
 } /* namespace NuTo */

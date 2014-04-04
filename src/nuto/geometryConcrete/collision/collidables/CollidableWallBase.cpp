@@ -14,13 +14,15 @@ NuTo::CollidableWallBase::CollidableWallBase(
 		FullVector<double, Eigen::Dynamic> rPosition,
 		FullVector<double, Eigen::Dynamic> rDirection,
 		const int rIndex)
-		: NuTo::CollidableBase::CollidableBase(rIndex)
+		: NuTo::CollidableBase::CollidableBase(rIndex),
+		  mPosition(rPosition),
+		  mDirection(rDirection),
+		  mInsideBox(nullptr),
+		  mOutsideBox(nullptr),
+		  mNonNullAxis(GetNonNullAxis()),
+		  mIsAxisAligned(abs(mDirection.Sum()) == 1)
 {
-	mPosition = rPosition;
-	mDirection = rDirection;
 	mDirection.normalize();
-	mInsideBox = 0;
-	mOutsideBox = 0;
 }
 
 NuTo::CollidableWallBase::~CollidableWallBase()
@@ -114,7 +116,7 @@ void NuTo::CollidableWallBase::VisualizationStatic(
 }
 #endif
 
-void NuTo::CollidableWallBase::AddBoxes(SubBox& rInsideBox, SubBox& rOutsideBox)
+void NuTo::CollidableWallBase::SetBoxes(SubBox& rInsideBox, SubBox& rOutsideBox)
 {
 	mBoxes.push_back(&rInsideBox);
 	mInsideBox = &rInsideBox;
@@ -149,7 +151,7 @@ const NuTo::FullVector<double, Eigen::Dynamic> NuTo::CollidableWallBase::GetPosi
 	return mPosition;
 }
 
-int NuTo::CollidableWallBase::GetNonNullAxis()
+const int NuTo::CollidableWallBase::GetNonNullAxis()
 {
 	for (int i = 0; i < 3; i++)
 		if (mDirection[i] != 0.)

@@ -13,9 +13,16 @@
 namespace NuTo
 {
 class CollidableParticleSphere;
+
+//! @brief class for planar physical walls
 class CollidableWallPhysical: public NuTo::CollidableWallBase
 {
 public:
+
+	//! @brief ... constructor, create CollidableWallBase using the point-and-normal-vector plane definition
+	//! @param rPosition ... point on the plane
+	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
+	//! @param rIndex ... name
 	CollidableWallPhysical(
 			NuTo::FullVector<double, Eigen::Dynamic> rPosition,
 			NuTo::FullVector<double, Eigen::Dynamic> rDirection,
@@ -30,6 +37,8 @@ public:
 	//! @return ... predicted collision time
 	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
 
+	//! @brief ... returns true
+	const bool IsPhysical() const;
 };
 
 } /* namespace NuTo */

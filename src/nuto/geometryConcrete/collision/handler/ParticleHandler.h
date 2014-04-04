@@ -8,74 +8,85 @@
 #ifndef PARTICLEHANDLER_H_
 #define PARTICLEHANDLER_H_
 
-#include <vector>
-#include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
-#include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
-
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#endif
 
 namespace NuTo
 {
 
+class CollidableParticleBase;
+class CollidableParticleSphere;
+class VisualizeUnstructuredGrid;
+
+//! @brief ... handles the particle list
 class ParticleHandler
 {
 public:
-	ParticleHandler(ParticleHandler& rOther);
+
+	//! @brief ... constructor, builds rNumParticles
 	ParticleHandler(
 			const int rNumParticles,
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
-			const double rVelocityRange,
-			const double rGrowthRate);
-	ParticleHandler(
-			const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
 			const double rVelocityRange,
 			const double rGrowthRate);
 
+	//! @brief ... constructor, uses rSpheres
+	ParticleHandler(
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres,
+			const double rVelocityRange,
+			const double rGrowthRate);
+
+	//! @brief ... destructor, deletes all particles
 	~ParticleHandler();
 
-	void Delete();
-
+	//! @brief ... updates all particles to the same time global time rTime
 	void Sync(const double rTime);
+
+	//! @brief ... getter for the kinetic energy of all particles
 	const double GetKineticEnergy() const;
+
+	//! @brief ... getter for the volume of all particles
 	const double GetVolume() const;
 
+	//! @brief ... writes a sphere visualization file
+	//! @param rName ... workdir
+	//! @param rTimeStep ... current timestep of the simulation
+	//! @param rGlobalTime ... current global time != wall time
+	//! @param rFinal ... false: use current radius, true: use initial radius
 	void VisualizeSpheres(std::string rName, int rTimeStep, double rGlobalTime, bool rFinal);
 
+	//! @brief ... resets all velocities
 	void ResetVelocities();
 
-	void AddParticle(const CollidableParticleSphere& rSphere);
+	//! @brief ... converts the particle list to a Nx4-matrix
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles() const;
 
-	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles() const;
-
+	//! @brief ... get a single particle from the particle list
 	CollidableParticleSphere* GetParticle(const int rIndex);
 
+	//! @brief ... getter for the particle list size
 	const int GetNumParticles() const;
 
-	double GetAbsoluteMininimalDistance(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox);
+	//! @brief ... calculates the minimal distance between all particles using sub boxes
+	double GetAbsoluteMininimalDistance(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox);
 
-	double GetRMax();
+	//! @brief ... caluclates approximate sub box length, based on box size
+	NuTo::FullVector<int,Eigen::Dynamic> GetSubBoxDivisions(NuTo::FullVector<double, Eigen::Dynamic> rLength);
 
 private:
-
-	FullVector<double,3> GetRandomVector(const double rStart, const double rEnd);
-	FullVector<double,3> GetRandomVector(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds);
-
 
 	CollidableBase::ParticleContainer mParticles;
 	int mParticleIndex;
 
+	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const double rStart, const double rEnd);
+	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds);
+
+	//! @return ... returns true if all z-positions are equal
+	bool Is2DSimulation(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres);
+
+
 };
 
-class StatBox
-{
-public:
-	StatBox(FullMatrix<double, 3, 2> rBox):mBox(rBox){};
-	std::vector<int> mSphereIndices;
-	FullMatrix<double, 3, 2> mBox;
-};
+
 
 } /* namespace NuTo */
 #endif /* PARTICLEHANDLER_H_ */

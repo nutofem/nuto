@@ -38,15 +38,22 @@ public:
 	//! @return ... predicted time of collision
 	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
 
-#ifdef ENABLE_VISUALIZE
+	const bool IsPhysical() const;
 
+#ifdef ENABLE_VISUALIZE
+	//! @brief ... visualize all non-moving collidables
+	//! @param rVisualizer ... NuTo object for ascii-export
 	void VisualizationStatic(VisualizeUnstructuredGrid& rVisualizer) const override;
 #endif
 
+	//! @brief ... returns true, if the sphere is in this cylinder
+	//! @param rSphere ... sphere to check
 	bool IsInside(const CollidableParticleSphere& rSphere) const override;
 
 protected:
 
+	//! @brief ... prints cylinder informations
+	//! @param rReturnStream ... output stream, that gets modified
 	void Print(std::ostream & rReturnStream) const override;
 
 	//! @brief ... cylinder radius

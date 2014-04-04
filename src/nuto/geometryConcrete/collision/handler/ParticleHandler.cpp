@@ -6,33 +6,31 @@
  */
 
 #include "nuto/geometryConcrete/collision/handler/ParticleHandler.h"
-#include "nuto/math/FullVector.h"
+#include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
+#include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 
-
-NuTo::ParticleHandler::ParticleHandler(ParticleHandler& rOther)
-		: mParticleIndex(rOther.mParticleIndex)
-{
-	mParticles = rOther.mParticles;
-}
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
+#endif
 
 NuTo::ParticleHandler::ParticleHandler(
 		const int rNumParticles,
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
 		const double rVelocityRange,
 		const double rGrowthRate)
+		:
+				mParticleIndex(100000)
 {
-	mParticleIndex = 100000;
-
-	mParticles.resize(rNumParticles);
+	mParticles.reserve(rNumParticles);
 
 	for (int i = 0; i < rNumParticles; ++i)
 	{
-		mParticles[i] = new NuTo::CollidableParticleSphere(
-				GetRandomVector(rBoundingBox),
+		mParticles.push_back(new NuTo::CollidableParticleSphere(
+				GetRandomVector(.9 * rBoundingBox),
 				GetRandomVector(-rVelocityRange / 2, rVelocityRange / 2),
 				0.,
 				rGrowthRate,
-				mParticleIndex++);
+				mParticleIndex++));
 	}
 
 }
@@ -41,42 +39,38 @@ NuTo::ParticleHandler::ParticleHandler(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres,
 		const double rVelocityRange,
 		const double rGrowthRate)
+		:
+				mParticleIndex(100000)
 {
-	mParticleIndex = 100000;
 
 	int numRows = rSpheres.GetNumRows();
 
-	mParticles.resize(numRows);
+	mParticles.reserve(numRows);
+
+	bool is2D = Is2DSimulation(rSpheres);
 
 	for (int i = 0; i < numRows; ++i)
 	{
 		NuTo::FullVector<double, 3> position( { rSpheres(i, 0), rSpheres(i, 1), rSpheres(i, 2) });
 		NuTo::FullVector<double, 3> velocity = GetRandomVector(-rVelocityRange / 2, rVelocityRange / 2);
+		if (is2D)
+			velocity[2] = 0.;
 		double radius = rSpheres(i, 3);
-		mParticles[i] = new NuTo::CollidableParticleSphere(
+		mParticles.push_back(new NuTo::CollidableParticleSphere(
 				position,
 				velocity,
 				radius,
-				rGrowthRate,
-				mParticleIndex++);
+				radius * rGrowthRate,
+				mParticleIndex++));
 	}
+	std::cout << "[ParticleHandler] Added " << mParticles.size() << " particles." << std::endl;
 }
 
 NuTo::ParticleHandler::~ParticleHandler()
 {
-
-}
-
-void NuTo::ParticleHandler::Delete()
-{
 	for (auto particle : mParticles)
-		delete particle;
-
-}
-
-void NuTo::ParticleHandler::AddParticle(const CollidableParticleSphere& rSphere)
-{
-	mParticles.push_back(new CollidableParticleSphere(rSphere));
+		if (particle)
+			delete particle;
 }
 
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::GetParticles() const
@@ -144,6 +138,7 @@ void NuTo::ParticleHandler::Sync(const double rTime)
 {
 	for (auto particle : mParticles)
 		particle->MoveAndGrow(rTime);
+
 }
 
 const double NuTo::ParticleHandler::GetKineticEnergy() const
@@ -173,20 +168,29 @@ const int NuTo::ParticleHandler::GetNumParticles() const
 	return mParticles.size();
 }
 
-
 double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox)
 {
-	double rMax = GetRMax();
 
-	FullVector<double, 3> length;
-	FullVector<double, 3> subLength;
-	FullVector<int, 3> divs;
-	for (int i = 0; i < 3; ++i)
+	struct StatBox
 	{
-		length[i] = rBoundingBox(i, 1) - rBoundingBox(i, 0);
-		divs[i] = static_cast<int>(length[i] / (rMax));
-		subLength[i] = length[i] / divs[i];
-	}
+		StatBox(FullMatrix<double, 3, 2> rBox)
+				: mBox(rBox)
+		{
+		}
+		;
+		std::vector<int> mSphereIndices;
+		FullMatrix<double, 3, 2> mBox;
+	};
+
+	FullVector<double, 3> length( {
+			rBoundingBox(0, 1) - rBoundingBox(0, 0),
+			rBoundingBox(1, 1) - rBoundingBox(1, 0),
+			rBoundingBox(2, 1) - rBoundingBox(2, 0) });
+	FullVector<int, 3> divs = GetSubBoxDivisions(length);
+
+	FullVector<double, 3> subBoxLength;
+	for (int i = 0; i < 3; ++i)
+		subBoxLength[i] = length[i] / divs[i];
 
 	// create sub boxes
 	std::vector<StatBox> boxes;
@@ -195,12 +199,12 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(FullMatrix<double, Ei
 			for (int iZ = 0; iZ < divs[2]; ++iZ)
 			{
 				FullMatrix<double, 3, 2> bounds;
-				bounds << rBoundingBox(0, 0) + iX * subLength[0],
-						rBoundingBox(0, 0) + (iX + 1) * subLength[0],
-						rBoundingBox(1, 0) + iY * subLength[1],
-						rBoundingBox(1, 0) + (iY + 1) * subLength[1],
-						rBoundingBox(2, 0) + iZ * subLength[2],
-						rBoundingBox(2, 0) + (iZ + 1) * subLength[2];
+				bounds << rBoundingBox(0, 0) + iX * subBoxLength[0],
+						rBoundingBox(0, 0) + (iX + 1) * subBoxLength[0],
+						rBoundingBox(1, 0) + iY * subBoxLength[1],
+						rBoundingBox(1, 0) + (iY + 1) * subBoxLength[1],
+						rBoundingBox(2, 0) + iZ * subBoxLength[2],
+						rBoundingBox(2, 0) + (iZ + 1) * subBoxLength[2];
 				boxes.push_back(StatBox(bounds));
 			}
 	// add spheres
@@ -225,9 +229,9 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(FullMatrix<double, Ei
 		for (int c = 0; c < 8; ++c)
 		{
 			// get xyz cell index of corner points
-			int indX = floor(static_cast<double>(corners[c](0) / subLength[0]));
-			int indY = floor(static_cast<double>(corners[c](1) / subLength[1]));
-			int indZ = floor(static_cast<double>(corners[c](2) / subLength[2]));
+			int indX = floor(static_cast<double>(corners[c](0) / subBoxLength[0]));
+			int indY = floor(static_cast<double>(corners[c](1) / subBoxLength[1]));
+			int indZ = floor(static_cast<double>(corners[c](2) / subBoxLength[2]));
 
 			indX = std::min(indX, static_cast<int>(divs[0] - 1));
 			indY = std::min(indY, static_cast<int>(divs[1] - 1));
@@ -280,15 +284,7 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(FullMatrix<double, Ei
 
 }
 
-double NuTo::ParticleHandler::GetRMax()
-{
-	double rMax = 0;
-	for (auto particle : mParticles)
-		rMax = std::max(rMax, particle->GetRadius0());
-	return rMax;
-}
-
-NuTo::FullVector<double, 3> NuTo::ParticleHandler::GetRandomVector(const double rStart, const double rEnd)
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::ParticleHandler::GetRandomVector(const double rStart, const double rEnd)
 {
 	NuTo::FullVector<double, 3> randomVector;
 	for (int i = 0; i < 3; ++i)
@@ -307,17 +303,41 @@ void NuTo::ParticleHandler::ResetVelocities()
 		particle->ResetVelocity();
 }
 
-NuTo::FullVector<double, 3> NuTo::ParticleHandler::GetRandomVector(
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::ParticleHandler::GetRandomVector(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds)
 {
 	NuTo::FullVector<double, 3> randomVector;
 	for (int i = 0; i < 3; ++i)
 	{
 		double rnd = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
-		rnd *= rBounds.GetValue(i,1) - rBounds.GetValue(i,0);   // correct range
-		rnd += rBounds.GetValue(i,0);			// correct starting point
+		rnd *= rBounds.GetValue(i, 1) - rBounds.GetValue(i, 0);   // correct range
+		rnd += rBounds.GetValue(i, 0);			// correct starting point
 		randomVector.SetValue(i, rnd);
 	}
 	return randomVector;
 }
 
+NuTo::FullVector<int, Eigen::Dynamic> NuTo::ParticleHandler::GetSubBoxDivisions(NuTo::FullVector<double, Eigen::Dynamic> rLength)
+{
+
+	const int ppSubBox = 10; // particles per sub box
+
+	double volBoundary = rLength[0] * rLength[1] * rLength[2];
+	double volSubBox = volBoundary / (GetNumParticles() / ppSubBox);
+	double lengthSubBox = std::pow(volSubBox, 1. / 3.);
+
+	FullVector<int, Eigen::Dynamic> divs(3);
+	for (int i = 0; i < 3; ++i)
+		divs.SetValue(i, std::ceil(rLength.GetValue(i) / lengthSubBox));
+
+	return divs;
+}
+
+bool NuTo::ParticleHandler::Is2DSimulation(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres)
+{
+	double coordZ = rSpheres(0, 3);
+	for (int i = 0; i < rSpheres.GetNumRows(); ++i)
+		if (coordZ != rSpheres(i, 3))
+			return false;
+	return true;
+}

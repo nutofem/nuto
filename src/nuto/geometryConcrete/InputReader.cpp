@@ -30,14 +30,12 @@ void NuTo::InputReader::ReadFile()
 	ReadSimulationParameters();
 	ReadBoundingBox();
 
-	mIsDefinedByGradingCurve = ReadBool();
 
-	if (mIsDefinedByGradingCurve)
-		ReadGradingCurve();
-	else
-		ReadMonodisperse();
+	ReadGradingCurve();
 
 	mShrinkage = ReadNumber();
+
+	CheckInputs();
 }
 
 void NuTo::InputReader::ReadSimulationParameters()
@@ -65,6 +63,8 @@ void NuTo::InputReader::ReadBoundingBox()
 	}
 	mBoundingBox = FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(3, 2);
 	mBoundingBox << boxVector[0], boxVector[1], boxVector[2], boxVector[3], boxVector[4], boxVector[5];
+
+	mIs2D = ReadBool();
 }
 
 void NuTo::InputReader::ReadGradingCurve()
@@ -87,11 +87,6 @@ void NuTo::InputReader::ReadGradingCurve()
 
 }
 
-void NuTo::InputReader::ReadMonodisperse()
-{
-	mNumParticles = ReadNumber();
-}
-
 void NuTo::InputReader::SkipToNextData()
 {
 	const int skipLength = 1000;
@@ -104,7 +99,6 @@ void NuTo::InputReader::SkipToNextData()
 bool NuTo::InputReader::ReadBool()
 {
 	SkipToNextData();
-
 
 	char value;
 	std::vector<char> positive = { 'T', 't', 'Y', 'y', '1' };
@@ -148,12 +142,12 @@ std::string NuTo::InputReader::ReadString()
 {
 	SkipToNextData();
 	char directory[1000];
-	mFile.get(directory,';');
+	mFile.get(directory, ';');
 
 	std::string str = directory;
 
 	// remove ';'
-	str.erase(str.size()-1);
+	str.erase(str.size() - 1);
 
 	// remove whitespaces
 	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
@@ -161,12 +155,34 @@ std::string NuTo::InputReader::ReadString()
 	return str;
 }
 
+void NuTo::InputReader::mThrow(const std::string& rMsg) const
+		{
+	throw Exception("[NuTo::InputReader::CheckInputs] " + rMsg);
+}
+
+void NuTo::InputReader::CheckInputs() const
+{
+
+	if(mGrowthRates < 0.)
+		mThrow("growthRates >= 0.0 !");
+
+	if(mAbsoluteDistance < 0.)
+		mThrow("absoluteDistance >= 0.0 !");
+
+	if(mVolumeFraction <= 0.)
+		mThrow("volumeFraction > 0.0 !");
+
+	if(mShrinkage >= 1. || mShrinkage < 0.)
+		mThrow("0.0 <= shrinkage < 1.0 !");
+
+}
+
 void NuTo::InputReader::PrintInput()
 {
 
 	std::cout << "          INPUT PARAMETERS" << std::endl;
 	std::cout << "======================================" << std::endl;
-	std::cout << std::endl <<  "     SIMULATION PARAMETERS   " << std::endl;
+	std::cout << std::endl << "     SIMULATION PARAMETERS   " << std::endl;
 	std::cout << " directory:                  " << mDirectory << std::endl;
 	std::cout << " max. number of events:      " << mNumEventsMax << std::endl;
 	std::cout << " max. simulation time [s]:   " << mTimeMax << std::endl;
@@ -174,23 +190,19 @@ void NuTo::InputReader::PrintInput()
 	std::cout << " initial time barrier:       " << mInitialTimeBarrier << std::endl;
 	std::cout << " random velocity range:      " << mRandomVelocityRange << std::endl;
 	std::cout << " growth rates:               " << mGrowthRates << std::endl;
-	std::cout << std::endl <<  "        BOUNDING BOX" << std::endl;
+	std::cout << " number of threads:          " << mNumThreads << std::endl;
+	std::cout << "======================================" << std::endl;
+	std::cout << std::endl << "        BOUNDING BOX" << std::endl;
 	std::cout << "    box type:                " << mBoxType << std::endl;
 	std::cout << "    x-Range  " << mBoundingBox.GetValue(0, 0) << " to " << mBoundingBox.GetValue(0, 1) << std::endl;
 	std::cout << "    y-Range  " << mBoundingBox.GetValue(1, 0) << " to " << mBoundingBox.GetValue(1, 1) << std::endl;
 	std::cout << "    z-Range  " << mBoundingBox.GetValue(2, 0) << " to " << mBoundingBox.GetValue(2, 1) << std::endl;
 	std::cout << std::endl << "          PARTICLES   " << std::endl;
-	if (mIsDefinedByGradingCurve)
-	{
-		std::cout << "The particles are defined by the following grading curve: " << std::endl;
-		std::cout << mGradingCurve << std::endl;
-		std::cout << " volume fraction: " << mVolumeFraction << std::endl;
-		std::cout << " absolute distance: " << mAbsoluteDistance << std::endl;
-	}
-	else
-	{
-		std::cout << "The " << mNumParticles << " particles are initialized with radius = 0." << std::endl;
-	}
+	std::cout << "======================================" << std::endl;
+	std::cout << "The particles are defined by the following grading curve: " << std::endl;
+	std::cout << mGradingCurve << std::endl;
+	std::cout << " volume fraction: " << mVolumeFraction << std::endl;
+	std::cout << " absolute distance: " << mAbsoluteDistance << std::endl;
 
 }
 
@@ -199,7 +211,7 @@ double NuTo::InputReader::GetAbsoluteDistance() const
 	return mAbsoluteDistance;
 }
 
-const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& NuTo::InputReader::GetBoundingBox() const
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetBoundingBox() const
 {
 	return mBoundingBox;
 }
@@ -209,7 +221,7 @@ int NuTo::InputReader::GetBoxType() const
 	return mBoxType;
 }
 
-const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& NuTo::InputReader::GetGradingCurve() const
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetGradingCurve() const
 {
 	return mGradingCurve;
 }
@@ -224,19 +236,9 @@ double NuTo::InputReader::GetInitialTimeBarrier() const
 	return mInitialTimeBarrier;
 }
 
-bool NuTo::InputReader::isIsDefinedByGradingCurve() const
-{
-	return mIsDefinedByGradingCurve;
-}
-
 long NuTo::InputReader::GetNumEventsMax() const
 {
 	return mNumEventsMax;
-}
-
-int NuTo::InputReader::GetNumParticles() const
-{
-	return mNumParticles;
 }
 
 double NuTo::InputReader::GetRandomVelocityRange() const
@@ -268,3 +270,15 @@ const std::string& NuTo::InputReader::GetDirectory() const
 {
 	return mDirectory;
 }
+
+bool NuTo::InputReader::Is2D() const
+{
+	return mIs2D;
+}
+
+double NuTo::InputReader::GetShrinkage() const
+{
+	return mShrinkage;
+}
+
+

@@ -7,6 +7,7 @@
 
 #include "nuto/geometryConcrete/WallTime.h"
 #include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"
+#include "nuto/geometryConcrete/collision/handler/ParticleHandler.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallPhysical.h"
@@ -15,38 +16,36 @@
 
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 
+
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
-		const FullVector<int, 3>& rDivisions)
-		: mSpheres(rSpheres)
+		const FullVector<int, Eigen::Dynamic> rDivisions)
+:
+		mDivisions(rDivisions),
+		mVolume(0.)
 {
+	if (rDivisions.GetNumRows() != 3)
+		throw Exception("[NuTo::SubBoxHandler::SubBoxHandler] FullVector<int, 3> rDivisions!");
 
-	mDivisions = rDivisions;
+	mSpheres = &rSpheres;
 	mSubBoxes.clear();
-	mVolume = 0.;
 }
 
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
-		: mSpheres(rSpheres)
+:
+		mDivisions(rSpheres.GetSubBoxDivisions(GetLength(rBox))),
+		mVolume(0.)
 {
-	double rMax = mSpheres.GetRMax();
-	FullVector<double, 3> length = GetLength(rBox);
+	mSpheres = &rSpheres;
+	mSubBoxes.clear();
 
-	std::cout << rMax << std::endl;
-	std::cout << length << std::endl;
-
-	mDivisions.SetValue(0, floor(length.GetValue(0) / rMax));
-	mDivisions.SetValue(1, floor(length.GetValue(1) / rMax));
-	mDivisions.SetValue(2, floor(length.GetValue(2) / rMax));
 
 	int numDivisions = mDivisions[0] * mDivisions[1] * mDivisions[2];
 
 	std::cout << "[NuTo::SubBoxHandler::SubBoxHandler] Build " << numDivisions << " sub boxes." << std::endl;
 
-	mSubBoxes.clear();
-	mVolume = 0.;
 }
 
 NuTo::SubBoxHandler::~SubBoxHandler()
@@ -71,8 +70,22 @@ unsigned int NuTo::SubBoxHandler::GetBoxIndex(int rX, int rY, int rZ)
 	return mDivisions[1] * mDivisions[2] * rX + mDivisions[2] * rY + rZ;
 }
 
-NuTo::FullVector<double, 3> NuTo::SubBoxHandler::GetSubBoxLength(
-		const FullVector<double, 3>& rLength)
+void NuTo::SubBoxHandler::BuildBox(
+		FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox ,const int rNumThreads)
+{
+	std::cout << "[BuildBox] Building boxes..." << std::endl;
+	BuildSubBoxes(rBox, rNumThreads);
+	AddSpheresToBoxes(rBox);
+}
+
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetLength(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBox)
+{
+	FullVector<double, 3> length( { rBox(0, 1) - rBox(0, 0), rBox(1, 1) - rBox(1, 0), rBox(2, 1) - rBox(2, 0) });
+	return length;
+}
+
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetSubBoxLength(
+		const FullVector<double, Eigen::Dynamic>& rLength)
 {
 	FullVector<double, 3> subBoxLength = rLength;
 	subBoxLength[0] /= mDivisions[0];
@@ -81,22 +94,7 @@ NuTo::FullVector<double, 3> NuTo::SubBoxHandler::GetSubBoxLength(
 	return subBoxLength;
 }
 
-std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::BuildBox(
-		FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
-{
-	mSubBoxes = GetSubBoxes(rBox);
-	AddSpheresToBoxes(rBox);
-	return mSubBoxes;
-}
-
-NuTo::FullVector<double, 3> NuTo::SubBoxHandler::GetLength(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBox)
-{
-	FullVector<double, 3> length( { rBox(0, 1) - rBox(0, 0), rBox(1, 1) - rBox(1, 0), rBox(2, 1) - rBox(2, 0) });
-	return length;
-}
-
-std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::GetSubBoxes(
-		FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
+void NuTo::SubBoxHandler::BuildSubBoxes(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox,const int rNumThreads)
 {
 
 	FullVector<double, 3> length = GetLength(rBox);
@@ -112,7 +110,7 @@ std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::GetSubBoxes(
 
 	// create cell grid boxes
 	for (unsigned int i = 0; i < nDivisions; ++i)
-		mSubBoxes.push_back(new SubBox(i));
+		mSubBoxes.push_back(new SubBox(i, rNumThreads));
 
 	// TODO make this ugly method readable, ffs!
 	FullMatrix<int, 6, 3> neighborBox, direction;
@@ -149,14 +147,12 @@ std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::GetSubBoxes(
 					else
 						wall = new CollidableWallVirtual(wallPosition, wallDirection, ++index);
 
-					wall->AddBoxes(insideBox, outsideBox);
+					wall->SetBoxes(insideBox, outsideBox);
 					walls.push_back(wall);
 
 				}
 				insideBox.SetWalls(walls);
 			}
-
-	return mSubBoxes;
 }
 
 std::vector<NuTo::CollidableWallBase*> NuTo::SubBoxHandler::GetXYWalls(unsigned int rIndex)
@@ -173,7 +169,7 @@ std::vector<NuTo::CollidableWallBase*> NuTo::SubBoxHandler::GetXYWalls(unsigned 
 	return xyWalls;
 }
 
-std::vector<NuTo::FullVector<double, 3> > NuTo::SubBoxHandler::GetXYCorners(
+std::vector<NuTo::FullVector<double, Eigen::Dynamic> > NuTo::SubBoxHandler::GetXYCorners(
 		std::vector<CollidableWallBase*> rWalls)
 {
 	double xMin = +INFINITY;
@@ -190,7 +186,7 @@ std::vector<NuTo::FullVector<double, 3> > NuTo::SubBoxHandler::GetXYCorners(
 		yMax = std::max(yMax, static_cast<double>(wall->GetPosition()(1)));
 	}
 
-	std::vector<NuTo::FullVector<double, 3> > corners(4);
+	std::vector<NuTo::FullVector<double, Eigen::Dynamic> > corners(4);
 
 	corners[0] = FullVector<double, 3>( { xMin, yMin, z });
 	corners[1] = FullVector<double, 3>( { xMin, yMax, z });
@@ -200,6 +196,17 @@ std::vector<NuTo::FullVector<double, 3> > NuTo::SubBoxHandler::GetXYCorners(
 	return corners;
 }
 
+const std::vector<NuTo::SubBox*>& NuTo::SubBoxHandler::GetSubBoxes() const
+{
+	return mSubBoxes;
+}
+
+void NuTo::SubBoxHandler::AddSubBox(SubBox& rSubBox)
+{
+	mSubBoxes.push_back(&rSubBox);
+}
+
+
 std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCylinder)
 {
 	std::vector<int> nInside(mSubBoxes.size());
@@ -207,7 +214,7 @@ std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCy
 	for (unsigned int i = 0; i < mSubBoxes.size(); ++i)
 	{
 		std::vector<CollidableWallBase*> xyWalls = GetXYWalls(i);
-		std::vector<NuTo::FullVector<double, 3> > xyCorners = GetXYCorners(xyWalls);
+		std::vector<NuTo::FullVector<double, Eigen::Dynamic> > xyCorners = GetXYCorners(xyWalls);
 		nInside[i] = 0;
 		for (int c = 0; c < 4; ++c)
 		{
@@ -219,7 +226,7 @@ std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCy
 	return nInside;
 }
 
-std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
+void NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox, const int rNumThreads)
 {
 	mSubBoxes.clear();
 
@@ -240,7 +247,7 @@ std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double,
 	CollidableWallCylinder* wallCylinder = new CollidableWallCylinder(origin, direction, radius, height, 1);
 
 	// create box
-	mSubBoxes = GetSubBoxes(rBox);
+	BuildSubBoxes(rBox, rNumThreads);
 
 	AddSpheresToBoxes(rBox);
 
@@ -249,31 +256,34 @@ std::vector<NuTo::SubBox*> NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double,
 
 	// nInside = 1..3 --> add cylinder
 	for (unsigned int i = 0; i < mSubBoxes.size(); ++i)
-		if (nInside[i] < 4)
+		if (1 <= nInside[i] && nInside[i] <= 3)
 		{
 			CollidableWallCylinder* subWallCylinder = new CollidableWallCylinder(origin, direction, radius, height, 1);
-			subWallCylinder->AddBoxes(*mSubBoxes[i], *mSubBoxes[i]);
+			subWallCylinder->SetBoxes(*mSubBoxes[i], *mSubBoxes[i]);
 			mSubBoxes[i]->AddWall(*subWallCylinder);
 		}
 
 	// delete all physical side walls
+
 	for (auto box : mSubBoxes)
+	{
+		std::vector<CollidableWallBase*> toDelete;
 		for (auto wall : box->GetWalls())
 		{
-			bool isPhysicalWall = dynamic_cast<CollidableWallPhysical*>(wall);
+			bool isPhysicalWall = wall->IsPhysical();
 			bool isSideWall = wall->GetDirection()(2) == 0;
 
 			if (isPhysicalWall && isSideWall)
 			{
-				box->RemoveWall(*wall);
-				delete wall;
+				toDelete.push_back(wall);
 			}
 		}
-
-	// nInside = 0 --> delete subBox ?
-
-	return mSubBoxes;
-
+		for(auto wall : toDelete)
+		{
+			box->RemoveWall(*wall);
+			delete wall;
+		}
+	}
 }
 
 void NuTo::SubBoxHandler::AddSpheresToBoxes(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
@@ -284,14 +294,14 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes(FullMatrix<double, Eigen::Dynamic, E
 	FullVector<double, 3> length = GetLength(rBox);
 	FullVector<double, 3> subLength = GetSubBoxLength(length);
 
-	const int numParticles = mSpheres.GetNumParticles();
+	const int numParticles = mSpheres->GetNumParticles();
 
-	std::cout << numParticles << std::endl;
+	std::cout << "[AddSpheresToBoxex]" << numParticles << std::endl;
 
 	for (int sph = 0; sph < numParticles; ++sph)
 	{
-		std::vector<FullVector<double, 3> > corners(8, mSpheres.GetParticle(sph)->GetPosition());
-		double radius = mSpheres.GetParticle(sph)->GetRadius();
+		std::vector<FullVector<double, 3> > corners(8, mSpheres->GetParticle(sph)->GetPosition());
+		double radius = mSpheres->GetParticle(sph)->GetRadius();
 		// add radius to get different points
 		int cornerIndex = 0;
 		for (int iX = -1; iX <= 1; iX += 2)
@@ -339,8 +349,8 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes(FullMatrix<double, Eigen::Dynamic, E
 
 					// only add new spheres
 					CollidableBase* tmpColl = mSubBoxes[boxIndex]->GetCollidables().back();
-					if (tmpColl != mSpheres.GetParticle(sph))
-						mSubBoxes[boxIndex]->AddSphere(*mSpheres.GetParticle(sph));
+					if (tmpColl != mSpheres->GetParticle(sph))
+						mSubBoxes[boxIndex]->AddSphere(*mSpheres->GetParticle(sph));
 				}
 
 	}

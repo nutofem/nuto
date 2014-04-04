@@ -7,27 +7,31 @@
 
 #include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
+#include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "nuto/geometryConcrete/WallTime.h"
 
 NuTo::EventListHandler::EventListHandler()
+		:
+				mTimeUpdate(0.),
+				mTimeErase(0.),
+				mTimeAdd(0.),
+				mTimeRebuild(0.),
+				mTimeBarrier(0.),
+				mNSphereCollisions(0),
+				mNWallCollisions(0),
+				mNWallTransfers(0)
 {
-	mTimeUpdate = 0.;
-	mTimeErase = 0.;
-	mTimeAdd = 0.;
-	mTimeRebuild = 0.;
-	mTimeAddDetail = 0;
+	mEvents.clear();
+}
 
-	mTimeBarrier = 0.;
 
-	mNSphereCollisions = 0;
-	mNWallCollisions = 0;
-	mNWallTransfers = 0;
-
+NuTo::EventListHandler::~EventListHandler()
+{
 	mEvents.clear();
 }
 
 double NuTo::EventListHandler::BuildInitialEventList(
-		std::vector<SubBox*>& rSubBoxes)
+		NuTo::SubBoxHandler& rSubBoxes)
 {
 	std::cout << "BuildInitialEventList() start." << std::endl;
 
@@ -43,16 +47,26 @@ double NuTo::EventListHandler::BuildInitialEventList(
 }
 
 double NuTo::EventListHandler::BuildEventList(
-		std::vector<SubBox*>& rSubBoxes)
+		NuTo::SubBoxHandler& rSubBoxes)
 {
 
 	double sTime = WallTime::Get();
 
 	mEvents.clear();
 
-	for (auto box : rSubBoxes)
+//	auto boxes = rSubBoxes.GetSubBoxes();
+//	for (unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
+//	{
+//		auto collidables = boxes[iBox]->GetCollidables();
+//		for (unsigned int iCollidable = 0; iCollidable < collidables.size(); ++iCollidable)
+//		{
+//			boxes[iBox]->CreateEvents(*this, *collidables[iCollidable]);
+//		}
+//	}
+
+	for (auto box : rSubBoxes.GetSubBoxes())
 		for (auto coll : box->GetCollidables())
-			mTimeAddDetail += box->CreateEvents(*this, *coll);
+			box->CreateEvents(*this, *coll);
 
 	mTimeRebuild += WallTime::Get() - sTime;
 
@@ -91,8 +105,9 @@ void NuTo::EventListHandler::AddEvent(const double rTime,
 
 void NuTo::EventListHandler::DeleteOldEvents(Event::LocalEvents& rOldEvents)
 {
-	for (auto oldEvent : rOldEvents)
-		mEvents.erase(*oldEvent);
+	for (unsigned int iOldEvent = 0; iOldEvent < rOldEvents.size(); ++iOldEvent) {
+		mEvents.erase(*rOldEvents[iOldEvent]);
+	}
 }
 
 const double NuTo::EventListHandler::GetNextEventTime()
@@ -116,8 +131,6 @@ void NuTo::EventListHandler::PrintStatistics(double rTimeTotal)
 	statistics << "Time Sum:    " << timeSum << " | " << timeSum / rTimeTotal * 100 << "%" << std::endl;
 	statistics << "Time Total:  " << std::setw(6) << rTimeTotal << std::endl;
 
-	statistics << "Time Add Detail " << mTimeAddDetail << std::endl;
-
 	long nEvents = mNSphereCollisions + mNWallCollisions + mNWallTransfers;
 
 	statistics << "Total Events: " << nEvents << std::endl;
@@ -127,6 +140,7 @@ void NuTo::EventListHandler::PrintStatistics(double rTimeTotal)
 
 	std::cout << statistics.str();
 }
+
 
 const int NuTo::EventListHandler::GetEventListSize()
 {
@@ -160,22 +174,22 @@ void NuTo::EventListHandler::PerformNextEvent()
 	mTimeUpdate += WallTime::Get() - timeTmp;
 
 	timeTmp = WallTime::Get();
-	nextEvent->EraseOldEventsLocalAndGlobal(*this);
+	nextEvent->EraseOldEvents(*this);
 	mTimeErase += WallTime::Get() - timeTmp;
 
 	timeTmp = WallTime::Get();
-	mTimeAddDetail += nextEvent->AddNewEventsLocalAndGlobal(*this);
+	nextEvent->AddNewEvents(*this);
 	mTimeAdd += WallTime::Get() - timeTmp;
 
 	delete nextEvent;
 
 }
 
-void NuTo::EventListHandler::SetTimeBarrier(double timeBarrier)
+void NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier)
 {
 	std::stringstream ostream;
 	ostream.setf(std::ios_base::scientific);
-	ostream << "Reset time barrier to " << std::setprecision(8) << timeBarrier;
+	ostream << "Reset time barrier to " << std::setprecision(8) << rTimeBarrier;
 	std::cout << ostream.str();
-	mTimeBarrier = timeBarrier;
+	mTimeBarrier = rTimeBarrier;
 }

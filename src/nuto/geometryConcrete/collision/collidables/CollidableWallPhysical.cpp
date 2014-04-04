@@ -37,18 +37,15 @@ const double NuTo::CollidableWallPhysical::PredictCollision(
 	double staticDistanceToWall;
 	double dynamicDistanceToWall;
 
-	if (abs(mDirection.Sum()) == 1)
+	if (mIsAxisAligned)
 	{
 		// mDirection is axis aligned
 
-		// get axis
-		int index = GetNonNullAxis();
-
 		// get direction in this axis
-		int sign = mDirection[index];
+		int sign = mDirection[mNonNullAxis];
 
-		staticDistanceToWall = sign * (rSphere.mPosition[index] - this->mPosition[index]) - rSphere.mRadius;
-		dynamicDistanceToWall = sign * rSphere.mVelocity[index] - rSphere.mGrowthRate;
+		staticDistanceToWall = sign * (rSphere.mPosition[mNonNullAxis] - this->mPosition[mNonNullAxis]) - rSphere.mRadius;
+		dynamicDistanceToWall = sign * rSphere.mVelocity[mNonNullAxis] - rSphere.mGrowthRate;
 
 	}
 	else
@@ -70,3 +67,7 @@ const double NuTo::CollidableWallPhysical::PredictCollision(
 
 }
 
+const bool NuTo::CollidableWallPhysical::IsPhysical() const
+{
+	return true;
+}

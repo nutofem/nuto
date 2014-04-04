@@ -9,7 +9,7 @@
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
-
+#include <algorithm>
 
 NuTo::CollidableBase::CollidableBase(const int rIndex)
 		: mIndex(rIndex)
@@ -32,7 +32,7 @@ void NuTo::CollidableBase::PrintLocalEvents() const
 	}
 }
 
-const std::list<NuTo::SubBox*>& NuTo::CollidableBase::GetSubBoxes() const
+const std::vector<NuTo::SubBox*>& NuTo::CollidableBase::GetSubBoxes() const
 {
 	return mBoxes;
 }
@@ -46,7 +46,8 @@ void NuTo::CollidableBase::AddBox(SubBox& rBox)
 
 void NuTo::CollidableBase::RemoveBox(SubBox& rBox)
 {
-	mBoxes.remove(&rBox);
+	auto newEnd = std::remove(mBoxes.begin(), mBoxes.end(), &rBox);
+	mBoxes.erase(newEnd, mBoxes.end());
 	if (mBoxes.size() == 0)
 		throw NuTo::Exception("[NuTo::CollidableBase::AddBox] Collidable is not handled by any box.");
 }

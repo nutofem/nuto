@@ -8,13 +8,13 @@
 #include "nuto/geometryConcrete/WallTime.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
-#include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
 #include <omp.h>
+#include <algorithm>
 
-NuTo::SubBox::SubBox(const int rIndex)
-		: mIndex(rIndex)
+NuTo::SubBox::SubBox(const int rIndex, const int rNumThreads)
+		: mIndex(rIndex), mNumThreads(rNumThreads)
 {
 }
 
@@ -31,7 +31,8 @@ void NuTo::SubBox::AddSphere(CollidableParticleSphere& rSphere)
 
 void NuTo::SubBox::RemoveSphere(CollidableParticleSphere& rSphere)
 {
-	mCollidables.remove(&rSphere);
+	auto newEnd = std::remove(mCollidables.begin(), mCollidables.end(), &rSphere);
+	mCollidables.erase(newEnd, mCollidables.end());
 	rSphere.RemoveBox(*this);
 }
 
@@ -68,40 +69,29 @@ void NuTo::SubBox::Print()
 		std::cout << (*i) << std::endl;
 }
 
-double NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
+void NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
 		CollidableBase& rCollidable)
 {
-	// convert
-	// list ( fast add / remove ) to
-	// vector ( fast iteration for parallelization )
-	// conversion overhead approx. 0
-	const int size(mCollidables.size());
-	std::vector<CollidableBase*> collidables(size);
-	int vecI = 0;
 
-	for (auto coll : mCollidables)
-		collidables[vecI++] = coll;
+	const unsigned int size(mCollidables.size());
 
 	// temporarily store event time and event type in vectors,
-	// because parallel event creation fails due to local list data race
+	// otherwise parallel event creation fails due to local list data race
 	std::vector<double> newEvents(size);
 	std::vector<int> eventType(size);
-
-	// measure parallel part
-	double timeTmp = WallTime::Get();
 
 	// catch exceptions in parallel for
 	bool parallelThrow = false;
 	Exception parallelException("");
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(shared) num_threads(4)
+#pragma omp parallel for schedule(dynamic) default(shared) num_threads(mNumThreads)
 #endif
-	for (int i = 0; i < size; ++i)
+	for (unsigned int i = 0; i < size; ++i)
 	{
 		try
 		{
-			newEvents[i] = rCollidable.PredictCollision(*collidables[i], eventType[i]);
+			newEvents[i] = rCollidable.PredictCollision(*mCollidables[i], eventType[i]);
 		}catch(Exception& e)
 		{
 			parallelException = e;
@@ -112,23 +102,20 @@ double NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
 	if (parallelThrow)
 		throw parallelException;
 
-	timeTmp = WallTime::Get() - timeTmp;
-
-	for (int i = 0; i < size; ++i)
+	for (unsigned int i = 0; i < size; ++i)
 		if (newEvents[i] != Event::EVENTNULL)
-			rEvents.AddEvent(newEvents[i], rCollidable, *collidables[i], eventType[i]);
-
-	return timeTmp;
+			rEvents.AddEvent(newEvents[i], rCollidable, *mCollidables[i], eventType[i]);
 }
 
-const std::list<NuTo::CollidableBase*>& NuTo::SubBox::GetCollidables() const
+const std::vector<NuTo::CollidableBase*>& NuTo::SubBox::GetCollidables() const
 {
 	return mCollidables;
 }
 
 void NuTo::SubBox::RemoveWall(CollidableWallBase& rWall)
 {
-	mCollidables.remove(&rWall);
+	auto newEnd = std::remove(mCollidables.begin(), mCollidables.end(), &rWall);
+	mCollidables.erase(newEnd, mCollidables.end());
 	mWalls.remove(&rWall);
 }
 

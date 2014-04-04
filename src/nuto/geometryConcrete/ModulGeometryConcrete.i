@@ -10,7 +10,12 @@
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallPhysical.h"
 #include "nuto/geometryConcrete/collision/Event.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"
+#include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
+#include "nuto/geometryConcrete/collision/handler/ParticleHandler.h"
+#include "nuto/geometryConcrete/collision/handler/CollisionHandler.h"
+#include "nuto/geometryConcrete/takeAndPlace/ParticleCreator.h"
+#include "nuto/geometryConcrete/InputReader.h"
 %}
 
 %apply int& OUTPUT { int& rType };
@@ -34,6 +39,10 @@ double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableWallPhys
 %include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 %include "nuto/geometryConcrete/collision/collidables/CollidableWallPhysical.h"
 %include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
+%include "nuto/geometryConcrete/collision/handler/ParticleHandler.h"
+%include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"
+%include "nuto/geometryConcrete/collision/handler/CollisionHandler.h"
+%include "nuto/geometryConcrete/takeAndPlace/ParticleCreator.h"
+%include "nuto/geometryConcrete/InputReader.h"
 
-//%include "nuto/visualize/VisualizeUnstructuredGrid.h"
 

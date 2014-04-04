@@ -20,8 +20,8 @@ const bool NuTo::CollidableWallVirtual::IsInOutsideBox(
 		const CollidableParticleSphere& rSphere) const
 		{
 	const auto& boxes = rSphere.GetSubBoxes();
-	for (auto box = boxes.begin(); box != boxes.end(); ++box)
-		if (*box == this->mOutsideBox)
+	for(unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
+		if(boxes[iBox] == this->mOutsideBox)
 			return true;
 	return false;
 }
@@ -44,10 +44,14 @@ void NuTo::CollidableWallVirtual::GetDistanceAligned(double& rDynamicDistance,
 		double& rStaticDistance, bool rIsInOutsideBox, CollidableParticleSphere& rSphere)
 {
 	int rSign = rIsInOutsideBox ? 1 : -1;
-	int index = GetNonNullAxis();
-	int direction = mDirection[index];
-	rDynamicDistance = direction * rSphere.mVelocity[index] + rSign * rSphere.mGrowthRate;
-	rStaticDistance = direction * (rSphere.mPosition[index] - this->mPosition[index]) + rSign * rSphere.mRadius;
+	int direction = mDirection[mNonNullAxis];
+	rDynamicDistance = direction * rSphere.mVelocity[mNonNullAxis] + rSign * rSphere.mGrowthRate;
+	rStaticDistance = direction * (rSphere.mPosition[mNonNullAxis] - this->mPosition[mNonNullAxis]) + rSign * rSphere.mRadius;
+}
+
+const bool NuTo::CollidableWallVirtual::IsPhysical() const
+{
+	return false;
 }
 
 void NuTo::CollidableWallVirtual::GetDistanceGeneral(double& rDynamicDistance,
@@ -71,7 +75,7 @@ const double NuTo::CollidableWallVirtual::PredictCollision(
 		double dynamicDistanceToExit;
 		double staticDistanceToExit;
 
-		if (abs(mDirection.sum()) == 1)
+		if (mIsAxisAligned)
 			GetDistanceAligned(dynamicDistanceToExit, staticDistanceToExit,	isInOutsideBox, rSphere);
 		else
 			GetDistanceGeneral(dynamicDistanceToExit, staticDistanceToExit,	isInOutsideBox, rSphere);
@@ -88,7 +92,7 @@ const double NuTo::CollidableWallVirtual::PredictCollision(
 		double dynamicDistanceToWall;
 		double staticDistanceToWall;
 
-		if (abs(mDirection.sum()) == 1)
+		if (mIsAxisAligned)
 			GetDistanceAligned(dynamicDistanceToWall, staticDistanceToWall,	isInOutsideBox, rSphere);
 		else
 			GetDistanceGeneral(dynamicDistanceToWall, staticDistanceToWall,	isInOutsideBox, rSphere);

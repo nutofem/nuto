@@ -39,16 +39,21 @@ public:
 	//! @return ... predicted collision time
 	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
 
+	//! @brief ... returns false
+	const bool IsPhysical() const;
+
 private:
 
 	//! @brief ... returns whether a sphere is in the outside box of this wall
 	//! @param rSphere ... sphere to test
 	const bool IsInOutsideBox(const CollidableParticleSphere& rSphere) const;
 
-
+	//! @brief ... get the distance between the sphere surface and the wall
 	void GetDistanceAligned(double& rDynamicDistance,
 			double& rStaticDistance, bool rIsInOutsideBox,
 			CollidableParticleSphere& rSphere);
+
+	//! @brief ... get the distance between the sphere surface and the wall
 	void GetDistanceGeneral(double& rDynamicDistance, double& rStaticDistance,
 			bool rIsInOutsideBox, CollidableParticleSphere& rSphere);
 };

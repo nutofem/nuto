@@ -19,7 +19,6 @@ NuTo::CollidableWallCylinder::CollidableWallCylinder(
 				mRadius(rRadius),
 				mHeigth(rHeigth)
 {
-	mOutsideBox = 0;
 }
 
 void NuTo::CollidableWallCylinder::PerformCollision(CollidableParticleSphere& rSphere)
@@ -39,9 +38,6 @@ void NuTo::CollidableWallCylinder::PerformCollision(CollidableParticleSphere& rS
 		rSphere.mVelocity += -2 * velocityNormal * n;
 
 	rSphere.mVelocity += (rSphere.mGrowthRate) * n;
-
-	//	std::cout << rSphere.mVelocity.transpose() << std::endl;
-
 }
 
 const double NuTo::CollidableWallCylinder::PredictCollision(
@@ -190,6 +186,12 @@ bool NuTo::CollidableWallCylinder::IsInside(
 	return dP.dot(dP) < (mRadius - rSphere.mRadius) * (mRadius - rSphere.mRadius);
 }
 
+const bool NuTo::CollidableWallCylinder::IsPhysical() const
+{
+	return true;
+}
+
 void NuTo::CollidableWallCylinder::Print(std::ostream& rReturnStream) const
 {
+	//TODO: NuTo::CollidableWallCylinder::Print
 }

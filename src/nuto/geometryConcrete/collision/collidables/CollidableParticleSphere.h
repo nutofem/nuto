@@ -45,17 +45,14 @@ public:
 			double rGrowthRate,
 			const int rIndex);
 
-	//! @brief... destructor, does nothing
-	virtual ~CollidableParticleSphere();
-
 	//! @brief ... move spheres and apply growth, mTimeOfLastCollision update
 	//! @param rTime ... new global time.
 	void MoveAndGrow(const double rTime);
 
-	//! @brief ... returns the kinetic energy of the sphere
+	//! @brief ... calculates and returns the kinetic energy of the sphere
 	const double GetKineticEnergy() const;
 
-	//! @brief ... returns the volume of the sphere
+	//! @brief ... calculates and returns the volume of the sphere
 	const double GetVolume() const;
 
 	//! @brief ... collision between CollidableSphere and CollidableBase, resolve double dispatch, forward *this
@@ -72,17 +69,20 @@ public:
 
 	//! @brief ... collision check between this and a CollidableBase, resolve double dispatch, forward *this
 	//! @param rCollidable ... possible collision partner
+	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
 	const double PredictCollision(CollidableBase& rCollidable, int& rType);
 
 	//! @brief ... collision check between this and another CollidableSphere:
 	//! Physics lead to quadratic equation.
 	//! @param rSphere ... possible collision partner
+	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
 	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
 
 	//! @brief ... collision check between CollidableSphere and CollidableWall, forward to CollidableWall.
 	//! @param rWall ... possible collision partner
+	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
 	const double PredictCollision(CollidableWallBase& rWall, int& rType);
 
@@ -90,6 +90,8 @@ public:
 	//! @param rEventsToDelete ... return argument
 	void GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const;
 
+	//! @brief ... exports the sphere position and its radius to as a row in a Nx4-matrix
+	//! @return ... 1x4-matrix, [posX, posY, posZ, radius]
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ExportRow() const;
 
 #ifdef ENABLE_VISUALIZE
@@ -105,9 +107,14 @@ public:
 	//! @param rGrowthRateFactor ... growthrate *= rGRFactor
 	//! @param rTime ... global time
 	void SetGrowthRate(const double rGrowthRateFactor, const double rTime);
-	const NuTo::FullVector<double, Eigen::Dynamic> GetPosition() const;
-	double GetRadius() const;
 
+	//! @brief ... getter for sphere position
+	const NuTo::FullVector<double, Eigen::Dynamic> GetPosition() const;
+
+	//! @brief ... getter for sphere radius
+	const double GetRadius() const;
+
+	//! @brief ... getter for initial sphere radius
 	const double GetRadius0() const;
 
 private:
@@ -136,11 +143,16 @@ private:
 	//! @param rMass1 ... mass of sphere 1
 	//! @param rMass2 ... mass of sphere 2
 	//! @return ... post-collision velocity for sphere 1.
-	const double SphereCollision1D(const double rVelocity1, const double rVelocity2, const double rMass1, const double rMass2) const;
+	const double SphereCollision1D(
+			const double rVelocity1,
+			const double rVelocity2,
+			const double rMass1,
+			const double rMass2) const;
 
 	//! @brief ... prints CollidableSphere
 	//! @param rReturnStream ... output stream, that gets modified
 	void Print(std::ostream & rReturnStream) const;
+
 };
 
 } /* namespace NuTo */

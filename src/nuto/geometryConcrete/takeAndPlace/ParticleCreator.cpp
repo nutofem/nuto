@@ -10,23 +10,16 @@
 #include "nuto/base/Exception.h"
 #include "nuto/geometryConcrete/WallTime.h"
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::CreateSpheresInSpecimen(
-		const InputReader& rInput,
-		const int rSeed)
+
+NuTo::ParticleCreator::ParticleCreator()
+		: mIs2D(false), mShrinkage(0.0)
 {
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> spheresBoundary(0, 4);
-	return CreateSpheresInSpecimen(
-			rInput.GetBoxType(),
-			rInput.GetBoundingBox(),
-			rInput.GetVolumeFraction(),
-			rInput.GetGradingCurve(),
-			0.,
-			rInput.GetAbsoluteDistance(),
-			rSeed,
-			spheresBoundary,
-			rInput.GetShrinkage());
 }
 
+NuTo::ParticleCreator::ParticleCreator(const bool rIs2D, const double rShrinkage)
+		: mIs2D(rIs2D), mShrinkage(rShrinkage)
+{
+}
 
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::CreateSpheresInSpecimen(
 		const int rTypeOfSpecimen,
@@ -36,9 +29,8 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 		const double rRelativeDistance,
 		const double rAbsoluteDistance,
 		const int rSeed,
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary,
-		const double rShrinkage)
-{
+		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary) const
+		{
 
 	double tStart = WallTime::Get();
 
@@ -62,14 +54,13 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 
 	for (int i = 0; i < particles.GetNumRows(); ++i)
 	{
-		volume += 4. / 3. * M_PI * particles(i, 3)*particles(i, 3)*particles(i, 3);
-		particles(i, 3) = particles(i, 3) - rShrinkage;
-		volumeShrinkage += 4. / 3. * M_PI * particles(i, 3)*particles(i, 3)*particles(i, 3);
+		volume += GetVolume(particles.GetValue(i, 3));
+		particles(i, 3) = particles(i, 3) * (1 - mShrinkage);
+		volumeShrinkage += GetVolume(particles.GetValue(i, 3));
 	}
 
-
 	std::cout << "[Take-Phase: ] Created " << particles.GetNumRows() << " particles. ";
-	std::cout << "[Take-Phase: ] Phi = " << volume/volumeSpecimen << ", phi_shrinkage = " << volumeShrinkage/volumeSpecimen << std::endl;
+	std::cout << "[Take-Phase: ] Phi = " << volume / volumeSpecimen << ", phi_shrinkage = " << volumeShrinkage / volumeSpecimen << std::endl;
 
 	PerformPlacePhase(
 			particles,
@@ -77,7 +68,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 			rTypeOfSpecimen,
 			rRelativeDistance,
 			rAbsoluteDistance);
-
 
 	std::cout << std::endl << "[Take-And-Place] Took " << WallTime::Get() - tStart << "s." << std::endl;
 
@@ -88,8 +78,8 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve,
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary,
 		const double rVolumeSpecimen,
-		const double rRelParticleVolume)
-{
+		const double rRelParticleVolume) const
+		{
 	// volume of particles per class
 	int numGradingClasses = rGradingCurve.GetNumRows();
 
@@ -103,7 +93,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 	int numParticles = rSpheresBoundary.GetNumRows();
 	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles(0, 4);
 	particles = rSpheresBoundary;
-
 
 	for (int gc = 0; gc < numGradingClasses; ++gc)
 	{
@@ -139,6 +128,8 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 
 			// volume
 			double volumeParticle = 4.0 / 3.0 * M_PI * radius * radius * radius;
+			if (mIs2D)
+				volumeParticle = M_PI * radius * radius;
 
 			Vist[gc] += volumeParticle;
 
@@ -177,8 +168,8 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
 		const int rTypeOfSpecimen,
 		const double rRelativeDistance,
-		const double rAbsoluteDistance)
-{
+		const double rAbsoluteDistance) const
+		{
 
 	int numParticles = rParticles.GetNumRows();
 	FullVector<double, 3> boxLength = GetBoxLength(rBoundingBox);
@@ -191,7 +182,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 	double lastPrintedFraction = 0.;
 	for (unsigned int sizeClass = 0; sizeClass < sizeClasses.size(); ++sizeClass)
 	{
-//		std::cout << "Class D < " << sizeClasses[sizeClass] << " : " << numParticlesPerSize[sizeClass] << " particles." << std::endl;
+		std::cout << "Class D < " << sizeClasses[sizeClass] << " : " << numParticlesPerSize[sizeClass] << " particles." << std::endl;
 
 		//create boxes for the previously inserted particles
 		//width of each box = largest diameter
@@ -199,17 +190,23 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 		FullVector<double, 3> lSubBox;
 		for (int count = 0; count < 3; count++)
 		{
-			nSubBox[count] = std::floor(boxLength.GetValue(count) / sizeClasses[sizeClass]);
+			// rescale to original sizes
+			double subBoxLength = sizeClasses[sizeClass] / (1.-mShrinkage);
+			nSubBox[count] = std::floor(boxLength.GetValue(count) / subBoxLength);
 			lSubBox[count] = boxLength[count] / nSubBox[count];
+		}
+		if (mIs2D)
+		{
+			boxLength[2] = 0.;
+			nSubBox[2] = 1;
+			lSubBox[2] = 2.*rParticles(0,3);
 		}
 
 		int numberOfSubBoxes = nSubBox[0] * nSubBox[1] * nSubBox[2];
 		std::vector<std::vector<int> > subBox(numberOfSubBoxes);
 
 		// add all previously added particles to the new boxes
-		for (int indexParticle = 0;
-				indexParticle < numParticlesAdded;
-				indexParticle++)
+		for (int indexParticle = 0; indexParticle < numParticlesAdded; indexParticle++)
 		{
 			InsertParticleIntoBox(rParticles, indexParticle, subBox, nSubBox, lSubBox, rBoundingBox);
 		}
@@ -220,8 +217,8 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 		for (int countParticle = numParticlesAdded;
 				countParticle < numParticlesAdded + numParticlesPerSize[sizeClass]; countParticle++)
 		{
-			bool inserted(false);
-			int numTries(0);
+			bool inserted = false;
+			int numTries = 0;
 			while (!inserted)
 			{
 				//create random coordinate
@@ -234,13 +231,17 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 					cSubBox[count] = (rParticles(countParticle, count) - rBoundingBox(count, 0)) / lSubBox[count];
 				}
 
-				//check for overlapping with the boundary
-				if (CollidesWithBoundary(
-						rBoundingBox,
-						rTypeOfSpecimen,
-						rParticles.GetRow(countParticle).transpose(),
-						rRelativeDistance, rAbsoluteDistance))
-					continue;
+				if (mIs2D)
+					rParticles(countParticle, 2) = rBoundingBox(2, 0) + .5* (rBoundingBox(2, 1) - rBoundingBox(2, 0));
+
+//				check for overlapping with the boundary
+				if (rTypeOfSpecimen != 0)
+					if (CollidesWithBoundary(
+							rBoundingBox,
+							rTypeOfSpecimen,
+							rParticles.GetRow(countParticle).transpose(),
+							rRelativeDistance, rAbsoluteDistance))
+						continue;
 
 				//calculate the corresponding box
 				int theBox = cSubBox[0] * nSubBox[1] * nSubBox[2] + cSubBox[1] * nSubBox[2] + cSubBox[2];
@@ -275,10 +276,9 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 						if (lastPrintedFraction == 0.)
 							std::cout << "[Take-Phase: ] Particles inserted: " << std::endl;
 
-						std::cout << (double) (countParticle) / numParticles * 100.	<< "%..."<< std::endl;;
+						std::cout << (double) (countParticle) / numParticles * 100. << "%..." << std::endl;
 						lastPrintedFraction = (double) (countParticle) / numParticles;
 					}
-
 				}
 				else
 				{
@@ -292,7 +292,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 	}
 }
 
-void NuTo::ParticleCreator::CheckBoundingBox(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox)
+void NuTo::ParticleCreator::CheckBoundingBox(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const
 		{
 	if (rBoundingBox.GetNumRows() != 3 && rBoundingBox.GetNumColumns() != 2)
 		throw Exception("[NuTo::ParticleCreator::CheckBoundingBox] bounding box has to have the dimension [3,2]");
@@ -302,7 +302,7 @@ void NuTo::ParticleCreator::CheckBoundingBox(const FullMatrix<double, Eigen::Dyn
 }
 
 void NuTo::ParticleCreator::CheckGradingCurve(
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve)
+		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve) const
 		{
 	int numGradingClasses = rGradingCurve.GetNumRows();
 
@@ -325,10 +325,14 @@ void NuTo::ParticleCreator::CheckGradingCurve(
 }
 
 NuTo::FullVector<double, 3> NuTo::ParticleCreator::GetBoxLength(
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox)
+		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const
 		{
 	FullVector<double, 3> lBox;
-	for (int count = 0; count < 3; count++)
+	int dimensionsToCheck = 3;
+	if (mIs2D)
+		dimensionsToCheck = 2;
+
+	for (int count = 0; count < dimensionsToCheck; count++)
 	{
 		lBox[count] = rBoundingBox(count, 1) - rBoundingBox(count, 0);
 		if (lBox[count] <= 0)
@@ -340,18 +344,23 @@ NuTo::FullVector<double, 3> NuTo::ParticleCreator::GetBoxLength(
 
 const double NuTo::ParticleCreator::GetSpecimenVolume(
 		int rTypeOfSpecimen,
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox)
+		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const
 		{
+	if (mIs2D && rTypeOfSpecimen != 0)
+		throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] specimen type not implemented.");
+
 	double Vspecimen;
 
 	FullVector<double, 3> lBox = GetBoxLength(rBoundingBox);
-
 
 	switch (rTypeOfSpecimen)
 	{
 	case 0:
 		//box
-		Vspecimen = lBox[0] * lBox[1] * lBox[2];
+		if (mIs2D)
+			Vspecimen = lBox[0] * lBox[1];
+		else
+			Vspecimen = lBox[0] * lBox[1] * lBox[2];
 		break;
 	case 1:
 		{
@@ -389,14 +398,13 @@ const double NuTo::ParticleCreator::GetSpecimenVolume(
 	return Vspecimen;
 }
 
-
 bool NuTo::ParticleCreator::CollidesWithBoundary(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox,
 		const int rTypeOfSpecimen,
-		const FullVector<double, 4> rParticle,
+		const FullVector<double, 4>& rParticle,
 		const double rRelativeDistance,
-		const double rAbsoluteDistance)
-{
+		const double rAbsoluteDistance) const
+		{
 	bool collidesWithBoundary = false;
 	switch (rTypeOfSpecimen)
 	{
@@ -437,10 +445,10 @@ bool NuTo::ParticleCreator::CollidesWithBoundary(
 }
 
 const std::vector<double> NuTo::ParticleCreator::GetSizeClasses(
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles)
-{
+		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles) const
+		{
 
-	const double sizeScaleFactor = 1.5;
+	const double sizeScaleFactor = 2;
 	double startDiameter = 2. * rParticles(rParticles.GetNumRows() - 1, 3);
 	double endDiameter = 2. * rParticles(0, 3);
 	double diameter = startDiameter;
@@ -457,13 +465,18 @@ const std::vector<double> NuTo::ParticleCreator::GetSizeClasses(
 	for (unsigned int i = 0; i < sizesReverse.size(); ++i)
 		sizes[sizes.size() - i - 1] = sizesReverse[i];
 
+	std::cout << sizes.size() << std::endl;
+
+	// reset biggest size class to biggest particle diameter
+	sizes[0] = 2. * rParticles(0, 3);
+
 	return sizes;
 }
 
 const std::vector<double> NuTo::ParticleCreator::GetNumParticlesPerSizeClass(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
-		const std::vector<double>& rSizes)
-{
+		const std::vector<double>& rSizes) const
+		{
 
 	unsigned int numParticles = rParticles.GetNumRows();
 
@@ -491,7 +504,6 @@ const std::vector<double> NuTo::ParticleCreator::GetNumParticlesPerSizeClass(
 	return numParticlesPerSize;
 }
 
-
 //! @brief cut spheres at a given z-coordinate to create circles (in 2D)
 //! @parameters rSpheres matrix with the spheres (x,y,z,r)
 //! @parameters rZCoord z coordinate (where to cut)
@@ -499,8 +511,8 @@ const std::vector<double> NuTo::ParticleCreator::GetNumParticlesPerSizeClass(
 //! @return ... matrix with the circles (x,y,r)
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::CutSpheresZ(
 		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres,
-		double rZCoord, double rMinRadius)
-{
+		double rZCoord, double rMinRadius) const
+		{
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> circles(1000, 3);
 	int numCircles(0);
 	for (int countSphere = 0; countSphere < rSpheres.GetNumRows();
@@ -536,7 +548,7 @@ void NuTo::ParticleCreator::InsertParticleIntoBox(
 		std::vector<std::vector<int> >& rSubBox,
 		const FullVector<int, 3>& rNSubBox,
 		const FullVector<double, 3>& rLSubBox,
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox)
+		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox) const
 		{
 
 	FullVector<int, 3> cSubBoxMin;
@@ -546,7 +558,6 @@ void NuTo::ParticleCreator::InsertParticleIntoBox(
 		double radius = rParticles(rTheParticle, 3);
 		double posParticle = rParticles(rTheParticle, coordinate);
 		double posBoundary = rBoundingBox(coordinate, 0);
-
 
 		// bigger particles may extend one box
 		// --> calculate the index range in each direction
@@ -575,4 +586,10 @@ void NuTo::ParticleCreator::InsertParticleIntoBox(
 				rSubBox[theBox].push_back(rTheParticle);
 			}
 }
-
+double NuTo::ParticleCreator::GetVolume(double radius) const
+		{
+	if (mIs2D)
+		return M_PI * radius * radius;
+	else
+		return 4. / 3. * M_PI * radius * radius * radius;
+}

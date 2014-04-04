@@ -15,44 +15,49 @@
 #include <string>
 #include <fstream>
 
-
 /* Example File:
 
 particle simulation input file
 
+1) avoid equal signes in comments
+2) avoid comments before ';' in vector definitions
  ------------------------------------------
 | simulation parameters and stop criterion |
  ------------------------------------------
-numEventsMax = 1.e10;
-timeMax = 10.;
-timePrintOut = 1.;
-initialTimeBarrier = 1.;
-randomVelocityRange = 0.;
-growthRates = .1;
-numThreads = 4;
+directory = myNutoExamples/c++/GradingCurveA/;
 
+numEventsMax = 1.e10;              Simulation stops after [numEventsMax] events
+timeMax = 600.;                    Simulation stops after [timeMax] seconds
+timePrintOut = 2.;                 There is a print out every [timePrintOut] seconds
+initialTimeBarrier = .1;           Adaption during simulation, not that important
+randomVelocityRange = 0.1;         equal distr. range[randomVelocityRange],center[0.0]
+growthRates = 1.;                  Growth rate for all particles
+numThreads = 8;                    Number of threads for parallelization
 
  ------------------------------------------
 |        bounding box definition           |
  ------------------------------------------
-boxType = 0;
-boundingBox = 0., 100.,
-              0., 100.,
-              0., 100.;
-
+boxType = 0;                       0.. cube | 1.. dogbone | 2.. cylinder
+boundingBox = 0.,80.,
+              0.,80.,
+              0.,80.;            x-y-z- range
+is2D = false;
  ------------------------------------------
 |           particle definition            |
  ------------------------------------------
-definitionByGradingCurve = true;
 
-numSieves = 3;
-   sieve1 =  8., 16., 0.40;
-   sieve2 =  4.,  8., 0.24;
-   sieve3 =  2.,  4., 0.15;
-volumeFraction = 0.70;
-absoluteDistance = 0.0;
+numSieves = 3;                     size of the grading curve
+   sieve1 =  8., 16., 0.40;        1st row: min particle size
+   sieve2 =  4.,  8., 0.24;        2nd row: max particle size
+   sieve3 =  2.,  4., 0.15;        3rd row: volume fraction of this class
 
- */
+
+volumeFraction = 0.7;             overall particle volume fraction
+absoluteDistance = 0.0;            minimal distance between two particles
+
+shrinkage = 0.10;              0.0 -> no EDMD
+
+*/
 
 
 namespace NuTo
@@ -64,14 +69,12 @@ public:
 	InputReader(std::string rFileName);
 	void PrintInput();
 	double GetAbsoluteDistance() const;
-	const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetBoundingBox() const;
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetBoundingBox() const;
 	int GetBoxType() const;
-	const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetGradingCurve() const;
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetGradingCurve() const;
 	double GetGrowthRates() const;
 	double GetInitialTimeBarrier() const;
-	bool isIsDefinedByGradingCurve() const;
 	long GetNumEventsMax() const;
-	int GetNumParticles() const;
 	double GetRandomVelocityRange() const;
 	double GetTimeMax() const;
 	double GetTimePrintOut() const;
@@ -79,17 +82,17 @@ public:
 	int GetNumThreads() const;
 	const std::string& GetDirectory() const;
 
-	double GetShrinkage() const
-	{
-		return mShrinkage;
-	}
+	bool Is2D() const;
+	double GetShrinkage() const;
+
+
 
 private:
 
 	void OpenFile(std::string rFileName);
 	void SkipToNextData();
 	double ReadNumber();
-	FullVector<double, Eigen::Dynamic> ReadVector();
+	NuTo::FullVector<double, Eigen::Dynamic> ReadVector();
 	bool ReadBool();
 	std::string ReadString();
 
@@ -97,7 +100,9 @@ private:
 	void ReadSimulationParameters();
 	void ReadBoundingBox();
 	void ReadGradingCurve();
-	void ReadMonodisperse();
+
+	void CheckInputs() const;
+	void mThrow(const std::string& rMsg) const;
 
 	std::ifstream mFile;
 
@@ -112,15 +117,12 @@ private:
 	int mNumThreads;
 
 	int mBoxType;
-	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
+	bool mIs2D;
 
-	bool mIsDefinedByGradingCurve;
-
-	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mGradingCurve;
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mGradingCurve;
 	double mVolumeFraction;
 	double mAbsoluteDistance;
-
-	int mNumParticles;
 
 	double mShrinkage;
 

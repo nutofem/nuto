@@ -12,6 +12,7 @@
 #include <list>
 
 #include "nuto/math/FullVector.h"
+#include "nuto/math/FullMatrix.h"
 
 #include "nuto/geometryConcrete/collision/Event.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"
@@ -28,6 +29,7 @@ class CollidableBase
 	friend class Event;
 public:
 
+	//! @brief ... statistics
 	enum EventType {
 		SphereCollision,
 		WallCollision,
@@ -37,25 +39,43 @@ public:
 	typedef std::vector<CollidableParticleSphere*> ParticleContainer;
 
 	//! @brief ... constructor, initialized with an index
+	//! @param rIndex ... index, multiple collidables with same index are allowed
 	CollidableBase(const int rIndex);
 
 	//! @brief ... destructor
 	virtual ~CollidableBase();
 
-	//! @brief ... returnes index
+	//! @brief ... getter for collidable index
 	const int GetIndex() const;
 
 	//! @brief ... collision handling, resolve double dispatch
-	//! @param rCollidable/rSphere/rWall ... collision partner
+	//! @param rCollidable ... collision partner
 	virtual void PerformCollision(CollidableBase& rCollidable) = 0;
+
+	//! @brief ... collision handling, resolve double dispatch
+	//! @param rSphere ... collision partner
 	virtual void PerformCollision(CollidableParticleSphere& rSphere) = 0;
+
+	//! @brief ... collision handling, resolve double dispatch
+	//! @param rWall ... collision partner
 	virtual void PerformCollision(CollidableWallBase& rWall) = 0;
 
 	//! @brief ... collision prediction between (this) and collision partner
-	//! @param rCollidable/rSphere/rWall ... collision partner
+	//! @param rCollidable ... collision partner
+	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted time of collision
 	virtual const double PredictCollision(CollidableBase& rCollidable, int& rType) = 0;
+
+	//! @brief ... collision prediction between (this) and collision partner
+	//! @param rSphere ... collision partner
+	//! @param rType ... return argument, element of enum CollidableBase::EventType
+	//! @return ... predicted time of collision
 	virtual const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) = 0;
+
+	//! @brief ... collision prediction between (this) and collision partner
+	//! @param rWall ... collision partner
+	//! @param rType ... return argument, element of enum CollidableBase::EventType
+	//! @return ... predicted time of collision
 	virtual const double PredictCollision(CollidableWallBase& rWall, int& rType) = 0;
 
 	//! @brief ... adds a SubBox to this collidable
@@ -79,7 +99,18 @@ public:
 	void PrintLocalEvents() const;
 
 	//! @brief ... returns all the SubBoxes of this collidable
-	const std::list<SubBox*>& GetSubBoxes() const;
+	const std::vector<SubBox*>& GetSubBoxes() const;
+
+#ifndef SWIG
+	//! @brief ... standard output for all collidables, calls Print(...) for polymorph behaviour
+	//! @param rOutStream ... operator RHS: output stream
+	//! @param rCollidable ... operator LHS: object added to the output stream
+	//! @return ... modified output stream
+	friend std::ostream& operator<<(std::ostream& rOutStream, const CollidableBase* rCollidable);
+#endif
+	//! @brief ... prints information based on derived class type.
+	//! @param rReturnStream ... output stream, that gets modified
+	virtual void Print(std::ostream & rReturnStream) const = 0;
 
 protected:
 
@@ -87,27 +118,14 @@ protected:
 	const int mIndex;
 
 	//! @brief ... list of SubBoxes in which this collidable is inside
-	//! if the collidable is passing a SubBox wall, multiple mBoxes are possible
-	std::list<SubBox*> mBoxes;
+	//! if the collidable is passing a virutal sub box wall, multiple mBoxes are possible
+	std::vector<SubBox*> mBoxes;
 
 	//! @brief ... local event list
 	//! adding single event: through EventBase::AddLocalEvents()
 	//! remove single event: through EventBase::~EventBase()
 	//! clear everything: on collision
 	Event::LocalEvents mLocalEvents;
-
-private:
-
-	//! @brief ... standard output for all collidables, calls Print(...) for polymorph behaviour
-	//! @param rOutStream ... operator RHS: output stream
-	//! @param rCollidable ... operator LHS: object added to the output stream
-	//! @return ... modified output stream
-#ifndef SWIG
-	friend std::ostream& operator<<(std::ostream& rOutStream, const CollidableBase* rCollidable);
-#endif
-	//! @brief ... prints information based on derived class type.
-	//! @param rReturnStream ... output stream, that gets modified
-	virtual void Print(std::ostream & rReturnStream) const = 0;
 
 };
 

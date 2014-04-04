@@ -21,7 +21,7 @@ class CollidableWallBase;
 class SubBox
 {
 public:
-	SubBox(const int rIndex);
+	SubBox(const int rIndex, const int rNumThreads = 1);
 	~SubBox();
 
 	void AddSphere(CollidableParticleSphere& rSphere);
@@ -31,21 +31,20 @@ public:
 	void RemoveWall(CollidableWallBase& rWall);
 	const std::list<CollidableWallBase*>& GetWalls() const;
 
-	double CreateEvents(EventListHandler& rEvents, CollidableBase& rCollidable);
+	void CreateEvents(EventListHandler& rEvents, CollidableBase& rCollidable);
 
 	void Print();
-	const std::list<CollidableBase*>& GetCollidables() const;
+	const std::vector<CollidableBase*>& GetCollidables() const;
 
 	bool AddIfInside(CollidableParticleSphere& rSphere);
 
 	const int GetIndex() const;
 
-
-
 private:
 	const int mIndex;
+	const int mNumThreads;
 	std::list<CollidableWallBase*> mWalls;
-	std::list<CollidableBase*> mCollidables;
+	std::vector<CollidableBase*> mCollidables;
 };
 
 } /* namespace NuTo */
