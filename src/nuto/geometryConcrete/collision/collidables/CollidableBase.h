@@ -29,13 +29,6 @@ class CollidableBase
 	friend class Event;
 public:
 
-	//! @brief ... statistics
-	enum EventType {
-		SphereCollision,
-		WallCollision,
-		WallTransfer
-	};
-
 	typedef std::vector<CollidableParticleSphere*> ParticleContainer;
 
 	//! @brief ... constructor, initialized with an index

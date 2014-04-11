@@ -22,7 +22,7 @@ NuTo::CollidableParticleSphere::CollidableParticleSphere(
 		const int rIndex)
 		: CollidableParticleBase(rPosition, rVelocity, rIndex),
 				mRadius(rRadius),
-				mRadiusGrowth(rGrowthRate),
+				mRadiusGrowth(rRadius),
 				mRadius0(rRadius),
 				mGrowthRate(rGrowthRate),
 				mTimeOfLastUpdate(0.),
@@ -131,7 +131,7 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 	if (this == &rSphere)
 		return Event::EVENTNULL;
 
-	rType = EventType::SphereCollision;
+	rType = Event::EventType::SphereCollision;
 
 	// sync both spheres to the more recent time
 	double baseTime;
@@ -178,6 +178,7 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 				<< rSphere.mIndex << "!";
 		throw NuTo::Exception(exceptionStream.str());
 	}
+
 
 	double discriminant = b * b - 4 * a * c;
 

@@ -16,6 +16,7 @@ namespace NuTo
 class CollidableParticleBase;
 class CollidableParticleSphere;
 class VisualizeUnstructuredGrid;
+class Specimen;
 
 //! @brief ... handles the particle list
 class ParticleHandler
@@ -25,7 +26,7 @@ public:
 	//! @brief ... constructor, builds rNumParticles
 	ParticleHandler(
 			const int rNumParticles,
-			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
+			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rParticleBoundingBox,
 			const double rVelocityRange,
 			const double rGrowthRate);
 
@@ -33,7 +34,8 @@ public:
 	ParticleHandler(
 			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres,
 			const double rVelocityRange,
-			const double rGrowthRate);
+			const double rRelativeGrowthRate,
+			const double rAbsoluteGrowthRate);
 
 	//! @brief ... destructor, deletes all particles
 	~ParticleHandler();
@@ -67,18 +69,29 @@ public:
 	const int GetNumParticles() const;
 
 	//! @brief ... calculates the minimal distance between all particles using sub boxes
-	double GetAbsoluteMininimalDistance(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox);
+	double GetAbsoluteMininimalDistance(Specimen& rSpecimen);
 
-	//! @brief ... caluclates approximate sub box length, based on box size
-	NuTo::FullVector<int,Eigen::Dynamic> GetSubBoxDivisions(NuTo::FullVector<double, Eigen::Dynamic> rLength);
+	//! @brief ... optional: change the file name, default: "spheres_"
+	void SetVisualizationFileName(const std::string& visualizationFileName);
+
+	//! @brief ... calculates approximate sub box length, based on box size and the number of particles per sub box
+	NuTo::FullVector<int,Eigen::Dynamic> GetSubBoxDivisions(Specimen& rSpecimen, const int rParticlesPerBox);
 
 private:
 
 	CollidableBase::ParticleContainer mParticles;
 	int mParticleIndex;
 
+	//! @brief ... returns a random vector with each component in a certain range
+	//! @param rStart ... start of value range
+	//! @param rEnd ... end of value range
 	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const double rStart, const double rEnd);
+
+	//! @brief ... returns a random vector with each component in a certain range
+	//! @param rBounds ... rBounds(:,0) start of value range, rBounds(:,1) end of value range
 	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds);
+
+	std::string mVisualizationFileName;
 
 	//! @return ... returns true if all z-positions are equal
 	bool Is2DSimulation(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres);

@@ -70,9 +70,9 @@ public:
 	void PrintInput();
 	double GetAbsoluteDistance() const;
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetBoundingBox() const;
-	int GetBoxType() const;
+	int GetTypeOfSpecimen() const;
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetGradingCurve() const;
-	double GetGrowthRates() const;
+	double GetRelativeGrowthRate() const;
 	double GetInitialTimeBarrier() const;
 	long GetNumEventsMax() const;
 	double GetRandomVelocityRange() const;
@@ -84,8 +84,7 @@ public:
 
 	bool Is2D() const;
 	double GetShrinkage() const;
-
-
+	double GetAbsoluteGrowthRate() const;
 
 private:
 
@@ -113,10 +112,11 @@ private:
 	double mTimePrintOut;
 	double mInitialTimeBarrier;
 	double mRandomVelocityRange;
-	double mGrowthRates;
+	double mRelativeGrowthRate;
+	double mAbsoluteGrowthRate;
 	int mNumThreads;
 
-	int mBoxType;
+	int mTypeOfSpecimen;
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
 	bool mIs2D;
 

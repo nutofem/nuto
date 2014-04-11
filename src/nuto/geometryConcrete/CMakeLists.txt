@@ -24,6 +24,7 @@ takeAndPlace/ParticleCreator.cpp
 SET(NuToGeometryConcrete_SOURCES
 InputReader.cpp
 WallTime.cpp
+Specimen.cpp
 ${NuToGeometryConcreteCollision_SOURCES}
 ${NuToGeometryConcreteGradingCurve_SOURCES}
 )

@@ -4,6 +4,7 @@
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
+#include "nuto/geometryConcrete/Specimen.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
@@ -30,7 +31,7 @@ double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableWallPhys
 %ignore Exception;
 %include "nuto/base/ModulNuToBase.i"
 
-
+%include "nuto/geometryConcrete/Specimen.h"
 %include "nuto/geometryConcrete/collision/Event.h"
 %include "nuto/geometryConcrete/collision/SubBox.h"
 %include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"

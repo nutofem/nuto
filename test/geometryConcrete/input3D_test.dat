@@ -1,0 +1,41 @@
+particle simulation input file
+
+1) avoid equal signes in comments
+2) avoid comments before ';' in vector definitions
+ ------------------------------------------
+| simulation parameters and stop criterion |
+ ------------------------------------------
+directory = myNutoExamples/c++/GradingCurveA/;
+
+numEventsMax = 1.e10;              Simulation stops after [numEventsMax] events
+timeMax = 600.;                    Simulation stops after [timeMax] seconds
+timePrintOut = 1.;                 There is a print out every [timePrintOut] seconds
+initialTimeBarrier = .1;           Adaption during simulation, not that important
+randomVelocityRange = 0.1;         equal distr. range[randomVelocityRange],center[0.0]
+relativeGrowthRate = 1.;           Growth rate for all particles
+absoluteGrowthRate = 0.;           Growth rate for all particles
+numThreads = 4;                    Number of threads for parallelization
+
+ ------------------------------------------
+|        bounding box definition           |
+ ------------------------------------------
+boxType = 0;                       0.. cube | 1.. dogbone | 2.. cylinder
+boundingBox = -16.,16.,
+              -16.,16.,           
+              -16.,16.;            x-y-z- range
+is2D = false;
+ ------------------------------------------
+|           particle definition            |
+ ------------------------------------------
+ 
+numSieves = 3;                     size of the grading curve
+   sieve1 =  8., 16., 0.40;        1st row: min particle size 
+   sieve2 =  4.,  8., 0.24;        2nd row: max particle size 
+   sieve3 =  2.,  4., 0.15;        3rd row: volume fraction of this class
+ 
+
+volumeFraction = 0.6;              overall particle volume fraction
+absoluteDistance = 0.0;            minimal distance between two particles
+
+shrinkage = 0.05;              0.0 -> no EDMD
+

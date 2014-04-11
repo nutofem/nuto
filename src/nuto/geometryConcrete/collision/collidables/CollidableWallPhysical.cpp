@@ -32,7 +32,7 @@ void NuTo::CollidableWallPhysical::PerformCollision(CollidableParticleSphere& rS
 const double NuTo::CollidableWallPhysical::PredictCollision(
 		CollidableParticleSphere& rSphere, int& rType)
 {
-	rType = EventType::WallCollision;
+	rType = Event::EventType::WallCollision;
 
 	double staticDistanceToWall;
 	double dynamicDistanceToWall;

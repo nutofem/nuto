@@ -16,13 +16,14 @@
 
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 
-
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
+		Specimen& rSpecimen,
 		const FullVector<int, Eigen::Dynamic> rDivisions)
-:
-		mDivisions(rDivisions),
-		mVolume(0.)
+		:
+				mSpecimen(rSpecimen),
+				mDivisions(rDivisions)
+
 {
 	if (rDivisions.GetNumRows() != 3)
 		throw Exception("[NuTo::SubBoxHandler::SubBoxHandler] FullVector<int, 3> rDivisions!");
@@ -33,14 +34,14 @@ NuTo::SubBoxHandler::SubBoxHandler(
 
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
-		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
-:
-		mDivisions(rSpheres.GetSubBoxDivisions(GetLength(rBox))),
-		mVolume(0.)
+		Specimen& rSpecimen,
+		const int rParticlesPerSubBox)
+		:
+				mSpecimen(rSpecimen),
+				mDivisions(rSpheres.GetSubBoxDivisions(mSpecimen, rParticlesPerSubBox))
 {
 	mSpheres = &rSpheres;
 	mSubBoxes.clear();
-
 
 	int numDivisions = mDivisions[0] * mDivisions[1] * mDivisions[2];
 
@@ -70,40 +71,45 @@ unsigned int NuTo::SubBoxHandler::GetBoxIndex(int rX, int rY, int rZ)
 	return mDivisions[1] * mDivisions[2] * rX + mDivisions[2] * rY + rZ;
 }
 
-void NuTo::SubBoxHandler::BuildBox(
-		FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox ,const int rNumThreads)
+void NuTo::SubBoxHandler::Build(const int rNumThreads)
+{
+	switch (mSpecimen.GetTypeOfSpecimen())
+	{
+	case 0:
+		BuildBox(rNumThreads);
+		break;
+	case 2:
+		BuildCylinder(rNumThreads);
+		break;
+	default:
+		throw Exception("[NuTo::SubBoxHandler::Build] Type not specimen not implemented yet.");
+		break;
+	}
+}
+
+void NuTo::SubBoxHandler::BuildBox(const int rNumThreads)
 {
 	std::cout << "[BuildBox] Building boxes..." << std::endl;
-	BuildSubBoxes(rBox, rNumThreads);
-	AddSpheresToBoxes(rBox);
+	BuildSubBoxes(rNumThreads);
+	AddSpheresToBoxes();
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetLength(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBox)
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetSubBoxLength()
 {
-	FullVector<double, 3> length( { rBox(0, 1) - rBox(0, 0), rBox(1, 1) - rBox(1, 0), rBox(2, 1) - rBox(2, 0) });
-	return length;
-}
-
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetSubBoxLength(
-		const FullVector<double, Eigen::Dynamic>& rLength)
-{
-	FullVector<double, 3> subBoxLength = rLength;
+	FullVector<double, 3> subBoxLength = mSpecimen.GetLength();
 	subBoxLength[0] /= mDivisions[0];
 	subBoxLength[1] /= mDivisions[1];
 	subBoxLength[2] /= mDivisions[2];
 	return subBoxLength;
 }
 
-void NuTo::SubBoxHandler::BuildSubBoxes(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox,const int rNumThreads)
+void NuTo::SubBoxHandler::BuildSubBoxes(const int rNumThreads)
 {
 
-	FullVector<double, 3> length = GetLength(rBox);
-
-	mVolume = length[0] * length[1] * length[2];
 	mSubBoxes.clear();
 
 	// equal length sub-boxes
-	FullVector<double, 3> subBoxLength = GetSubBoxLength(length);
+	FullVector<double, 3> subBoxLength = GetSubBoxLength();
 	int index = 0;
 
 	unsigned int nDivisions = mDivisions[0] * mDivisions[1] * mDivisions[2];
@@ -134,9 +140,9 @@ void NuTo::SubBoxHandler::BuildSubBoxes(FullMatrix<double, Eigen::Dynamic, Eigen
 
 					SubBox& outsideBox = *mSubBoxes[GetBoxIndex(iX + indexX, iY + indexY, iZ + indexZ)];
 					FullVector<double, 3> wallPosition( {
-							(position(iWall, 0) + iX) * subBoxLength[0] + rBox(0, 0),
-							(position(iWall, 1) + iY) * subBoxLength[1] + rBox(1, 0),
-							(position(iWall, 2) + iZ) * subBoxLength[2] + rBox(2, 0) });
+							(position(iWall, 0) + iX) * subBoxLength[0] + mSpecimen.GetBoundingBox()(0, 0),
+							(position(iWall, 1) + iY) * subBoxLength[1] + mSpecimen.GetBoundingBox()(1, 0),
+							(position(iWall, 2) + iZ) * subBoxLength[2] + mSpecimen.GetBoundingBox()(2, 0) });
 
 					FullVector<double, 3> wallDirection;
 					wallDirection << direction(iWall, 0), direction(iWall, 1), direction(iWall, 2);
@@ -206,7 +212,6 @@ void NuTo::SubBoxHandler::AddSubBox(SubBox& rSubBox)
 	mSubBoxes.push_back(&rSubBox);
 }
 
-
 std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCylinder)
 {
 	std::vector<int> nInside(mSubBoxes.size());
@@ -226,30 +231,26 @@ std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCy
 	return nInside;
 }
 
-void NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox, const int rNumThreads)
+void NuTo::SubBoxHandler::BuildCylinder(const int rNumThreads)
 {
 	mSubBoxes.clear();
 
-	FullVector<double, 3> length = GetLength(rBox);
-
-	double radius = length[0] / 2.;
-	double height = length[2];
-
-	mVolume = 0.25 * M_PI * radius * radius * height;
+	double radius = mSpecimen.GetLength(0) / 2.;
+	double height = mSpecimen.GetLength(2);
 
 	FullVector<double, 3> origin( {
-			rBox(0, 0) + radius,
-			rBox(1, 0) + radius,
-			rBox(2, 0) + height });
+			mSpecimen.GetBoundingBox()(0, 0) + radius,
+			mSpecimen.GetBoundingBox()(1, 0) + radius,
+			mSpecimen.GetBoundingBox()(2, 0) + height });
 
 	FullVector<double, 3> direction( { 0., 0., 1 });
 
 	CollidableWallCylinder* wallCylinder = new CollidableWallCylinder(origin, direction, radius, height, 1);
 
 	// create box
-	BuildSubBoxes(rBox, rNumThreads);
+	BuildSubBoxes(rNumThreads);
 
-	AddSpheresToBoxes(rBox);
+	AddSpheresToBoxes();
 
 	// get number of corners inside the cylinder (nInside) for each cell
 	std::vector<int> nInside = GetNInside(wallCylinder);
@@ -278,7 +279,7 @@ void NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double, Eigen::Dynamic, Eigen
 				toDelete.push_back(wall);
 			}
 		}
-		for(auto wall : toDelete)
+		for (auto wall : toDelete)
 		{
 			box->RemoveWall(*wall);
 			delete wall;
@@ -286,13 +287,12 @@ void NuTo::SubBoxHandler::BuildCylinder(FullMatrix<double, Eigen::Dynamic, Eigen
 	}
 }
 
-void NuTo::SubBoxHandler::AddSpheresToBoxes(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox)
+void NuTo::SubBoxHandler::AddSpheresToBoxes()
 {
 
 	double sTime = omp_get_wtime();
 
-	FullVector<double, 3> length = GetLength(rBox);
-	FullVector<double, 3> subLength = GetSubBoxLength(length);
+	FullVector<double, 3> subLength = GetSubBoxLength();
 
 	const int numParticles = mSpheres->GetNumParticles();
 
@@ -324,9 +324,9 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes(FullMatrix<double, Eigen::Dynamic, E
 		for (int c = 0; c < 8; ++c)
 		{
 			// get xyz cell index of corner points
-			int indX = std::floor(static_cast<double>((corners[c](0) - rBox(0, 0)) / subLength[0]));
-			int indY = std::floor(static_cast<double>((corners[c](1) - rBox(1, 0)) / subLength[1]));
-			int indZ = std::floor(static_cast<double>((corners[c](2) - rBox(2, 0)) / subLength[2]));
+			int indX = std::floor(static_cast<double>((corners[c](0) - mSpecimen.GetBoundingBox()(0, 0)) / subLength[0]));
+			int indY = std::floor(static_cast<double>((corners[c](1) - mSpecimen.GetBoundingBox()(1, 0)) / subLength[1]));
+			int indZ = std::floor(static_cast<double>((corners[c](2) - mSpecimen.GetBoundingBox()(2, 0)) / subLength[2]));
 
 			// get start and end indices of corner points
 			xs = std::min(xs, indX);
@@ -337,6 +337,12 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes(FullMatrix<double, Eigen::Dynamic, E
 			ze = std::max(ze, indZ);
 
 		}
+		if(mSpecimen.Is2D())
+		{
+			zs = 0;
+			ze = 0;
+		}
+
 		for (int indX = xs; indX <= xe; ++indX)
 			for (int indY = ys; indY <= ye; ++indY)
 				for (int indZ = zs; indZ <= ze; ++indZ)
@@ -374,7 +380,7 @@ void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
 
 double NuTo::SubBoxHandler::GetVolume() const
 {
-	return mVolume;
+	return mSpecimen.GetVolume();
 }
 
 void NuTo::SubBoxHandler::PrintBoxes()

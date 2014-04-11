@@ -21,7 +21,8 @@ NuTo::CollisionHandler::CollisionHandler(
 		ParticleHandler& rSpheres,
 		SubBoxHandler& rSubBoxes, const std::string rName)
 		: mName(rName),
-		  mEnableStatusVisualization(false)
+				mEnableStatusVisualization(false),
+				mEnableFileOutput(rName != "")
 
 {
 	mSpheres = &rSpheres;
@@ -33,7 +34,7 @@ void NuTo::CollisionHandler::LogStatus(
 		const long rTimeStep,
 		const double rGlobalTime,
 		const double rWSTime) const
-{
+		{
 	double eKin = mSpheres->GetKineticEnergy();
 	double vol = mSpheres->GetVolume();
 	double time = WallTime::Get() - rWSTime;
@@ -50,6 +51,21 @@ void NuTo::CollisionHandler::LogStatus(
 
 }
 
+void NuTo::CollisionHandler::InitializeLogger(NuTo::Logger& rLogger)
+{
+	if (mEnableFileOutput)
+		rLogger.OpenFile(mName + std::string("/log.dat"));
+
+	rLogger.SetQuiet(false);
+	rLogger << "# Event \t Time \t EKin \t Phi \t WTime \n";
+}
+
+void NuTo::CollisionHandler::VisualizeSpheres(long rNumEvents, double rGlobalTime, bool rIsFinal)
+{
+	if (mEnableFileOutput)
+		mSpheres->VisualizeSpheres(mName, rNumEvents, rGlobalTime, rIsFinal);
+}
+
 void NuTo::CollisionHandler::Simulate(
 		const long rNumEventsMax,
 		const double rTimeMax,
@@ -59,17 +75,15 @@ void NuTo::CollisionHandler::Simulate(
 {
 
 	NuTo::Logger logger;
-	logger.OpenFile(mName + std::string("/log.dat"));
-	logger.SetQuiet(false);
-	logger << "# Event \t Time \t EKin \t Phi \t WTime \n";
+	InitializeLogger(logger);
+	Exception caughtException("");
 
 	long numEvents = 0;
 	double globalTime = 0.;
-	mSpheres->VisualizeSpheres(mName, numEvents, globalTime, false);
+	VisualizeSpheres(numEvents, globalTime, false);
 
-	mGlobalEventList.SetTimeBarrier(rInitialTimeBarrier);
-	double wTimeEventList = mGlobalEventList.BuildInitialEventList(*mSubBoxes);
 
+	double wTimeEventList = mGlobalEventList.SetTimeBarrier(rInitialTimeBarrier, *mSubBoxes);
 
 	double timePrintOut = rTimePrintOut;
 
@@ -88,8 +102,8 @@ void NuTo::CollisionHandler::Simulate(
 		{
 			globalTimeBarrier = oldGlobalTime + 10 * (oldGlobalTime - globalTimeOfBarrierReset);
 
-			mGlobalEventList.SetTimeBarrier(globalTimeBarrier);
-			wTimeEventList = mGlobalEventList.BuildEventList(*mSubBoxes);
+
+			wTimeEventList = mGlobalEventList.SetTimeBarrier(globalTimeBarrier,*mSubBoxes);
 			wTimeEventList = std::max(wTimeEventList, .05);
 			globalTime = mGlobalEventList.GetNextEventTime();
 
@@ -102,8 +116,7 @@ void NuTo::CollisionHandler::Simulate(
 		{
 
 			globalTimeBarrier = oldGlobalTime + 1.1 * (oldGlobalTime - globalTimeOfBarrierReset);
-			mGlobalEventList.SetTimeBarrier(globalTimeBarrier);
-			wTimeEventList = mGlobalEventList.BuildEventList(*mSubBoxes);
+			wTimeEventList = mGlobalEventList.SetTimeBarrier(globalTimeBarrier,*mSubBoxes);
 			wTimeEventList = std::max(wTimeEventList, .05);
 			globalTime = mGlobalEventList.GetNextEventTime();
 
@@ -117,10 +130,9 @@ void NuTo::CollisionHandler::Simulate(
 		{
 			timePrintOut += rTimePrintOut;
 			LogStatus(logger, numEvents, globalTime, wStartTime);
-			if(mEnableStatusVisualization)
+			if (mEnableStatusVisualization && mEnableFileOutput)
 				mSpheres->VisualizeSpheres(mName, numEvents, globalTime, false);
 		}
-
 
 		try
 		{
@@ -129,6 +141,7 @@ void NuTo::CollisionHandler::Simulate(
 		{
 			std::cout << e.ErrorMessage() << std::endl;
 			std::cout << " fail timestep: " << numEvents << std::endl;
+			caughtException = e;
 			break;
 		}
 
@@ -144,13 +157,22 @@ void NuTo::CollisionHandler::Simulate(
 	mSpheres->Sync(globalTime);
 	LogStatus(logger, numEvents, globalTime, wStartTime);
 
-	mSpheres->VisualizeSpheres(mName, numEvents, globalTime, false);
-	mSpheres->VisualizeSpheres(mName, numEvents + 1, globalTime + 1, true);
+	VisualizeSpheres(numEvents, globalTime, false);
+	VisualizeSpheres(numEvents + 1, globalTime + 1., true);
 
 	logger.CloseFile();
+
+	// rethrow exceptions for proper test failure
+	if (caughtException.ErrorMessage() != "")
+		throw Exception("[NuTo::CollisionHandler::Simulate] Simulation ended with the exception: \n" + caughtException.ErrorMessage());
 }
 
-void NuTo::CollisionHandler::SetStatusVisualization(bool rEnableStatusVisualization)
+void NuTo::CollisionHandler::EnableStatusVisualization(bool rEnableStatusVisualization)
 {
 	mEnableStatusVisualization = rEnableStatusVisualization;
+}
+
+void NuTo::CollisionHandler::EnableFileOutput(bool rEnableFileOutput)
+{
+	mEnableFileOutput = rEnableFileOutput;
 }

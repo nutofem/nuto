@@ -29,7 +29,8 @@ public:
 	CollisionHandler(ParticleHandler& rSpheres, SubBoxHandler& rSubBoxes, const std::string rName);
 
 	//! @brief ... true: write a sphere visualization file @ every status output
-	void SetStatusVisualization(bool rEnableStatusVisualization);
+	void EnableStatusVisualization(bool rEnableStatusVisualization);
+	void EnableFileOutput(bool rEnableFileOutput);
 
 	//! @brief ... performs the simulation loop
 	//! @param rNumEventsMax ... abort if reached
@@ -44,17 +45,17 @@ public:
 			const double rTimePrintOut,
 			const double rInitialTimeBarrier);
 
-
 private:
-
-	//! @brief ... writes a sphere visualization file
-	//! @param rTimeStep ... current timestep of the simulation
-	//! @param rGlobalTime ... current global time != wall time
-	//! @param rFinal ... false: use current radius, true: use initial radius
-	void VisualizeSpheres(int rTimeStep, double rGlobalTime, bool rFinal);
 
 	//! @brief ... writes an entry to the status file
 	void LogStatus(Logger& rLogger, const long rTimeStep, const double rGlobalTime, const double rWSTime) const;
+
+	//! @brief ... initializes the logger and writes a header
+	void InitializeLogger(NuTo::Logger& rLogger);
+
+	//! @brief ... prints a visualization file for the current time step
+	//! @param rIsFinal ... uses either the initial radius0 (true) or the current radius (false)
+	void VisualizeSpheres(long rNumEvents, double rGlobalTime, bool rIsFinal);
 
 	ParticleHandler* mSpheres;
 	SubBoxHandler* mSubBoxes;
@@ -65,6 +66,7 @@ private:
 
 	//! @brief ... true: write a sphere visualization file @ every status output
 	bool mEnableStatusVisualization;
+	bool mEnableFileOutput;
 
 };
 

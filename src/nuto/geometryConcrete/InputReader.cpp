@@ -47,13 +47,14 @@ void NuTo::InputReader::ReadSimulationParameters()
 	mTimePrintOut = ReadNumber();
 	mInitialTimeBarrier = ReadNumber();
 	mRandomVelocityRange = ReadNumber();
-	mGrowthRates = ReadNumber();
+	mRelativeGrowthRate = ReadNumber();
+	mAbsoluteGrowthRate = ReadNumber();
 	mNumThreads = ReadNumber();
 }
 
 void NuTo::InputReader::ReadBoundingBox()
 {
-	mBoxType = ReadNumber();
+	mTypeOfSpecimen = ReadNumber();
 	FullVector<double, Eigen::Dynamic> boxVector = ReadVector();
 	if (boxVector.GetNumRows() != 6)
 	{
@@ -163,7 +164,7 @@ void NuTo::InputReader::mThrow(const std::string& rMsg) const
 void NuTo::InputReader::CheckInputs() const
 {
 
-	if(mGrowthRates < 0.)
+	if(mRelativeGrowthRate < 0.)
 		mThrow("growthRates >= 0.0 !");
 
 	if(mAbsoluteDistance < 0.)
@@ -189,11 +190,11 @@ void NuTo::InputReader::PrintInput()
 	std::cout << " time between printouts [s]: " << mTimePrintOut << std::endl;
 	std::cout << " initial time barrier:       " << mInitialTimeBarrier << std::endl;
 	std::cout << " random velocity range:      " << mRandomVelocityRange << std::endl;
-	std::cout << " growth rates:               " << mGrowthRates << std::endl;
+	std::cout << " growth rates:               " << mRelativeGrowthRate << std::endl;
 	std::cout << " number of threads:          " << mNumThreads << std::endl;
 	std::cout << "======================================" << std::endl;
 	std::cout << std::endl << "        BOUNDING BOX" << std::endl;
-	std::cout << "    box type:                " << mBoxType << std::endl;
+	std::cout << "    box type:                " << mTypeOfSpecimen << std::endl;
 	std::cout << "    x-Range  " << mBoundingBox.GetValue(0, 0) << " to " << mBoundingBox.GetValue(0, 1) << std::endl;
 	std::cout << "    y-Range  " << mBoundingBox.GetValue(1, 0) << " to " << mBoundingBox.GetValue(1, 1) << std::endl;
 	std::cout << "    z-Range  " << mBoundingBox.GetValue(2, 0) << " to " << mBoundingBox.GetValue(2, 1) << std::endl;
@@ -216,9 +217,9 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetB
 	return mBoundingBox;
 }
 
-int NuTo::InputReader::GetBoxType() const
+int NuTo::InputReader::GetTypeOfSpecimen() const
 {
-	return mBoxType;
+	return mTypeOfSpecimen;
 }
 
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetGradingCurve() const
@@ -226,9 +227,9 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetG
 	return mGradingCurve;
 }
 
-double NuTo::InputReader::GetGrowthRates() const
+double NuTo::InputReader::GetRelativeGrowthRate() const
 {
-	return mGrowthRates;
+	return mRelativeGrowthRate;
 }
 
 double NuTo::InputReader::GetInitialTimeBarrier() const
@@ -281,4 +282,7 @@ double NuTo::InputReader::GetShrinkage() const
 	return mShrinkage;
 }
 
-
+double NuTo::InputReader::GetAbsoluteGrowthRate() const
+{
+	return mAbsoluteGrowthRate;
+}

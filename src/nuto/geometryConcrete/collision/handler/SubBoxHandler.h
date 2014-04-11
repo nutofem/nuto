@@ -10,11 +10,13 @@
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"
+#include "nuto/geometryConcrete/Specimen.h"
 
 namespace NuTo
 {
 class ParticleHandler;
 class CollidableWallCylinder;
+
 
 //! @brief ... builds and handles sub boxes
 class SubBoxHandler
@@ -24,25 +26,17 @@ public:
 	//! @brief ... constructor, initializes the handler with a given number of sub box divisions
 	//! @param rSpheres ... spheres to be added to the sub boxes
 	//! @param rDivisions ... sets divs[0]*divs[1]*divs[2] sub boxes
-	SubBoxHandler(ParticleHandler& rSpheres,const NuTo::FullVector<int, Eigen::Dynamic> rDivisions);
+	SubBoxHandler(ParticleHandler& rSpheres, Specimen& rSpecimen, const NuTo::FullVector<int, Eigen::Dynamic> rDivisions);
 
 	//! @brief ... constructor, initializes the handler, calculates the number of sub boxes
 	//! @param rSpheres ... spheres to be added to the sub boxes
 	//! @param rBox ... sets the number of sub boxes according to the rBox size
-	SubBoxHandler(ParticleHandler& rSpheres,const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox);
+	SubBoxHandler(ParticleHandler& rSpheres, Specimen& rSpecimen, const int rParticlesPerSubBox);
 
 	//! @brief ... deletes all sub boxes
 	~SubBoxHandler();
 
-	//! @brief ... build a cubic specimen
-	//! @param rBox ... size of the specimen
-	//! @param rNumThreads ... number of threads for parallelization
-	void BuildBox(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox, const int rNumThreads = 1);
-
-	//! @brief ... build a cylindric specimen
-	//! @param rBox ... size of the specimen
-	//! @param rNumThreads ... number of threads for parallelization
-	void BuildCylinder(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox, const int rNumThreads = 1);
+	void Build(const int rNumThreads = 1);
 
 	//! @brief ... getter for specimen volume
 	double GetVolume() const;
@@ -65,20 +59,26 @@ private:
 
 	ParticleHandler* mSpheres;
 	std::vector<SubBox*> mSubBoxes;
+	Specimen mSpecimen;
 	NuTo::FullVector<int, Eigen::Dynamic> mDivisions;
-	double mVolume;
 
+	//! @brief ... build a cubic specimen
+	//! @param rBox ... size of the specimen
+	//! @param rNumThreads ... number of threads for parallelization
+	void BuildBox(const int rNumThreads = 1);
 
-	void AddSpheresToBoxes(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox);
+	//! @brief ... build a cylindric specimen
+	//! @param rBox ... size of the specimen
+	//! @param rNumThreads ... number of threads for parallelization
+	void BuildCylinder(const int rNumThreads = 1);
 
-	//! @brief ...
-	NuTo::FullVector<double, Eigen::Dynamic> GetLength(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBox);
+	void AddSpheresToBoxes();
 
 	//! @brief ...
 	std::vector<CollidableWallBase*> GetXYWalls(unsigned int rIndex);
 
 	//! @brief ...
-	void BuildSubBoxes(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBox,const int rNumThreads);
+	void BuildSubBoxes(const int rNumThreads);
 
 	//! @brief ...
 	std::vector<NuTo::FullVector<double,Eigen::Dynamic> > GetXYCorners(
@@ -88,8 +88,7 @@ private:
 	unsigned int GetBoxIndex(int rX, int rY, int rZ);
 
 	//! @brief ...
-	NuTo::FullVector<double, Eigen::Dynamic> GetSubBoxLength(
-			const NuTo::FullVector<double, Eigen::Dynamic>& rLength);
+	NuTo::FullVector<double, Eigen::Dynamic> GetSubBoxLength();
 
 	//! @brief ...
 	std::vector<int> GetNInside(CollidableWallCylinder* rWallCylinder);

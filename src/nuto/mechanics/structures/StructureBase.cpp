@@ -2649,7 +2649,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 					//insert
 					inserted = true;
 					InsertParticleIntoBox(particles,countParticle,subBox,nSubBox,lSubBox,rBoundingBox);
-					if ((double)(countParticle)/numParticles-lastPrintedFraction>0.01)
+					if ((double)(countParticle)/numParticles-lastPrintedFraction>0.1)
 					{
 						std::cout << (double)(countParticle)/numParticles*100. << "% of particles already inserted." << "\n";
 						lastPrintedFraction = (double)(countParticle)/numParticles;

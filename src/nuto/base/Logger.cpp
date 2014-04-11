@@ -185,7 +185,7 @@ void NuTo::Logger::OpenFile(std::string rFileString)
     mLogFile.clear();
 	mLogFile.open(rFileString.c_str());
 	if (!mLogFile.is_open())
-		throw Exception ( "[NuTo::Logger::OpenFile]File could not be opened." );
+		throw Exception ( "[NuTo::Logger::OpenFile] File " + std::string(rFileString.c_str()) + " could not be opened." );
 }
 
 //! @brief ..reset file and open it again

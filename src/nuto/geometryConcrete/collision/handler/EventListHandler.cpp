@@ -30,51 +30,6 @@ NuTo::EventListHandler::~EventListHandler()
 	mEvents.clear();
 }
 
-double NuTo::EventListHandler::BuildInitialEventList(
-		NuTo::SubBoxHandler& rSubBoxes)
-{
-	std::cout << "BuildInitialEventList() start." << std::endl;
-
-	BuildEventList(rSubBoxes);
-
-	std::cout << "BuildInitialEventList():" << mTimeRebuild << " s | ";
-	std::cout << mEvents.size() << " events." << std::endl;
-
-	double rTime = mTimeRebuild;
-	mTimeRebuild = 0.;
-
-	return rTime;
-}
-
-double NuTo::EventListHandler::BuildEventList(
-		NuTo::SubBoxHandler& rSubBoxes)
-{
-
-	double sTime = WallTime::Get();
-
-	mEvents.clear();
-
-//	auto boxes = rSubBoxes.GetSubBoxes();
-//	for (unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
-//	{
-//		auto collidables = boxes[iBox]->GetCollidables();
-//		for (unsigned int iCollidable = 0; iCollidable < collidables.size(); ++iCollidable)
-//		{
-//			boxes[iBox]->CreateEvents(*this, *collidables[iCollidable]);
-//		}
-//	}
-
-	for (auto box : rSubBoxes.GetSubBoxes())
-		for (auto coll : box->GetCollidables())
-			box->CreateEvents(*this, *coll);
-
-	mTimeRebuild += WallTime::Get() - sTime;
-
-	std::cout << ", " << WallTime::Get() - sTime << " s , " << mEvents.size() << " events." << std::endl;
-
-	return WallTime::Get() - sTime;
-}
-
 void NuTo::EventListHandler::PrintEvents()
 {
 	std::cout << std::endl << "======== GLOBAL EVENT LIST ========" << std::endl;
@@ -154,13 +109,13 @@ void NuTo::EventListHandler::PerformNextEvent()
 
 	switch (nextEvent->GetType())
 	{
-	case CollidableBase::EventType::SphereCollision:
+	case Event::EventType::SphereCollision:
 		mNSphereCollisions++;
 		break;
-	case CollidableBase::EventType::WallCollision:
+	case Event::EventType::WallCollision:
 		mNWallCollisions++;
 		break;
-	case CollidableBase::EventType::WallTransfer:
+	case Event::EventType::WallTransfer:
 		mNWallTransfers++;
 		break;
 	default:
@@ -185,11 +140,38 @@ void NuTo::EventListHandler::PerformNextEvent()
 
 }
 
-void NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier)
+double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler& rSubBoxes)
 {
+	mTimeBarrier = rTimeBarrier;
+
+	double sTime = WallTime::Get();
+
+	mEvents.clear();
+
+	// rebuild the event list
+	auto& boxes = rSubBoxes.GetSubBoxes();
+	for (unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
+	{
+		auto& collidables = boxes[iBox]->GetCollidables();
+		for (unsigned int iCollidable = 0; iCollidable < collidables.size(); ++iCollidable)
+		{
+			boxes[iBox]->CreateEvents(*this, *collidables[iCollidable]);
+		}
+	}
+
+
+	double timeRebuild = WallTime::Get() - sTime;
+	mTimeRebuild += timeRebuild;
+
+
 	std::stringstream ostream;
 	ostream.setf(std::ios_base::scientific);
-	ostream << "Reset time barrier to " << std::setprecision(8) << rTimeBarrier;
+
+
+	ostream << "New time barrier: " << std::setprecision(8) << rTimeBarrier;
+	ostream << " created  "  << mEvents.size() << " events in " << timeRebuild << " s." << std::endl;
+
 	std::cout << ostream.str();
-	mTimeBarrier = rTimeBarrier;
+
+	return timeRebuild;
 }

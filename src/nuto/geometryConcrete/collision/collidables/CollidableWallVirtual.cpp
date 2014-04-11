@@ -66,7 +66,7 @@ void NuTo::CollidableWallVirtual::GetDistanceGeneral(double& rDynamicDistance,
 const double NuTo::CollidableWallVirtual::PredictCollision(
 		CollidableParticleSphere& rSphere, int& rType)
 {
-	rType = EventType::WallTransfer;
+	rType = Event::EventType::WallTransfer;
 
 	bool isInOutsideBox = IsInOutsideBox(rSphere);
 	if (isInOutsideBox)

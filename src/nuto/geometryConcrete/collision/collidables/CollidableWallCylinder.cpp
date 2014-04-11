@@ -43,7 +43,7 @@ void NuTo::CollidableWallCylinder::PerformCollision(CollidableParticleSphere& rS
 const double NuTo::CollidableWallCylinder::PredictCollision(
 		CollidableParticleSphere& rSphere, int& rType)
 {
-	rType = EventType::WallCollision;
+	rType = Event::EventType::WallCollision;
 
 	FullVector<double, 3> dPos = rSphere.mPosition - mPosition;
 

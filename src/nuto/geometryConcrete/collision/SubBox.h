@@ -18,26 +18,53 @@ class CollidableParticleSphere;
 class CollidableBase;
 class CollidableWallBase;
 
+//! @brief ... class for sub box handing -> improves the performance without changing the physics
 class SubBox
 {
 public:
+
+	//! @brief ... constructor
+	//! @param rIndex ... name for debug
+	//! @param rNumThreads ... number of threads for parallelization
 	SubBox(const int rIndex, const int rNumThreads = 1);
+
+	//! @brief ... destructor, Deletes mWalls on destruction
 	~SubBox();
 
-	void AddSphere(CollidableParticleSphere& rSphere);
-	void RemoveSphere(CollidableParticleSphere& rSphere);
-	void SetWalls(const std::list<CollidableWallBase*>& rCollidables);
-	void AddWall(CollidableWallBase& rWall);
-	void RemoveWall(CollidableWallBase& rWall);
-	const std::list<CollidableWallBase*>& GetWalls() const;
-
+	//! @brief ... creates events between mCollidables and rCollidable
+	//! ... most time consuming method, parallelized
+	//! @param rEvents ... global event list
+	//! @param rCollidable ... collidable involved in this collision
 	void CreateEvents(EventListHandler& rEvents, CollidableBase& rCollidable);
 
-	void Print();
-	const std::vector<CollidableBase*>& GetCollidables() const;
+	//! @brief ... the sphere is now handled by this sub box
+	void AddSphere(CollidableParticleSphere& rSphere);
 
+	//! @brief ... adds a sphere only, if its inside of this box
 	bool AddIfInside(CollidableParticleSphere& rSphere);
 
+	//! @brief ... the sphere leaves this sub box
+	void RemoveSphere(CollidableParticleSphere& rSphere);
+
+	//! @brief ... sets the virtual and physical walls as sub box boundaries
+	void SetWalls(const std::list<CollidableWallBase*>& rCollidables);
+
+	//! @brief ... add a single wall
+	void AddWall(CollidableWallBase& rWall);
+
+	//! @brief ... remove a single wall
+	void RemoveWall(CollidableWallBase& rWall);
+
+	//! @brief ... print mCollidables without the walls
+	void Print();
+
+	//! @brief ... getter for mCollidables
+	const std::vector<CollidableBase*>& GetCollidables() const;
+
+	//! @brief ... getter for mWalls
+	const std::list<CollidableWallBase*>& GetWalls() const;
+
+	//! @brief ... getter for mIndex
 	const int GetIndex() const;
 
 private:

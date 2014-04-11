@@ -31,6 +31,13 @@ public:
 
 	typedef std::vector<Event*> LocalEvents;
 
+	//! @brief ... statistics
+	enum EventType {
+		SphereCollision,
+		WallCollision,
+		WallTransfer
+	};
+
 	//! @brief ... identifier for null events
 	static const double EVENTNULL;
 
@@ -70,10 +77,10 @@ public:
 	//! (--> automatically added to local event lists, see constructor)
 	//! stores them to the global event list
 	//! @param rEvents ... global event list
-	//! @param rCollidables ... global collidable list
 	void AddNewEvents(EventListHandler& rEvents) const;
 
 	//! @brief ... removes all events in the local event lists of rEvent
+	//! @param rEvents ... global event list
 	void EraseOldEvents(EventListHandler& rEvents) const;
 
 	//! @brief ... performs the collision of mFirst vs. mSecond

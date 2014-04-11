@@ -26,12 +26,6 @@ public:
 	//! @brief ... destructor, deletes all events
 	~EventListHandler();
 
-	//! @brief ... builds the initial event list with additional statistics
-	double BuildInitialEventList(SubBoxHandler& rSubBoxes);
-
-	//! @brief ... rebuilds the event list
-	double BuildEventList(SubBoxHandler& rSubBoxes);
-
 	//! @brief ... performs the most recent event
 	//! ... 1) get next events and performs it
 	//! ... 2) removes all old events
@@ -56,8 +50,10 @@ public:
 	//! @brief ... returns the time of the most recent event
 	const double GetNextEventTime();
 
-	//! @brief ... setter for the time barrier
-	void SetTimeBarrier(double rTimeBarrier);
+	//! @brief ... setter for the time barrier, rebuilds the event list
+	//! @param rTimeBarrier ... new in-simulation time barrier
+	//! @param rSubBoxes ... sub boxes to consider
+	double SetTimeBarrier(double rTimeBarrier, SubBoxHandler& rSubBoxes);
 
 	//! @brief getter for the event list size
 	const int GetEventListSize();
