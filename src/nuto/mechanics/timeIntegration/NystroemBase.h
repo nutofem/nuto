@@ -43,18 +43,6 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
 
-    //! @brief ... Return time step
-    double GetTimeStep()const
-    {
-    	return mTimeStep;
-    }
-
-    //! @brief ... Return time step
-    void SetTimeStep(double rTimeStep)
-    {
-    	mTimeStep = rTimeStep;
-    }
-
     //! @brief ... return number of intermediate stages
     virtual int GetNumStages()const=0;
 
@@ -78,8 +66,6 @@ public:
 protected:
     //empty private construct required for serialization
     NystroemBase(){};
-    //time step for the time integration, be careful not to make it smaller than the critical time step
-    double mTimeStep;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

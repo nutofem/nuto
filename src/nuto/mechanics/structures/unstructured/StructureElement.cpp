@@ -951,8 +951,8 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] coordinate dimension of node is not 2.)");
 	theNode->GetCoordinates2D(coordinates);
 	bb[0][0] = coordinates[0];
-	bb[0][1] = coordinates[1];
-	bb[1][0] = coordinates[0];
+	bb[0][1] = coordinates[0];
+	bb[1][0] = coordinates[1];
 	bb[1][1] = coordinates[1];
 	for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
 	{
@@ -972,25 +972,6 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 				bb[1][1] = coordinates[1];
 		}
 	}
-
-	//create boxes for the additional nodes
-	double deltaBox[2];
-	int numBoxes1D[2];
-	numBoxes1D[0] = (bb[0][1]-bb[0][0])/rMeshSize+1;
-	numBoxes1D[1] = (bb[1][1]-bb[1][0])/rMeshSize+1;
-	deltaBox[0] = (bb[0][1]-bb[0][0])/numBoxes1D[0];
-	deltaBox[1] = (bb[1][1]-bb[1][0])/numBoxes1D[1];
-
-	std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
-	std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
-	std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
-	std::vector<std::vector<NodeBase*> >nodeBoxes(numBoxes1D[0]*numBoxes1D[1]);
-
-	if (rNodeDistanceMerge>deltaBox[0] || rNodeDistanceMerge>deltaBox[1])
-	{
-		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] The merge distance is larger than the mesh size, that should not happen.");
-	}
-
 	Element::eElementType elementType;
 	NuTo::IntegrationTypeBase* integrationType1D;
 	switch (rOrder)
@@ -1010,6 +991,59 @@ void NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral (int rGroupNumb
 	default:
 		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] only order 2,3 and 4 implemented.");
 	}
+
+	//create boxes for the existing and additional nodes
+	double deltaBox[2];
+	int numBoxes1D[2];
+	numBoxes1D[0] = (bb[0][1]-bb[0][0])/rMeshSize+1;
+	numBoxes1D[1] = (bb[1][1]-bb[1][0])/rMeshSize+1;
+	deltaBox[0] = (bb[0][1]-bb[0][0])/numBoxes1D[0];
+	deltaBox[1] = (bb[1][1]-bb[1][0])/numBoxes1D[1];
+
+	std::cout << "bounding box x " << bb[0][0] << " " << bb[1][0] << std::endl;
+	std::cout << "bounding box y " << bb[0][1] << " " << bb[1][1] << std::endl;
+	std::cout << "number of boxes " << numBoxes1D[0] << " " << numBoxes1D[1] << std::endl;
+	std::vector<std::vector<NodeBase*> >nodeBoxes(numBoxes1D[0]*numBoxes1D[1]);
+
+	if (rNodeDistanceMerge>deltaBox[0] || rNodeDistanceMerge>deltaBox[1])
+	{
+		throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] The merge distance is larger than the mesh size, that should not happen.");
+	}
+
+	//insert all existing nodes into these subboxes
+	std::set<NodeBase*> addedNodePtrs;
+	for (boost::ptr_map<int,ElementBase>::iterator itElement=mElementMap.begin(); itElement!=mElementMap.end();itElement++)
+	{
+		if (elementType!=itElement->second->GetEnumType())
+			continue;
+		for (int count=0; count<itElement->second->GetNumNodes(); count++)
+		{
+			theNode = itElement->second->GetNode(count);
+			if (theNode->GetNumCoordinates()!=2)
+				throw MechanicsException("[NuTo::Structure::ElementConvertPlane2D4NToPlane2D4NSpectral] coordinate dimension of node is not 2.)");
+			theNode->GetCoordinates2D(coordinates);
+
+			//check, if node is within the bounding box
+			if (coordinates[0]<bb[0][0] || coordinates[0]>bb[0][1])
+				continue;
+			if (coordinates[1]<bb[1][0] || coordinates[1]>bb[1][1])
+				continue;
+
+			//check, if node has already been added
+			if (addedNodePtrs.find(theNode)!=addedNodePtrs.end())
+				continue;
+
+			//calculate corresponding box
+			int theBoxX = ((int)((coordinates[0]-bb[0][0])/deltaBox[0]))%(numBoxes1D[0]);
+			int theBoxY = ((int)((coordinates[1]-bb[1][0])/deltaBox[1]))%(numBoxes1D[1]);
+			int theBox = theBoxX + theBoxY*numBoxes1D[0];
+
+			nodeBoxes[theBox].push_back(theNode);
+			addedNodePtrs.insert(theNode);
+		}
+	}
+	std::cout << "added " << addedNodePtrs.size() << " nodes for nodes of other elements possibly to be merged." << std::endl;
+	addedNodePtrs.clear();
 
 	//Get natural coordinates (1D)
 	std::vector<double> newNodeCoordinatesNatural1D(integrationType1D->GetNumIntegrationPoints());

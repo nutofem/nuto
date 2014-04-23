@@ -50,8 +50,7 @@ void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
     #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialization of NystroemBase" << "\n";
     #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase)
-           & BOOST_SERIALIZATION_NVP(mTimeStep);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase);
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialization of NystroemBase" << "\n";
     #endif
@@ -82,7 +81,7 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
         	}
         	else
         	{
-                throw MechanicsException("[NuTo::NystroemBase::Solve] time step not set for unconditional stable algorithm.");
+                throw MechanicsException("[NuTo::NystroemBase::Solve] time step not set for unconditionally stable algorithm.");
         	}
         }
 

@@ -153,7 +153,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
             }
 
             //calculate new displacement approximation (disp_k is calculated internally when NodeMerge is called
-            disp_j += vel_j * mTimeStep +  acc_j * (mTimeStep*mTimeStep);
+            disp_j += vel_j * mTimeStep +  acc_j * (mTimeStep*mTimeStep*0.5);
 
             mStructure->NodeMergeActiveDofValues(0,disp_j);
 			mStructure->ElementTotalUpdateTmpStaticData();
