@@ -17,6 +17,7 @@ enum eResultType
 {
 	TIME=0,                         //!< time
 	NODE_DISPLACEMENT,              //!< nodal diplacement
+	NODE_ACCELERATION,              //!< nodal diplacement
 	GROUP_NODE_FORCE
 };
 

@@ -204,9 +204,17 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 
 			//std::cout << "final disp_j_new " << disp_j_new(0) << std::endl;
 			mStructure->NodeMergeActiveDofValues(0,disp_j_new);
+            if (mMergeActiveDofValuesOrder1)
+                mStructure->NodeMergeActiveDofValues(1,vel_j_new);
+            if (mMergeActiveDofValuesOrder2)
+            {
+            	mStructure->NodeMergeActiveDofValues(2,(vel_j_new-vel_j)*(1./mTimeStep));
+            }
+
 			mStructure->ElementTotalUpdateTmpStaticData();
 			mStructure->ElementTotalUpdateStaticData();
 			//std::cout << "delta disp between time steps" <<  (disp_j-disp_j_new).norm() << std::endl;
+
             disp_j = disp_j_new;
             vel_j  = vel_j_new;
 

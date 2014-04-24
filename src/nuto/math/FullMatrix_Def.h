@@ -233,19 +233,19 @@ public:
     //! @brief ... writes a matrix to a file
     //! @param fileName_ ... file name
     //! @param delimiter_ ... delimiters between the entries in each line
-    void AppendToFile ( std::string fileName_, std::string delimiter_ ) const;
+    void AppendToFile ( const std::string& fileName_, std::string delimiter_ ) const;
 
     //! @brief ... append a matrix to a file
     //! @param fileName_ ... file name
     //! @param delimiter_ ... delimiters between the entries in each line
     //! @param stringBefore ... String to write before the matrix (e.g. some comments)
     //! @param stringAfter ... String to write after the matrix (e.g. some comments)
-    void AppendToFile ( std::string fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const;
+    void AppendToFile ( const std::string& fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const;
 
     //! @brief ... writes a matrix to a file
     //! @param fileName_ ... file name
     //! @param delimiter_ ... delimiters between the entries in each line
-    void WriteToFile ( std::string fileName_, std::string delimiter_ ) const;
+    void WriteToFile ( const std::string& fileName_, std::string delimiter_ ) const;
 
 
     //! @brief ... writes a matrix to a file
@@ -253,7 +253,7 @@ public:
     //! @param delimiter_ ... delimiters between the entries in each line
     //! @param stringBefore ... String to write before the matrix (e.g. some comments)
     //! @param stringAfter ... String to write after the matrix (e.g. some comments)
-    void WriteToFile ( std::string fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const;
+    void WriteToFile ( const std::string& fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed

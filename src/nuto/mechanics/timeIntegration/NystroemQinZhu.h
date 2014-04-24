@@ -15,6 +15,7 @@ namespace NuTo
 //! @date November 2013
 //! @brief ... class for explicit time integration using a fourth order Nystroem method according to
 //! "Modeling the scalar wave equation with Nyström methods" by Jing-Bo Chen, Geophysics, 2006
+//! "High-order time discretizations in seismic modeling", Jing-Bo Chen 2007
 class NystroemQinZhu : public NystroemBase
 {
 #ifdef ENABLE_SERIALIZATION

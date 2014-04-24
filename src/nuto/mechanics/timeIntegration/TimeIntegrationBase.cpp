@@ -29,6 +29,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
+#include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
 #include "nuto/mechanics/timeIntegration/ResultTime.h"
 
 
@@ -47,6 +48,8 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo
     mAutomaticTimeStepping = false;
  	mTimeDependentConstraint = -1;
  	mTimeDependentLoadCase = -1;
+ 	mMergeActiveDofValuesOrder1 = false;
+ 	mMergeActiveDofValuesOrder2 = false;
  	ResetForNextLoad();
 }
 
@@ -210,6 +213,26 @@ int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(const std::string& rRe
 	return resultNumber;
 }
 
+//! @brief monitor the accelerations of a node
+//! @param rNodeId id of the node
+//! @param rResultId string identifying the result, this is used for the output file
+//! @return id of the result, so that it could be modified afterwards
+int NuTo::TimeIntegrationBase::AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId )
+{
+	//find unused integer id
+	int resultNumber(mResultMap.size());
+	boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+	while (it!=mResultMap.end())
+	{
+		resultNumber++;
+		it = mResultMap.find(resultNumber);
+	}
+
+	mResultMap.insert(resultNumber, new ResultNodeAcceleration(rResultStr,rNodeId));
+	mMergeActiveDofValuesOrder2 = true;
+	return resultNumber;
+}
+
 //! @brief monitor the time
 //! @param rResultId string identifying the result, this is used for the output file
 //! @return id of the result, so that it could be modified afterwards
@@ -272,6 +295,12 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 			{
 				ResultTime* resultPtr(itResult->second->AsResultTime());
 				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult,mTime);
+				break;
+			}
+			case TimeIntegration::NODE_ACCELERATION:
+			{
+				ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
+				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
 				break;
 			}
 			case TimeIntegration::NODE_DISPLACEMENT:

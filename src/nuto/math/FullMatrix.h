@@ -713,7 +713,7 @@ void FullMatrix<T,rows,cols>::ReadFromFile ( std::string fileName_ )
 //! @param fileName_ ... file name
 //! @param delimiter_ ... delimiters between the entries in each line
 template<class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::AppendToFile ( std::string fileName_, std::string delimiter_ ) const
+void FullMatrix<T,rows,cols>::AppendToFile ( const std::string& fileName_, std::string delimiter_ ) const
 {
 	AppendToFile ( fileName_,delimiter_,"","" );
 }
@@ -724,7 +724,7 @@ void FullMatrix<T,rows,cols>::AppendToFile ( std::string fileName_, std::string 
 //! @param stringBefore ... String to write before the matrix (e.g. some comments)
 //! @param stringAfter ... String to write after the matrix (e.g. some comments)
 template<class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::AppendToFile ( std::string fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const
+void FullMatrix<T,rows,cols>::AppendToFile ( const std::string& fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const
 {
 	try
 	{
@@ -759,7 +759,7 @@ void FullMatrix<T,rows,cols>::AppendToFile ( std::string fileName_, std::string 
 //! @param fileName_ ... file name
 //! @param delimiter_ ... delimiters between the entries in each line
 template<class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::WriteToFile ( std::string fileName_, std::string delimiter_ ) const
+void FullMatrix<T,rows,cols>::WriteToFile ( const std::string& fileName_, std::string delimiter_ ) const
 {
 	WriteToFile ( fileName_,delimiter_,"","" );
 }
@@ -771,7 +771,7 @@ void FullMatrix<T,rows,cols>::WriteToFile ( std::string fileName_, std::string d
 //! @param stringBefore ... String to write before the matrix (e.g. some comments)
 //! @param stringAfter ... String to write after the matrix (e.g. some comments)
 template<class T, int rows, int cols>
-void FullMatrix<T,rows,cols>::WriteToFile ( std::string fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const
+void FullMatrix<T,rows,cols>::WriteToFile ( const std::string& fileName_, std::string delimiter_, std::string stringBefore, std::string stringAfter ) const
 {
 	try
 	{

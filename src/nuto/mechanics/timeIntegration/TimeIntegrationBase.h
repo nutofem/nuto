@@ -131,6 +131,12 @@ public:
     	return mVecGroupNodesReactionForces;
     }
 
+    //! @brief monitor the accelerations of a node
+    //! @param rNodeId id of the node
+    //! @param rResultId string identifying the result, this is used for the output file
+    //! @return id of the result, so that it could be modified afterwards
+    int AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId );
+
     //! @brief monitor the displacements of a node
     //! @param rNodeId id of the node
     //! @param rResultId string identifying the result, this is used for the output file
@@ -214,7 +220,10 @@ protected:
 	double mMaxTimeStep;
     //minimum time step (for adaptive simulations)
 	double mMinTimeStep;
-
+	//if set to true, store velocities at the nodes in each time step (required when postprocessing velocities)
+	bool mMergeActiveDofValuesOrder1;
+	//if set to true, store acceleration at the nodes in each time step (required when postprocessing accelerations)
+	bool mMergeActiveDofValuesOrder2;
 	//************************
 	//* PostProcessing Stuff *
 	//************************

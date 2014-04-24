@@ -156,6 +156,10 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
             disp_j += vel_j * mTimeStep +  acc_j * (mTimeStep*mTimeStep*0.5);
 
             mStructure->NodeMergeActiveDofValues(0,disp_j);
+            if (mMergeActiveDofValuesOrder1)
+                mStructure->NodeMergeActiveDofValues(1,vel_j);
+            if (mMergeActiveDofValuesOrder2)
+                mStructure->NodeMergeActiveDofValues(2,acc_j);
 			mStructure->ElementTotalUpdateTmpStaticData();
 
 			//calculate external force
