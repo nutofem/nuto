@@ -29,6 +29,7 @@ IN_seed = 6174
 # ======================================================
 def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
   IN = nuto.InputReader(rInputFile)
+  IN.ReadFile()
 
   specimen = nuto.Specimen(IN.GetBoundingBox(), IN.GetTypeOfSpecimen(), IN.Is2D())
   
@@ -69,6 +70,10 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
     IN.GetTimePrintOut(), 
     IN.GetInitialTimeBarrier())
 
+  IN.Close()  
+  del subBoxes
+  del spheres
+    
 # ======================================================
 # ==       Build Pathes for workdir and input         ==
 # ======================================================

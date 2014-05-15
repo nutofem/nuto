@@ -81,12 +81,12 @@ public:
 	double GetVolumeFraction() const;
 	int GetNumThreads() const;
 	const std::string& GetDirectory() const;
+	void Close();
 
 	bool Is2D() const;
 	double GetShrinkage() const;
 	double GetAbsoluteGrowthRate() const;
 
-private:
 
 	void OpenFile(std::string rFileName);
 	void SkipToNextData();
@@ -99,6 +99,8 @@ private:
 	void ReadSimulationParameters();
 	void ReadBoundingBox();
 	void ReadGradingCurve();
+
+private:
 
 	void CheckInputs() const;
 	void mThrow(const std::string& rMsg) const;

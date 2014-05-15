@@ -11,8 +11,8 @@
 #include "nuto/geometryConcrete/WallTime.h"
 
 
-NuTo::ParticleCreator::ParticleCreator(NuTo::Specimen rSpecimen, const double rShrinkage)
-		: mSpecimen(rSpecimen), mShrinkage(rShrinkage)
+NuTo::ParticleCreator::ParticleCreator(NuTo::Specimen rSpecimen, const double rShrinkage, const long rNumMaxTries)
+		: mSpecimen(rSpecimen), mShrinkage(rShrinkage), mNumMaxTries(rNumMaxTries)
 {
 }
 
@@ -139,7 +139,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 		}
 
 		std::cout << "Volume for class " << gc + 1 << " : " << Vist[gc] / rVolumeSpecimen
-				<< "(" << Vsoll[gc] / rVolumeSpecimen << ")" << std::endl;
+				<< "(" << Vsoll[gc] / rVolumeSpecimen << ")" << numParticles << " particles." << std::endl;
 
 	}
 
@@ -270,8 +270,13 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 				else
 				{
 					numTries++;
-					if (numTries > 1e7)
-						throw Exception("[NuTo::ParticleCreator::CreateSpheresInSpecimen] unable to insert sphere after a 1e7 tries.");
+					if (numTries > mNumMaxTries)
+					{
+						std::stringstream exceptionStream;
+						exceptionStream << "[NuTo::ParticleCreator::CreateSpheresInSpecimen] unable to insert sphere after ";
+						exceptionStream << mNumMaxTries << " tries.";
+						throw Exception(exceptionStream.str());
+					}
 				}
 			}
 		}

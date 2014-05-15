@@ -12,10 +12,6 @@
 NuTo::InputReader::InputReader(std::string rFileName)
 {
 	OpenFile(rFileName);
-
-	ReadFile();
-
-	mFile.close();
 }
 
 void NuTo::InputReader::OpenFile(std::string rFileName)
@@ -154,6 +150,11 @@ std::string NuTo::InputReader::ReadString()
 	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
 
 	return str;
+}
+
+void NuTo::InputReader::Close()
+{
+	mFile.close();
 }
 
 void NuTo::InputReader::mThrow(const std::string& rMsg) const
