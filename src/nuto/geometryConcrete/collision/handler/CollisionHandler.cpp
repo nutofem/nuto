@@ -73,6 +73,16 @@ void NuTo::CollisionHandler::Simulate(
 		const double rTimePrintOut,
 		const double rInitialTimeBarrier)
 {
+	// Stop criteria for the main loop:
+	// 1) rWTimeMax reached --> successful!
+	// 2) rWTimeMax reached --> failed
+	// 3) rNumEventsMax = number of events without change in particle volume fraction
+	// means: no change in current global time
+	// if dGlobalTime < epsilon in rNumEventsMax events --> simulation is stuck, failed
+
+	const double epsilon = 1e-6;
+	long noChangeCounter = 0;
+	double noChangeGlobalTime = 0;
 
 	NuTo::Logger logger;
 	InitializeLogger(logger);
@@ -94,7 +104,7 @@ void NuTo::CollisionHandler::Simulate(
 	double wallTimeOfBarrierReset = 0.;
 
 	double wStartTime = WallTime::Get();
-	while (WallTime::Get() - wStartTime < rTimeMax && numEvents < rNumEventsMax && globalTime < rWTimeMax)
+	while (WallTime::Get() - wStartTime < rTimeMax && globalTime < rWTimeMax)
 	{
 		globalTime = mGlobalEventList.GetNextEventTime();
 
@@ -145,7 +155,29 @@ void NuTo::CollisionHandler::Simulate(
 			break;
 		}
 
+		if (globalTime - noChangeGlobalTime < epsilon)
+		{
+			noChangeCounter++;
+			if (noChangeCounter > rNumEventsMax)
+			{
+				std::stringstream exceptionStream;
+				exceptionStream << "[NuTo::CollisionHandler::Simulate] Simulation stopped after " << rNumEventsMax <<
+						" events without a significant change.";
+				caughtException = NuTo::Exception(exceptionStream.str());
+				break;
+
+			}
+		}
+		else
+		{
+			noChangeCounter = 0;
+			noChangeGlobalTime = globalTime;
+		}
+
+
+
 		numEvents++;
+
 
 		oldGlobalTime = globalTime;
 	}

@@ -83,7 +83,6 @@ void NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
 	// catch exceptions in parallel for
 	bool parallelThrow = false;
 	Exception parallelException("");
-
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(shared) num_threads(mNumThreads)
 #endif
@@ -105,6 +104,7 @@ void NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
 	for (unsigned int i = 0; i < size; ++i)
 		if (newEvents[i] != Event::EVENTNULL)
 			rEvents.AddEvent(newEvents[i], rCollidable, *mCollidables[i], eventType[i]);
+
 }
 
 const std::vector<NuTo::CollidableBase*>& NuTo::SubBox::GetCollidables() const

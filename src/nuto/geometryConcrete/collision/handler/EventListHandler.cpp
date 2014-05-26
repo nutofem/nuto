@@ -51,7 +51,9 @@ void NuTo::EventListHandler::AddEvent(const double rTime,
 		return;
 
 	auto insert = mEvents.insert(new Event(rTime, &rCollidable2, &rCollidable1, rType));
-	(*insert.first).AddLocalEvent();
+	if(insert.second)
+		(*insert.first).AddLocalEvent();
+
 
 //	Event* tmp = new Event(rTime, &rCollidable2, &rCollidable1, rType);
 //	tmp->AddLocalEvent();

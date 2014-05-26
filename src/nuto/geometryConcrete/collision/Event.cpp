@@ -88,22 +88,43 @@ bool NuTo::Event::operator <(const Event& rOther) const
 	if (this->mTime != rOther.mTime)
 		return this->mTime < rOther.mTime;
 
+
 	// simultaneous events!
 
 	// avoid the same event to be added twice, same event might be: this->mFirst == rOther.mSecond
 
-	if (*this == rOther)
-		return false;
+//	if (*this == rOther)
+//		return false;
+
+	CollidableBase* smaller1 = this->mFirst;
+	CollidableBase* bigger1 = this->mSecond;
+
+	CollidableBase* smaller2 = rOther.mFirst;
+	CollidableBase* bigger2 = rOther.mSecond;
+
+	if (smaller1 > bigger1)
+		std::swap(smaller1, bigger1);
+
+	if(smaller2 > bigger2)
+		std::swap(smaller2, bigger2);
+
+
+	// compare smaller pointer:
+	if (smaller1 == smaller2)
+		return bigger1 > bigger2;
+
+	return smaller1 > smaller2;
+
 
 	// simultaneous, non-equal events: add somehow distinguish-able
 
-	if (this->mFirst != rOther.mFirst)
-		return this->mFirst < rOther.mFirst;
-
-	if (this->mSecond != rOther.mSecond)
-		return this->mSecond < rOther.mSecond;
-
-	return this->mFirst < rOther.mSecond;
+//	if (this->mFirst != rOther.mFirst)
+//		return this->mFirst < rOther.mFirst;
+//
+//	if (this->mSecond != rOther.mSecond)
+//		return this->mSecond > rOther.mSecond;
+//
+//	return this->mFirst < rOther.mSecond;
 }
 
 bool NuTo::Event::operator ==(Event const& rRhs) const
