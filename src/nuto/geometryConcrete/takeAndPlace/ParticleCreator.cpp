@@ -14,6 +14,7 @@
 NuTo::ParticleCreator::ParticleCreator(NuTo::Specimen rSpecimen, const double rShrinkage, const long rNumMaxTries)
 		: mSpecimen(rSpecimen), mShrinkage(rShrinkage), mNumMaxTries(rNumMaxTries)
 {
+    mVolume = mSpecimen.GetVolume();
 }
 
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::CreateSpheresInSpecimen(
@@ -32,13 +33,9 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 
 	CheckGradingCurve(rGradingCurve);
 
-	// calculate specimen length
-	double volumeSpecimen = mSpecimen.GetVolume();
-
 	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles = PerformTakePhase(
 			rGradingCurve,
 			rSpheresBoundary,
-			volumeSpecimen,
 			rRelParticleVolume);
 
 	double volume = 0.;
@@ -52,7 +49,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 	}
 
 	std::cout << "[Take-Phase: ] Created " << particles.GetNumRows() << " particles. ";
-	std::cout << "[Take-Phase: ] Phi = " << volume / volumeSpecimen << ", phi_shrinkage = " << volumeShrinkage / volumeSpecimen << std::endl;
+	std::cout << "[Take-Phase: ] Phi = " << volume / mVolume << ", phi_shrinkage = " << volumeShrinkage / mVolume << std::endl;
 
 	PerformPlacePhase(
 			particles,
@@ -67,7 +64,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::PerformTakePhase(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve,
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary,
-		const double rVolumeSpecimen,
 		const double rRelParticleVolume) const
 		{
 	// volume of particles per class
@@ -78,7 +74,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 	std::vector<int> numParticlesPerClass(numGradingClasses);
 
 	// calculating mass of the aggregates */
-	double volumeSumParticles = rVolumeSpecimen * rRelParticleVolume;
+	double volumeSumParticles = mVolume * rRelParticleVolume;
 
 	int numParticles = rSpheresBoundary.GetNumRows();
 	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles(0, 4);
@@ -138,8 +134,8 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 			}
 		}
 
-		std::cout << "Volume for class " << gc + 1 << " : " << Vist[gc] / rVolumeSpecimen
-				<< "(" << Vsoll[gc] / rVolumeSpecimen << ")" << numParticles << " particles." << std::endl;
+		std::cout << "Volume for class " << gc + 1 << " : " << Vist[gc] / mVolume
+				<< "(" << Vsoll[gc] / mVolume << ")" << numParticles << " particles." << std::endl;
 
 	}
 

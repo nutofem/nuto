@@ -276,12 +276,13 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(Specimen& rSpecimen)
 
 				FullVector<double, 3> dP = GetParticle(indexI)->GetPosition() - GetParticle(indexJ)->GetPosition();
 				double dR = GetParticle(indexI)->GetRadius0() + GetParticle(indexJ)->GetRadius0();
-				double ijDistance = dP.Dot(dP) - dR * dR;
+
+				double ijDistance = sqrt(dP.Dot(dP)) - dR;
 				minDistance = std::min(minDistance, ijDistance);
 			}
 		}
 	}
-	return sqrt(minDistance);
+	return minDistance;
 
 }
 

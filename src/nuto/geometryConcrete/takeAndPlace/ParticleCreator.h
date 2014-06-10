@@ -52,7 +52,6 @@ public:
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> PerformTakePhase(
 			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve,
 			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary,
-			const double rVolumeSpecimen,
 			const double rRelParticleVolume) const;
 
 	//! @brief ... performs the "place"-of the "take-and-place" algorithm
@@ -93,6 +92,8 @@ private:
 	NuTo::Specimen mSpecimen;
 	const double mShrinkage;
 	const long mNumMaxTries;
+
+	double mVolume;
 };
 
 } /* namespace NuTo */
