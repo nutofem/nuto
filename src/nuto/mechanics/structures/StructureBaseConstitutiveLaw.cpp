@@ -4,6 +4,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
@@ -46,6 +47,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "DAMAGEVISCOPLASTICITYENGINEERINGSTRESS")
     {
         ConstitutiveLawType = Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS;
+    }
+    else if (ConstitutiveLawTypeString == "DAMAGEVISCOPLASTICITYHARDENINGENGINEERINGSTRESS")
+    {
+        ConstitutiveLawType = Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS;
     }
     else
     {
@@ -96,6 +101,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityEngineeringStress();
+            break;
+        case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityHardeningEngineeringStress();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
@@ -370,6 +378,70 @@ void NuTo::StructureBase::ConstitutiveLawSetInitialHardeningModulus(int rIdent, 
     catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetInitialHardeningModulus] error setting initial hardening modulus.");
+        throw e;
+    }
+}
+
+//! @brief ... get hardening value
+//! @return ... hardening value
+double NuTo::StructureBase::ConstitutiveLawGetHardeningValue(int rIdent) const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetHardeningValue();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetHardeningValue] error getting hardening value.");
+		throw e;
+	}
+}
+
+//! @brief ... set hardening value
+//! @param rHardening ...  hardening value
+void NuTo::StructureBase::ConstitutiveLawSetHardeningValue(int rIdent, double rHardening)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetHardeningValue(rHardening);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetHardeningValue] error setting hardening value.");
+        throw e;
+    }
+}
+
+//! @brief ... get hardening exponent
+//! @return ... hardening exponent
+double NuTo::StructureBase::ConstitutiveLawGetHardeningExponent(int rIdent) const
+{
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		return ConstitutiveLawPtr->GetHardeningExponent();
+	}
+	catch (NuTo::MechanicsException& e)
+	{
+		e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetHardeningExponent] error getting hardening exponent.");
+		throw e;
+	}
+}
+
+//! @brief ... set hardening exponent
+//! @param rHardeningExponent ...  hardening exponent
+void NuTo::StructureBase::ConstitutiveLawSetHardeningExponent(int rIdent, double rHardeningExponent)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetHardeningExponent(rHardeningExponent);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetHardeningExponent] error setting hardening exponent.");
         throw e;
     }
 }
@@ -726,6 +798,38 @@ double NuTo::StructureBase::ConstitutiveLawGetViscosity(int rIdent) const
         throw e;
     }
     return Viscosity;
+}
+
+// set viscosity exponent
+void NuTo::StructureBase::ConstitutiveLawSetViscosityExponent(int rIdent, double rViscosityExponent)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetViscosityExponent(rViscosityExponent);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetViscosityExponent] error setting viscosity exponent.");
+        throw e;
+    }
+}
+
+// get viscosity exponent
+double NuTo::StructureBase::ConstitutiveLawGetViscosityExponent(int rIdent) const
+{
+    double ViscosityExponent;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ViscosityExponent = ConstitutiveLawPtr->GetViscosityExponent();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetViscosityExponent] error getting viscosity exponent.");
+        throw e;
+    }
+    return ViscosityExponent;
 }
 
 // set damage distribution

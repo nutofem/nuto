@@ -1206,6 +1206,22 @@ public:
     //! @param rH ...  hardening modulus
     void ConstitutiveLawSetInitialHardeningModulus(int rIdent, double rH);
 
+    //! @brief ... get hardening value
+    //! @return ... hardening value
+    double ConstitutiveLawGetHardeningValue(int rIdent) const;
+
+    //! @brief ... set hardening value
+    //! @return ... hardening value
+    void ConstitutiveLawSetHardeningValue(int rIdent, double rHardening);
+
+    //! @brief ... get hardening exponent
+    //! @return ... hardening exponent
+    double ConstitutiveLawGetHardeningExponent(int rIdent) const;
+
+    //! @brief ... set hardening exponent
+    //! @return ... hardening exponent
+    void ConstitutiveLawSetHardeningExponent(int rIdent, double rHardeningExponent);
+
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
@@ -1291,6 +1307,14 @@ public:
     //! @brief ... set viscosity
     //! @param ... viscosity
     void ConstitutiveLawSetViscosity(int rIdent, double rViscosity);
+
+    //! @brief ... get viscosity exponent
+    //! @return ... viscosity exponent
+    double ConstitutiveLawGetViscosityExponent(int rIdent) const;
+
+    //! @brief ... set viscosity exponent
+    //! @param ... viscosity exponent
+    void ConstitutiveLawSetViscosityExponent(int rIdent, double rViscosityExponent);
 
     //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
     //! @return ... damage distribution

@@ -18,6 +18,7 @@ class ConstitutiveStaticDataDamageViscoPlasticity3D : public ConstitutiveStaticD
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class DamageViscoPlasticityEngineeringStress;
+    friend class DamageViscoPlasticityHardeningEngineeringStress;
 public:
 	//! @brief constructor
     ConstitutiveStaticDataDamageViscoPlasticity3D();
@@ -69,6 +70,9 @@ protected:
 
     //! @brief plasticity state variable
     double mVP;
+
+    //! @brief hardening state variable
+    double mPrevHardening;
 };
 
 }

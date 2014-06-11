@@ -110,11 +110,15 @@ bool NuTo::EngineeringStress3D::YieldSurfaceDruckerPrager3DDerivatives(
 
 	double invariante_1 = (*this)[0]+(*this)[1]+(*this)[2];
 	double norm_2 = (*this).Norm();
+	double factor, func;
+	const double eps = 1e-5;
 
-    if (fabs(norm_2)<1e-6)
-        return false;
-
-    double factor = 1./(6.*norm_2);
+	if (norm_2 > eps) {
+		factor = 1./(6.*norm_2);
+	} else {
+		factor = (1./6.)*(1/eps)*(1.5 - 0.5*std::pow(norm_2/eps,2.));
+		func = (1/eps)*(1.5 - 0.5*std::pow(norm_2/eps,2.));
+	}
 
     /* Calculate derivative of norm_2:=J2 */
     rdJ2_dSigma(0) = factor * (2.*(*this)[0]-(*this)[1]-(*this)[2]);
@@ -133,32 +137,61 @@ bool NuTo::EngineeringStress3D::YieldSurfaceDruckerPrager3DDerivatives(
 
     /* Calculate second derivative of the Drucker Prager yield surface */
 #define DELTA(i, j) ((i==j)?1:0)
-    factor = 1./(2.*norm_2*norm_2);
 
-    for ( int i = 0; i < 6; i++ )
-       for ( int j = 0; j < 6; j++ )
-       {
-    	   if (i < 3 && j < 3)
-    	   {
-    		   rd2F_d2Sigma(i,j) = norm_2*(DELTA(i, j) - 1./3.);
-    		   rd2F_d2Sigma(i,j) -= ((*this)[i] - invariante_1/3.)*rdJ2_dSigma(j);
-    		   rd2F_d2Sigma(i,j) *= factor;
-    	   }
-    	   if (i < 3 && j > 2)
-    	       	   {
-    		   rd2F_d2Sigma(i,j) = -factor*((*this)[i] - invariante_1/3.)*rdJ2_dSigma(j);
-    	       	   }
-    	   if (i > 2 && j < 3)
-    	       	   {
-    		   rd2F_d2Sigma(i,j) = -2.*factor*(*this)[i]*rdJ2_dSigma(j);
-    	       	   }
-    	   if (i > 2 && j > 2)
-    	   {
-    		   rd2F_d2Sigma(i,j) = norm_2*DELTA(i, j);
-    		   rd2F_d2Sigma(i,j) -= (*this)[i]*rdJ2_dSigma(j);
-    		   rd2F_d2Sigma(i,j) *= 2.*factor;
-    	   }
-       }
+    if (norm_2 > eps) {
+    	factor = 1./(2.*norm_2*norm_2);
+    	for ( int i = 0; i < 6; i++ )
+    		for ( int j = 0; j < 6; j++ )
+    		{
+    			if (i < 3 && j < 3)
+    			{
+    				rd2F_d2Sigma(i,j) = norm_2*(DELTA(i, j) - 1./3.);
+    				rd2F_d2Sigma(i,j) -= ((*this)[i] - invariante_1/3.)*rdJ2_dSigma(j);
+    				rd2F_d2Sigma(i,j) *= factor;
+    			}
+    			if (i < 3 && j > 2)
+    				{
+    				rd2F_d2Sigma(i,j) = -factor*((*this)[i] - invariante_1/3.)*rdJ2_dSigma(j);
+    				}
+    			if (i > 2 && j < 3)
+    				{
+    				rd2F_d2Sigma(i,j) = -2.*factor*(*this)[i]*rdJ2_dSigma(j);
+    				}
+    			if (i > 2 && j > 2)
+    				{
+    				rd2F_d2Sigma(i,j) = norm_2*DELTA(i, j);
+    				rd2F_d2Sigma(i,j) -= (*this)[i]*rdJ2_dSigma(j);
+    				rd2F_d2Sigma(i,j) *= 2.*factor;
+    				}
+    		}	// for loop
+
+	} else {
+		factor = 1./(2.*eps*eps);
+    	for ( int i = 0; i < 6; i++ )
+    		for ( int j = 0; j < 6; j++ )
+    		{
+    			if (i < 3 && j < 3)
+    			{
+    				rd2F_d2Sigma(i,j) = eps*eps*func*(DELTA(i, j) - 1./3.);
+    				rd2F_d2Sigma(i,j) -= ((*this)[i] - invariante_1/3.)*(norm_2/eps)*rdJ2_dSigma(j);
+    				rd2F_d2Sigma(i,j) *= factor;
+    			}
+    			if (i < 3 && j > 2)
+    				{
+    				rd2F_d2Sigma(i,j) = -factor*((*this)[i] - invariante_1/3.)*(norm_2/eps)*rdJ2_dSigma(j);
+    				}
+    			if (i > 2 && j < 3)
+    				{
+    				rd2F_d2Sigma(i,j) = -2.*factor*(*this)[i]*(norm_2/eps)*rdJ2_dSigma(j);
+    				}
+    			if (i > 2 && j > 2)
+    				{
+    				rd2F_d2Sigma(i,j) = eps*eps*func*DELTA(i, j);
+    				rd2F_d2Sigma(i,j) -= (*this)[i]*(norm_2/eps)*rdJ2_dSigma(j);
+    				rd2F_d2Sigma(i,j) *= 2.*factor;
+    				}
+    		}	// for loop
+	}	// end if
 
     return true;
 }

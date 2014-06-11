@@ -183,6 +183,34 @@ void NuTo::ConstitutiveBase::SetInitialHardeningModulus(double rH)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetHardeningModulus] The constitutive relationship does not have a parameter hardening modulus.");
 }
 
+//! @brief ... get hardening value
+//! @return ... hardening value
+double NuTo::ConstitutiveBase::GetHardeningValue() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetHardeningValue] The constitutive relationship does not have a parameter hardening value.");
+}
+
+//! @brief ... set hardening value
+//! @param rH ...  hardening value
+void NuTo::ConstitutiveBase::SetHardeningValue(double rHardening)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetHardeningValue] The constitutive relationship does not have a parameter hardening value.");
+}
+
+//! @brief ... get hardening exponent
+//! @return ... hardening exponent
+double NuTo::ConstitutiveBase::GetHardeningExponent() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetHardeningExponent] The constitutive relationship does not have a parameter hardening exponent.");
+}
+
+//! @brief ... set hardening exponent
+//! @param rHardeningExponent ...  hardening exponent
+void NuTo::ConstitutiveBase::SetHardeningExponent(double rHardeningExponent)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetHardeningExponent] The constitutive relationship does not have a parameter hardening exponent.");
+}
+
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding hardening modulus
@@ -346,6 +374,20 @@ double NuTo::ConstitutiveBase::GetViscosity() const
 void NuTo::ConstitutiveBase::SetViscosity(double rViscosity)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscosity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get viscosity exponent
+//! @return ... viscosity exponent
+double NuTo::ConstitutiveBase::GetViscosityExponent() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetViscosityExponent] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set viscosity exponent
+//! @param ... viscosity exponent
+void NuTo::ConstitutiveBase::SetViscosityExponent(double rViscosityExponent)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscosityExponent] The constitutive relationship does not have this parameter.");
 }
 
 //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)

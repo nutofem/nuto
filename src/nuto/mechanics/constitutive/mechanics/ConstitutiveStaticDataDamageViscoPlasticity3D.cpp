@@ -19,6 +19,7 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::ConstitutiveStaticDataDamag
 	mOmegaCompr = 0.;
 	mKappaInelastic = 0.;
 	mVP     = 0.;
+	mPrevHardening = 0.;
 
 	mEpsilonP[0] = 0.;
 	mEpsilonP[1] = 0.;
@@ -41,6 +42,7 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D& NuTo::ConstitutiveStaticDat
     mOmegaCompr = rOther.mOmegaCompr;
     mKappaInelastic = rOther.mKappaInelastic;
     mVP = rOther.mVP;
+    mPrevHardening = rOther.mPrevHardening;
 
     mEpsilonP[0] = rOther.mEpsilonP[0];
     mEpsilonP[1] = rOther.mEpsilonP[1];
@@ -106,7 +108,8 @@ void NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::serialize(Archive & ar
        & BOOST_SERIALIZATION_NVP(mKappaInelastic)
        & BOOST_SERIALIZATION_NVP(mEpsilonP)
        & BOOST_SERIALIZATION_NVP(mEpsilonVp)
-       & BOOST_SERIALIZATION_NVP(mVP);
+       & BOOST_SERIALIZATION_NVP(mVP)
+       & BOOST_SERIALIZATION_NVP(mPrevHardening);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataDamageViscoPlasticity3D" << std::endl;
 #endif

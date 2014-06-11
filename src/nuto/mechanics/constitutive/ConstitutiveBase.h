@@ -157,6 +157,22 @@ public:
     //! @param rH ...  hardening modulus
     virtual void SetInitialHardeningModulus(double rH);
 
+    //! @brief ... get hardening value
+    //! @return ... hardening value
+    virtual double GetHardeningValue() const;
+
+    //! @brief ... set hardening value
+    //! @param rH ...  hardening value
+    virtual void SetHardeningValue(double rH);
+
+    //! @brief ... get hardening exponent
+    //! @return ... hardening exponent
+    virtual double GetHardeningExponent() const;
+
+    //! @brief ... set hardening exponent
+    //! @param rHexponent ...  hardening exponent
+    virtual void SetHardeningExponent(double rHexponent);
+
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
@@ -251,6 +267,14 @@ public:
     //! @brief ... set viscosity
     //! @param ... viscosity
     virtual void SetViscosity(double rViscosity);
+
+    //! @brief ... get viscosity exponent
+    //! @return ... viscosity exponent
+    virtual double GetViscosityExponent() const;
+
+    //! @brief ... set viscosity exponent
+    //! @param ... viscosity exponent
+    virtual void SetViscosityExponent(double rViscosityExponent);
 
     //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
     //! @return ... damage distribution

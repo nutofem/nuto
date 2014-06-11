@@ -30,6 +30,7 @@ constitutive/mechanics/EngineeringStress3D.cpp
 constitutive/mechanics/DeformationGradient1D.cpp
 constitutive/mechanics/Damage.cpp
 constitutive/mechanics/DamageViscoPlasticityEngineeringStress.cpp
+constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.cpp
 constitutive/mechanics/DeformationGradient2D.cpp
 constitutive/mechanics/DeformationGradient3D.cpp
 constitutive/mechanics/Displacements1D.cpp
