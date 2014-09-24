@@ -173,7 +173,7 @@ double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler
 	ostream << "New time barrier: " << std::setprecision(8) << rTimeBarrier;
 	ostream << " created  "  << mEvents.size() << " events in " << timeRebuild << " s." << std::endl;
 
-	std::cout << ostream.str();
+	//std::cout << ostream.str();
 
 	return timeRebuild;
 }

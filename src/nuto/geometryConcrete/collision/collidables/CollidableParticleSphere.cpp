@@ -210,10 +210,11 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableWallBase
 	return rWall.PredictCollision(*this, rType);
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::CollidableParticleSphere::ExportRow() const
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::CollidableParticleSphere::ExportRow(bool rInitialRadius) const
 {
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> data(1, 4);
-	data << mPosition[0], mPosition[1], mPosition[2], mRadius;
+	double radius = rInitialRadius? mRadius0 : mRadius;
+	data << mPosition[0], mPosition[1], mPosition[2], radius;
 	return data;
 }
 

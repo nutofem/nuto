@@ -161,6 +161,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 
 	std::vector<double> numParticlesPerSize = GetNumParticlesPerSizeClass(rParticles, sizeClasses);
 
+
 	int numParticlesAdded = 0;
 	double lastPrintedFraction = 0.;
 	for (unsigned int sizeClass = 0; sizeClass < sizeClasses.size(); ++sizeClass)

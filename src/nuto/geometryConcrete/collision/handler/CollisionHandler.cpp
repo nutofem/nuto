@@ -36,6 +36,7 @@ void NuTo::CollisionHandler::LogStatus(
 		const double rWSTime) const
 		{
 	double eKin = mSpheres->GetKineticEnergy();
+	mSpheres->Sync(rGlobalTime);
 	double vol = mSpheres->GetVolume();
 	double time = WallTime::Get() - rWSTime;
 
@@ -66,7 +67,7 @@ void NuTo::CollisionHandler::VisualizeSpheres(long rNumEvents, double rGlobalTim
 		mSpheres->VisualizeSpheres(mName, rNumEvents, rGlobalTime, rIsFinal);
 }
 
-void NuTo::CollisionHandler::Simulate(
+double NuTo::CollisionHandler::Simulate(
 		const long rNumEventsMax,
 		const double rTimeMax,
 		const double rWTimeMax,
@@ -104,10 +105,10 @@ void NuTo::CollisionHandler::Simulate(
 	double wallTimeOfBarrierReset = 0.;
 
 	double wStartTime = WallTime::Get();
+	double wMeasureTime = 0;
 	while (WallTime::Get() - wStartTime < rTimeMax && globalTime < rWTimeMax)
 	{
 		globalTime = mGlobalEventList.GetNextEventTime();
-
 		if (globalTime == Event::EVENTNULL)
 		{
 			globalTimeBarrier = oldGlobalTime + 10 * (oldGlobalTime - globalTimeOfBarrierReset);
@@ -135,13 +136,18 @@ void NuTo::CollisionHandler::Simulate(
 
 		}
 
+//		mSpheres->Sync(globalTime);
+//		VisualizeSpheres(numEvents, globalTime, false);
+
 		// print a status update
 		if (rTimePrintOut != 0 && WallTime::Get() - wStartTime > timePrintOut)
 		{
 			timePrintOut += rTimePrintOut;
 			LogStatus(logger, numEvents, globalTime, wStartTime);
 			if (mEnableStatusVisualization && mEnableFileOutput)
-				mSpheres->VisualizeSpheres(mName, numEvents, globalTime, false);
+			{
+				//mSpheres->VisualizeSpheres(mName, numEvents, globalTime, false);
+			}
 		}
 
 		try
@@ -177,26 +183,35 @@ void NuTo::CollisionHandler::Simulate(
 
 
 		numEvents++;
-
+//		if (numEvents > rNumEventsMax)
+//		    break;
+//
+//		if (numEvents == 5e6)
+//		    wMeasureTime = WallTime::Get();
 
 		oldGlobalTime = globalTime;
 	}
 
 	double wTime = WallTime::Get() - wStartTime;
+	double wTimeMeasure = WallTime::Get() - wMeasureTime;
 
 	mGlobalEventList.PrintStatistics(wTime);
 
 	mSpheres->Sync(globalTime);
 	LogStatus(logger, numEvents, globalTime, wStartTime);
 
-	VisualizeSpheres(numEvents, globalTime, false);
-	VisualizeSpheres(numEvents + 1, globalTime + 1., true);
+//	VisualizeSpheres(numEvents, globalTime, false);
+//	VisualizeSpheres(numEvents + 1, globalTime + 1., true);
 
 	logger.CloseFile();
+
+
 
 	// rethrow exceptions for proper test failure
 	if (caughtException.ErrorMessage() != "")
 		throw Exception("[NuTo::CollisionHandler::Simulate] Simulation ended with the exception: \n" + caughtException.ErrorMessage());
+
+    return wTimeMeasure;
 }
 
 void NuTo::CollisionHandler::EnableStatusVisualization(bool rEnableStatusVisualization)

@@ -38,7 +38,7 @@ public:
 	//! @param rWTimeMax ... abort if reached
 	//! @param rTimePrintOut ... print out every rTimePrintOut seconds
 	//! @param rInitialTimeBarrier ... doesnt really matter
-	void Simulate(
+	double Simulate(
 			const long rNumEventsMax,
 			const double rTimeMax,
 			const double rWTimeMax,

@@ -60,7 +60,7 @@ public:
 	void ResetVelocities();
 
 	//! @brief ... converts the particle list to a Nx4-matrix
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles() const;
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles(bool rInitialRadius = false) const;
 
 	//! @brief ... get a single particle from the particle list
 	CollidableParticleSphere* GetParticle(const int rIndex);

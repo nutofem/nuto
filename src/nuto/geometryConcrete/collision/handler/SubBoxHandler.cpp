@@ -290,7 +290,7 @@ void NuTo::SubBoxHandler::BuildCylinder(const int rNumThreads)
 void NuTo::SubBoxHandler::AddSpheresToBoxes()
 {
 
-	double sTime = omp_get_wtime();
+	double sTime = WallTime::Get();
 
 	FullVector<double, 3> subLength = GetSubBoxLength();
 
@@ -360,7 +360,7 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 				}
 
 	}
-	std::cout << "AddSpheresToBoxes() took " << omp_get_wtime() - sTime
+	std::cout << "AddSpheresToBoxes() took " << WallTime::Get() - sTime
 			<< " seconds." << std::endl;
 
 }

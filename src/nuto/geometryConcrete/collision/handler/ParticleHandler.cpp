@@ -77,12 +77,12 @@ NuTo::ParticleHandler::~ParticleHandler()
 			delete particle;
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::GetParticles() const
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::GetParticles(bool rInitialRadius) const
 {
 	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles(mParticles.size(), 4);
 	int i = 0;
 	for (auto particle : mParticles)
-		particles.SetRow(i++, particle->ExportRow());
+		particles.SetRow(i++, particle->ExportRow(rInitialRadius));
 
 	return particles;
 }

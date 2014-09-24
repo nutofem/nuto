@@ -91,8 +91,9 @@ public:
 	void GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const;
 
 	//! @brief ... exports the sphere position and its radius to as a row in a Nx4-matrix
-	//! @return ... 1x4-matrix, [posX, posY, posZ, radius]
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ExportRow() const;
+	//! @param rInitialRadius ... switch to export mRadius or mRadius0
+	//! @return ... 1x4-matrix, [posX, posY, posZ, radius/radius0]
+	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ExportRow(bool rInitialRadius = false) const;
 
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all moving collidables
