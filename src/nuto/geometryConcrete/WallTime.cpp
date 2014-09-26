@@ -6,11 +6,11 @@
  */
 
 #include "nuto/geometryConcrete/WallTime.h"
+#include <ctime>
+
 
 #ifdef _OPENMP
 #include <omp.h>
-#else
-#include <ctime>
 #endif
 
 //! @return ... current wall time, parallel or sequential
@@ -21,4 +21,13 @@ double NuTo::WallTime::Get()
 #else
 	return static_cast<double>(clock()) / CLOCKS_PER_SEC;
 #endif
+}
+
+std::string NuTo::WallTime::TimeStamp()
+{
+    char buffer[120];
+    time_t now = time(0);
+    tm * timeinfo = localtime(&now);
+    strftime(buffer, 120, "%F_%H-%M-%S", timeinfo);
+    return std::string(buffer);
 }

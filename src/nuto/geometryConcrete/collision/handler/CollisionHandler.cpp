@@ -55,7 +55,7 @@ void NuTo::CollisionHandler::LogStatus(
 void NuTo::CollisionHandler::InitializeLogger(NuTo::Logger& rLogger)
 {
 	if (mEnableFileOutput)
-		rLogger.OpenFile(mName + std::string("/log.dat"));
+		rLogger.OpenFile(mName + std::string("_log.dat"));
 
 	rLogger.SetQuiet(false);
 	rLogger << "# Event \t Time \t EKin \t Phi \t WTime \n";
@@ -63,7 +63,7 @@ void NuTo::CollisionHandler::InitializeLogger(NuTo::Logger& rLogger)
 
 void NuTo::CollisionHandler::VisualizeSpheres(long rNumEvents, double rGlobalTime, bool rIsFinal)
 {
-	if (mEnableFileOutput)
+	if (mEnableStatusVisualization)
 		mSpheres->VisualizeSpheres(mName, rNumEvents, rGlobalTime, rIsFinal);
 }
 
@@ -91,6 +91,7 @@ double NuTo::CollisionHandler::Simulate(
 
 	long numEvents = 0;
 	double globalTime = 0.;
+	double globalTimePrint = 0.;
 	VisualizeSpheres(numEvents, globalTime, false);
 
 
@@ -140,14 +141,24 @@ double NuTo::CollisionHandler::Simulate(
 //		VisualizeSpheres(numEvents, globalTime, false);
 
 		// print a status update
-		if (rTimePrintOut != 0 && WallTime::Get() - wStartTime > timePrintOut)
+		// a) at time print out
+		bool statusPrintOut = rTimePrintOut != 0 && WallTime::Get() - wStartTime > timePrintOut;
+		// b) at every 0.01 global time steps
+		bool statusGlobalTime = globalTime > globalTimePrint;
+
+		if (statusPrintOut or statusGlobalTime)
 		{
-			timePrintOut += rTimePrintOut;
 			LogStatus(logger, numEvents, globalTime, wStartTime);
 			if (mEnableStatusVisualization && mEnableFileOutput)
 			{
 				//mSpheres->VisualizeSpheres(mName, numEvents, globalTime, false);
 			}
+	        if (statusGlobalTime)
+	            globalTimePrint = globalTime + 0.01;
+
+	        if (statusPrintOut)
+	            timePrintOut += rTimePrintOut;
+
 		}
 
 		try
@@ -204,7 +215,6 @@ double NuTo::CollisionHandler::Simulate(
 //	VisualizeSpheres(numEvents + 1, globalTime + 1., true);
 
 	logger.CloseFile();
-
 
 
 	// rethrow exceptions for proper test failure
