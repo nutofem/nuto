@@ -38,15 +38,6 @@ public:
 			const int rSeed,
 			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheresBoundary) const;
 
-	//! @brief ... cut spheres at a given z-coordinate to create circles (in 2D)
-	//! @param rSpheres matrix with the spheres (x,y,z,r)
-	//! @param rZCoord z coordinate (where to cut)
-	//! @param rMinRadius minimal radius of the circle
-	//! @return ... matrix with the circles (x,y,r)
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> CutSpheresZ(
-			NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres,
-			double rZCoord, double rMinRadius) const;
-
 	//! @brief ... performs the "take"-of the "take-and-place" algorithm
 	//! @return ... matrix with sphere radii according to the grading curve
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> PerformTakePhase(

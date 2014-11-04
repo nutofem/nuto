@@ -96,7 +96,7 @@ rawSpheres = nuto.DoubleFullMatrix(3,4, [0.,10.,5.,  0.,0.,math.sqrt(75.),   0.,
 
 # build boundary matrix
 boundary = nuto.DoubleFullMatrix(3,2, [-1e10, -1e10, -1e10, 1e10, 1e10, 1e10])
-specimen = nuto.Specimen(boundary, 0, False);
+specimen = nuto.Specimen(boundary, 0);
 
 # build sub box division vector
 subBoxDivs = nuto.IntFullVector([1,1,1])
@@ -163,7 +163,7 @@ numParticles = 1000;
 bBoxLength = 40.
 bBox = nuto.DoubleFullMatrix(3,2,[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2., bBoxLength/2., bBoxLength/2., bBoxLength/2.])
 
-specimen = nuto.Specimen(bBox, 0, False)
+specimen = nuto.Specimen(bBox, 0)
 
 spheres = nuto.ParticleHandler(numParticles, bBox, 1., 0.1)
 
@@ -174,8 +174,8 @@ collisions = nuto.CollisionHandler(spheres, subBoxes, "")
 
 collisions.Simulate(
    100000000,
-   30.,
    8.,
+   30.,
    1.,
    10.) 
 spheres = None
@@ -191,7 +191,7 @@ collisions = None
 bBoxLength = 40. * .7
 bBoxCylPos = nuto.DoubleFullMatrix(3,2,[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2., bBoxLength/2., bBoxLength/2., bBoxLength/2.])
 
-specimen = nuto.Specimen(bBox, 2, False)
+specimen = nuto.Specimen(bBox, 2)
 
 spheres = nuto.ParticleHandler(numParticles, bBoxCylPos, 1., 0.1)
 
@@ -202,8 +202,8 @@ collisions = nuto.CollisionHandler(spheres, subBoxes, "")
 
 collisions.Simulate(
    100000000,
-   30.,
-   8,
+   8.,
+   30,
    1.,
    10.) 
  

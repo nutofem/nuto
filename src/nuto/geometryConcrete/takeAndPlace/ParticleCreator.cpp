@@ -114,8 +114,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 
 			// volume
 			double volumeParticle = 4.0 / 3.0 * M_PI * radius * radius * radius;
-			if (mSpecimen.Is2D())
-				volumeParticle = M_PI * radius * radius;
 
 			Vist[gc] += volumeParticle;
 
@@ -179,11 +177,6 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 			nSubBox[count] = std::floor(mSpecimen.GetLength().GetValue(count) / subBoxLength);
 			lSubBox[count] = mSpecimen.GetLength()[count] / nSubBox[count];
 		}
-		if (mSpecimen.Is2D())
-		{
-			nSubBox[2] = 1;
-			lSubBox[2] = 2. * rParticles(0, 3);
-		}
 
 		int numberOfSubBoxes = nSubBox[0] * nSubBox[1] * nSubBox[2];
 		std::vector<std::vector<int> > subBox(numberOfSubBoxes);
@@ -215,11 +208,6 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 					cSubBox[count] = (rParticles(countParticle, count) - mSpecimen.GetBoundingBox()(count, 0)) / lSubBox[count];
 				}
 
-				if (mSpecimen.Is2D())
-				{
-					rParticles(countParticle, 2) = mSpecimen.GetBoundingBox()(2, 0) + .5 * (mSpecimen.GetBoundingBox()(2, 1) - mSpecimen.GetBoundingBox()(2, 0));
-					cSubBox(2) = 0;
-				}
 //				check for overlapping with the boundary
 				if (not mSpecimen.IsBox())
 					if (CollidesWithBoundary(
@@ -414,43 +402,6 @@ const std::vector<double> NuTo::ParticleCreator::GetNumParticlesPerSizeClass(
 	return numParticlesPerSize;
 }
 
-//! @brief cut spheres at a given z-coordinate to create circles (in 2D)
-//! @parameters rSpheres matrix with the spheres (x,y,z,r)
-//! @parameters rZCoord z coordinate (where to cut)
-//! @parameters rMinRadius minimal radius of the circle
-//! @return ... matrix with the circles (x,y,r)
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::CutSpheresZ(
-		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres,
-		double rZCoord, double rMinRadius) const
-		{
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> circles(1000, 3);
-	int numCircles(0);
-	for (int countSphere = 0; countSphere < rSpheres.GetNumRows();
-			countSphere++)
-	{
-		double delta = rSpheres(countSphere, 2) - rZCoord;
-		if (fabs(delta) < rSpheres(countSphere, 3))
-		{
-			double radius = sqrt(static_cast<double>(rSpheres(countSphere, 3) * rSpheres(countSphere, 3) - delta * delta));
-			if (radius > rMinRadius)
-			{
-				//add circle
-				if (numCircles == circles.GetNumRows())
-				{
-					circles.ConservativeResizeRows(numCircles + 1000);
-				}
-				circles(numCircles, 0) = rSpheres(countSphere, 0);
-				circles(numCircles, 1) = rSpheres(countSphere, 1);
-				circles(numCircles, 2) = radius;
-				numCircles++;
-			}
-		}
-	}
-	circles.ConservativeResizeRows(numCircles);
-
-	return circles;
-}
-
 //! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
 void NuTo::ParticleCreator::InsertParticleIntoBox(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rParticles,
@@ -464,13 +415,6 @@ void NuTo::ParticleCreator::InsertParticleIntoBox(
 	FullVector<int, 3> cSubBoxMax;
 
 	int coordMax = 3;
-
-	if (mSpecimen.Is2D())
-	{
-		coordMax = 2;
-		cSubBoxMax[2] = 0;
-		cSubBoxMin[2] = 0;
-	}
 
 	for (int coordinate = 0; coordinate < coordMax; coordinate++)
 	{
@@ -506,8 +450,5 @@ void NuTo::ParticleCreator::InsertParticleIntoBox(
 }
 double NuTo::ParticleCreator::GetVolume(double radius) const
 		{
-	if (mSpecimen.Is2D())
-		return M_PI * radius * radius;
-	else
-		return 4. / 3. * M_PI * radius * radius * radius;
+    return 4. / 3. * M_PI * radius * radius * radius;
 }

@@ -10,7 +10,6 @@ import os
 # the test fails automatically.
 
 
-IN_is2D = False
 IN_shrinkage = 0.02
 IN_boxType = 0
 IN_boundingBox = nuto.DoubleFullMatrix(3,2, [0., 0., 0., 40., 40., 40.])
@@ -30,7 +29,7 @@ IN_numThreads = 4
 IN_InitialTimeBarrier = 0.1
 
 
-specimen = nuto.Specimen(IN_boundingBox, IN_boxType, IN_is2D)
+specimen = nuto.Specimen(IN_boundingBox, IN_boxType)
 
 creator = nuto.ParticleCreator(specimen, IN_shrinkage)
 
@@ -41,6 +40,7 @@ spheresMatrix = creator.CreateSpheresInSpecimen(
   IN_absoluteDistance, 
   IN_seed, 
   IN_spheresBoundary)
+
 
 # particle handler
 spheres = nuto.ParticleHandler(spheresMatrix, IN_velocityRange, IN_relativeGrowthRate, IN_absoluteGrowthRate)

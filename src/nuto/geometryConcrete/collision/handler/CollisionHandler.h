@@ -28,8 +28,6 @@ public:
 	//! @param rName ... work dir
 	CollisionHandler(ParticleHandler& rSpheres, SubBoxHandler& rSubBoxes, const std::string rName);
 
-	//! @brief ... true: write a sphere visualization file @ every status output
-	void EnableStatusVisualization(bool rEnableStatusVisualization);
 	void EnableFileOutput(bool rEnableFileOutput);
 
 	//! @brief ... performs the simulation loop
@@ -64,8 +62,6 @@ private:
 	//! @brief ... workdir
 	const std::string mName;
 
-	//! @brief ... true: write a sphere visualization file @ every status output
-	bool mEnableStatusVisualization;
 	bool mEnableFileOutput;
 
 };

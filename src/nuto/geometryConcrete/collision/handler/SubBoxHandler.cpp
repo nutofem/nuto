@@ -337,11 +337,6 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 			ze = std::max(ze, indZ);
 
 		}
-		if(mSpecimen.Is2D())
-		{
-			zs = 0;
-			ze = 0;
-		}
 
 		for (int indX = xs; indX <= xe; ++indX)
 			for (int indY = ys; indY <= ye; ++indY)

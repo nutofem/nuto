@@ -19,10 +19,10 @@ NuTo::ParticleHandler::ParticleHandler(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rParticleBoundingBox,
 		const double rVelocityRange,
 		const double rGrowthRate)
-		:
-				mParticleIndex(100000)
 {
 	mParticles.reserve(rNumParticles);
+
+    double particleIndex = 100000;
 
 	for (int i = 0; i < rNumParticles; ++i)
 	{
@@ -31,7 +31,7 @@ NuTo::ParticleHandler::ParticleHandler(
 				GetRandomVector(-rVelocityRange / 2., rVelocityRange / 2.),
 				0.00,
 				rGrowthRate,
-				mParticleIndex++));
+                particleIndex++));
 	}
 
 	mVisualizationFileName = "spheres";
@@ -41,33 +41,20 @@ NuTo::ParticleHandler::ParticleHandler(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres,
 		const double rVelocityRange,
 		const double rRelativeGrowthRate,
-		const double rAbsoluteGrowthRate)
-		:
-				mParticleIndex(100000)
+        const double rAbsoluteGrowthRate)
 {
 
-	int numRows = rSpheres.GetNumRows();
 
-	mParticles.reserve(numRows);
+    CreateParticlesFromMatrix(rSpheres, rVelocityRange, rRelativeGrowthRate, rAbsoluteGrowthRate);
+    mVisualizationFileName = "spheres";
 
-	bool is2D = Is2DSimulation(rSpheres);
-	std::cout << is2D << std::endl;
+}
 
-	for (int i = 0; i < numRows; ++i)
-	{
-		NuTo::FullVector<double, 3> position( { rSpheres(i, 0), rSpheres(i, 1), rSpheres(i, 2) });
-		NuTo::FullVector<double, 3> velocity = GetRandomVector(-rVelocityRange / 2., rVelocityRange / 2.);
-		if (is2D)
-			velocity[2] = 0.;
-		double radius = rSpheres(i, 3);
-		mParticles.push_back(new NuTo::CollidableParticleSphere(
-				position,
-				velocity,
-				radius,
-				radius * rRelativeGrowthRate + rAbsoluteGrowthRate,
-				mParticleIndex++));
-	}
-	mVisualizationFileName = "spheres";
+NuTo::ParticleHandler::ParticleHandler(const std::string &rFileName, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate)
+{
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles;
+    particles.ReadFromFile(rFileName);
+    CreateParticlesFromMatrix(particles, rVelocityRange, rRelativeGrowthRate, rAbsoluteGrowthRate);
 }
 
 NuTo::ParticleHandler::~ParticleHandler()
@@ -84,10 +71,16 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::
 	for (auto particle : mParticles)
 		particles.SetRow(i++, particle->ExportRow(rInitialRadius));
 
-	return particles;
+    return particles;
 }
 
-void NuTo::ParticleHandler::VisualizeSpheres(std::string rName, int rTimeStep, double rGlobalTime, bool rFinal)
+void NuTo::ParticleHandler::ExportParticlesToFile(const std::string &rExportFileName, bool rInitialRadius) const
+{
+    auto particleMatrix = GetParticles(rInitialRadius);
+    particleMatrix.WriteToFile(rExportFileName, " ");
+}
+
+void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime, bool rFinal)
 {
 #ifdef ENABLE_VISUALIZE
 	// modify rGlobalTime slightly to resolve every event
@@ -100,11 +93,11 @@ void NuTo::ParticleHandler::VisualizeSpheres(std::string rName, int rTimeStep, d
 		particle->VisualizationDynamic(visuSpheres, rFinal);
 
 	std::stringstream fileName;
-	fileName << rName << "/" << mVisualizationFileName << "_" << rTimeStep << ".vtu";
+    fileName << rOutputDirectory << "/" << mVisualizationFileName << "_" << rTimeStep << ".vtu";
 	visuSpheres.ExportVtuDataFile(fileName.str());
 
 	//write an additional pvd file
-	std::string resultFile = rName + std::string("/") + mVisualizationFileName + std::string(".pvd");
+    std::string resultFile = rOutputDirectory + std::string("/") + mVisualizationFileName + std::string(".pvd");
 	std::fstream file;
 	if (rTimeStep == 0)
 		file.open(resultFile.c_str(), std::fstream::out);
@@ -130,11 +123,36 @@ void NuTo::ParticleHandler::VisualizeSpheres(std::string rName, int rTimeStep, d
 		file.seekp(-endOfXML.str().length(), std::ios_base::end);
 	}
 	file << "<DataSet timestep=\"" << std::setprecision(10) << std::setw(10)
-			<< rGlobalTime << "\" file=\"" << mVisualizationFileName << "_" << rTimeStep << ".vtu\"/>"
+            << rGlobalTime << "\" file=\"" << mVisualizationFileName << "_" << rTimeStep << ".vtu\"/>"
 			<< std::endl;
 
 	file << endOfXML.str();
 	file.close();
+#endif
+}
+
+void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, double rZCoord)
+{
+#ifdef ENABLE_VISUALIZE
+
+    NuTo::VisualizeUnstructuredGrid visuSpheres;
+    visuSpheres.DefinePointDataScalar("Radius");
+
+    auto circles = CutSpheresZ(rZCoord,0);
+
+    for (int i = 0; i < circles.rows(); i ++)
+    {
+        double coords[3];
+        coords[0] = circles(i,0);
+        coords[1] = circles(i,1);
+        coords[2] = 0;
+
+        unsigned int index = visuSpheres.AddPoint(coords);
+        double radius = circles(i,2);
+        visuSpheres.SetPointDataScalar(index, "Radius", radius);
+    }
+    visuSpheres.ExportVtuDataFile(rOutputFile);
+
 #endif
 }
 
@@ -286,6 +304,28 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(Specimen& rSpecimen)
 
 }
 
+void NuTo::ParticleHandler::CreateParticlesFromMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate)
+{
+    int numRows = rSpheres.GetNumRows();
+    mParticles.reserve(numRows);
+
+    double particleIndex = 100000;
+
+    for (int i = 0; i < numRows; ++i)
+    {
+        NuTo::FullVector<double, 3> position( { rSpheres(i, 0), rSpheres(i, 1), rSpheres(i, 2) });
+        NuTo::FullVector<double, 3> velocity = GetRandomVector(-rVelocityRange / 2., rVelocityRange / 2.);
+
+        double radius = rSpheres(i, 3);
+        mParticles.push_back(new NuTo::CollidableParticleSphere(
+                position,
+                velocity,
+                radius,
+                radius * rRelativeGrowthRate + rAbsoluteGrowthRate,
+                particleIndex++));
+    }
+}
+
 NuTo::FullVector<double, Eigen::Dynamic> NuTo::ParticleHandler::GetRandomVector(const double rStart, const double rEnd)
 {
 	NuTo::FullVector<double, 3> randomVector;
@@ -320,9 +360,9 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::ParticleHandler::GetRandomVector(
 	return randomVector;
 }
 
-void NuTo::ParticleHandler::SetVisualizationFileName(const std::string& visualizationFileName)
+void NuTo::ParticleHandler::SetVisualizationFileName(const std::string& rVisualizationFileName)
 {
-	mVisualizationFileName = visualizationFileName;
+    mVisualizationFileName = rVisualizationFileName;
 }
 
 NuTo::FullVector<int, Eigen::Dynamic> NuTo::ParticleHandler::GetSubBoxDivisions(Specimen& rSpecimen, const int rParticlesPerBox)
@@ -330,34 +370,46 @@ NuTo::FullVector<int, Eigen::Dynamic> NuTo::ParticleHandler::GetSubBoxDivisions(
 
 	FullVector<int, Eigen::Dynamic> divs(3);
 
-	if (rSpecimen.Is2D())
-	{
-		double areaBoundary = rSpecimen.GetVolume();
-		double areaSubBox = areaBoundary / (GetNumParticles() / rParticlesPerBox);
-		double lengthSubBox = std::sqrt(areaSubBox);
-		divs[0] = rSpecimen.GetLength(0) / lengthSubBox;
-		divs[1] = rSpecimen.GetLength(1) / lengthSubBox;
-		divs[2] = 1;
-	}
-	else
-	{
-		double volBoundary = rSpecimen.GetVolume();
-		double volSubBox = volBoundary / (GetNumParticles() / rParticlesPerBox);
-		double lengthSubBox = std::pow(volSubBox, 1. / 3.);
+    double volBoundary = rSpecimen.GetVolume();
+    double volSubBox = volBoundary / (GetNumParticles() / rParticlesPerBox);
+    double lengthSubBox = std::pow(volSubBox, 1. / 3.);
 
-		for (int i = 0; i < 3; ++i)
-			divs.SetValue(i, std::ceil(rSpecimen.GetLength(i) / lengthSubBox));
-	}
-
+    for (int i = 0; i < 3; ++i)
+        divs.SetValue(i, std::ceil(rSpecimen.GetLength(i) / lengthSubBox));
 	return divs;
 
 }
 
-bool NuTo::ParticleHandler::Is2DSimulation(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres)
-{
-	double coordZ = rSpheres(0, 2);
-	for (int i = 0; i < rSpheres.GetNumRows(); ++i)
-		if (coordZ != rSpheres(i, 2))
-			return false;
-	return true;
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::CutSpheresZ(
+        double rZCoord, double rMinRadius) const
+        {
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> circles(1000, 3);
+    int numCircles = 0;
+
+    auto spheres = GetParticles(false);
+
+    for (int countSphere = 0; countSphere < spheres.GetNumRows();
+            countSphere++)
+    {
+        double delta = spheres(countSphere, 2) - rZCoord;
+        if (fabs(delta) < spheres(countSphere, 3))
+        {
+            double radius = sqrt(static_cast<double>(spheres(countSphere, 3) * spheres(countSphere, 3) - delta * delta));
+            if (radius > rMinRadius)
+            {
+                //add circle
+                if (numCircles == circles.GetNumRows())
+                {
+                    circles.ConservativeResizeRows(numCircles + 1000);
+                }
+                circles(numCircles, 0) = spheres(countSphere, 0);
+                circles(numCircles, 1) = spheres(countSphere, 1);
+                circles(numCircles, 2) = radius;
+                numCircles++;
+            }
+        }
+    }
+    circles.ConservativeResizeRows(numCircles);
+
+    return circles;
 }

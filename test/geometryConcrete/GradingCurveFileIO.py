@@ -20,7 +20,6 @@ import os
 # ======================================================
 
 inputFileName3D = "input3D_test.dat"
-inputFileName2D = "input2D_test.dat"
 IN_seed = 6174
 
 
@@ -31,7 +30,7 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
   IN = nuto.InputReader(rInputFile)
   IN.ReadFile()
 
-  specimen = nuto.Specimen(IN.GetBoundingBox(), IN.GetTypeOfSpecimen(), IN.Is2D())
+  specimen = nuto.Specimen(IN.GetBoundingBox(), IN.GetTypeOfSpecimen())
   
   creator = nuto.ParticleCreator(specimen, IN.GetShrinkage())
   spheresBoundary = nuto.DoubleFullMatrix(0,4,[])
@@ -59,7 +58,6 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
   subBoxes.VisualizeBorders(rWorkDir + "/borders.vtu")
 
   collisions = nuto.CollisionHandler(spheres, subBoxes, rWorkDir)
-  collisions.EnableStatusVisualization(False)
 
   wallTimeMax = (1. / (1. - IN.GetShrinkage()) - 1.) / IN.GetRelativeGrowthRate();
 
@@ -69,6 +67,9 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
     wallTimeMax , 
     IN.GetTimePrintOut(), 
     IN.GetInitialTimeBarrier())
+
+  spheres.ExportParticlesToVTU3D(rWorkDir, 0, 0, False);
+  spheres.ExportParticlesToVTU3D(rWorkDir, 1, 1, True);
 
   IN.Close()  
   del subBoxes
@@ -102,11 +103,10 @@ print "   |--->  Print result files to"
 print "   |---> ",workDir
 print
 
-inputFile2D = os.path.join(inputDir, inputFileName2D)
 inputFile3D = os.path.join(inputDir, inputFileName3D)
 
 # ======================================================
 # ==           Run Examples                           ==
 # ======================================================
 RunSimulationFromInputFile(inputFile3D, workDir, "3dSpheres")
-RunSimulationFromInputFile(inputFile2D, workDir, "2dSpheres")
+

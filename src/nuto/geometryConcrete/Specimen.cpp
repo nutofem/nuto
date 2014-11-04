@@ -7,14 +7,11 @@
 
 #include "nuto/geometryConcrete/Specimen.h"
 
-NuTo::Specimen::Specimen(
-		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
-		const int rTypeOfSpecimen,
-		const bool rIs2D)
+NuTo::Specimen::Specimen(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
+		const int rTypeOfSpecimen)
 		:
 				mBoundingBox(rBoundingBox),
-				mTypeOfSpecimen(rTypeOfSpecimen),
-				mIs2D(rIs2D)
+                mTypeOfSpecimen(rTypeOfSpecimen)
 {
 	CheckBoundingBox();
 	CalculateLength();
@@ -23,15 +20,14 @@ NuTo::Specimen::Specimen(
 NuTo::Specimen::Specimen(const Specimen& rOther)
 		:
 				mBoundingBox(rOther.mBoundingBox),
-				mTypeOfSpecimen(rOther.mTypeOfSpecimen),
-				mIs2D(rOther.mIs2D)
+                mTypeOfSpecimen(rOther.mTypeOfSpecimen)
 {
 	CalculateLength();
 }
 
 const double NuTo::Specimen::GetVolume() const
 {
-	if (mIs2D && (mTypeOfSpecimen != 0 && mTypeOfSpecimen != 2))
+    if (mTypeOfSpecimen != 0 && mTypeOfSpecimen != 2)
 		throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] specimen type not implemented.");
 
 	double Vspecimen;
@@ -40,9 +36,6 @@ const double NuTo::Specimen::GetVolume() const
 	{
 	case 0:
 		//box
-		if (mIs2D)
-			Vspecimen = mLength[0] * mLength[1];
-		else
 			Vspecimen = mLength[0] * mLength[1] * mLength[2];
 		break;
 	case 1:
@@ -68,10 +61,8 @@ const double NuTo::Specimen::GetVolume() const
 		if (D < 1e-10)
 			throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] "
 					+ std::string("for the cylindern, the x,y dimension should be positive (Diameter)."));
-		if (mIs2D)
-			Vspecimen = M_PI * 0.25 * D * D;
-		else
-			Vspecimen = M_PI * 0.25 * D * D * mLength[2];
+
+        Vspecimen = M_PI * 0.25 * D * D * mLength[2];
 	}
 		break;
 	default:
@@ -89,11 +80,6 @@ void NuTo::Specimen::CalculateLength()
 	mLength = FullVector<double, Eigen::Dynamic>(3);
 
 	int dimensionsToCheck = 3;
-	if (mIs2D)
-	{
-		dimensionsToCheck = 2;
-		mLength[2] = 0.;
-	}
 
 	for (int i = 0; i < dimensionsToCheck; i++)
 	{
@@ -116,11 +102,6 @@ const NuTo::FullVector<double, Eigen::Dynamic>& NuTo::Specimen::GetLength() cons
 const int NuTo::Specimen::GetTypeOfSpecimen() const
 {
 	return mTypeOfSpecimen;
-}
-
-const bool NuTo::Specimen::Is2D() const
-{
-	return mIs2D;
 }
 
 const bool NuTo::Specimen::IsBox() const

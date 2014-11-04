@@ -167,6 +167,7 @@ ENDIF(ENABLE_NUMPY)
 
 # Python required for interface files c++ and python
 MESSAGE(STATUS "Checking for Python...")
+Set(PythonLibs_FIND_VERSION 2.7)
 FIND_PACKAGE(PythonLibs REQUIRED)
 FIND_PACKAGE(PythonInterp REQUIRED)
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
