@@ -28,7 +28,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain>
+template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain>
 class NodeDof: public virtual NodeBase
 {
 #ifdef ENABLE_SERIALIZATION

@@ -10,7 +10,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for grid nodes with displacements
-class NodeGridDisplacements2D : public NodeGrid2D, public NodeDof<0,2,0,0,0,0>
+class NodeGridDisplacements2D : public NodeGrid2D, public NodeDof<0,2,0,0,0,0,0>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -19,7 +19,7 @@ class NodeGridDisplacements2D : public NodeGrid2D, public NodeDof<0,2,0,0,0,0>
 public:
 
     //! @brief constructor
-    NodeGridDisplacements2D(int rNodeId) : NodeGrid2D (rNodeId), NodeDof<0,2,0,0,0,0>()
+    NodeGridDisplacements2D(int rNodeId) : NodeGrid2D (rNodeId), NodeDof<0,2,0,0,0,0,0>()
     {}
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
@@ -44,7 +44,7 @@ public:
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF)
     {
-    	NodeDof<0,2,0,0,0,0>::SetGlobalDofs(rDOF);
+    	NodeDof<0,2,0,0,0,0,0>::SetGlobalDofs(rDOF);
     }
 
     //! @brief write dof values to the node (based on global dof number)
@@ -52,7 +52,7 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void SetGlobalDofValues(int rTimeDerivative, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
     {
-        NodeDof<0,2,0,0,0,0>::SetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
+        NodeDof<0,2,0,0,0,0,0>::SetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
 
     //! @brief extract dof values from the node (based on global dof number)
@@ -60,14 +60,14 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
     {
-        NodeDof<0,2,0,0,0,0>::GetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
+        NodeDof<0,2,0,0,0,0,0>::GetGlobalDofValues(rTimeDerivative, rActiveDofValues, rDependentDofValues);
     }
 
      //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     {
-    	NodeDof<0,2,0,0,0,0>::RenumberGlobalDofs(rMappingInitialToNewOrdering);
+    	NodeDof<0,2,0,0,0,0,0>::RenumberGlobalDofs(rMappingInitialToNewOrdering);
     }
 
     //! @brief returns the type of the node

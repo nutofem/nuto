@@ -291,11 +291,11 @@ void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
 							{
 							case 0:
 								if (numNonlocalNonlocalTotalStrain==1)
-									newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,1>();
+									newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,1,0>();
 								break;
 							case 2:
 								if (numNonlocalNonlocalTotalStrain==1)
-									newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,0,1>();
+									newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,0,1,0>();
 								break;
 							default:
 								throw MechanicsException("[BoundaryElementsCreate] time derivative should be either 0 or 2.");

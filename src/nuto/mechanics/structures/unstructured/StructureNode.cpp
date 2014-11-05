@@ -222,9 +222,11 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
     // bit 2 : rotations
     // bit 3 : temperatures
     // bit 4 : nonlocal data
-    // bit 5 : nonlocal eq. plastic strain (as a nodal value
-    // bit 6 : nonlocal total strain (as a nodal value
-    //check here the maximum number of bits for the integer
+    // bit 5 : nonlocal eq. plastic strain (as a nodal value)
+    // bit 6 : nonlocal total strain (as a nodal value)
+    // bit 7 : nonlocal eq. strain (as a nodal value)
+    // bit 8 :
+    // (maximum number of bits: 30)
 
     boost::char_separator<char> sep(" ");
     boost::tokenizer< boost::char_separator<char> > tok(rDOFs, sep);
@@ -298,13 +300,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -314,13 +316,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -338,13 +340,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,1,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,1,0,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,3,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,3,0,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -354,13 +356,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,1,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,1,0,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,3,0,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,3,0,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -378,13 +380,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,1,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,0,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,0,0,1,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,0,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,0,0,1,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -394,13 +396,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,1,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,1,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,1,0,0,1,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,1,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,1,0,0,1,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -410,13 +412,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,2,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,0,0,1,0,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,2,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,0,0,1,0,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,2,0,0,1,0,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,0,0,1,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -452,13 +454,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,2,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,2,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,2,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,2,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,2,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,2,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -468,13 +470,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,2,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,2,0,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0,2,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0,2,0,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0,2,0>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0,2,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -492,13 +494,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,1>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,1,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,3>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,3,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,0,6>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,0,6,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -508,13 +510,13 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			switch (mDimension)
 			{
 			case 1:
-				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,1>();
+				nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,1,0>();
 				break;
 			case 2:
-				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0,0,3>();
+				nodePtr = new NuTo::NodeCoordinatesDof<2,2,2,0,0,0,3,0>();
 				break;
 			case 3:
-				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0,0,6>();
+				nodePtr = new NuTo::NodeCoordinatesDof<3,2,3,0,0,0,6,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
