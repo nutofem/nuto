@@ -36,7 +36,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeGrid2D)
-           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(BOOST_IDENTITY_TYPE((NodeDof<0,2,0,0,0,0>)));
+           & BOOST_SERIALIZATION_BASE_OBJECT_NVP(BOOST_IDENTITY_TYPE((NodeDof<0,2,0,0,0,0,0>)));
     }
 #endif  // ENABLE_SERIALIZATION
 
