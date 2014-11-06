@@ -7,9 +7,12 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 
+
+
+
 //! @brief ... constructor
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain >::NodeDof() //: NuTo::NodeBase()
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::NodeDof() //: NuTo::NodeBase()
 {
 	for (int countDerivatives=0; countDerivatives<TNumTimeDerivatives+1; countDerivatives++)
 	{
@@ -58,15 +61,15 @@ NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatur
 }
 
 //! @brief ... destructor
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::~NodeDof() //: NuTo::~NodeBase()
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::~NodeDof() //: NuTo::~NodeBase()
 {
 }
 
 //! @brief assignment operator
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
-     operator=(NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain> const& rOther)
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+     operator=(NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION> const& rOther)
 {
     mDisplacements = rOther.mDisplacements;
     mDofDisplacements = rOther.mDofDisplacements;
@@ -86,8 +89,8 @@ void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTempe
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetGlobalDofs(int& rDOF)
 {
     for (int count=0; count<TNumDisplacements; count++)
@@ -116,8 +119,8 @@ SetGlobalDofs(int& rDOF)
 //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)
 {
     assert(TNumTimeDerivatives>=rTimeDerivative);
@@ -217,8 +220,8 @@ SetGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dyn
 //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
 {
 	assert(rActiveDofValues.GetNumColumns() == 1);
@@ -309,8 +312,8 @@ GetGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>&
 
 //! @brief renumber the global dofs according to predefined ordering
 //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
 {
     for (int count=0; count<TNumDisplacements; count++)
@@ -341,8 +344,8 @@ RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
 
 //! @brief returns the number of displacements of the node
 //! @return number of displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNumTimeDerivatives()const
 {
 	return TNumTimeDerivatives;
@@ -350,8 +353,8 @@ GetNumTimeDerivatives()const
 
 //! @brief returns the number of displacements of the node
 //! @return number of displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNumDisplacements()const
 {
 	return TNumDisplacements;
@@ -360,8 +363,8 @@ GetNumDisplacements()const
 //! @brief gives the global DOF of a displacement component
 //! @param rComponent component
 //! @return global DOF
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDofDisplacement(int rComponent)const
 {
 	assert(rComponent<TNumDisplacements);
@@ -370,8 +373,8 @@ GetDofDisplacement(int rComponent)const
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacements1D(double rDisplacements[1])const
 {
 	assert(TNumDisplacements==1);
@@ -380,8 +383,8 @@ GetDisplacements1D(double rDisplacements[1])const
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacements1D(int rTimeDerivative, double rDisplacements[1])const
 {
 	assert(TNumDisplacements==1);
@@ -391,8 +394,8 @@ GetDisplacements1D(int rTimeDerivative, double rDisplacements[1])const
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetDisplacements1D(const double rDisplacements[1])
 {
 	assert(TNumDisplacements==1);
@@ -401,8 +404,8 @@ SetDisplacements1D(const double rDisplacements[1])
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetDisplacements1D(int rTimeDerivative, const double rDisplacements[1])
 {
 	assert(TNumDisplacements==1);
@@ -412,8 +415,8 @@ SetDisplacements1D(int rTimeDerivative, const double rDisplacements[1])
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacements2D(double rDisplacements[2])const
 {
 	assert(TNumDisplacements==2);
@@ -423,8 +426,8 @@ GetDisplacements2D(double rDisplacements[2])const
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacements2D(int rTimeDerivative, double rDisplacements[2])const
 {
 	assert(TNumDisplacements==2);
@@ -435,8 +438,8 @@ GetDisplacements2D(int rTimeDerivative, double rDisplacements[2])const
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetDisplacements2D(const double rDisplacements[2])
 {
 	assert(TNumDisplacements==2);
@@ -446,8 +449,8 @@ SetDisplacements2D(const double rDisplacements[2])
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetDisplacements2D(int rTimeDerivative, const double rDisplacements[2])
 {
 	assert(TNumDisplacements==2);
@@ -458,8 +461,8 @@ SetDisplacements2D(int rTimeDerivative, const double rDisplacements[2])
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacements3D(double rDisplacements[3])const
 {
 	assert(TNumDisplacements==3);
@@ -470,8 +473,8 @@ GetDisplacements3D(double rDisplacements[3])const
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacements3D(int rTimeDerivative, double rDisplacements[3])const
 {
 	assert(TNumDisplacements==3);
@@ -483,8 +486,8 @@ GetDisplacements3D(int rTimeDerivative, double rDisplacements[3])const
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetDisplacements3D(const double rDisplacements[3])
 {
 	assert(TNumDisplacements==3);
@@ -495,8 +498,8 @@ SetDisplacements3D(const double rDisplacements[3])
 
 //! @brief set the displacements
 //! @param rDisplacements  given displacements
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetDisplacements3D(int rTimeDerivative, const double rDisplacements[3])
 {
 	assert(TNumDisplacements==3);
@@ -508,8 +511,8 @@ SetDisplacements3D(int rTimeDerivative, const double rDisplacements[3])
 
 //! @brief returns the displacements of the node
 //! @return displacement
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-double NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDisplacement(short rIndex)const
 {
 	assert(rIndex<TNumDisplacements);
@@ -519,8 +522,8 @@ GetDisplacement(short rIndex)const
 
 //! @brief returns the number of Rotations of the node
 //! @return number of Rotations
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNumRotations()const
 {
 	return TNumRotations;
@@ -529,8 +532,8 @@ GetNumRotations()const
 //! @brief gives the global DOF of a Rotation component
 //! @param rComponent component
 //! @return global DOF
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDofRotation(int rComponent)const
 {
 	assert(TNumRotations>rComponent);
@@ -539,8 +542,8 @@ GetDofRotation(int rComponent)const
 
 //! @brief returns the Rotations of the node
 //! @return Rotation
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetRotations2D(double rRotations[1])const
 {
 	assert(TNumRotations==1);
@@ -548,8 +551,8 @@ GetRotations2D(double rRotations[1])const
 }
 
 //! @return Rotation
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetRotations2D(int rTimeDerivative, double rRotations[1])const
 {
 	assert(TNumRotations==1);
@@ -559,8 +562,8 @@ GetRotations2D(int rTimeDerivative, double rRotations[1])const
 
 //! @brief set the Rotations
 //! @param rRotations  given Rotations
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetRotations2D(const double rRotations[1])
 {
 	assert(TNumRotations==1);
@@ -569,8 +572,8 @@ SetRotations2D(const double rRotations[1])
 
 //! @brief set the Rotations
 //! @param rRotations  given Rotations
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetRotations2D(int rTimeDerivative, const double rRotations[1])
 {
 	assert(TNumRotations==1);
@@ -580,8 +583,8 @@ SetRotations2D(int rTimeDerivative, const double rRotations[1])
 
 //! @brief returns the Rotations of the node
 //! @return Rotation
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetRotations3D(double rRotations[3])const
 {
 	assert(TNumRotations==3);
@@ -592,8 +595,8 @@ GetRotations3D(double rRotations[3])const
 
 //! @brief returns the Rotations of the node
 //! @return Rotation
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetRotations3D(int rTimeDerivative, double rRotations[3])const
 {
 	assert(TNumRotations==3);
@@ -604,8 +607,8 @@ GetRotations3D(int rTimeDerivative, double rRotations[3])const
 
 //! @brief set the Rotations
 //! @param rRotations  given Rotations
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetRotations3D(const double rRotations[3])
 {
 	assert(TNumRotations==3);
@@ -616,8 +619,8 @@ SetRotations3D(const double rRotations[3])
 
 //! @brief set the Rotations
 //! @param rRotations  given Rotations
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetRotations3D(int rTimeDerivative, const double rRotations[3])
 {
 	assert(TNumRotations==3);
@@ -629,8 +632,8 @@ SetRotations3D(int rTimeDerivative, const double rRotations[3])
 
 //! @brief returns the Rotations of the node
 //! @return Rotation
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-double NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetRotation(short rIndex)const
 {
 	assert(TNumRotations>rIndex);
@@ -639,8 +642,8 @@ GetRotation(short rIndex)const
 
 //! @brief returns the number of temperatures of the node
 //! @return number of temperatures
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNumTemperatures()const
 {
 	return TNumTemperatures;
@@ -648,8 +651,8 @@ GetNumTemperatures()const
 
 //! @brief returns the temperature of the node
 //! @return temperature
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-double NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetTemperature()const
 {
 	assert(TNumTemperatures==1);
@@ -658,8 +661,8 @@ GetTemperature()const
 
 //! @brief returns the temperature of the node
 //! @return temperature
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-double NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetTemperature(int rTimeDerivative)const
 {
 	assert(TNumTemperatures==1);
@@ -670,8 +673,8 @@ GetTemperature(int rTimeDerivative)const
 
 //! @brief set the temperature of the node
 //! @param rTemperature  given temperature
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetTemperature(double rTemperatures)
 {
 	assert(TNumTemperatures==1);
@@ -680,8 +683,8 @@ SetTemperature(double rTemperatures)
 
 //! @brief set the temperature of the node
 //! @param rTemperature  given temperature
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetTemperature(int rTimeDerivative, double rTemperatures)
 {
 	assert(TNumTemperatures==1);
@@ -693,8 +696,8 @@ SetTemperature(int rTimeDerivative, double rTemperatures)
 //! @brief gives the global DOF of a temperature component
 //! @param rComponent component
 //! @return global DOF
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDofTemperature()const
 {
 	assert(TNumTemperatures==1);
@@ -704,8 +707,8 @@ GetDofTemperature()const
 
 //! @brief returns the number of Damage of the node
 //! @return number of Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNumNonlocalEqPlasticStrain()const
 {
 	return TNumNonlocalEqPlasticStrain;
@@ -713,8 +716,8 @@ GetNumNonlocalEqPlasticStrain()const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalEqPlasticStrain(double* rNonlocalEqPlasticStrain)const
 {
 	assert(TNumNonlocalEqPlasticStrain==2);
@@ -724,8 +727,8 @@ GetNonlocalEqPlasticStrain(double* rNonlocalEqPlasticStrain)const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalEqPlasticStrain(int rTimeDerivative, double* rNonlocalEqPlasticStrain)const
 {
 	assert(TNumNonlocalEqPlasticStrain==2);
@@ -737,8 +740,8 @@ GetNonlocalEqPlasticStrain(int rTimeDerivative, double* rNonlocalEqPlasticStrain
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalEqPlasticStrain(const double* rNonlocalEqPlasticStrain)
 {
 	assert(TNumNonlocalEqPlasticStrain==2);
@@ -748,8 +751,8 @@ SetNonlocalEqPlasticStrain(const double* rNonlocalEqPlasticStrain)
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalEqPlasticStrain(int rTimeDerivative, const double* rNonlocalEqPlasticStrain)
 {
 	assert(TNumNonlocalEqPlasticStrain==2);
@@ -762,8 +765,8 @@ SetNonlocalEqPlasticStrain(int rTimeDerivative, const double* rNonlocalEqPlastic
 //! @brief gives the global DOF of a Damage component
 //! @param rComponent component
 //! @return global DOF
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDofNonlocalEqPlasticStrain(int rComponent)const
 {
 	assert(rComponent<TNumNonlocalEqPlasticStrain);
@@ -773,8 +776,8 @@ GetDofNonlocalEqPlasticStrain(int rComponent)const
 
 //! @brief returns the number of Damage of the node
 //! @return number of Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNumNonlocalTotalStrain()const
 {
 	return TNumNonlocalTotalStrain;
@@ -782,8 +785,8 @@ GetNumNonlocalTotalStrain()const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain1D(double* rNonlocalTotalStrain)const
 {
 	assert(TNumNonlocalTotalStrain==1);
@@ -792,8 +795,8 @@ GetNonlocalTotalStrain1D(double* rNonlocalTotalStrain)const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain2D(double* rNonlocalTotalStrain)const
 {
 	assert(TNumNonlocalTotalStrain==3);
@@ -804,8 +807,8 @@ GetNonlocalTotalStrain2D(double* rNonlocalTotalStrain)const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain3D(double* rNonlocalTotalStrain)const
 {
 	assert(TNumNonlocalTotalStrain==6);
@@ -819,8 +822,8 @@ GetNonlocalTotalStrain3D(double* rNonlocalTotalStrain)const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain1D(int rTimeDerivative, double* rNonlocalTotalStrain)const
 {
 	assert(TNumNonlocalTotalStrain==1);
@@ -831,8 +834,8 @@ GetNonlocalTotalStrain1D(int rTimeDerivative, double* rNonlocalTotalStrain)const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain2D(int rTimeDerivative, double* rNonlocalTotalStrain)const
 {
 	assert(TNumNonlocalTotalStrain==3);
@@ -845,8 +848,8 @@ GetNonlocalTotalStrain2D(int rTimeDerivative, double* rNonlocalTotalStrain)const
 
 //! @brief returns the Damage of the node
 //! @return Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain3D(int rTimeDerivative, double* rNonlocalTotalStrain)const
 {
 	assert(TNumNonlocalTotalStrain==6);
@@ -862,8 +865,8 @@ GetNonlocalTotalStrain3D(int rTimeDerivative, double* rNonlocalTotalStrain)const
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalTotalStrain1D(const double* rNonlocalTotalStrain)
 {
 	assert(TNumNonlocalTotalStrain==1);
@@ -872,8 +875,8 @@ SetNonlocalTotalStrain1D(const double* rNonlocalTotalStrain)
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalTotalStrain2D(const double* rNonlocalTotalStrain)
 {
 	assert(TNumNonlocalTotalStrain==3);
@@ -884,8 +887,8 @@ SetNonlocalTotalStrain2D(const double* rNonlocalTotalStrain)
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalTotalStrain3D(const double* rNonlocalTotalStrain)
 {
 	assert(TNumNonlocalTotalStrain==6);
@@ -899,8 +902,8 @@ SetNonlocalTotalStrain3D(const double* rNonlocalTotalStrain)
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalTotalStrain1D(int rTimeDerivative, const double* rNonlocalTotalStrain)
 {
 	assert(TNumNonlocalTotalStrain==1);
@@ -911,8 +914,8 @@ SetNonlocalTotalStrain1D(int rTimeDerivative, const double* rNonlocalTotalStrain
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalTotalStrain2D(int rTimeDerivative, const double* rNonlocalTotalStrain)
 {
 	assert(TNumNonlocalTotalStrain==3);
@@ -925,8 +928,8 @@ SetNonlocalTotalStrain2D(int rTimeDerivative, const double* rNonlocalTotalStrain
 
 //! @brief set the Damage of the node
 //! @param rDamage  given Damage
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain)
 {
 	assert(TNumNonlocalTotalStrain==6);
@@ -942,8 +945,8 @@ SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain
 
 //! @brief returns the nonlocal total strain component of the node
 //! @return strain component (rTimeDerivative=0)
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-double NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNonlocalTotalStrain(short rIndex)const
 {
 	assert(rIndex<TNumNonlocalTotalStrain);
@@ -953,8 +956,8 @@ GetNonlocalTotalStrain(short rIndex)const
 //! @brief gives the global DOF of a Damage component
 //! @param rComponent component
 //! @return global DOF
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-int NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetDofNonlocalTotalStrain(int rComponent)const
 {
 	assert(rComponent<TNumNonlocalTotalStrain);
@@ -964,8 +967,8 @@ GetDofNonlocalTotalStrain(int rComponent)const
 
 //! @brief returns the type of node as a string (all the data stored at the node)
 //! @return string
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-std::string NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+std::string NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNodeTypeStr()const
 {
 	throw MechanicsException("");
@@ -1010,8 +1013,8 @@ GetNodeType()const
 */
 
 #ifdef ENABLE_VISUALIZE
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-void NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain, TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
 {
 
@@ -1019,11 +1022,11 @@ Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::Vis
 #endif // ENABLE_VISUALIZE
 
 //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain >
-NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain >* NuTo::NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>::
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>* NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 Clone()const
 {
-    return new NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain,TNumNonlocalTotalStrain,TNumNonlocalEqStrain>(*this);
+    return new NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>(*this);
 }
 
 

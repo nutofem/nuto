@@ -23,12 +23,15 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
+#define NODE_DOF_TEMPLATE_PARAMETERS int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterPhaseFraction, int TNumRelativeHumidity
+#define NODE_DOF_TEMPLATE_INITIALIZATION TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterPhaseFraction, TNumRelativeHumidity
+
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain>
+template <NODE_DOF_TEMPLATE_PARAMETERS>
 class NodeDof: public virtual NodeBase
 {
 #ifdef ENABLE_SERIALIZATION

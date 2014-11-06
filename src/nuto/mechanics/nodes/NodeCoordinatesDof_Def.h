@@ -27,10 +27,10 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures,int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain>
+template <int TNumCoordinates, NODE_DOF_TEMPLATE_PARAMETERS>
 class NodeCoordinatesDof:
 	     public NodeCoordinates<TNumCoordinates>,
-         public NodeDof<TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain>
+         public NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -45,7 +45,7 @@ public:
     ~NodeCoordinatesDof();
 
     //! @brief assignment operator
-    void operator=(NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain> const& rOther);
+    void operator=(NodeCoordinatesDof<TNumCoordinates,NODE_DOF_TEMPLATE_INITIALIZATION> const& rOther);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -72,7 +72,7 @@ public:
 #endif // ENABLE_VISUALIZE
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-    virtual NodeCoordinatesDof<TNumCoordinates,TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures,TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain>* Clone()const;
+    virtual NodeCoordinatesDof<TNumCoordinates,NODE_DOF_TEMPLATE_INITIALIZATION>* Clone()const;
 
 protected:
 
