@@ -80,7 +80,7 @@ void NuTo::ParticleHandler::ExportParticlesToFile(const std::string &rExportFile
     particleMatrix.WriteToFile(rExportFileName, " ");
 }
 
-void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime, bool rFinal)
+void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime, bool rFinal) const
 {
 #ifdef ENABLE_VISUALIZE
 	// modify rGlobalTime slightly to resolve every event
@@ -131,14 +131,14 @@ void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory,
 #endif
 }
 
-void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, double rZCoord)
+void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, double rZCoord) const
 {
 #ifdef ENABLE_VISUALIZE
 
     NuTo::VisualizeUnstructuredGrid visuSpheres;
     visuSpheres.DefinePointDataScalar("Radius");
 
-    auto circles = CutSpheresZ(rZCoord,0);
+    auto circles = GetParticles2D(rZCoord,0);
 
     for (int i = 0; i < circles.rows(); i ++)
     {
@@ -180,7 +180,7 @@ const double NuTo::ParticleHandler::GetVolume() const
 	return volume;
 }
 
-NuTo::CollidableParticleSphere* NuTo::ParticleHandler::GetParticle(const int rIndex)
+NuTo::CollidableParticleSphere* NuTo::ParticleHandler::GetParticle(const int rIndex) const
 {
 	return mParticles[rIndex];
 }
@@ -380,7 +380,7 @@ NuTo::FullVector<int, Eigen::Dynamic> NuTo::ParticleHandler::GetSubBoxDivisions(
 
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::CutSpheresZ(
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::GetParticles2D(
         double rZCoord, double rMinRadius) const
         {
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> circles(1000, 3);
@@ -412,4 +412,248 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::
     circles.ConservativeResizeRows(numCircles);
 
     return circles;
+}
+
+void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
+        Specimen& rSpecimen, double rMeshSize) const
+{
+    std::ofstream mFile;
+
+    // Define header
+    // some default options, adjust this afterwards in the .geo file
+
+    mFile.open(rOutputFile);
+    mFile << "Mesh.Algorithm = 6;\n"; //Frontal hex
+    //mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
+    //mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
+    //mFile << "Mesh.HighOrderNumLayers = 6;\n";
+    //mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
+    //mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
+    mFile << "Mesh.Optimize = 1;\n";
+    //mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
+    //mFile << "Mesh.OptimizeNetgen = 1;\n";
+    //mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
+    //mFile << "Mesh.SecondOrderLinear = 1;\n"; //should second order elements just be created by linear interpolation?
+    //mFile << "Mesh.ThirdOrderLinear = " << true << ";\n"; //should second order elements just be created by linear interpolation?
+    mFile << "Mesh.Smoothing = 2;\n"; //number of smoothing steps for the final mesh
+
+
+    // define the sphere function
+
+    mFile << "Function MySphere \n";
+    mFile << "  meshCircleR = meshCircle; \n";
+    mFile << "  p1 = newp; Point(p1) = {xC,  yC,  zC,  meshCircleR} ; \n";
+    mFile << "  p2 = newp; Point(p2) = {xC+R,yC,  zC,  meshCircleR} ; \n";
+    mFile << "  p3 = newp; Point(p3) = {xC,  yC+R,zC,  meshCircleR} ; \n";
+    mFile << "  p4 = newp; Point(p4) = {xC,  yC,  zC+R,meshCircleR} ; \n";
+    mFile << "  p5 = newp; Point(p5) = {xC-R,yC,  zC,  meshCircleR} ; \n";
+    mFile << "  p6 = newp; Point(p6) = {xC,  yC-R,zC,  meshCircleR} ; \n";
+    mFile << "  p7 = newp; Point(p7) = {xC,  yC,  zC-R,meshCircleR} ; \n";
+    mFile << " \n";
+    mFile << "  c1  = newreg; Circle(c1)  = {p2,p1,p7}; c2  = newreg; Circle(c2)  = {p7,p1,p5}; \n";
+    mFile << "  c3  = newreg; Circle(c3)  = {p5,p1,p4}; c4  = newreg; Circle(c4)  = {p4,p1,p2}; \n";
+    mFile << "  c5  = newreg; Circle(c5)  = {p2,p1,p3}; c6  = newreg; Circle(c6)  = {p3,p1,p5}; \n";
+    mFile << "  c7  = newreg; Circle(c7)  = {p5,p1,p6}; c8  = newreg; Circle(c8)  = {p6,p1,p2}; \n";
+    mFile << "  c9  = newreg; Circle(c9)  = {p7,p1,p3}; c10 = newreg; Circle(c10) = {p3,p1,p4}; \n";
+    mFile << "  c11 = newreg; Circle(c11) = {p4,p1,p6}; c12 = newreg; Circle(c12) = {p6,p1,p7}; \n";
+    mFile << " \n";
+    mFile << "  l1 = newreg; Line Loop(l1) = {c5,c10,c4};   Ruled Surface(newreg) = {l1}; \n";
+    mFile << "  l2 = newreg; Line Loop(l2) = {c9,-c5,c1};   Ruled Surface(newreg) = {l2}; \n";
+    mFile << "  l3 = newreg; Line Loop(l3) = {c12,-c8,-c1}; Ruled Surface(newreg) = {l3}; \n";
+    mFile << "  l4 = newreg; Line Loop(l4) = {c8,-c4,c11};  Ruled Surface(newreg) = {l4}; \n";
+    mFile << "  l5 = newreg; Line Loop(l5) = {-c10,c6,c3};  Ruled Surface(newreg) = {l5}; \n";
+    mFile << "  l6 = newreg; Line Loop(l6) = {-c11,-c3,c7}; Ruled Surface(newreg) = {l6}; \n";
+    mFile << "  l7 = newreg; Line Loop(l7) = {-c2,-c7,-c12};Ruled Surface(newreg) = {l7}; \n";
+    mFile << "  l8 = newreg; Line Loop(l8) = {-c6,-c9,c2};  Ruled Surface(newreg) = {l8}; \n";
+    mFile << "   \n";
+    mFile << "  theLoops[t] = newreg ; \n";
+    mFile << " \n";
+    mFile << "  Surface Loop(theLoops[t]) = {l8+1,l5+1,l1+1,l2+1,l3+1,l7+1,l6+1,l4+1}; \n";
+    mFile << " \n";
+    mFile << "  thehole = newreg ; \n";
+    mFile << "  Volume(thehole) = theLoops[t] ; \n";
+    mFile << "  Physical Volume(t) = thehole ; \n";
+    mFile << " \n";
+    mFile << "Return \n";
+    mFile << " \n";
+
+    // define the specimen
+
+    auto bounds = rSpecimen.GetBoundingBox();
+
+    mFile << "xS = " << bounds(0, 0) << "; xE = " << bounds(0, 1) << ";\n";
+    mFile << "yS = " << bounds(1, 0) << "; yE = " << bounds(1, 1) << ";\n";
+    mFile << "zS = " << bounds(2, 0) << "; zE = " << bounds(2, 1) << ";\n";
+    mFile << "meshSpecimen = " << rMeshSize << "; \n";
+
+    mFile << "// defines a box-shaped specimen \n";
+    mFile << "// by start coordinates <xyz>S \n";
+    mFile << "// and end coordinates  <xyz>E \n";
+    mFile << "\n";
+    mFile << "// top points: z = zE \n";
+    mFile << "p0 = newp; Point(p0) = {xS, yS, zE, meshSpecimen}; \n";
+    mFile << "p1 = newp; Point(p1) = {xS, yE, zE, meshSpecimen}; \n";
+    mFile << "p2 = newp; Point(p2) = {xE, yE, zE, meshSpecimen}; \n";
+    mFile << "p3 = newp; Point(p3) = {xE, yS, zE, meshSpecimen}; \n";
+    mFile << "// bottom points z = zS \n";
+    mFile << "p4 = newp; Point(p4) = {xS, yS, zS, meshSpecimen}; \n";
+    mFile << "p5 = newp; Point(p5) = {xS, yE, zS, meshSpecimen}; \n";
+    mFile << "p6 = newp; Point(p6) = {xE, yE, zS, meshSpecimen}; \n";
+    mFile << "p7 = newp; Point(p7) = {xE, yS, zS, meshSpecimen}; \n";
+    mFile << "\n";
+    mFile << "// top lines z = zS \n";
+    mFile << "lT0 = newreg; Line(lT0) = {p0, p1}; \n";
+    mFile << "lT1 = newreg; Line(lT1) = {p1, p2}; \n";
+    mFile << "lT2 = newreg; Line(lT2) = {p2, p3}; \n";
+    mFile << "lT3 = newreg; Line(lT3) = {p3, p0}; \n";
+    mFile << "// bottom lines z = zE \n";
+    mFile << "lB0 = newreg; Line(lB0) = {p4, p5}; \n";
+    mFile << "lB1 = newreg; Line(lB1) = {p5, p6}; \n";
+    mFile << "lB2 = newreg; Line(lB2) = {p6, p7}; \n";
+    mFile << "lB3 = newreg; Line(lB3) = {p7, p4}; \n";
+    mFile << "// connection zS --> zE \n";
+    mFile << "lC0 = newreg; Line(lC0) = {p0, p4}; \n";
+    mFile << "lC1 = newreg; Line(lC1) = {p1, p5}; \n";
+    mFile << "lC2 = newreg; Line(lC2) = {p2, p6}; \n";
+    mFile << "lC3 = newreg; Line(lC3) = {p3, p7}; \n";
+    mFile << "\n";
+    mFile << "// lineloops and surfaces \n";
+    mFile << "// the index says which coordinate is constant \n";
+    mFile << "lxS = newreg; Line Loop(lxS) = {-lT3, lC3, lB3,-lC0}; Plane Surface(newreg) = {lxS}; \n";
+    mFile << "lxE = newreg; Line Loop(lxE) = {-lT1, lC1, lB1,-lC2}; Plane Surface(newreg) = {lxE}; \n";
+    mFile << "\n";
+    mFile << "lyS = newreg; Line Loop(lyS) = {-lT0, lC0, lB0,-lC1}; Plane Surface(newreg) = {lyS}; \n";
+    mFile << "lyE = newreg; Line Loop(lyE) = {-lT2, lC2, lB2,-lC3}; Plane Surface(newreg) = {lyE}; \n";
+    mFile << "\n";
+    mFile << "lzS = newreg; Line Loop(lzS) = { lT0, lT1, lT2, lT3}; Plane Surface(newreg) = {lzS}; \n";
+    mFile << "lzE = newreg; Line Loop(lzE) = {-lB3,-lB2,-lB1,-lB0}; Plane Surface(newreg) = {lzE}; \n";
+    mFile << "\n";
+    mFile << "theLoops[t] = newreg; \n";
+    mFile << "Surface Loop(theLoops[t]) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; \n";
+    mFile << "theBox = newreg; \n";
+    mFile << "Volume(theBox) = theLoops[t]; \n";
+    mFile << "\n";
+    mFile << "Return \n";
+    mFile << "\n";
+
+    auto spheres = GetParticles();
+    int objectCounter = 0;
+
+    for (int i = 0; i < spheres.rows(); i++)
+    {
+        mFile << "t = " << objectCounter << ";\n";
+        objectCounter++;
+        mFile << "xC = " << spheres(i, 0) << "; yC = " << spheres(i, 1)
+                << "; zC = " << spheres(i, 2) << ";\n";
+        mFile << "R = " << spheres(i, 3) << "; \n";
+        mFile << "meshCircle = " << rMeshSize << "; \n";
+        mFile << "Call MySphere; \n";
+        mFile << " \n";
+        mFile << " \n";
+    }
+
+
+    mFile << "volNr = newreg; \n";
+    mFile << "Volume(volNr) = {theLoops[]};\n";
+    mFile << "Physical Volume(newreg) = volNr;\n";
+    mFile.close();
+}
+
+void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
+        Specimen& rSpecimen, double rMeshSize, double rZCoord,
+        double rMinRadius) const
+{
+    std::ofstream file;
+
+    // Define header
+    // some default options, adjust this afterwards in the .geo file
+
+    file.open(rOutputFile);
+    file << "Mesh.Algorithm = 6;\n"; //Frontal hex
+    //mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
+    //mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
+    //mFile << "Mesh.HighOrderNumLayers = 6;\n";
+    //mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
+    //mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
+    file << "Mesh.Optimize = 1;\n";
+    //mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
+    //mFile << "Mesh.OptimizeNetgen = 1;\n";
+    //mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
+    //mFile << "Mesh.SecondOrderLinear = 1;\n"; //should second order elements just be created by linear interpolation?
+    //mFile << "Mesh.ThirdOrderLinear = " << true << ";\n"; //should second order elements just be created by linear interpolation?
+    file << "Mesh.Smoothing = 2;\n"; //number of smoothing steps for the final mesh
+
+
+    // define the circle function
+
+    file << "Function MySphere \n";
+    file << "  meshCircleR = meshCircle; \n";
+    file << "  p1 = newp; Point(p1) = {xC,  yC,  0,  meshCircleR} ; \n";
+    file << "  p2 = newp; Point(p2) = {xC+R,yC,  0,  meshCircleR} ; \n";
+    file << "  p3 = newp; Point(p3) = {xC-R,yC,  0,  meshCircleR} ; \n";
+    file << " \n";
+    file << "  c1  = newreg; Circle(c1)  = {p2,p1,p3}; c2  = newreg; Circle(c2)  = {p3,p1,p2}; \n";
+    file << " \n";
+    file << "  l1 = newreg; Line Loop(l1) = {c1,c2};\n";
+    file << "  s1 = newreg; Plane Surface(s1) = {l1}; \n";
+    file << "  Physical Surface(newreg) = {s1}; \n";
+    file << "   \n";
+    file << "  theLoops[t] = l1 ; \n";
+    file << " \n";
+    file << "Return \n";
+    file << " \n";
+
+    // define the specimen
+
+    auto bounds = rSpecimen.GetBoundingBox();
+
+    file << "xS = " << bounds(0, 0) << "; xE = " << bounds(0, 1) << ";\n";
+    file << "yS = " << bounds(1, 0) << "; yE = " << bounds(1, 1) << ";\n";
+    file << "meshSpecimen = " << rMeshSize << ";\n";
+    file << "// defines a box-shaped specimen \n";
+    file << "// by start coordinates <xyz>S \n";
+    file << "// and end coordinates  <xyz>E \n";
+    file << "\n";
+    file << "// points: \n";
+    file << "p0 = newp; Point(p0) = {xS, yS, 0, meshSpecimen}; \n";
+    file << "p1 = newp; Point(p1) = {xS, yE, 0, meshSpecimen}; \n";
+    file << "p2 = newp; Point(p2) = {xE, yE, 0, meshSpecimen}; \n";
+    file << "p3 = newp; Point(p3) = {xE, yS, 0, meshSpecimen}; \n";
+    file << "\n";
+    file << "// lines \n";
+    file << "l0 = newreg; Line(l0) = {p0, p1}; \n";
+    file << "l1 = newreg; Line(l1) = {p1, p2}; \n";
+    file << "l2 = newreg; Line(l2) = {p2, p3}; \n";
+    file << "l3 = newreg; Line(l3) = {p3, p0}; \n";
+    file << "\n";
+    file << "// lineloops and surfaces \n";
+    file << "// the index says which coordinate is constant \n";
+    file << "box = newreg; Line Loop(box) = { l0, l1, l2, l3}; \n";
+    file << "\n";
+    file << "\n";
+
+    // call the circle function
+
+    auto circles = GetParticles2D(rZCoord, rMinRadius);
+    int objectCounter = 0;
+
+    for (int i = 0; i < circles.rows(); i++)
+    {
+        file << "t = " << objectCounter << ";\n";
+        objectCounter++;
+        file << "xC = " << circles(i, 0) << "; yC = " << circles(i, 1) << ";\n";
+        file << "R = " << circles(i, 2) << "; \n";
+        file << "meshCircle = " << rMeshSize << "; \n";
+        file << "Call MySphere; \n";
+        file << " \n";
+        file << " \n";
+
+    }
+
+    // finish
+
+    file << "volNr = newreg; \n";
+    file << "Plane Surface(volNr) = {box, theLoops[]};\n";
+    file << "Physical Surface(newreg) = volNr;\n";
+    file.close();
 }

@@ -64,12 +64,26 @@ public:
 	//! @param rTimeStep ... current timestep of the simulation
 	//! @param rGlobalTime ... current global time != wall time
 	//! @param rFinal ... false: use current radius, true: use initial radius
-    void ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime, bool rFinal);
+    void ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime, bool rFinal) const;
 
     //! @brief ... writes a sphere visualization file
     //! @param rOutputDirectory ... workdir
     //! @param rFinal ... false: use current radius, true: use initial radius
-    void ExportParticlesToVTU2D(std::string rOutputFile, double rZCoord);
+    void ExportParticlesToVTU2D(std::string rOutputFile, double rZCoord) const;
+
+    //! @brief ... writes a gmsh .geo file 3D
+    //! @param rOutputFile ... .geo-file name
+    //! @param rSpecimen ... specimen
+    //! @param rMeshSize ... mesh size
+    void ExportParticlesToGmsh3D(std::string rOutputFile, Specimen& rSpecimen, double rMeshSize) const;
+
+    //! @brief ... writes a gmsh .geo file 3D
+    //! @param rOutputFile ... .geo-file name
+    //! @param rSpecimen ... specimen
+    //! @param rMeshSize ... mesh size
+    //! @param rZCoord ... z coordinate (where to cut)
+    //! @param rMinRadius ... minimal radius of the circle
+    void ExportParticlesToGmsh2D(std::string rOutputFile, Specimen& rSpecimen, double rMeshSize, double rZCoord, double rMinRadius) const;
 
 
 	//! @brief ... resets all velocities
@@ -78,11 +92,18 @@ public:
 	//! @brief ... converts the particle list to a Nx4-matrix
 	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles(bool rInitialRadius = false) const;
 
+    //! @brief ... cut spheres at a given z-coordinate to create circles (in 2D)
+    //! @param rZCoord z coordinate (where to cut)
+    //! @param rMinRadius minimal radius of the circle
+    //! @return ... matrix with the circles (x,y,r)
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles2D(
+            double rZCoord, double rMinRadius) const;
+
     //! @brief ... exports the particle list to a file
     void ExportParticlesToFile(const std::string& rExportFileName, bool rInitialRadius) const;
 
 	//! @brief ... get a single particle from the particle list
-	CollidableParticleSphere* GetParticle(const int rIndex);
+	CollidableParticleSphere* GetParticle(const int rIndex) const;
 
 	//! @brief ... getter for the particle list size
 	const int GetNumParticles() const;
@@ -96,12 +117,7 @@ public:
 	//! @brief ... calculates approximate sub box length, based on box size and the number of particles per sub box
 	NuTo::FullVector<int,Eigen::Dynamic> GetSubBoxDivisions(Specimen& rSpecimen, const int rParticlesPerBox);
 
-    //! @brief ... cut spheres at a given z-coordinate to create circles (in 2D)
-    //! @param rZCoord z coordinate (where to cut)
-    //! @param rMinRadius minimal radius of the circle
-    //! @return ... matrix with the circles (x,y,r)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> CutSpheresZ(
-            double rZCoord, double rMinRadius) const;
+
 
 private:
 

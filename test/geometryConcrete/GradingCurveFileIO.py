@@ -72,8 +72,13 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
   spheres.ExportParticlesToVTU3D(rWorkDir, 1, 1, True);
 
   IN.Close()  
+  del collisions
   del subBoxes
   del spheres
+  del spheresBoundary
+  del spheresMatrix
+  del creator
+
     
 # ======================================================
 # ==       Build Pathes for workdir and input         ==
