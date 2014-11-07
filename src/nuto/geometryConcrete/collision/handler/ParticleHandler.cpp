@@ -528,16 +528,15 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     mFile << "lzS = newreg; Line Loop(lzS) = { lT0, lT1, lT2, lT3}; Plane Surface(newreg) = {lzS}; \n";
     mFile << "lzE = newreg; Line Loop(lzE) = {-lB3,-lB2,-lB1,-lB0}; Plane Surface(newreg) = {lzE}; \n";
     mFile << "\n";
-    mFile << "theLoops[t] = newreg; \n";
-    mFile << "Surface Loop(theLoops[t]) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; \n";
+    mFile << "theLoops[0] = newreg; \n";
+    mFile << "Surface Loop(theLoops[0]) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; \n";
     mFile << "theBox = newreg; \n";
-    mFile << "Volume(theBox) = theLoops[t]; \n";
+    mFile << "Volume(theBox) = theLoops[0]; \n";
     mFile << "\n";
-    mFile << "Return \n";
     mFile << "\n";
 
     auto spheres = GetParticles();
-    int objectCounter = 0;
+    int objectCounter = 1; // The first (index 0) object is the box.
 
     for (int i = 0; i < spheres.rows(); i++)
     {

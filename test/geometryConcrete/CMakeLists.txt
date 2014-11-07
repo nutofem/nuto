@@ -21,10 +21,27 @@ IF(ENABLE_PYTHON_TESTS)
 
 	SET_PROPERTY(TEST ${MYTESTS}  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")    
 
-IF(ENABLE_MECHANICS)
-	ADD_TEST(geometryConcrete::GmshExport			${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-	SET_PROPERTY(TEST geometryConcrete::GmshExport  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")		 
-ENDIF(ENABLE_MECHANICS)
+
+	unset(GMSH_PATH CACHE)
+	find_program(GMSH_PATH gmsh)
+	# If gmsh is not found, the variables value will be "GMSH_PATH-NOTFOUND", which
+	# is recognized by the IF()-statement
+	# The link to the mechanics library is required, since the successful import
+	# to a structure is tested.
+
+	IF(GMSH_PATH)
+		IF(ENABLE_MECHANICS)
+		message(STATUS "Gmsh found: ${GMSH_PATH}")
+		ADD_TEST(geometryConcrete::GmshExport			${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${GMSH_PATH})
+		SET_PROPERTY(TEST geometryConcrete::GmshExport  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+		ENDIF(ENABLE_MECHANICS)		
+	ELSE(GMSH_PATH)
+		message(STATUS "Gmsh not found. Skipping test geometryConcrete::GmshExport")
+	ENDIF(GMSH_PATH)
+	
+
+  
+
 
 
 
