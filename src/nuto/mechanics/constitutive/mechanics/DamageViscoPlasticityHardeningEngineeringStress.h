@@ -258,34 +258,34 @@ protected:
     //! @brief ... thermal expansion coefficient \f$ \alpha \f$
     double mThermalExpansionCoefficient;
 
-    //! @param ... Tensile Strength \f$ \TensileStrength \f$
+    //! @param ... Tensile Strength
     double mTensileStrength;
 
-    //! @param ... Compressive Strength \f$ \CompressiveStrength \f$
+    //! @param ... Compressive Strength
     double mCompressiveStrength;
 
-    //! @param ... Biaxial Compressive Strength \f$ \BiaxialCompressiveStrength \f$
+    //! @param ... Biaxial Compressive Strength
     double mBiaxialCompressiveStrength;
 
-    //! @param ... Viscosity \f$ \Viscosity \f$
+    //! @param ... Viscosity
     double mViscosity;
 
-    //! @param ... Viscosity Exponent \f$ \ViscosityExponent \f$
+    //! @param ... Viscosity Exponent
     double mViscosityExponent;
 
-    //! @param ... Damage Distribution (determines the portion of damage via viscoplasticity and plasticity) \f$ \Damage Distribution \f$
+    //! @param ... Damage Distribution (determines the portion of damage via viscoplasticity and plasticity)
     double mDamageDistribution;
 
-    //! @param ... Viscoplastic Yield Surface Offset with respect to the plastic yield surface \f$ \Viscoplastic Yield Surface Offset \f$
+    //! @param ... Viscoplastic Yield Surface Offset with respect to the plastic yield surface
     double mViscoplasticYieldSurfaceOffset;
 
-    //! @param ... Fracture energy \f$ \Fracture energy \f$
+    //! @param ... Fracture energy
     double mFractureEnergy;
 
-    //! @param ... Hardening value \f$ \Hardening value \f$
+    //! @param ... Hardening value
     double mHardening;
 
-    //! @param ... Hardening exponent \f$ \Hardening exponent \f$
+    //! @param ... Hardening exponent
     double mHardeningExponent;
 
     //! @brief ... either use a pure plasticity model (false) or add softening using the damage model (true)
