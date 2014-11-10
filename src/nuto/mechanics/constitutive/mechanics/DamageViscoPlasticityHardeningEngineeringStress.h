@@ -356,7 +356,7 @@ private:
     {
     	double CurrentHardening, RateFactor;
 
-    	RateFactor = 1. + pow(rStrainRateNorm/(52./(10000.*mE)),0.5);  // 0_55 ->10000  0_625 -> 1000
+    	RateFactor = 1. + pow(rStrainRateNorm/(43./(1.*mE)),0.5);  // 0_55 ->1000 0_625 -> 100 static->1
 //    	RateFactor = 1.;
 
     	CurrentHardening = rPrevHardening;
@@ -366,8 +366,6 @@ private:
 
     	return CurrentHardening;
 
-// model with varying amplitude (not stable)
-//    	return this->mHardening*(1. + pow(rStrainRateNorm/(25./(10000.*mE)),0.5))*(1. - exp(-this->mHardeningExponent*rKappaInelastic));
 // original model
 //    	return this->mHardening*(1. - exp(-this->mHardeningExponent*rKappaInelastic));
     }			// 100/mE is the strain rate at fatigue test, when an enormous hardening increase is observed
@@ -448,15 +446,19 @@ private:
 			// calculate hardening and necessary
 			// cumulative equivalent inelastic strain
         	EngineeringStrain3D DeltaEpsilonP, DeltaEpsilonVp;			// increments of plastic and viscoplastic strain respectively
+//        	double ViscoFlowFactor = pow(OverStress.YieldSurfaceDruckerPrager3D(0., 0.)/mCompressiveStrength,mViscosityExponent);
         	double ViscoFlowFactor = pow(OverStress.YieldSurfaceDruckerPrager3D(0., 0.)/mCompressiveStrength,mViscosityExponent);
+
         	DeltaEpsilonP = Plus(rVP)*rDeltaTime*dF_dSigma;
             DeltaEpsilonVp = (ElasticStiffness.fullPivLu().solve(Stress - ProjStress)).eval();
             DeltaEpsilonVp *= rDeltaTime*Sgn(rVviscoP)/rViscosity;
             DeltaEpsilonVp *= ViscoFlowFactor;
 
             double DeltaKappaInelastic = this->CumulativeEquivalentStrainIncrement(DeltaEpsilonVp, DeltaEpsilonP);
-            rHP += this->CalculateHardening(DeltaKappaInelastic, rPrevHardening, rDeltaStrain.Norm()/rDeltaTime);
-            rHVP += this->CalculateHardening(DeltaKappaInelastic, rPrevHardening, rDeltaStrain.Norm()/rDeltaTime);
+            if (rDeltaTime > mTOLF){
+            	rHP += this->CalculateHardening(DeltaKappaInelastic, rPrevHardening, rDeltaStrain.Norm()/rDeltaTime);
+            	rHVP += this->CalculateHardening(DeltaKappaInelastic, rPrevHardening, rDeltaStrain.Norm()/rDeltaTime);
+            }
 
 			// calculate residual with respect to the stress increments, that is residual(0:5)
 			residual.segment<6>(0) = rDeltaStress + rDeltaTime*Sgn(rVviscoP)*ViscoFlowFactor*
@@ -471,10 +473,14 @@ private:
 			// calculate residual with respect to the cumulative plastic strain rate, that is residual(12)
 			residual[12] = this->mE*rDeltaTime*(rVP - Plus(rVP)) -
 					Stress.YieldSurfaceDruckerPrager3D(rBeta, rHP);
+//			residual[12] = this->mE*(rVP - Plus(rVP)) -
+//					Stress.YieldSurfaceDruckerPrager3D(rBeta, rHP);
 
 			// calculate residual with respect to the cumulative viscoplastic strain rate, that is residual(13)
 			residual[13] = this->mE*rDeltaTime*(rVviscoP - Plus(rVviscoP)) -
 					ProjStress.YieldSurfaceDruckerPrager3D(rBeta, rHVP);
+//			residual[13] = this->mE*(rVviscoP - Plus(rVviscoP)) -
+//					ProjStress.YieldSurfaceDruckerPrager3D(rBeta, rHVP);
 
 			return residual;
 		}
@@ -773,6 +779,8 @@ private:
     //	for (i=0;i<n;i++)							// OPTIMIZED
     //		if (fabs(fvec[i]) > test) test=fabs(fvec[i]);   // OPTIMIZED
     	test = fvec.array().abs().maxCoeff();		// OPTIMIZED
+//Fatigue
+//    	cout << "	fvec_norm before LineSearch " << test << endl;
     	if (test < 0.01*TOLF) {
     		check=false;
     		return;
@@ -785,11 +793,11 @@ private:
 
     	for (its=0;its<MAXITS;its++) {
 //Fatigue
-    		cout<< "===== Iteration =====" << its <<endl;   // Test
+//    		cout<< "===== Iteration =====" << its <<endl;   // Test
     		if (fdjacAn != 0) {         			// if analytical Jacobi is there
     			fjac = (this->*fdjacAn)(rParameter,x);     	// analytical Jacobi matrix
-//    			cout<<"*** Analytical ***"<<endl;  	// Test
-//    			cout << fjac << endl;             	// Test
+ //   			cout<<"*** Analytical ***"<<endl;  	// Test
+ //   			cout << fjac << endl;             	// Test
     		} else {                   				// if not analytic -> take numeric
     			fjac=this->DResidualNum(rParameter,x,fvec); // numerical Jacobi matrix
 //    			cout<<"*** Numerical ***"<<endl;   	// Test
@@ -810,8 +818,10 @@ private:
     //		for (i=0;i<n;i++) p[i] = -fvec[i];      // OPTIMIZED
     		p = -fvec;								// OPTIMIZED
     //												// Test
-//Fatigue    		cout << "fvec before solve= " << fvec.transpose()<<endl;   // Test
-//Fatigue    		cout << "p = " << fjac.fullPivLu().solve(-fvec).transpose()<<endl;   // Test
+//Fatigue
+//    		cout << "	fvec before LineSearch = " << fvec.transpose()<< endl;   // Test
+//Fatigue
+//    		cout << "	p before LineSearch    = " << fjac.fullPivLu().solve(-fvec).transpose()<< endl;   // Test
 
     //												// OPTIMIZED
     //		LUdcmp alu(fjac);						// OPTIMIZED
@@ -819,18 +829,22 @@ private:
     		p =	fjac.fullPivLu().solve(-fvec).transpose();		// LU SOLVER of fjac * p = -fvec
     //															// SVD SOLVER
     //		p = fjac.jacobiSvd().solve(-fvec).transpose();      // SVD SOLVER
-//NR    		LineSearch(xold,fold,g,p,x,f,stpmax,check,fmin);
+//NR    	LineSearch(xold,fold,g,p,x,f,stpmax,check,fmin);
     		LineSearch(rParameter,xold,fold,g,p,x,f,stpmax,check,fvec);    // AnstattNR
-//Fatigue    		cout << "fvec after solve= " << fvec.transpose()<<endl;   // Test
+//Fatigue
+//        	cout << "	fvec_norm after LineSearch " << fvec.array().abs().maxCoeff() << endl;
+//    		cout << "	fvec after LineSearch = " << fvec.transpose()<<endl;   // Test
+//    		cout << "	x    after LineSearch = " << x.transpose()<<endl;   // Test
+
     //												// OPTIMIZED
     //		test=0.0;								// OPTIMIZED
     //		for (i=0;i<n;i++)						// OPTIMIZED
     //			if (fabs(fvec[i]) > test) test=fabs(fvec[i]);   // OPTIMIZED
     		test = fvec.array().abs().maxCoeff();	// OPTIMIZED
 
-    		if (test < TOLF) {
+    		if (test < 0.01*TOLF) {
     			check=false;
-//Fatigue    			cout << "iter = " << its << " ORDENARY RETURN, test = " << test << " TOLF = " << TOLF << endl;
+//Fatigue   cout << "iter = " << its << " ORDENARY RETURN, test = " << test << " TOLF = " << TOLF << endl;
     			return;
     		}
 

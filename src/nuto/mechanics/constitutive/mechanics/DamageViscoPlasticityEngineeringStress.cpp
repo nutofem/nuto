@@ -513,14 +513,17 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityEngineeringStress::Evaluate3D(Ele
 
 	// get engineering strain directly
 	if(rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)==rConstitutiveInput.end())
+	{
 		throw MechanicsException("[NuTo::DamageViscoPlasticityEngineeringStress::Evaluate] engineering strain 3d needed.");
+	}
+
 	engineeringStrain = rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)->second->GetEngineeringStrain3D();
 
 	//subtract thermal strain
 	EngineeringStrain3D MechanicEngineeringStrain(engineeringStrain);
 //    cout << "Eval.: Def Grad" << endl;
 //    deformationGradient.Info();
-    cout << "Eval.: eing Strain" << engineeringStrain.transpose() << endl;
+//    cout << "Eval.: eing Strain" << engineeringStrain.transpose() << endl;
 	// if temperature is an input, subtract thermal strains to get elastic strains
 	if (section->GetInputConstitutiveIsTemperature())
 	{

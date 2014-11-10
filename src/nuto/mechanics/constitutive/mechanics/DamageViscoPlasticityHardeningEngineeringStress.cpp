@@ -518,9 +518,20 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 //	deformationGradient.GetEngineeringStrain(engineeringStrain);
 
 	// get engineering strain directly
-	if(rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)==rConstitutiveInput.end())
-		throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evaluate] engineering strain 3d needed.");
-	engineeringStrain = rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)->second->GetEngineeringStrain3D();
+	if (rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)==rConstitutiveInput.end()) {
+		if (rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D)==rConstitutiveInput.end()) {
+			throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evaluate] engineering strain 3d or deformation gradient 3d needed.");
+		} else {
+			const DeformationGradient3D& deformationGradient(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D)->second->GetDeformationGradient3D());
+			deformationGradient.GetEngineeringStrain(engineeringStrain);
+		}
+	} else {
+		engineeringStrain = rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)->second->GetEngineeringStrain3D();
+	}
+
+//	if(rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)==rConstitutiveInput.end())
+//		throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evaluate] engineering strain 3d needed.");
+//	engineeringStrain = rConstitutiveInput.find(NuTo::Constitutive::Input::ENGINEERING_STRAIN_3D)->second->GetEngineeringStrain3D();
 
 	//subtract thermal strain
 	EngineeringStrain3D MechanicEngineeringStrain(engineeringStrain);
@@ -539,7 +550,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 		MechanicEngineeringStrain[1] -= deltaStrain;
 		MechanicEngineeringStrain[2] -= deltaStrain;
 	}
-//Fatigue    cout << "Eval.: Mech Eng Strain" << MechanicEngineeringStrain.transpose() << endl;
+//Fatigue cout << "Eval.: Mech Eng Strain" << MechanicEngineeringStrain.transpose() << endl;
 
 	// declare output of Return Mapping: stress, algorithmic tangent and static data
 	EngineeringStress3D engineeringStress;
@@ -615,6 +626,10 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     	case NuTo::Constitutive::Output::DAMAGE:
     	{
     		itOutput->second->GetDamage().SetDamage(newStaticData.mOmegaCompr);
+    		if (rIp == 0) {
+// Fatigue
+//    		std::cout << "	*** DAMAGE = " << newStaticData.mOmegaCompr << " at time end =" << rElement->GetStructure()->GetTime() << std::endl;
+    		}
    		break;
     	}
     	case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
@@ -683,8 +698,10 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 	InitTime = structure->GetPrevTime();
 	EndTime  = structure->GetTime();
 	DeltaTime = EndTime - InitTime;
-// Fatigue
-	cout << "*** InitTime = " << InitTime << "EndTime = " << EndTime << "Time Increment = " << DeltaTime << endl;
+	if (rIp == 0) {
+//	Fatigue
+//		cout << "*** InitTime = " << InitTime << ", EndTime = " << EndTime << ", Time Increment = " << DeltaTime << endl;
+	}
 
 	// get material parameters
     double f_ct  = mTensileStrength;
@@ -706,6 +723,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
     double HP  = f_c2*f_c1 / (sqrt3*(2*f_c2-f_c1));     // H for the plastic yield surface
     double HVP = HP + Hoffset;							// H for the viscoplastic yield surface
     assert(HVP > 0.);
+// Fatigue    std::cout<< "Beta = " << Beta << ", HP = " << HP << ", HVP = " << HVP << std::endl;
 
     // get elastic matrix
 	// calculate coefficients of the linear elastic material matrix
@@ -733,24 +751,29 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
     // calculate trial stress at the end of time increment
     EngineeringStress3D TrialStress;
     TrialStress = ElasticStiffness*(rEngineeringStrain - OldStaticData->mEpsilonP - OldStaticData->mEpsilonVp);
-//Fatigue    cout << "rEing Strain " << rEngineeringStrain.transpose() << endl;
-//Fatigue    cout << " Old plastic strain = " << (OldStaticData->mEpsilonP).transpose() <<
-//Fatigue  		" Old viscoplastic strain = " <<(OldStaticData->mEpsilonVp).transpose()<< endl;
-//Fatigue    cout << "trial stress " << TrialStress.transpose() << endl;
+	if (rIp == 0) {
+//Fatigue
+//		cout << "rEing Strain " << rEngineeringStrain.transpose() << endl;
+//	    std::cout << "trial stress " << TrialStress.transpose() << endl;
+//	    std::cout << "prev  stress " << prevStress.transpose() << endl;
+//	    std::cout << "old mViscoP = " << OldStaticData->mViscoP << std::endl;
+	}
+//Fatigue cout << " Old plastic strain = " << (OldStaticData->mEpsilonP).transpose() <<
+//Fatigue " Old viscoplastic strain = " <<(OldStaticData->mEpsilonVp).transpose()<< endl;
 
     // calculate elastic solution
     if (rNewStress!=0) {
     	(*rNewStress) = TrialStress;
     }
     if (rNewTangent!=0) {
-    	(*rNewTangent) = ElasticStiffness;
+    	(*rNewTangent) = (1. - OldStaticData->mOmegaCompr)*ElasticStiffness;
     }
     if (rNewStaticData!=0) {
     	(*rNewStaticData) = (*OldStaticData);
-    	rNewStaticData->mVP = TrialStress.YieldSurfaceDruckerPrager3D(Beta, HPhardening)/(DeltaTime*this->mE);
+//Fatigue    	rNewStaticData->mVP = TrialStress.YieldSurfaceDruckerPrager3D(Beta, HPhardening)/(DeltaTime*this->mE);
     }
     // if inelastic case, that is the viscoplastic yield surface criterion provides a positive value
-    if (TrialStress.YieldSurfaceDruckerPrager3D(Beta, HVPhardening) > -toleranceYieldSurface) {
+    if (TrialStress.YieldSurfaceDruckerPrager3D(Beta, HVPhardening) > -toleranceYieldSurface && DeltaTime > mTOLF) {
 
     	// compound the vector of unknowns
     	NuTo::FullVector<double,Eigen::Dynamic> Unknown(14);
@@ -761,6 +784,11 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
     	Unknown[12] = TrialStress.YieldSurfaceDruckerPrager3D(Beta, HPhardening)/(max(DeltaTime,0.01)*this->mE);	// mVP = Unknown(12) plastic state variable
     	Unknown[13] = TrialStress.YieldSurfaceDruckerPrager3D(Beta, HVPhardening)/(max(DeltaTime,0.01)*this->mE);	// mVviscoP = Unknown(13) viscoplastic state variable
+//    	Unknown[12] = rNewStaticData->mVP;
+//    	Unknown[13] = rNewStaticData->mViscoP;
+//    	Unknown[12] = TrialStress.YieldSurfaceDruckerPrager3D(Beta, HPhardening)/this->mE;	// mVP = Unknown(12) plastic state variable
+//    	Unknown[13] = TrialStress.YieldSurfaceDruckerPrager3D(Beta, HVPhardening)/this->mE;	// mVviscoP = Unknown(13) viscoplastic state variable
+
 
     	// compose vector of known Parameter, which are necessary for ResidualAn
     	NuTo::FullVector<double,Eigen::Dynamic> Parameter(20);
@@ -793,12 +821,15 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
         // start Newton solver
         try
         {
-        this->Newton(ParameterList,Unknown,check,fdjacAn);
-//    	this->Newton(ParameterList,Unknown,check);   // use for numerical Jacobi
-//        cout << "Unknown from Newton" << Unknown.transpose() << endl;;
+      	  this->Newton(ParameterList,Unknown,check,fdjacAn);	// use for analytical Jacobi
+//        this->Newton(ParameterList,Unknown,check);   // use for numerical Jacobi
+      	if (rIp == 0) {
+//Fatigue
+//      		std::cout << "Unknown from Newton" << Unknown.transpose() << endl;
+//      		std::cout << boolalpha;
+//      		std::cout << "check from Newton " << check << endl;;
+      	}
 //        cout << "Parameter from Newton" << ParameterList.transpose()<< endl;
-//Fatigue		std::cout << boolalpha << std::endl;
-//Fatigue	    cout << "check from Newton " << check;
 
         }
         catch (...)
@@ -824,7 +855,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
         // calculate stress
         if (rNewStress!=0) {
         	(*rNewStress) = NewStressTemp;
-//Fatigue        	(*rNewStress).Info(1);
+//Fatigue   (*rNewStress).Info(1);
         }
 
         // calculate static data
@@ -832,6 +863,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
         	EngineeringStrain3D DeltaEpsilonP, DeltaEpsilonVp;			// increments of plastic and viscoplastic strain respectively
         	//plastic state variable
         	rNewStaticData->mVP = Unknown[12];							// plastic state variable
+        	rNewStaticData->mViscoP = Unknown[13];						// viscoplastic state variable
         	double mVviscoP = Unknown[13];								// viscoplastic state variable
         	// plastic strain
         	DeltaEpsilonP = Plus(rNewStaticData->mVP)*DeltaTime*rdF_dSigma;
@@ -847,9 +879,17 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
         	rNewStaticData->mKappaInelastic = OldStaticData->mKappaInelastic + DeltaKappaInelastic;
 //        	rNewStaticData->mOmegaCompr = 1. - exp(-rNewStaticData->mKappaInelastic/CalculateDuctility());    // additional parameter epsC is neccessary for exp(-mKappaInelastic/epsC);
             rNewStaticData->mOmegaCompr = OldStaticData->mOmegaCompr;		// calculate damage with effect of hydrostatic pressure
+//            rNewStaticData->mOmegaCompr += (1. - OldStaticData->mOmegaCompr)*
+//            		pow(OverStress.YieldSurfaceDruckerPrager3D(0., 0.)/mCompressiveStrength,0.5)*DeltaKappaInelastic/(DeltaKappaInelastic +
+//            		(1 + pow(Plus(-NewStressTemp[0] - NewStressTemp[1] - NewStressTemp[2])/mCompressiveStrength,3.))*CalculateDuctility());
+
             rNewStaticData->mOmegaCompr += (1. - OldStaticData->mOmegaCompr)*
-            		pow(OverStress.YieldSurfaceDruckerPrager3D(0., 0.)/mCompressiveStrength,0.5)*DeltaKappaInelastic/(DeltaKappaInelastic +
-            		(1 + pow(Plus(-NewStressTemp[0] - NewStressTemp[1] - NewStressTemp[2])/mCompressiveStrength,3.))*CalculateDuctility());
+            		pow(OverStress.YieldSurfaceDruckerPrager3D(0., 0.)/mCompressiveStrength,0.5)*DeltaKappaInelastic/(DeltaKappaInelastic*pow(OverStress.YieldSurfaceDruckerPrager3D(0., 0.)/mCompressiveStrength,0.5)
+            				+ (1 + pow(Plus(-NewStressTemp[0] - NewStressTemp[1] - NewStressTemp[2])/mCompressiveStrength,3.))*CalculateDuctility());
+        	if (rIp == 0) {
+// Fatigue
+//        		std::cout << "	*** DAMAGE from ReturnMapping = " << rNewStaticData->mOmegaCompr << std::endl;
+        	}
             //hardening
             rNewStaticData->mPrevHardening = this->CalculateHardening(DeltaKappaInelastic, OldStaticData->mPrevHardening, StrainRate.Norm());
         }
@@ -858,10 +898,16 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
         if (rNewTangent!=0) {
             NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rMatrixMultipl;
 
-//            rMatrixMultipl = -((this->DResidualAn(Parameter,Unknown)).fullPivLu().solve(this->DResidualDEpsAn(Unknown))).eval();
-//            (*rNewTangent) = rMatrixMultipl.block<6,6>(0,0);				// use for analytic algorithmic tangent
-            (*rNewTangent) = this->DStressDEpsNum(ParameterList,Unknown,6); // use for numerical algorithmic tangent
+            rMatrixMultipl = -((this->DResidualAn(Parameter,Unknown)).fullPivLu().solve(this->DResidualDEpsAn(Unknown))).eval();
+            (*rNewTangent) = (1. - rNewStaticData->mOmegaCompr)*rMatrixMultipl.block<6,6>(0,0);				// use for analytic algorithmic tangent
+//          (*rNewTangent) = (1. - rNewStaticData->mOmegaCompr)*this->DStressDEpsNum(ParameterList,Unknown,6); // use for numerical algorithmic tangent
         }
+        // stop simulation if the failure surface is achieved
+//        if (NewStressTemp.YieldSurfaceDruckerPrager3D(Beta, HP + rNewStaticData->mPrevHardening) > -toleranceYieldSurface) {
+//        	throw NuTo::Exception("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::ReturnMapping3D] The failure "
+//        	" surface has been achieved.");
+//        }
+
     }
 
 	return Error::SUCCESSFUL;
@@ -1126,7 +1172,7 @@ void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetHardeningExponent
 //! @sa eConstitutiveType
 NuTo::Constitutive::eConstitutiveType NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetType() const
 {
-    return NuTo::Constitutive::LINEAR_ELASTIC;
+    return NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS;
 }
 
 //! @brief ... check compatibility between element type and type of constitutive relationship

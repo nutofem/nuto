@@ -4,15 +4,18 @@
 #define CONSTITUTIVESTATICDATADAMAGEVISCOPLASTICITY3D_H
 
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.h"
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
 //! @brief ... base class, storing the static data (history variables) of a constitutive relationship
 //! @author Jörg F. Unger, ISM
 //! @date December 2009
 namespace NuTo
 {
+class DamageViscoPlasticityHardeningEngineeringStress;
+class DamageViscoPlasticityEngineeringStress;
 class IpDataStaticDataBase;
 
-class ConstitutiveStaticDataDamageViscoPlasticity3D : public ConstitutiveStaticDataPrevEngineeringStressStrain3D
+class ConstitutiveStaticDataDamageViscoPlasticity3D : ConstitutiveStaticDataPrevEngineeringStressStrain3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -47,6 +50,54 @@ public:
     //!@ brief reinterpret as damage viscoplasticity static data
     const ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D()const;
 
+    //!@brief get mKappaInelastic
+    double GetKappaInelastic()
+    {
+    	return this->mKappaInelastic;
+    }
+
+    //!@brief set mKappaInelastic
+    void SetKappaInelastic(double KappaInelastic)
+    {
+    	this->mKappaInelastic = KappaInelastic;
+    }
+
+    //!@brief get mOmegaCompr
+    double GetOmegaCompr()
+    {
+    	return this->mOmegaCompr;
+    }
+
+    //!@brief set mOmegaCompr
+    void SetOmegaCompr(double OmegaCompr)
+    {
+    	this->mOmegaCompr = OmegaCompr;
+    }
+
+    //!@brief get mPrevHardening
+    double GetPrevHardening()
+    {
+    	return this->mPrevHardening;
+    }
+
+    //!@brief set mPrevHardening
+    void SetPrevHardening(double PrevHardening)
+    {
+    	this->mPrevHardening = PrevHardening;
+    }
+
+    //!@brief get mEpsilonVp
+    EngineeringStrain3D GetEpsilonVp()
+    {
+    	return this->mEpsilonVp;
+    }
+
+    //!@brief set mEpsilonVp
+    void SetEpsilonVp(EngineeringStrain3D EpsilonVp)
+    {
+    	this->mEpsilonVp = EpsilonVp;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -70,6 +121,9 @@ protected:
 
     //! @brief plasticity state variable
     double mVP;
+
+    //! @brief plasticity state variable
+    double mViscoP;
 
     //! @brief hardening state variable
     double mPrevHardening;

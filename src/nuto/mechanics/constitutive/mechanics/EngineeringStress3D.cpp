@@ -113,6 +113,7 @@ bool NuTo::EngineeringStress3D::YieldSurfaceDruckerPrager3DDerivatives(
 	double factor, func;
 	const double eps = 1e-5;
 
+
 	if (norm_2 > eps) {
 		factor = 1./(6.*norm_2);
 	} else {

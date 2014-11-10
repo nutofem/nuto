@@ -35,7 +35,7 @@ public:
     	return new ConstitutiveStaticDataMisesPlasticity3D(*this);
     }
 
-    //! @brief check, if the static data is compatible with a given element and a given constitutive model
+    //! @brief check, if the static data is compatible with a givenr element and a given constitutive model
     virtual bool CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const;
 
     //! @brief assignment operator

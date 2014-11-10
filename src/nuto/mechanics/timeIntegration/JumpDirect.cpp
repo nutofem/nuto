@@ -1,4 +1,4 @@
-// $Id: NewmarkDirect.cpp 575 2011-09-20 18:05:35Z unger3 $
+// $Id: JumpDirect.cpp 2014-11-06 12:55:55Z vkindrac $
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -21,7 +21,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/timeIntegration/JumpDirect.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "nuto/math/FullMatrix.h"
@@ -30,43 +30,49 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NewmarkDirect::NewmarkDirect (StructureBase* rStructure)  : NewmarkBase (rStructure)
+NuTo::JumpDirect::JumpDirect (StructureBase* rStructure)  : NewmarkBase (rStructure)
 {
     mMinLineSearchStep = 0.01;
+    mHarmonicIncrementation = 16;
+    mHarmonicExtrapolation = false;
+    mHarmonicExcitation = false;
 }
 
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::NewmarkDirect::Info()const
+void NuTo::JumpDirect::Info()const
 {
     NewmarkBase::Info();
 }
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::JumpDirect::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::JumpDirect::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::JumpDirect::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::JumpDirect::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::JumpDirect::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::JumpDirect::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::NewmarkDirect::serialize(Archive & ar, const unsigned int version)
+void NuTo::JumpDirect::serialize(Archive & ar, const unsigned int version)
 {
     #ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of NewmarkDirect" << "\n";
+        std::cout << "start serialization of JumpDirect" << "\n";
     #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewmarkBase)
-           & BOOST_SERIALIZATION_NVP(mMinLineSearchStep);
+           & BOOST_SERIALIZATION_NVP(mMinLineSearchStep)
+           & BOOST_SERIALIZATION_NVP(mHarmonicIncrementation)
+           & BOOST_SERIALIZATION_NVP(mHarmonicExtrapolation)
+           & BOOST_SERIALIZATION_NVP(mHarmonicExcitation);
     #ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of NewmarkDirect" << "\n";
+        std::cout << "finish serialization of JumpDirect" << "\n";
     #endif
 }
 
 #endif // ENABLE_SERIALIZATION
 
 
-NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
+NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -83,8 +89,15 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 #endif
     try
     {
+    	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
+    	std::cout << "... applied harmonic = " << mHarmonicExcitation << std::endl;
+    	std::cout << "... displecement amplitude = " << mHarmonicConstraintFactor(0,0) << std::endl;
+    	std::cout << "... displecement frequency = " << mHarmonicConstraintFactor(0,1) << std::endl;
+    	std::cout << "... number of cycles = " << int (mHarmonicConstraintFactor(0,2)) << std::endl;
+    	std::cout << "... timeDependentConstraintTime = " << timeDependentConstraintTime << std::endl;
+
         if (mMaxTimeStep==0)
-            throw MechanicsException("[NuTo::NewmarkDirect::Solve] max time step is set to zero.");
+            throw MechanicsException("[NuTo::JumpDirect::Solve] max time step is set to zero.");
 
         //renumber dofs and build constraint matrix
         mStructure->NodeBuildGlobalDofs();
@@ -140,24 +153,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         //store last converged displacements, velocities and accelerations
         NuTo::FullVector<double,Eigen::Dynamic> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
         mStructure->NodeExtractDofValues(0,lastConverged_disp_j, lastConverged_disp_k);
-//        mInternalEnergy = mStructure->ElementTotalGetInternalEnergy();
-//        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotHistory(1,7);
-//        plotHistory(0,0) = mTime;
-//        plotHistory(0,2) = mInternalEnergy;
-//        plotHistory(0,6) = mInternalEnergy;
+
         if (this->IsDynamic())
         {
             mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
             mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
-
-//            mKineticEnergy = 0.5*(lastConverged_vel_j.Dot(massMatrix_jj*lastConverged_vel_j+massMatrix_jk*lastConverged_vel_k)+lastConverged_vel_k.Dot(massMatrix_kj*lastConverged_vel_j+massMatrix_kk*lastConverged_vel_k));
-//            mExternalEnergy = 0;
-//            mDampedEnergy = 0.;
-
-//            plotHistory(0,3) = mKineticEnergy;
-//            plotHistory(0,4) = mDampedEnergy;
-//            plotHistory(0,5) = mExternalEnergy;
-//            plotHistory(0,6)+= mKineticEnergy ;
         }
 
         double curTime  = 0;
@@ -170,10 +170,9 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         double timeDependentConstraintFactor(0);
         if (mTimeDependentConstraint!=-1)
         {
-            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+            timeDependentConstraintFactor = this->CalculateTimeDependentHarmonicConstraintFactor(curTime);
             mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
         }
-//        plotHistory(0,1) = timeDependentConstraintFactor;
         mStructure->ConstraintGetRHSAfterGaussElimination(bRHSprev);
         mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
         mStructure->ElementTotalUpdateTmpStaticData();
@@ -226,7 +225,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         }
 
         if (residual_mod.Norm()>mToleranceForce)
-            throw MechanicsException("[NuTo::NewmarkDirect::Solve] Initial configuration is not in (dynamic) equilibrium.");
+            throw MechanicsException("[NuTo::JumpDirect::Solve] Initial configuration is not in (dynamic) equilibrium.");
         std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
 
 /*        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector0(plotHistory);
@@ -274,7 +273,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             //apply constraints for last converged time step
             if (mTimeDependentConstraint!=-1)
             {
-				timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+				timeDependentConstraintFactor = this->CalculateTimeDependentHarmonicConstraintFactor(curTime);
 				mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
             }
             mStructure->ConstraintGetRHSAfterGaussElimination(bRHSprev);
@@ -288,18 +287,10 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             curTime += timeStep;
 
             if (timeStep<mMinTimeStep)
-                throw MechanicsException("[NuTo::NewmarkDirect::Solve] time step is smaller than minimum - no convergence is obtained.");
+                throw MechanicsException("[NuTo::JumpDirect::Solve] time step is smaller than minimum - no convergence is obtained.");
 
-
-            //if the time difference towards the end is very small, increase the time step, if it exceeds the total time, decrease the time step
-            if (mAutomaticTimeStepping)
-            {
-                if (rTimeDelta-curTime<0.5*timeStep)
-                {
-                    timeStep += rTimeDelta-curTime;
-                    curTime = rTimeDelta;
-                }
-            }
+            // check wether a harmonic time step and check wether curTime is too close to the time data
+            this->SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);
 
             // set new structure time at the end of the time increment
             mStructure->SetTime(curTime);
@@ -307,11 +298,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             if (this->IsDynamic())
             {
                 if (1.-mGamma*mMuDampingMass*timeStep<=0)
-                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] Factor for the mass matrix is negative - reduce your time step.");
+                    throw MechanicsException("[NuTo::JumpDirect::Solve] Factor for the mass matrix is negative - reduce your time step.");
             }
-
-            mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j);
-            mStructure->ElementTotalUpdateTmpStaticData();
 
             //calculate the initial out-of-balance force
             disp_j = lastConverged_disp_j;
@@ -327,7 +315,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             {
                 if (mTimeDependentConstraint!=-1)
                 {
-					timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+					timeDependentConstraintFactor = this->CalculateTimeDependentHarmonicConstraintFactor(curTime);
 					mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
                 }
                 mStructure->ConstraintGetRHSAfterGaussElimination(bRHShalf);
@@ -336,7 +324,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             //apply constraints for the new time step (modified bRHS)
             if (mTimeDependentConstraint!=-1)
             {
-				timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+				timeDependentConstraintFactor = this->CalculateTimeDependentHarmonicConstraintFactor(curTime);
 				mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
             }
             mStructure->ConstraintGetRHSAfterGaussElimination(bRHSend);
@@ -572,45 +560,6 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         }
                     }
                 }
-/*
-//check stiffness matrix
-stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
-//std::cout << "stiffness exact1\n" <<  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
-FullVector<double, Eigen::Dynamic> check_disp_j1,check_disp_j2,check_disp_k1,check_disp_k2;
-mStructure->NodeExtractDofValues(0,check_disp_j1,check_disp_k1);
-//std::cout << "active dof values " << check_disp_j1 << std::endl;
-FullVector<double, Eigen::Dynamic> check_intforce_j1(check_disp_j1),check_intforce_k1(check_disp_k1),
-		check_intforce_j2(check_disp_j1),check_intforce_k2(check_disp_k1);
-FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> stiffMatrix_jj_cdf(stiffMatrix_jj);
-stiffMatrix_jj_cdf.setZero();
-
-mStructure->BuildGlobalGradientInternalPotentialSubVectors(check_intforce_j1,check_intforce_k1);
-//std::cout << "check_intforce_j1 \n" << check_intforce_j1 << std::endl;
-double delta(1e-8);
-for (int count=0; count<check_disp_j1.GetNumRows(); count++)
-{
-	check_disp_j2 = check_disp_j1;
-	check_disp_j2(count)+=delta;
-	//mStructure->NodeMergeActiveDofValues(0,check_disp_j2);
-	mStructure->NodeMergeDofValues(0,check_disp_j2,check_disp_k1);
-	mStructure->ElementTotalUpdateTmpStaticData();
-	mStructure->BuildGlobalGradientInternalPotentialSubVectors(check_intforce_j2,check_intforce_k2);
-	//std::cout << "check_intforce_j2 \n" << check_intforce_j2 << std::endl;
-	stiffMatrix_jj_cdf.col(count) = ((check_intforce_j2-check_intforce_j1).transpose())*(1./delta);
-}
-if ((stiffMatrix_jj_cdf-FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj)).cwiseAbs().maxCoeff()>1e-3)
-{
-	std::cout << "stiffness exact2\n" <<  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
-	std::cout << "stiffness cdf\n" <<  stiffMatrix_jj_cdf << std::endl;
-	std::cout << "delta \n" <<  stiffMatrix_jj_cdf-FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
-}
-else
-{
-	std::cout << "error stiffness is " << (stiffMatrix_jj_cdf-FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj)).cwiseAbs().maxCoeff() << std::endl;
-}
-mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
-*/
 
                 //solve for new state
                 NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
@@ -736,52 +685,8 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
             if (normResidual<=mToleranceForce)
             {
                 //converged solution
-            	std::cout << " *** UpdateStaticData *** from NewMarkDirect" << std::endl;
+            	std::cout << " *** UpdateStaticData *** from JumpDirect" << std::endl;
                 mStructure->ElementTotalUpdateStaticData();
-
-                //calculate energies (at this point, use the trapezoidal rule for all energies, for some energies, you can compare that to the direct calculation
-                // e.g. internal energy for elastic materials or the kinetic energy
-                //double internalEnergyExact = mStructure->ElementTotalGetInternalEnergy();
-                //FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> delta_disp_j(disp_j-lastConverged_disp_j);
-                //FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> delta_disp_k(disp_k-lastConverged_disp_k);
-
-                //mInternalEnergy+= 0.5*(delta_disp_j.Dot(intForce_j+prevIntForce_j)+
-                //                       delta_disp_k.Dot(intForce_k+prevIntForce_k));
-
-                //if (this->IsDynamic())
-                //{
-                    //double kineticEnergyExact = 0.5*(vel_j.Dot(massMatrix_jj*vel_j+massMatrix_jk*vel_k)+vel_k.Dot(massMatrix_kj*vel_j+massMatrix_kk*vel_k));
-                //    mKineticEnergy+= 0.5*(delta_disp_j.Dot(massMatrix_jj*(acc_j+lastConverged_acc_j)+massMatrix_jk*(acc_k+lastConverged_acc_k))+
-                //                      delta_disp_k.Dot(massMatrix_kj*(acc_j+lastConverged_acc_j)+massMatrix_kk*(acc_k+lastConverged_acc_k)));
-
-                //    if (mMuDampingMass>0)
-                //    {
-                //        mDampedEnergy+=mMuDampingMass*0.5*(delta_disp_j.Dot(massMatrix_jj*(vel_j+lastConverged_vel_j)+massMatrix_jk*(vel_k+lastConverged_vel_k))+
-                //                                           delta_disp_k.Dot(massMatrix_kj*(vel_j+lastConverged_vel_j)+massMatrix_kk*(vel_k +lastConverged_vel_k)));
-                //    }
-                //}
-
-                //mExternalEnergy += 0.5*(delta_disp_j.Dot(extForce_j+prevExtForce_j) + delta_disp_k.Dot(extForce_k+prevExtForce_k)+
-                //                        delta_disp_j.Dot(residual_j+prevResidual_j) + delta_disp_k.Dot(residual_k+prevResidual_k));
-
-                //this is should be moved to the general postprocessing routine
-                //FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector(1,7);
-                //plotVector(0,0) = mTime+timeStep;
-                //plotVector(0,1) = timeDependentConstraintFactor;
-                //plotVector(0,2) = mInternalEnergy;
-                //plotVector(0,3) = mKineticEnergy;
-                //plotVector(0,4) = mDampedEnergy;
-                //plotVector(0,5) = mExternalEnergy;
-                //plotVector(0,6) = mInternalEnergy + mKineticEnergy + mDampedEnergy - mExternalEnergy;
-
-                //plotHistory.AppendRows(plotVector);
-
-                //std::cout << "mInternalEnergy " << mInternalEnergy << "(exact " << internalEnergyExact << "), kinetic energy " << mKineticEnergy << "(exact " << kineticEnergyExact << "), damped energy " << mDampedEnergy ;
-                //std::cout << ", external energy " << mExternalEnergy << "\n";
-                //std::cout << "energy stored in the system (internal + kinetic) " << mInternalEnergy+mKineticEnergy << "\n";
-                //std::cout << "energy removed from the system (damping - external) " << mDampedEnergy-mExternalEnergy << "\n";
-                //std::cout << "total energy " << mInternalEnergy+mKineticEnergy + mDampedEnergy-mExternalEnergy << "\n";
-
 
                 //store converged step
                 lastConverged_disp_j = disp_j;
@@ -816,7 +721,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 //std::cout << "plot Vector " << plotVector << std::endl;
 
 				//perform Postprocessing
-            	std::cout << " *** PostProcess *** from NewMarkDirect" << std::endl;
+            	std::cout << " *** PostProcess *** from JumpDirect" << std::endl;
 				PostProcess(prevResidual_j, prevResidual_k);
 
                 //eventually increase next time step
@@ -839,14 +744,14 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 }
                 else
                 {
-                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
+                    throw MechanicsException("[NuTo::JumpDirect::Solve] no convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
                 }
             }
         }
     }
     catch (MechanicsException& e)
     {
-        e.AddMessage("[NuTo::NewmarkDirect::Solve] performing Newton-Raphson iteration.");
+        e.AddMessage("[NuTo::JumpDirect::Solve] performing Newton-Raphson iteration.");
         throw e;
     }
 #ifdef SHOW_TIME
@@ -854,10 +759,10 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 #ifdef _OPENMP
     double wend = omp_get_wtime ( );
     if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::NewmarkDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+        mStructure->GetLogger()<<"[NuTo::JumpDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
 #else
     if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::NewmarkDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mStructure->GetLogger()<< "[NuTo::JumpDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
     return NuTo::Error::SUCCESSFUL;
@@ -867,9 +772,9 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
 //!            in case of restoring from a file with the wrong object type, the file id is printed
 //! @return    class name
-std::string NuTo::NewmarkDirect::GetTypeId()const
+std::string NuTo::JumpDirect::GetTypeId()const
 {
-    return std::string("NewmarkDirect");
+    return std::string("JumpDirect");
 }
 
 
@@ -878,7 +783,7 @@ std::string NuTo::NewmarkDirect::GetTypeId()const
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
 //! @brief ... save the object to a file
-void NuTo::NewmarkDirect::Restore (const std::string &filename, std::string rType )
+void NuTo::JumpDirect::Restore (const std::string &filename, std::string rType )
 {
     try
     {
@@ -891,7 +796,7 @@ void NuTo::NewmarkDirect::Restore (const std::string &filename, std::string rTyp
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw MechanicsException ( "[JumpDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="XML")
@@ -899,7 +804,7 @@ void NuTo::NewmarkDirect::Restore (const std::string &filename, std::string rTyp
             boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
             oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw MechanicsException ( "[JumpDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="TEXT")
@@ -907,7 +812,7 @@ void NuTo::NewmarkDirect::Restore (const std::string &filename, std::string rTyp
             boost::archive::text_iarchive ota ( ifs, std::ios::binary );
             ota & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw MechanicsException ( "[JumpDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else
@@ -925,14 +830,14 @@ void NuTo::NewmarkDirect::Restore (const std::string &filename, std::string rTyp
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[NewmarkDirect::Restore]Unhandled exception." );
+        throw MechanicsException ( "[JumpDirect::Restore]Unhandled exception." );
     }
 }
 
 //  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::NewmarkDirect::Save (const std::string &filename, std::string rType )const
+void NuTo::JumpDirect::Save (const std::string &filename, std::string rType )const
 {
     try
     {
@@ -961,12 +866,12 @@ void NuTo::NewmarkDirect::Save (const std::string &filename, std::string rType )
         }
         else
         {
-            throw MechanicsException ( "[NewmarkDirect::Save]File type not implemented." );
+            throw MechanicsException ( "[JumpDirect::Save]File type not implemented." );
         }
     }
     catch ( boost::archive::archive_exception e )
     {
-        std::string s ( std::string ( "[NewmarkDirect::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+        std::string s ( std::string ( "[JumpDirect::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         std::cout << s << "\n";
         throw MathException ( s );
     }
@@ -980,11 +885,11 @@ void NuTo::NewmarkDirect::Save (const std::string &filename, std::string rType )
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[NewmarkDirect::Save]Unhandled exception." );
+        throw MechanicsException ( "[JumpDirect::Save]Unhandled exception." );
     }
 }
 
 #ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NewmarkDirect)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::JumpDirect)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION

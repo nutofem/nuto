@@ -19,6 +19,7 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::ConstitutiveStaticDataDamag
 	mOmegaCompr = 0.;
 	mKappaInelastic = 0.;
 	mVP     = 0.;
+	mViscoP = 0.;
 	mPrevHardening = 0.;
 
 	mEpsilonP[0] = 0.;
@@ -42,6 +43,7 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D& NuTo::ConstitutiveStaticDat
     mOmegaCompr = rOther.mOmegaCompr;
     mKappaInelastic = rOther.mKappaInelastic;
     mVP = rOther.mVP;
+    mViscoP = rOther.mViscoP;
     mPrevHardening = rOther.mPrevHardening;
 
     mEpsilonP[0] = rOther.mEpsilonP[0];
@@ -64,7 +66,8 @@ NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D& NuTo::ConstitutiveStaticDat
 //! @brief check, if the static data is compatible with a given element and a given constitutive model
 bool NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const
 {
-	if (rConstitutiveType==NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS)
+	if (rConstitutiveType==NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS ||
+			rConstitutiveType==NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS)
 	{
 		if (rElementType==NuTo::Element::BRICK8N || rElementType==NuTo::Element::TETRAHEDRON4N || rElementType==NuTo::Element::TETRAHEDRON10N)
 			return true;
@@ -109,6 +112,7 @@ void NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D::serialize(Archive & ar
        & BOOST_SERIALIZATION_NVP(mEpsilonP)
        & BOOST_SERIALIZATION_NVP(mEpsilonVp)
        & BOOST_SERIALIZATION_NVP(mVP)
+       & BOOST_SERIALIZATION_NVP(mViscoP)
        & BOOST_SERIALIZATION_NVP(mPrevHardening);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataDamageViscoPlasticity3D" << std::endl;
