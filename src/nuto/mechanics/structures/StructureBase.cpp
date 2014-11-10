@@ -726,7 +726,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             rVisualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::ACCELERATION:
-            //do nothing;
+            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::ANGULAR_VELOCITY:
             //do nothing;
