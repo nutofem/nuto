@@ -369,6 +369,12 @@ protected:
     boost::array<boost::array<double, TNumNonlocalTotalStrain>,TNumTimeDerivatives+1> mNonlocalTotalStrain;
     boost::array<int, TNumNonlocalTotalStrain> mDofNonlocalTotalStrain;
 
+    boost::array<boost::array<double, TNumWaterPhaseFraction>,TNumTimeDerivatives+1> mWaterPhaseFraction;
+    boost::array<int, TNumWaterPhaseFraction> mDofWaterPhaseFraction;
+
+    boost::array<boost::array<double, TNumRelativeHumidity>,TNumTimeDerivatives+1> mRelativeHumidity;
+    boost::array<int, TNumRelativeHumidity> mDofRelativeHumidity;
+
 };
 
 }//namespace NuTo

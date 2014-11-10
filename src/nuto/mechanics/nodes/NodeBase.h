@@ -352,6 +352,43 @@ public:
     //! @return global DOF
     virtual int GetDofNonlocalTotalStrain(int rComponent)const;
 
+    // Moisture Transport --- Begin
+
+    // WaterPhaseFraction, int TNumRelativeHumidity
+
+    //! @brief returns the number of water phase fraction components of the node
+    //! @return number of water phase fraction components
+    virtual int GetNumWaterPhaseFraction()const;
+
+    //! @brief returns the water phase fraction of the node
+    //! @return water phase fraction
+    virtual double GetWaterPhaseFraction()const;
+
+    //! @brief returns the water phase fraction of the node
+    //! @param rTimeDerivative time derivative
+    //! @return water phase fraction
+    virtual double GetWaterPhaseFraction(int rTimeDerivative)const;
+
+    //! @brief set the water phase fraction of the node
+    //! @param rTemperature  given temperature
+    virtual void SetWaterPhaseFraction(double rWaterPhaseFraction);
+
+    //! @brief set the water phase fraction of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rTemperature  given temperature
+    virtual void SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction);
+
+    //! @brief gives the global DOF of a water phase fraction component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofWaterPhaseFraction()const;
+
+
+
+    // Moisture Transport --- End
+
+
+
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
     virtual std::string GetNodeTypeStr()const=0;

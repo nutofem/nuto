@@ -528,6 +528,62 @@ int NuTo::NodeBase::GetDofNonlocalTotalStrain(int rComponent)const
 }
 
 
+// Moisture Transport --- Begin
+
+// WaterPhaseFraction, int TNumRelativeHumidity
+
+//! @brief returns the number of water phase fraction components of the node
+//! @return number of water phase fraction components
+int NuTo::NodeBase::GetNumWaterPhaseFraction()const
+{
+    return 0;
+}
+
+//! @brief returns the water phase fraction of the node
+//! @return water phase fraction
+double NuTo::NodeBase::GetWaterPhaseFraction()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+}
+
+//! @brief returns the water phase fraction of the node
+//! @param rTimeDerivative time derivative
+//! @return water phase fraction
+double NuTo::NodeBase::GetWaterPhaseFraction(int rTimeDerivative)const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+}
+
+//! @brief set the water phase fraction of the node
+//! @param rTemperature  given temperature
+void NuTo::NodeBase::SetWaterPhaseFraction(double rWaterPhaseFraction)
+{
+    throw MechanicsException("[NuTo::NodeBase::SetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+}
+
+//! @brief set the water phase fraction of the node
+//! @param rTimeDerivative time derivative
+//! @param rTemperature  given temperature
+void NuTo::NodeBase::SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction)
+{
+    throw MechanicsException("[NuTo::NodeBase::SetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+}
+
+//! @brief gives the global DOF of a water phase fraction component
+//! @param rComponent component
+//! @return global DOF
+int NuTo::NodeBase::GetDofWaterPhaseFraction()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetDofWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+}
+
+
+
+// Moisture Transport --- End
+
+
+
+
 #ifdef ENABLE_VISUALIZE
 void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
 {
