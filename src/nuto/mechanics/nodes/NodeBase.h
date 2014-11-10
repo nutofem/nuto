@@ -254,7 +254,6 @@ public:
     virtual void SetTemperature(int rTimeDerivative, double rTemperature);
 
     //! @brief gives the global DOF of a temperature component
-    //! @param rComponent component
     //! @return global DOF
     virtual int GetDofTemperature()const;
 
@@ -352,6 +351,32 @@ public:
     //! @return global DOF
     virtual int GetDofNonlocalTotalStrain(int rComponent)const;
 
+    //! @brief returns the number of temperatures of the node
+    //! @return number of temperatures
+    virtual int GetNumNonlocalEqStrain()const;
+
+    //! @brief returns the nonlocal eq. strain of the node
+    //! @return nonlocal eq. strain
+    virtual double GetNonlocalEqStrain()const;
+
+    //! @brief returns the nonlocal eq. strain of the node
+    //! @param rTimeDerivative time derivative
+    //! @return nonlocal eq. strain
+    virtual double GetNonlocalEqStrain(int rTimeDerivative)const;
+
+    //! @brief set the nonlocal eq. strain of the node
+    //! @param rNonlocalEqStrain  given nonlocal eq. strain
+    virtual void SetNonlocalEqStrain(double rNonlocalEqStrain);
+
+    //! @brief set the temperature of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rNonlocalEqStrain given nonlocal eq. strain
+    virtual void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain);
+
+    //! @brief gives the global DOF the nonlocal eq. strain
+    //! @return global DOF
+    virtual int GetDofNonlocalEqStrain()const;
+
     // Moisture Transport --- Begin
 
     // WaterPhaseFraction, int TNumRelativeHumidity
@@ -386,7 +411,6 @@ public:
 
 
     // Moisture Transport --- End
-
 
 
     //! @brief returns the type of node as a string (all the data stored at the node)

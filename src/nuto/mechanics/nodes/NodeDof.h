@@ -36,6 +36,10 @@ NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::NodeDof() //: NuTo::NodeBase()
 		{
 			mNonlocalTotalStrain[countDerivatives][count]=0.;
 		}
+        for (int count=0; count<TNumNonlocalEqStrain; count++)
+        {
+            mNonlocalEqStrain[countDerivatives][count]=0.;
+        }
 	}
 	for (int count=0; count<TNumDisplacements; count++)
 	{
@@ -57,6 +61,11 @@ NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::NodeDof() //: NuTo::NodeBase()
 	{
 		mDofNonlocalTotalStrain[count]=-1;
 	}
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        mDofNonlocalEqStrain[count]=-1;
+    }
+
 
 }
 
@@ -85,6 +94,9 @@ void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 
     mNonlocalTotalStrain = rOther.mNonlocalTotalStrain;
     mDofNonlocalTotalStrain = rOther.mDofNonlocalTotalStrain;
+
+    mNonlocalEqStrain = rOther.mNonlocalEqStrain;
+    mDofNonlocalEqStrain = rOther.mDofNonlocalEqStrain;
 }
 
     //! @brief sets the global dofs
@@ -112,6 +124,10 @@ SetGlobalDofs(int& rDOF)
     for (int count=0; count<TNumNonlocalTotalStrain; count++)
     {
     	mDofNonlocalTotalStrain[count]=rDOF++;
+    }
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        mDofNonlocalEqStrain[count]=rDOF++;
     }
 }
 
@@ -213,6 +229,23 @@ SetGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dyn
         }
         this->mNonlocalTotalStrain[rTimeDerivative][count] = value;
     }
+
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        int dof = this->mDofNonlocalEqStrain[count];
+        double value;
+        if (dof >= rActiveDofValues.GetNumRows())
+        {
+            dof -= rActiveDofValues.GetNumRows();
+            assert(dof < rDependentDofValues.GetNumRows());
+            value = rDependentDofValues(dof);
+        }
+        else
+        {
+            value = rActiveDofValues(dof);
+        }
+        this->mNonlocalEqStrain[rTimeDerivative][count] = value;
+    }
 }
 
 
@@ -307,6 +340,22 @@ GetGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>&
             rActiveDofValues(dof) = value;
         }
     }
+
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        int dof = this->mDofNonlocalEqStrain[count];
+        double value = this->mNonlocalEqStrain[rTimeDerivative][count];
+        if (dof >= rActiveDofValues.GetNumRows())
+        {
+            dof -= rActiveDofValues.GetNumRows();
+            assert(dof < rDependentDofValues.GetNumRows());
+            rDependentDofValues(dof) = value;
+        }
+        else
+        {
+            rActiveDofValues(dof) = value;
+        }
+    }
 }
 
 
@@ -339,6 +388,10 @@ RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     for (int count=0; count<TNumNonlocalTotalStrain; count++)
     {
     	mDofNonlocalTotalStrain[count]=rMappingInitialToNewOrdering[mDofNonlocalTotalStrain[count]];
+    }
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        mDofNonlocalEqStrain[count]=rMappingInitialToNewOrdering[mDofNonlocalEqStrain[count]];
     }
 }
 
@@ -964,6 +1017,73 @@ GetDofNonlocalTotalStrain(int rComponent)const
 	return mDofNonlocalTotalStrain[rComponent];
 
 }
+
+
+//! @brief returns the number of nonlocal eq. strain of the node
+//! @return number of temperatures
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetNumNonlocalEqStrain()const
+{
+    return TNumNonlocalEqStrain;
+}
+
+//! @brief returns the nonlocal eq. strain of the node
+//! @return nonlocal eq. strain
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetNonlocalEqStrain()const
+{
+    assert(TNumNonlocalEqStrain==1);
+    return mNonlocalEqStrain[0][0];
+}
+
+//! @brief returns the nonlocal eq. strain of the node
+//! @return nonlocal eq. strain
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetNonlocalEqStrain(int rTimeDerivative)const
+{
+    assert(TNumNonlocalEqStrain==1);
+    assert(rTimeDerivative>=0);
+    assert(rTimeDerivative<=TNumTimeDerivatives);
+    return mNonlocalEqStrain[rTimeDerivative][0];
+}
+
+//! @brief set the nonlocal eq. strain of the node
+//! @param rNonlocalEqStrain  given nonlocal eq. strain
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+SetNonlocalEqStrain(double rNonlocalEqStrain)
+{
+    assert(TNumNonlocalEqStrain==1);
+    mNonlocalEqStrain[0][0] = rNonlocalEqStrain;
+}
+
+//! @brief set the nonlocal eq. strain of the node
+//! @param rNonlocalEqStrain  given nonlocal eq. strain
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain)
+{
+    assert(TNumNonlocalEqStrain==1);
+    assert(rTimeDerivative>=0);
+    assert(rTimeDerivative<=TNumNonlocalEqStrain);
+    mNonlocalEqStrain[rTimeDerivative][0] = rNonlocalEqStrain;
+}
+
+//! @brief gives the global DOF of a nonlocal eq. strain component
+//! @param rComponent component
+//! @return global DOF
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetDofNonlocalEqStrain()const
+{
+    assert(TNumNonlocalEqStrain==1);
+    return mDofNonlocalEqStrain[0];
+
+}
+
 
 //! @brief returns the type of node as a string (all the data stored at the node)
 //! @return string

@@ -527,6 +527,55 @@ int NuTo::NodeBase::GetDofNonlocalTotalStrain(int rComponent)const
 	throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
 }
 
+//! @brief returns the number of temperatures of the node
+//! @return number of temperatures
+int NuTo::NodeBase::GetNumNonlocalEqStrain()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+}
+
+
+//! @brief returns the nonlocal eq. strain of the node
+//! @return nonlocal eq. strain
+double NuTo::NodeBase::GetNonlocalEqStrain()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+}
+
+
+//! @brief returns the nonlocal eq. strain of the node
+//! @param rTimeDerivative time derivative
+//! @return nonlocal eq. strain
+double NuTo::NodeBase::GetNonlocalEqStrain(int rTimeDerivative)const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+}
+
+
+//! @brief set the nonlocal eq. strain of the node
+//! @param rNonlocalEqStrain  given nonlocal eq. strain
+void NuTo::NodeBase::SetNonlocalEqStrain(double rNonlocalEqStrain)
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+}
+
+
+//! @brief set the temperature of the node
+//! @param rTimeDerivative time derivative
+//! @param rNonlocalEqStrain given nonlocal eq. strain
+void NuTo::NodeBase::SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain)
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+}
+
+
+//! @brief gives the global DOF the nonlocal eq. strain
+//! @return global DOF
+int NuTo::NodeBase::GetDofNonlocalEqStrain()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+}
+
 
 // Moisture Transport --- Begin
 
@@ -580,7 +629,6 @@ int NuTo::NodeBase::GetDofWaterPhaseFraction()const
 
 
 // Moisture Transport --- End
-
 
 
 
@@ -723,7 +771,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 			}
 				break;
 			default:
-				;
+				break;
         }
         WhatIter++;
     }

@@ -331,12 +331,38 @@ public:
 
     //! @brief returns the nonlocal total strain component of the node
     //! @return strain component (rTimeDerivative=0)
-    double GetNonlocalTotalStrain(short rIndex)const;
+    double GetNonlocalTotalStrain(short rIndex)const override;
 
     //! @brief gives the global DOF of a Damage component
     //! @param rComponent component
     //! @return global DOF
     int GetDofNonlocalTotalStrain(int rComponent)const override;
+
+    //! @brief returns the number of temperatures of the node
+    //! @return number of temperatures
+    int GetNumNonlocalEqStrain()const override;
+
+    //! @brief returns the nonlocal eq. strain of the node
+    //! @return nonlocal eq. strain
+    double GetNonlocalEqStrain()const override;
+
+    //! @brief returns the nonlocal eq. strain of the node
+    //! @param rTimeDerivative time derivative
+    //! @return nonlocal eq. strain
+    double GetNonlocalEqStrain(int rTimeDerivative)const override;
+
+    //! @brief set the nonlocal eq. strain of the node
+    //! @param rNonlocalEqStrain  given nonlocal eq. strain
+    void SetNonlocalEqStrain(double rNonlocalEqStrain) override;
+
+    //! @brief set the temperature of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rNonlocalEqStrain given nonlocal eq. strain
+    void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain) override;
+
+    //! @brief gives the global DOF the nonlocal eq. strain
+    //! @return global DOF
+    virtual int GetDofNonlocalEqStrain()const override;
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
@@ -368,6 +394,9 @@ protected:
 
     boost::array<boost::array<double, TNumNonlocalTotalStrain>,TNumTimeDerivatives+1> mNonlocalTotalStrain;
     boost::array<int, TNumNonlocalTotalStrain> mDofNonlocalTotalStrain;
+
+    boost::array<boost::array<double, TNumNonlocalEqStrain>,TNumTimeDerivatives+1> mNonlocalEqStrain;
+    boost::array<int, TNumNonlocalEqStrain> mDofNonlocalEqStrain;
 
     boost::array<boost::array<double, TNumWaterPhaseFraction>,TNumTimeDerivatives+1> mWaterPhaseFraction;
     boost::array<int, TNumWaterPhaseFraction> mDofWaterPhaseFraction;
