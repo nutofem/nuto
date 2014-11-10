@@ -15,6 +15,8 @@
 #include <omp.h>
 # endif
 
+#include "nuto/math/SparseDirectSolverMUMPS.h"
+
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -27,6 +29,7 @@
 NuTo::NystroemBase::NystroemBase (StructureBase* rStructure)  : TimeIntegrationBase (rStructure)
 {
     mTimeStep = 0.;
+    mUseDiagonalMassMatrix = true;
 }
 
 
@@ -50,7 +53,9 @@ void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
     #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialization of NystroemBase" << "\n";
     #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase)
+           & BOOST_SERIALIZATION_NVP(mTimeStep)
+           & BOOST_SERIALIZATION_NVP(mUseDiagonalMassMatrix);
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialization of NystroemBase" << "\n";
     #endif
@@ -84,6 +89,8 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
                 throw MechanicsException("[NuTo::NystroemBase::Solve] time step not set for unconditionally stable algorithm.");
         	}
         }
+        //allocate solver (usually not needed)
+        NuTo::SparseDirectSolverMUMPS mySolver;
 
         std::cout << "modify computation of critical time step to include the dependence on the time integration scheme." <<std::endl;
         //calculate instead the smallest eigenfrequency, depending on the time integration this gives the critical time step
@@ -99,15 +106,15 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
         mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
         NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        FullVector<double,Eigen::Dynamic> bRHS;
+        //FullVector<double,Eigen::Dynamic> bRHS;
         if (CmatT.GetNumEntries() > 0)
         {
             throw MechanicsException("[NuTo::NystroemBase::Solve] not implemented for constrained systems including multiple dofs.");
         }
 
         //calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use asDiagonal()
-        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j(mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> massMatrix_k;
+        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j;
+        NuTo::SparseMatrixCSRGeneral<double> fullMassMatrix_jj;
 
         //extract displacements, velocities and accelerations
         NuTo::FullVector<double,Eigen::Dynamic> disp_j, vel_j, tmp_k,
@@ -124,15 +131,30 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
         mStructure->NodeExtractDofValues(0,disp_j,tmp_k);
         mStructure->NodeExtractDofValues(1,vel_j,tmp_k);
 
-        //calculate lumped mass matrix
-        //intForce_j is just used as a tmp variable
-        mStructure->BuildGlobalLumpedHession2(intForce_j,massMatrix_k);
+        if (mUseDiagonalMassMatrix)
+        {
+            //calculate lumped mass matrix
+        	invMassMatrix_j.resize(mStructure->GetNumActiveDofs());
+            //intForce_j is just used as a tmp variable
+			mStructure->BuildGlobalLumpedHession2(intForce_j,tmp_k);
 
-        //check the sum of all entries
-        std::cout << "the total mass is " << intForce_j.sum()/3. +  tmp_k.sum()/3. << std::endl;
+			//check the sum of all entries
+			std::cout << "the total mass is " << intForce_j.sum()/3. +  tmp_k.sum()/3. << std::endl;
 
-        //invert the mass matrix
-        invMassMatrix_j = intForce_j.cwiseInverse();
+			//invert the mass matrix
+			invMassMatrix_j = intForce_j.cwiseInverse();
+        }
+        else
+        {
+        	NuTo::SparseMatrixCSRVector2General<double> full2MassMatrix_jj,full2MassMatrix_jk,full2MassMatrix_kj,full2MassMatrix_kk;
+        	full2MassMatrix_jj.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
+        	full2MassMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
+        	full2MassMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
+        	full2MassMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
+			mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,full2MassMatrix_jj,full2MassMatrix_jk,full2MassMatrix_kj,full2MassMatrix_kk);
+			fullMassMatrix_jj=full2MassMatrix_jj;
+			fullMassMatrix_jj.SetOneBasedIndexing();
+	    }
 
         double curTime  = 0;
 		CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
@@ -166,14 +188,17 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 					curTime=prevCurTime+deltaTimeStage;
 					mTime=prevTime+deltaTimeStage;
 
-//to be implemented mStructure->SetCurrentTime(mTime);
+                    //to be implemented for time dependent problems mStructure->SetCurrentTime(mTime);
 					//an update of the external load factor and the time dependent constraint is only
 					//necessary for a modified global time
 					if (mTimeDependentConstraint!=-1)
     				{
-    					throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
-    					//double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-    					//mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+				        if (CmatT.GetNumEntries() > 0)
+				        {
+				            throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
+				        }
+    					double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+    					mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
     					//mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
     				}
     				//calculate external force
@@ -189,7 +214,16 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 				//std::cout << "norm of deltaForce " << (intForce_j-extForce_j).norm() << std::endl;
 
 				//std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
-				acc_j_tmp[countStage]  = (invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j));
+				if (mUseDiagonalMassMatrix)
+				{
+					//no system has to be solved
+					acc_j_tmp[countStage]  = (invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j));
+				}
+				else
+				{
+					//system of equations has to be solved
+					mySolver.Solve(fullMassMatrix_jj, extForce_j-intForce_j, acc_j_tmp[countStage]);
+				}
 				//std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
 				//std::cout << "norm of acc " << (d_vel_j_tmp).norm() << std::endl;
 
@@ -232,10 +266,10 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 	        	//the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
 	        	//this is calculated using finite differencs
 	        	//make sure to recalculate the internal force and external force (if time factor is not 1)
-				if (mTimeDependentConstraint!=-1)
-				{
-					throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
-				}
+				//if (mTimeDependentConstraint!=-1)
+				//{
+				//	throw MechanicsException("[NuTo::NystroemBase::Solve3] solution with constraints not yet implemented.");
+				//}
 
 				//acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
 	        	//outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
@@ -248,7 +282,7 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
     }
     catch (MechanicsException& e)
     {
-        e.AddMessage("[NuTo::NystroemBase::Solve] performing Newton-Raphson iteration.");
+        e.AddMessage("[NuTo::NystroemBase::Solve] performing Nystroem iteration.");
         throw e;
     }
 #ifdef SHOW_TIME

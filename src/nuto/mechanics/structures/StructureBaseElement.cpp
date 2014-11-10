@@ -1802,6 +1802,38 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
         std::cout<<"[NuTo::StructureBase::ElementGroupGetAverageStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
+
+
+void NuTo::StructureBase::ElementGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetMembers] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupGetMembers] Group is not an element group.");
+    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
+    assert(elementGroup!=0);
+
+    rMembers.Resize(elementGroup->GetNumMembers());
+    int countElement(0);
+    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++,countElement++)
+    {
+       	rMembers[countElement] = itElement->first;
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupGetMembers] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+
 //! @brief calculates the total energy of the system
 //! @return total energy
 double NuTo::StructureBase::ElementTotalGetInternalEnergy()
@@ -1988,7 +2020,7 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 		boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE );
 		boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_0_TIME_DERIVATIVE );
 
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver;
+		Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> > eigenSolver;
 
 
 #ifdef _OPENMP
@@ -2016,9 +2048,17 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 				NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  stiffness(elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble());
 
 				//assuming the stiffness matrix is symmetric
+				//std::cout << "lumped mass in element routine\n" <<  lumpedMass << std::endl;
+				//std::cout << "element stiffness\n" << stiffness << std::endl;
+
+				//eigenSolver.compute(stiffness);
+				//std::cout << "eigenvalues element stiffness\n" << eigenSolver.eigenvalues() << std::endl;
+
+				//std::cout << "eigenmatrix element\n" << lumpedMass.cwiseInverse().asDiagonal()*stiffness << std::endl;
 
 				//invert the lumped mass matrix
-				eigenSolver.compute((lumpedMass.cwiseInverse()).asDiagonal()*stiffness);
+				eigenSolver.compute(stiffness,lumpedMass.asDiagonal());
+				//std::cout << "eigenvalues in element routine\n" <<  eigenSolver.eigenvalues() << std::endl;
 
 				double maxElementEigenValue = eigenSolver.eigenvalues().maxCoeff();
 				if (maxElementEigenValue>maxGlobalEigenValue)

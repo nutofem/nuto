@@ -140,7 +140,7 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   endif()
 
   #-Wfatal-errors for not so long error messages
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -msse4")
   # ISO standards mode does not work well on MinGW
   # (they don't define certain things that are defined on other platforms in standard mode,
   # like M_PI)

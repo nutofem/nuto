@@ -63,9 +63,19 @@ public:
     //! @brief ... return, if time (e.g. for the calculation of external loads) has changed
     virtual bool HasTimeChanged(int rStage)const=0;
 
+    //! @brief ... set whether to use a diagonal mass matrix (standard) or a full mass matrix
+    void SetUseLumpedMass(bool rUseDiagonalMassMatrix)
+    {
+    	mUseDiagonalMassMatrix = rUseDiagonalMassMatrix;
+    }
+
+
 protected:
     //empty private construct required for serialization
     NystroemBase(){};
+private:
+    //use diagonal mass matrix (standard is true, only for test cases use false)
+    bool mUseDiagonalMassMatrix;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

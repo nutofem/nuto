@@ -73,6 +73,19 @@ int NuTo::Structure::ElementGetId(const ElementBase* rElement)const
     throw MechanicsException("[NuTo::Structure::GetElementId] Element does not exist.");
 }
 
+//! @brief returns a vector with the node ids of an element
+//! @param identifier
+//! @return vector with node ids
+NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::ElementGetNodes(int rId)
+{
+	NuTo::ElementBase* elementPtr = ElementGetElementPtr(rId);
+	NuTo::FullVector<int,Eigen::Dynamic> nodeVector(elementPtr->GetNumNodes());
+	for (int count=0; count<elementPtr->GetNumNodes();count++)
+		nodeVector(count) = this->NodeGetId(elementPtr->GetNode(count));
+	return nodeVector;
+}
+
+
 //! @brief info about one single element
 //! @param rElement (Input) ... pointer to the element
 //! @param rVerboseLevel (Input) ... level of verbosity

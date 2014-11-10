@@ -110,8 +110,8 @@ void NuTo::Plane2D10N::CalculateNaturalNodeCoordinates(std::vector< std::array<d
 {
 	rNaturalNodeCoordinates.resize(10);
 
-	std::array<double,2>& tmparray(rNaturalNodeCoordinates[0]);
-	tmparray[0] = 0.;
+	//std::array<double,2>& tmparray(rNaturalNodeCoordinates[0]);
+	//tmparray[0] = 0.;
 
 	//node 0
 	rNaturalNodeCoordinates[0][0] = 0.0;

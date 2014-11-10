@@ -53,7 +53,7 @@ class ElementOutputBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
-//! @brief ... standard abstract class for all groups
+//! @brief ... standard abstract class for all elements
 class ElementBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -263,19 +263,22 @@ public:
     virtual void InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], double rGlobalCoordinates[3]) const;
 
     //! @brief ... interpolate three-dimensional global point displacements from one-dimensional local point coordinates (element coordinates system)
+    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    virtual void InterpolateDisplacementsFrom1D(double rLocalCoordinates, double rGlobalDisplacements[3]) const;
+    virtual void InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const;
 
     //! @brief ... interpolate three-dimensional global point displacements from two-dimensional local point coordinates (element coordinates system)
+    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rLocalCoordinates ... two-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    virtual void InterpolateDisplacementsFrom2D(double rLocalCoordinates[2], double rGlobalDisplacements[3]) const;
+    virtual void InterpolateDisplacementsFrom2D(int rTimeDerivative, double rLocalCoordinates[2], double rGlobalDisplacements[3]) const;
 
     //! @brief ... interpolate three-dimensional global point displacements from three-dimensional local point coordinates (element coordinates system)
+    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rLocalCoordinates ... three-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    virtual void InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
+    virtual void InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
 
     //! @brief ... interpolate three-dimensional global temperature from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates

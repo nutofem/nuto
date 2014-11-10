@@ -162,6 +162,30 @@ void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
 #endif
 }
 
+//! @brief ... Adds an element to an element group
+//! @param ... rIdentGroup identifier for the group
+//! @param ... rIdentNode  identifier for the element
+void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupAddElement] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group.");
+
+    itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupAddElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
 //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
 //! @param ... rIdentGroup identifier for the group
 //! @param ... rDirection either 0,1,2 for x,y, or z
@@ -315,14 +339,9 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
         std::vector<std::pair<int,NodeBase*> > nodeVector;
         this->GetNodesTotal(nodeVector);
         FullVector<double,2> coordinates;
-        FullVector<double,2> vecPtrCenter;
-        FullVector<double,2> vecPtrProjection;
         FullVector<double,2> vecDelta;
         double rMin2 = rMin*rMin;
         double rMax2 = rMax*rMax;
-
-        //normalize Diretion Vector
-        rDirection*=1./rDirection.Norm();
 
         for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
         {
@@ -331,12 +350,7 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
                 continue;
             double r2(0.);
     		nodePtr->GetCoordinates2D(coordinates.data());
-    		vecPtrCenter = coordinates - rCenter;
-
-    		//get projection onto axis
-    		double s = rDirection.transpose()*vecPtrCenter;
-    		vecPtrProjection = rCenter+rDirection*s;
-    		vecDelta = coordinates - vecPtrProjection;
+    		vecDelta = coordinates - rCenter;
 
     		r2 = (vecDelta(0)*vecDelta(0) + vecDelta(1)*vecDelta(1));
 
@@ -399,7 +413,9 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
 //! @brief ... Adds all elements to a group whose nodes are in the given node group
 //! @param ... rElementGroupId identifier for the element group
 //! @param ... rNodeGroupId idenbtifier for the node group
-void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId)
+//! @param ... rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group, if set
+//! to false, the element is select if at least one node is in the node group
+void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId, bool rHaveAllNodes)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -427,18 +443,37 @@ void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNo
         {
         	if (!elementGroup->Contain(elementVector[countElement].first))
         	{
-        		bool elementAdded;
-        		int countNode;
-        		for (countNode=0, elementAdded=false;
-        				(countNode<elementVector[countElement].second->GetNumNodes()) && (elementAdded==false);
-        				countNode++)
-				{
-					if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode))!=nodePtrSet.end())
+        		bool addElement;
+        		if (rHaveAllNodes==true)
+        		{
+        			addElement = true;
+					int countNode;
+					for (countNode=0; (countNode<elementVector[countElement].second->GetNumNodes()) && (addElement==true);
+							countNode++)
 					{
-						//add the element;
-						elementGroup->AddMember(elementVector[countElement].first, elementVector[countElement].second);
-						elementAdded=true;
+						if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode))==nodePtrSet.end())
+						{
+							addElement=false;
+						}
 					}
+        		}
+        		else
+        		{
+        			addElement = false;
+					int countNode;
+					for (countNode=0; (countNode<elementVector[countElement].second->GetNumNodes()) && (addElement==false);
+							countNode++)
+					{
+						if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode))==nodePtrSet.end())
+						{
+							addElement=true;
+						}
+					}
+        		}
+				if (addElement)
+				{
+					//add the element;
+					elementGroup->AddMember(elementVector[countElement].first, elementVector[countElement].second);
 				}
         	}
         }
@@ -630,6 +665,47 @@ int NuTo::StructureBase::GroupGetNumMembers(int rIdentGroup)const
         std::cout<<"[NuTo::StructureBase::GroupGetNumMembers] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
     return (*itGroup).second->GetNumMembers();
+}
+
+//! @brief ... Returns a vector with the members of a group
+//! @param ... rIdentGroup identifier for the group
+//! @return ... vector of members
+NuTo::FullVector<int, Eigen::Dynamic> NuTo::StructureBase::GroupGetMemberIds(int rIdentGroup)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupGetNumMembers] Group with the given identifier does not exist.");
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupGetNumMembers] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+    return (*itGroup).second->GetMemberIds();
+}
+
+
+//! @brief ... checks for a member in a group
+//! @param ... rIdentGroup identifier for the group
+//! @return ... rMember id (element id, node id etc.)
+bool NuTo::StructureBase::GroupContainsMember(int rIdentGroup, int rMember)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupContains] Group with the given identifier does not exist.");
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::GroupContains] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+    return (*itGroup).second->Contain(rMember);
 }
 
 // get group pointer from group identifier

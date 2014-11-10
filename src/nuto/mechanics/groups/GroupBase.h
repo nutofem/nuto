@@ -10,6 +10,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/math/FullVector_Def.h"
 
 namespace NuTo
 {
@@ -60,6 +61,10 @@ public:
 	//! @brief gives the number of group members
 	//! @return number of group members
 	virtual int GetNumMembers()const=0;
+
+	//! @brief gives the group member ids
+	//! @return group members
+	virtual NuTo::FullVector<int,Eigen::Dynamic> GetMemberIds()const=0;
 
 	//! @brief gives the group type
 	//! @return group type

@@ -173,7 +173,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
             //**********************************************
         	if (CmatT.GetNumEntries() > 0)
 	        {
-	            throw MechanicsException("[NuTo::NystroemBase::Solve] not implemented for constrained systems including multiple dofs.");
+	            throw MechanicsException("[NuTo::VelocityVerlet::Solve] not implemented for constrained systems including multiple dofs.");
 	        }
 	        else
 	        {
@@ -181,10 +181,10 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
 			    //outOfBalance_j.Resize(intForce_j.GetNumRows());
 	        	//the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
 	        	//this is calculated using finite differencs
-				if (mTimeDependentConstraint!=-1)
-				{
-					throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
-				}
+				//if (mTimeDependentConstraint!=-1)
+				//{
+				//	throw MechanicsException("[NuTo::VelocityVerlet::Solve] solution with constraints not yet implemented.");
+				//}
 
 				//acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
 	        	//outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;

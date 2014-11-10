@@ -150,10 +150,11 @@ double NuTo::NystroemQinZhu::GetStageWeights2(int rStage)const
 //! @brief calculate the critical time step for explicit routines
 //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
 //! this is the critical time step from velocity verlet, the real one is certainly larger
+//! check paper "Lax-Wendroff and Nystrom methods for seismic modelling" by Jing-Bo Chen
 double NuTo::NystroemQinZhu::CalculateCriticalTimeStep()const
 {
 	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
-	return 2.45/std::sqrt(maxGlobalEigenValue);
+	return 2.58651889452/std::sqrt(maxGlobalEigenValue);
 }
 
 

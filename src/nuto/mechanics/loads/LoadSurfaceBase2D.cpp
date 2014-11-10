@@ -25,7 +25,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
     	nodePtrSet.insert(itNode->second);
     }
 
-    std::cout << "number of loaded elements " << nodeGroup->GetNumMembers() << std::endl;
+    std::cout << "number of loaded nodes " << nodeGroup->GetNumMembers() << std::endl;
 
 	//loop over all elements
 	std::vector<const NodeBase*> surfaceNodes;

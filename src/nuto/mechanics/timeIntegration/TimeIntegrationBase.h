@@ -154,6 +154,12 @@ public:
     //! @return id of the result, so that it could be modified afterwards
     int AddResultTime(const std::string& rResultStr);
 
+    //! @brief monitor the stress of all ips in an element (always 6 components times number of integration points)
+    //! @param rResultId string identifying the result, this is used for the output file
+    //! @param rElementId id of the element to be monitored
+    //! @return id of the result, so that it could be modified afterwards
+    int AddResultElementIpStress(const std::string& rResultStr, int rElementId);
+
     //! @brief sets the result directory
     //! @param if delete is set, all the content of the directory will be removed
     void SetResultDirectory(std::string rResultDir, bool rDelete);

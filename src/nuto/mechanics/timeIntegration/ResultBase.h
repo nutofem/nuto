@@ -22,6 +22,7 @@ namespace NuTo
 class ResultNodeDof;
 class ResultGroupNodeDof;
 class ResultTime;
+class ResultElementIpBase;
 class StructureBase;
 //! @author Jörg F. Unger, BAM
 //! @date December 2013
@@ -64,6 +65,11 @@ public:
     virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
     	throw MechanicsException("[NutO::ResultBase::ResultNodeGroupDof] object is not of this type.");
+    }
+
+    virtual ResultElementIpBase* AsResultElementIpBase()
+    {
+    	throw MechanicsException("[NutO::ResultBase::AsResultElementIpBase] object is not of this type.");
     }
 
 

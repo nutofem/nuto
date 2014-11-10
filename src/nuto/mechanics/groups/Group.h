@@ -63,6 +63,17 @@ public:
         return (int)this->size();
     }
 
+    //! @brief returns the group members
+    //! @return group members (id)
+    NuTo::FullVector<int,Eigen::Dynamic> GetMemberIds()const
+    {
+    	NuTo::FullVector<int,Eigen::Dynamic> members((int)this->size());
+    	int count(0);
+    	for (auto it = this->begin(); it!=this->end(); it++, count++)
+    		members(count) = it->first;
+    	return members;
+    }
+
     //! @brief adds a group member
     //! @param rMember new member
     void AddMember(int rId, T* rMember)

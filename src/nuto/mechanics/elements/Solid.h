@@ -225,12 +225,13 @@ public:
     //! @brief ... interpolate three-dimensional global point coordinates from three-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... three-dimensional local point coordinates
     //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    void InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], double rGlobalCoordinates[3]) const;
+    void InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], double rGlobalCoordinates[3]) const override;
 
     //! @brief ... interpolate three-dimensional global point displacements from three-dimensional local point coordinates (element coordinates system)
+    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rLocalCoordinates ... three-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    void InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
+    void InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLocalCoordinates[3], double rGlobalDisplacements[3]) const override;
 
     //! @brief ... interpolate three-dimensional global temperature from three-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... three-dimensional local point coordinates

@@ -226,12 +226,13 @@ public:
     //! @brief ... interpolate three-dimensional global point coordinates from two-dimensional local point coordinates (element coordinates system)
     //! @param rNaturalCoordinates ... two-dimensional point coordinates in natural coordinate system
     //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    void InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], double rGlobalCoordinates[2]) const;
+    void InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], double rGlobalCoordinates[2]) const override;
 
     //! @brief ... interpolate three-dimensional global point displacements from three-dimensional local point coordinates (element coordinates system)
+    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rNaturalCoordinates ... two-dimensional point coordinates in natural coordinate system
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    void InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const;
+    void InterpolateDisplacementsFrom2D(int rTimeDerivative, double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const override;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @param rVolume  vector for storage of the ip volumes (area in 2D)

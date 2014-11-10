@@ -17,8 +17,9 @@ enum eResultType
 {
 	TIME=0,                         //!< time
 	NODE_DISPLACEMENT,              //!< nodal diplacement
-	NODE_ACCELERATION,              //!< nodal diplacement
-	GROUP_NODE_FORCE
+	NODE_ACCELERATION,              //!< nodal accelerations
+	GROUP_NODE_FORCE,               //!< nodal forces
+	ELEMENT_IP_STRESS               //!> ip (stress)
 };
 
 }

@@ -73,7 +73,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
 
 	if (rDisplacements.GetNumColumns()!=1)
 	    throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Displacement matrix has to have a single column.");
-	if (nodePtr->GetNumTimeDerivatives()>rTimeDerivative)
+	if (nodePtr->GetNumTimeDerivatives()<rTimeDerivative)
 	    throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] number of time derivatives stored at node is less than the required value.");
 	try
 	{
@@ -270,12 +270,49 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
 #endif
 }
 
+void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::NodeGroupGetMembers] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+        throw MechanicsException("[NuTo::StructureBase::NodeGroupGetMembers] Group is not an node group.");
+    Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
+    assert(nodeGroup!=0);
+
+    rMembers.Resize(nodeGroup->GetNumMembers());
+    int countNode(0);
+    for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++,countNode++)
+    {
+       	rMembers[countNode] = itNode->first;
+    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::NodeGroupGetMembers] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
 
 
 //! @brief gets the displacements of a node
 //! @param rIdent node identifier
 //! @param rDisplacements matrix (one column) with the displacements
 void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullVector<double,Eigen::Dynamic>& rDisplacements)const
+{
+	this->NodeGetDisplacements(rNode,0,rDisplacements);
+}
+
+
+//! @brief gets the displacements of a node
+//! @param rIdent node identifier
+//! @param rDisplacements matrix (one column) with the displacements
+void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rDisplacements)const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -289,15 +326,15 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullVector<double,Eige
 		{
 		case 1:
 			rDisplacements.Resize(1);
-			nodePtr->GetDisplacements1D(rDisplacements.data());
+			nodePtr->GetDisplacements1D(rTimeDerivative,rDisplacements.data());
 		break;
 		case 2:
 			rDisplacements.Resize(2);
-			nodePtr->GetDisplacements2D(rDisplacements.data());
+			nodePtr->GetDisplacements2D(rTimeDerivative,rDisplacements.data());
 		break;
 		case 3:
 			rDisplacements.Resize(3);
-			nodePtr->GetDisplacements3D(rDisplacements.data());
+			nodePtr->GetDisplacements3D(rTimeDerivative,rDisplacements.data());
 		break;
 		case 0:
 			throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Node has no displacements.");
@@ -319,6 +356,59 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, FullVector<double,Eige
         std::cout<<"[NuTo::StructureBase::NodeGetDisplacements] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+
+//! @brief gets the displacement dofs of a node
+//! @param rIdent node identifier
+//! @param rDisplacements matrix (one column) with the displacements
+void NuTo::StructureBase::NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+	const NodeBase* nodePtr = NodeGetNodePtr(rNode);
+
+	try
+	{
+		switch (nodePtr->GetNumDisplacements())
+		{
+		case 1:
+			rDisplacementDofs.Resize(1);
+			rDisplacementDofs[0] = nodePtr->GetDofDisplacement(0);
+		break;
+		case 2:
+			rDisplacementDofs.Resize(2);
+			rDisplacementDofs[0] = nodePtr->GetDofDisplacement(0);
+			rDisplacementDofs[1] = nodePtr->GetDofDisplacement(1);
+		break;
+		case 3:
+			rDisplacementDofs.Resize(3);
+			rDisplacementDofs[0] = nodePtr->GetDofDisplacement(0);
+			rDisplacementDofs[0] = nodePtr->GetDofDisplacement(1);
+			rDisplacementDofs[0] = nodePtr->GetDofDisplacement(2);
+		break;
+		case 0:
+			throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacementDofs] Node has no displacements.");
+		break;
+		}
+	}
+    catch(NuTo::MechanicsException & b)
+	{
+        b.AddMessage("[NuTo::StructureBase::NodeGetDisplacementDofs] Error getting displacement dofs.");
+    	throw b;
+	}
+    catch(...)
+	{
+	    throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacementDofs] Error getting displacement dofs of node (unspecified exception).");
+	}
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime && mVerboseLevel>3)
+        std::cout<<"[NuTo::StructureBase::NodeGetDisplacementDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 
 //! @brief gets the rotations of a node
 //! @param rIdent node identifier

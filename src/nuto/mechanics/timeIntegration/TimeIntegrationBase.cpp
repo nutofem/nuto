@@ -27,6 +27,7 @@
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/timeIntegration/ResultElementIpStress.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
@@ -48,7 +49,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo
     mAutomaticTimeStepping = false;
  	mTimeDependentConstraint = -1;
  	mTimeDependentLoadCase = -1;
- 	mMergeActiveDofValuesOrder1 = false;
+ 	mMergeActiveDofValuesOrder1 = true;
  	mMergeActiveDofValuesOrder2 = false;
  	ResetForNextLoad();
 }
@@ -252,6 +253,25 @@ int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
 	return resultNumber;
 }
 
+//! @brief monitor the stress of all ips in an element (always 6 components times number of integration points)
+//! @param rResultId string identifying the result, this is used for the output file
+//! @return id of the result, so that it could be modified afterwards
+int NuTo::TimeIntegrationBase::AddResultElementIpStress(const std::string& rResultStr, int rElementId)
+{
+	//find unused integer id
+	int resultNumber(mResultMap.size());
+	boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+	while (it!=mResultMap.end())
+	{
+		resultNumber++;
+		it = mResultMap.find(resultNumber);
+	}
+
+	mResultMap.insert(resultNumber, new ResultElementIpStress(rResultStr, rElementId));
+
+	return resultNumber;
+}
+
 //! @brief monitor the time
 //! @param rResultId string identifying the result, this is used for the output file
 //! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be calculated
@@ -316,6 +336,12 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance_j,rOutOfBalance_k);
 				break;
 
+			}
+			case TimeIntegration::ELEMENT_IP_STRESS:
+			{
+				ResultElementIpBase* resultPtr(itResult->second->AsResultElementIpBase());
+				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
+				break;
 			}
 			default:
 				throw MechanicsException("[NuTo::NewmarkDirect::Solve] Unknown component in postprocessing.");

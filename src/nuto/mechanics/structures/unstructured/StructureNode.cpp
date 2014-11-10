@@ -64,6 +64,21 @@ int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
     throw MechanicsException("[NuTo::Structure::GetNodeId] Node does not exist.");
 }
 
+//! @brief ... return the global dof number of the displacement component of a node
+//! @param rNodeId (Input) 			... node id
+//! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)
+//! @returnrglobal dof number
+int NuTo::Structure::NodeGetDofDisplacement(int rNodeId, int rDispDof)
+{
+	NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
+	if (nodePtr->GetNumDisplacements()>rDispDof)
+	{
+		return nodePtr->GetDofDisplacement(rDispDof);
+	}
+	else
+	   throw MechanicsException("[NuTo::Structure::NodeGetDisplacementDofs] Node does have sufficient disp dofs.");
+}
+
 //! @brief ... store all element ids connected to this node in a vector
 //! @param rNode (Input) 			... node id
 //! @param rElementNumbers (Output) ... vector of element ids
@@ -713,11 +728,7 @@ void NuTo::Structure::NodeBuildGlobalDofs()
         // build initial node numbering
         this->mNumDofs = 0;
 
-        //call routine that includes non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
-        //mNumDofs is also increased
-        NumberAdditionalGlobalDofs();
-
-        //number Lagrange multipliers in constraint equations defined in StructureBase
+         //number Lagrange multipliers in constraint equations defined in StructureBase
         ConstraintNumberGlobalDofs(this->mNumDofs);
 
         for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
@@ -780,9 +791,6 @@ void NuTo::Structure::NodeBuildGlobalDofs()
             }
         }
         this->mConstraintMatrix.RemoveLastColumns(numDependentDofs);
-
-        //call routine that includes non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
-        ReNumberAdditionalGlobalDofs(mappingInitialToNewOrdering);
 
         //renumber DOFS in constraints (Lagrange multiplier)
         ConstraintRenumberGlobalDofs(mappingInitialToNewOrdering);

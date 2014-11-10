@@ -43,7 +43,7 @@ ENDIF(ENABLE_PYTHON_TESTS)
 
 IF(ENABLE_C++_TESTS)
   # Test ConstraintsLagrange
-  ADD_EXECUTABLE(ConstraintsLagrange2D ConstraintsLagrange2D)
+  ADD_EXECUTABLE(ConstraintsLagrange2D ConstraintsLagrange2D.cpp)
   TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
   IF (ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToVisualize)

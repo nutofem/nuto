@@ -186,17 +186,17 @@ void NuTo::ElementBase::InterpolateCoordinatesFrom3D(double rLocalCoordinates[3]
     throw MechanicsException("[NuTo::ElementBase::InterpolateCoordinatesFrom3D] 3D geometry interpolation routine not implemented.");
 }
 
-void NuTo::ElementBase::InterpolateDisplacementsFrom1D(double rLocalCoordinates, double rGlobalDisplacements[3]) const
+void NuTo::ElementBase::InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom1D] 1D displacement interpolation routine not implemented.");
 }
 
-void NuTo::ElementBase::InterpolateDisplacementsFrom2D(double rLocalCoordinates[2], double rGlobalDisplacements[3]) const
+void NuTo::ElementBase::InterpolateDisplacementsFrom2D(int rTimeDerivative, double rLocalCoordinates[2], double rGlobalDisplacements[3]) const
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom2D] 2D displacement interpolation routine not implemented.");
 }
 
-void NuTo::ElementBase::InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const
+void NuTo::ElementBase::InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLocalCoordinates[3], double rGlobalDisplacements[3]) const
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom3D] 3D displacement interpolation routine not implemented.");
 }
@@ -593,19 +593,63 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 switch (dimension)
                 {
                 case 1:
-                    this->InterpolateDisplacementsFrom1D(VisualizationPointLocalCoordinates[PointCount], GlobalDisplacements);
+                    this->InterpolateDisplacementsFrom1D(0,VisualizationPointLocalCoordinates[PointCount], GlobalDisplacements);
                     break;
                 case 2:
-                    this->InterpolateDisplacementsFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], GlobalDisplacements);
+                    this->InterpolateDisplacementsFrom2D(0,&VisualizationPointLocalCoordinates[2*PointCount], GlobalDisplacements);
                     break;
                 case 3:
-                    this->InterpolateDisplacementsFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], GlobalDisplacements);
+                    this->InterpolateDisplacementsFrom3D(0,&VisualizationPointLocalCoordinates[3*PointCount], GlobalDisplacements);
                     break;
                 default:
                     throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
                 }
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalDisplacements);
+            }
+            break;
+        case NuTo::VisualizeBase::VELOCITY:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                double GlobalVelocity[3];
+                switch (dimension)
+                {
+                case 1:
+                    this->InterpolateDisplacementsFrom1D(1,VisualizationPointLocalCoordinates[PointCount], GlobalVelocity);
+                    break;
+                case 2:
+                    this->InterpolateDisplacementsFrom2D(1,&VisualizationPointLocalCoordinates[2*PointCount], GlobalVelocity);
+                    break;
+                case 3:
+                    this->InterpolateDisplacementsFrom3D(1,&VisualizationPointLocalCoordinates[3*PointCount], GlobalVelocity);
+                    break;
+                default:
+                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                }
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalVelocity);
+            }
+            break;
+        case NuTo::VisualizeBase::ACCELERATION:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                double GlobalAcceleration[3];
+                switch (dimension)
+                {
+                case 1:
+                    this->InterpolateDisplacementsFrom1D(2,VisualizationPointLocalCoordinates[PointCount], GlobalAcceleration);
+                    break;
+                case 2:
+                    this->InterpolateDisplacementsFrom2D(2,&VisualizationPointLocalCoordinates[2*PointCount], GlobalAcceleration);
+                    break;
+                case 3:
+                    this->InterpolateDisplacementsFrom3D(2,&VisualizationPointLocalCoordinates[3*PointCount], GlobalAcceleration);
+                    break;
+                default:
+                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                }
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalAcceleration);
             }
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
@@ -811,8 +855,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         	//do nothing
         break;
         case NuTo::VisualizeBase::ROTATION:
-        case NuTo::VisualizeBase::VELOCITY:
-        case NuTo::VisualizeBase::ACCELERATION:
         case NuTo::VisualizeBase::ANGULAR_VELOCITY:
         case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
         	//do nothing

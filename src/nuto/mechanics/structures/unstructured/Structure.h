@@ -161,6 +161,12 @@ public:
     int NodeGetId(const NodeBase* rNode)const;
 #endif //SWIG
 
+    //! @brief ... return the global dof number of the displacement component of a node
+    //! @param rNodeId (Input) 			... node id
+    //! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)
+    //! @returnrglobal dof number
+    int NodeGetDofDisplacement(int rNodeId, int rDispDof);
+
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output)	... vector of element ids
@@ -222,14 +228,6 @@ public:
 
     //! @brief numbers the dofs in the structure
     void NodeBuildGlobalDofs();
-
-    //! @brief renumbers the global dofs in the structure after
-    //! @only relevant for structureip with global dofs, otherwise just empty
-    virtual void ReNumberAdditionalGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
-    {}
-
-    //! @brief numbers non standard DOFs' e.g. in StructureIp, for standard structures this routine is empty
-    virtual void NumberAdditionalGlobalDofs(){};
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
@@ -300,6 +298,11 @@ public:
     //! @param rVerboseLevel (Input) ... level of verbosity
     void ElementInfo(const ElementBase* rElement, int rVerboseLevel)const;
 #endif //SWIG
+
+    //! @brief returns a vector with the node ids of an element
+    //! @param identifier
+    //! @return vector with node ids
+    NuTo::FullVector<int,Eigen::Dynamic> ElementGetNodes(int rId);
 
     //! @brief info about the elements in the Structure
     void ElementInfo(int rVerboseLevel)const;

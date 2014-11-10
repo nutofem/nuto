@@ -409,6 +409,11 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGroupSetDisplacements(int rIdent, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
+    //! @brief returns the node ids of an node group
+    //! @param rGroupId  group number
+    //! @param rMembers  return vector with node ids
+    void NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers);
+
     //! @brief gets the coordinates of a node
     //! @param rNode node identifier
     //! @param rCoordinates matrix (one column) with the coordinates
@@ -423,6 +428,17 @@ public:
     //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGetDisplacements(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements)const;
+
+    //! @brief gets the displacements of a node
+    //! @param rIdent node identifier
+    //! @param rTimeDerivative time derivative (0 disp, 1 velocity,2 acceleration)
+    //! @param rDisplacements matrix (one column) with the displacements
+    void NodeGetDisplacements(int rNode, int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rDisplacements)const;
+
+    //! @brief gets the displacement dofs of a node
+    //! @param rIdent node identifier
+    //! @param rDisplacements matrix (one column) with the displacements
+    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;
 
     //! @brief gets the rotations of a node
     //! @param rNode node identifier
@@ -733,6 +749,11 @@ public:
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
     void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
+
+    //! @brief returns the element ids of an element group
+    //! @param rGroupId  group number
+    //! @param rMembers  return vector with element ids
+    void ElementGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers);
 
     //! @brief calculates the volume of the elements
     //! @param rGroupId  group number
@@ -1509,10 +1530,17 @@ public:
     //! @param ... rMax ... maximum value
     void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
 
+    //! @brief ... Adds an element to an element group
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rIdentNode  identifier for the element
+    void GroupAddElement(int rIdentGroup, int rIdElement);
+
     //! @brief ... Adds all elements to a group whose nodes are in the given node group
     //! @param ... rElementGroupId identifier for the element group
     //! @param ... rNodeGroupId idenbtifier for the node group
-    void GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId);
+    //! @param ... rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group, if set
+    //! to false, the element is select if at least one node is in the node group
+    void GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId, bool rHaveAllNodes);
 
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
     //! @param ... rIdentGroup identifier for the group
@@ -1534,6 +1562,16 @@ public:
     //! @param ... rIdentGroup identifier for the group
     //! @return ... number of members
     int GroupGetNumMembers(int rIdentGroup)const;
+
+    //! @brief ... Returns a vector with the members of a group
+    //! @param ... rIdentGroup identifier for the group
+    //! @return ... vector of members
+    NuTo::FullVector<int, Eigen::Dynamic> GroupGetMemberIds(int rIdentGroup)const;
+
+    //! @brief ... checks for a member in a group
+    //! @param ... rIdentGroup identifier for the group
+    //! @return ... rMember id (element id, node id etc.)
+    bool GroupContainsMember(int rIdentGroup, int rMember)const;
 
     //*************************************************************
     //************ Integration type routines     ******************

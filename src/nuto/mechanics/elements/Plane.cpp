@@ -1190,7 +1190,7 @@ void NuTo::Plane::InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], do
 }
 
 // interpolate displacements
-void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const
+void NuTo::Plane::InterpolateDisplacementsFrom2D(int rTimeDerivative, double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const
 {
     // calculate shape functions
     std::vector<double> ShapeFunctions(this->GetNumNodesField());
@@ -1206,9 +1206,9 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(double rNaturalCoordinates[2], 
         double NodeDisplacement[3];
         const NodeBase *nodePtr(GetNode(NodeCount));
         if (nodePtr->GetNumDisplacements()==2)
-            nodePtr->GetDisplacements2D(NodeDisplacement);
+            nodePtr->GetDisplacements2D(rTimeDerivative, NodeDisplacement);
         else
-            nodePtr->GetDisplacements3D(NodeDisplacement);
+            nodePtr->GetDisplacements3D(rTimeDerivative, NodeDisplacement);
 
         // add node contribution
         for (int theDisplacement=0; theDisplacement<nodePtr->GetNumDisplacements(); theDisplacement++)

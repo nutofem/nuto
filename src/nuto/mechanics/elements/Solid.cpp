@@ -981,7 +981,7 @@ void NuTo::Solid::InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], doub
 }
 
 // interpolate displacements
-void NuTo::Solid::InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], double rGlobalDisplacements[3]) const
+void NuTo::Solid::InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLocalCoordinates[3], double rGlobalDisplacements[3]) const
 {
     // calculate shape functions
     std::vector<double> ShapeFunctions(this->GetNumNodesField());
@@ -995,7 +995,7 @@ void NuTo::Solid::InterpolateDisplacementsFrom3D(double rLocalCoordinates[3], do
     {
         // get node displacements
         double NodeDisplacement[3];
-        GetNodeField(NodeCount)->GetDisplacements3D(NodeDisplacement);
+        GetNodeField(NodeCount)->GetDisplacements3D(rTimeDerivative, NodeDisplacement);
 
         // add node contribution
         rGlobalDisplacements[0] += ShapeFunctions[NodeCount] *  NodeDisplacement[0];
