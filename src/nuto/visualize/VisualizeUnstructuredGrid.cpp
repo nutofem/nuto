@@ -611,6 +611,7 @@ unsigned int NuTo::VisualizeUnstructuredGrid::GetPointDataIndex(const std::strin
             return PointDataCount;
         }
     }
+    std::cout << rIdent << std::endl;
     throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::GetPointDataIndex] data identifier not found.");
 }
 

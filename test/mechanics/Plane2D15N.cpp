@@ -87,7 +87,7 @@ try
 	myStructure.GroupAddNodeCoordinateRange(groupNodes_Right,direction,min,max);
 
 	int groupElements_Right = myStructure.GroupCreate("Elements");
-	myStructure.GroupAddElementsFromNodes(groupElements_Right, groupNodes_Right);
+	myStructure.GroupAddElementsFromNodes(groupElements_Right, groupNodes_Right,false);
 
     //define constant pressure at right hand side
     NuTo::FullVector<double, Eigen::Dynamic> loadVector(2);
