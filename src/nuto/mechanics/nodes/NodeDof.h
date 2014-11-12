@@ -97,6 +97,13 @@ void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
 
     mNonlocalEqStrain = rOther.mNonlocalEqStrain;
     mDofNonlocalEqStrain = rOther.mDofNonlocalEqStrain;
+
+    mWaterPhaseFraction = rOther.mWaterPhaseFraction;
+    mDofWaterPhaseFraction = rOther.mDofWaterPhaseFraction;
+
+    mRelativeHumidity = rOther.mRelativeHumidity;
+    mDofRelativeHumidity=rOther.mDofRelativeHumidity;
+
 }
 
     //! @brief sets the global dofs
@@ -129,6 +136,15 @@ SetGlobalDofs(int& rDOF)
     {
         mDofNonlocalEqStrain[count]=rDOF++;
     }
+    for (int count=0; count<TNumWaterPhaseFraction; count++)
+    {
+        mDofWaterPhaseFraction[count]=rDOF++;
+    }
+    for (int count=0; count<TNumRelativeHumidity; count++)
+    {
+        mDofRelativeHumidity[count]=rDOF++;
+    }
+
 }
 
 //! @brief write dof values to the node (based on global dof number)
@@ -246,6 +262,41 @@ SetGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dyn
         }
         this->mNonlocalEqStrain[rTimeDerivative][count] = value;
     }
+
+    for (int count=0; count<TNumWaterPhaseFraction; count++)
+    {
+        int dof = this->mDofWaterPhaseFraction[count];
+        double value;
+        if (dof >= rActiveDofValues.GetNumRows())
+        {
+            dof -= rActiveDofValues.GetNumRows();
+            assert(dof < rDependentDofValues.GetNumRows());
+            value = rDependentDofValues(dof);
+        }
+        else
+        {
+            value = rActiveDofValues(dof);
+        }
+        this->mWaterPhaseFraction[rTimeDerivative][count] = value;
+    }
+
+    for (int count=0; count<TNumRelativeHumidity; count++)
+    {
+        int dof = this->mDofRelativeHumidity[count];
+        double value;
+        if (dof >= rActiveDofValues.GetNumRows())
+        {
+            dof -= rActiveDofValues.GetNumRows();
+            assert(dof < rDependentDofValues.GetNumRows());
+            value = rDependentDofValues(dof);
+        }
+        else
+        {
+            value = rActiveDofValues(dof);
+        }
+        this->mRelativeHumidity[rTimeDerivative][count] = value;
+    }
+
 }
 
 
@@ -356,6 +407,38 @@ GetGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>&
             rActiveDofValues(dof) = value;
         }
     }
+
+    for (int count=0; count<TNumWaterPhaseFraction; count++)
+    {
+        int dof = this->mDofWaterPhaseFraction[count];
+        double value = this->mWaterPhaseFraction[rTimeDerivative][count];
+        if (dof >= rActiveDofValues.GetNumRows())
+        {
+            dof -= rActiveDofValues.GetNumRows();
+            assert(dof < rDependentDofValues.GetNumRows());
+            rDependentDofValues(dof) = value;
+        }
+        else
+        {
+            rActiveDofValues(dof) = value;
+        }
+    }
+
+    for (int count=0; count<TNumRelativeHumidity; count++)
+    {
+        int dof = this->mDofRelativeHumidity[count];
+        double value = this->mRelativeHumidity[rTimeDerivative][count];
+        if (dof >= rActiveDofValues.GetNumRows())
+        {
+            dof -= rActiveDofValues.GetNumRows();
+            assert(dof < rDependentDofValues.GetNumRows());
+            rDependentDofValues(dof) = value;
+        }
+        else
+        {
+            rActiveDofValues(dof) = value;
+        }
+    }
 }
 
 
@@ -393,6 +476,15 @@ RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     {
         mDofNonlocalEqStrain[count]=rMappingInitialToNewOrdering[mDofNonlocalEqStrain[count]];
     }
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        mDofWaterPhaseFraction[count]=rMappingInitialToNewOrdering[mDofWaterPhaseFraction[count]];
+    }
+    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    {
+        mDofRelativeHumidity[count]=rMappingInitialToNewOrdering[mDofRelativeHumidity[count]];
+    }
+
 }
 
 //! @brief returns the number of displacements of the node
@@ -1083,6 +1175,147 @@ GetDofNonlocalEqStrain()const
     return mDofNonlocalEqStrain[0];
 
 }
+
+// Moisture Transport --- Begin
+
+// WaterPhaseFraction, int TNumRelativeHumidity
+
+//! @brief returns the number of water phase fraction components of the node
+//! @return number of water phase fraction components
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetNumWaterPhaseFraction()const
+{
+    return TNumWaterPhaseFraction;
+}
+
+//! @brief returns the water phase fraction of the node
+//! @return water phase fraction
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetWaterPhaseFraction()const
+{
+    assert(TNumWaterPhaseFraction==1);
+    return mWaterPhaseFraction[0][0];
+}
+
+//! @brief returns the water phase fraction of the node
+//! @param rTimeDerivative time derivative
+//! @return water phase fraction
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetWaterPhaseFraction(int rTimeDerivative)const
+{
+    assert(TNumWaterPhaseFraction==1);
+    assert(rTimeDerivative>=0 && rTimeDerivative<=TNumTimeDerivatives);
+    return mWaterPhaseFraction[rTimeDerivative][0];
+}
+
+//! @brief set the water phase fraction of the node
+//! @param rTemperature  given temperature
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+SetWaterPhaseFraction(double rWaterPhaseFraction)
+{
+    assert(TNumWaterPhaseFraction==1);
+    mWaterPhaseFraction[0][0] = rWaterPhaseFraction;
+}
+
+//! @brief set the water phase fraction of the node
+//! @param rTimeDerivative time derivative
+//! @param rTemperature  given temperature
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction)
+{
+    assert(TNumWaterPhaseFraction==1);
+    assert(rTimeDerivative>=0 && rTimeDerivative<=TNumTimeDerivatives);
+    mWaterPhaseFraction[0][0] = rWaterPhaseFraction;
+}
+
+//! @brief gives the global DOF of a water phase fraction component
+//! @param rComponent component
+//! @return global DOF
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetDofWaterPhaseFraction()const
+{
+    assert(TNumWaterPhaseFraction==1);
+    return mDofWaterPhaseFraction[0];
+}
+
+// --- relative Feuchte
+
+//! @brief returns the number of relative humidity components of the node
+//! @return number of relative humidity components
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetNumRelativeHumidity()const
+{
+    return TNumRelativeHumidity;
+}
+
+//! @brief returns the relative humidity of the node
+//! @return relative humidity
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetRelativeHumidity()const
+{
+    assert(TNumRelativeHumidity==1);
+    return mRelativeHumidity[0][0];
+}
+
+//! @brief returns the relative humidity of the node
+//! @param rTimeDerivative time derivative
+//! @return relative humidity
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+double NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetRelativeHumidity(int rTimeDerivative)const
+{
+    assert(TNumRelativeHumidity==1);
+    assert(rTimeDerivative>=0 && rTimeDerivative<=TNumTimeDerivatives);
+    return mRelativeHumidity[rTimeDerivative][0];
+}
+
+//! @brief set the relative humidity of the node
+//! @param rTemperature  given relative humidity
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+SetRelativeHumidity(double rRelativeHumidity)
+{
+    assert(TNumRelativeHumidity==1);
+    mRelativeHumidity[0][0] = rRelativeHumidity;
+}
+
+//! @brief set the relative humidity of the node
+//! @param rTimeDerivative time derivative
+//! @param rTemperature  given relative humidity
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+void NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity)
+{
+    assert(TNumRelativeHumidity==1);
+    assert(rTimeDerivative>=0 && rTimeDerivative<=TNumTimeDerivatives);
+    mRelativeHumidity[0][0] = rRelativeHumidity;
+}
+
+//! @brief gives the global DOF of a relative humidity component
+//! @param rComponent component
+//! @return global DOF
+template <NODE_DOF_TEMPLATE_PARAMETERS>
+int NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
+GetDofRelativeHumidity()const
+{
+    assert(TNumRelativeHumidity==1);
+    return mDofRelativeHumidity[0];
+}
+
+
+
+// Moisture Transport --- End
+
+
+
 
 
 //! @brief returns the type of node as a string (all the data stored at the node)

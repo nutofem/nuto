@@ -364,6 +364,73 @@ public:
     //! @return global DOF
     virtual int GetDofNonlocalEqStrain()const override;
 
+
+    // Moisture Transport --- Begin
+
+    // WaterPhaseFraction, int TNumRelativeHumidity
+
+    //! @brief returns the number of water phase fraction components of the node
+    //! @return number of water phase fraction components
+    virtual int GetNumWaterPhaseFraction()const override;
+
+    //! @brief returns the water phase fraction of the node
+    //! @return water phase fraction
+    virtual double GetWaterPhaseFraction()const override;
+
+    //! @brief returns the water phase fraction of the node
+    //! @param rTimeDerivative time derivative
+    //! @return water phase fraction
+    virtual double GetWaterPhaseFraction(int rTimeDerivative)const override;
+
+    //! @brief set the water phase fraction of the node
+    //! @param rTemperature  given temperature
+    virtual void SetWaterPhaseFraction(double rWaterPhaseFraction) override;
+
+    //! @brief set the water phase fraction of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rTemperature  given temperature
+    virtual void SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction) override;
+
+    //! @brief gives the global DOF of a water phase fraction component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofWaterPhaseFraction()const override;
+
+    //! @brief returns the number of relative humidity components of the node
+    //! @return number of relative humidity components
+    virtual int GetNumRelativeHumidity()const override;
+
+    //! @brief returns the relative humidity of the node
+    //! @return relative humidity
+    virtual double GetRelativeHumidity()const override;
+
+    //! @brief returns the relative humidity of the node
+    //! @param rTimeDerivative time derivative
+    //! @return relative humidity
+    virtual double GetRelativeHumidity(int rTimeDerivative)const override;
+
+    //! @brief set the relative humidity of the node
+    //! @param rTemperature  given relative humidity
+    virtual void SetRelativeHumidity(double rRelativeHumidity) override;
+
+    //! @brief set the relative humidity of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rTemperature  given relative humidity
+    virtual void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity) override;
+
+    //! @brief gives the global DOF of a relative humidity component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofRelativeHumidity()const override;
+
+
+    // Moisture Transport --- End
+
+
+
+
+
+
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
     std::string GetNodeTypeStr()const override;

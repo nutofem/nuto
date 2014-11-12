@@ -604,7 +604,7 @@ double NuTo::NodeBase::GetWaterPhaseFraction(int rTimeDerivative)const
 }
 
 //! @brief set the water phase fraction of the node
-//! @param rTemperature  given temperature
+//! @param rWaterPhaseFraction  given water phase fraction
 void NuTo::NodeBase::SetWaterPhaseFraction(double rWaterPhaseFraction)
 {
     throw MechanicsException("[NuTo::NodeBase::SetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
@@ -612,7 +612,7 @@ void NuTo::NodeBase::SetWaterPhaseFraction(double rWaterPhaseFraction)
 
 //! @brief set the water phase fraction of the node
 //! @param rTimeDerivative time derivative
-//! @param rTemperature  given temperature
+//! @param rWaterPhaseFraction  given water phase fraction
 void NuTo::NodeBase::SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction)
 {
     throw MechanicsException("[NuTo::NodeBase::SetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
@@ -624,6 +624,53 @@ void NuTo::NodeBase::SetWaterPhaseFraction(int rTimeDerivative, double rWaterPha
 int NuTo::NodeBase::GetDofWaterPhaseFraction()const
 {
     throw MechanicsException("[NuTo::NodeBase::GetDofWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+}
+
+// --- relative Feuchte
+
+//! @brief returns the number of relative humidity components of the node
+//! @return number of relative humidity components
+int NuTo::NodeBase::GetNumRelativeHumidity()const
+{
+    return 0;
+}
+
+//! @brief returns the relative humidity of the node
+//! @return relative humidity
+double NuTo::NodeBase::GetRelativeHumidity()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
+}
+
+//! @brief returns the relative humidity of the node
+//! @param rTimeDerivative time derivative
+//! @return relative humidity
+double NuTo::NodeBase::GetRelativeHumidity(int rTimeDerivative)const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
+}
+
+//! @brief set the relative humidity of the node
+//! @param rTemperature  given relative humidity
+void NuTo::NodeBase::SetRelativeHumidity(double rRelativeHumidity)
+{
+    throw MechanicsException("[NuTo::NodeBase::SetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
+}
+
+//! @brief set the relative humidity of the node
+//! @param rTimeDerivative time derivative
+//! @param rTemperature  given relative humidity
+void NuTo::NodeBase::SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity)
+{
+    throw MechanicsException("[NuTo::NodeBase::SetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
+}
+
+//! @brief gives the global DOF of a relative humidity component
+//! @param rComponent component
+//! @return global DOF
+int NuTo::NodeBase::GetDofRelativeHumidity()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetDofRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
 }
 
 

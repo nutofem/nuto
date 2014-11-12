@@ -409,6 +409,34 @@ public:
     virtual int GetDofWaterPhaseFraction()const;
 
 
+    //! @brief returns the number of relative humidity components of the node
+    //! @return number of relative humidity components
+    virtual int GetNumRelativeHumidity()const;
+
+    //! @brief returns the relative humidity of the node
+    //! @return relative humidity
+    virtual double GetRelativeHumidity()const;
+
+    //! @brief returns the relative humidity of the node
+    //! @param rTimeDerivative time derivative
+    //! @return relative humidity
+    virtual double GetRelativeHumidity(int rTimeDerivative)const;
+
+    //! @brief set the relative humidity of the node
+    //! @param rTemperature  given relative humidity
+    virtual void SetRelativeHumidity(double rRelativeHumidity);
+
+    //! @brief set the relative humidity of the node
+    //! @param rTimeDerivative time derivative
+    //! @param rTemperature  given relative humidity
+    virtual void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity);
+
+    //! @brief gives the global DOF of a relative humidity component
+    //! @param rComponent component
+    //! @return global DOF
+    virtual int GetDofRelativeHumidity()const;
+
+
 
     // Moisture Transport --- End
 

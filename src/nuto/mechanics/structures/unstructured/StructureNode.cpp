@@ -240,7 +240,9 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
     // bit 5 : nonlocal eq. plastic strain (as a nodal value)
     // bit 6 : nonlocal total strain (as a nodal value)
     // bit 7 : nonlocal eq. strain (as a nodal value)
-    // bit 8 :
+    // bit 8 : water phase fraction
+    // bit 9 : relative humidity
+    // bit 10:
     // (maximum number of bits: 30)
 
     boost::char_separator<char> sep(" ");
@@ -278,6 +280,14 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
         else if (*beg=="NONLOCALEQSTRAIN")
         {
             attributes = attributes | 1 << Node::NONLOCALEQSTRAIN;
+        }
+        else if (*beg=="WATERPHASEFRACTION")
+        {
+            attributes = attributes | 1 << Node::WATERPHASEFRACTION;
+        }
+        else if (*beg=="RELATIVEHUMIDITY")
+        {
+            attributes = attributes | 1 << Node::RELATIVEHUMIDITY;
         }
         else
         {
@@ -589,9 +599,58 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	        }
 	        break;
 
+
+        // Moisture Transport --- Beginn
+
+        case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::WATERPHASEFRACTION) | (1 << Node::RELATIVEHUMIDITY):
+            // coordinates and displacements and nonlocal eq. strains
+            switch (rNumTimeDerivatives)
+            {
+            case 0:
+                switch (mDimension)
+                {
+                case 1:
+                    nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,0,0,1,1>();
+                    break;
+                default:
+                    throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+                }
+            break;
+
+            default:
+                throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and nonlocal eq strains only implemented for 0 time derivatives.");
+            }
+            break;
+
+        case (1 << Node::COORDINATES) | (1 << Node::WATERPHASEFRACTION) | (1 << Node::RELATIVEHUMIDITY):
+            // coordinates and displacements and nonlocal eq. strains
+            switch (rNumTimeDerivatives)
+            {
+            case 0:
+                switch (mDimension)
+                {
+                case 1:
+                    nodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,0,0,1,1>();
+                    break;
+                default:
+                    throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+                }
+            break;
+
+            default:
+                throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and nonlocal eq strains only implemented for 0 time derivatives.");
+            }
+            break;
+
+
+        // Moisture Transport --- Ende
+
     default:
         throw MechanicsException("[NuTo::Structure::NodeCreate] This combination of attributes is not implemented (just add in the source file the relevant combination).");
     }
+
+
+
 
     //add coordinates
     try
