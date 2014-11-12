@@ -62,6 +62,11 @@ NuTo::LocalEqPlasticStrain& NuTo::ConstitutiveOutputBase::GetLocalEqPlasticStrai
 	throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetLocalEqPlasticStrain] not implemented for this output object.");
 }
 
+NuTo::LocalEqStrain& NuTo::ConstitutiveOutputBase::GetLocalEqStrain()
+{
+    throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetLocalEqStrain] not implemented for this output object.");
+}
+
 NuTo::ConstitutiveTangentLocal6x6& NuTo::ConstitutiveOutputBase::GetConstitutiveTangentLocal6x6()
 {
 	throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetConstitutiveTangentLocal6x6] not implemented for this output object.");

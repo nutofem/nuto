@@ -284,6 +284,14 @@ public:
     //! @param ... damage distribution
     virtual void SetDamageDistribution(double rDamageDistribution);
 
+    //! @brief ... get damage law
+    //! @return ... damage law
+    virtual NuTo::FullVector<double, Eigen::Dynamic> GetDamageLaw() const;
+
+    //! @brief ... set damage law
+    //! @param rDamageLawParameters ... damage law
+    virtual void SetDamageLaw(const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw);
+
     //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
     //! @return ... viscoplastic yield surface offset
     virtual double GetViscoplasticYieldSurfaceOffset() const;

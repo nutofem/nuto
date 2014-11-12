@@ -37,6 +37,7 @@ class Logger;
 class SecondPiolaKirchhoffStress3D;
 class StructureBase;
 class NonlocalEqPlasticStrain;
+class NonlocalEqStrain;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Jörg F. Unger, BAM
@@ -60,6 +61,7 @@ public:
     virtual double GetTemperature()const;
     virtual const TemperatureGradient3D& GetTemperatureGradient3D()const;
     virtual const NonlocalEqPlasticStrain& GetNonlocalEqPlasticStrain()const;
+    virtual const NonlocalEqStrain& GetNonlocalEqStrain()const;
     virtual const EngineeringStrain1D& GetEngineeringStrain1D()const;
     virtual const EngineeringStrain2D& GetEngineeringStrain2D()const;
     virtual const EngineeringStrain3D& GetEngineeringStrain3D()const;

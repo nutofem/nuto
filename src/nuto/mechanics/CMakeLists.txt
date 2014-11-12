@@ -15,6 +15,7 @@ constitutive/thermal/TemperatureGradient1D.cpp
 constitutive/thermal/TemperatureGradient2D.cpp
 constitutive/thermal/TemperatureGradient3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.cpp
+constitutive/mechanics/ConstitutiveStaticDataGradientDamage1D.cpp
 constitutive/mechanics/ConstitutiveStaticDataGradientDamagePlasticity1D.cpp
 constitutive/mechanics/ConstitutiveStaticDataMisesPlasticity3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D
@@ -37,6 +38,7 @@ constitutive/mechanics/Displacements1D.cpp
 constitutive/mechanics/EngineeringStrain1D.cpp
 constitutive/mechanics/EngineeringStrain2D.cpp
 constitutive/mechanics/EngineeringStrain3D.cpp
+constitutive/mechanics/GradientDamageEngineeringStress.cpp
 constitutive/mechanics/GradientDamagePlasticityEngineeringStress.cpp
 constitutive/mechanics/GreenLagrangeStrain1D.cpp
 constitutive/mechanics/GreenLagrangeStrain2D.cpp
@@ -46,8 +48,10 @@ constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
 constitutive/mechanics/LinearElasticEngineeringStress.cpp
 constitutive/mechanics/LocalEqPlasticStrain.cpp
+constitutive/mechanics/LocalEqStrain.cpp
 constitutive/mechanics/MisesPlasticityEngineeringStress.cpp
 constitutive/mechanics/NonlocalEqPlasticStrain.cpp
+constitutive/mechanics/NonlocalEqStrain.cpp
 constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements1D.cpp
 constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp

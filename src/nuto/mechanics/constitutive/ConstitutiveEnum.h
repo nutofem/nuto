@@ -11,17 +11,18 @@ namespace Constitutive
 {
 enum eConstitutiveType
 {
-    LINEAR_ELASTIC,            //!< linear-elastic behavior
-    LINEAR_ELASTIC_ENGINEERING_STRESS,            //!< linear-elastic behavior
-    MISES_PLASTICITY_ENGINEERING_STRESS,          //!< mises plasticity with isotropic and kinematic hardening
-    NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,//!< nonlocal damage model with plasticity in the effective stress space
-    MULTISCALE,                //!< multiscale model, where the average stress is calculated from a full fine scale model
-    LATTICE_CONCRETE,          //!< material law for lattice model
-    LINEAR_HEAT_FLUX,           //!< material law for lattice model
+    LINEAR_ELASTIC,                                //!< linear-elastic behavior
+    LINEAR_ELASTIC_ENGINEERING_STRESS,             //!< linear-elastic behavior
+    MISES_PLASTICITY_ENGINEERING_STRESS,           //!< mises plasticity with isotropic and kinematic hardening
+    NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< nonlocal damage model with plasticity in the effective stress space
+    MULTISCALE,                                    //!< multiscale model, where the average stress is calculated from a full fine scale model
+    LATTICE_CONCRETE,                              //!< material law for lattice model
+    LINEAR_HEAT_FLUX,                              //!< material law for lattice model
     GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< gradient damage plasticity model
+    GRADIENT_DAMAGE_ENGINEERING_STRESS,            //!< gradient damage model
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
-    DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS, //!< viscoplastic damage model
-    DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS //!< viscoplastic damage model with hardening
+    DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,    //!< viscoplastic damage model
+    DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
 };
 
 enum eNonlocalDamageYieldSurface
@@ -40,6 +41,13 @@ enum eSolutionPhaseType
 	NONLINEAR_CRACKED           //!< nonlinear with crack enrichment
 };
 
+enum eDamageLawType
+{
+    ISOTROPIC_NO_SOFTENING,         //!< constant post peak behaviour
+    ISOTROPIC_LINEAR_SOFTENING,     //!< linear
+    ISOTROPIC_EXPONENTIAL_SOFTENING //!< exponential
+};
+
 namespace Input
 {
 enum eInput
@@ -55,7 +63,8 @@ enum eInput
 	TEMPERATURE_GRADIENT_2D,           //!<
 	TEMPERATURE_GRADIENT_3D,           //!<
 	NONLOCAL_EQ_PLASTIC_STRAIN,        //!<
-	NONLOCAL_TOTAL_STRAIN_1D,          //!<
+    NONLOCAL_EQ_STRAIN,                //!<
+    NONLOCAL_TOTAL_STRAIN_1D,          //!<
 	ENGINEERING_STRESS_1D,             //!< usually the stress is an output, that 's why the additional input term is required
 	DEFORMATION_GRADIENT_REAL_1D,      //!<
 	NONLOCAL_TOTAL_STRAIN_REAL_1D,     //!<
@@ -77,6 +86,7 @@ static inline std::string InputToString ( const Input::eInput& e )
                               (Input::TEMPERATURE_GRADIENT_2D,"TEMPERATURE_GRADIENT_2D")
                               (Input::TEMPERATURE_GRADIENT_3D,"TEMPERATURE_GRADIENT_3D")
                               (Input::NONLOCAL_EQ_PLASTIC_STRAIN,"NONLOCAL_EQ_PLASTIC_STRAIN")
+                              (Input::NONLOCAL_EQ_STRAIN,"NONLOCAL_EQ_STRAIN")
                               (Input::NONLOCAL_TOTAL_STRAIN_1D,"NONLOCAL_TOTAL_STRAIN_1D")
                               (Input::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
                               (Input::DEFORMATION_GRADIENT_REAL_1D,"DEFORMATION_GRADIENT_REAL_1D")
@@ -105,7 +115,8 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,
-	D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,
+    D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,
+    D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
@@ -122,8 +133,10 @@ enum eOutput
 	DAMAGE,
 	UPDATE_STATIC_DATA,
 	UPDATE_TMP_STATIC_DATA,
-	LOCAL_EQ_PLASTIC_STRAIN,
-	D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,
+    LOCAL_EQ_PLASTIC_STRAIN,
+    LOCAL_EQ_STRAIN,
+    D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,
+    D_LOCAL_EQ_STRAIN_D_STRAIN_1D,
 	ENGINEERING_STRESS_REAL_1D,
 	ENGINEERING_STRAIN_VIRT_1D,
 	D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,
@@ -149,6 +162,7 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D")
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D")
+                              (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D")
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_1D,"D_ENGINEERING_STRESS_D_TEMPERATURE_1D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
@@ -166,7 +180,9 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::UPDATE_STATIC_DATA,"UPDATE_STATIC_DATA")
                               (Output::UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA")
                               (Output::LOCAL_EQ_PLASTIC_STRAIN,"LOCAL_EQ_PLASTIC_STRAIN")
+                              (Output::LOCAL_EQ_STRAIN,"LOCAL_EQ_STRAIN")
                               (Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D")
+                              (Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_STRAIN_D_STRAIN_1D")
                               (Output::ENGINEERING_STRESS_REAL_1D,"ENGINEERING_STRESS_REAL_1D")
                               (Output::ENGINEERING_STRAIN_VIRT_1D,"ENGINEERING_STRAIN_VIRT_1D")
                               (Output::D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D")

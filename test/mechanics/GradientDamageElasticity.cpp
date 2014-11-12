@@ -4,7 +4,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
-#include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -15,9 +15,20 @@
 #define PRINTRESULT
 #include <eigen3/Eigen/Eigenvalues>
 
+
+
+
 int main()
 {
 try {
+
+
+
+
+
+
+
+
 
     // 1D structure
     NuTo::Structure myStructure(1);
@@ -29,6 +40,21 @@ try {
 
     double displacementBCLeft = -5.e-4;
     double displacementBCRight = -displacementBCLeft;
+
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(3);
+    myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
+    myDamageLaw(1) = 1.e-4;
+    myDamageLaw(2) = 0.005;
+
+    int myNumberConstitutiveLaw = myStructure.ConstitutiveLawCreate("GradientDamageEngineeringStress");
+
+    myStructure.ConstitutiveLawSetDensity       (myNumberConstitutiveLaw, 1.0);
+    myStructure.ConstitutiveLawSetYoungsModulus (myNumberConstitutiveLaw, 20000.);
+    myStructure.ConstitutiveLawSetPoissonsRatio (myNumberConstitutiveLaw, 0.3);
+    myStructure.ConstitutiveLawSetNonlocalRadius(myNumberConstitutiveLaw, 1.0);
+    myStructure.ConstitutiveLawSetDamageLaw(myNumberConstitutiveLaw, myDamageLaw);
+
+
 
     // create nodes
     int numNodes= numElements * 2 + 1;
@@ -73,6 +99,22 @@ try {
     double normDof = (actDofValues - actDofValuesStructure).norm() + (depDofValues - depDofValuesStructure).norm();
     if (normDof > 1.e-15)
         throw NuTo::Exception("[GradientDamageElasticity] Error while merging or extracting Dof values");
+
+    // create elements
+
+    // TODO: create section and weakened section
+
+    for (int element = 0; element < numElements; element ++)
+    {
+        NuTo::FullVector<int, 3> nodeIds;
+        nodeIds(0) = 2*element;
+        nodeIds(1) = 2*element+1;
+        nodeIds(2) = 2*element+2;
+        myStructure.ElementCreate("Truss1D3N", nodeIds);
+    }
+
+    myStructure.Info();
+
 
 
 

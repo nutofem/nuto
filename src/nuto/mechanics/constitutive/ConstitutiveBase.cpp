@@ -404,6 +404,22 @@ void NuTo::ConstitutiveBase::SetDamageDistribution(double rDamageDistribution)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDamageDistribution] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get damage law
+//! @return ... damage law
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::ConstitutiveBase::GetDamageLaw() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDamageLaw] The constitutive relationship does not have this parameter.");
+
+}
+
+//! @brief ... set damage law
+//! @param rDamageLaw ... damage law
+void NuTo::ConstitutiveBase::SetDamageLaw(const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDamageLaw] The constitutive relationship does not have this parameter.");
+}
+
+
 //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
 //! @return ... viscoplastic yield surface offset
 double NuTo::ConstitutiveBase::GetViscoplasticYieldSurfaceOffset() const

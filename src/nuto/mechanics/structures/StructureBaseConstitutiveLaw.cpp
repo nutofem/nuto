@@ -7,6 +7,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
@@ -35,6 +36,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "GRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS")
     {
         ConstitutiveLawType = Constitutive::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
+    }
+    else if (ConstitutiveLawTypeString == "GRADIENTDAMAGEENGINEERINGSTRESS")
+    {
+        ConstitutiveLawType = Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS;
     }
     else if (ConstitutiveLawTypeString == "LINEARHEATFLUX")
     {
@@ -95,6 +100,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::GradientDamagePlasticityEngineeringStress();
+            break;
+        case NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStress();
             break;
         case NuTo::Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();
@@ -862,6 +870,54 @@ double NuTo::StructureBase::ConstitutiveLawGetDamageDistribution(int rIdent) con
         throw e;
     }
     return DamageDistribution;
+}
+
+//! @brief ... get damage law
+//! @return ... damage law
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetDamageLaw(int rIdent) const
+{
+    NuTo::FullVector<double, Eigen::Dynamic> damageLaw;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        damageLaw = ConstitutiveLawPtr->GetDamageLaw();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDamageLaw] error getting damage law.");
+        throw e;
+    }
+    return damageLaw;
+}
+
+//! @brief ... set damage law
+//! @param rDamageLaw ... damage law <BR>
+//! ============================================================================================<BR>
+//! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING <BR>
+//! w(k) = 1 - e_0/k <BR>
+//! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
+//! ============================================================================================<BR>
+//! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING <BR>
+//! w(k) = e_c/k * (k-e_0) / (e_c-e_0) <BR>
+//! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
+//! rDamageLaw[2] = e_c // strain at full damage <BR>
+//! ============================================================================================<BR>
+//! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING <BR>
+//! w(k) = 1 - e_0/k exp{ (e_0 - k) / e_f } <BR>
+//! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
+//! rDamageLaw[2] = e_f // post-peak slope parameter <BR>
+void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetDamageLaw(rDamageLaw);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDamageLaw] error setting damage law.");
+        throw e;
+    }
 }
 
 //****************************

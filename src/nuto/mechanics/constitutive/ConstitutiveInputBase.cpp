@@ -54,7 +54,12 @@ const NuTo::TemperatureGradient3D& NuTo::ConstitutiveInputBase::GetTemperatureGr
 
 const NuTo::NonlocalEqPlasticStrain& NuTo::ConstitutiveInputBase::GetNonlocalEqPlasticStrain()const
 {
-	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetDamage] not implemented for this input object.");
+	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetNonlocalEqPlasticStrain] not implemented for this input object.");
+}
+
+const NuTo::NonlocalEqStrain& NuTo::ConstitutiveInputBase::GetNonlocalEqStrain()const
+{
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetNonlocalEqStrain] not implemented for this input object.");
 }
 
 const NuTo::EngineeringStrain1D& NuTo::ConstitutiveInputBase::GetEngineeringStrain1D()const
