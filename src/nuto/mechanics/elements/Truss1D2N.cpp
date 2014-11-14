@@ -31,29 +31,7 @@ NuTo::Truss1D2N::Truss1D2N(NuTo::StructureBase* rStructure, const std::vector<Nu
 //! @param shape functions for all the nodes
 void NuTo::Truss1D2N::CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    assert(rShapeFunctions.size()==2);
-    rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates);
-    rShapeFunctions[1] = 0.5*(1.+rLocalCoordinates);
-}
-
-//! @brief calculates the shape functions
-//! @param rLocalCoordinates local coordinates of the integration point
-//! @param shape functions for all the nodes
-void NuTo::Truss1D2N::CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
-{
-    assert(rShapeFunctions.size()==2);
-    rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates);
-    rShapeFunctions[1] = 0.5*(1.+rLocalCoordinates);
-}
-
-//! @brief calculates the shape functions
-//! @param rLocalCoordinates local coordinates of the integration point
-//! @param shape functions for all the nodes
-void NuTo::Truss1D2N::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
-{
-    assert(rShapeFunctions.size()==2);
-    rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates);
-    rShapeFunctions[1] = 0.5*(1.+rLocalCoordinates);
+    ShapeFunctions1D::ShapeFunctions1D2N(rLocalCoordinates,rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -62,31 +40,7 @@ void NuTo::Truss1D2N::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCo
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D2N::CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    assert(rDerivativeShapeFunctions.size()==2);
-    rDerivativeShapeFunctions[0] = -0.5;
-    rDerivativeShapeFunctions[1] = 0.5;
-}
-
-//! @brief calculates the derivative of the shape functions
-//! @param rLocalCoordinates local coordinates of the integration point
-//! @param derivative of the shape functions for all the nodes,
-//! first all the directions for a single node, and then for the next node
-void NuTo::Truss1D2N::CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
-{
-    assert(rDerivativeShapeFunctions.size()==2);
-    rDerivativeShapeFunctions[0] = -0.5;
-    rDerivativeShapeFunctions[1] = 0.5;
-}
-
-//! @brief calculates the derivative of the shape functions
-//! @param rLocalCoordinates local coordinates of the integration point
-//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
-//! first all the directions for a single node, and then for the next node
-void NuTo::Truss1D2N::CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
-{
-    assert(rDerivativeShapeFunctions.size()==2);
-    rDerivativeShapeFunctions[0] = -0.5;
-    rDerivativeShapeFunctions[1] = 0.5;
+    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rLocalCoordinates, rDerivativeShapeFunctions);
 }
 
 

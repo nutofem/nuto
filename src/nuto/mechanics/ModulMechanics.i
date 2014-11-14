@@ -28,3 +28,4 @@
 %include "nuto/mechanics/structures/unstructured/Structure.h"
 %include "nuto/mechanics/structures/grid/StructureGrid.h"
 %include "nuto/mechanics/elements/ElementEnum.h"
+

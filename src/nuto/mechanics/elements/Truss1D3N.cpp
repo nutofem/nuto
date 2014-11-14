@@ -31,21 +31,7 @@ NuTo::Truss1D3N::Truss1D3N(NuTo::StructureBase* rStructure, const std::vector<Nu
 //! @param shape functions for all the nodes
 void NuTo::Truss1D3N::CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-	assert(rShapeFunctions.size()==3);
-	rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates)-0.5*(1.-rLocalCoordinates*rLocalCoordinates);
-	rShapeFunctions[1] = 1.-rLocalCoordinates*rLocalCoordinates;
-	rShapeFunctions[2] = 0.5*(1.+rLocalCoordinates)-0.5*(1.-rLocalCoordinates*rLocalCoordinates);
-}
-
-//! @brief calculates the shape functions
-//! @param rLocalCoordinates local coordinates of the integration point
-//! @param shape functions for all the nodes
-void NuTo::Truss1D3N::CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
-{
-	assert(rShapeFunctions.size()==3);
-	rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates)-0.5*(1.-rLocalCoordinates*rLocalCoordinates);
-	rShapeFunctions[1] = 1.-rLocalCoordinates*rLocalCoordinates;
-	rShapeFunctions[2] = 0.5*(1.+rLocalCoordinates)-0.5*(1.-rLocalCoordinates*rLocalCoordinates);
+    ShapeFunctions1D::ShapeFunctions1D3N(rLocalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the shape functions
@@ -53,10 +39,17 @@ void NuTo::Truss1D3N::CalculateShapeFunctionsField(double rLocalCoordinates, std
 //! @param shape functions for all the nodes
 void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-	assert(rShapeFunctions.size()==2);
-    rShapeFunctions[0] = 0.5*(1.-rLocalCoordinates);
-    rShapeFunctions[1] = 0.5*(1.+rLocalCoordinates);
+   ShapeFunctions1D::ShapeFunctions1D2N(rLocalCoordinates, rShapeFunctions);
 }
+
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalEqStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+{
+    ShapeFunctions1D::ShapeFunctions1D2N(rLocalCoordinates, rShapeFunctions);
+}
+
 
 //! @brief calculates the derivative of the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
@@ -64,22 +57,7 @@ void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCo
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-	assert(rDerivativeShapeFunctions.size()==3);
-	rDerivativeShapeFunctions[0] = -0.5 + rLocalCoordinates;
-	rDerivativeShapeFunctions[1] = -2.0 * rLocalCoordinates;
-	rDerivativeShapeFunctions[2] =  0.5 + rLocalCoordinates;
-}
-
-//! @brief calculates the derivative of the shape functions
-//! @param rLocalCoordinates local coordinates of the integration point
-//! @param derivative of the shape functions for all the nodes,
-//! first all the directions for a single node, and then for the next node
-void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
-{
-	assert(rDerivativeShapeFunctions.size()==3);
-	rDerivativeShapeFunctions[0] = -0.5 + rLocalCoordinates;
-	rDerivativeShapeFunctions[1] = -2.0 * rLocalCoordinates;
-	rDerivativeShapeFunctions[2] =  0.5 + rLocalCoordinates;
+    ShapeFunctions1D::DerivativeShapeFunctions1D3N(rLocalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -88,9 +66,72 @@ void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsField(double rLocalCoordi
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    assert(rDerivativeShapeFunctions.size()==2);
-    rDerivativeShapeFunctions[0] = -0.5;
-    rDerivativeShapeFunctions[1] = 0.5;
+    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rLocalCoordinates, rDerivativeShapeFunctions);
+}
+
+//! @brief calculates the derivative of the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+{
+    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rLocalCoordinates, rDerivativeShapeFunctions);
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+NuTo::NodeBase* NuTo::Truss1D3N::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)
+{
+    assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 );
+    if (rLocalNodeNumber==0)
+        return mNodes[0];
+    if (rLocalNodeNumber==1)
+        return mNodes[2];
+    throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalTotalStrain] the interpolation order is only linear for the total strain.");
+    return 0;
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+const NuTo::NodeBase* NuTo::Truss1D3N::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)const
+{
+    assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 );
+    if (rLocalNodeNumber==0)
+        return mNodes[0];
+    if (rLocalNodeNumber==1)
+        return mNodes[2];
+    throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalTotalStrain] the interpolation order is only linear for the total strain.");
+    return 0;
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+NuTo::NodeBase* NuTo::Truss1D3N::GetNodeNonlocalEqStrain(int rLocalNodeNumber)
+{
+    assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 );
+    if (rLocalNodeNumber==0)
+        return mNodes[0];
+    if (rLocalNodeNumber==1)
+        return mNodes[2];
+    throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalEqStrain] the interpolation order is only linear for the nonlocal eq strain.");
+    return 0;
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+const NuTo::NodeBase* NuTo::Truss1D3N::GetNodeNonlocalEqStrain(int rLocalNodeNumber)const
+{
+    assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 );
+    if (rLocalNodeNumber==0)
+        return mNodes[0];
+    if (rLocalNodeNumber==1)
+        return mNodes[2];
+    throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalEqStrain] the interpolation order is only linear for the nonlocal eq strain.");
+    return 0;
 }
 
 //! @brief returns the enum of the standard integration type for this element

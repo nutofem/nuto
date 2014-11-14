@@ -20,7 +20,9 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
 #include "nuto/mechanics/constitutive/mechanics/LocalEqPlasticStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalEqPlasticStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
 #include "nuto/mechanics/constitutive/thermal/HeatFlux1D.h"
 #include "nuto/mechanics/constitutive/thermal/HeatFlux3D.h"
 #include "nuto/mechanics/constitutive/thermal/Temperature.h"
@@ -81,7 +83,13 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		int numNonlocalTotalStrain(GetNumShapeFunctionsNonlocalTotalStrain());
 		int numNonlocalTotalStrainDofs(section->GetIsNonlocalTotalStrainDof() ? numNonlocalTotalStrain : 0);
 
-		std::vector<double> localNodeDisp,nodeTemp,nodeNonlocalEqPlasticStrain,nodeNonlocalTotalStrain;
+		int numNonlocalEqStrain = GetNumShapeFunctionsNonlocalEqStrain();
+		int numNonlocalEqStrainDofs = section->GetIsNonlocalEqStrainDof() ? numNonlocalEqStrain : 0;
+
+
+
+		// node values of the Dofs
+		std::vector<double> localNodeDisp,nodeTemp,nodeNonlocalEqPlasticStrain,nodeNonlocalTotalStrain, nodeNonlocalEqStrain;
 
 		//calculate local displacements, velocities and accelerations
 		if (numDispDofs>0)
@@ -105,18 +113,36 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			nodeNonlocalTotalStrain.resize(numNonlocalTotalStrain);
 			CalculateNodalNonlocalTotalStrain(0,nodeNonlocalTotalStrain);
 		}
+		if (numNonlocalEqStrainDofs>0 || section->GetInputConstitutiveIsNonlocalEqStrain())
+		{
+		    nodeNonlocalEqStrain.resize(numNonlocalEqStrain);
+		    CalculateNodalNonlocalEqStrain(0, nodeNonlocalEqStrain);
+		}
 
 		//allocate space for local ip coordinates
 		double localIPCoord;
 
+
+		//allocate space for derivatives of shape functions
+		std::vector<double> shapeFunctionsField(GetNumNodesField());
+		std::vector<double> shapeFunctionsNonlocalTotalStrain(GetNumShapeFunctionsNonlocalTotalStrain());
+        std::vector<double> shapeFunctionsNonlocalEqStrain(GetNumShapeFunctionsNonlocalEqStrain());
+
+
+
 		//allocate space for local shape functions
-		std::vector<double> derivativeShapeFunctionsGeometryNatural(GetLocalDimension()*GetNumNodesGeometry());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsFieldNatural(GetLocalDimension()*GetNumNodesField());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsFieldLocal(GetLocalDimension()*GetNumNodesField());    //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsNonlocalTotalStrainNatural(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());  //allocate space for derivatives of shape functions
-		std::vector<double> derivativeShapeFunctionsNonlocalTotalStrainLocal(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());    //allocate space for derivatives of shape functions
-		std::vector<double> shapeFunctionsField(GetNumNodesField());                                       //allocate space for derivatives of shape functions
-		std::vector<double> shapeFunctionsNonlocalTotalStrain(GetNumShapeFunctionsNonlocalTotalStrain());                                       //allocate space for derivatives of shape functions
+        std::vector<double> derivativeShapeFunctionsGeometryNatural(GetLocalDimension()*GetNumNodesGeometry());
+
+        std::vector<double> derivativeShapeFunctionsFieldNatural(GetLocalDimension()*GetNumNodesField());
+        std::vector<double> derivativeShapeFunctionsFieldLocal(GetLocalDimension()*GetNumNodesField());
+
+        std::vector<double> derivativeShapeFunctionsNonlocalTotalStrainNatural(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());
+        std::vector<double> derivativeShapeFunctionsNonlocalTotalStrainLocal(GetLocalDimension()*GetNumShapeFunctionsNonlocalTotalStrain());
+
+        std::vector<double> derivativeShapeFunctionsNonlocalEqStrainNatural(GetLocalDimension()*GetNumShapeFunctionsNonlocalEqStrain());
+        std::vector<double> derivativeShapeFunctionsNonlocalEqStrainLocal(GetLocalDimension()*GetNumShapeFunctionsNonlocalEqStrain());
+
+
 
 		//allocate deformation gradient
 		DeformationGradient1D deformationGradient;
@@ -129,11 +155,17 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		//allocate  damage (output of constitutive relation)
 		Damage damage;
 
-		//allocate nonlocal eq plastic strain (nodal dof value, input of constitutive relation)
-		NonlocalEqPlasticStrain nonLocalEqPlasticStrain;
+		//allocate nonlocal eq plastic strain (gauss point value, input of constitutive relation)
+		NonlocalEqPlasticStrain nonlocalEqPlasticStrain;
+
+        //allocate nonlocal eq strain (gauss point value, input of constitutive relation)
+        NonlocalEqStrain nonlocalEqStrain;
 
 		//allocate local eq plastic strain output of constitutive relation
 		LocalEqPlasticStrain localEqPlasticStrain;
+
+        //allocate local eq strain output of constitutive relation
+        LocalEqStrain localEqStrain;
 
 		EngineeringStrain1D nonlocalTotalStrain;
 
@@ -158,10 +190,12 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		ConstitutiveTangentLocal<1,1> tangentStressStrain;
 		ConstitutiveTangentLocal<1,1> tangentStressTemperature;
 		ConstitutiveTangentLocal<1,2> tangentStressNonlocalEqPlasticStrain;
+        ConstitutiveTangentLocal<1,1> tangentStressNonlocalEqStrain;
 		ConstitutiveTangentLocal<1,1> tangentStressNonlocalTotalStrain;
 		ConstitutiveTangentLocal<1,1> tangentHeatFluxTemperatureGradient;
 		ConstitutiveTangentLocal<1,1> tangentHeatFluxTemperatureRate;
 		ConstitutiveTangentLocal<2,1> tangentLocalEqPlasticStrainStrain;
+        ConstitutiveTangentLocal<1,1> tangentLocalEqStrainStrain;
 
 		//define inputs and outputs
 		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputList;
@@ -184,13 +218,24 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 		if (numNonlocalEqPlasticStrainDofs>0)
 		{
-			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonLocalEqPlasticStrain;
+			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_PLASTIC_STRAIN] = &nonlocalEqPlasticStrain;
 		}
 
 		if (numNonlocalTotalStrainDofs>0)
 		{
 			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrain;
 		}
+        if (numNonlocalEqStrainDofs>0)
+        {
+            constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN] = &nonlocalEqStrain;
+        }
+
+        // sum of all dofs
+        int numDofs = numDispDofs
+                + numTempDofs
+                + numNonlocalEqPlasticStrainDofs
+                + numNonlocalTotalStrainDofs
+                + numNonlocalEqStrainDofs;
 
 		//define outputs
 		for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
@@ -198,7 +243,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			switch(it->first)
 			{
 			case Element::INTERNAL_GRADIENT:
-				it->second->GetFullVectorDouble().Resize(numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs);
+				it->second->GetFullVectorDouble().Resize(numDofs);
 				//if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
 				//on the global level
 				if (mStructure->GetHessianConstant(0)==false)
@@ -219,11 +264,15 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					{
 						constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRAIN_1D] = &localTotalStrain;
 					}
+                    if (numNonlocalEqStrainDofs>0)
+                    {
+                        constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
+                    }
 				}
 			break;
 			case Element::HESSIAN_0_TIME_DERIVATIVE:
 				{
-					it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs);
+					it->second->GetFullMatrixDouble().Resize(numDofs, numDofs);
 					it->second->SetSymmetry(true);
 					it->second->SetConstant(true);
 					if (numDispDofs>0)
@@ -236,7 +285,9 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D] = &tangentStressNonlocalEqPlasticStrain;
 						if (numNonlocalTotalStrainDofs>0)
 							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D] = &tangentStressNonlocalTotalStrain;
-					}
+                        if (numNonlocalEqStrainDofs>0)
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D] = &tangentStressNonlocalEqStrain;
+}
 					if (numTempDofs>0)
 					{
 						constitutiveOutputList[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_1D] = &tangentHeatFluxTemperatureGradient;
@@ -244,12 +295,15 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						//if (numDisp)
 						//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
 					}
-					if (numNonlocalEqPlasticStrainDofs>0)
+					if (numNonlocalEqPlasticStrainDofs>0 && numDispDofs>0)
 					{
-						//mixed terms
-						if (numDispDofs)
-							constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D] = &tangentLocalEqPlasticStrainStrain;
+                        constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D] = &tangentLocalEqPlasticStrainStrain;
 					}
+
+                    if (numNonlocalEqStrainDofs>0 && numDispDofs>0)
+                    {
+                        constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D] = &tangentLocalEqStrainStrain;
+                    }
 				}
 			break;
 			case Element::HESSIAN_1_TIME_DERIVATIVE:
@@ -310,10 +364,20 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				}
 			break;
 			case Element::GLOBAL_ROW_DOF:
-				this->CalculateGlobalRowDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs,numNonlocalEqPlasticStrainDofs,numNonlocalTotalStrainDofs);
+				this->CalculateGlobalRowDofs(it->second->GetVectorInt(),
+				        numDispDofs,
+				        numTempDofs,
+				        numNonlocalEqPlasticStrainDofs,
+				        numNonlocalTotalStrainDofs,
+				        numNonlocalEqStrainDofs);
 			break;
 			case Element::GLOBAL_COLUMN_DOF:
-				this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),numDispDofs,numTempDofs,numNonlocalEqPlasticStrainDofs,numNonlocalTotalStrainDofs);
+				this->CalculateGlobalColumnDofs(it->second->GetVectorInt(),
+				        numDispDofs,
+				        numTempDofs,
+				        numNonlocalEqPlasticStrainDofs,
+				        numNonlocalTotalStrainDofs,
+				        numNonlocalEqStrainDofs);
 			break;
 			default:
 				throw MechanicsException("[NuTo::Truss::Evaluate] element output not implemented.");
@@ -374,7 +438,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			if (numNonlocalEqPlasticStrainDofs)
 			{
 				CalculateShapeFunctionsNonlocalTotalStrain(localIPCoord, shapeFunctionsNonlocalTotalStrain);
-				CalculateNonlocalEqPlasticStrain(shapeFunctionsNonlocalTotalStrain, nodeNonlocalEqPlasticStrain, nonLocalEqPlasticStrain);
+				CalculateNonlocalEqPlasticStrain(shapeFunctionsNonlocalTotalStrain, nodeNonlocalEqPlasticStrain, nonlocalEqPlasticStrain);
 			}
 
 			if (numNonlocalTotalStrainDofs)
@@ -393,6 +457,18 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				CalculateNonlocalTotalStrain(shapeFunctionsNonlocalTotalStrain, nodeNonlocalTotalStrain, nonlocalTotalStrain);
 			}
 
+            if (numNonlocalEqStrainDofs)
+            {
+                CalculateShapeFunctionsNonlocalEqStrain(localIPCoord, shapeFunctionsNonlocalEqStrain);
+                CalculateNonlocalEqStrain(shapeFunctionsNonlocalEqStrain, nodeNonlocalEqStrain, nonlocalEqStrain);
+                CalculateDerivativeShapeFunctionsNonlocalEqStrain(localIPCoord, derivativeShapeFunctionsNonlocalEqStrainNatural);
+                for (unsigned int count=0; count<derivativeShapeFunctionsNonlocalEqStrainNatural.size(); count++)
+                {
+                    derivativeShapeFunctionsNonlocalEqStrainLocal[count] = derivativeShapeFunctionsNonlocalEqStrainNatural[count]/detJ;
+                }
+
+            }
+
 			ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
 			Error::eError error = constitutivePtr->Evaluate1D(this, theIP,
 					constitutiveInputList, constitutiveOutputList);
@@ -403,12 +479,17 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
 			FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Kkk;
-			if (numNonlocalEqPlasticStrainDofs>0 || numNonlocalTotalStrainDofs>0)
+			if (numNonlocalEqPlasticStrainDofs > 0 || numNonlocalTotalStrainDofs > 0)
 			{
 				//calculate Kkk detJ*(cBtB+NtN)
 				//the nonlocal radius is in a gradient formulation is different from the nonlocal radius in an integral formulation
 				CalculateKkk(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsNonlocalTotalStrainLocal,constitutivePtr->GetNonlocalRadius(),factor,Kkk);
-			}
+			} else if (numNonlocalEqStrainDofs > 0)
+            {
+                //calculate Kkk detJ*(cBtB+NtN)
+                //the nonlocal radius is in a gradient formulation is different from the nonlocal radius in an integral formulation
+                CalculateKkk(shapeFunctionsNonlocalEqStrain,derivativeShapeFunctionsNonlocalEqStrainLocal,constitutivePtr->GetNonlocalRadius(),factor,Kkk);
+            }
 
 			//calculate output
 			for (auto it = rElementOutput.begin(); it!=rElementOutput.end(); it++)
@@ -433,13 +514,18 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 						if (numNonlocalEqPlasticStrainDofs>0)
 						{
 							//add Kkk*nonlocalEqPlasticStrain+detJ*F
-							AddDetJRnonlocalplasticStrain(shapeFunctionsField,localEqPlasticStrain, Kkk, nodeNonlocalEqPlasticStrain, factor, numDispDofs+numTempDofs, it->second->GetFullVectorDouble());
+							AddDetJRnonlocalPlasticStrain(shapeFunctionsField,localEqPlasticStrain, Kkk, nodeNonlocalEqPlasticStrain, factor, numDispDofs+numTempDofs, it->second->GetFullVectorDouble());
 						}
 						if (numNonlocalTotalStrainDofs>0)
 						{
 							//add Kkk*nonlocalTotalStrain+detJ*F
 							AddDetJRnonlocalTotalStrain(shapeFunctionsNonlocalTotalStrain,localTotalStrain, Kkk, nodeNonlocalTotalStrain, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, it->second->GetFullVectorDouble());
 						}
+                        if (numNonlocalEqStrainDofs>0)
+                        {
+                            //add Kkk*nonlocalEqStrain-detJ*F
+                            AddDetJRnonlocalEqStrain(shapeFunctionsNonlocalEqStrain,localEqStrain, Kkk, nodeNonlocalEqStrain, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs, it->second->GetFullVectorDouble());
+                        }
 					}
 				}
 				break;
@@ -463,6 +549,11 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							{
 								AddDetJBtdSigmadNonlocalTotalStrainN(derivativeShapeFunctionsNonlocalTotalStrainLocal, tangentStressNonlocalTotalStrain,shapeFunctionsNonlocalTotalStrain, factor, 0,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, it->second->GetFullMatrixDouble());
 							}
+							if (numNonlocalEqStrainDofs > 0)
+							{
+							    AddDetJBtdSigmadNonlocalEqStrainN(derivativeShapeFunctionsFieldLocal, tangentStressNonlocalEqStrain, shapeFunctionsNonlocalEqStrain, factor, 0, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs, it->second->GetFullMatrixDouble());
+							}
+
 						}
 						if (numTempDofs>0)
 						{
@@ -491,10 +582,23 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 							//derivative of F(nonlocaltotalStrain) with respect to all unknowns
 							if (numDispDofs>0)
 							{
-								AddDetJNtB(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsFieldLocal, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, 0, it->second->GetFullMatrixDouble());
+								AddDetJNtB(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsNonlocalTotalStrainLocal, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs, 0, it->second->GetFullMatrixDouble());
 							}
 							it->second->GetFullMatrixDouble().AddBlock(numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs,Kkk);
 						}
+                        if (numNonlocalEqStrainDofs>0)
+                        {
+                            int prevDofs = numDispDofs + numTempDofs + numNonlocalEqPlasticStrainDofs + numNonlocalTotalStrainDofs;
+
+                            //derivative of F(nonlocalEqStrain) with respect to all unknowns
+                            if (numDispDofs > 0)
+                            {
+                                AddDetJNtdLocalEqStraindEpsilonB(shapeFunctionsNonlocalEqStrain, tangentLocalEqStrainStrain, derivativeShapeFunctionsFieldLocal, factor, prevDofs, 0, it->second->GetFullMatrixDouble());
+                            }
+                            // add Kkk
+                            it->second->GetFullMatrixDouble().AddBlock(prevDofs,prevDofs,Kkk);
+
+                        }
 						BlowLocalMatrixToGlobal(it->second->GetFullMatrixDouble());
 					}
 				break;
@@ -585,7 +689,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			}
 		}
     }
-    catch (NuTo::MechanicsException e)
+    catch (NuTo::MechanicsException& e)
     {
         std::stringstream ss;
         ss << mStructure->ElementGetId(this);
@@ -619,6 +723,30 @@ void NuTo::Truss::AddDetJNtdLocalEqPlasticStraindEpsilonB(const std::vector<doub
 			}
 		}
     }
+}
+
+//! @brief add detJ transpose N dOmega/depsilon B
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rTangentLocalEqStrain derivative of the local eq plastic strains with respect to the strain
+//! @param rderivativeShapeFunctions of the ip for all shape functions
+//! @param rFactor factor including detJ and area
+//! @param rResult result
+void NuTo::Truss::AddDetJNtdLocalEqStraindEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentLocalEqStrainStrain,
+        const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+{
+
+    double tmpfactor = rTangentLocalEqStrainStrain(0)*rFactor;
+    //these for loops are not optimal, we might use a map to an eigenvector and perform the multiplication directly
+    // ttitsche:: I did the benchmark: the conversion / mapping to Eigen::Matrices is too slow.
+    for (unsigned int iN=0; iN<rShapeFunctions.size(); iN++) // N-Matrix
+    {
+        for (unsigned int iB=0; iB<rDerivativeShapeFunctions.size(); iB++) // B-Matrix
+        {
+            rResult(rRow+iN,rCol+iB) -= tmpfactor*rShapeFunctions[iN]*rDerivativeShapeFunctions[iB];
+        }
+    }
+
+
 }
 
 //! @brief add detJ transpose N dOmega/depsilon B
@@ -688,16 +816,36 @@ void NuTo::Truss::AddDetJBtdSigmadNonlocalTotalStrainN(const std::vector<double>
     }
 }
 
-//! @brief add Kkk*omega+detJ*F (detJ is already included in Koo)
+//! @brief add detJ B.T dSigma/dnonlocalEqStrain N
+//! @param derivativeShapeFunctions of the ip for all shape functions
+//! @param tangentStressNonlocalEqStrain derivative of the stress with respect to the nonlocal eq strain
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rFactor factor including detJ and area
+//! @param rResult result
+void NuTo::Truss::AddDetJBtdSigmadNonlocalEqStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalEqStrain,
+        const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+{
+    double tmpfactor = rTangentStressNonlocalEqStrain(0)*rFactor;
+    //these tow for loops are not optimal, we might use a map to an eigenvector and perform the multiplication directly
+    for (unsigned int iB=0; iB<rDerivativeShapeFunctions.size(); iB++) // B-Matrix
+    {
+        for (unsigned int iN=0; iN<rShapeFunctions.size(); iN++)  // N-Matrix
+        {
+            rResult(rRow+iB,rCol+iN)+=tmpfactor*rDerivativeShapeFunctions[iB]*rShapeFunctions[iN];
+        }
+    }
+}
+
+//! @brief add Kkk*omega+detJ*F (detJ is already included in Kkk)
 //! @param rShapeFunctions of the ip for all shape functions
 //! @param rLocalEqPlasticStrain local eq. plastic strain values
 //! @param rKkk stiffness matrix Kkk
 //! @param rNodeNonlocalEqPlasticStrain nodal nonlocal eq plastic strain values
 //! @param rFactor factor including detJ and area
 //! @param rResult result
-void NuTo::Truss::AddDetJRnonlocalplasticStrain(const std::vector<double>& rShapeFunctions,const LocalEqPlasticStrain& rLocalEqPlasticStrain,
+void NuTo::Truss::AddDetJRnonlocalPlasticStrain(const std::vector<double>& rShapeFunctions,const LocalEqPlasticStrain& rLocalEqPlasticStrain,
 		const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
-		const std::vector<double>& rNodeNonlocalEqPlasticStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult)
+		const std::vector<double>& rNodeNonlocalEqPlasticStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult) const
 {
 	assert(rResult.GetNumRows()>=(int)(rRow+2*rShapeFunctions.size()));
 	assert(2*rShapeFunctions.size()==rNodeNonlocalEqPlasticStrain.size());
@@ -722,7 +870,7 @@ void NuTo::Truss::AddDetJRnonlocalplasticStrain(const std::vector<double>& rShap
 	rResult.segment(rRow+rShapeFunctions.size(),rShapeFunctions.size()) +=tmpResult;
 }
 
-//! @brief add Kkk*omega+detJ*F (detJ is already included in Koo)
+//! @brief add Kkk*omega+detJ*F (detJ is already included in Kkk)
 //! @param rShapeFunctions of the ip for all shape functions
 //! @param rLocalTotalStrain local total strain values
 //! @param rKkk stiffness matrix Kkk
@@ -731,7 +879,7 @@ void NuTo::Truss::AddDetJRnonlocalplasticStrain(const std::vector<double>& rShap
 //! @param rResult result
 void NuTo::Truss::AddDetJRnonlocalTotalStrain(const std::vector<double>& rShapeFunctions,const EngineeringStrain1D& rLocalTotalStrain,
 		const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
-		const std::vector<double>& rNodeNonlocalTotalStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult)
+		const std::vector<double>& rNodeNonlocalTotalStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult) const
 {
 	assert(rResult.GetNumRows()>=(int)(rRow+rShapeFunctions.size()));
 	assert(rShapeFunctions.size()==rNodeNonlocalTotalStrain.size());
@@ -746,6 +894,31 @@ void NuTo::Truss::AddDetJRnonlocalTotalStrain(const std::vector<double>& rShapeF
 	rResult.segment(rRow,rShapeFunctions.size()) +=tmpResult;
 
 }
+
+//! @brief add Kkk*nonlocalEqStrain-detJ*N.T*localEqStrain (detJ is already included in Kkk)
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rLocalEqStrain local eq. strain values
+//! @param rKkk stiffness matrix Kkk
+//! @param rNodeNonlocalEqStrain nodal nonlocal eq strain values
+//! @param rFactor factor including detJ and area
+//! @param rResult result
+void NuTo::Truss::AddDetJRnonlocalEqStrain(const std::vector<double>& rShapeFunctions,const LocalEqStrain& rLocalEqStrain, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
+        const std::vector<double>& rNodeNonlocalEqStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult) const
+{
+    assert(rResult.GetNumRows()>=(int)(rRow+rShapeFunctions.size()));
+    assert(rShapeFunctions.size()==rNodeNonlocalEqStrain.size());
+
+    // perform Kkk * nodeNonlocalEqStrain
+    FullVector<double,Eigen::Dynamic> tmpResult = rKkk*Eigen::Map<Eigen::VectorXd>(const_cast<double*>(&(rNodeNonlocalEqStrain[0])),rShapeFunctions.size());
+
+    double localEqStrainMulFactor = rLocalEqStrain(0)*rFactor;
+    for (unsigned int count=0; count<rShapeFunctions.size(); count++)
+    {
+        tmpResult(count) -= rShapeFunctions[count]*localEqStrainMulFactor;
+    }
+    rResult.segment(rRow,rShapeFunctions.size()) +=tmpResult;
+}
+
 
 //! @brief calculates the Kkk matrix
 //! @param shapeFunctions of the ip for all shape functions
@@ -782,7 +955,7 @@ void NuTo::Truss::CalculateNodalTemperatures(int rTimeDerivative, std::vector<do
     for (int count=0; count<GetNumNodesField(); count++)
     {
         if (GetNode(count)->GetNumTemperatures()!=1)
-            throw MechanicsException("[NuTo::Truss::CalculateTemperatures] Temperature is required as input to the constitutive model, but the node does not have this data.");
+            throw MechanicsException("[NuTo::Truss::CalculateNodalTemperatures] Temperature is required as input to the constitutive model, but the node does not have this data.");
         rTemperatures[count] = GetNode(count)->GetTemperature(rTimeDerivative);
     }
 }
@@ -800,7 +973,7 @@ void NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std
     for (int count=0; count<GetNumNodesField(); count++)
     {
         if (GetNode(count)->GetNumNonlocalEqPlasticStrain()!=2)
-            throw MechanicsException("[NuTo::Truss::CalculateNodalDamage] Damage is required as input to the constitutive model, but the node does not have this data.");
+            throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain] Damage is required as input to the constitutive model, but the node does not have this data.");
         GetNode(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
         rNodalNonlocalEqPlasticStrain[count] = nonlocalEqPlasticStrain[0];
         rNodalNonlocalEqPlasticStrain[count+GetNumNodesField()] = nonlocalEqPlasticStrain[1];
@@ -820,9 +993,26 @@ void NuTo::Truss::CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::ve
     for (int count=0; count<GetNumShapeFunctionsNonlocalTotalStrain(); count++)
     {
         if (GetNodeNonlocalTotalStrain(count)->GetNumNonlocalTotalStrain()!=1)
-            throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalStrain] nonlocal strain is required as input to the constitutive model, but the node does not have this data.");
+            throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalTotalStrain] nonlocal strain is required as input to the constitutive model, but the node does not have this data.");
         GetNodeNonlocalTotalStrain(count)->GetNonlocalTotalStrain1D(nonlocalTotalStrain);
         rNodalNonlocalTotalStrain[count] = nonlocalTotalStrain[0];
+    }
+}
+
+//! @brief stores the nonlocal eq strain of the nodes
+//! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
+//! @param nonlocal eq strain vector with already correct size allocated (1*nodes)
+//! this can be checked with an assertation
+void NuTo::Truss::CalculateNodalNonlocalEqStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalEqStrain)const
+{
+    assert(rTimeDerivative>=0);
+    assert(rTimeDerivative<3);
+    assert((int)rNodalNonlocalEqStrain.size()==GetNumShapeFunctionsNonlocalEqStrain());
+    for (int iNode=0; iNode < GetNumShapeFunctionsNonlocalEqStrain(); iNode++)
+    {
+        if (GetNodeNonlocalEqStrain(iNode)->GetNumNonlocalEqStrain()!=1)
+            throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalEqStrain] Nonlocal eq strain is required as input to the constitutive model, but the node does not have this data.");
+        rNodalNonlocalEqStrain[iNode] = GetNodeNonlocalEqStrain(iNode)->GetNonlocalEqStrain(rTimeDerivative);
     }
 }
 
@@ -843,6 +1033,24 @@ void NuTo::Truss::CalculateDeformationGradient(const std::vector<double>& rDeriv
         rDeformationGradient.mDeformationGradient+=rLocalDisp[count]*rDerivativeShapeFunctions[count];
     }
     rDeformationGradient.mDeformationGradient+=1.;
+}
+
+//! @brief returns the number of shape functions for the interpolation of the nonlocal total strains
+//! this is required for the calculation of the derivatives of the shape functions
+//! whose size is GetLocalDimension*GetNumShapeFunctions
+//! @return local dimension
+int NuTo::Truss::GetNumShapeFunctionsNonlocalTotalStrain()const
+{
+    return GetNumNodesGeometry();
+}
+
+//! @brief returns the number of shape functions for the interpolation of the nonlocal eq strains
+//! this is required for the calculation of the derivatives of the shape functions
+//! whose size is GetLocalDimension*GetNumShapeFunctions
+//! @return local dimension
+int NuTo::Truss::GetNumShapeFunctionsNonlocalEqStrain()const
+{
+    return GetNumNodesGeometry();
 }
 
 //! @brief returns the local coordinates of an integration point
@@ -897,6 +1105,59 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     return;
 }
 
+//! @brief calculates the shape functions, uses the geometry shape functions unless implemented differently
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
+void NuTo::Truss::CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+{
+    CalculateShapeFunctionsGeometry(rLocalCoordinates, rShapeFunctions);
+}
+
+//! @brief calculates the shape functions, uses the geometry shape functions unless implemented differently
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Truss::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+{
+    CalculateShapeFunctionsGeometry(rLocalCoordinates, rShapeFunctions);
+}
+
+//! @brief calculates the shape functions, uses the geometry shape functions unless implemented differently
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Truss::CalculateShapeFunctionsNonlocalEqStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
+{
+    CalculateShapeFunctionsGeometry(rLocalCoordinates, rShapeFunctions);
+}
+
+
+//! @brief calculates the derivative of the shape functions, uses the derivatives of the geometry shape function unless implemented differently
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Truss::CalculateDerivativeShapeFunctionsField(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+{
+    CalculateDerivativeShapeFunctionsGeometry(rLocalCoordinates, rDerivativeShapeFunctions);
+}
+
+//! @brief calculates the derivative of the shape functions, uses the derivatives of the geometry shape function unless implemented differently
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Truss::CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+{
+    CalculateDerivativeShapeFunctionsGeometry(rLocalCoordinates, rDerivativeShapeFunctions);
+}
+
+//! @brief calculates the derivative of the shape functions, uses the derivatives of the geometry shape function unless implemented differently
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+//! first all the directions for a single node, and then for the next node
+void NuTo::Truss::CalculateDerivativeShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
+{
+    CalculateDerivativeShapeFunctionsGeometry(rLocalCoordinates, rDerivativeShapeFunctions);
+}
+
+
 //! @brief returns the nonlocal eq plastic strain interpolated from the nodal values
 //! @param shapeFunctionsGlobal shape functions
 //! @param rNodeDamage nonlocal eq plastic strain values of the nodes
@@ -930,6 +1191,22 @@ void NuTo::Truss::CalculateNonlocalTotalStrain(const std::vector<double>& shapeF
 		rNonlocalTotalStrain(0)+=shapeFunctions[count]*rNodeNonlocalTotalStrain[count];
 	}
 	return;
+}
+
+//! @brief returns the nonlocal eq strain interpolated from the nodal values
+//! @param shapeFunctions shape functions
+//! @param rNodeNonlocalEqStrain nonlocal eq strain values of the nodes
+//! @param rNonlocalEqStrain return value
+void NuTo::Truss::CalculateNonlocalEqStrain(const std::vector<double>& shapeFunctions,
+        const std::vector<double>& rNodeNonlocalEqStrain, NonlocalEqStrain& rNonlocalEqStrain)const
+{
+    assert(shapeFunctions.size()==rNodeNonlocalEqStrain.size());
+    rNonlocalEqStrain(0) = 0.;
+
+    for (unsigned int count=0; count<shapeFunctions.size(); count++)
+    {
+        rNonlocalEqStrain(0)+=shapeFunctions[count]*rNodeNonlocalEqStrain[count];
+    }
 }
 
 //! @brief calculates the integration point data with the current displacements applied
@@ -1152,7 +1429,7 @@ void NuTo::Truss::GetIntegrationPointVolume(std::vector<double>& rVolume)const
 
 	rVolume.resize(GetNumIntegrationPoints());
 
-     for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
+    for (int theIP=0; theIP<GetNumIntegrationPoints(); theIP++)
     {
         GetLocalIntegrationPointCoordinates(theIP, localIPCoord);
 
@@ -1163,6 +1440,39 @@ void NuTo::Truss::GetIntegrationPointVolume(std::vector<double>& rVolume)const
                        *(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
     }
 }
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)
+{
+    return GetNode(rLocalNodeNumber);
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+const  NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)const
+{
+    return GetNode(rLocalNodeNumber);
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalEqStrain(int rLocalNodeNumber)
+{
+    return GetNode(rLocalNodeNumber);
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+const  NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalEqStrain(int rLocalNodeNumber)const
+{
+    return GetNode(rLocalNodeNumber);
+}
+
 
 //! @brief cast the base pointer to a Truss, otherwise throws an exception
 const NuTo::Truss* NuTo::Truss::AsTruss()const
@@ -1175,6 +1485,21 @@ NuTo::Truss* NuTo::Truss::AsTruss()
 {
 	return this;
 }
+
+//! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
+//! @param rGlobalColumnDofs ... vector of global column dofs
+//! @param rNumXxxxDofs ... number of Xxxx dofs
+void NuTo::Truss::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs, int rNumNonlocalEqStrainDofs) const
+{
+    CalculateGlobalRowDofs(
+            rGlobalColumnDofs,
+            rNumDispDofs,
+            rNumTempDofs,
+            rNumNonlocalEqPlasticStrainDofs,
+            rNumNonlocalTotalStrainDofs,
+            rNumNonlocalEqStrainDofs);
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

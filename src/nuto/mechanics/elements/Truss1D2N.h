@@ -136,33 +136,11 @@ public:
     //! @param shape functions for all the nodes
     void CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
-    //! @brief calculates the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param shape functions for all the nodes
-    void CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
-
-    //! @brief calculates the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param shape functions for all the nodes
-    void CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
-
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes,
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
-
-    //! @brief calculates the derivative of the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param derivative of the shape functions for all the nodes,
-    //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
-
-    //! @brief calculates the derivative of the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
-    //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief returns the number of local degrees of freedom
     //! @return number of local degrees of freedom

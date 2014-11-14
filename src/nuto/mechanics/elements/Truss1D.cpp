@@ -92,51 +92,111 @@ void NuTo::Truss1D::InterpolateDisplacementsFrom1D(int rTimeDerivatrive, double 
 }
 
 // build global row dofs
-void NuTo::Truss1D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumTempDofs,
-		int rNumNonlocalEqPlasticStrainDofs, int rNumNonlocalTotalStrainDofs) const
+void NuTo::Truss1D::CalculateGlobalRowDofs(
+        std::vector<int>& rGlobalRowDofs,
+        int rNumDispDofs,
+        int rNumTempDofs,
+		int rNumNonlocalEqPlasticStrainDofs,
+		int rNumNonlocalTotalStrainDofs,
+		int rNumNonlocalEqStrainDofs) const
 {
-    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs+rNumNonlocalEqPlasticStrainDofs+rNumNonlocalTotalStrainDofs);
-    int indexDisp(0);
-    int indexNonlocalTotalStrain(0);
+    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs+rNumNonlocalEqPlasticStrainDofs+rNumNonlocalTotalStrainDofs+rNumNonlocalEqStrainDofs);
+
+
+
+    // indices for the current dof type
+    int iGlobalDisp                    = 0;
+    int iGlobalTemp                    = 0;
+    int iGlobalNonlocalEqPlasticStrain = 0;
+    int iGlobalNonlocalTotalStrain     = 0;
+    int iGlobalNonlocalEqStrain        = 0;
+
     int numNodes(this->GetNumNodes());
-    for (int nodeCount = 0; nodeCount < numNodes; nodeCount++)
+
+    for (int iNode = 0; iNode < numNodes; iNode++)
     {
-        const NodeBase * nodePtr(GetNode(nodeCount));
+        const NodeBase * node = GetNode(iNode);
+
         if (rNumDispDofs>0)
         {
-            for (int countDisp=0; countDisp<nodePtr->GetNumDisplacements(); countDisp++)
+            for (int iLocalLocal = 0; iLocalLocal < node->GetNumDisplacements(); iLocalLocal++)
             {
-        	    rGlobalRowDofs[indexDisp] = nodePtr->GetDofDisplacement(countDisp);
-        	    indexDisp++;
+        	    rGlobalRowDofs[iGlobalDisp] = node->GetDofDisplacement(iLocalLocal);
+        	    iGlobalDisp++;
             }
         }
-        if (nodePtr->GetNumTemperatures()>0 && rNumTempDofs>0)
+
+        int iStartTemp = rNumDispDofs;
+        if (node->GetNumTemperatures()>0 && rNumTempDofs>0)
         {
-            rGlobalRowDofs[rNumDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
+            rGlobalRowDofs[iStartTemp + iGlobalTemp] = node->GetDofTemperature();
+
+            // is only increased if the node actually has the corresponding dofs
+            iGlobalTemp++;
+
         }
-        if (nodePtr->GetNumNonlocalEqPlasticStrain()>0 && rNumNonlocalEqPlasticStrainDofs>0)
+
+        int iStartNonlocalEqPlasticStrain = iStartTemp + rNumTempDofs;
+        if (node->GetNumNonlocalEqPlasticStrain()>0 && rNumNonlocalEqPlasticStrainDofs>0)
         {
-            for (int countNonlocalEqPlasticStrain=0; countNonlocalEqPlasticStrain<nodePtr->GetNumNonlocalEqPlasticStrain(); countNonlocalEqPlasticStrain++)
+            for (int iNonlocalEqPlasticStrain=0; iNonlocalEqPlasticStrain < node->GetNumNonlocalEqPlasticStrain(); iNonlocalEqPlasticStrain++)
             {
-				rGlobalRowDofs[rNumDispDofs + rNumTempDofs + nodeCount + numNodes*countNonlocalEqPlasticStrain] = nodePtr->GetDofNonlocalEqPlasticStrain(countNonlocalEqPlasticStrain);
+                // abr: NonlocalEqPlasticStrain --> e*[]
+                // the final vector
+                // should look like
+                // [ dispDofs ... ]
+                //
+                // [ tempDofs ... ]
+                //
+                // [ e*[iNonlocalEqPlasticStrain = 0] of node 0
+                // [ e*[iNonlocalEqPlasticStrain = 0] of node 1
+                // [  ... ]
+                // [ e*[iNonlocalEqPlasticStrain = 0] of node N
+                //
+                // [ e*[iNonlocalEqPlasticStrain = 1] of node 0
+                // [ e*[iNonlocalEqPlasticStrain = 1] of node 1
+                // [  ... ]
+                // [ e*[iNonlocalEqPlasticStrain = 1] of node N
+
+                // [ ...]
+                // --> an offset of iNonlocalEqPlasticStrain * N is applied
+                int iGlobalOffset =  numNodes*iNonlocalEqPlasticStrain;
+
+				rGlobalRowDofs[iStartNonlocalEqPlasticStrain + iGlobalNonlocalEqPlasticStrain + iGlobalOffset] = node->GetDofNonlocalEqPlasticStrain(iNonlocalEqPlasticStrain);
+            }
+            // is only increased if the node actually has the corresponding dofs
+            iGlobalNonlocalEqPlasticStrain++;
+        }
+
+        int iStartNonlocalTotalStrain = iStartNonlocalEqPlasticStrain + rNumNonlocalEqPlasticStrainDofs;
+        if (node->GetNumNonlocalTotalStrain()>0 && rNumNonlocalTotalStrainDofs>0)
+        {
+            // arranged like the displacements
+            for (int iNonlocalTotalStrain=0; iNonlocalTotalStrain < node->GetNumNonlocalTotalStrain(); iNonlocalTotalStrain++)
+            {
+				rGlobalRowDofs[iStartNonlocalTotalStrain + iGlobalNonlocalTotalStrain] = node->GetDofNonlocalTotalStrain(iNonlocalTotalStrain);
+				iGlobalNonlocalTotalStrain++;
             }
         }
-        if (nodePtr->GetNumNonlocalTotalStrain()>0 && rNumNonlocalTotalStrainDofs>0)
+
+        int iStartNonlocalEqStrain = iStartNonlocalTotalStrain + rNumNonlocalTotalStrainDofs;
+        if (node->GetNumNonlocalEqStrain()>0 && rNumNonlocalEqStrainDofs>0)
         {
-            for (int countNonlocalTotalStrain=0; countNonlocalTotalStrain<nodePtr->GetNumNonlocalTotalStrain(); countNonlocalTotalStrain++)
-            {
-				rGlobalRowDofs[rNumDispDofs + rNumTempDofs + rNumNonlocalEqPlasticStrainDofs + indexNonlocalTotalStrain] = nodePtr->GetDofNonlocalTotalStrain(countNonlocalTotalStrain);
-				indexNonlocalTotalStrain++;
-            }
+            rGlobalRowDofs[iStartNonlocalEqStrain + iGlobalNonlocalEqStrain] = node->GetDofNonlocalEqStrain();
+            iGlobalNonlocalEqStrain ++;
         }
+
+        //int iStartNextDof = iStartNonlocalEqStrain + rNumNonlocalEqStrain;
+
+
     }
+
+//    std::cout << Eigen::Map<Eigen::VectorXi>(rGlobalRowDofs.data(), rGlobalRowDofs.size()) << std::endl;
+//    std::cout << "==========================================" << std::endl;
+
 }
 
-// build global column dof
-void NuTo::Truss1D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs, int rNumNonlocalTotalStrainDofs) const
-{
-    this->CalculateGlobalRowDofs(rGlobalColumnDofs,rNumDispDofs,rNumTempDofs,rNumNonlocalEqPlasticStrainDofs,rNumNonlocalTotalStrainDofs);
-}
+
 
 // check element definition
 void NuTo::Truss1D::CheckElement()

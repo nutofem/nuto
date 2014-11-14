@@ -1851,7 +1851,7 @@ double NuTo::StructureBase::ElementTotalGetInternalEnergy()
     {
         try
         {
-        	throw MechanicsException("[NuTo::StructureBase::ElementTotalGetInternalEnerg] not yet implemented on ip level.");
+        	throw MechanicsException("[NuTo::StructureBase::ElementTotalGetInternalEnergy] not yet implemented on ip level.");
 //            elementVector[elementCount]->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {

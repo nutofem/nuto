@@ -79,6 +79,14 @@ public:
     //! @param rFlag ... true, if damage are dofs
     void SetIsNonlocalTotalStrainDof(bool rFlag);
 
+    //! @brief... get if nonlocal eq strain is dofs
+    //! @return ... true, if nonlocal eq strain is dofs
+    bool GetIsNonlocalEqStrainDof()const;
+
+    //! @brief... set if nonlocal eq strain is dofs
+    //! @param rFlag ... true, if nonlocal eq strain is dofs
+    void SetIsNonlocalEqStrainDof(bool rFlag);
+
     //! @brief... get if temperatures are to be used as input to the constitutive model
     //! @return ... true, if temperatures are to be used as input to the constitutive model
     bool GetInputConstitutiveIsTemperature()const;
@@ -102,6 +110,14 @@ public:
     //! @brief... set if damage is to be used as input to the constitutive model (gradient damage formulation)
     //! @param rFlag ... true, if damage is to be used as input to the constitutive model
     void SetInputConstitutiveIsNonlocalTotalStrain(bool rFlag);
+
+    //! @brief... get if damage is to be used as input to the constitutive model (gradient damage formulation)
+    //! @return ... true, if damage is to be used as input to the constitutive model
+    bool GetInputConstitutiveIsNonlocalEqStrain()const;
+
+    //! @brief... set if damage is to be used as input to the constitutive model (gradient damage formulation)
+    //! @param rFlag ... true, if damage is to be used as input to the constitutive model
+    void SetInputConstitutiveIsNonlocalEqStrain(bool rFlag);
 
     //! @brief... get if temperature gradients are to be used as input to the constitutive model
     //! @return ... true, if temperature gradients are to be used as input to the constitutive model
@@ -151,6 +167,7 @@ private:
     bool mInputConstitutiveIsTemperature;
     bool mInputConstitutiveIsNonlocalEqPlasticStrain;
     bool mInputConstitutiveIsNonlocalTotalStrain;
+    bool mInputConstitutiveIsNonlocalEqStrain;
     bool mInputConstitutiveIsTemperatureGradient;
     bool mInputConstitutiveIsDeformationGradient;
 
@@ -158,6 +175,7 @@ private:
     bool mTemperatureDof;
     bool mNonlocalEqPlasticStrainDof;
     bool mNonlocalTotalStrainDof;
+    bool mNonlocalEqStrainDof;
 };
 
 }

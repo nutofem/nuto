@@ -19,6 +19,7 @@
 #include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 

@@ -20,11 +20,13 @@ NuTo::SectionBase::SectionBase()
 	mInputConstitutiveIsTemperatureGradient = false;
 	mInputConstitutiveIsNonlocalEqPlasticStrain = false;
 	mInputConstitutiveIsNonlocalTotalStrain = false;
+    mInputConstitutiveIsNonlocalEqStrain = false;
 	mInputConstitutiveIsDeformationGradient = true;
     mDisplacementDof = true;
     mTemperatureDof = false;
     mNonlocalEqPlasticStrainDof = false;
     mNonlocalTotalStrainDof = false;
+    mNonlocalEqStrainDof = false;
 }
 
 int NuTo::SectionBase::GetNumInputConstitutive()const
@@ -70,6 +72,20 @@ void NuTo::SectionBase::SetIsNonlocalTotalStrainDof(bool rFlag)
 bool NuTo::SectionBase::GetIsNonlocalTotalStrainDof()const
 {
 	return mNonlocalTotalStrainDof;
+}
+
+//! @brief... set if nonlocal eq strain is dofs
+//! @param rFlag ... true, if nonlocal eq strain is dofs
+void NuTo::SectionBase::SetIsNonlocalEqStrainDof(bool rFlag)
+{
+    mNonlocalEqStrainDof = rFlag;
+}
+
+//! @brief... get if nonlocal eq strain is dofs
+//! @return ... true, if nonlocal eq strain is dofs
+bool NuTo::SectionBase::GetIsNonlocalEqStrainDof()const
+{
+    return mNonlocalEqStrainDof;
 }
 
 //! @brief... set if temperatures are dofs
@@ -129,6 +145,19 @@ bool NuTo::SectionBase::GetInputConstitutiveIsNonlocalTotalStrain()const
 void NuTo::SectionBase::SetInputConstitutiveIsNonlocalTotalStrain(bool rFlag)
 {
 	mInputConstitutiveIsNonlocalTotalStrain = rFlag;
+}
+
+//! @brief... get if nonlocal eq plastic strains are to be used as input to the constitutive model
+//! @return ... true, if nonlocal eq plastic strains are to be used as input to the constitutive model
+bool NuTo::SectionBase::GetInputConstitutiveIsNonlocalEqStrain()const
+{
+    return mInputConstitutiveIsNonlocalEqStrain;
+}
+//! @brief... set if nonlocal eq plastic strains are to be used as input to the constitutive model
+//! @param rFlag ... true, if nonlocal eq plastic strains are to be used as input to the constitutive model
+void NuTo::SectionBase::SetInputConstitutiveIsNonlocalEqStrain(bool rFlag)
+{
+    mInputConstitutiveIsNonlocalEqStrain = rFlag;
 }
 
 //! @brief... get if displacements are dof

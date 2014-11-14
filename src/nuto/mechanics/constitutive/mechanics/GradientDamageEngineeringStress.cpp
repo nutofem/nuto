@@ -205,7 +205,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
                 tangent(0,0) = (1.-omega) * mE;
             }
             break;
-            case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D:
+            case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D:
             {
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
@@ -254,7 +254,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
             }
             break;
             default:
-                throw MechanicsException(std::string("[NuTo::GradientDamageEngineeringStress::Evaluate1D] output object)") +
+                throw MechanicsException(std::string("[NuTo::GradientDamageEngineeringStress::Evaluate1D] output object ") +
                         NuTo::Constitutive::OutputToString(itOutput->first) +
                         std::string(" could not be calculated, check the allocated material law and the section behavior."));
             }

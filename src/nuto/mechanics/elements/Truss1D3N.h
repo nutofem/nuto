@@ -126,9 +126,18 @@ public:
     //! this is required for the calculation of the derivatives of the shape functions
     //! whose size is GetLocalDimension*GetNumShapeFunctions
     //! @return local dimension
-    virtual int GetNumShapeFunctionsNonlocalTotalStrain()const
+    int GetNumShapeFunctionsNonlocalTotalStrain()const
     {
     	return 2;
+    }
+
+    //! @brief returns the number of shape functions
+    //! this is required for the calculation of the derivatives of the shape functions
+    //! whose size is GetLocalDimension*GetNumShapeFunctions
+    //! @return local dimension
+    int GetNumShapeFunctionsNonlocalEqStrain()const
+    {
+        return 2;
     }
 
     //! @brief calculates the shape functions
@@ -136,15 +145,15 @@ public:
 	//! @param shape functions for all the nodes
 	void CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
-	//! @brief calculates the shape functions
-	//! @param rLocalCoordinates local coordinates of the integration point
-	//! @param shape functions for all the nodes
-	void CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes
+    void CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
-	//! @brief calculates the shape functions
-	//! @param rLocalCoordinates local coordinates of the integration point
-	//! @param shape functions for all the nodes
-	void CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes
+    void CalculateShapeFunctionsNonlocalEqStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
 	//! @brief calculates the derivative of the shape functions
 	//! @param rLocalCoordinates local coordinates of the integration point
@@ -152,45 +161,37 @@ public:
 	//! first all the directions for a single node, and then for the next node
 	void CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
-	//! @brief calculates the derivative of the shape functions
-	//! @param rLocalCoordinates local coordinates of the integration point
-	//! @param derivative of the shape functions for all the nodes,
-	//! first all the directions for a single node, and then for the next node
-	void CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
-
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    NodeBase* GetNodeNonlocalTotalStrain(int rLocalNodeNumber)
-    {
-    	assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 );
-    	if (rLocalNodeNumber==0)
-    		return mNodes[0];
-    	if (rLocalNodeNumber==1)
-    		return mNodes[2];
-    	throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalTotalStrain] the interpolation order is only linear for the total strain.");
-        return 0;
-    }
+    //! @brief calculates the derivative of the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    void CalculateDerivativeShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    const NodeBase* GetNodeNonlocalTotalStrain(int rLocalNodeNumber)const
-    {
-    	assert(rLocalNodeNumber==0 || rLocalNodeNumber==1 );
-    	if (rLocalNodeNumber==0)
-    		return mNodes[0];
-    	if (rLocalNodeNumber==1)
-    		return mNodes[2];
-    	throw MechanicsException("[NuTo::Truss1D3N::GetNodeNonlocalTotalStrain] the interpolation order is only linear for the total strain.");
-        return 0;
-    }
+    NodeBase* GetNodeNonlocalTotalStrain(int rLocalNodeNumber);
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNodeNonlocalTotalStrain(int rLocalNodeNumber)const;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    NodeBase* GetNodeNonlocalEqStrain(int rLocalNodeNumber);
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetNodeNonlocalEqStrain(int rLocalNodeNumber)const;
 
 	//! @brief calculate list of global dofs related to the entries in the element stiffness matrix
     //! @param rGlobalDofsRow global dofs corresponding to the rows of the matrix
