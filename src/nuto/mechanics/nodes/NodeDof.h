@@ -40,6 +40,14 @@ NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::NodeDof() //: NuTo::NodeBase()
         {
             mNonlocalEqStrain[countDerivatives][count]=0.;
         }
+        for (int count=0; count<TNumWaterPhaseFraction; count++)
+        {
+            mWaterPhaseFraction[countDerivatives][count]=0.;
+        }
+        for (int count=0; count<TNumRelativeHumidity; count++)
+        {
+            mRelativeHumidity[countDerivatives][count]=0.;
+        }
 	}
 	for (int count=0; count<TNumDisplacements; count++)
 	{
@@ -65,7 +73,14 @@ NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::NodeDof() //: NuTo::NodeBase()
     {
         mDofNonlocalEqStrain[count]=-1;
     }
-
+    for (int count=0; count<TNumWaterPhaseFraction; count++)
+    {
+        mDofWaterPhaseFraction[count]=-1;
+    }
+    for (int count=0; count<TNumRelativeHumidity; count++)
+    {
+        mDofRelativeHumidity[count]=-1;
+    }
 
 }
 
@@ -476,11 +491,11 @@ RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     {
         mDofNonlocalEqStrain[count]=rMappingInitialToNewOrdering[mDofNonlocalEqStrain[count]];
     }
-    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    for (int count=0; count<TNumWaterPhaseFraction; count++)
     {
         mDofWaterPhaseFraction[count]=rMappingInitialToNewOrdering[mDofWaterPhaseFraction[count]];
     }
-    for (int count=0; count<TNumNonlocalEqStrain; count++)
+    for (int count=0; count<TNumRelativeHumidity; count++)
     {
         mDofRelativeHumidity[count]=rMappingInitialToNewOrdering[mDofRelativeHumidity[count]];
     }
