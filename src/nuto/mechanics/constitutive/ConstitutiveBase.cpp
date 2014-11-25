@@ -434,6 +434,20 @@ void NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset(double rViscoplas
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get water phase density
+//! @return ... water phase density
+double NuTo::ConstitutiveBase::GetWaterPhaseDensity() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetWaterPhaseDensity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set water phase density
+//! @param ... water phase density
+void NuTo::ConstitutiveBase::SetWaterPhaseDensity(double rWaterPhaseDensity)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDensity] The constitutive relationship does not have this parameter.");
+}
+
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
 {

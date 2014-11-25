@@ -300,6 +300,17 @@ public:
     //! @param ... viscoplastic yield surface offset
     virtual void SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset);
 
+    //! @brief ... get water phase density
+    //! @return ... water phase density
+    virtual double GetWaterPhaseDensity() const;
+
+    //! @brief ... set water phase density
+    //! @param ... water phase density
+    virtual void SetWaterPhaseDensity(double rWaterPhaseDensity);
+
+
+
+
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship

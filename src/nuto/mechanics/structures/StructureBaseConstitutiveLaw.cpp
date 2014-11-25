@@ -11,6 +11,7 @@
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
+#include "nuto/mechanics/constitutive/moistureTransport/MoistureTransport.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -56,6 +57,10 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
     else if (ConstitutiveLawTypeString == "DAMAGEVISCOPLASTICITYHARDENINGENGINEERINGSTRESS")
     {
         ConstitutiveLawType = Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS;
+    }
+    else if (ConstitutiveLawTypeString == "MOISTURETRANSPORT")
+    {
+        ConstitutiveLawType = Constitutive::MOISTURE_TRANSPORT;
     }
     else
     {
@@ -112,6 +117,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityHardeningEngineeringStress();
+            break;
+        case NuTo::Constitutive::MOISTURE_TRANSPORT:
+            ConstitutiveLawPtr = new NuTo::MoistureTransport();
             break;
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
@@ -953,3 +961,39 @@ double NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int
     return ViscoplasticYieldSurfaceOffset;
 }
 
+
+//! @brief ... get water phase density
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDensity(int rIdent)
+{
+    double WaterPhaseDensity = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        WaterPhaseDensity = ConstitutiveLawPtr->GetWaterPhaseDensity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDensity] error getting water phase density.");
+        throw e;
+    }
+    return WaterPhaseDensity;
+}
+
+
+//! @brief ... set water phase density
+//! @param rIdent ... constitutive law identifier
+//! @param rWaterPhaseDensity ... water phase density
+void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDensity(int rIdent, double rWaterPhaseDensity)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetWaterPhaseDensity(rWaterPhaseDensity);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDensity] error setting water phase density.");
+        throw e;
+    }
+}

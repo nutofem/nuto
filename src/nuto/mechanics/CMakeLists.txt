@@ -60,6 +60,7 @@ constitutive/mechanics/SecondPiolaKirchhoffStress1D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress2D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
 constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
+constitutive/moistureTransport/MoistureTransport.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES

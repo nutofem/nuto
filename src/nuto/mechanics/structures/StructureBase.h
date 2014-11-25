@@ -1376,6 +1376,16 @@ public:
     //! @param ... viscoplastic yield surface offset
     void ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset);
 
+
+    //! @brief ... get water phase density
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetWaterPhaseDensity(int rIdent);
+
+    //! @brief ... set water phase density
+    //! @param rIdent ... constitutive law identifier
+    //! @param rWaterPhaseDensity ... water phase density
+    void ConstitutiveLawSetWaterPhaseDensity(int rIdent, double rWaterPhaseDensity);
+
     #ifndef SWIG
     //! @brief ... create a new section
     //! @param rIdent ... section identifier

@@ -23,6 +23,7 @@ enum eConstitutiveType
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,    //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
+    MOISTURE_TRANSPORT                             //!< moisture transport model
 };
 
 enum eNonlocalDamageYieldSurface
