@@ -378,12 +378,127 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 	}
 }
 
+//bool NuTo::StructureBase::CheckStiffness()
+//{
+//    //be carefull this routine performs a node merge, which modifies the displacements
+//    //as a result, the stiffness calculated here might be different from the one if you just call the stiffness routine
+//    //this is especially true for the first step of the Newton iteration in displacement control situation
+//    //where the stiffness of the old state is calulated on purpose and the multiplied by the difference between prescribed dependent dofs and actual dependent dofs
+//
+//    mLogger << "test of stiffness still included, node merge is called!!! " << "\n";
+//    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
+//    NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
+//    NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
+//    NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
+//
+//    bool oldShowtime = mShowTime;
+//    mShowTime = false;
+//
+//    //recalculate stiffness
+//    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+//    //mLogger << "active dof values " << "\n";
+//    //displacementsActiveDOFsCheck.Trans().Info(12,4);
+//    //mLogger << "dependent dof values " << "\n";
+//    //displacementsDependentDOFsCheck.Trans().Info(12,4);
+//    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
+//    this->ElementTotalUpdateTmpStaticData();
+//    this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+//    //this->ConstraintInfo(10);
+//
+//    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
+//    //std::cout<<"stiffness matrix" << "\n";
+//    //stiffnessMatrixCSRVector2Full.Info(10,3);
+//    double interval(-1e-10);
+//    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
+//    NuTo::FullVector<double,Eigen::Dynamic> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows());
+//    double energy1,energy2;
+//    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
+//    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
+//    this->ElementTotalUpdateTmpStaticData();
+//    this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
+//    //this->NodeInfo(10);
+//    energy1 = this->ElementTotalGetInternalEnergy();
+//    energy1 += this->ConstraintTotalGetTotalEnergy();
+//    //std::cout << "check stiffness:: energy1 "<<  energy1 << "\n";
+//
+//    for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
+//    {
+//    	displacementsActiveDOFsCheck(count,0)+=interval;
+//        this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
+//        this->ElementTotalUpdateTmpStaticData();
+//        this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
+//        //std::cout << "check stiffness:: intForceVector2"<< "\n";
+//        //intForceVector2.Trans().Info(10,6);
+//        //this->ConstraintInfo(10);
+//        energy2 = this->ElementTotalGetInternalEnergy();
+//        energy2 += this->ConstraintTotalGetTotalEnergy();
+//        stiffnessMatrixCSRVector2_CDF.SetColumn(count,(intForceVector2-intForceVector1)*(1./interval));
+//        intForceVectorCDF(count,0) = (energy2-energy1)/interval;
+//        displacementsActiveDOFsCheck(count,0)-=interval;
+//    }
+//    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
+//    this->ElementTotalUpdateTmpStaticData();
+//
+//    mShowTime=oldShowtime;
+//
+//    if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e-1)
+//    {
+//        if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
+//        {
+//			mLogger << "globalStiffnessMatrix algo" << "\n";
+//			mLogger.Out(stiffnessMatrixCSRVector2Full,10,3,false);
+//			mLogger << "\n" << "globalStiffnessMatrix cdf" << "\n";
+//			mLogger.Out(stiffnessMatrixCSRVector2_CDF,10,3,false);
+//			mLogger<< "\n" << "error" << "\n";
+//			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
+//        }
+//        //extract the first 5x5 block
+//        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
+//        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
+//        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockDelta(blockAlgo-blockCDF);
+//
+//        double maxError;
+//        int row,col;
+//        maxError =(stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff(&row,&col);
+//        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << stiffnessMatrixCSRVector2Full(row,col) << "\n";
+//
+//        if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
+//        {
+//			mLogger<< "\n" << "intForceVector algo" << "\n";
+//			mLogger.Out(intForceVector1.Trans(),10,3,false);
+//			mLogger<< "\n" << "intForceVector cdf" << "\n";
+//			mLogger.Out(intForceVectorCDF.Trans(),10,3,false);
+//			mLogger << "\n" << "error" << "\n";
+//			mLogger.Out(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(intForceVector1-intForceVectorCDF).cwiseAbs().transpose(),10,3);
+//        }
+//        maxError = (intForceVector1-intForceVectorCDF).cwiseAbs().maxCoeff(&row,&col);
+//        mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
+//
+//        //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
+//        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e1)
+//        {
+//        	NodeInfo(10);
+//            mLogger << "stiffness ist wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
+//            exit(0);
+//        }
+//        return false;
+//    }
+//    else
+//    {
+//        mLogger << "stiffness is OK "<< "\n";
+//        return true;
+//    }
+//
+//}
+
 bool NuTo::StructureBase::CheckStiffness()
 {
     //be carefull this routine performs a node merge, which modifies the displacements
     //as a result, the stiffness calculated here might be different from the one if you just call the stiffness routine
     //this is especially true for the first step of the Newton iteration in displacement control situation
     //where the stiffness of the old state is calulated on purpose and the multiplied by the difference between prescribed dependent dofs and actual dependent dofs
+
+    // ttitsche: deleted all the internal energy stuff, since it is not implemented.
 
     mLogger << "test of stiffness still included, node merge is called!!! " << "\n";
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
@@ -394,46 +509,29 @@ bool NuTo::StructureBase::CheckStiffness()
     bool oldShowtime = mShowTime;
     mShowTime = false;
 
-    //recalculate stiffness
+    // calculate stiffness
     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-    //mLogger << "active dof values " << "\n";
-    //displacementsActiveDOFsCheck.Trans().Info(12,4);
-    //mLogger << "dependent dof values " << "\n";
-    //displacementsDependentDOFsCheck.Trans().Info(12,4);
-    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-    //this->ConstraintInfo(10);
+
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2Full(stiffnessMatrixCSRVector2);
-    //std::cout<<"stiffness matrix" << "\n";
-    //stiffnessMatrixCSRVector2Full.Info(10,3);
-    double interval(-1e-10);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2_CDF(stiffnessMatrixCSRVector2.GetNumRows(), stiffnessMatrixCSRVector2.GetNumColumns());
-    NuTo::FullVector<double,Eigen::Dynamic> intForceVector1, intForceVector2, intForceVectorCDF(stiffnessMatrixCSRVector2.GetNumRows());
-    double energy1,energy2;
-    this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
-    this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
+
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> stiffnessMatrixCSRVector2_CDF(mNumActiveDofs, mNumActiveDofs);
+    NuTo::FullVector<double,Eigen::Dynamic> intForceVector1, intForceVector2;
+
     this->ElementTotalUpdateTmpStaticData();
     this->BuildGlobalGradientInternalPotentialVector(intForceVector1);
-    //this->NodeInfo(10);
-    energy1 = this->ElementTotalGetInternalEnergy();
-    energy1 += this->ConstraintTotalGetTotalEnergy();
-    //std::cout << "check stiffness:: energy1 "<<  energy1 << "\n";
 
+    double interval = -1e-10;
     for (int count=0; count<displacementsActiveDOFsCheck.GetNumRows(); count++)
     {
-    	displacementsActiveDOFsCheck(count,0)+=interval;
+        displacementsActiveDOFsCheck(count,0)+=interval;
         this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
         this->ElementTotalUpdateTmpStaticData();
         this->BuildGlobalGradientInternalPotentialVector(intForceVector2);
-        //std::cout << "check stiffness:: intForceVector2"<< "\n";
-        //intForceVector2.Trans().Info(10,6);
-        //this->ConstraintInfo(10);
-        energy2 = this->ElementTotalGetInternalEnergy();
-        energy2 += this->ConstraintTotalGetTotalEnergy();
         stiffnessMatrixCSRVector2_CDF.SetColumn(count,(intForceVector2-intForceVector1)*(1./interval));
-        intForceVectorCDF(count,0) = (energy2-energy1)/interval;
         displacementsActiveDOFsCheck(count,0)-=interval;
     }
     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
@@ -441,46 +539,23 @@ bool NuTo::StructureBase::CheckStiffness()
 
     mShowTime=oldShowtime;
 
+    int row,col;
+    double maxError =(stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff(&row,&col);
+    mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << stiffnessMatrixCSRVector2Full(row,col) << "\n";
+
     if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e-1)
     {
-        if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
+        if (mNumActiveDofs < 100)
         {
-			mLogger << "globalStiffnessMatrix algo" << "\n";
-			mLogger.Out(stiffnessMatrixCSRVector2Full,10,3,false);
-			mLogger << "\n" << "globalStiffnessMatrix cdf" << "\n";
-			mLogger.Out(stiffnessMatrixCSRVector2_CDF,10,3,false);
-			mLogger<< "\n" << "error" << "\n";
-			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
+            mLogger << "globalStiffnessMatrix algo" << "\n";
+            mLogger.Out(stiffnessMatrixCSRVector2Full,10,3,false);
+            mLogger << "\n" << "globalStiffnessMatrix cdf" << "\n";
+            mLogger.Out(stiffnessMatrixCSRVector2_CDF,10,3,false);
+            mLogger<< "\n" << "error" << "\n";
+            mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
         }
-        //extract the first 5x5 block
-        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
-        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockCDF(stiffnessMatrixCSRVector2_CDF.GetBlock(0,0,5,5));
-        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockDelta(blockAlgo-blockCDF);
-
-        double maxError;
-        int row,col;
-        maxError =(stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff(&row,&col);
-        mLogger << "maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << stiffnessMatrixCSRVector2Full(row,col) << "\n";
-
-        if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
-        {
-			mLogger<< "\n" << "intForceVector algo" << "\n";
-			mLogger.Out(intForceVector1.Trans(),10,3,false);
-			mLogger<< "\n" << "intForceVector cdf" << "\n";
-			mLogger.Out(intForceVectorCDF.Trans(),10,3,false);
-			mLogger << "\n" << "error" << "\n";
-			mLogger.Out(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(intForceVector1-intForceVectorCDF).cwiseAbs().transpose(),10,3);
-        }
-        maxError = (intForceVector1-intForceVectorCDF).cwiseAbs().maxCoeff(&row,&col);
-        mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
-
-        //throw MechanicsException("[NuTo::Multiscale::Solve] Stiffness matrix is not correct.");
-        if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e1)
-        {
-        	NodeInfo(10);
-            mLogger << "stiffness ist wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
-            exit(0);
-        }
+        NodeInfo(10);
+        mLogger << "stiffness ist wrong!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<< "\n";
         return false;
     }
     else

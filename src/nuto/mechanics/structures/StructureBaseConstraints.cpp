@@ -706,6 +706,11 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         rDofType = NuTo::Node::TEMPERATURES;
         rDofComponent = 0;
     }
+    else if(dofString == "NONLOCALEQSTRAIN")
+    {
+        rDofType = NuTo::Node::NONLOCALEQSTRAIN;
+        rDofComponent = 0;
+    }
     else
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] invalid dof string.");

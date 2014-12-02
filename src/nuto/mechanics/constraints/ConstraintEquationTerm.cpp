@@ -50,6 +50,15 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
         }
     }
     break;
+    case Node::NONLOCALEQSTRAIN:
+    {
+        int numNonlocalEqStrain = rNode->GetNumNonlocalEqStrain();
+        if (rDofComponent < 0 || rDofComponent >= numNonlocalEqStrain)
+        {
+            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid nonlocal eq strain component.");
+        }
+    }
+    break;
     default:
         throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] dof type is not supported.");
     }
@@ -97,6 +106,11 @@ int NuTo::ConstraintEquationTerm::GetDof() const
     case Node::TEMPERATURES:
     {
     	return mNode->GetDofTemperature();
+    }
+    break;
+    case Node::NONLOCALEQSTRAIN:
+    {
+        return mNode->GetDofNonlocalEqStrain();
     }
     break;
     default:

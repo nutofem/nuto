@@ -72,6 +72,10 @@ myStructure.SectionSetThickness(mySection,1)
 myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 myStructure.ElementTotalSetSection(mySection)
 
+# Check stiffness
+myStructure.NodeBuildGlobalDofs()
+myStructure.CheckStiffness()
+
 #set displacements of right node
 myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)
@@ -170,7 +174,7 @@ for element in range(0,8):
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile( "Plane2D3N.vtk")
+myStructure.ExportVtkDataFileElements( "Plane2D3N.vtk")
 
 if (error):
     sys.exit(-1)

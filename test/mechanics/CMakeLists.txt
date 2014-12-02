@@ -2,40 +2,40 @@
 
 #test files for mechanics module
 IF(ENABLE_PYTHON_TESTS)
-  ADD_TEST(mechanics::Brick8N                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Brick8N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::ConstitutiveLaws                  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstitutiveLaws.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::CreateNodesAndGroupOperations     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CreateNodesAndGroupOperations.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::ConstraintsLagrange1D             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstraintsLagrange1D.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::GlobalDofs                        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GlobalDofs.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::NonlocalDamagePlasticity          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NonlocalDamagePlasticity.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Plane2D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Plane2D4N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Plane2D4N_planeStress             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N_planeStress.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Section                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Sections.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Tetrahedron10N                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron10N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Truss1D2N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D2N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::Truss1D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
- #ADD_TEST(mechanics::Tetrahedron4N                     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(mechanics::DeleteElemNode                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DeleteElemNode.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Brick8N                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Brick8N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::ConstitutiveLaws                  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstitutiveLaws.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::CreateNodesAndGroupOperations     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CreateNodesAndGroupOperations.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::ConstraintsLagrange1D             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstraintsLagrange1D.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::GlobalDofs                        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GlobalDofs.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::NonlocalDamagePlasticity          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NonlocalDamagePlasticity.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Plane2D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Plane2D4N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Plane2D4N_planeStress             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Plane2D4N_planeStress.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Section                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Sections.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Tetrahedron10N                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron10N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Truss1D2N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D2N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::Truss1D3N                         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D3N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+ #ADD_TEST(p::mechanics::Tetrahedron4N                     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron4N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  ADD_TEST(p::mechanics::DeleteElemNode                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DeleteElemNode.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
 
   # set PYTHONPATH environment for all examples
 
   SET(MYTESTS 
-  mechanics::Brick8N
-  mechanics::ConstitutiveLaws
-  mechanics::CreateNodesAndGroupOperations
-  mechanics::ConstraintsLagrange1D
-  mechanics::GlobalDofs
-  mechanics::NonlocalDamagePlasticity
-  mechanics::Plane2D3N
-  mechanics::Plane2D4N
-  mechanics::Plane2D4N_planeStress
-  mechanics::Section
-  mechanics::Tetrahedron10N
-  mechanics::Truss1D2N
-  mechanics::Truss1D3N
-  #mechanics::Tetrahedron4N
-  mechanics::DeleteElemNode
+  p::mechanics::Brick8N
+  p::mechanics::ConstitutiveLaws
+  p::mechanics::CreateNodesAndGroupOperations
+  p::mechanics::ConstraintsLagrange1D
+  p::mechanics::GlobalDofs
+  p::mechanics::NonlocalDamagePlasticity
+  p::mechanics::Plane2D3N
+  p::mechanics::Plane2D4N
+  p::mechanics::Plane2D4N_planeStress
+  p::mechanics::Section
+  p::mechanics::Tetrahedron10N
+  p::mechanics::Truss1D2N
+  p::mechanics::Truss1D3N
+  #p::mechanics::Tetrahedron4N
+  p::mechanics::DeleteElemNode
   )
   SET_PROPERTY(TEST ${MYTESTS}  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 ENDIF(ENABLE_PYTHON_TESTS)
@@ -54,7 +54,7 @@ IF(ENABLE_C++_TESTS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(ConstraintsLagrange2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(mechanics::ConstraintsLagrange2D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange2D)
+  ADD_TEST(c::mechanics::ConstraintsLagrange2D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange2D)
 
   # GradientDamagePlasticity
   ADD_EXECUTABLE(GradientDamagePlasticity GradientDamagePlasticity.cpp)
@@ -68,7 +68,7 @@ IF(ENABLE_C++_TESTS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(GradientDamagePlasticity PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(mechanics::GradientDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/GradientDamagePlasticity)
+  ADD_TEST(c::mechanics::GradientDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/GradientDamagePlasticity)
 
   # GradientDamageElasticity
   ADD_EXECUTABLE(GradientDamage GradientDamage.cpp)
@@ -82,7 +82,7 @@ IF(ENABLE_C++_TESTS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(GradientDamage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(mechanics::GradientDamage ${CMAKE_CURRENT_BUILD_DIR}/GradientDamage)
+  ADD_TEST(c::mechanics::GradientDamage ${CMAKE_CURRENT_BUILD_DIR}/GradientDamage)
 
   # test Newmark time integration
   ADD_EXECUTABLE(NewmarkPlane2D4N NewmarkPlane2D4N.cpp)
@@ -96,7 +96,7 @@ IF(ENABLE_C++_TESTS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(NewmarkPlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(mechanics::NewmarkPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/NewmarkPlane2D4N)
+  ADD_TEST(c::mechanics::NewmarkPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/NewmarkPlane2D4N)
 
   # test Newmark time integration with a dogbone specimen
   ADD_EXECUTABLE(DogBoneDirectNewmark DogBoneDirectNewmark.cpp)
@@ -114,7 +114,18 @@ IF(ENABLE_C++_TESTS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(DogBoneDirectNewmark PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(mechanics::DogBoneDirectNewmark ${CMAKE_CURRENT_BUILD_DIR}/DogBoneDirectNewmark)
+  ADD_TEST(c::mechanics::DogBoneDirectNewmark ${CMAKE_CURRENT_BUILD_DIR}/DogBoneDirectNewmark)
+
+  # test triangular 2D 3 node element
+  ADD_EXECUTABLE(Plane2D3N Plane2D3N.cpp)
+  TARGET_LINK_LIBRARIES(Plane2D3N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(Plane2D3N NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(Plane2D3N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  ADD_TEST(c::mechanics::Plane2D3N ${CMAKE_CURRENT_BUILD_DIR}/Plane2D3N)
 
   # test triangular 10 node element
   ADD_EXECUTABLE(Plane2D10N Plane2D10N.cpp)
@@ -123,9 +134,13 @@ IF(ENABLE_C++_TESTS)
     TARGET_LINK_LIBRARIES(Plane2D10N NuToVisualize)
   ENDIF (ENABLE_VISUALIZE)
   IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(DogBoneDirectNewmark ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    TARGET_LINK_LIBRARIES(Plane2D10N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
   ENDIF(MUMPS_FOUND)
-
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(Plane2D10N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)#
+  ADD_TEST(c::mechanics::Plane2D10N ${CMAKE_CURRENT_BUILD_DIR}/Plane2D10N)
+  
   # test triangular 15 node element
   ADD_EXECUTABLE(Plane2D15N Plane2D15N.cpp)
   TARGET_LINK_LIBRARIES(Plane2D15N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
@@ -133,13 +148,10 @@ IF(ENABLE_C++_TESTS)
     TARGET_LINK_LIBRARIES(Plane2D15N NuToVisualize)
   ENDIF (ENABLE_VISUALIZE)
   IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(DogBoneDirectNewmark ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    TARGET_LINK_LIBRARIES(Plane2D15N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
   ENDIF(MUMPS_FOUND)
+  ADD_TEST(c::mechanics::Plane2D15N ${CMAKE_CURRENT_BUILD_DIR}/Plane2D15N)
 
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(Plane2D10N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)#
-  ADD_TEST(mechanics::Plane2D10N ${CMAKE_CURRENT_BUILD_DIR}/Plane2D10N)
 
 ENDIF(ENABLE_C++_TESTS)
 
