@@ -51,6 +51,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo
  	mTimeDependentLoadCase = -1;
  	mMergeActiveDofValuesOrder1 = true;
  	mMergeActiveDofValuesOrder2 = false;
+ 	mCheckCoefficientMatrix = false;
  	ResetForNextLoad();
 }
 

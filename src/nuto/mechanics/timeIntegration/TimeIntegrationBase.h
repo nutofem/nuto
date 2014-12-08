@@ -177,9 +177,21 @@ public:
     }
 
     //! @brief returns if automatic time stepping is turned on
-    bool SetAutomaticTimeStepping()const
+    bool GetAutomaticTimeStepping()const
     {
     	return mAutomaticTimeStepping;
+    }
+
+    //! @brief sets the coefficient matrix check (on or off)
+    void SetCheckCoefficientMatrix(bool rCheckCoefficientMatrix)
+    {
+        mCheckCoefficientMatrix = rCheckCoefficientMatrix;
+    }
+
+    //! @brief returns if the coefficient matrix check is turned on
+    bool GetCheckCoefficientMatrix() const
+    {
+        return mCheckCoefficientMatrix;
     }
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
@@ -230,6 +242,9 @@ protected:
 	bool mMergeActiveDofValuesOrder1;
 	//if set to true, store acceleration at the nodes in each time step (required when postprocessing accelerations)
 	bool mMergeActiveDofValuesOrder2;
+	//if set to true, checks the coefficient matrix in each sub step
+	bool mCheckCoefficientMatrix;
+
 	//************************
 	//* PostProcessing Stuff *
 	//************************

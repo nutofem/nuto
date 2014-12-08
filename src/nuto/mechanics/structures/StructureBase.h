@@ -608,15 +608,35 @@ public:
     //! @return element with maximum error
     int ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDifference);
 
-    //! @brief similiar to above, but this time the global matrix is checked, not the element matrices
+    //! @brief Checks the global CoefficientMatrix_0 and the internal forces vector by the internal energy
     //! @return false, if stiffness is not correct
     virtual bool CheckStiffness();
+
+
+    //! @brief Compares the global CoefficientMatrix_0 to the matrix using central differences
+    //! @param rDelta delta step for finite differences
+    //! @param rPrintResult 'true' prints the result
+    bool CheckCoefficientMatrix_0(double rDelta, bool rPrintResult);
+
+    //! @brief Compares the element CoefficientMatrix_0 to the matrix using central differences
+    //! for all elements
+    //! @param rDelta delta step for finite differences
+    bool ElementCheckCoefficientMatrix_0(double rDelta);
+
+    //! @brief Compares the element CoefficientMatrix_0 to the matrix using central differences
+    //! for a specific element
+    //! @param rDelta delta step for finite differences
+    //! @param rElementId element id
+    //! @param rDifference difference to CDF solution
+    //! @param rPrintResult 'true' prints the result
+    bool ElementCheckCoefficientMatrix_0(double rDelta,
+            int rElementId, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rDifference, bool rPrintResult);
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
     void ElementGradientInternalPotential(int rElementId,
-                                          NuTo::FullVector<double,Eigen::Dynamic>& rResult,
-                                          NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow);
+                                          NuTo::FullVector<double, Eigen::Dynamic>& rResult,
+                                          NuTo::FullVector<int, Eigen::Dynamic>& rGlobalDofsRow);
 
     //! @brief modifies the constitutive law of a single element
     //! @param rElementIdent identifier for the element

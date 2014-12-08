@@ -47,9 +47,6 @@ int main()
         myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
         myStructure.ElementTotalSetSection(mySection);
 
-        myStructure.NodeBuildGlobalDofs();
-        myStructure.CheckStiffness();
-
         //set displacements of right node
         NuTo::FullVector<double, 2> dirX({1,0});
         NuTo::FullVector<double, 2> dirY({0,1});

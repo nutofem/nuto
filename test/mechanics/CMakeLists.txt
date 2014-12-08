@@ -152,6 +152,11 @@ IF(ENABLE_C++_TESTS)
   ENDIF(MUMPS_FOUND)
   ADD_TEST(c::mechanics::Plane2D15N ${CMAKE_CURRENT_BUILD_DIR}/Plane2D15N)
 
+  # test the CheckStiffness method globally and locally
+  ADD_EXECUTABLE(CoefficientChecks CoefficientChecks.cpp)
+  TARGET_LINK_LIBRARIES(CoefficientChecks NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  ADD_TEST(c::mechanics::CoefficientChecks ${CMAKE_CURRENT_BUILD_DIR}/CoefficientChecks)
+
 
 ENDIF(ENABLE_C++_TESTS)
 

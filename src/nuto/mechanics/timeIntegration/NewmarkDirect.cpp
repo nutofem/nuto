@@ -447,7 +447,17 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         stiffMatrix_jk.AddScal(massMatrix_jk,factor);
     				}
                 }
-           }
+            }
+
+
+            if (mCheckCoefficientMatrix)
+            {
+                mStructure->CheckCoefficientMatrix_0(1.e-6, false);
+                mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
+
+//                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
+//                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
+            }
 
 			//solve for trial state
 			NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
@@ -572,6 +582,16 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         }
                     }
                 }
+
+                if (mCheckCoefficientMatrix)
+                {
+                    mStructure->CheckCoefficientMatrix_0(1.e-6, false);
+                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
+
+//                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
+//                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
+                }
+
 /*
 //check stiffness matrix
 stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
@@ -700,7 +720,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 
                     trialNormResidual=residual_mod.Norm();
 
-                    std::cout << "  linesearch alpha " << alpha <<" previous residual " << normResidual << " trial residual " << trialNormResidual <<  "\n";
+                    mStructure->GetLogger() << "  linesearch alpha " << alpha <<" previous residual " << normResidual << " trial residual " << trialNormResidual <<  "\n";
 
                     alpha*=0.5;
                 }
@@ -731,12 +751,12 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                     //and leave
                     iteration = mMaxNumIterations;
                 }
-            }
-            // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+            } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+
             if (normResidual<=mToleranceForce)
             {
                 //converged solution
-            	std::cout << " *** UpdateStaticData *** from NewMarkDirect" << std::endl;
+                mStructure->GetLogger() << " *** UpdateStaticData *** from NewMarkDirect \n";
                 mStructure->ElementTotalUpdateStaticData();
 
                 //calculate energies (at this point, use the trapezoidal rule for all energies, for some energies, you can compare that to the direct calculation
@@ -812,11 +832,11 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 //postprocess
                 mTime+=timeStep;
 
-                std::cout << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
+                mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
                 //std::cout << "plot Vector " << plotVector << std::endl;
 
 				//perform Postprocessing
-            	std::cout << " *** PostProcess *** from NewMarkDirect" << std::endl;
+                mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
 				PostProcess(prevResidual_j, prevResidual_k);
 
                 //eventually increase next time step
@@ -829,7 +849,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
             }
             else
             {
-                std::cout << "No convergence with timestep " << timeStep << "\n";
+                mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
                 //no convergence
                 if (mAutomaticTimeStepping)
                 {

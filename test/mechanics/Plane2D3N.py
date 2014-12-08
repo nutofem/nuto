@@ -72,10 +72,6 @@ myStructure.SectionSetThickness(mySection,1)
 myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 myStructure.ElementTotalSetSection(mySection)
 
-# Check stiffness
-myStructure.NodeBuildGlobalDofs()
-myStructure.CheckStiffness()
-
 #set displacements of right node
 myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(1,0)), 0.0)
 myStructure.ConstraintLinearSetDisplacementNode(0, nuto.DoubleFullMatrix(2,1,(0,1)), 0.0)

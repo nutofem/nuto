@@ -100,6 +100,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
         // get section information determining which input on the constitutive level should be used
         const SectionBase* section(rElement->GetSection());
 
+
         // check if parameters are valid
         if (this->mParametersValid == false)
         {
@@ -146,8 +147,31 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
         // last converged kappa
         const double kappaLastConverged = oldStaticData->mKappa;
 
+        double dDamage = CalculateDamage(nonlocalEqStrain) - CalculateDamage(kappaLastConverged);
+        double dKappa = nonlocalEqStrain - kappaLastConverged;
+
+        double dDamagedKappa_CDF = dKappa == 0? 0 : dDamage/dKappa;
+        double dDamagedKappa0 = CalculateDerivativeDamage(kappaLastConverged);
+        double dDamagedKappa1 = CalculateDerivativeDamage(nonlocalEqStrain);
+
+        NuTo::Logger& logger = rElement->GetStructure()->GetLogger();
+
+        bool print = rElement->GetStructure()->ElementGetId(rElement) == 2;
+
         // kappa
         const double kappa = std::max(nonlocalEqStrain, kappaLastConverged);
+
+
+        double tangentKappa = - CalculateDerivativeDamage(kappa) * mE * strain1D(0);
+
+//        if (print and nonlocalEqStrain > mDamageLawParameters.GetValue(0) and dKappa > 0)
+//        {
+//            logger << "delta K : " << dKappa << "\n";
+//            logger << "dDdK (kappaLastConverged) : " << dDamagedKappa0 << "\n";
+//            logger << "dDdK (nonlocalEqStrain)   : " << dDamagedKappa1 << "\n";
+//            logger << "dDdK (CDF)                : " << dDamagedKappa_CDF << "\n";
+//            logger << "tangent                   : " << tangentKappa << "\n";
+//        }
 
         //calculate damage
         double omega = CalculateDamage(kappa);
@@ -174,7 +198,6 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
             {
             case NuTo::Constitutive::Output::ENGINEERING_STRESS_1D:
             {
-
                 EngineeringStress1D& engineeringStress1D = itOutput->second->GetEngineeringStress1D();
                 engineeringStress1D = (1.-omega)*stress1D;
             }
@@ -212,7 +235,11 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
                 if (kappa > kappaLastConverged)
                 {
                     // loading
-                    tangent(0,0) = - CalculateDerivativeDamage(kappa) * stress1D[0];
+
+//                    tangent(0,0) = - CalculateDerivativeDamage(kappa) * stress1D[0];
+                    tangent(0,0) = tangentKappa;
+
+
                 } else {
                     // unloading
                     tangent(0,0) = 0.;
