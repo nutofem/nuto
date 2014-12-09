@@ -47,7 +47,7 @@ void NuTo::ConstitutiveStaticDataGradientDamage1D::serialize(Archive & ar, const
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstitutiveStaticDataGradientDamage1D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticBase)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataBase)
        & BOOST_SERIALIZATION_NVP(mKappa);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataGradientDamage1D" << std::endl;

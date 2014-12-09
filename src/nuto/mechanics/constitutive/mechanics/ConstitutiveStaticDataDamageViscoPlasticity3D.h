@@ -15,7 +15,7 @@ class DamageViscoPlasticityHardeningEngineeringStress;
 class DamageViscoPlasticityEngineeringStress;
 class IpDataStaticDataBase;
 
-class ConstitutiveStaticDataDamageViscoPlasticity3D : ConstitutiveStaticDataPrevEngineeringStressStrain3D
+class ConstitutiveStaticDataDamageViscoPlasticity3D : public ConstitutiveStaticDataPrevEngineeringStressStrain3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

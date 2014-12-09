@@ -3,7 +3,7 @@
 #ifndef CONSTITUTIVESTATICDATAGRADIENTDAMAGE1D_H
 #define CONSTITUTIVESTATICDATAGRADIENTDAMAGE1D_H
 
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain1D.h"
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
 //! @brief ... base class, storing the static data (history variables) of a constitutive relationship
 //! @author Thomas Titscher, BAM

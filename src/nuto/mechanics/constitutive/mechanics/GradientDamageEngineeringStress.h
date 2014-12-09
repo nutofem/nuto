@@ -218,7 +218,7 @@ protected:
 }
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::GradientDamagePlasticityEngineeringStress)
+BOOST_CLASS_EXPORT_KEY(NuTo::GradientDamageEngineeringStress)
 #endif // ENABLE_SERIALIZATION
 
 #endif /* CONSTITUTIVEGRADIENTDAMAGEENGINEERINGSTRESS_H_ */

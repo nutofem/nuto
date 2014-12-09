@@ -74,13 +74,9 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() : Const
           & BOOST_SERIALIZATION_NVP(mE)
           & BOOST_SERIALIZATION_NVP(mNu)
           & BOOST_SERIALIZATION_NVP(mNonlocalRadius)
-          & BOOST_SERIALIZATION_NVP(mTensileStrength)
-          & BOOST_SERIALIZATION_NVP(mCompressiveStrength)
-          & BOOST_SERIALIZATION_NVP(mBiaxialCompressiveStrength)
-          & BOOST_SERIALIZATION_NVP(mFractureEnergy)
-          & BOOST_SERIALIZATION_NVP(mYieldSurface)
-          & BOOST_SERIALIZATION_NVP(mM)
-          & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
+          & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient)
+          & BOOST_SERIALIZATION_NVP(mDamageLawType)
+          & BOOST_SERIALIZATION_NVP(mDamageLawParameters);
 #ifdef DEBUG_SERIALIZATION
        std::cout << "finish serialize GradientDamageEngineeringStress" << "\n";
 #endif
@@ -180,13 +176,19 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
         EngineeringStress1D stress1D;
         stress1D(0) = mE * strain1D(0);
 
-        // calculate local eq strain
-        LocalEqStrain localEqStrain;
-        localEqStrain[0] = strain1D[0];
-
-        // calculate d localEqStrain / d strain 1D
+        // calculate local eq strain and its derivative
         NuTo::FullVector<double, 1> localEqStrainDerivative;
+        LocalEqStrain localEqStrain;
+
+        localEqStrain[0] = strain1D[0];
         localEqStrainDerivative[0] = 1.;
+
+
+//        logger << "nonlocal eq. strain " << nonlocalEqStrain << "\n";
+//        logger << "conv. nonlocal eq. strain " << kappa << "\n";
+
+
+
 
         //set this to true, if update is in the map, perform the update after all other outputs have been calculated
         bool performUpdateAtEnd(false);
@@ -673,7 +675,6 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa)cons
             if (rKappa > e_0)
             {
                 omega = 1 - e_0 / rKappa * exp( (e_0 - rKappa) / e_f);
-                omega = std::min(omega, MAX_OMEGA);
             }
             break;
         }
