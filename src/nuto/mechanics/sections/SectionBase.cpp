@@ -22,11 +22,16 @@ NuTo::SectionBase::SectionBase()
 	mInputConstitutiveIsNonlocalTotalStrain = false;
     mInputConstitutiveIsNonlocalEqStrain = false;
 	mInputConstitutiveIsDeformationGradient = true;
+    mInputConstitutiveIsRelativeHumidity = false;
+    mInputConstitutiveIsWaterPhaseFraction= false;
+
     mDisplacementDof = true;
     mTemperatureDof = false;
     mNonlocalEqPlasticStrainDof = false;
     mNonlocalTotalStrainDof = false;
     mNonlocalEqStrainDof = false;
+    mRelativeHumidityDoF = false;
+    mWaterPhaseFractionDof = false;
 }
 
 int NuTo::SectionBase::GetNumInputConstitutive()const
@@ -94,6 +99,35 @@ void NuTo::SectionBase::SetIsTemperatureDof(bool rFlag)
 {
 	mTemperatureDof = rFlag;
 }
+
+//! @brief... get if water phase fraction is dofs
+//! @return ... true, if water phase fraction is dofs
+bool NuTo::SectionBase::GetIsWaterPhaseFractionDof()const
+{
+    return mWaterPhaseFractionDof;
+}
+
+//! @brief... set if water phase fraction is dofs
+//! @param rFlag ... true, if water phase fraction is dofs
+void NuTo::SectionBase::SetIsWaterPhaseFractionDof(bool rFlag)
+{
+    mWaterPhaseFractionDof = rFlag;
+}
+
+//! @brief... get if relative humidity is dofs
+//! @return ... true, if relative humidity is dofs
+bool NuTo::SectionBase::GetIsRelativeHumidityDof()const
+{
+    return mRelativeHumidityDoF;
+}
+
+//! @brief... set if relative humidity is dofs
+//! @param rFlag ... true, if relative humidity is dofs
+void NuTo::SectionBase::SetIsRelativeHumidityDof(bool rFlag)
+{
+    mRelativeHumidityDoF = rFlag;
+}
+
 
 //! @brief... get if temperatures are to be used as input to the constitutive model
 //! @return ... true, if temperatures are to be used as input to the constitutive model
@@ -201,6 +235,37 @@ void NuTo::SectionBase::SetInputConstitutiveIsDeformationGradient(bool rFlag)
 {
 	mInputConstitutiveIsDeformationGradient = rFlag;
 }
+
+//! @brief... get if water phase fraction is to be used as input to the constitutive model
+//! @return ... true, if water phase fraction are to be used as input to the constitutive model
+bool NuTo::SectionBase::GetInputConstitutiveIsWaterPhaseFraction() const
+{
+    return mInputConstitutiveIsWaterPhaseFraction;
+}
+
+//! @brief... set if water phase fraction are to be used as input to the constitutive model
+//! @param rFlag ... true, if water phase fraction are to be used as input to the constitutive model
+void NuTo::SectionBase::SetInputConstitutiveIsWaterPhaseFraction(bool rFlag)
+{
+    mInputConstitutiveIsWaterPhaseFraction = rFlag;
+}
+
+//! @brief... get if relative humidity is to be used as input to the constitutive model
+//! @return ... true, if relative humidity are to be used as input to the constitutive model
+bool NuTo::SectionBase::GetInputConstitutiveIsRelativeHumidity() const
+{
+    return mInputConstitutiveIsRelativeHumidity;
+}
+
+//! @brief... set if relative humidity are to be used as input to the constitutive model
+//! @param rFlag ... true, if relative humidity are to be used as input to the constitutive model
+void NuTo::SectionBase::SetInputConstitutiveIsRelativeHumidity(bool rFlag)
+{
+    mInputConstitutiveIsRelativeHumidity = rFlag;
+}
+
+
+
 
 double NuTo::SectionBase::GetArea() const
 {

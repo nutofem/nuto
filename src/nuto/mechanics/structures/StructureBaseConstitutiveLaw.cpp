@@ -961,6 +961,181 @@ double NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int
     return ViscoplasticYieldSurfaceOffset;
 }
 
+//! @brief ... get mass exchange rate between vapor phase and water phase
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate(int rIdent)
+{
+    double MassExchangeRate = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        MassExchangeRate = ConstitutiveLawPtr->GetMassExchangeRate();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate] error getting mass exchange rate.");
+        throw e;
+    }
+    return MassExchangeRate;
+
+}
+
+//! @brief ... set mass exchange rate between vapor phase and water phase
+//! @param rIdent ... constitutive law identifier
+//! @param rMassExchangeRate ... mass exchange rate
+void NuTo::StructureBase::ConstitutiveLawSetMassExchangeRate(int rIdent, double rMassExchangeRate)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetMassExchangeRate(rMassExchangeRate);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetMassExchangeRate] error setting mass exchange rate.");
+        throw e;
+    }
+}
+
+//! @brief ... get porosity
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetPorosity(int rIdent)
+{
+    double Porosity = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        Porosity = ConstitutiveLawPtr->GetPorosity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetPorosity] error getting porosity.");
+        throw e;
+    }
+    return Porosity;
+}
+
+//! @brief ... set porosity
+//! @param rIdent ... constitutive law identifier
+//! @param rPorosity ... porosity
+void NuTo::StructureBase::ConstitutiveLawSetPorosity(int rIdent, double rPorosity)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetPorosity(rPorosity);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetPorosity] error setting porosity.");
+        throw e;
+    }
+}
+
+//! @brief ... get vapor phase diffusion coefficient
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionCoefficient(int rIdent)
+{
+    double VaporPhaseDiffusionCoefficient = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        VaporPhaseDiffusionCoefficient = ConstitutiveLawPtr->GetVaporPhaseDiffusionCoefficient();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionCoefficient] error getting vapor phase diffusion coefficient.");
+        throw e;
+    }
+    return VaporPhaseDiffusionCoefficient;
+}
+
+//! @brief ... set vapor phase diffusion coefficient
+//! @param rIdent ... constitutive law identifier
+//! @param rVaporPhaseDiffusionCoefficient ... vapor phase diffusion coefficient
+void NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionCoefficient(int rIdent, double rVaporPhaseDiffusionCoefficient)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetVaporPhaseDiffusionCoefficient(rVaporPhaseDiffusionCoefficient);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionCoefficient] error setting vapor phase diffusion coefficient.");
+        throw e;
+    }
+}
+
+//! @brief ... get vapor phase diffusion exponent
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionExponent(int rIdent)
+{
+    double VaporPhaseDiffusionExponent = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        VaporPhaseDiffusionExponent = ConstitutiveLawPtr->GetVaporPhaseDiffusionExponent();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionExponent] error getting vapor phase diffusion exponent.");
+        throw e;
+    }
+    return VaporPhaseDiffusionExponent;
+}
+
+//! @brief ... set vapor phase diffusion exponent
+//! @param rIdent ... constitutive law identifier
+//! @param rVaporPhaseDiffusionExponent ... vapor phase diffusion exponent
+void NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionExponent(int rIdent, double rVaporPhaseDiffusionExponent)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetVaporPhaseDiffusionExponent(rVaporPhaseDiffusionExponent);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionExponent] error setting vapor phase diffusion exponent.");
+        throw e;
+    }
+}
+
+//! @brief ... get vapor phase saturation density
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetVaporPhaseSaturationDensity(int rIdent)
+{
+    double VaporPhaseSaturationDensity = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        VaporPhaseSaturationDensity = ConstitutiveLawPtr->GetVaporPhaseSaturationDensity();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVaporPhaseSaturationDensity] error getting vapor phase saturation density.");
+        throw e;
+    }
+    return VaporPhaseSaturationDensity;
+}
+
+//! @brief ... set vapor phase saturation density
+//! @param rIdent ... constitutive law identifier
+//! @param rVaporPhaseSaturationDensity ... vapor phase saturation density
+void NuTo::StructureBase::ConstitutiveLawSetVaporPhaseSaturationDensity(int rIdent, double rVaporPhaseSaturationDensity)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetVaporPhaseSaturationDensity(rVaporPhaseSaturationDensity);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVaporPhaseSaturationDensity] error setting vapor phase saturation density.");
+        throw e;
+    }
+}
 
 //! @brief ... get water phase density
 //! @param rIdent ... constitutive law identifier
@@ -994,6 +1169,77 @@ void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDensity(int rIdent, double
     catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDensity] error setting water phase density.");
+        throw e;
+    }
+}
+
+//! @brief ... get water phase diffusion coefficient
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionCoefficient(int rIdent)
+{
+    double WaterPhaseDiffusionCoefficient = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        WaterPhaseDiffusionCoefficient = ConstitutiveLawPtr->GetWaterPhaseDiffusionCoefficient();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionCoefficient] error getting water phase diffusion coefficient.");
+        throw e;
+    }
+    return WaterPhaseDiffusionCoefficient;
+}
+
+//! @brief ... set water phase diffusion coefficient
+//! @param rIdent ... constitutive law identifier
+//! @param rWaterPhaseDiffusionCoefficient ... water phase diffusion coefficient
+void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionCoefficient(int rIdent, double rWaterPhaseDiffusionCoefficient)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetWaterPhaseDiffusionCoefficient(rWaterPhaseDiffusionCoefficient);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionCoefficient] error setting water phase diffusion coefficient.");
+        throw e;
+    }
+}
+
+
+//! @brief ... get water phase diffusion exponent
+//! @param rIdent ... constitutive law identifier
+double NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionExponent(int rIdent)
+{
+    double WaterPhaseDiffusionExponent = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        WaterPhaseDiffusionExponent = ConstitutiveLawPtr->GetWaterPhaseDiffusionExponent();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionExponent] error getting water phase diffusion exponent.");
+        throw e;
+    }
+    return WaterPhaseDiffusionExponent;
+}
+
+//! @brief ... set water phase diffusion exponent
+//! @param rIdent ... constitutive law identifier
+//! @param rWaterPhaseDiffusionExponent ... water phase diffusion exponent
+void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionExponent(int rIdent, double rWaterPhaseDiffusionExponent)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetWaterPhaseDiffusionExponent(rWaterPhaseDiffusionExponent);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionExponent] error setting water phase diffusion exponent.");
         throw e;
     }
 }

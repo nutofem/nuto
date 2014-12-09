@@ -434,6 +434,76 @@ void NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset(double rViscoplas
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get mass exchange rate between water phase and vapor phase
+//! @return ... mass exchange rate
+double NuTo::ConstitutiveBase::GetMassExchangeRate() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMassExchangeRate] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set mass exchange rate between water phase and vapor phase
+//! @param ... mass exchange rate
+void NuTo::ConstitutiveBase::SetMassExchangeRate (double rMassExchangeRate)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMassExchangeRate] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get porosity
+//! @return ... porosity
+double NuTo::ConstitutiveBase::GetPorosity() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetPorosity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set porosity
+//! @param ... porosity
+void NuTo::ConstitutiveBase::SetPorosity(double rPorosity)
+{
+        throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetPorosity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get vapor phase diffusion coefficient
+//! @return ... vapor phase diffusion coefficient
+double NuTo::ConstitutiveBase::GetVaporPhaseDiffusionCoefficient() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVaporPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set vapor phase diffusion coefficient
+//! @param ... vapor phase diffusion coefficient
+void NuTo::ConstitutiveBase::SetVaporPhaseDiffusionCoefficient(double rVaporPhaseDiffusionCoefficient)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVaporPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get vapor phase diffusion exponent
+//! @return ... vapor phase diffusion exponent
+double NuTo::ConstitutiveBase::GetVaporPhaseDiffusionExponent() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVaporPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set vapor phase diffusion exponent
+//! @param ... vapor phase diffusion exponent
+void NuTo::ConstitutiveBase::SetVaporPhaseDiffusionExponent(double rVaporPhaseDiffusionExponent)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVaporPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get vapor phase saturation density
+//! @return ... vapor phase saturation density
+double NuTo::ConstitutiveBase::GetVaporPhaseSaturationDensity() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVaporPhaseSaturationDensity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set vapor phase saturation density
+//! @param ... vapor phase saturation density
+void NuTo::ConstitutiveBase::SetVaporPhaseSaturationDensity(double rVaporPhaseSaturationDensity)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVaporPhaseSaturationDensity] The constitutive relationship does not have this parameter.");
+}
+
 //! @brief ... get water phase density
 //! @return ... water phase density
 double NuTo::ConstitutiveBase::GetWaterPhaseDensity() const
@@ -446,6 +516,34 @@ double NuTo::ConstitutiveBase::GetWaterPhaseDensity() const
 void NuTo::ConstitutiveBase::SetWaterPhaseDensity(double rWaterPhaseDensity)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDensity] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get water phase diffusion coefficient
+//! @return ... water phase diffusion exponent
+double NuTo::ConstitutiveBase::GetWaterPhaseDiffusionCoefficient() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetWaterPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set water phase diffusion coefficient
+//! @param ... water phase diffusion coefficient
+void NuTo::ConstitutiveBase::SetWaterPhaseDiffusionCoefficient(double rWaterPhaseDiffusionCoefficient)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get water phase diffusion exponent
+//! @return ... water phase diffusion exponent
+double NuTo::ConstitutiveBase::GetWaterPhaseDiffusionExponent() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetWaterPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set water phase diffusion exponent
+//! @param ... water phase diffusion exponent
+void NuTo::ConstitutiveBase::SetWaterPhaseDiffusionExponent(double rWaterPhaseDiffusionExponent)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
 }
 
 // modify parameter validity flag

@@ -53,23 +53,25 @@ namespace Input
 {
 enum eInput
 {
-	DEFORMATION_GRADIENT_1D,           //!<
-	DEFORMATION_GRADIENT_2D,           //!<
-	DEFORMATION_GRADIENT_3D,           //!<
-	ENGINEERING_STRAIN_1D,           //!<
-	ENGINEERING_STRAIN_2D,           //!<
+    DEFORMATION_GRADIENT_1D,            //!<
+    DEFORMATION_GRADIENT_2D,            //!<
+    DEFORMATION_GRADIENT_3D,            //!<
+    ENGINEERING_STRAIN_1D,              //!<
+    ENGINEERING_STRAIN_2D,              //!<
 	ENGINEERING_STRAIN_3D,
-	TEMPERATURE,                       //!<
-	TEMPERATURE_GRADIENT_1D,           //!<
-	TEMPERATURE_GRADIENT_2D,           //!<
-	TEMPERATURE_GRADIENT_3D,           //!<
-	NONLOCAL_EQ_PLASTIC_STRAIN,        //!<
-    NONLOCAL_EQ_STRAIN,                //!<
-    NONLOCAL_TOTAL_STRAIN_1D,          //!<
-	ENGINEERING_STRESS_1D,             //!< usually the stress is an output, that 's why the additional input term is required
-	DEFORMATION_GRADIENT_REAL_1D,      //!<
-	NONLOCAL_TOTAL_STRAIN_REAL_1D,     //!<
-	NONLOCAL_TOTAL_STRAIN_VIRT_1D      //!<
+    TEMPERATURE,                        //!<
+    TEMPERATURE_GRADIENT_1D,            //!<
+    TEMPERATURE_GRADIENT_2D,            //!<
+    TEMPERATURE_GRADIENT_3D,            //!<
+    NONLOCAL_EQ_PLASTIC_STRAIN,         //!<
+    NONLOCAL_EQ_STRAIN,                 //!<
+    NONLOCAL_TOTAL_STRAIN_1D,           //!<
+    ENGINEERING_STRESS_1D,              //!< usually the stress is an output, that 's why the additional input term is required
+    DEFORMATION_GRADIENT_REAL_1D,       //!<
+    NONLOCAL_TOTAL_STRAIN_REAL_1D,      //!<
+    NONLOCAL_TOTAL_STRAIN_VIRT_1D,      //!<
+    RELATIVE_HUMIDITY,                  //!<
+    WATER_PHASE_FRACTION                //!<
 };
 }
 
@@ -143,7 +145,14 @@ enum eOutput
 	D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,
 	D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,
 	D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,
-	D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D
+    D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,
+    PHASE_MASS_EXCHANGE_RATE,
+    PHASE_MASS_EXCHANGE_RATE_TIMES_EQUILIBRIUM_SORPTION_CURVE,
+    VAPOR_PHASE_DIFFUSION_COEFFICIENT,
+    VAPOR_PHASE_SATURATION_DENSITY_TIMES_VAPOR_PHASE_VOLUME_FRACTION,
+    VAPOR_PHASE_SATURATION_DENSITY_TIMES_RELATIVE_HUMIDITY,
+    WATER_PHASE_DIFFUSION_COEFFICIENT,
+    WATER_PHASE_DENSITY
 };
 }
 
@@ -189,7 +198,9 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D")
                               (Output::D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D")
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,"D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D")
-                              (Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,"D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D");
+                              (Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,"D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D")
+                              (Output::VAPOR_PHASE_DIFFUSION_COEFFICIENT, "VAPOR_PHASE_DIFFUSION_COEFFICIENT")
+                              (Output::WATER_PHASE_DIFFUSION_COEFFICIENT, "WATER_PHASE_DIFFUSION_COEFFICIENT");
   std::map< Output::eOutput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;

@@ -1216,6 +1216,34 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
 }
 
 
+//! @brief ... build global coefficient matrix (damping) for primary dofs (e.g displacements, rotations, temperature)
+//! @param rMatrix ... global coefficient matrix (symmetric)
+//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix1(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::DAMPING, rMatrix, rVector);
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix1] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix1] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return error;
+}
+
+
 //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
 //! @param rMatrix ... global coefficient matrix (nonsymmetric)
 //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)

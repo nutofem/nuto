@@ -87,6 +87,22 @@ public:
     //! @param rFlag ... true, if nonlocal eq strain is dofs
     void SetIsNonlocalEqStrainDof(bool rFlag);
 
+    //! @brief... get if water phase fraction is dofs
+    //! @return ... true, if water phase fraction is dofs
+    bool GetIsWaterPhaseFractionDof()const;
+
+    //! @brief... set if water phase fraction is dofs
+    //! @param rFlag ... true, if water phase fraction is dofs
+    void SetIsWaterPhaseFractionDof(bool rFlag);
+
+    //! @brief... get if relative humidity is dofs
+    //! @return ... true, if relative humidity is dofs
+    bool GetIsRelativeHumidityDof()const;
+
+    //! @brief... set if relative humidity is dofs
+    //! @param rFlag ... true, if relative humidity is dofs
+    void SetIsRelativeHumidityDof(bool rFlag);
+
     //! @brief... get if temperatures are to be used as input to the constitutive model
     //! @return ... true, if temperatures are to be used as input to the constitutive model
     bool GetInputConstitutiveIsTemperature()const;
@@ -135,6 +151,22 @@ public:
     //! @param rFlag ... true, if deformation Gradient are to be used as input to the constitutive model
     void SetInputConstitutiveIsDeformationGradient(bool rFlag);
 
+    //! @brief... get if water phase fraction is to be used as input to the constitutive model
+    //! @return ... true, if water phase fraction are to be used as input to the constitutive model
+    bool GetInputConstitutiveIsWaterPhaseFraction() const;
+
+    //! @brief... set if water phase fraction are to be used as input to the constitutive model
+    //! @param rFlag ... true, if water phase fraction are to be used as input to the constitutive model
+    void SetInputConstitutiveIsWaterPhaseFraction(bool rFlag);
+
+    //! @brief... get if relative humidity is to be used as input to the constitutive model
+    //! @return ... true, if relative humidity are to be used as input to the constitutive model
+    bool GetInputConstitutiveIsRelativeHumidity() const;
+
+    //! @brief... set if relative humidity are to be used as input to the constitutive model
+    //! @param rFlag ... true, if relative humidity are to be used as input to the constitutive model
+    void SetInputConstitutiveIsRelativeHumidity(bool rFlag);
+
     //! @brief ... get the cross-section area of the section
     //! @return ... section cross-section area
     virtual double GetArea() const;
@@ -170,12 +202,17 @@ private:
     bool mInputConstitutiveIsNonlocalEqStrain;
     bool mInputConstitutiveIsTemperatureGradient;
     bool mInputConstitutiveIsDeformationGradient;
+    bool mInputConstitutiveIsWaterPhaseFraction = false;
+    bool mInputConstitutiveIsRelativeHumidity = false;
+
 
     bool mDisplacementDof;
     bool mTemperatureDof;
     bool mNonlocalEqPlasticStrainDof;
     bool mNonlocalTotalStrainDof;
     bool mNonlocalEqStrainDof;
+    bool mWaterPhaseFractionDof = false;
+    bool mRelativeHumidityDoF = false;
 };
 
 }

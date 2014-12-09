@@ -1,4 +1,4 @@
-// $Id$
+ // $Id$
 #ifndef TRUSS_H
 #define TRUSS_H
 
@@ -17,6 +17,8 @@ class LocalEqPlasticStrain;
 class LocalEqStrain;
 class NonlocalEqPlasticStrain;
 class NonlocalEqStrain;
+class RelativeHumidity;
+class WaterPhaseFraction;
 template <int TNumRows, int TNumColumns> class ConstitutiveTangentLocal;
 
 //! @author Jörg F. Unger, ISM
@@ -134,6 +136,19 @@ public:
     		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol,
     		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
 
+    //! @brief adds to a matrix the product N^t C N, where N contains the the shape functions and C is the constitutive tangent
+    //! eventually include also area/width of an element
+    //! @param rShapeFunctions shape functions
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rFactor factor including area, determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the submatrix
+    //! @param rCol col, where to start to add the submatrix
+    //! @param rCoefficientMatrix to be added to
+    void AddDetJNtCN(const std::vector<double>& rShapeFunctions,
+                     const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent, double rFactor,
+                     int rRow, int rCol,
+                     FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const;
+
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
     //! this can be checked with an assertation
@@ -190,6 +205,34 @@ public:
     void CalculateNonlocalEqStrain(const std::vector<double>& shapeFunctions,
             const std::vector<double>& rNodeNonlocalEqStrain, NonlocalEqStrain& rNonlocalEqStrain)const;
 
+    //! @brief stores the relative humidity of the nodes
+    //! @param time derivative
+    //! @param relative humidity vector with already correct size allocated (1*nodes)
+    //! this can be checked with an assertation
+    void CalculateNodalRelativeHumidity(int rTimeDerivative, std::vector<double>& rNodalRelativeHumidity)const;
+
+    //! @brief returns the relative humidity interpolated from the nodal values
+    //! @param shapeFunctions shape functions
+    //! @param rNodeRelativeHumidity relative humidity values of the nodes
+    //! @param rRelativeHumidity return value
+    void CalculateRelativeHumidity(const std::vector<double>& rShapeFunctions,
+                                   const std::vector<double>& rNodeRelativeHumidity,
+                                   RelativeHumidity& rRelativeHumidity)const;
+
+    //! @brief stores the water phase fraction of the nodes
+    //! @param time derivative
+    //! @param water phase fraction vector with already correct size allocated (1*nodes)
+    //! this can be checked with an assertation
+    void CalculateNodalWaterPhaseFraction(int rTimeDerivative, std::vector<double>& rNodalWaterPhaseFraction)const;
+
+    //! @brief returns the water phase fraction interpolated from the nodal values
+    //! @param shapeFunctions shape functions
+    //! @param rNodeWaterPhaseFraction water phase fraction values of the nodes
+    //! @param rWaterPhaseFraction return value
+    void CalculateWaterPhaseFraction(const std::vector<double>& rShapeFunctions,
+                                     const std::vector<double>& rNodeWaterPhaseFraction,
+                                     WaterPhaseFraction& rWaterPhaseFraction)const;
+
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section
@@ -232,6 +275,12 @@ public:
     //! @return local dimension
     virtual int GetNumShapeFunctionsNonlocalEqStrain()const;
 
+    //! @brief returns the number of shape functions for the interpolation of the moisture transport
+    //! this is required for the calculation of the derivatives of the shape functions
+    //! whose size is GetLocalDimension*GetNumShapeFunctions
+    //! @return local dimension
+    virtual int GetNumShapeFunctionsMoistureTransport() const;
+
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
@@ -262,6 +311,11 @@ public:
     //! @param shape functions for all the nodes
     virtual void CalculateShapeFunctionsNonlocalEqStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
 
+    //! @brief calculates the shape functions, uses the geometry shape functions unless implemented differently
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for all the nodes
+    virtual void CalculateShapeFunctionsMoistureTransport(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
+
     //! @brief calculates the derivative of the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
@@ -285,6 +339,12 @@ public:
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
     virtual void CalculateDerivativeShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
+
+    //! @brief calculates the derivative of the shape functions, uses the derivatives of the geometry shape function unless implemented differently
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsMoistureTransport(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
 
 
     //! @brief returns determinant of the Jacobian
@@ -425,12 +485,12 @@ protected:
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
     //! @param rNumXxxxDofs ... number of Xxxx dofs
-    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs, int rNumNonlocalEqStrainDofs) const=0;
+    virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs, int rNumNonlocalEqStrainDofs, int rNumRelativeHumidityDofs, int rNumWaterPhaseFractionDofs) const=0;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
     //! @param rNumXxxxDofs ... number of Xxxx dofs
-    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs, int rNumNonlocalEqStrainDofs) const;
+    virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs,int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqPlasticStrainDofs,int rNumNonlocalTotalStrainDofs, int rNumNonlocalEqStrainDofs, int rNumRelativeHumidityDofs, int rNumWaterPhaseFractionDofs) const;
 
     //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
     //! @param rShapeFunctions ... shape functions

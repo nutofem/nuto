@@ -82,6 +82,16 @@ const NuTo::EngineeringStress1D& NuTo::ConstitutiveInputBase::GetEngineeringStre
 	throw MechanicsException("[NuTo::ConstitutiveInputBase::GetEngineeringStress1D] not implemented for this input object.");
 }
 
+const NuTo::RelativeHumidity& NuTo::ConstitutiveInputBase::GetRelativeHumidity()const
+{
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetRelativeHumidity] not implemented for this input object.");
+}
+
+const NuTo::WaterPhaseFraction& NuTo::ConstitutiveInputBase::GetWaterPhaseFraction()const
+{
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterPhaseFraction] not implemented for this input object.");
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstitutiveInputBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

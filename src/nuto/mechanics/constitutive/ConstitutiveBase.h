@@ -300,6 +300,46 @@ public:
     //! @param ... viscoplastic yield surface offset
     virtual void SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset);
 
+    //! @brief ... get mass exchange rate between water phase and vapor phase
+    //! @return ... mass exchange rate
+    virtual double GetMassExchangeRate() const;
+
+    //! @brief ... set mass exchange rate between water phase and vapor phase
+    //! @param ... mass exchange rate
+    virtual void SetMassExchangeRate (double rMassExchangeRate);
+
+    //! @brief ... get porosity
+    //! @return ... porosity
+    virtual double GetPorosity() const;
+
+    //! @brief ... set porosity
+    //! @param ... porosity
+    virtual void SetPorosity(double rPorosity);
+
+    //! @brief ... get vapor phase diffusion coefficient
+    //! @return ... vapor phase diffusion coefficient
+    virtual double GetVaporPhaseDiffusionCoefficient() const;
+
+    //! @brief ... set vapor phase diffusion coefficient
+    //! @param ... vapor phase diffusion coefficient
+    virtual void SetVaporPhaseDiffusionCoefficient(double rVaporPhaseDiffusionCoefficient);
+
+    //! @brief ... get vapor phase diffusion exponent
+    //! @return ... vapor phase diffusion exponent
+    virtual double GetVaporPhaseDiffusionExponent() const;
+
+    //! @brief ... set vapor phase diffusion exponent
+    //! @param ... vapor phase diffusion exponent
+    virtual void SetVaporPhaseDiffusionExponent(double rVaporPhaseDiffusionExponent);
+
+    //! @brief ... get vapor phase Density
+    //! @return ... vapor phase saturation density
+    virtual double GetVaporPhaseSaturationDensity() const;
+
+    //! @brief ... set vapor phase saturation density
+    //! @param ... vapor phase saturation density
+    virtual void SetVaporPhaseSaturationDensity(double rVaporPhaseSaturationDensity);
+
     //! @brief ... get water phase density
     //! @return ... water phase density
     virtual double GetWaterPhaseDensity() const;
@@ -307,6 +347,26 @@ public:
     //! @brief ... set water phase density
     //! @param ... water phase density
     virtual void SetWaterPhaseDensity(double rWaterPhaseDensity);
+
+    //! @brief ... get water phase diffusion coefficient
+    //! @return ... water phase diffusion coefficient
+    virtual double GetWaterPhaseDiffusionCoefficient() const;
+
+    //! @brief ... set water phase diffusion coefficient
+    //! @param ... water phase diffusion coefficient
+    virtual void SetWaterPhaseDiffusionCoefficient(double rWaterPhaseDiffusionCoefficient);
+
+    //! @brief ... set water phase diffusion exponent
+    //! @param ... water phase diffusion exponent
+    virtual void SetWaterPhaseDiffusionExponent(double rWaterPhaseDiffusionExponent);
+
+    //! @brief ... get water phase diffusion exponent
+    //! @return ... water phase diffusion exponent
+    virtual double GetWaterPhaseDiffusionExponent() const;
+
+
+
+
 
 
 

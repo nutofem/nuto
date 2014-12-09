@@ -260,6 +260,11 @@ public:
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
     NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
+    //! @brief ... build global coefficient matrix (damping) for primary dofs (e.g displacements, rotations, temperature)
+    //! @param rMatrix ... global coefficient matrix (symmetric)
+    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
+    NuTo::Error::eError BuildGlobalCoefficientMatrix1(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+
     //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
     //! @param rMatrix ... global coefficient matrix (nonsymmetric)
     //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
@@ -854,7 +859,19 @@ public:
     //! @param rNode identifier for node
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int  ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+
+    //! @brief adds a relative humidity constraint equation for node
+    //! @param rNode pointer to node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue);
+
+    //! @brief adds a relative humidity constraint for a node
+    //! @param rIdent identifier for node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue);
 
 #ifndef SWIG
     //! @brief adds a rotation constraint equation for a node
@@ -868,6 +885,18 @@ public:
     //! @param rNode identifier for node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
+
+    //! @brief adds a water volume fraction constraint for a node
+    //! @param rNode pointer to node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetWaterPhaseFractionNode(NodeBase* rNode, double rValue);
+
+    //! @brief adds a water volume fraction constraint for a node
+    //! @param rIdent identifier for node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetWaterPhaseFractionNode(int rIdent, double rValue);
 
 #ifndef SWIG
     //! @brief adds a displacement constraint equation for a group of node
@@ -1396,6 +1425,50 @@ public:
     //! @param ... viscoplastic yield surface offset
     void ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset);
 
+    //! @brief ... get mass exchange rate between vapor phase and water phase
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetMassExchangeRate(int rIdent);
+
+    //! @brief ... set mass exchange rate between vapor phase and water phase
+    //! @param rIdent ... constitutive law identifier
+    //! @param rMassExchangeRate ... mass exchange rate
+    void ConstitutiveLawSetMassExchangeRate(int rIdent, double rMassExchangeRate);
+
+    //! @brief ... get porosity
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetPorosity(int rIdent);
+
+    //! @brief ... set porosity
+    //! @param rIdent ... constitutive law identifier
+    //! @param rPorosity ... porosity
+    void ConstitutiveLawSetPorosity(int rIdent, double rPorosity);
+
+    //! @brief ... get vapor phase diffusion coefficient
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetVaporPhaseDiffusionCoefficient(int rIdent);
+
+    //! @brief ... set vapor phase diffusion coefficient
+    //! @param rIdent ... constitutive law identifier
+    //! @param rVaporPhaseDiffusionCoefficient ... vapor phase diffusion coefficient
+    void ConstitutiveLawSetVaporPhaseDiffusionCoefficient(int rIdent, double rVaporPhaseDiffusionCoefficient);
+
+    //! @brief ... get vapor phase diffusion exponent
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetVaporPhaseDiffusionExponent(int rIdent);
+
+    //! @brief ... set vapor phase diffusion exponent
+    //! @param rIdent ... constitutive law identifier
+    //! @param rVaporPhaseDiffusionExponent ... vapor phase diffusion exponent
+    void ConstitutiveLawSetVaporPhaseDiffusionExponent(int rIdent, double rVaporPhaseDiffusionExponent);
+
+    //! @brief ... get vapor phase saturation density
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetVaporPhaseSaturationDensity(int rIdent);
+
+    //! @brief ... set vapor phase saturation density
+    //! @param rIdent ... constitutive law identifier
+    //! @param rVaporPhaseSaturationDensity ... vapor phase saturation density
+    void ConstitutiveLawSetVaporPhaseSaturationDensity(int rIdent, double rVaporPhaseSaturationDensity);
 
     //! @brief ... get water phase density
     //! @param rIdent ... constitutive law identifier
@@ -1405,6 +1478,25 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rWaterPhaseDensity ... water phase density
     void ConstitutiveLawSetWaterPhaseDensity(int rIdent, double rWaterPhaseDensity);
+
+    //! @brief ... get water phase diffusion coefficient
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetWaterPhaseDiffusionCoefficient(int rIdent);
+
+    //! @brief ... set water phase diffusion coefficient
+    //! @param rIdent ... constitutive law identifier
+    //! @param rWaterPhaseDiffusionCoefficient ... water phase diffusion coefficient
+    void ConstitutiveLawSetWaterPhaseDiffusionCoefficient(int rIdent, double rWaterPhaseDiffusionCoefficient);
+
+    //! @brief ... get water phase diffusion exponent
+    //! @param rIdent ... constitutive law identifier
+    double ConstitutiveLawGetWaterPhaseDiffusionExponent(int rIdent);
+
+    //! @brief ... set water phase diffusion exponent
+    //! @param rIdent ... constitutive law identifier
+    //! @param rWaterPhaseDiffusionExponent ... water phase diffusion exponent
+    void ConstitutiveLawSetWaterPhaseDiffusionExponent(int rIdent, double rWaterPhaseDiffusionExponent);
+
 
     #ifndef SWIG
     //! @brief ... create a new section

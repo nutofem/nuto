@@ -38,6 +38,8 @@ class SecondPiolaKirchhoffStress3D;
 class StructureBase;
 class NonlocalEqPlasticStrain;
 class NonlocalEqStrain;
+class RelativeHumidity;
+class WaterPhaseFraction;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Jörg F. Unger, BAM
@@ -65,6 +67,8 @@ public:
     virtual const EngineeringStrain1D& GetEngineeringStrain1D()const;
     virtual const EngineeringStrain2D& GetEngineeringStrain2D()const;
     virtual const EngineeringStrain3D& GetEngineeringStrain3D()const;
+    virtual const RelativeHumidity& GetRelativeHumidity()const;
+    virtual const WaterPhaseFraction& GetWaterPhaseFraction()const;
 
     virtual const EngineeringStress1D& GetEngineeringStress1D()const;
 

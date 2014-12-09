@@ -19,7 +19,9 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeRelativeHumidity.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeRotations2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeWaterPhaseFraction.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 
 //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
@@ -211,6 +213,124 @@ int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rVa
 
     return ConstraintLinearSetRotationNode(nodePtr, rValue);
 }
+
+//! @brief adds a relative humidity constraint equation for node
+//! @param rNode pointer to node
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeRelativeHumidity(rNode,rValue));
+        break;
+    case 2:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] not implemented for 2D.");
+        break;
+    case 3:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] not implemented for 3D.");
+        break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+//! @brief adds a relative humidity constraint for a node
+//! @param rIdent identifier for node
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] Node with the given identifier could not be found.");
+        throw e;
+    }
+    catch (...)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetRelativeHumidityNode(nodePtr, rValue);
+}
+
+
+//! @brief adds a water volume fraction constraint for a node
+//! @param rNode pointer to node
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode(NodeBase* rNode, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeWaterPhaseFraction(rNode,rValue));
+        break;
+    case 2:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode] not implemented for 2D.");
+        break;
+    case 3:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode] not implemented for 3D.");
+        break;
+    default:
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode] Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+//! @brief adds a water volume fraction constraint for a node
+//! @param rIdent identifier for node
+//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+//! @return integer id to delete or modify the constraint
+int NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode(int rIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode] Node with the given identifier could not be found.");
+        throw e;
+    }
+    catch (...)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetWaterPhaseFractionNode] Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetWaterPhaseFractionNode(nodePtr, rValue);
+}
+
 
 //! @brief adds a displacement constraint equation for a group of node
 //! @param rNode pointer to group of nodes

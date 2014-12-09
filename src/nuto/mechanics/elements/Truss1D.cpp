@@ -98,9 +98,11 @@ void NuTo::Truss1D::CalculateGlobalRowDofs(
         int rNumTempDofs,
 		int rNumNonlocalEqPlasticStrainDofs,
 		int rNumNonlocalTotalStrainDofs,
-		int rNumNonlocalEqStrainDofs) const
+        int rNumNonlocalEqStrainDofs,
+        int rNumRelativeHumidityDofs,
+        int rNumWaterPhaseFractionDofs) const
 {
-    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs+rNumNonlocalEqPlasticStrainDofs+rNumNonlocalTotalStrainDofs+rNumNonlocalEqStrainDofs);
+    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs+rNumNonlocalEqPlasticStrainDofs+rNumNonlocalTotalStrainDofs+rNumNonlocalEqStrainDofs+rNumRelativeHumidityDofs+rNumWaterPhaseFractionDofs);
 
 
 
@@ -110,6 +112,8 @@ void NuTo::Truss1D::CalculateGlobalRowDofs(
     int iGlobalNonlocalEqPlasticStrain = 0;
     int iGlobalNonlocalTotalStrain     = 0;
     int iGlobalNonlocalEqStrain        = 0;
+    int iGlobalRelativeHumidity        = 0;
+    int iGlobalWaterPhaseFraction      = 0;
 
     int numNodes(this->GetNumNodes());
 
@@ -186,6 +190,19 @@ void NuTo::Truss1D::CalculateGlobalRowDofs(
             iGlobalNonlocalEqStrain ++;
         }
 
+        int iStartRelativeHumidity = iStartNonlocalEqStrain +rNumNonlocalEqStrainDofs;
+        if (node->GetNumRelativeHumidity()>0 && rNumRelativeHumidityDofs>0)
+        {
+            rGlobalRowDofs[iStartRelativeHumidity+iGlobalRelativeHumidity]  = node->GetDofRelativeHumidity();
+            iGlobalRelativeHumidity++;
+        }
+
+        int iStartWaterPhaseFraction = iStartRelativeHumidity + rNumRelativeHumidityDofs;
+        if (node->GetNumWaterPhaseFraction()>0 && rNumWaterPhaseFractionDofs>0)
+        {
+            rGlobalRowDofs[iStartWaterPhaseFraction+iGlobalWaterPhaseFraction] = node->GetDofWaterPhaseFraction();
+            iGlobalWaterPhaseFraction++;
+        }
         //int iStartNextDof = iStartNonlocalEqStrain + rNumNonlocalEqStrain;
 
 

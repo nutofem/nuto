@@ -233,6 +233,9 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
     	SectionPtr->SetIsRotationDof(false);
     	SectionPtr->SetIsTemperatureDof(false);
     	SectionPtr->SetIsNonlocalEqPlasticStrainDof(false);
+        //SectionPtr->SetInputConstitutiveIsDeformationGradient(false);   <--- CopyPaste Fehler??? Kein Dof? - vhirtham
+        SectionPtr->SetIsRelativeHumidityDof(false);
+        SectionPtr->SetIsWaterPhaseFractionDof(false);
 
     	boost::char_separator<char> sep(" ");
         boost::tokenizer< boost::char_separator<char> > tok(DOFsUpperCase, sep);
@@ -261,6 +264,14 @@ void NuTo::StructureBase::SectionSetDOF(int rId, const std::string& rDOFs)
             else if (*beg=="NONLOCALEQSTRAIN")
             {
                 SectionPtr->SetIsNonlocalEqStrainDof(true);
+            }
+            else if (*beg=="WATERPHASEFRACTION")
+            {
+                SectionPtr->SetIsWaterPhaseFractionDof(true);
+            }
+            else if (*beg=="RELATIVEHUMIDITY")
+            {
+                SectionPtr->SetIsRelativeHumidityDof(true);
             }
             else
             {

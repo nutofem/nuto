@@ -37,7 +37,7 @@ void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rE
 {
 	//std::cout << "NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw" << std::endl;
 	assert(rConstitutiveLaw!=0);
-	mConstitutiveLaw = rConstitutiveLaw;
+    mConstitutiveLaw = rConstitutiveLaw;
 	InitializeUpdatedConstitutiveLaw(rElement);
 }
 

@@ -61,6 +61,8 @@ constitutive/mechanics/SecondPiolaKirchhoffStress2D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
 constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
 constitutive/moistureTransport/MoistureTransport.cpp
+constitutive/moistureTransport/WaterPhaseFraction.cpp
+constitutive/moistureTransport/RelativeHumidity.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES
@@ -81,7 +83,9 @@ constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
 constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
 constraints/ConstraintLinearNodeGroupRotations2D.cpp
 constraints/ConstraintLinearNodeGroupTemperature.cpp
+constraints/ConstraintLinearNodeRelativeHumidity.cpp
 constraints/ConstraintLinearNodeRotations2D.cpp
+constraints/ConstraintLinearNodeWaterPhaseFraction.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNonlinear.cpp
