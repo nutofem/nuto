@@ -68,67 +68,24 @@ try {
 
     // create elements
 
-    for (int element = 0; element < numElements; element ++)
+    for (int iElement = 0; iElement < numElements; iElement ++)
     {
         NuTo::FullVector<int, 3> nodeIds;
-        nodeIds(0) = 2*element;
-        nodeIds(1) = 2*element+1;
-        nodeIds(2) = 2*element+2;
-        myStructure.ElementCreate(element, "Truss1D3N", nodeIds,"ConstitutiveLawIpNonlocal","StaticData");
-        myStructure.ElementSetIntegrationType(element,"1D2NGauss2Ip","StaticData");
-        if (element==numElements/2)
-            myStructure.ElementSetSection(element,mySectionRed);
+        nodeIds(0) = 2*iElement;
+        nodeIds(1) = 2*iElement+1;
+        nodeIds(2) = 2*iElement+2;
+        myStructure.ElementCreate(iElement, "Truss1D3N", nodeIds,"ConstitutiveLawIpNonlocal","StaticData");
+        myStructure.ElementSetIntegrationType(iElement,"1D2NGauss2Ip","StaticData");
+        if (iElement==numElements/2)
+            myStructure.ElementSetSection(iElement,mySectionRed);
         else
-            myStructure.ElementSetSection(element,mySection);
-        myStructure.ElementSetConstitutiveLaw(element,myNumberConstitutiveLaw);
+            myStructure.ElementSetSection(iElement,mySection);
+        myStructure.ElementSetConstitutiveLaw(iElement,myNumberConstitutiveLaw);
     }
 
     myStructure.CalculateMaximumIndependentSets();
-
-
-
-    NuTo::SparseMatrixCSRVector2General<double> K_sparse;
-    NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
-    NuTo::FullVector<double,Eigen::Dynamic> activeDOFsCheck;
-    NuTo::FullVector<double,Eigen::Dynamic> dependentDOFsCheck;
-    myStructure.BuildGlobalCoefficientMatrix0(K_sparse, dispForceVector);
-
-    myStructure.NodeExtractDofValues(0, activeDOFsCheck, dependentDOFsCheck);
-
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> K(K_sparse);
-
-    double epsilon = 1e-6;
-
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> K_num(K_sparse.GetNumRows(), K_sparse.GetNumColumns()), K_diff;
-    NuTo::FullVector<double,Eigen::Dynamic> intForceVector1, intForceVector2;
-
-    myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector1);
-    for (int count=0; count<activeDOFsCheck.GetNumRows(); count++)
-    {
-        activeDOFsCheck(count,0)+=epsilon;
-        myStructure.NodeMergeActiveDofValues(0,activeDOFsCheck);
-        myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector2);
-        K_num.SetColumn(count,(intForceVector2-intForceVector1)*(1./epsilon));
-        activeDOFsCheck(count,0)-=epsilon;
-    }
-    myStructure.NodeMergeActiveDofValues(0,activeDOFsCheck);
-
-    K_diff = K-K_num;
-    double maxDiffK = abs(K_diff.Max());
-    if (maxDiffK > 1e-3)
-    {
-        std::cout << "Something with the stiffness matrix, see values: " << std::endl;
-        std::cout << "K:" << std::endl;
-        K.Info(10,3, true);
-        std::cout << "K_num:" << std::endl;
-        K_num.Info(10,3, true);
-        std::cout << "K - K_num:" << std::endl;
-        K_diff.Info(10,3,true);
-    } else {
-        std::cout << "Stiffness matrix is kinda allright. Could be better, I guess. Nah.. it's allright." << std::endl;
-        std::cout << "Max. difference: " << maxDiffK << std::endl;
-
-    }
+    myStructure.CheckCoefficientMatrix_0(1.e-6, true);
+    myStructure.ElementCheckCoefficientMatrix_0(1.e-6);
 
 
 

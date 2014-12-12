@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakeLists.txt 701 2014-12-08 12:51:24Z ttitscher $
 
 #test files for mechanics module
 IF(ENABLE_PYTHON_TESTS)
@@ -70,7 +70,7 @@ IF(ENABLE_C++_TESTS)
   ENDIF(MINGW)
   ADD_TEST(c::mechanics::GradientDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/GradientDamagePlasticity)
 
-  # GradientDamageElasticity
+  # GradientDamage
   ADD_EXECUTABLE(GradientDamage GradientDamage.cpp)
   TARGET_LINK_LIBRARIES(GradientDamage NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
   IF (ENABLE_VISUALIZE)
@@ -160,4 +160,18 @@ IF(ENABLE_C++_TESTS)
 
 ENDIF(ENABLE_C++_TESTS)
 
-  
+IF(ENABLE_C++_TESTS_WIP)  
+  # GradientDamage
+  ADD_EXECUTABLE(GradientDamage GradientDamage.cpp)
+  TARGET_LINK_LIBRARIES(GradientDamage NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(GradientDamage NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(GradientDamage ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(GradientDamage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  ADD_TEST(c::mechanics::GradientDamage ${CMAKE_CURRENT_BUILD_DIR}/GradientDamage)
+ENDIF(ENABLE_C++_TESTS_WIP)
