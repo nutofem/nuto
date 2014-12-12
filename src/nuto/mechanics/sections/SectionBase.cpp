@@ -293,11 +293,13 @@ void NuTo::SectionBase::Info(unsigned short rVerboseLevel) const
     std::cout << "    section pointer: " << this << std::endl;
 }
 
+//! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
 NuTo::SectionTruss* NuTo::SectionBase::AsSectionTruss()
 {
     throw NuTo::MechanicsException("[NuTo::SectionBase::AsSectionTruss] Section is not of type SectionTruss.");
 }
 
+//! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
 const NuTo::SectionTruss* NuTo::SectionBase::AsSectionTruss() const
 {
     throw NuTo::MechanicsException("[NuTo::SectionBase::AsSectionTruss] Section is not of type SectionTruss.");

@@ -38,6 +38,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
 //! @brief constructor
@@ -564,25 +565,21 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			if (error!=Error::SUCCESSFUL)
 				return error;
 
-			double area = detJ*mSection->GetArea();
-			double xIP_ptr[3];
-			GetGlobalIntegrationPointCoordinates(theIP, xIP_ptr);
-			double xIP = xIP_ptr[0];
 
 
-		    double xWeakSpot = 25;
-		    double lWeakSpot = 5;
-		    double alpha = 0.10;
+			double areaFactor = 1.;
 
-		    // reduce area
-	        if (xIP < xWeakSpot+lWeakSpot and xIP > xWeakSpot-lWeakSpot)
-	            area *= (1 - alpha* std::pow(1. - std::abs((xIP-xWeakSpot)/lWeakSpot),4));
+			if (numNonlocalEqStrainDofs)
+			{
+			    // calculate global IP coordinates
+	            double coordsIP[3];
+	            GetGlobalIntegrationPointCoordinates(theIP, coordsIP);
 
-	        std::cout << xIP << " : " << area << std::endl;
+	            areaFactor = mSection->AsSectionTruss()->GetAreaFactor(coordsIP[0]);
+			}
 
-
-			double factor (area*
-					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+			double factor = detJ * mSection->GetArea() * areaFactor *
+					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
 
 
 			FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Kkk;

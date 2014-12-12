@@ -1,6 +1,6 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
-
+#include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
@@ -16,11 +16,15 @@ int main()
 try {
 
     // define geometry
-    int numElements = 3;
+    int numElements = 7;
     double length = 50;
+    double xWeakSpot = 25;
+    double lWeakSpot = 5;
 
     double area = 10;
-    double areaRed = area ;//* (1-0.10);
+    double alpha = 0.10;
+    double exponent = 4;
+
 
     // 1D structure
     NuTo::Structure myStructure(1);
@@ -40,20 +44,23 @@ try {
 
     // create sections
     int mySection    = myStructure.SectionCreate("Truss");
-    int mySectionRed = myStructure.SectionCreate("Truss");
-    myStructure.SectionSetArea             (mySection   , area);
-    myStructure.SectionSetArea             (mySectionRed, areaRed);
-    myStructure.SectionSetDOF              (mySection,    "displacements nonlocalEqStrain");
-    myStructure.SectionSetDOF              (mySectionRed, "displacements nonlocalEqStrain");
-    myStructure.SectionSetInputConstitutive(mySection,    "deformationGradient nonlocalEqStrain");
-    myStructure.SectionSetInputConstitutive(mySectionRed, "deformationGradient nonlocalEqStrain");
+    myStructure.SectionSetArea             (mySection, area);
+    myStructure.SectionSetDOF              (mySection, "displacements nonlocalEqStrain");
+    myStructure.SectionSetInputConstitutive(mySection, "deformationGradient nonlocalEqStrain");
+
+    // set function for area reduction
+    NuTo::SectionTruss* secTruss = myStructure.SectionGetSectionPtr(mySection)->AsSectionTruss();
+    double areaParameters[4];
+    areaParameters[0] = xWeakSpot;
+    areaParameters[1] = lWeakSpot;
+    areaParameters[2] = alpha;
+    areaParameters[3] = exponent;
+    secTruss->SetAreaParameters(areaParameters);
 
     // create nodes
     int numNodes= numElements * 2 + 1;
-
     double lengthElement=length / numElements;
 
-    // create nodes
     NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
     for(int node = 0; node < numNodes; node++)
     {
@@ -64,7 +71,8 @@ try {
             myStructure.NodeCreate(node, "displacements", nodeCoordinates, 0);
     }
 
-    myStructure.NodeBuildGlobalDofs();
+    int nodeLeft = 0;
+    int nodeRight = numNodes - 1;
 
     // create elements
 
@@ -76,16 +84,27 @@ try {
         nodeIds(2) = 2*iElement+2;
         myStructure.ElementCreate(iElement, "Truss1D3N", nodeIds,"ConstitutiveLawIpNonlocal","StaticData");
         myStructure.ElementSetIntegrationType(iElement,"1D2NGauss2Ip","StaticData");
-        if (iElement==numElements/2)
-            myStructure.ElementSetSection(iElement,mySectionRed);
-        else
-            myStructure.ElementSetSection(iElement,mySection);
+        myStructure.ElementSetSection(iElement,mySection);
         myStructure.ElementSetConstitutiveLaw(iElement,myNumberConstitutiveLaw);
     }
 
+    //     Constraints: set derivatives of nonlocal eq strain = 0
+    int constraintEqLeft = myStructure.ConstraintLinearEquationCreate(nodeLeft, "nonlocalEqStrain", 1., 0.);
+    myStructure.ConstraintLinearEquationAddTerm(constraintEqLeft, nodeLeft+2, "nonlocalEqStrain", -1);
+
+    int constraintEqRight = myStructure.ConstraintLinearEquationCreate(nodeRight, "nonlocalEqStrain", 1., 0.);
+    myStructure.ConstraintLinearEquationAddTerm(constraintEqRight, nodeRight-2, "nonlocalEqStrain", -1);
+
+    myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
-    myStructure.CheckCoefficientMatrix_0(1.e-6, true);
-    myStructure.ElementCheckCoefficientMatrix_0(1.e-6);
+
+    bool globalStiffnessCorrect = myStructure.CheckCoefficientMatrix_0(1.e-6, true);
+    bool elementStiffnessCorrect = myStructure.ElementCheckCoefficientMatrix_0(1.e-6);
+
+    if (not globalStiffnessCorrect)
+        throw NuTo::Exception("global stiffness matrix incorrect!");
+    if (not elementStiffnessCorrect)
+        throw NuTo::Exception("element stiffness matrices incorrect!");
 
 
 

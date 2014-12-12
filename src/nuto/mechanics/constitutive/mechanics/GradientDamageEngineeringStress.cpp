@@ -274,7 +274,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
             break;
             case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
             {
-                   throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
+                   throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate1D] tmp_static_data has to be updated without any other outputs, call it separately.");
             }
             break;
             case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:

@@ -2,11 +2,13 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
+#include <cmath>
 
 // constructor
 NuTo::SectionTruss::SectionTruss()
 {
     this->mArea = 0.0;
+    this->mAreaParameters = nullptr;
 }
 
 // set cross-section area
@@ -25,6 +27,34 @@ double NuTo::SectionTruss::GetArea() const
     return this->mArea;
 }
 
+//! @brief ... calculates a x-dependent area factor based on the mAreaParameters data
+//! @param rXCoordinate ... x coordinate
+//! @return ... x-dependent area factor
+double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
+{
+    if (mAreaParameters == nullptr)
+    {
+        throw NuTo::MechanicsException("[NuTo::SectionTruss::GetAreaFactor] Call NuTo::SectionTruss::SetAreaParameters first!") ;
+    }
+
+    double xWeakSpot = mAreaParameters[0];
+    double lWeakSpot = mAreaParameters[1];
+    double alpha     = mAreaParameters[2];
+    double exponent  = mAreaParameters[3];
+
+    double areaFactor = 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot) ,exponent);
+
+    return this->mArea*areaFactor;
+}
+
+
+//! @brief ... set the area parameters
+//! @param rAreaParameter ... area parameters [0]-xWeakSpot [1]-lWeakSpot [2]-alpha [3]-exponent
+void NuTo::SectionTruss::SetAreaParameters(double* rAreaParameters)
+{
+    mAreaParameters = rAreaParameters;
+}
+
 // get section type
 NuTo::Section::eSectionType NuTo::SectionTruss::GetType() const
 {
@@ -37,4 +67,15 @@ void NuTo::SectionTruss::Info(unsigned short rVerboseLevel) const
     this->SectionBase::Info(rVerboseLevel);
     std::cout << "    section type: 1D" << std::endl;
     std::cout << "    cross-section area: " << this->mArea << std::endl;
+}
+
+//! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
+NuTo::SectionTruss* NuTo::SectionTruss::AsSectionTruss()
+{
+    return this;
+}
+//! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
+const NuTo::SectionTruss* NuTo::SectionTruss::AsSectionTruss() const
+{
+    return this;
 }
