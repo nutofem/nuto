@@ -11,6 +11,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
 
 
 //! @brief ... constructor
@@ -290,6 +291,16 @@ void NuTo::SectionBase::SetThickness(double rThickness)
 void NuTo::SectionBase::Info(unsigned short rVerboseLevel) const
 {
     std::cout << "    section pointer: " << this << std::endl;
+}
+
+NuTo::SectionTruss* NuTo::SectionBase::AsSectionTruss()
+{
+    throw NuTo::MechanicsException("[NuTo::SectionBase::AsSectionTruss] Section is not of type SectionTruss.");
+}
+
+const NuTo::SectionTruss* NuTo::SectionBase::AsSectionTruss() const
+{
+    throw NuTo::MechanicsException("[NuTo::SectionBase::AsSectionTruss] Section is not of type SectionTruss.");
 }
 
 #ifdef ENABLE_SERIALIZATION

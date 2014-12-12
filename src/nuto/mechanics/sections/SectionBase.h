@@ -14,6 +14,7 @@
 
 namespace NuTo
 {
+class SectionTruss;
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
 //! @brief ... standard abstract base class for sections
@@ -186,6 +187,12 @@ public:
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information
     virtual void Info(unsigned short rVerboseLevel) const;
+
+    //! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
+    virtual SectionTruss* AsSectionTruss();
+
+    //! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
+    virtual const SectionTruss* AsSectionTruss() const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
