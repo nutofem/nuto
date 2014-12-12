@@ -564,7 +564,24 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			if (error!=Error::SUCCESSFUL)
 				return error;
 
-			double factor (detJ*mSection->GetArea()*
+			double area = detJ*mSection->GetArea();
+			double xIP_ptr[3];
+			GetGlobalIntegrationPointCoordinates(theIP, xIP_ptr);
+			double xIP = xIP_ptr[0];
+
+
+		    double xWeakSpot = 25;
+		    double lWeakSpot = 5;
+		    double alpha = 0.10;
+
+		    // reduce area
+	        if (xIP < xWeakSpot+lWeakSpot and xIP > xWeakSpot-lWeakSpot)
+	            area *= (1 - alpha* std::pow(1. - std::abs((xIP-xWeakSpot)/lWeakSpot),4));
+
+	        std::cout << xIP << " : " << area << std::endl;
+
+
+			double factor (area*
 					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
 
