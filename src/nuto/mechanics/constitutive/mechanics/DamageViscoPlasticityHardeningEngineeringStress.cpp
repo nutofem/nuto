@@ -55,6 +55,7 @@ NuTo::DamageViscoPlasticityHardeningEngineeringStress::DamageViscoPlasticityHard
     mHardening = 0.;
     mHardeningExponent = 0.;
     mDamage = true;
+    mFatigueExtrapolation = false;
 	SetParametersValid();
 }
 
@@ -82,7 +83,8 @@ void NuTo::DamageViscoPlasticityHardeningEngineeringStress::serialize(Archive & 
       & BOOST_SERIALIZATION_NVP(mViscoplasticYieldSurfaceOffset)
       & BOOST_SERIALIZATION_NVP(mFractureEnergy)
       & BOOST_SERIALIZATION_NVP(mHardening)
-      & BOOST_SERIALIZATION_NVP(mHardeningExponent);
+      & BOOST_SERIALIZATION_NVP(mHardeningExponent)
+      & BOOST_SERIALIZATION_NVP(mFatigueExtrapolation);
 #ifdef DEBUG_SERIALIZATION
    std::cout << "finish serialize DamageViscoPlasticityHardeningEngineeringStress" << std::endl;
 #endif
@@ -1165,6 +1167,19 @@ void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetHardeningExponent
     this->SetParametersValid();
 }
 
+//! @brief ... get fatigue extrapolation
+//! @param FatigueExtrapolation ...
+bool NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetFatigueExtrapolation() const
+{
+	return mFatigueExtrapolation;
+}
+
+//! @brief ... set fatigue extrapolation
+//! @param FatigueExtrapolation ...
+void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetFatigueExtrapolation(bool rFatigueExtrapolation)
+{
+	this->mFatigueExtrapolation = rFatigueExtrapolation;
+}
 ///////////////////////////////////////////////////////////////////////////
 
 //! @brief ... get type of constitutive relationship
@@ -1364,7 +1379,7 @@ void NuTo::DamageViscoPlasticityHardeningEngineeringStress::Info(unsigned short 
     rLogger << "    fracture energy 	 		  : " << this->mFractureEnergy << "\n";
     rLogger << "    hardening value 	 		  : " << this->mHardening << "\n";
     rLogger << "    hardening exponent 	 		  : " << this->mHardeningExponent << "\n";
-
+    rLogger << "    fatigue extrapolation 		  : " << this->mFatigueExtrapolation << "\n";
 }
 
 // check parameters

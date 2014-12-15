@@ -8,6 +8,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/NewmarkBase.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include <boost/math/constants/constants.hpp>
 #include <math.h>
 
@@ -16,7 +17,7 @@ namespace NuTo
 //! @author Vitaliy M. Kindrachuk
 //! @date December 2014
 //! @brief ... standard class for implicit time integration including cycle jump based on a Fourier formulation
-class JumpDirect : public NewmarkBase
+class JumpDirect : public NewmarkDirect
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -59,12 +60,17 @@ public:
     //! @param if mHarmonicExtrapolation == false then performs a Newmark, otherwise performs Newmark till 3 cycles and then cycle jump
     void SetHarmonicExtrapolation(bool rHarmonicExtrapolation)
     {
-    	mHarmonicExtrapolation = rHarmonicExtrapolation;
+    	if (mHarmonicExcitation == true) {
+    		mHarmonicExtrapolation = rHarmonicExtrapolation;
+		} else {
+			throw MechanicsException("[NuTo::JumpDirect::SetHarmonicConstraint] SetHarmonicConstraint at first!");
+		}
+
     }
 
     //! @brief if mHarmonicExtrapolation == false then performs a Newmark, otherwise performs Newmark till 3 cycles and then cycle jump
     //! @param if mHarmonicExtrapolation == false then performs a Newmark, otherwise performs Newmark till 3 cycles and then cycle jump
-    bool GetHarmonicEtrapolation()const
+    bool GetHarmonicExtrapolation()const
     {
     	return mHarmonicExtrapolation;
     }
@@ -106,10 +112,10 @@ public:
 
     //! @brief apply the new rhs of the constraints as a function of the current time delta
     //! @brief the time dependent constraint is followed by a sine excitation
-    double CalculateTimeDependentHarmonicConstraintFactor(double curTime)
+    double CalculateTimeDependentConstraintFactor(double curTime)
     {
     	if (mTimeDependentConstraintFactor.GetNumRows()==0)
-    		throw MechanicsException("[NuTo::JumpDirect::CalculateTimeDependentHarmonicConstraintFactor] the harmonic excitation can be only applied to the time dependent constraint.");
+    		throw MechanicsException("[NuTo::JumpDirect::CalculateTimeDependentConstraintFactor] the harmonic excitation can be only applied to the time dependent constraint.");
 
     	// calculate the end time of the time dependent constraint. Since this time the constraint is harmonic
     	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
@@ -117,12 +123,12 @@ public:
 
     	if (curTime <= timeDependentConstraintTime) {
         	// calculate timeDependentConstraintFactor during the time dependent constraint
-    		return this->CalculateTimeDependentConstraintFactor(curTime);
+    		return NewmarkDirect::CalculateTimeDependentConstraintFactor(curTime);
 		} else {
 			// time dependent constraint is continued by the harmonic excitation
 
 			// calculate constraint at the end time of the time dependent constraint
-			timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(timeDependentConstraintTime);
+			timeDependentConstraintFactor = NewmarkDirect::CalculateTimeDependentConstraintFactor(timeDependentConstraintTime);
 
 			if (mHarmonicConstraintFactor.GetNumRows()==0) {
 				return timeDependentConstraintFactor;

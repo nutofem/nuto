@@ -1382,6 +1382,14 @@ public:
     //! @return ... viscosity exponent
     double ConstitutiveLawGetViscosityExponent(int rIdent) const;
 
+    //! @brief ... set fatigue extrapolation flag
+    //! @param ... fatigue extrapolation flag
+    void ConstitutiveLawSetFatigueExtrapolation(int rIdent, bool rFatigueExtrapolation);
+
+    //! @brief ... get fatigue extrapolation flag
+    //! @param ... fatigue extrapolation flag
+    bool ConstitutiveLawGetFatigueExtrapolation(int rIdent) const;
+
     //! @brief ... set viscosity exponent
     //! @param ... viscosity exponent
     void ConstitutiveLawSetViscosityExponent(int rIdent, double rViscosityExponent);

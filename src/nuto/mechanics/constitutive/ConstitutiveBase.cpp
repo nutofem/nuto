@@ -434,6 +434,19 @@ void NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset(double rViscoplas
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetViscoplasticYieldSurfaceOffset] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get fatigue extrapolation flag
+//! @param ... fatigue extrapolation flag
+bool NuTo::ConstitutiveBase::GetFatigueExtrapolation() const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFatigueExtrapolation] The constitutive relationship does not have this option.");
+}
+
+//! @brief ... set fatigue extrapolation flag
+//! @param ... fatigue extrapolation flag
+void NuTo::ConstitutiveBase::SetFatigueExtrapolation(bool rFatigueExtrapolation)
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFatigueExtrapolation] The constitutive relationship does not have this option.");
+}
 //! @brief ... get mass exchange rate between water phase and vapor phase
 //! @return ... mass exchange rate
 double NuTo::ConstitutiveBase::GetMassExchangeRate() const

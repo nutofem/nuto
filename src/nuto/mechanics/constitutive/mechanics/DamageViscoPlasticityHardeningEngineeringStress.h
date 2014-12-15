@@ -210,6 +210,14 @@ public:
     //! @param rHexponent ...  hardening exponent
     void SetHardeningExponent(double rHardeningExponent) override;
 
+    //! @brief ... get fatigue extrapolation
+    //! @param FatigueExtrapolation ...
+    bool GetFatigueExtrapolation() const override;
+
+    //! @brief ... set fatigue extrapolation
+    //! @param FatigueExtrapolation ...
+    void SetFatigueExtrapolation(bool rFatigueExtrapolation) override;
+
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship
@@ -290,6 +298,9 @@ protected:
 
     //! @brief ... either use a pure plasticity model (false) or add softening using the damage model (true)
     bool mDamage;
+
+    //! @brief ... either use the standard set of state variables (false) or use the set extended for fatigue extrapolation (true)
+    bool mFatigueExtrapolation;
 
     //! @brief ... check if density is positive
     //! @param rRho ... density

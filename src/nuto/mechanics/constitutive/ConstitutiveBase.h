@@ -300,6 +300,14 @@ public:
     //! @param ... viscoplastic yield surface offset
     virtual void SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset);
 
+    //! @brief ... get fatigue extrapolation flag
+    //! @param ... fatigue extrapolation flag
+    virtual bool GetFatigueExtrapolation() const;
+
+    //! @brief ... set fatigue extrapolation flag
+    //! @param ... fatigue extrapolation flag
+    virtual void SetFatigueExtrapolation(bool rFatigueExtrapolation);
+
     //! @brief ... get mass exchange rate between water phase and vapor phase
     //! @return ... mass exchange rate
     virtual double GetMassExchangeRate() const;

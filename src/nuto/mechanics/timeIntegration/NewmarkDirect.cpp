@@ -290,16 +290,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             if (timeStep<mMinTimeStep)
                 throw MechanicsException("[NuTo::NewmarkDirect::Solve] time step is smaller than minimum - no convergence is obtained.");
 
-
-            //if the time difference towards the end is very small, increase the time step, if it exceeds the total time, decrease the time step
-            if (mAutomaticTimeStepping)
-            {
-                if (rTimeDelta-curTime<0.5*timeStep)
-                {
-                    timeStep += rTimeDelta-curTime;
-                    curTime = rTimeDelta;
-                }
-            }
+            //check whether harmonic excitation check whether curTime is too close to the time data
+            this->SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);
 
             // set new structure time at the end of the time increment
             mStructure->SetTime(curTime);
@@ -327,7 +319,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             {
                 if (mTimeDependentConstraint!=-1)
                 {
-					timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+					timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime - 0.5*timeStep);
 					mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
                 }
                 mStructure->ConstraintGetRHSAfterGaussElimination(bRHShalf);
@@ -351,7 +343,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             if (this->IsDynamic())
             {
                 //calculate approximations to the time derivates of the rhs of the constraint matrix
-                bRHSdot = (bRHSprev*5.-bRHShalf*8.+bRHSend*3.)*(-1./(timeStep));
+                bRHSdot =  (bRHSend - bRHSprev)*(1./(timeStep));
                 bRHSddot = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep));
 
                 //calculate new accelerations and velocities of independent dofs

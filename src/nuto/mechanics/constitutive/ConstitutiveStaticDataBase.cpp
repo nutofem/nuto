@@ -140,6 +140,19 @@ const NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D* NuTo::ConstitutiveSta
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3D] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3D.");
 }
 
+//!@ brief reinterpret as damage viscoplasticity static data with damage
+NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* NuTo::ConstitutiveStaticDataBase::AsDamageViscoPlasticity3DFatigue()
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
+}
+
+//!@ brief reinterpret as damage viscoplasticity static data with damage
+const NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* NuTo::ConstitutiveStaticDataBase::AsDamageViscoPlasticity3DFatigue()const
+{
+	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
+}
+
+
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");

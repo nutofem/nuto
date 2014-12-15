@@ -30,6 +30,7 @@ class ConstitutiveStaticDataMisesPlasticity3D;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ConstitutiveStaticDataStrainGradientDamagePlasticity1D;
 class ConstitutiveStaticDataDamageViscoPlasticity3D;
+class ConstitutiveStaticDataDamageViscoPlasticity3DFatigue;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
@@ -112,6 +113,12 @@ public:
 
     //!@ brief reinterpret as damage viscoplasticity static data
     virtual const ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D()const;
+
+    //!@ brief reinterpret as damage viscoplasticity static data with fatigue
+    virtual ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* AsDamageViscoPlasticity3DFatigue();
+
+    //!@ brief reinterpret as damage viscoplasticity static data
+    virtual const ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* AsDamageViscoPlasticity3DFatigue()const;
 
 #ifdef ENABLE_VISUALIZE
     //Visualize for all integration points the fine scale structure

@@ -961,6 +961,46 @@ double NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int
     return ViscoplasticYieldSurfaceOffset;
 }
 
+// set fatigue flag
+void NuTo::StructureBase::ConstitutiveLawSetFatigueExtrapolation(int rIdent, bool rFatigueExtrapolation)
+{
+	try
+	{
+		ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		if (ConstitutiveLawPtr->GetType() == NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS) {
+			ConstitutiveLawPtr->SetFatigueExtrapolation(rFatigueExtrapolation);
+		} else {
+			std::cout << "[NuTo::StructureBase::ConstitutiveLawSetFatigueExtrapolation] the constitutive law " << ConstitutiveLawPtr->GetType() << " is currently not implemented for fatigue extrapolation." << std::endl;
+			throw MechanicsException(" ");
+		}
+	}
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetFatigueExtrapolation] error setting fatigue extrapolation flag.");
+        throw e;
+    }
+}
+// get fatigue flag
+bool NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation(int rIdent) const
+{
+	bool FatigueExtrapolation;
+	try
+	{
+		const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+		if (ConstitutiveLawPtr->GetType() == NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS) {
+			FatigueExtrapolation = ConstitutiveLawPtr->GetFatigueExtrapolation();
+		} else {
+			std::cout << "[NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation] the constitutive law " << ConstitutiveLawPtr->GetType() << " is currently not implemented for fatigue extrapolation." << std::endl;
+			throw MechanicsException(" ");
+		}
+	}
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation] error getting fatigue extrapolation flag.");
+        throw e;
+    }
+    return FatigueExtrapolation;
+}
 //! @brief ... get mass exchange rate between vapor phase and water phase
 //! @param rIdent ... constitutive law identifier
 double NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate(int rIdent)
