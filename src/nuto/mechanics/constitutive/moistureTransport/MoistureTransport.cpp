@@ -8,6 +8,8 @@
 
 #include "nuto/mechanics/constitutive/moistureTransport/MoistureTransport.h"
 
+#include <Math.h>
+
 NuTo::MoistureTransport::MoistureTransport()
     :   ConstitutiveBase()
 {

@@ -143,7 +143,7 @@ public:
 
 protected:
 
-    FullVector<double,3> mActualSorptionCoeff   {{1.0, 1.0, 1.0}};
+    FullVector<double,3> mActualSorptionCoeff   {{0.20, 0.0, 0.0}};
 
     //! @brief ... Vapor phase diffusion exponent \f$ \alpha_V \f$
     double mAlphaV  = 1.0;

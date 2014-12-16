@@ -161,8 +161,8 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
         std::vector<double> derivativeShapeFunctionsNonlocalEqStrainNatural(GetLocalDimension()*GetNumShapeFunctionsNonlocalEqStrain());
         std::vector<double> derivativeShapeFunctionsNonlocalEqStrainLocal(GetLocalDimension()*GetNumShapeFunctionsNonlocalEqStrain());
 
-        std::vector<double> derivativeShapeFunctionsMoistureTransport(GetLocalDimension()*GetNumShapeFunctionsMoistureTransport());
-
+        std::vector<double> derivativeShapeFunctionsMoistureTransportNatural(GetLocalDimension()*GetNumShapeFunctionsMoistureTransport());
+        std::vector<double> derivativeShapeFunctionsMoistureTransportLocal(GetLocalDimension()*GetNumShapeFunctionsMoistureTransport());
 
 
 		//allocate deformation gradient
@@ -266,13 +266,13 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
         {
             constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN] = &nonlocalEqStrain;
         }
-        if (numRelativeHumidityDofs>0)
-        {
-            constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY] = &relativeHumidity;
-        }
         if (numWaterPhaseFractionDofs>0)
         {
             constitutiveInputList[NuTo::Constitutive::Input::WATER_PHASE_FRACTION] = &waterPhaseFraction;
+        }
+        if (numRelativeHumidityDofs>0)
+        {
+            constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY] = &relativeHumidity;
         }
         // sum of all dofs
         int numDofs = numDispDofs
@@ -555,7 +555,11 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                 CalculateShapeFunctionsMoistureTransport(localIPCoord,shapeFunctionsMoistureTransport);
                 CalculateRelativeHumidity(shapeFunctionsMoistureTransport,nodeRelativeHumidity,relativeHumidity);
                 CalculateWaterPhaseFraction(shapeFunctionsMoistureTransport,nodeWaterPhaseFraction,waterPhaseFraction);
-                CalculateDerivativeShapeFunctionsMoistureTransport(localIPCoord,derivativeShapeFunctionsMoistureTransport);
+                CalculateDerivativeShapeFunctionsMoistureTransport(localIPCoord,derivativeShapeFunctionsMoistureTransportNatural);
+                for (unsigned int count=0; count<derivativeShapeFunctionsMoistureTransportNatural.size(); count++)
+                {
+                    derivativeShapeFunctionsMoistureTransportLocal[count] = derivativeShapeFunctionsMoistureTransportNatural[count]/detJ;
+                }
 
             }
 
@@ -716,7 +720,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                             // | X - |      X = K_w + R_w
                             // | - - |
 
-                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransport,tangentVaporPhaseDiffusionCoefficient,factor,0,0,it->second->GetFullMatrixDouble());
+                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransportLocal,tangentWaterPhaseDiffusionCoefficient,factor,0,0,it->second->GetFullMatrixDouble());
                             AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRate,factor,0,0,it->second->GetFullMatrixDouble());
 
                             // | - - |      X = -R_w
@@ -730,10 +734,12 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
                             // | - - |      X = K_phi + R_w_eq
                             // | - X |
-                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransport,tangentWaterPhaseDiffusionCoefficient,factor,2,2,it->second->GetFullMatrixDouble());
+                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransportLocal,tangentVaporPhaseDiffusionCoefficient,factor,2,2,it->second->GetFullMatrixDouble());
                             AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve,factor,2,2,it->second->GetFullMatrixDouble());
 
                             //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
+                            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
+                            //int a=0;
                         }
                         BlowLocalMatrixToGlobal(it->second->GetFullMatrixDouble());
 					}
@@ -784,6 +790,8 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                         AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesVaporPhaseVolumeFraction,factor,2,2,it->second->GetFullMatrixDouble());
 
                         //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
+                        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
+                        //int a=0;
                     }
 					BlowLocalMatrixToGlobal(it->second->GetFullMatrixDouble());
 				}
