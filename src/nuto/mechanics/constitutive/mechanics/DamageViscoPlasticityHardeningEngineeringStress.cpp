@@ -18,6 +18,7 @@
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.h"
 #include "nuto/mechanics/constitutive/mechanics/Damage.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
@@ -641,6 +642,11 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     	    *(rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()) = newStaticData;
     	    rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mPrevStrain = MechanicEngineeringStrain;
     	    rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mPrevSigma = engineeringStress;
+    	    std::cout<< "AsDVP3D = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D() <<
+    	    		", damage value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mOmegaCompr <<
+    	    		"AsDVP3DFatigue = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue() <<
+    	    		", damage value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mOmegaCompr <<
+    	    		", damageFatigue value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mOmegaComprFatigue << std::endl;
     	}
 		break;
     	default:
@@ -672,7 +678,11 @@ NuTo::ConstitutiveStaticDataBase* NuTo::DamageViscoPlasticityHardeningEngineerin
 //! @return ... see brief explanation
 NuTo::ConstitutiveStaticDataBase* NuTo::DamageViscoPlasticityHardeningEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const
 {
-	return new ConstitutiveStaticDataDamageViscoPlasticity3D();
+	if (this->GetFatigueExtrapolation()) {
+		return new ConstitutiveStaticDataDamageViscoPlasticity3DFatigue();
+	} else {
+		return new ConstitutiveStaticDataDamageViscoPlasticity3D();
+	}
 }
 
 //! @brief ... performs the return mapping procedure in 3D

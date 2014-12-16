@@ -26,7 +26,6 @@ try
     	if (argc!=2)
     	{
     	    std::cout << "Error executing NewmarkPlane2D4N, expecting one argument, got "<< argc-1 << std::endl;
-    		exit(-1);
     	}
     	resultDir = argv[1];
     }
@@ -303,7 +302,7 @@ try
     result_right.Info(15,12,true);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_rightRef(2,2);
-    result_rightRef(1,0) = 3.016324269061e+02;
+    result_rightRef(1,0) = 3.016224604217e+02;
 
     if ((result_rightRef-result_right).cwiseAbs().maxCoeff()>1e-4)
     {
