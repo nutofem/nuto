@@ -54,6 +54,11 @@ NuTo::IpData::eIpStaticDataType NuTo::ElementOutputBase::GetIpDataType()
 	throw MechanicsException("[ElementOutputBase::GetIpDataType] ipdata is not stored.");
 }
 
+NuTo::FatigueData::eFatigueDataType NuTo::ElementOutputBase::GetFatigueDataType()
+{
+	throw MechanicsException("[ElementOutputBase::GetFatigueDataType] fatigue data is not stored.");
+}
+
 void NuTo::ElementOutputBase::SetSymmetry(bool rSymmetric)
 {
 	throw MechanicsException("[ElementOutputBase::SetSymmetry] symmetry is not stored.");
