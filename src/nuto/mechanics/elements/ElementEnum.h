@@ -44,9 +44,9 @@ enum eOutput
 	IP_DATA,                         //!< this is primarily for plotting, give the 3D state  so for plane stress there is a z-component in the strain
 	GLOBAL_ROW_DOF,                  //!< calculates the row dofs of the local element matrices
 	GLOBAL_COLUMN_DOF,               //!< calculates the column dofs of the local element matrices
-	FATIGUE_SAVA_STATIC_DATA,		 //!< for fatigue applications: saving static data in case if the cycle jump should be repeated
+	FATIGUE_SAVE_STATIC_DATA,		 //!< for fatigue applications: saving static data in case if the cycle jump should be repeated
 	FATIGUE_RESTORE_STATIC_DATA,     //!< cycle jump should be repeated, getting the previous state
-	EXTRAPOLATE_STATIC_DATA    		 //!< extrapolate static data to make a jump
+	FATIGUE_EXTRAPOLATE_STATIC_DATA  //!< extrapolate static data to make a jump
 };
 
 }

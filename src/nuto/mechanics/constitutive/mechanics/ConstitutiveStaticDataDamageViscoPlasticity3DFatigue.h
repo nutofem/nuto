@@ -99,6 +99,18 @@ public:
     	this->mEpsilonVpFatigue = EpsilonVp;
     }
 
+    //!@brief save static data to their relevant fatigue counterparts
+    void FatigueSaveStaticData()
+    {
+    	this->SetKappaInelasticFatigue(this->mKappaInelastic);
+    	this->SetOmegaComprFatigue(this->mOmegaCompr);
+    	this->SetPrevHardeningFatigue(this->mPrevHardening);
+    	this->mEpsilonPFatigue = this->mEpsilonP;
+    	this->mEpsilonVpFatigue = this->mEpsilonVp;
+    	this->mPrevStrainFatigue = this->mPrevStrain;
+    	this->mPrevStressFatigue = this->mPrevSigma;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

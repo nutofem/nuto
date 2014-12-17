@@ -121,6 +121,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     		std::cout << "Damage = " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
     	}
 
+    	mStructure->ElementFatigueSaveStaticData();
     }
 //    try
 //    {

@@ -1842,6 +1842,81 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
     return errorGlobal;
 }
 
+//! @brief saves static data of a all elements
+NuTo::Error::eError NuTo::StructureBase::ElementFatigueSaveStaticData()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+#ifdef _OPENMP
+    double wstart = omp_get_wtime ( );
+#endif
+    start=clock();
+#endif
+
+	std::vector<ElementBase*> elementVector;
+	GetElementsTotal(elementVector);
+	Error::eError errorGlobal (Error::SUCCESSFUL);
+    int exception(0);
+    std::string exceptionStringTotal;
+
+	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+	boost::assign::ptr_map_insert<ElementOutputDummy>( elementOutput )( Element::FATIGUE_SAVE_STATIC_DATA );
+
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+    #pragma omp parallel default(shared)
+    #pragma omp for schedule(dynamic,1) nowait
+#endif //_OPENMP
+    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+	{
+		try
+		{
+            Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
+            if (error!=Error::SUCCESSFUL)
+            {
+            	if (errorGlobal==Error::SUCCESSFUL)
+            		errorGlobal = error;
+            	else if (errorGlobal!=error)
+            		throw MechanicsException("[NuTo::StructureBase::ElementFatigueSaveStaticData] elements have returned multiple different error codes, can't handle that.");
+            }
+		}
+		catch(NuTo::Exception& e)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			std::string exceptionStringLocal(e.ErrorMessage()
+					+"[NuTo::StructureBase::ElementFatigueSaveStaticData] Error saving static data for element " + ss.str() + ".\n");
+			exception+=1;
+			exceptionStringTotal+=exceptionStringLocal;
+		}
+		catch(...)
+		{
+			std::stringstream ss;
+			ss << ElementGetId(elementVector[countElement]);
+			std::string exceptionStringLocal("[NuTo::StructureBase::ElementFatigueSaveStaticData] Error saving static data for element " + ss.str() + ".\n");
+			exception+=1;
+			exceptionStringTotal+=exceptionStringLocal;
+		}
+	}
+    if(exception>0)
+    {
+	    throw MechanicsException(exceptionStringTotal);
+    }
+#ifdef SHOW_TIME
+    end=clock();
+#ifdef _OPENMP
+    double wend = omp_get_wtime ( );
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementFatigueSaveStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+#else
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::ElementFatigueSaveStaticData] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif
+    return errorGlobal;
+}
+
 //! @brief calculates the average stress
 //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
 //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)

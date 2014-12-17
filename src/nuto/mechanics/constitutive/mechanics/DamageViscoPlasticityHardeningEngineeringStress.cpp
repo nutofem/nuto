@@ -642,11 +642,16 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     	    *(rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()) = newStaticData;
     	    rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mPrevStrain = MechanicEngineeringStrain;
     	    rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mPrevSigma = engineeringStress;
-    	    std::cout<< "AsDVP3D = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D() <<
-    	    		", damage value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mOmegaCompr <<
-    	    		"AsDVP3DFatigue = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue() <<
-    	    		", damage value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mOmegaCompr <<
-    	    		", damageFatigue value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mOmegaComprFatigue << std::endl;
+    	}
+		break;
+    	case NuTo::Constitutive::Output::FATIGUE_SAVE_STATIC_DATA:
+    	{
+    		rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->FatigueSaveStaticData();
+//    		std::cout<< "AsDVP3D = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D() <<
+//    		   		", damage value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mPrevStrain <<
+//    		   		"AsDVP3DFatigue = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue() <<
+//    		   		", damage value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mPrevStrain <<
+//    		  		", damageFatigue value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mPrevStrainFatigue << std::endl;
     	}
 		break;
     	default:
