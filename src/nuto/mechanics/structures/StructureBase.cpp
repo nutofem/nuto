@@ -79,6 +79,7 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentHeatFlux.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
+#include "nuto/visualize/VisualizeComponentNonlocalEqStrain.h"
 #include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentRotation.h"
@@ -313,7 +314,7 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -328,7 +329,7 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -343,7 +344,7 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -358,7 +359,7 @@ void NuTo::StructureBase::AddVisualizationComponentSection()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
@@ -372,7 +373,7 @@ void NuTo::StructureBase::AddVisualizationComponentConstitutive()
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentConstitutive] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -406,6 +407,21 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
     end=clock();
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalEqStrain());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 }
 
@@ -695,6 +711,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
         case NuTo::VisualizeBase::SECTION:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
@@ -774,6 +793,9 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
             break;
         case NuTo::VisualizeBase::TEMPERATURE:
             rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
             break;
         default:
         	break;

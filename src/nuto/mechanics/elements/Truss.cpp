@@ -580,6 +580,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 	            GetGlobalIntegrationPointCoordinates(theIP, coordsIP);
 
 	            areaFactor = mSection->AsSectionTruss()->GetAreaFactor(coordsIP[0]);
+//	            std::cout << coordsIP[0] << ": " << areaFactor << std::endl;
 			}
 
 			double factor = detJ * mSection->GetArea() * areaFactor *

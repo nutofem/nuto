@@ -42,9 +42,13 @@ double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
     double alpha     = mAreaParameters[2];
     double exponent  = mAreaParameters[3];
 
-    double areaFactor = 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot) ,exponent);
+    double xStartWeakSpot = xWeakSpot - lWeakSpot / 2;
+    double xEndWeakSpot   = xWeakSpot + lWeakSpot / 2;
 
-    return this->mArea*areaFactor;
+    if (xStartWeakSpot < rXCoordinate and rXCoordinate < xEndWeakSpot)
+        return 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot) ,exponent);
+    else
+        return 1.;
 }
 
 

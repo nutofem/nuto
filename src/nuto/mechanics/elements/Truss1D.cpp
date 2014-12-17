@@ -51,8 +51,8 @@ void NuTo::Truss1D::CalculateLocalDisplacements(int rTimeDerivative, std::vector
 void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const
 {
     // calculate shape functions
-    std::vector<double> ShapeFunctions(this->GetNumNodesGeometry());
-    this->CalculateShapeFunctionsGeometry(rLocalCoordinates, ShapeFunctions);
+    std::vector<double> shapeFunctions(this->GetNumNodesGeometry());
+    this->CalculateShapeFunctionsGeometry(rLocalCoordinates, shapeFunctions);
 
     // start interpolation
     rGlobalCoordinates[0] = 0.0;
@@ -61,11 +61,11 @@ void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, doubl
     for (int theNode = 0; theNode < this->GetNumNodesGeometry(); theNode++)
     {
         // get node coordinate
-        double NodeCoordinate;
-        GetNode(theNode)->GetCoordinates1D(&NodeCoordinate);
+        double nodeCoordinate;
+        GetNode(theNode)->GetCoordinates1D(&nodeCoordinate);
 
         // add node contribution
-        rGlobalCoordinates[0] += ShapeFunctions[theNode] *  NodeCoordinate;
+        rGlobalCoordinates[0] += shapeFunctions[theNode] *  nodeCoordinate;
     }
 }
 
@@ -73,8 +73,8 @@ void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, doubl
 void NuTo::Truss1D::InterpolateDisplacementsFrom1D(int rTimeDerivatrive, double rLocalCoordinates, double rGlobalDisplacements[3]) const
 {
     // calculate shape functions
-    std::vector<double> ShapeFunctions(this->GetNumNodesField());
-    this->CalculateShapeFunctionsField(rLocalCoordinates, ShapeFunctions);
+    std::vector<double> shapeFunctions(this->GetNumNodesField());
+    this->CalculateShapeFunctionsField(rLocalCoordinates, shapeFunctions);
 
     // start interpolation
     rGlobalDisplacements[0] = 0.0;
@@ -83,11 +83,33 @@ void NuTo::Truss1D::InterpolateDisplacementsFrom1D(int rTimeDerivatrive, double 
     for (int theNode = 0; theNode < this->GetNumNodesField(); theNode++)
     {
         // get node displacements
-        double NodeDisplacement;
-       	GetNodeField(theNode)->GetDisplacements1D(rTimeDerivatrive,&NodeDisplacement);
+        double nodeDisplacement;
+       	GetNodeField(theNode)->GetDisplacements1D(rTimeDerivatrive,&nodeDisplacement);
 
         // add node contribution
-        rGlobalDisplacements[0] += ShapeFunctions[theNode] *  NodeDisplacement;
+        rGlobalDisplacements[0] += shapeFunctions[theNode] *  nodeDisplacement;
+    }
+}
+
+//! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... one-dimensional local point coordinates
+//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+void NuTo::Truss1D::InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const
+{
+    int numNonlocalEqStrains = this->GetNumShapeFunctionsNonlocalEqStrain();
+
+    // calculate shape functions
+    std::vector<double> shapeFunctions(numNonlocalEqStrains);
+    this->CalculateShapeFunctionsNonlocalEqStrain(rLocalCoordinates, shapeFunctions);
+
+    rNonlocalEqStrain = 0.;
+    for (int iNode = 0; iNode < numNonlocalEqStrains; ++iNode)
+    {
+        // get node nonlocal eq strain
+        double nodeNonlocalEqStrain = GetNodeNonlocalEqStrain(iNode)->GetNonlocalEqStrain();
+
+        // interpolation
+        rNonlocalEqStrain += shapeFunctions[iNode] * nodeNonlocalEqStrain;
     }
 }
 

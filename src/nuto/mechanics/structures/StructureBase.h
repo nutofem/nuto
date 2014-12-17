@@ -147,6 +147,9 @@ public:
     //! @brief ... Add visualization of heat flux to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentHeatFlux();
 
+    //! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentNonlocalEqStrain();
+
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 

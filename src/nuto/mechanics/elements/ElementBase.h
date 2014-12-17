@@ -283,18 +283,33 @@ public:
 
     //! @brief ... interpolate three-dimensional global temperature from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rGlobalDisplacements ... three-dimension global point displacements
+    //! @param rTemperatures ... interpolated temperature
     virtual void InterpolateTemperatureFrom1D(double rLocalCoordinates, double& rTemperature) const;
 
     //! @brief ... interpolate three-dimensional global temperature from two-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... two-dimensional local point coordinates
-    //! @param rGlobalDisplacements ... three-dimension global point displacements
+    //! @param rTemperatures ... interpolated temperature
     virtual void InterpolateTemperatureFrom2D(double rLocalCoordinates[2], double& rTemperature) const;
 
     //! @brief ... interpolate three-dimensional global temperature from three-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... three-dimensional local point coordinates
-    //! @param rGlobalDisplacements ... three-dimension global point displacements
+    //! @param rTemperatures ... interpolated temperature
     virtual void InterpolateTemperatureFrom3D(double rLocalCoordinates[3], double& rTemperature) const;
+
+    //! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... one-dimensional local point coordinates
+    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+    virtual void InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const;
+
+    //! @brief ... interpolate three-dimensional global nonlocal eq strain from two-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... two-dimensional local point coordinates
+    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+    virtual void InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinates[2], double& rNonlocalEqStrain) const;
+
+    //! @brief ... interpolate three-dimensional global nonlocal eq strain from three-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... three-dimensional local point coordinates
+    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+    virtual void InterpolateNonlocalEqStrainFrom3D(double rLocalCoordinates[3], double& rNonlocalEqStrain) const;
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip

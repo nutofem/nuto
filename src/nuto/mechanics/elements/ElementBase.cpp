@@ -216,6 +216,30 @@ void NuTo::ElementBase::InterpolateTemperatureFrom3D(double rLocalCoordinates[3]
     throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom3D] 3D temperature interpolation routine not implemented.");
 }
 
+//! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... one-dimensional local point coordinates
+//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom1D] 1D nonlocal eq strain interpolation routine not implemented.");
+}
+
+//! @brief ... interpolate three-dimensional global nonlocal eq strain from two-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... two-dimensional local point coordinates
+//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinates[2], double& rNonlocalEqStrain) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom2D] 2D nonlocal eq strain interpolation routine not implemented.");
+}
+
+//! @brief ... interpolate three-dimensional global nonlocal eq strain from three-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... three-dimensional local point coordinates
+//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom3D(double rLocalCoordinates[3], double& rNonlocalEqStrain) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom3D] 3D nonlocal eq strain interpolation routine not implemented.");
+}
+
 //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
 //! @return Area
 double NuTo::ElementBase::CalculateArea()const
@@ -518,6 +542,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		break;
 		case NuTo::VisualizeBase::DISPLACEMENTS:
 		case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+		case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
 		case NuTo::VisualizeBase::CONSTITUTIVE:
 		case NuTo::VisualizeBase::SECTION:
 		case NuTo::VisualizeBase::ELEMENT:
@@ -529,11 +554,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		case NuTo::VisualizeBase::ANGULAR_VELOCITY:
 		case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
 		case NuTo::VisualizeBase::PARTICLE_RADIUS:
-		break;
 
 		default:
 			//do nothing
 			;
+        break;
 		}
     }
 
@@ -806,6 +831,28 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
             }
         }
         break;
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                double nonlocalEqStrain;
+                switch (dimension)
+                {
+                case 1:
+                    this->InterpolateNonlocalEqStrainFrom1D(VisualizationPointLocalCoordinates[PointCount], nonlocalEqStrain);
+                    break;
+                case 2:
+                    this->InterpolateNonlocalEqStrainFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], nonlocalEqStrain);
+                    break;
+                case 3:
+                    this->InterpolateNonlocalEqStrainFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], nonlocalEqStrain);
+                    break;
+                default:
+                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                }
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), nonlocalEqStrain);
+            }
+            break;
         case NuTo::VisualizeBase::CONSTITUTIVE:
         {
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
@@ -827,6 +874,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), sectionId);
             }
         }
+        break;
         case NuTo::VisualizeBase::ELEMENT:
         {
             int elementId = this->ElementGetId();

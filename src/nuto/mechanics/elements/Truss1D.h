@@ -68,6 +68,13 @@ public:
     //! @param rGlobalDisplacements ... three-dimension global point displacements
     void InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const override;
 
+
+    //! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... one-dimensional local point coordinates
+    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
+    void InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const override;
+
+
 protected:
     //! @brief ... just for serialization
     Truss1D(){}

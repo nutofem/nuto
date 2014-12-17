@@ -19,7 +19,8 @@ public:
         DISPLACEMENTS,					//!< visualize displacements
         ENGINEERING_STRESS,				//!< visualize engineering stress tensor
         ENGINEERING_STRAIN,				//!< visualize engineering strain tensor
-        NONLOCAL_WEIGHT,				//!< visualize nonlocal weights
+        NONLOCAL_WEIGHT,                //!< visualize nonlocal weights
+        NONLOCAL_EQ_STRAIN,             //!< visualize nonlocal equivalent strains
         DAMAGE,							//!< visualize damage
         ENGINEERING_PLASTIC_STRAIN,		//!< visualize engineering plastic strain
         CONSTITUTIVE,					//!< visualize constitutive id
