@@ -94,10 +94,11 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     try
     {
     	//calculate the end time of monotonic loading which is exactly the beginning of cyclic loading
+    	NuTo::Error::eError Error;
     	double BeginHarmonicExcitation(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
     	if (mHarmonicExtrapolation) {
     		//calculate the first three cycles
-    		NuTo::Error::eError Error = NuTo::NewmarkDirect::Solve(BeginHarmonicExcitation + 3./mHarmonicConstraintFactor(0,1));
+    		Error = NuTo::NewmarkDirect::Solve(BeginHarmonicExcitation + 3./mHarmonicConstraintFactor(0,1));
     		if (Error != NuTo::Error::SUCCESSFUL) {
     			return Error;
     		}
@@ -121,7 +122,22 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     		std::cout << "Damage = " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
     	}
 
+    	// save static data and displacements
+    	NuTo::FullVector<double,Eigen::Dynamic> save_disp_j,save_disp_k;
+    	double SaveTime(mStructure->GetTime());
+    	mStructure->NodeExtractDofValues(0,save_disp_j, save_disp_k);
     	mStructure->ElementFatigueSaveStaticData();
+
+    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicConstraintFactor(0,1));
+
+    	// repeat with restoring
+    	mStructure->SetPrevTime(SaveTime);
+    	mStructure->SetTime(SaveTime);
+    	mStructure->NodeMergeActiveDofValues(0,save_disp_j);
+    	mStructure->ElementFatigueRestoreStaticData();
+
+    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicConstraintFactor(0,1));
+
     }
 //    try
 //    {

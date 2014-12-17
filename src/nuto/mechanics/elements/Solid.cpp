@@ -210,6 +210,9 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			case Element::FATIGUE_SAVE_STATIC_DATA:
 				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_SAVE_STATIC_DATA] = 0;
 			break;
+			case Element::FATIGUE_RESTORE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_RESTORE_STATIC_DATA] = 0;
+			break;
 			case Element::IP_DATA:
 				switch(it->second->GetIpDataType())
 				{
@@ -426,6 +429,8 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				case Element::UPDATE_TMP_STATIC_DATA:
 				break;
 				case Element::FATIGUE_SAVE_STATIC_DATA:
+				break;
+				case Element::FATIGUE_RESTORE_STATIC_DATA:
 				break;
 				case Element::IP_DATA:
 					switch (it->second->GetIpDataType())

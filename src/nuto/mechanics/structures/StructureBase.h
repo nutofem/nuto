@@ -755,6 +755,9 @@ public:
     //! @brief saves static data of a all elements
     NuTo::Error::eError ElementFatigueSaveStaticData();
 
+    //! @brief restores static data of a all elements
+    NuTo::Error::eError ElementFatigueRestoreStaticData();
+
     //! @brief calculates the average stress
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)

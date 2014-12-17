@@ -654,6 +654,11 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 //    		  		", damageFatigue value = " << rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->mPrevStrainFatigue << std::endl;
     	}
 		break;
+    	case NuTo::Constitutive::Output::FATIGUE_RESTORE_STATIC_DATA:
+    	{
+    		rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->FatigueRestoreStaticData();
+    	}
+		break;
     	default:
     		throw MechanicsException(std::string("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evaluate3D] output object)") +
     				NuTo::Constitutive::OutputToString(itOutput->first) +

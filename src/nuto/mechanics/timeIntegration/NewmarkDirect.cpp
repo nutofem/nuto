@@ -160,8 +160,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 //            plotHistory(0,6)+= mKineticEnergy ;
         }
 
-        double curTime  = 0;
-
+//        double curTime  = 0;
+        double curTime(mTime);
         // initialize the structure times
         mStructure->SetPrevTime(curTime);
         mStructure->SetTime(curTime);
