@@ -6,7 +6,6 @@
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/elements/FatigueDataEnum.h"
 
 namespace NuTo
 {
@@ -42,8 +41,6 @@ public:
     virtual std::vector<int>& GetVectorInt();
 
     virtual NuTo::IpData::eIpStaticDataType GetIpDataType();
-
-    virtual NuTo::FatigueData::eFatigueDataType GetFatigueDataType();
 
     virtual void SetSymmetry(bool rSymmetric);
 
