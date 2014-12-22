@@ -131,6 +131,21 @@ public:
     NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
     		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables);
 
+    //! @brief ... applies dof scaling to a global vector
+    //! @param rVector ... vector that needs scaling
+    //! @param rRowStart ... global dof row, where rVector starts
+    void ApplyGlobalDofScaling(NuTo::FullVector<double, Eigen::Dynamic>& rVector, int rRowStart);
+
+    //! @brief ... applies dof scaling to a global matrix
+    //! @param rMatrix ... matrix that needs scaling
+    //! @param rRowStart ... global dof row, where rMatrix starts
+    //! @param rColStart ... global dof column, where rMatrix starts
+    void ApplyGlobalDofScaling(NuTo::SparseMatrix<double>& rMatrix, int rRowStart, int rColStart);
+
+    //! @brief ... calculates the dof scaling values
+    //! @param rDofScalingVector ... vector of dof scaling values that correspond to the global dofs
+    void GetGlobalDofScalingVector(NuTo::FullVector<double, Eigen::Dynamic>& rDofScalingVector);
+
 //*************************************************
 //************ Node routines        ***************
 //***  defined in structures/StructureNode.cpp  ***

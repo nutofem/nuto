@@ -1518,6 +1518,36 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
 #endif
 }
 
+
+//! @brief ... applies dof scaling to a global vector
+//! @param rVector ... vector that needs scaling
+void NuTo::Structure::ApplyGlobalDofScaling(NuTo::FullVector<double, Eigen::Dynamic>& rVector, int rRowStart)
+{
+    int numRows = rVector.rows();
+    NuTo::FullVector<double, Eigen::Dynamic> dofScalingVector(this->mNumDofs);
+    GetGlobalDofScalingVector(dofScalingVector);
+
+    for (int iRow = 0; iRow < numRows; ++iRow)
+    {
+        rVector(iRow) *= dofScalingVector(iRow+rRowStart);
+    }
+}
+
+//! @brief ... applies dof scaling to a global matrix
+//! @param rMatrix ... matrix that needs scaling
+void NuTo::Structure::ApplyGlobalDofScaling(NuTo::SparseMatrix<double>& rMatrix, int rRowStart, int rColStart)
+{
+
+}
+
+//! @brief ... calculates the dof scaling values
+//! @param rDofScalingVector ... vector of dof scaling values that correspond to the global dofs
+void NuTo::Structure::GetGlobalDofScalingVector(NuTo::FullVector<double, Eigen::Dynamic>& rDofScalingVector)
+{
+
+}
+
+
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
 //! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)

@@ -72,7 +72,15 @@ public:
     //! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
     //! @param rOutOfBalance_k ... residual of the  dependent dofs
     void PostProcess(const FullVector<double,Eigen::Dynamic>& rOutOfBalance_j,
-    		          const FullVector<double,Eigen::Dynamic>& rOutOfBalance_k);
+    		         const FullVector<double,Eigen::Dynamic>& rOutOfBalance_k);
+
+    //! @brief visualizes the residual by merging it to the nodes, exporting the vtu file and restoring the inital state
+    //! @param rResidual_j ... residual vector
+    //! @param rActiveDofValues ... vector of active dof values
+    //! @param rTimeStep ... time step number for file names
+    void VisualizeResidual(
+            const FullVector<double,Eigen::Dynamic>& rResidual_j,
+            const FullVector<double, Eigen::Dynamic>& rActiveDofValues, int rTimeStep);
 
     //! @brief sets the  time step for the time integration procedure (initial value)
     void SetTimeStep(double rTimeStep)
@@ -194,6 +202,18 @@ public:
         return mCheckCoefficientMatrix;
     }
 
+    //! @brief sets the visualize residual flag (on or off)
+    void SetVisualizeResidual(bool rVisualizeResidual)
+    {
+        mVisualizeResidual = rVisualizeResidual;
+    }
+
+    //! @brief returns if the visualize residual flag is turned on
+    bool GetVisualizeResidual() const
+    {
+        return mVisualizeResidual;
+    }
+
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     virtual bool HasCriticalTimeStep()const = 0;
 
@@ -214,6 +234,10 @@ public:
 protected:
     //empty private construct required for serialization
     TimeIntegrationBase(){};
+
+    void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
+
+
     //structure belonging to the time integration scheme
     StructureBase* mStructure;
     //constraint for displacement control (as a function of time)
@@ -264,6 +288,10 @@ protected:
     double mMinTimeStepPlot;
     //last time when a vtk file was plotted
     double mLastTimePlot;
+
+    //if set to true, prints an additional result files with residual values
+    bool mVisualizeResidual;
+
     //groups of elements to be plotted separately
     FullVector<int,Eigen::Dynamic> mPlotElementGroups;
 
@@ -272,6 +300,7 @@ protected:
     // vector of nodes for the output of the dofs
     std::vector<NodeBase*> mVecOutputDispNodesPtr;
     NuTo::FullVector<int,Eigen::Dynamic> mVecOutputDispNodesInt;
+
 
 };
 } //namespace NuTo

@@ -35,6 +35,16 @@ public:
     	return mMinLineSearchStep;
     }
 
+    void SetPerformLineSearch(bool rPerformLineSearch)
+    {
+        mPerformLineSearch = rPerformLineSearch;
+    }
+
+    bool GetPerformLineSearch() const
+    {
+        return mPerformLineSearch;
+    }
+
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     bool HasCriticalTimeStep()const
     {
@@ -136,6 +146,10 @@ protected:
     //empty private construct required for serialization
     NewmarkDirect(){};
 	double mMinLineSearchStep;
+
+	bool mPerformLineSearch;
+
+	int mVisualizeResidualTimeStep;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

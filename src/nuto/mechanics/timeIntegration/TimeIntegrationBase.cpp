@@ -52,6 +52,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo
  	mMergeActiveDofValuesOrder1 = true;
  	mMergeActiveDofValuesOrder2 = false;
  	mCheckCoefficientMatrix = false;
+ 	mVisualizeResidual = false;
  	ResetForNextLoad();
 }
 
@@ -295,6 +296,8 @@ int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResul
 	return resultNumber;
 }
 
+
+
 //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
 //! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
 //! @param rOutOfBalance_k ... out of balance values of the dependent dofs
@@ -359,115 +362,43 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 
 #ifdef ENABLE_VISUALIZE
 			//plot the solution vtk file
-			std::stringstream ssTimeStepVTK;
-			ssTimeStepVTK << mTimeStepVTK;
-
-			boost::filesystem::path resultFile(mResultDir);
-			resultFile /= std::string("Nodes")+ssTimeStepVTK.str()+std::string(".vtu");
-			mStructure->ExportVtkDataFileNodes(resultFile.string(),true);
-
-			if (mPlotElementGroups.GetNumRows()==0)
-			{
-				//plot all elements
-				resultFile = mResultDir;
-				resultFile /= std::string("Elements")+ssTimeStepVTK.str()+std::string(".vtu");
-				mStructure->ExportVtkDataFileElements(resultFile.string(),true);
-
-				//write an additional pvd file
-				resultFile = mResultDir;
-				resultFile /= std::string("Elements.pvd");
-			    std::fstream file;
-			    if (mTimeStepVTK==0)
-			    {
-			    	file.open(resultFile.string(), std::fstream::out);
-			    }
-			    else
-			    {
-			    	file.open(resultFile.string(), std::fstream::out | std::fstream::in |std::ios_base::ate);
-			    }
-
-			    if (!file.is_open())
-			    {
-			    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.string());
-			    }
-			    std::stringstream endOfXML;
-			    endOfXML << "</Collection>" << std::endl;
-			    endOfXML << "</VTKFile>" << std::endl;
-			    if (mTimeStepVTK==0)
-			    {
-					// header /////////////////////////////////////////////////////////////////
-					file << "<?xml version=\"1.0\"?>" << std::endl;
-					file << "<VTKFile type=\"Collection\">" << std::endl;
-					file << "<Collection>" << std::endl;
-					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << mTimeStepVTK << ".vtu\"/>" << std::endl;
-			    }
-			    else
-			    {
-				    //delete the last part of the xml file
-			    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
-					file << "<DataSet timestep=\""<< mTime << "\" file=\"Elements" << mTimeStepVTK << ".vtu\"/>" << std::endl;
-			    }
-			    file << endOfXML.str();
-			    file.close();
-			}
-			else
-			{
-				//plot all groups separately
-				for (int countGroupElement=0; countGroupElement<mPlotElementGroups.GetNumRows();countGroupElement++)
-				{
-					std::stringstream ssGroup;
-					ssGroup << mPlotElementGroups(countGroupElement);
-
-					//plot all elements
-					resultFile = mResultDir;
-					resultFile /= std::string("Group") + ssGroup.str() + std::string("_Elements")+ssTimeStepVTK.str()+std::string(".vtu");
-					mStructure->ElementGroupExportVtkDataFile(mPlotElementGroups(countGroupElement), resultFile.string(),true);
-
-					std::cout << "export group " << mPlotElementGroups(countGroupElement) << " with " <<  mStructure->GroupGetNumMembers(mPlotElementGroups(countGroupElement)) << std::endl;
-
-					//write an additional pvd file
-					resultFile = mResultDir;
-					resultFile /= std::string("Group") + ssGroup.str() + std::string("_ElementsAll")+std::string(".pvd");
-				    std::fstream file;
-				    if (mTimeStepVTK==0)
-				    {
-				    	file.open(resultFile.string(), std::fstream::out);
-				    }
-				    else
-				    {
-				    	file.open(resultFile.string(), std::fstream::out | std::fstream::in |std::ios_base::ate);
-				    }
-
-				    if (!file.is_open())
-				    {
-				    	throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::PostProcess] Error opening file ")+resultFile.string());
-				    }
-				    std::stringstream endOfXML;
-				    endOfXML << "</Collection>" << std::endl;
-				    endOfXML << "</VTKFile>" << std::endl;
-				    if (mTimeStepVTK==0)
-				    {
-						// header /////////////////////////////////////////////////////////////////
-						file << "<?xml version=\"1.0\"?>" << std::endl;
-						file << "<VTKFile type=\"Collection\">" << std::endl;
-						file << "<Collection>" << std::endl;
-				    }
-				    else
-				    {
-					    //delete the last part of the xml file
-				    	file.seekp (-endOfXML.str().length(),std::ios_base::end);
-				    }
-					file << "<DataSet timestep=\""<< mTime << "\" file=\"Group" << mPlotElementGroups(countGroupElement) << "_Elements" << mTimeStepVTK << ".vtu\"/>" << std::endl;
-				    file << endOfXML.str();
-				    file.close();
-				}
-			}
+            ExportVisualizationFiles(mResultDir, mTime, mTimeStepVTK);
 #endif
 			mTimeStepVTK++;
 			mLastTimePlot = mTime;
 		}
         mTimeStepResult++;
     }
+}
+
+//! @brief visualizes the residual by merging it to the nodes, exporting the vtu file and restoring the inital state
+//! @param rResidual_j ... residual vector
+//! @param rActiveDofValues ... vector of active dof values
+//! @param rTimeStep ... time step number for file names
+void NuTo::TimeIntegrationBase::VisualizeResidual(
+        const FullVector<double,Eigen::Dynamic>& rResidual_j,
+        const FullVector<double, Eigen::Dynamic>& rActiveDofValues,
+        int rTimeStep)
+{
+    std::string resultDir = mResultDir + "Residual";
+
+    if (rTimeStep == 0)
+    {
+        // create and clear residual result directory
+        std::string resultDirOrig = mResultDir;
+        SetResultDirectory(resultDir, true);
+        mResultDir = resultDirOrig;
+    }
+
+    // apply residual to nodes, export the vtu files
+    mStructure->NodeMergeActiveDofValues(rResidual_j);
+
+    double timeMod = mTime+rTimeStep*mMinTimeStep*1.e-1;
+    ExportVisualizationFiles(resultDir, timeMod, rTimeStep);
+
+    // resore dof values
+    mStructure->NodeMergeActiveDofValues(rActiveDofValues);
+
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -554,4 +485,136 @@ void NuTo::TimeIntegrationBase::SetPlotElementGroups(NuTo::FullVector<int,Eigen:
 	if (rPlotElementGroups.GetNumRows()<1)
 		throw MechanicsException("[NuTo::TimeIntegrationBase::SetPlotElementGroups] vector must have at least a single row.");
 	mPlotElementGroups = rPlotElementGroups;
+}
+
+void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep)
+{
+    //plot the solution vtk file
+    std::stringstream ssTimeStepVTK;
+    ssTimeStepVTK << timeStep;
+    boost::filesystem::path resultFile(rResultDir);
+    resultFile /= std::string("Nodes") + ssTimeStepVTK.str()
+            + std::string(".vtu");
+    mStructure->ExportVtkDataFileNodes(resultFile.string(), true);
+
+    std::stringstream timeFormatted;
+    timeFormatted.width(15);
+    timeFormatted.precision(12);
+    timeFormatted << rTime;
+
+
+    if (mPlotElementGroups.GetNumRows() == 0)
+    {
+        //plot all elements
+        resultFile = rResultDir;
+        resultFile /= std::string("Elements") + ssTimeStepVTK.str()
+                + std::string(".vtu");
+        mStructure->ExportVtkDataFileElements(resultFile.string(), true);
+        //write an additional pvd file
+        resultFile = rResultDir;
+        resultFile /= std::string("Elements.pvd");
+        std::fstream file;
+        if (timeStep == 0)
+        {
+            file.open(resultFile.string(), std::fstream::out);
+        }
+        else
+        {
+            file.open(resultFile.string(),
+                    std::fstream::out | std::fstream::in | std::ios_base::ate);
+        }
+        if (!file.is_open())
+        {
+            throw NuTo::MechanicsException(
+                    std::string(
+                            "[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ")
+                            + resultFile.string());
+        }
+        std::stringstream endOfXML;
+        endOfXML << "</Collection>" << std::endl;
+        endOfXML << "</VTKFile>" << std::endl;
+        if (timeStep == 0)
+        {
+            // header /////////////////////////////////////////////////////////////////
+            file << "<?xml version=\"1.0\"?>" << std::endl;
+            file << "<VTKFile type=\"Collection\">" << std::endl;
+            file << "<Collection>" << std::endl;
+            file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Elements"
+                    << timeStep << ".vtu\"/>" << std::endl;
+        }
+        else
+        {
+            //delete the last part of the xml file
+            file.seekp(-endOfXML.str().length(), std::ios_base::end);
+            file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Elements"
+                    << timeStep << ".vtu\"/>" << std::endl;
+        }
+        file << endOfXML.str();
+        file.close();
+    }
+    else
+    {
+        //plot all groups separately
+        for (int countGroupElement = 0;
+                countGroupElement < mPlotElementGroups.GetNumRows();
+                countGroupElement++)
+        {
+            std::stringstream ssGroup;
+            ssGroup << mPlotElementGroups(countGroupElement);
+            //plot all elements
+            resultFile = rResultDir;
+            resultFile /= std::string("Group") + ssGroup.str()
+                    + std::string("_Elements") + ssTimeStepVTK.str()
+                    + std::string(".vtu");
+            mStructure->ElementGroupExportVtkDataFile(
+                    mPlotElementGroups(countGroupElement), resultFile.string(),
+                    true);
+            std::cout << "export group "
+                    << mPlotElementGroups(countGroupElement) << " with "
+                    << mStructure->GroupGetNumMembers(
+                            mPlotElementGroups(countGroupElement)) << std::endl;
+            //write an additional pvd file
+            resultFile = rResultDir;
+            resultFile /= std::string("Group") + ssGroup.str()
+                    + std::string("_ElementsAll") + std::string(".pvd");
+            std::fstream file;
+            if (timeStep == 0)
+            {
+                file.open(resultFile.string(), std::fstream::out);
+            }
+            else
+            {
+                file.open(resultFile.string(),
+                        std::fstream::out | std::fstream::in
+                                | std::ios_base::ate);
+            }
+            if (!file.is_open())
+            {
+                throw NuTo::MechanicsException(
+                        std::string(
+                                "[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ")
+                                + resultFile.string());
+            }
+            std::stringstream endOfXML;
+            endOfXML << "</Collection>" << std::endl;
+            endOfXML << "</VTKFile>" << std::endl;
+            if (timeStep == 0)
+            {
+                // header /////////////////////////////////////////////////////////////////
+                file << "<?xml version=\"1.0\"?>" << std::endl;
+                file << "<VTKFile type=\"Collection\">" << std::endl;
+                file << "<Collection>" << std::endl;
+            }
+            else
+            {
+                //delete the last part of the xml file
+                file.seekp(-endOfXML.str().length(), std::ios_base::end);
+            }
+            file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group"
+                    << mPlotElementGroups(countGroupElement) << "_Elements"
+                    << timeStep << ".vtu\"/>" << std::endl;
+            file << endOfXML.str();
+            file.close();
+        }
+    }
 }

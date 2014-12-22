@@ -33,6 +33,8 @@
 NuTo::NewmarkDirect::NewmarkDirect (StructureBase* rStructure)  : NewmarkBase (rStructure)
 {
     mMinLineSearchStep = 0.01;
+    mVisualizeResidualTimeStep = 0;
+    mPerformLineSearch = true;
 }
 
 
@@ -268,6 +270,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 */
         PostProcess(prevResidual_j, prevResidual_k);
 
+
         double timeStep = mTimeStep;
         while (curTime < rTimeDelta)
         {
@@ -445,7 +448,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             if (mCheckCoefficientMatrix)
             {
                 mStructure->CheckCoefficientMatrix_0(1.e-6, false);
-                mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
+//                mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
 
 //                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
 //                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
@@ -578,7 +581,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 if (mCheckCoefficientMatrix)
                 {
                     mStructure->CheckCoefficientMatrix_0(1.e-6, false);
-                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
+//                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
 
 //                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
 //                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
@@ -627,6 +630,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 //solve for new state
                 NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
                 hessianModSolver.SetOneBasedIndexing();
+//                residual_mod.Info(10,10,true);
                 mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
                 delta_disp_j*=-1;
 
@@ -715,11 +719,18 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                     mStructure->GetLogger() << "  linesearch alpha " << alpha <<" previous residual " << normResidual << " trial residual " << trialNormResidual <<  "\n";
 
                     alpha*=0.5;
-                }
-                while(alpha>mMinLineSearchStep && trialNormResidual>(1.-alpha)*normResidual);
-                   //in the first iteration, there is no line search
 
-                if (alpha>mMinLineSearchStep)
+                    if (mVisualizeResidual)
+                    {
+                        VisualizeResidual(residual_mod,trial_disp_j, mVisualizeResidualTimeStep);
+                        mVisualizeResidualTimeStep++;
+
+                    }
+
+                }
+                while(mPerformLineSearch && alpha>mMinLineSearchStep && trialNormResidual>(1.-alpha)*normResidual);
+
+                if (alpha>mMinLineSearchStep || !mPerformLineSearch)
                 {
                     //improvement is achieved, go to next Newton step
                     disp_j = trial_disp_j;
@@ -743,6 +754,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                     //and leave
                     iteration = mMaxNumIterations;
                 }
+
             } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
 
             if (normResidual<=mToleranceForce)
@@ -829,7 +841,9 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 
 				//perform Postprocessing
                 mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
-				PostProcess(prevResidual_j, prevResidual_k);
+
+                PostProcess(prevResidual_j, prevResidual_k);
+
 
                 //eventually increase next time step
                 if (mAutomaticTimeStepping && iteration<0.25*mMaxNumIterations)

@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
+#include <assert.h>
 #include <cmath>
 
 // constructor
@@ -45,10 +46,14 @@ double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
     double xStartWeakSpot = xWeakSpot - lWeakSpot / 2;
     double xEndWeakSpot   = xWeakSpot + lWeakSpot / 2;
 
+    double areaFactor = 1.;
+
     if (xStartWeakSpot < rXCoordinate and rXCoordinate < xEndWeakSpot)
         return 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot) ,exponent);
-    else
-        return 1.;
+
+    assert(areaFactor > 0.);
+
+    return areaFactor;
 }
 
 
