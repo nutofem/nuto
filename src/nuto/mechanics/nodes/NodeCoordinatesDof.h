@@ -95,6 +95,12 @@ Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::Vis
 				rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements3D);
 			}
         break;
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+        {
+            int a = 3;
+
+        }
+        break;
         default:
         break;
         }
