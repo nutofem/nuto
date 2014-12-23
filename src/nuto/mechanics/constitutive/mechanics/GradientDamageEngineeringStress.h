@@ -154,6 +154,20 @@ public:
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const;
 
+    //! @brief ... calculate the isotropic damage variable from the nonlocal eq strain history variable
+    //! kappa and the damage law parameters (class members)
+    //! \f$ \omega = 1 - \frac{\varepsilon_0}{\kappa} \exp \left(\frac{\varepsilon_0 - \kappa}{\varepsilon_f} \right) \f$
+    //! @param rKappa ... history variable
+    //! @return isotropic damage variable
+    double CalculateDamage(double rKappa) const;
+
+    //! @brief ... calculate the D_Omega_D_Kappa from the nonlocal eq strain history variable
+    //! kappa and the damage law parameters (class members)
+    //! \f$ \frac{\partial \omega}{\partial \kappa} = \frac{\varepsilon_0}{\kappa} \left(\frac{1}{\kappa} + \frac{1}{\varepsilon_f} \right) \exp \left(\frac{\varepsilon_0 - \kappa}{\varepsilon_f} \right) \f$
+    //! @param rKappa ... history variable
+    //! @return ... isotropic damage variable
+    double CalculateDerivativeDamage(double rKappa) const;
+
 protected:
     //! @brief ... density
     double mRho;
@@ -199,20 +213,6 @@ protected:
     //! @brief ... check damage law
     //! @param rDamageLaw ... damage law
     void CheckDamageLaw(const NuTo::FullVector<double, Eigen::Dynamic>& rDamageLaw) const;
-
-    //! @brief ... calculate the isotropic damage variable from the nonlocal eq strain history variable
-    //! kappa and the damage law parameters (class members)
-    //! \f$ \omega = 1 - \frac{\varepsilon_0}{\kappa} \exp \left(\frac{\varepsilon_0 - \kappa}{\varepsilon_f} \right) \f$
-    //! @param rKappa ... history variable
-    //! @return isotropic damage variable
-    double CalculateDamage(double rKappa) const;
-
-    //! @brief ... calculate the D_Omega_D_Kappa from the nonlocal eq strain history variable
-    //! kappa and the damage law parameters (class members)
-    //! \f$ \frac{\partial \omega}{\partial \kappa} = \frac{\varepsilon_0}{\kappa} \left(\frac{1}{\kappa} + \frac{1}{\varepsilon_f} \right) \exp \left(\frac{\varepsilon_0 - \kappa}{\varepsilon_f} \right) \f$
-    //! @param rKappa ... history variable
-    //! @return ... isotropic damage variable
-    double CalculateDerivativeDamage(double rKappa) const;
 
 };
 }

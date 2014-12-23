@@ -44,9 +44,10 @@ enum eSolutionPhaseType
 
 enum eDamageLawType
 {
-    ISOTROPIC_NO_SOFTENING,         //!< constant post peak behaviour
-    ISOTROPIC_LINEAR_SOFTENING,     //!< linear
-    ISOTROPIC_EXPONENTIAL_SOFTENING //!< exponential
+    ISOTROPIC_NO_SOFTENING,             //!< constant post peak behaviour
+    ISOTROPIC_LINEAR_SOFTENING,         //!< linear
+    ISOTROPIC_EXPONENTIAL_SOFTENING,    //!< exponential
+    ISOTROPIC_CUBIC_HERMITE             //!< cubic hermite h00
 };
 
 namespace Input

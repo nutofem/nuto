@@ -2,18 +2,121 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 
-#define PRINTRESULT
+//#define PRINTRESULT
 #include <eigen3/Eigen/Eigenvalues>
 
 
+
+bool CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
+{
+    double epsilon = 1.e-10;
+    double e0 = rConstitutiveLaw.GetDamageLaw().GetValue(1);
+    double E = rConstitutiveLaw.GetYoungsModulus();
+    for (int i = 1; i < 100; ++i)
+    {
+        double kappa = i*e0+epsilon;
+
+        double sigma1 = (1 - rConstitutiveLaw.CalculateDamage(kappa))*E*kappa;
+        double sigma2 = (1 - rConstitutiveLaw.CalculateDamage(kappa+epsilon))*E*kappa;
+
+        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa)*E*kappa;
+        double DsigmaDkappa_CDF = (sigma2-sigma1)/epsilon;
+
+        double differenceSigma = DsigmaDkappa - DsigmaDkappa_CDF;
+
+#ifdef PRINTRESULT
+            std::cout << "kappa:" <<  kappa << " | differenceSigma: " << differenceSigma << std::endl;
+            std::cout << "Dsigma:" << DsigmaDkappa << " | Dsigma_CDF: " << DsigmaDkappa_CDF << std::endl;
+            std::cout << "sigma1:" << sigma1 << " | sigma2: " << sigma2 << std::endl << std::endl;
+#endif
+
+        if (abs(differenceSigma)>1.e-1)
+            return false;
+    }
+
+    return true;
+}
+
+bool CheckDamageLawsValues(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
+{
+    double epsilon = 1.e-12;
+    double e0 = rConstitutiveLaw.GetDamageLaw().GetValue(1);
+    double initialDamage = rConstitutiveLaw.CalculateDamage(e0+epsilon);
+    bool isCorrect = initialDamage < 1.e-6;
+    return isCorrect;
+}
+
+void CheckDamageLaws()
+{
+    NuTo::GradientDamageEngineeringStress myConstitutiveLaw;
+
+
+    double E = 20000.;
+    double e0 = 1.e-4;
+
+    myConstitutiveLaw.SetYoungsModulus(E);
+    myConstitutiveLaw.SetPoissonsRatio(0.3);
+    myConstitutiveLaw.SetNonlocalRadius(1.0);
+
+    // create a damage law
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawNoSoftening(2);
+    myDamageLawNoSoftening(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING;
+    myDamageLawNoSoftening(1) = e0;
+
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawLinear(3);
+    myDamageLawLinear(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING;
+    myDamageLawLinear(1) = e0;
+    myDamageLawLinear(2) = 0.005;
+
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawExponential(3);
+    myDamageLawExponential(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
+    myDamageLawExponential(1) = e0;
+    myDamageLawExponential(2) = 0.005;
+
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawHermite(3);
+    myDamageLawHermite(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE;
+    myDamageLawHermite(1) = e0;
+    myDamageLawHermite(2) = 0.005;
+
+    myConstitutiveLaw.SetDamageLaw(myDamageLawNoSoftening);
+    if (not CheckDamageLawsValues(myConstitutiveLaw))
+        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_NO_SOFTENING: wrong initial damage");
+    if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
+            throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_NO_SOFTENING: wrong damage derivatives");
+
+    myConstitutiveLaw.SetDamageLaw(myDamageLawLinear);
+    if (not CheckDamageLawsValues(myConstitutiveLaw))
+        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_LINEAR_SOFTENING: wrong initial damage");
+    if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
+            throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_LINEAR_SOFTENING: wrong damage derivatives");
+
+
+    myConstitutiveLaw.SetDamageLaw(myDamageLawExponential);
+    if (not CheckDamageLawsValues(myConstitutiveLaw))
+        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING: wrong initial damage");
+    if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
+            throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING: wrong damage derivatives");
+
+    myConstitutiveLaw.SetDamageLaw(myDamageLawHermite);
+    if (not CheckDamageLawsValues(myConstitutiveLaw))
+        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong initial damage");
+    if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
+            throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong damage derivatives");
+
+
+
+}
 
 
 int main()
 {
 try {
+
+    CheckDamageLaws();
 
     // define geometry
     int numElements = 7;
