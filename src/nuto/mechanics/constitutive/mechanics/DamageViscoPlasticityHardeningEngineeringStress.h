@@ -88,7 +88,6 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
 
-
     // calculate coefficients of the material matrix
     void CalculateCoefficients2DPlainStress(double& C11, double& C12, double& C33) const;
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
@@ -214,7 +213,7 @@ public:
     //! @param FatigueExtrapolation ...
     bool GetFatigueExtrapolation() const override;
 
-    //! @brief ... set fatigue extrapolation
+    //! @brief ... set fatigue extrapolation, if true allocates the respective constitutive static data
     //! @param FatigueExtrapolation ...
     void SetFatigueExtrapolation(bool rFatigueExtrapolation) override;
 

@@ -101,6 +101,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mNumActiveDofs = 0;
     mNumDofs   = 0;
     mNodeNumberingRequired = true;
+    mNumExtrapolatedCycles = 0;
 
     mMappingIntEnum2String.resize(NuTo::IntegrationType::NumIntegrationTypes);
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss1Ip]=
@@ -247,6 +248,18 @@ void NuTo::StructureBase::SetTime(double rTime)
 double NuTo::StructureBase::GetTime() const
 {
 	return mTime;
+}
+
+//! @brief set number of cycles to be extrapolated
+void NuTo::StructureBase::SetNumExtrapolatedCycles(int rNumber)
+{
+	mNumExtrapolatedCycles = rNumber;
+}
+
+//! @brief get the number of cycles to be extrapolated
+int NuTo::StructureBase::GetNumExtrapolatedCycles() const
+{
+	return mNumExtrapolatedCycles;
 }
 
 // store all elements of a group in a vector

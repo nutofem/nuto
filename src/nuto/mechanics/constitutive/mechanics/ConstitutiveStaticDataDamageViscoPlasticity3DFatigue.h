@@ -123,6 +123,27 @@ public:
     	this->mPrevSigma = this->mPrevStressFatigue;
     }
 
+    //!@brief extrapolate static data except of mPrevSigma and mPrevStrain
+    void FatigueExtrapolateStaticData(int rNumber)
+	{
+        EngineeringStrain3D DeltaEpsilonP, DeltaEpsilonVp;
+        double DeltaKappaInelastic, DeltaOmegaCompr, DeltaPrevHardening;
+
+        // calculate cyclic change of the inelastic strains
+        DeltaKappaInelastic = this->mKappaInelastic - this->mKappaInelasticFatigue;
+        DeltaOmegaCompr     = this->mOmegaCompr     - this->mOmegaComprFatigue;
+        DeltaPrevHardening  = this->mPrevHardening  - this->mPrevHardeningFatigue;
+    	DeltaEpsilonP  = this->mEpsilonP  - this->mEpsilonPFatigue;
+    	DeltaEpsilonVp = this->mEpsilonVp - this->mEpsilonVpFatigue;
+
+    	// linear extrapolation by NumExtrapolatedCycles
+    	this->mKappaInelastic = this->mKappaInelasticFatigue + rNumber*DeltaKappaInelastic;
+    	this->mOmegaCompr     = this->mOmegaComprFatigue     + rNumber*DeltaOmegaCompr;
+    	this->mPrevHardening  = this->mPrevHardeningFatigue  + rNumber*DeltaPrevHardening;
+    	this->mEpsilonP  = this->mEpsilonPFatigue  + rNumber*DeltaEpsilonP;
+    	this->mEpsilonVp = this->mEpsilonVpFatigue + rNumber*DeltaEpsilonVp;
+	}
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

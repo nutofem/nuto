@@ -758,6 +758,9 @@ public:
     //! @brief restores static data of a all elements
     NuTo::Error::eError ElementFatigueRestoreStaticData();
 
+    //! @brief extrapolates static data of a all elements
+    NuTo::Error::eError ElementFatigueExtrapolateStaticData();
+
     //! @brief calculates the average stress
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
@@ -1820,6 +1823,12 @@ public:
     //! @brief get the end of the time increment of the structure (current time)
     double GetTime() const;
 
+    //! @brief set number of cycles to be extrapolated in the cycle jump routine
+    void SetNumExtrapolatedCycles(int rNumber);
+
+    //! @brief get the number of cycles to be extrapolated in the cycle jump routine
+    int GetNumExtrapolatedCycles() const;
+
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
     void SetToleranceStiffnessEntries(double rToleranceStiffnessEntries);
@@ -1926,6 +1935,9 @@ protected:
 	double mTime;
 
     int mDimension;
+
+    //! @brief ... number of cycles applied for extrapolation in the cycle jump.
+    int mNumExtrapolatedCycles;
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase

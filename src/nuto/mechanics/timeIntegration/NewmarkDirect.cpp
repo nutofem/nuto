@@ -162,7 +162,6 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 //            plotHistory(0,6)+= mKineticEnergy ;
         }
 
-//        double curTime  = 0;
         double curTime(mTime);
         // initialize the structure times
         mStructure->SetPrevTime(curTime);
@@ -293,7 +292,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             if (timeStep<mMinTimeStep)
                 throw MechanicsException("[NuTo::NewmarkDirect::Solve] time step is smaller than minimum - no convergence is obtained.");
 
-            //check whether harmonic excitation check whether curTime is too close to the time data
+            //check whether harmonic excitation, check whether curTime is too close to the time data
             this->SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);
 
             // set new structure time at the end of the time increment
@@ -305,8 +304,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     throw MechanicsException("[NuTo::NewmarkDirect::Solve] Factor for the mass matrix is negative - reduce your time step.");
             }
 
-            mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j);
-            mStructure->ElementTotalUpdateTmpStaticData();
+//            mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j);
+//            mStructure->ElementTotalUpdateTmpStaticData();
 
             //calculate the initial out-of-balance force
             disp_j = lastConverged_disp_j;
