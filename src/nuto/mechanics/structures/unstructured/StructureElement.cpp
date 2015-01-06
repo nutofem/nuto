@@ -5,6 +5,8 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/Truss1D2N.h"
+#include "nuto/mechanics/elements/Truss1D3N.h"
+#include "nuto/mechanics/elements/Truss1D4NDisp3NX.h"
 #include "nuto/mechanics/elements/BoundaryGradientDamage1D.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D10N.h"
@@ -13,7 +15,6 @@
 #include "nuto/mechanics/elements/Plane2D6N.h"
 #include "nuto/mechanics/elements/Plane2D4N.h"
 #include "nuto/mechanics/elements/Plane2D4NSpectral.h"
-#include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Tetrahedron4N.h"
 #include "nuto/mechanics/elements/Tetrahedron10N.h"
 #include "nuto/mechanics/groups/Group.h"
@@ -515,10 +516,14 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
 	{
 		elementType = NuTo::Element::TRUSS1D2N;
 	}
-	else if (upperCaseElementType=="TRUSS1D3N")
-	{
-		elementType = NuTo::Element::TRUSS1D3N;
-	}
+    else if (upperCaseElementType=="TRUSS1D3N")
+    {
+        elementType = NuTo::Element::TRUSS1D3N;
+    }
+    else if (upperCaseElementType=="TRUSS1D4NDISP3NX")
+    {
+        elementType = NuTo::Element::TRUSS1D4NDISP3NX;
+    }
 	else if (upperCaseElementType=="BRICK8N")
 	{
 		elementType = NuTo::Element::BRICK8N;
@@ -616,6 +621,11 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
 				throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D3N is only a 1D element, either change the dimension of the structure to one or use TRUSS3D3N.");
 			ptrElement = new NuTo::Truss1D3N(this, rNodeVector, rElementDataType, rIpDataType);
 			break;
+        case NuTo::Element::TRUSS1D4NDISP3NX:
+            if (1!=mDimension)
+                throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D4NDisp3NEqStrain is only a 1D element, either change the dimension of the structure to one or use TRUSS3D4N.");
+            ptrElement = new NuTo::Truss1D4NDisp3NX(this, rNodeVector, rElementDataType, rIpDataType);
+            break;
 		case NuTo::Element::BRICK8N:
 			if (this->mDimension != 3)
 			{
@@ -1514,5 +1524,146 @@ void NuTo::Structure::ElementConvertPlane2D3N (int rGroupNumberElements,
     end=clock();
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::ElementConvertPlane2D3N] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
+
+//! @param rGroupNumberElements group for elements (Truss1D2N) to be converted
+//! @param r3NDofType dof type string of the 3N interpolated dof
+void NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX(int rGroupNumberElements, std::string r3NDofType)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    std::cout << "=================== INFO ==========================" << std::endl;
+    Info();
+
+    // check if group exists and is non empty
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX] Group is not an element group.");
+    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
+    assert(elementGroup!=0);
+
+    int numElements = elementGroup->size();
+    std::cout << "Number of elements to convert: " << numElements << std::endl;
+
+    std::vector<int> oldElementIds;
+    std::vector<int> newElementIds;
+
+
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();++itElement)
+    {
+        ElementBase* element = itElement->second;
+        int elementId = itElement->first;
+        oldElementIds.push_back(elementId);
+
+        if (element->GetEnumType() != NuTo::Element::TRUSS1D2N)
+            throw MechanicsException("[NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX] the elements to be converted are not of the type PLANE2D3N.");
+
+
+        NuTo::FullVector<int, Eigen::Dynamic> nodeIds(5);
+
+        // get existing nodes ...
+        NodeBase* node0 = element->GetNodeGeometry(0);
+        NodeBase* node4 = element->GetNodeGeometry(1);
+
+        // ... and find their IDs
+        for (auto mapNodeIterator : mNodeMap)
+        {
+            NodeBase* mapNode = mapNodeIterator.second;
+            int mapNodeIndex = mapNodeIterator.first;
+            if (mapNode == node0)
+                nodeIds(0) = mapNodeIndex;
+            if (mapNode == node4)
+                nodeIds(4) = mapNodeIndex;
+        }
+
+
+        // extract existing node coordinates
+        NuTo::FullVector<double, Eigen::Dynamic> xN(5);
+        double coordinates[3];
+        node0->GetCoordinates1D(coordinates);
+        xN(0) = coordinates[0];
+
+        node4->GetCoordinates1D(coordinates);
+        xN(4) = coordinates[0];
+
+        // interpolate new coordinates
+        xN(1) = xN(0) + (xN(4) - xN(0)) * 1./3.;
+        xN(2) = xN(0) + (xN(4) - xN(0)) * 0.5;
+        xN(3) = xN(0) + (xN(4) - xN(0)) * 2./3.;
+
+        // create new nodes
+        NuTo::FullVector<double, Eigen::Dynamic> coordVector(1);
+        coordVector(0) = xN(1);
+        nodeIds(1) = NodeCreate("displacements" , coordVector);
+
+        coordVector(0) = xN(2);
+        nodeIds(2) = NodeCreate(r3NDofType, coordVector);
+
+        coordVector(0) = xN(3);
+        nodeIds(3) = NodeCreate("displacements" , coordVector);
+
+        // extract element data
+        ElementData::eElementDataType elementDataType(element->GetElementDataType());
+        IpData::eIpDataType ipDataType = element->GetIpDataType(0);
+        std::cout << ipDataType << std::endl;
+
+        // get node ptr vector
+        std::vector<NodeBase*> nodeVector(5);
+        for (int iNode=0; iNode<5; iNode++)
+            nodeVector[iNode] = NodeGetNodePtr(nodeIds.GetValue(iNode));
+
+        int newElementId = ElementCreate(Element::TRUSS1D4NDISP3NX, nodeVector,elementDataType, ipDataType);
+
+        // transfer misc element data
+        int oldConstitutiveId = ConstitutiveLawGetId(element->GetConstitutiveLaw(42)); // argument 42 has no influence
+        int oldSectionId = SectionGetId(element->GetSection());
+        std::string IntegrationTyoe = element->GetIntegrationType()->GetStrIdentifier();
+
+        ElementSetConstitutiveLaw(newElementId, oldConstitutiveId);
+        ElementSetSection(newElementId, oldSectionId);
+
+        newElementIds.push_back(newElementId);
+    }
+
+    // delete old elements
+    for (int iElement = 0; iElement < numElements; ++iElement)
+    {
+        // delete old element from group
+        elementGroup->RemoveMember(oldElementIds[iElement]);
+
+        // delete old elment from element map
+        this->ElementDeleteInternal(oldElementIds[iElement]);
+
+        // add new element to group
+        elementGroup->AddMember(newElementIds[iElement], ElementGetElementPtr(newElementIds[iElement]));
+    }
+
+
+
+    std::cout << "=================== INFO ==========================" << std::endl;
+    Info();
+
+//    try
+//    {
+//
+//    }
+//    catch(NuTo::MechanicsException &e)
+//    {
+//        e.AddMessage("[NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX] Error converting element.");
+//        throw e;
+//    }
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }

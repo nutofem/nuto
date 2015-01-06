@@ -36,8 +36,38 @@ template <int TNumCoordinates, NODE_DOF_TEMPLATE_PARAMETERS>
 std::string NuTo::NodeCoordinatesDof<TNumCoordinates,NODE_DOF_TEMPLATE_INITIALIZATION>::
 GetNodeTypeStr()const
 {
-	throw MechanicsException("");
-    return std::string("[NuTo::NodeDof::GetNodeTypeStr]to be done");
+    std::stringstream nodeType;
+    if (TNumTimeDerivatives > 0)
+        nodeType << "TimeDerivatives:" << TNumTimeDerivatives << "\n";
+
+    if (TNumCoordinates > 0)
+            nodeType << "Coordinates:" << TNumCoordinates << "\n";
+
+    if (TNumDisplacements > 0)
+        nodeType << "Displacements:" << TNumDisplacements << "\n";
+
+    if (TNumRotations > 0)
+        nodeType << "Rotations:" << TNumRotations << "\n";
+
+    if (TNumTemperatures > 0)
+        nodeType << "Temperatures:" << TNumTemperatures << "\n";
+
+    if (TNumNonlocalEqPlasticStrain > 0)
+        nodeType << "NonlocalEqPlasticStrain:" << TNumNonlocalEqPlasticStrain << "\n";
+
+    if (TNumNonlocalTotalStrain > 0)
+        nodeType << "NonlocalTotalStrain:" << TNumNonlocalTotalStrain << "\n";
+
+    if (TNumNonlocalEqStrain > 0)
+        nodeType << "NonlocalEqStrain:" << TNumNonlocalEqStrain << "\n";
+
+    if (TNumWaterPhaseFraction > 0)
+        nodeType << "WaterPhaseFraction:" << TNumWaterPhaseFraction << "\n";
+
+    if (TNumRelativeHumidity > 0)
+        nodeType << "RelativeHumidity:" << TNumRelativeHumidity << "\n";
+
+    return nodeType.str();
 }
 
 
@@ -77,6 +107,9 @@ Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::Vis
 				double displacements3D[3];
 				switch (this->GetNumDisplacements())
 				{
+				case 0:
+				    // in case that only some nodes have disp dofs
+				    break;
 				case 1:
 					this->GetDisplacements1D(displacements3D);
 					displacements3D[1] = 0.;

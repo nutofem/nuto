@@ -393,6 +393,16 @@ public:
     void ElementConvertPlane2D3N (int rGroupNumberElements,
     		std::string rElementTypeStr, double rNodeDistanceMerge, double rMeshSize);
 
+    //! @brief   transfer to element structure: <br>
+    //!  D         D         D         D <br>
+    //!  |---------|----|----|---------| <br>
+    //!  X              X              X <br>
+    //!  0         1    2    3         4 <br>
+    //!  node0 and node4 should already exist with the right dof types in the Truss1D2N element
+    //! @param rGroupNumberElements group for elements (Truss1D2N) to be converted
+    //! @param r3NDofType dof type string of the 3N interpolated dof
+    void ElementConvertTruss1D2NToTruss1D4NDisp3NX(int rGroupNumberElements, std::string r3NDofType);
+
 #ifndef SWIG
     //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
     //! @param rGroupNumberElements group for elements on the real boundary

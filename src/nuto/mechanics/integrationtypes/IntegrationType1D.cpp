@@ -16,6 +16,8 @@ bool NuTo::IntegrationType1D::CheckElementCompatibility(NuTo::Element::eElementT
         return true;
     case NuTo::Element::TRUSS1D3N:
         return true;
+    case NuTo::Element::TRUSS1D4NDISP3NX:
+        return true;
     default:
         return false;
     }

@@ -25,7 +25,7 @@ NuTo::Truss1D::Truss1D(NuTo::StructureBase* rStructure, ElementData::eElementDat
 //! this can be checked with an assertation
 void NuTo::Truss1D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const
 {
-    assert((int)rLocalCoordinates.size()==GetNumNodes());
+    assert((int)rLocalCoordinates.size()==GetNumNodesGeometry());
     for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
         GetNodeGeometry(theNode)->GetCoordinates1D(&(rLocalCoordinates[theNode]));
@@ -62,7 +62,7 @@ void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, doubl
     {
         // get node coordinate
         double nodeCoordinate;
-        GetNode(theNode)->GetCoordinates1D(&nodeCoordinate);
+        GetNodeGeometry(theNode)->GetCoordinates1D(&nodeCoordinate);
 
         // add node contribution
         rGlobalCoordinates[0] += shapeFunctions[theNode] *  nodeCoordinate;

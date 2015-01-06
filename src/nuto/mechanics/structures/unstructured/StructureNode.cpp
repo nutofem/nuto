@@ -598,6 +598,49 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	            throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and nonlocal eq strains only implemented for 0 time derivatives.");
 	        }
 	        break;
+	        case (1 << Node::COORDINATES) | (1 << Node::NONLOCALEQSTRAIN):
+	            // coordinates and displacements and nonlocal eq. strains
+	            switch (rNumTimeDerivatives)
+	            {
+	            case 0:
+	                switch (mDimension)
+	                {
+	                case 1:
+	                    nodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,0,1,0,0>();
+	                    break;
+	                case 2:
+	                    throw MechanicsException("[NuTo::Structure::NodeCreate] nonlocal eq strain not yet implemented for 2D.");
+	                    //nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,0,1,0,0>();
+	                    break;
+	                case 3:
+	                    throw MechanicsException("[NuTo::Structure::NodeCreate] nonlocal eq strain not yet implemented for 3D.");
+	                    //nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,0,0,1,0,0>();
+	                    break;
+	                default:
+	                    throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+	                }
+	            break;
+	//          case 2:
+	//
+	//              switch (mDimension)
+	//              {
+	//              case 1:
+	//                  nodePtr = new NuTo::NodeCoordinatesDof<1,2,0,0,0,0,0,1,0,0>();
+	//                  break;
+	//              case 2:
+	//                  nodePtr = new NuTo::NodeCoordinatesDof<2,2,0,0,0,0,0,1,0,0>();
+	//                  break;
+	//              case 3:
+	//                  nodePtr = new NuTo::NodeCoordinatesDof<3,2,0,0,0,0,0,1,0,0>();
+	//                  break;
+	//              default:
+	//                  throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+	//              }
+	//          break;
+	            default:
+	                throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and nonlocal eq strains only implemented for 0 time derivatives.");
+	            }
+	            break;
 
 
         // Moisture Transport --- Beginn

@@ -137,6 +137,7 @@ elements/Truss.cpp
 elements/Truss1D.cpp
 elements/Truss1D2N.cpp
 elements/Truss1D3N.cpp
+elements/Truss1D4NDisp3NX.cpp
 elements/Tetrahedron4N.cpp
 )
 

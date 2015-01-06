@@ -954,9 +954,9 @@ void NuTo::Truss::AddDetJNtCN(const std::vector<double>& rShapeFunctions,
                               FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     rFactor *=rConstitutiveTangent(0,0);
-    for (int node1=0; node1<GetNumNodes(); node1++)
+    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
     {
-        for (int node2=0; node2<GetNumNodes(); node2++)
+        for (int node2=0; node2<GetNumNodesGeometry(); node2++)
         {
             rCoefficientMatrix(rRow+node1,rCol+node2)+=rFactor*rShapeFunctions[node1]*rShapeFunctions[node2];
         }
@@ -1147,9 +1147,9 @@ void NuTo::Truss::CalculateNodalTemperatures(int rTimeDerivative, std::vector<do
 	assert((int)rTemperatures.size()==GetNumNodesField());
     for (int count=0; count<GetNumNodesField(); count++)
     {
-        if (GetNode(count)->GetNumTemperatures()!=1)
+        if (GetNodeField(count)->GetNumTemperatures()!=1)
             throw MechanicsException("[NuTo::Truss::CalculateNodalTemperatures] Temperature is required as input to the constitutive model, but the node does not have this data.");
-        rTemperatures[count] = GetNode(count)->GetTemperature(rTimeDerivative);
+        rTemperatures[count] = GetNodeField(count)->GetTemperature(rTimeDerivative);
     }
 }
 
@@ -1165,9 +1165,9 @@ void NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std
 	double nonlocalEqPlasticStrain[2];
     for (int count=0; count<GetNumNodesField(); count++)
     {
-        if (GetNode(count)->GetNumNonlocalEqPlasticStrain()!=2)
+        if (GetNodeField(count)->GetNumNonlocalEqPlasticStrain()!=2)
             throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain] Damage is required as input to the constitutive model, but the node does not have this data.");
-        GetNode(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
+        GetNodeField(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
         rNodalNonlocalEqPlasticStrain[count] = nonlocalEqPlasticStrain[0];
         rNodalNonlocalEqPlasticStrain[count+GetNumNodesField()] = nonlocalEqPlasticStrain[1];
     }
@@ -1220,9 +1220,9 @@ void NuTo::Truss::CalculateNodalRelativeHumidity(int rTimeDerivative, std::vecto
     assert((int)rNodalRelativeHumidity.size()==GetNumShapeFunctionsMoistureTransport());
     for (int iNode=0; iNode < GetNumShapeFunctionsMoistureTransport(); iNode++)
     {
-        if (GetNode(iNode)->GetNumRelativeHumidity()!=1)
+        if (GetNodeField(iNode)->GetNumRelativeHumidity()!=1)
             throw MechanicsException("[NuTo::Truss::CalculateNodalRelativeHumidity] Relative humidity is required as input to the constitutive model, but the node does not have this data.");
-        rNodalRelativeHumidity[iNode] = GetNode(iNode)->GetRelativeHumidity(rTimeDerivative);
+        rNodalRelativeHumidity[iNode] = GetNodeField(iNode)->GetRelativeHumidity(rTimeDerivative);
     }
 }
 
@@ -1237,9 +1237,9 @@ void NuTo::Truss::CalculateNodalWaterPhaseFraction(int rTimeDerivative, std::vec
     assert((int)rNodalWaterPhaseFraction.size()==GetNumShapeFunctionsMoistureTransport());
     for (int iNode=0; iNode < GetNumShapeFunctionsMoistureTransport(); iNode++)
     {
-        if (GetNode(iNode)->GetNumWaterPhaseFraction()!=1)
+        if (GetNodeField(iNode)->GetNumWaterPhaseFraction()!=1)
             throw MechanicsException("[NuTo::Truss::CalculateNodalWaterPhaseFraction] Water phase fraction is required as input to the constitutive model, but the node does not have this data.");
-        rNodalWaterPhaseFraction[iNode] = GetNode(iNode)->GetWaterPhaseFraction(rTimeDerivative);
+        rNodalWaterPhaseFraction[iNode] = GetNodeField(iNode)->GetWaterPhaseFraction(rTimeDerivative);
     }
 }
 
@@ -1255,7 +1255,7 @@ void NuTo::Truss::CalculateDeformationGradient(const std::vector<double>& rDeriv
     rDeformationGradient.mDeformationGradient = 0;
 
     //normally, the inverse Jacobian should be calculated, but for a truss element, it is sufficient to use the inverse of the Jacobian determinant
-    for (int count=0; count<GetNumNodes(); count++)
+    for (int count=0; count<GetNumNodesField(); count++)
     {
         rDeformationGradient.mDeformationGradient+=rLocalDisp[count]*rDerivativeShapeFunctions[count];
     }
@@ -1305,7 +1305,7 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
 {
     double naturalCoordinates;
     double nodeCoordinates[3];
-    std::vector<double> shapeFunctions(GetNumNodes());
+    std::vector<double> shapeFunctions(GetNumNodesGeometry());
     GetLocalIntegrationPointCoordinates(rIpNum, naturalCoordinates);
     CalculateShapeFunctionsGeometry(naturalCoordinates, shapeFunctions);
     rCoordinates[0] = 0.;
@@ -1315,9 +1315,9 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     nodeCoordinates[0] = 0;
     nodeCoordinates[1] = 0;
     nodeCoordinates[2] = 0;
-    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
-    	const NodeBase *nodePtr(GetNode(theNode));
+    	const NodeBase *nodePtr(GetNodeGeometry(theNode));
     	switch (nodePtr->GetNumCoordinates())
     	{
     	case 1:
@@ -1615,9 +1615,9 @@ NuTo::ConstitutiveStaticDataBase* NuTo::Truss::AllocateStaticData(const Constitu
 //! @return determinant of the Jacobian
 double NuTo::Truss::DetJacobian(const std::vector<double>& derivativeShapeFunctions,const std::vector<double>& localCoord)const
 {
-    assert((int)localCoord.size()==GetNumNodes() && (int)derivativeShapeFunctions.size()==GetNumNodes());
+    assert((int)localCoord.size()==GetNumNodesGeometry() && (int)derivativeShapeFunctions.size()==GetNumNodesGeometry());
     double detJ(0);
-    for (int count=0; count<GetNumNodes(); count++)
+    for (int count=0; count<GetNumNodesGeometry(); count++)
         detJ+=derivativeShapeFunctions[count]*localCoord[count];
     return detJ;
 }
@@ -1636,9 +1636,9 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     rFactor *=rConstitutiveTangent(0,0);
-    for (int node1=0; node1<GetNumNodes(); node1++)
+    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
     {
-        for (int node2=0; node2<GetNumNodes(); node2++)
+        for (int node2=0; node2<GetNumNodesGeometry(); node2++)
         {
             rCoefficientMatrix(rRow+node1,rCol+node2)+=rFactor*rDerivativeShapeFunctions[node1]*rDerivativeShapeFunctions[node2];
         }
@@ -1651,9 +1651,9 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
 //! @param rCoefficientMatrix to be added to
 void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double rFactor, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
-    for (int node1=0; node1<GetNumNodes(); node1++)
+    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
     {
-        for (int node2=0; node2<GetNumNodes(); node2++)
+        for (int node2=0; node2<GetNumNodesGeometry(); node2++)
         {
             rCoefficientMatrix(node1,node2)+=rFactor*rShapeFunctions[node1]*rShapeFunctions[node2];
         }
@@ -1673,7 +1673,7 @@ void NuTo::Truss::AddDetJBtSigma(const std::vector<double>& rDerivativeShapeFunc
                                  FullVector<double,Eigen::Dynamic>& rResult)const
 {
     rFactor*=rEngineeringStress.GetData()[0];
-    for (int node1=0; node1<GetNumNodes(); node1++)
+    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
     {
         rResult(rRow+node1)+=rFactor*rDerivativeShapeFunctions[node1];
     }
@@ -1692,7 +1692,7 @@ void NuTo::Truss::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
                                  FullVector<double,Eigen::Dynamic>& rResult)const
 {
     rFactor*=rHeatFlux.GetData()[0];
-    for (int node1=0; node1<GetNumNodes(); node1++)
+    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
     {
         rResult(rRow+node1)+=rFactor*rDerivativeShapeFunctions[node1];
     }
@@ -1731,7 +1731,7 @@ void NuTo::Truss::GetIntegrationPointVolume(std::vector<double>& rVolume)const
 //! @return pointer to the node
 NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)
 {
-    return GetNode(rLocalNodeNumber);
+    return GetNodeField(rLocalNodeNumber);
 }
 
 //! @brief returns a pointer to the i-th node of the element
@@ -1739,7 +1739,7 @@ NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)
 //! @return pointer to the node
 const  NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalTotalStrain(int rLocalNodeNumber)const
 {
-    return GetNode(rLocalNodeNumber);
+    return GetNodeField(rLocalNodeNumber);
 }
 
 //! @brief returns a pointer to the i-th node of the element
@@ -1747,7 +1747,7 @@ const  NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalTotalStrain(int rLocalNodeNum
 //! @return pointer to the node
 NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalEqStrain(int rLocalNodeNumber)
 {
-    return GetNode(rLocalNodeNumber);
+    return GetNodeField(rLocalNodeNumber);
 }
 
 //! @brief returns a pointer to the i-th node of the element
@@ -1755,7 +1755,7 @@ NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalEqStrain(int rLocalNodeNumber)
 //! @return pointer to the node
 const  NuTo::NodeBase* NuTo::Truss::GetNodeNonlocalEqStrain(int rLocalNodeNumber)const
 {
-    return GetNode(rLocalNodeNumber);
+    return GetNodeField(rLocalNodeNumber);
 }
 
 
