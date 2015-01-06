@@ -49,7 +49,7 @@ double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
     double areaFactor = 1.;
 
     if (xStartWeakSpot < rXCoordinate and rXCoordinate < xEndWeakSpot)
-        return 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot) ,exponent);
+        return 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot*2.) ,exponent);
 
     assert(areaFactor > 0.);
 
