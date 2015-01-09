@@ -644,6 +644,33 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     	    rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D()->mPrevSigma = engineeringStress;
     	}
 		break;
+    	case NuTo::Constitutive::Output::ENGINEERING_STRESS_ELASTIC_3D:
+    	{
+    	    // get elastic matrix
+    		// calculate coefficients of the linear elastic material matrix
+    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		double C11, C12, C44;
+    		this->CalculateCoefficients3D(C11, C12, C44);
+    		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
+    							C12, C11, C12,  0., 0.,  0.,
+    							C12, C12, C11,  0., 0.,  0.,
+    							 0.,  0.,  0., C44, 0.,  0.,
+    							 0.,  0.,  0.,  0., C44, 0.,
+    							 0.,  0.,  0.,  0., 0., C44;
+    		// get static data
+    	    const ConstitutiveStaticDataDamageViscoPlasticity3D *ExtrapolatedStaticData = rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D();
+
+    		// calculate engineering stress corresponding to the extrapolated static data
+    	    engineeringStress = ElasticStiffness*(MechanicEngineeringStrain - ExtrapolatedStaticData->mEpsilonP - ExtrapolatedStaticData->mEpsilonVp);
+
+    	    if (mDamage == true) {
+				engineeringStress *= 1. - ExtrapolatedStaticData->mOmegaCompr;
+			}
+
+    	    itOutput->second->GetEngineeringStress3D() = engineeringStress;
+
+    	break;
+    	}
     	case NuTo::Constitutive::Output::FATIGUE_SAVE_STATIC_DATA:
     	{
     		rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->FatigueSaveStaticData();

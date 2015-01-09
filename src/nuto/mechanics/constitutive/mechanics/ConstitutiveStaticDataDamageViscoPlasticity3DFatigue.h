@@ -124,6 +124,7 @@ public:
     }
 
     //!@brief extrapolate static data except of mPrevSigma and mPrevStrain
+    //!@brief mPrevSigma and mPrevStrain should be calculated after finding the equilibrium with the extrapolated static data
     void FatigueExtrapolateStaticData(int rNumber)
 	{
         EngineeringStrain3D DeltaEpsilonP, DeltaEpsilonVp;
@@ -137,11 +138,11 @@ public:
     	DeltaEpsilonVp = this->mEpsilonVp - this->mEpsilonVpFatigue;
 
     	// linear extrapolation by NumExtrapolatedCycles
-    	this->mKappaInelastic = this->mKappaInelasticFatigue + rNumber*DeltaKappaInelastic;
-    	this->mOmegaCompr     = this->mOmegaComprFatigue     + rNumber*DeltaOmegaCompr;
-    	this->mPrevHardening  = this->mPrevHardeningFatigue  + rNumber*DeltaPrevHardening;
-    	this->mEpsilonP  = this->mEpsilonPFatigue  + rNumber*DeltaEpsilonP;
-    	this->mEpsilonVp = this->mEpsilonVpFatigue + rNumber*DeltaEpsilonVp;
+    	this->mKappaInelastic += rNumber*DeltaKappaInelastic;
+    	this->mOmegaCompr     += rNumber*DeltaOmegaCompr;
+    	this->mPrevHardening  += rNumber*DeltaPrevHardening;
+    	this->mEpsilonP  += rNumber*DeltaEpsilonP;
+    	this->mEpsilonVp += rNumber*DeltaEpsilonVp;
 	}
 
 #ifdef ENABLE_SERIALIZATION

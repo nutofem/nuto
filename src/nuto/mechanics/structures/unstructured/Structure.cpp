@@ -1485,6 +1485,180 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
     return errorGlobal;
 }
 
+NuTo::Error::eError NuTo::Structure::BuildGlobalElasticGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
+		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector)
+{
+    // initialize vectors
+    assert(rActiveDofGradientVector.GetNumRows() == this->mNumActiveDofs);
+    assert(rActiveDofGradientVector.GetNumColumns() == 1);
+    for (int row = 0; row < rActiveDofGradientVector.GetNumRows(); row ++)
+    {
+        rActiveDofGradientVector(row,0) = 0.0;
+    }
+    assert(rDependentDofGradientVector.GetNumRows() == this->mNumDofs - this->mNumActiveDofs);
+    assert(rDependentDofGradientVector.GetNumColumns() == 1);
+    for (int row = 0; row < rDependentDofGradientVector.GetNumRows(); row ++)
+    {
+        rDependentDofGradientVector(row,0) = 0.0;
+    }
+
+    // define variables storing the element contribution
+	Error::eError errorGlobal (Error::SUCCESSFUL);
+
+	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+
+	boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::INTERNAL_GRADIENT_ELASTIC );
+	boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
+
+    // loop over all elements
+#ifdef _OPENMP
+	if (mNumProcessors!=0)
+		omp_set_num_threads(mNumProcessors);
+    if (mUseMIS)
+    {
+		if (mMIS.size()==0)
+			throw MechanicsException("[NuTo::Structure::BuildGlobalElasticGradientInternalPotentialSubVectors] maximum independent set not calculated.");
+		for (unsigned int misCounter=0; misCounter<mMIS.size() ; misCounter++)
+		{
+			std::vector<ElementBase*>::iterator elementIter;
+			#pragma omp parallel default(shared) private(elementIter) firstprivate(elementOutput)
+			for (elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
+			{
+				#pragma omp single nowait
+				{
+					ElementBase* elementPtr = *elementIter;
+					// calculate element contribution
+					Error::eError error = elementPtr->Evaluate(elementOutput);
+					if (error!=Error::SUCCESSFUL)
+					{
+						if (errorGlobal==Error::SUCCESSFUL)
+							errorGlobal = error;
+						else if (errorGlobal!=error)
+							throw MechanicsException("[NuTo::Structure::BuildGlobalElasticGradientInternalPotentialSubVectors] elements have returned multiple different error codes, can't handle that.");
+					}
+					else
+					{
+		            	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT_ELASTIC)->second->GetFullVectorDouble());
+		    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+		    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+
+						// write element contribution to global vectors
+						for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+						{
+							int globalRowDof = elementVectorGlobalDofs[rowCount];
+							if (globalRowDof < this->mNumActiveDofs)
+							{
+								rActiveDofGradientVector(globalRowDof) += elementVector(rowCount);
+							}
+							else
+							{
+								globalRowDof -= this->mNumActiveDofs;
+								assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+								rDependentDofGradientVector(globalRowDof) += elementVector(rowCount);
+							}
+						}
+					}
+				}
+			}
+		}
+    }
+	else
+	{
+		//do not use MIS
+		//loop over all elements
+        #pragma omp parallel default(shared) firstprivate(elementOutput)
+		for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
+		{
+			#pragma omp single nowait
+			{
+				ElementBase* elementPtr = elementIter->second;
+				// calculate element contribution
+				Error::eError error = elementPtr->Evaluate(elementOutput);
+
+				if (error!=Error::SUCCESSFUL)
+
+				{
+					if (errorGlobal==Error::SUCCESSFUL)
+						errorGlobal = error;
+					else if (errorGlobal!=error)
+						throw MechanicsException("[NuTo::Structure::BuildGlobalElasticGradientInternalPotentialSubVectors] elements have returned multiple different error codes, can't handle that.");
+				}
+				else
+				{
+	            	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT_ELASTIC)->second->GetFullVectorDouble());
+	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::INTERNAL_GRADIENT_ELASTIC)->second->GetVectorInt());
+
+	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+
+					// write element contribution to global vectors
+					for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+					{
+						int globalRowDof = elementVectorGlobalDofs[rowCount];
+						if (globalRowDof < this->mNumActiveDofs)
+						{
+							#pragma omp critical (StructureBuildGlobalGradientInternalPotentialSubVectors)
+							rActiveDofGradientVector(globalRowDof) += elementVector(rowCount);
+						}
+						else
+						{
+							globalRowDof -= this->mNumActiveDofs;
+							assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+							#pragma omp critical (StructureBuildGlobalGradientInternalPotentialSubVectors)
+							rDependentDofGradientVector(globalRowDof) += elementVector(rowCount);
+						}
+					}
+				}
+			}
+		}
+	}
+#else
+	// loop over all elements
+	for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
+	{
+		ElementBase* elementPtr = elementIter->second;
+		// calculate element contribution
+		Error::eError error = elementPtr->Evaluate(elementOutput);
+
+		if (error!=Error::SUCCESSFUL)
+
+		{
+			if (errorGlobal==Error::SUCCESSFUL)
+				errorGlobal = error;
+			else if (errorGlobal!=error)
+				throw MechanicsException("[NuTo::Structure::BuildGlobalElasticGradientInternalPotentialSubVectors] elements have returned multiple different error codes, can't handle that.");
+		}
+		else
+		{
+        	NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT_ELASTIC)->second->GetFullVectorDouble());
+			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
+
+			// write element contribution to global vectors
+			for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofs.size(); rowCount++)
+			{
+				int globalRowDof = elementVectorGlobalDofs[rowCount];
+				if (globalRowDof < this->mNumActiveDofs)
+				{
+					rActiveDofGradientVector(globalRowDof) += elementVector(rowCount);
+				}
+				else
+				{
+					globalRowDof -= this->mNumActiveDofs;
+					assert(globalRowDof < this->mNumDofs - this->mNumActiveDofs);
+					rDependentDofGradientVector(globalRowDof) += elementVector(rowCount);
+				}
+			}
+		}
+	}
+#endif
+
+    //write contribution of Lagrange Multipliers
+    ConstraintBuildGlobalGradientInternalPotentialSubVectors(rActiveDofGradientVector, rDependentDofGradientVector);
+    return errorGlobal;
+}
+
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
 //! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)

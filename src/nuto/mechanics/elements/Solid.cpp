@@ -170,6 +170,21 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					}
 				}
 			break;
+			case Element::INTERNAL_GRADIENT_ELASTIC:
+				it->second->GetFullVectorDouble().Resize(numDispDofs+numTempDofs);
+				if (mStructure->GetHessianConstant(0)==false)
+				{
+					if (numDispDofs>0)
+					{
+						constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_ELASTIC_3D] = &engineeringStress;
+					}
+					if (numTempDofs>0)
+					{
+						constitutiveOutputList[NuTo::Constitutive::Output::HEAT_FLUX_3D] = &heatFlux;
+					}
+				}
+
+			break;
 			case Element::HESSIAN_0_TIME_DERIVATIVE:
 				{
 					it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,numDispDofs+numTempDofs);
@@ -312,6 +327,20 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				switch(it->first)
 				{
 				case Element::INTERNAL_GRADIENT:
+				{
+					// Jacobian
+					double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+					if (numDispDofs>0)
+					{
+						AddDetJBtSigma(derivativeShapeFunctionsFieldGlobal,engineeringStress, factor, 0, it->second->GetFullVectorDouble());
+					}
+					if (numTempDofs>0)
+					{
+						AddDetJBtHeatFlux(derivativeShapeFunctionsFieldGlobal,heatFlux, factor, numDispDofs, it->second->GetFullVectorDouble());
+					}
+				}
+				break;
+				case Element::INTERNAL_GRADIENT_ELASTIC:
 				{
 					// Jacobian
 					double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));

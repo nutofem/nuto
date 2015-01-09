@@ -131,6 +131,15 @@ public:
     NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
     		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables);
 
+    //! @brief ...calculates the sub-vectors of the global internal potential gradient
+    //! @brief ...presumes that state variables remain constant during the return mapping
+    //! @brief ...used for calculation of the Fourier modes in the cycle jump method
+    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
+    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
+    NuTo::Error::eError BuildGlobalElasticGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
+    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector);
+
+
     //! @brief ... applies dof scaling to a global vector
     //! @param rVector ... vector that needs scaling
     //! @param rRowStart ... global dof row, where rVector starts
