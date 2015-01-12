@@ -107,6 +107,14 @@ public:
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     NuTo::Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK);
 
+    //! @brief ... based on the global dofs build submatrices of the global stiffness matrix0
+    //! @brief ... presumes elastic deformation, that is the state variables remain constant
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    NuTo::Error::eError BuildGlobalElasticStiffnessSubMatricesGeneral(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK);
+
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
     //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)

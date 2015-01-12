@@ -39,6 +39,7 @@ enum eOutput
 	INTERNAL_GRADIENT,               //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
 	HESSIAN_0_TIME_DERIVATIVE,       //!<
+	HESSIAN_0_TIME_DERIVATIVE_ELASTIC,	//!<
 	HESSIAN_1_TIME_DERIVATIVE,       //!<
 	HESSIAN_2_TIME_DERIVATIVE,       //!<
 	LUMPED_HESSIAN_2_TIME_DERIVATIVE,//!<

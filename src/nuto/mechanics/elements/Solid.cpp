@@ -206,6 +206,27 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					}
 				}
 			break;
+			case Element::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
+				{
+					it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs,numDispDofs+numTempDofs);
+					it->second->SetSymmetry(true);
+					it->second->SetConstant(true);
+					if (numDispDofs>0)
+					{
+						constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D] = &tangentStressStrain;
+						//mixed term
+						if (numTempDofs)
+							constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE_3D] = &tangentStressTemperature;
+					}
+					if (numTempDofs>0)
+					{
+						constitutiveOutputList[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D] = &tangentHeatFluxTemperatureGradient;
+						//mixed term
+						//if (numDispDofs)
+						//    constitutiveOutputList.insert(std::pair<NuTo::Constitutive::eOutput, ConstitutiveOutputBase*>(NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_ENGINEERING_STRAIN_3D, &tangentHeatFluxEngineeringStrain[timeDerivative]));
+					}
+				}
+			break;
 			case Element::HESSIAN_1_TIME_DERIVATIVE:
 				break;
 			case Element::HESSIAN_2_TIME_DERIVATIVE:
@@ -355,6 +376,32 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				}
 				break;
 				case Element::HESSIAN_0_TIME_DERIVATIVE:
+					{
+						double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+
+						if (numDispDofs>0)
+						{
+							AddDetJBtCB(derivativeShapeFunctionsFieldGlobal, tangentStressStrain, factor, 0,0, it->second->GetFullMatrixDouble());
+							if (tangentStressStrain.GetSymmetry()==false)
+								it->second->SetSymmetry(false);
+							if (tangentStressStrain.GetConstant()==false)
+								it->second->SetConstant(false);
+							if (numTempDofs>0)
+								throw MechanicsException("[NuTo::Solid::Evaluate] mixed terms not yet implemented.");
+						}
+						if (numTempDofs>0)
+						{
+							AddDetJBtCB(derivativeShapeFunctionsFieldGlobal, tangentHeatFluxTemperatureGradient, factor, numDispDofs,numDispDofs, it->second->GetFullMatrixDouble());
+							if (tangentHeatFluxTemperatureGradient.GetSymmetry()==false)
+								it->second->SetSymmetry(false);
+							if (tangentHeatFluxTemperatureGradient.GetConstant()==false)
+								it->second->SetConstant(false);
+							if (numDispDofs>0)
+								throw MechanicsException("[NuTo::Solid::Evaluate] mixed terms not yet implemented.");
+						}
+					}
+				break;
+				case Element::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
 					{
 						double factor(fabs(detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
 

@@ -671,6 +671,32 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 
     	break;
     	}
+    	case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D:
+    	{
+    		ConstitutiveTangentLocal<6,6> tangentElastic;
+
+    	    // get elastic matrix
+    		// calculate coefficients of the linear elastic material matrix
+    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		double C11, C12, C44;
+    		this->CalculateCoefficients3D(C11, C12, C44);
+    		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
+    							C12, C11, C12,  0., 0.,  0.,
+    							C12, C12, C11,  0., 0.,  0.,
+    							 0.,  0.,  0., C44, 0.,  0.,
+    							 0.,  0.,  0.,  0., C44, 0.,
+    							 0.,  0.,  0.,  0., 0., C44;
+    		// get static data
+    	    const ConstitutiveStaticDataDamageViscoPlasticity3D *ExtrapolatedStaticData = rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3D();
+
+    	    // calculate elastic tangent under assumption that the state variables do not evolve (no plasticity etc.)
+    	    tangentElastic = (1. - ExtrapolatedStaticData->mOmegaCompr)*ElasticStiffness;
+    	    itOutput->second->AsConstitutiveTangentLocal_6x6() = tangentElastic;
+
+    	    itOutput->second->AsConstitutiveTangentLocal_6x6().SetSymmetry(true);
+
+    		break;
+    	}
     	case NuTo::Constitutive::Output::FATIGUE_SAVE_STATIC_DATA:
     	{
     		rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->FatigueSaveStaticData();

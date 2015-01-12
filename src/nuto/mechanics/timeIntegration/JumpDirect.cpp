@@ -128,14 +128,31 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     	mStructure->NodeExtractDofValues(0,save_disp_j, save_disp_k);
     	mStructure->ElementFatigueSaveStaticData();
 
+    	std::cout << "Calculate 10 Cycles from here, mTime = " << mTime << std::endl;
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicConstraintFactor(0,1));
+
+    	//Example get damage
+    	if (mStructure->ElementGetElementPtr(0)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS){
+    		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(0)->GetConstitutiveLaw(0)->GetType() << std::endl;
+    		std::cout << "Damage after 10 cycles = " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+    	}
 
     	// repeat with restoring
     	mStructure->SetPrevTime(SaveTime);
     	mStructure->SetTime(SaveTime);
+    	// postprocessing time
+    	mTime = SaveTime;
     	mStructure->NodeMergeActiveDofValues(0,save_disp_j);
     	mStructure->ElementFatigueRestoreStaticData();
+    	std::cout << " SaveTime " << SaveTime << ", mStructure->GetTime() = " << mStructure->GetTime() << std::endl;
 
+    	//Example get damage
+    	if (mStructure->ElementGetElementPtr(0)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS){
+    		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(0)->GetConstitutiveLaw(0)->GetType() << std::endl;
+    		std::cout << "Damage after restoring " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+    	}
+
+    	std::cout << "Repeat 10 Cycles from here, mTime = " << mTime << std::endl;
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicConstraintFactor(0,1));
 
     }
