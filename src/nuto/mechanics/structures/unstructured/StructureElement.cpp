@@ -149,15 +149,43 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 	return ElementCreate(rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA") );
 }
 
+//! @brief Applies boundary conditions to the boundary elements via linear constraints
+//! @param rType type of boundary condition
+void NuTo::Structure::BoundaryElementsApplyConstraints(BoundaryCondition::eType rType)
+{
+    int elemGroupBoundary = GroupCreate("Elements");
+    GroupAddElementFromType(elemGroupBoundary, "BoundaryGradientDamage1D");
+    int numBoundaryElements = GroupGetNumMembers(elemGroupBoundary);
+    for (int iElem = 0; iElem < numBoundaryElements; ++iElem)
+    {
+        int elemIndex = GroupGetMemberIds(elemGroupBoundary).GetValue(iElem);
+        ElementGetElementPtr(elemIndex)->AsBoundaryGradientDamage1D()->ApplyConstraints(rType, this);
+    }
 
+    if (numBoundaryElements == 0)
+    {
+        throw MechanicsException("[NuTo::StructureElement::BoundaryElementsApplyConstraints] Define boundary elements first! (NuTo::Structure::BoundaryElementsCreate())");
+    }
+    else
+    {
+        mLogger << "[NuTo::StructureElement::BoundaryElementsApplyConstraints] Applied BC to " << numBoundaryElements << " elements \n";
+    }
+
+
+}
+
+//! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
+//! @param rElementType element type
 //! @param rGroupNumberElements group for elements on the real boundary
 //! @param rGroupNumberBoundaryNodes nodes on the boundary
-//! @param rElementType element type
-//! @param rNodeIdents Identifier for the corresponding nodes
-void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
-		int rGroupNumberElements, int rGroupNumberBoundaryNodes,
-		int rOrder, double rVirtualBoundary,
-		const std::string& rElementDataType, const std::string& rIpDataType)
+//! @param rElementDataType Element data for the elements
+//! @param rIpDataType Integration point data for the elements
+void NuTo::Structure::BoundaryElementsCreate (
+        const std::string& rElementType,
+		int rGroupNumberElements,
+		int rGroupNumberBoundaryNodes,
+		const std::string& rElementDataType,
+		const std::string& rIpDataType)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -221,7 +249,6 @@ void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
 
     BoundaryElementsCreate(elementType,
     		itGroupElements->second->AsGroupElement(), itGroupBoundaryNodes->second->AsGroupNode(),
-    		rOrder, rVirtualBoundary,
     		elementDataType, ipDataType);
 
 #ifdef SHOW_TIME
@@ -232,132 +259,86 @@ void NuTo::Structure::BoundaryElementsCreate (const std::string& rElementType,
 }
 
 //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
-//! @param rGroupNumberElements group for elements on the real boundary
-//! @param rGroupNumberBoundaryNodes nodes on the boundary
 //! @param rElementType element type
-//! @param rNodeIdents Identifier for the corresponding nodes
-void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
-		const Group<ElementBase>* rGroupElements, const Group<NodeBase>* rGroupBoundaryNodes,
-		int rOrder, double rVirtualBoundary,
-		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+//! @param rGroupElements group for elements on the real boundary
+//! @param rGroupBoundaryNodes nodes on the boundary
+//! @param rElementDataType Element data for the elements
+//! @param rIpDataType Integration point data for the elements
+void NuTo::Structure::BoundaryElementsCreate (
+        Element::eElementType rType,
+		const Group<ElementBase>* rGroupElements,
+		const Group<NodeBase>* rGroupBoundaryNodes,
+		ElementData::eElementDataType rElementDataType,
+		IpData::eIpDataType rIpDataType)
 {
-	double deltaL(rVirtualBoundary/rOrder);
 
     for (Group<ElementBase>::const_iterator itElement=rGroupElements->begin(); itElement!=rGroupElements->end();itElement++)
     {
+        ElementBase* element = itElement->second;
         try
         {
-        	std::map<NodeBase*,std::vector<NodeBase*> > copiedNodes;
-
         	//better check local dimension, but this is in general identical
-    		switch(itElement->second->GetGlobalDimension())
+    		switch(element->GetGlobalDimension())
     		{
     		case 1:
     		{
-    			//in 1D it is either the first or the last node of the element
-      			NodeBase* nodePtr [2];
-      			nodePtr[0] = itElement->second->GetNode(0);
-      			nodePtr[1] = itElement->second->GetNode(itElement->second->GetNumNodes()-1);
 
-       			int nodeNumber[2];
-       			double coordinate[2];
+    		    Truss* truss = element->AsTruss();
 
-       			for (int count=0; count<2; count++)
-       			{
-       				nodeNumber[count] = NodeGetId(nodePtr[count]);
-       				nodePtr[count]->GetCoordinates1D(&(coordinate[count]));
-       			}
-
-       			//loop over first/last node of element
-       			for (int countNode=0; countNode<2; countNode++)
-       			{
-					if (rGroupBoundaryNodes->Contain(nodeNumber[countNode]))
-					{
-						int numTimeDerivatives = nodePtr[countNode]->GetNumTimeDerivatives();
-						int numNonlocalNonlocalTotalStrain = nodePtr[countNode]->GetNumNonlocalTotalStrain();
-						//check, if the virtual boundary extends to the left or to the right
-						std::vector<NodeBase*> newNodes(rOrder+1);
-						newNodes[0] = nodePtr[countNode];
-						for (int countOrder=0; countOrder<rOrder; countOrder++)
-						{
-							NodeBase* newNodePtr(0);
-							double NewCoordinate;
-							if (countNode==0)
-							{
-								if (coordinate[0]<coordinate[1])
-									//boundary extends to the left
-									NewCoordinate = coordinate[0]-(countOrder+1)*deltaL;
-								else
-									//boundary extends to the right
-									NewCoordinate = coordinate[0]+(countOrder+1)*deltaL;
-							}
-							else
-							{
-								if (coordinate[0]<coordinate[1])
-									//boundary extends to the right
-									NewCoordinate = coordinate[1]+(countOrder+1)*deltaL;
-								else
-									//boundary extends to the right
-									NewCoordinate = coordinate[1]-(countOrder+1)*deltaL;
-							}
-
-							switch(numTimeDerivatives)
-							{
-							case 0:
-								if (numNonlocalNonlocalTotalStrain==1)
-                                    newNodePtr = new NuTo::NodeCoordinatesDof<1,0,0,0,0,0,1,0,0,0>();
-								break;
-							case 2:
-								if (numNonlocalNonlocalTotalStrain==1)
-                                    newNodePtr = new NuTo::NodeCoordinatesDof<1,1,0,0,0,0,1,0,0,0>();
-								break;
-							default:
-								throw MechanicsException("[BoundaryElementsCreate] time derivative should be either 0 or 2.");
-							}
-
-							newNodePtr->SetCoordinates1D(&NewCoordinate);
-
-							//find unused integer id
-							int newNodeId(mNodeMap.size());
-							boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(newNodeId);
-							while (it!=mNodeMap.end())
-							{
-								newNodeId++;
-								it = mNodeMap.find(newNodeId);
-							}
-							// add new node to map
-							this->mNodeMap.insert(newNodeId, newNodePtr);
-
-							newNodes[countOrder+1] = newNodePtr;
-						}
-						//add to map (copied nodes with the original boundary node
-						//this has to be done for 2D and 3D, but for 1D, boundary nodes belong only to a single element
-						//copiedNodes[nodePtr1] = newNodes;
-
-						//create the boundary element
-						ElementBase* newElementPtr = new NuTo::BoundaryGradientDamage1D(this,newNodes,
-								itElement->second->AsTruss(),countNode,
-								NuTo::ElementData::CONSTITUTIVELAWIP,
-								IntegrationType::IntegrationType1D2NBoundaryGauss3Ip,
-								IpData::STATICDATA);
-
-						//find unused integer id
-						int elementNumber(mElementMap.size());
-						boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(elementNumber);
-						while (it!=mElementMap.end())
-						{
-							elementNumber++;
-							it = mElementMap.find(elementNumber);
-						}
-
-						mElementMap.insert(elementNumber, newElementPtr);
-
-						//modify the material of the element, use the constitutive law of the first ip in the neigboring element
-						newElementPtr->SetConstitutiveLaw(itElement->second->GetConstitutiveLaw(0));
+    		    // assert: max 2 boundaries --> max 2 elements, max 2 nodes
+    		    assert (rGroupElements->GetNumMembers() <= 2);
+    		    assert (rGroupBoundaryNodes->GetNumMembers() <= 2);
 
 
-					}//if (rGroupBoundaryNodes->Contain(nodeNumber1))
-				}//for (int count=0; count<2; count++)
+    		    // get the two surface nodes of the element
+    		    std::vector<const NodeBase*> surfaceNodes(1);
+    		    truss->GetSurfaceNodes(0, surfaceNodes);
+    		    int nodeIds[2];
+    		    nodeIds[0] = NodeGetId(surfaceNodes[0]);
+
+    		    truss->GetSurfaceNodes(1, surfaceNodes);
+                nodeIds[1] = NodeGetId(surfaceNodes[0]);
+
+
+                // add the boundary element if it has corresponding
+                // nodes in the boundary node group
+                int nodesPerElement = 0;
+                for (int iNode = 0; iNode < 2; ++iNode)
+                {
+                    if (rGroupBoundaryNodes->Contain(nodeIds[iNode]))
+                    {
+                        ElementBase* newElementPtr = new NuTo::BoundaryGradientDamage1D(
+                                this, itElement->second->AsTruss(),
+                                NodeGetNodePtr(nodeIds[iNode]),
+                                NuTo::ElementData::CONSTITUTIVELAWIP,
+                                IntegrationType::IntegrationType0DBoundary,
+                                IpData::STATICDATA);
+
+                        //find unused integer id
+                        int elementNumber(mElementMap.size());
+                        boost::ptr_map<int,ElementBase>::iterator it = mElementMap.find(elementNumber);
+                        while (it!=mElementMap.end())
+                        {
+                            elementNumber++;
+                            it = mElementMap.find(elementNumber);
+                        }
+                        mElementMap.insert(elementNumber, newElementPtr);
+
+                        // assign the constitutive law
+//                        ElementSetConstitutiveLaw(newElementPtr)
+                        newElementPtr->SetConstitutiveLaw(truss->GetConstitutiveLaw(0));
+
+                        nodesPerElement ++;
+                    }
+                }
+
+                // perform some checks:
+                if (nodesPerElement == 0)
+                    throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Some element in the node group has no corresponding surface node.");
+
+                if (nodesPerElement == 2 and rGroupElements->GetNumMembers() != 1)
+                    throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Two 1D surface nodes are only possible for a single element.");
+
     		}
     		break;
     		case 2:
@@ -397,7 +378,6 @@ void NuTo::Structure::BoundaryElementsCreate (Element::eElementType rType,
 
 
 }
-
 
 
 
@@ -568,6 +548,10 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
 	{
 		elementType = NuTo::Element::TETRAHEDRON10N;
 	}
+    else if (upperCaseElementType=="BOUNDARYGRADIENTDAMAGE1D")
+    {
+        elementType = NuTo::Element::BOUNDARYGRADIENTDAMAGE1D;
+    }
 	else
 	{
 		throw MechanicsException("[NuTo::Structure::ElementCreate] Element type "+upperCaseElementType +" does not exist.");
@@ -1613,7 +1597,6 @@ void NuTo::Structure::ElementConvertTruss1D2NToTruss1D4NDisp3NX(int rGroupNumber
         // extract element data
         ElementData::eElementDataType elementDataType(element->GetElementDataType());
         IpData::eIpDataType ipDataType = element->GetIpDataType(0);
-        std::cout << ipDataType << std::endl;
 
         // get node ptr vector
         std::vector<NodeBase*> nodeVector(5);

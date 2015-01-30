@@ -12,7 +12,8 @@ namespace IntegrationType
 
 enum eIntegrationType
 {
-    IntegrationType1D2NGauss1Ip=0,
+    IntegrationType0DBoundary = 0,
+    IntegrationType1D2NGauss1Ip,
     IntegrationType1D2NGauss2Ip,
     IntegrationType1D2NBoundaryGauss3Ip,
     IntegrationType1D2NGauss3Ip,

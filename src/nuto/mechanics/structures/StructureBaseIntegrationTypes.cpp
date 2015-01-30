@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NConstVariableIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
@@ -55,6 +56,9 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         NuTo::IntegrationTypeBase *ptrIntegrationType;
         switch(rEnumIntegrationType)
         {
+        case  NuTo::IntegrationType::IntegrationType0DBoundary:
+            ptrIntegrationType = new NuTo::IntegrationType0DBoundary();
+        break;
         case  NuTo::IntegrationType::IntegrationType1D2NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss1Ip();
         break;

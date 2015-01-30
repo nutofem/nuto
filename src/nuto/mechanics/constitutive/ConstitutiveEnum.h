@@ -47,6 +47,7 @@ enum eDamageLawType
     ISOTROPIC_NO_SOFTENING,             //!< constant post peak behaviour
     ISOTROPIC_LINEAR_SOFTENING,         //!< linear
     ISOTROPIC_EXPONENTIAL_SOFTENING,    //!< exponential
+    ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH, //!< exponential with polynomial smoothing near peak
     ISOTROPIC_CUBIC_HERMITE             //!< cubic hermite h00
 };
 

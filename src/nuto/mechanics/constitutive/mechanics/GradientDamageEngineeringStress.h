@@ -115,6 +115,22 @@ public:
     //! @param rAlpha ... thermal expansion coefficient
     void SetThermalExpansionCoefficient(double rNu) override;
 
+    //! @brief ... get fracture energy
+    //! @return ... fracture energy
+    double GetFractureEnergy() const;
+
+    //! @brief ... set fracture energy
+    //! @param rFractureEnergy... fracture energy
+    void SetFractureEnergy(double rFractureEnergy);
+
+    //! @brief ... get tensile strength
+    //! @return ... tensile strength
+    double GetTensileStrength() const;
+
+    //! @brief ... set tensile strength
+    //! @param rTensileStrength...  tensile strength
+    void SetTensileStrength(double rTensileStrength);
+
     //! @brief ... get damage law
     //! @return ... damage law
     NuTo::FullVector<double, Eigen::Dynamic> GetDamageLaw() const override;
@@ -184,6 +200,12 @@ protected:
     //! @brief ... thermal expansion coefficient \f$ \alpha \f$
     double mThermalExpansionCoefficient;
 
+    //! @brief ... fracture energy
+    double mFractureEnergy;
+
+    //! @brief ... tensile strength
+    double mTensileStrength;
+
     //! @brief ... damage law type
     int mDamageLawType;
 
@@ -209,6 +231,15 @@ protected:
     //! @brief ... check thermal expansion coefficient
     //! @param rAlpha ... thermal expansion coefficient
     void CheckThermalExpansionCoefficient(double rAlpha) const;
+
+    //! @brief ... check if tensile strength is positive
+    //! @param rTensileStrength ... nonlocal radius
+    void CheckTensileStrength(double rTensileStrength) const;
+
+    //! @brief ... check if fracture energy is positive
+    //! @param rFractureEnergy ... fracture energy
+    void CheckFractureEnergy(double rFractureEnergy) const;
+
 
     //! @brief ... check damage law
     //! @param rDamageLaw ... damage law

@@ -70,6 +70,18 @@ public:
     //! @brief Update the static data of an element
     //Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType);
 
+
+    //! @brief returns the surface nodes
+    //! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+    //! @param surface nodes
+    virtual void GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const;
+
+    //! @brief transforms the natural surface coordinates to natural element coordinates
+    //! @param rSurface surface edge number
+    //! @param rSurfaceCoordinate natural coordinate in the surface system (not relevant in 1D)
+    //! @param rNaturalSurfaceCoordinates corresponding natural coordinate in the element system
+    virtual void CalculateNaturalSurfaceCoordinates(int rSurface, double rSurfaceCoordinate, std::vector<double>& rNaturalSurfaceCoordinates) const;
+
     //! @brief calculates the Kkk matrix
     //! @param shapeFunctions of the ip for all shape functions
     //! @param derivativeShapeFunctions of the ip for all shape functions
@@ -123,7 +135,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJNtdLocalEqStraindEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentLocalEqStrainStrain,
-            const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+            const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const;
 
 
     //! @brief add detJ transpose N dOmega/depsilon B

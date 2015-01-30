@@ -869,6 +869,55 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
     return Error::SUCCESSFUL;
 }
 
+//! @brief returns the surface nodes
+//! @param surface (numbering so that the normal (right hand /thumb rule) is pointing outwards)
+//! @param surface nodes
+void NuTo::Truss::GetSurfaceNodes(int rSurface, std::vector<const NodeBase*>& rSurfaceNodes)const
+{
+    assert (rSurfaceNodes.size() == 1);
+    switch (rSurface)
+    {
+        case 0:
+        {
+            // first node
+            rSurfaceNodes[0] = GetNode(0);
+        }
+            break;
+        case 1:
+        {
+            // last node
+            rSurfaceNodes[0] = GetNode(GetNumNodes()-1);
+        }
+        break;
+        default:
+            throw NuTo::MechanicsException("[NuTo::Truss::GetSurfaceNodes] Truss has only 2 surfaces.");
+    }
+}
+
+//! @brief transforms the natural surface coordinates to natural element coordinates
+//! @param rSurface surface edge number
+//! @param rSurfaceCoordinate natural coordinate in the surface system (not relevant in 1D)
+//! @param rNaturalSurfaceCoordinates corresponding natural coordinate in the element system
+void NuTo::Truss::CalculateNaturalSurfaceCoordinates(int rSurface, double rSurfaceCoordinate, std::vector<double>& rNaturalSurfaceCoordinates) const
+{
+    assert (rNaturalSurfaceCoordinates.size() == 1);
+    switch (rSurface)
+    {
+        case 0:
+        {
+            rNaturalSurfaceCoordinates[0] = -1;
+        }
+            break;
+        case 1:
+        {
+            rNaturalSurfaceCoordinates[0] = 1;
+        }
+        break;
+        default:
+            throw NuTo::MechanicsException("[NuTo::Truss::CalculateNaturalSurfaceCoordinates] Truss has only 2 surfaces.");
+    }
+}
+
 //! @brief add detJ transpose N dOmega/depsilon B
 //! @param rShapeFunctions of the ip for all shape functions
 //! @param rTangentLocalEqPlasticStrainStrain derivative of the local eq plastic strains with respect to the strain
@@ -901,7 +950,7 @@ void NuTo::Truss::AddDetJNtdLocalEqPlasticStraindEpsilonB(const std::vector<doub
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJNtdLocalEqStraindEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentLocalEqStrainStrain,
-        const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+        const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const
 {
 
     double tmpfactor = rTangentLocalEqStrainStrain(0)*rFactor;

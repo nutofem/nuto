@@ -18,6 +18,7 @@
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/elements/BoundaryGradientDamage1D.h" // for enum definition
 
 namespace NuTo
 {
@@ -385,16 +386,6 @@ public:
     //! @return a NuTo::FullVector<int,Eigen::Dynamic> containing the element numbers
     NuTo::FullVector<int,Eigen::Dynamic> ElementsCreate (const std::string& rElementType, NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
-    //! @param rGroupNumberElements group for elements on the real boundary
-    //! @param rGroupNumberBoundaryNodes nodes on the boundary
-    //! @param int rOrder number of additional boundary nodes
-    //! @param rVirtualBoundary thickness of the virtual boundary element (related to the nonlocal radius)
-    //! @param rElementType element type
-    //! @param rNodeIdents Identifier for the corresponding nodes
-    void BoundaryElementsCreate (const std::string& rElementType,
-    		int rGroupNumberElements, int rGroupNumberBoundaryNodes,
-    		int rOrder, double rVirtualBoundary,
-    		const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @param rGroupNumberElements group for elements (Plane2D4N) to be converted
     //! @param rOder, order of the elements (2,3 or 4 is implemented)
@@ -420,18 +411,38 @@ public:
     //! @param r3NDofType dof type string of the 3N interpolated dof
     void ElementConvertTruss1D2NToTruss1D4NDisp3NX(int rGroupNumberElements, std::string r3NDofType);
 
-#ifndef SWIG
+
+    //! @brief Applies boundary conditions to the boundary elements via linear constraints
+    //! @param rType type of boundary condition
+    void BoundaryElementsApplyConstraints(NuTo::BoundaryCondition::eType rType);
+
     //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
+    //! @param rElementType element type
     //! @param rGroupNumberElements group for elements on the real boundary
     //! @param rGroupNumberBoundaryNodes nodes on the boundary
-    //! @param int rOrder number of additional boundary nodes
-    //! @param rVirtualBoundary thickness of the virtual boundary element (related to the nonlocal radius)
+    //! @param rElementDataType Element data for the elements
+    //! @param rIpDataType Integration point data for the elements
+    void BoundaryElementsCreate (
+            const std::string& rElementType,
+    		int rGroupNumberElements,
+    		int rGroupNumberBoundaryNodes,
+    		const std::string& rElementDataType,
+    		const std::string& rIpDataType);
+
+#ifndef SWIG
+
+    //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
     //! @param rElementType element type
-    //! @param rNodeIdents Identifier for the corresponding nodes
-    void BoundaryElementsCreate (NuTo::Element::eElementType rType,
-    		const Group<ElementBase>* rGroupElements, const Group<NodeBase>* rGroupBoundaryNodes,
-    		int rOrder, double rVirtualBoundary,
-    		ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+    //! @param rGroupElements group for elements on the real boundary
+    //! @param rGroupBoundaryNodes nodes on the boundary
+    //! @param rElementDataType Element data for the elements
+    //! @param rIpDataType Integration point data for the elements
+    void BoundaryElementsCreate (
+            NuTo::Element::eElementType rType,
+    		const Group<ElementBase>* rGroupElements,
+    		const Group<NodeBase>* rGroupBoundaryNodes,
+    		ElementData::eElementDataType rElementDataType,
+    		IpData::eIpDataType rIpDataType);
 
 #endif //SWIG
 

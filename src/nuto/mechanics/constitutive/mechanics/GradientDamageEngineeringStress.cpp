@@ -36,7 +36,7 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
-#define MAX_OMEGA 1.
+#define MAX_OMEGA 0.99
 //#define ENABLE_DEBUG
 
 NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() : ConstitutiveBase()
@@ -46,6 +46,8 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() : Const
     mNu = 0.;
     mNonlocalRadius = 0.;
     mThermalExpansionCoefficient = 0.;
+    mTensileStrength = 0.;
+    mFractureEnergy = 0.;
     mDamageLawType = Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
 
 
@@ -160,12 +162,6 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
         localEqStrainDerivative[0] = 1.;
 
 
-//        logger << "nonlocal eq. strain " << nonlocalEqStrain << "\n";
-//        logger << "conv. nonlocal eq. strain " << kappa << "\n";
-
-
-
-
         //set this to true, if update is in the map, perform the update after all other outputs have been calculated
         bool performUpdateAtEnd(false);
 
@@ -210,13 +206,11 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
             {
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
-                if (kappa > kappaLastConverged)
+                if (nonlocalEqStrain > kappaLastConverged)
                 {
                     // loading
 
-//                    tangent(0,0) = - CalculateDerivativeDamage(kappa) * stress1D[0];
-                    tangent(0,0) = - CalculateDerivativeDamage(kappa) * mE * strain1D(0);
-
+                    tangent(0,0) = - CalculateDerivativeDamage(nonlocalEqStrain) * stress1D[0];
 
                 } else {
                     // unloading
@@ -417,6 +411,38 @@ void NuTo::GradientDamageEngineeringStress::SetThermalExpansionCoefficient(doubl
     this->SetParametersValid();
 }
 
+//! @brief ... get fracture energy
+//! @return ... fracture energy
+double NuTo::GradientDamageEngineeringStress::GetFractureEnergy() const
+{
+    return mFractureEnergy;
+}
+
+//! @brief ... set fracture energy
+//! @param rFractureEnergy... fracture energy
+void NuTo::GradientDamageEngineeringStress::SetFractureEnergy(double rFractureEnergy)
+{
+    this->CheckFractureEnergy(rFractureEnergy);
+    this->mFractureEnergy = rFractureEnergy;
+    this->SetParametersValid();
+}
+
+//! @brief ... get tensile strength
+//! @return ... tensile strength
+double NuTo::GradientDamageEngineeringStress::GetTensileStrength() const
+{
+    return mTensileStrength;
+}
+
+//! @brief ... set tensile strength
+//! @param rTensileStrength...  tensile strength
+void NuTo::GradientDamageEngineeringStress::SetTensileStrength(double rTensileStrength)
+{
+    this->CheckTensileStrength(rTensileStrength);
+    this->mTensileStrength = rTensileStrength;
+    this->SetParametersValid();
+}
+
 //! @brief ... get damage law
 //! @return ... damage law
 NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStress::GetDamageLaw() const
@@ -436,7 +462,8 @@ void NuTo::GradientDamageEngineeringStress::SetDamageLaw(
     this->CheckDamageLaw(rDamageLaw);
     mDamageLawType = static_cast<int>(rDamageLaw[0]);
     int numDamageLawParameters = rDamageLaw.rows() - 1;
-    mDamageLawParameters = rDamageLaw.GetBlock(1,0,numDamageLawParameters,1);
+    if (numDamageLawParameters > 0)
+        mDamageLawParameters = rDamageLaw.GetBlock(1,0,numDamageLawParameters,1);
 
     this->SetParametersValid();
 
@@ -478,6 +505,8 @@ bool NuTo::GradientDamageEngineeringStress::CheckElementCompatibility(NuTo::Elem
     case NuTo::Element::TRUSS1D3N:
         return true;
     case NuTo::Element::TRUSS1D4NDISP3NX:
+        return true;
+    case NuTo::Element::BOUNDARYGRADIENTDAMAGE1D:
         return true;
     default:
         return false;
@@ -535,6 +564,26 @@ void NuTo::GradientDamageEngineeringStress::CheckThermalExpansionCoefficient(dou
 {
 }
 
+//! @brief ... check if tensile strength is positive
+//! @param rTensileStrength ... nonlocal radius
+void NuTo::GradientDamageEngineeringStress::CheckTensileStrength(double rTensileStrength) const
+{
+    if (rTensileStrength <= 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CheckTensileStrength] The tensile strength must be a positive value.");
+    }
+}
+
+//! @brief ... check if fracture energy is positive
+//! @param rFractureEnergy ... fracture energy
+void NuTo::GradientDamageEngineeringStress::CheckFractureEnergy(double rFractureEnergy) const
+{
+    if (rFractureEnergy <= 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::CheckFractureEnergy] The fracture energy must be a positive value.");
+    }
+}
+
 //! @brief ... check damage law parameters
 //! @param rDamageLawParameters ... damage law parameters
 void NuTo::GradientDamageEngineeringStress::CheckDamageLaw(
@@ -544,69 +593,31 @@ void NuTo::GradientDamageEngineeringStress::CheckDamageLaw(
     int numDamageLawParameters = rDamageLaw.rows() - 1;
 
     switch (damageLawType) {
-        case Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING:
-        {
-            if (numDamageLawParameters < 1)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_NO_SOFTENING: Must provide one parameter"));
-
-            if (rDamageLaw(1) <= 0)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_NO_SOFTENING: parameter e_0 must be positive"));
-            break;
-        }
-
-        case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
-        {
-            if (numDamageLawParameters < 2)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_LINEAR_SOFTENING: Must provide two parameters"));
-
-            if (rDamageLaw(1) <= 0 || rDamageLaw(2) <= 0)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_LINEAR_SOFTENING: parameters e_0 and e_c must be positive"));
-
-            break;
-        }
-        case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
-        {
-            if (numDamageLawParameters < 2)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_EXPONENTIAL_SOFTENING: Must provide two parameters"));
-
-            if (rDamageLaw(1) <= 0 || rDamageLaw(2) <= 0)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_EXPONENTIAL_SOFTENING: parameters e_0 and e_f must be positive"));
-            break;
-        }
-
-        case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
-        {
-            if (numDamageLawParameters < 2)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_CUBIC_HERMITE: Must provide two parameters"));
-
-            if (rDamageLaw(1) <= 0 || rDamageLaw(2) <= 0)
-                throw NuTo::MechanicsException(
-                        std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                        std::string("ISOTROPIC_CUBIC_HERMITE: parameters e_0 and e_f must be positive"));
-            break;
-        }
-
-        default:
-        {
+    case Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING:
+        break;
+    case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
+        break;
+    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
+        break;
+    case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
+        break;
+    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH:
+    {
+        if (numDamageLawParameters != 3)
             throw NuTo::MechanicsException(
                     std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
-                    std::string("The required damage law is not implemented. "));
-            break;
-        }
+                    std::string("ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH needs exactly 3 parameters."));
+
+    }
+        break;
+    default:
+    {
+        throw NuTo::MechanicsException(
+                std::string("[NuTo::GradientDamageEngineeringStress::CheckDamageLaw] ") +
+                std::string("The required damage law is not implemented. "));
+        break;
+    }
+
     }
 
 }
@@ -631,6 +642,8 @@ void NuTo::GradientDamageEngineeringStress::CheckParameters()const
     this->CheckYoungsModulus(mE);
     this->CheckPoissonsRatio(mNu);
     this->CheckNonlocalRadius(mNonlocalRadius);
+    this->CheckTensileStrength(mTensileStrength);
+    this->CheckFractureEnergy(mFractureEnergy);
     this->CheckDamageLaw(GetDamageLaw());
     this->CheckThermalExpansionCoefficient(mThermalExpansionCoefficient);
 }
@@ -640,10 +653,14 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa)cons
 {
     double omega = 0;
 
+    double e_0 = mTensileStrength / mE;
+    double e_f = mFractureEnergy / mTensileStrength;
+    double e_c = 2* e_f; // or something
+
+
     switch (mDamageLawType) {
         case Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
             if (rKappa > e_0)
             {
                 omega = 1 - e_0 / rKappa;
@@ -652,8 +669,6 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa)cons
         }
         case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
-            double e_c = mDamageLawParameters.GetValue(1);
             if (rKappa > e_0)
             {
                 omega = e_c / rKappa * (rKappa - e_0) / (e_c - e_0);
@@ -663,18 +678,50 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa)cons
         }
         case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
-            double e_f = mDamageLawParameters.GetValue(1);
             if (rKappa > e_0)
             {
                 omega = 1 - e_0 / rKappa * exp( (e_0 - rKappa) / e_f);
             }
             break;
         }
+        case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH:
+        {
+            double alpha = mDamageLawParameters[0];
+            double beta = mDamageLawParameters[1];
+            double gamma = mDamageLawParameters[2];
+
+            double e_Dev_e0 = rKappa / e_0;
+            double e0_Dev_e = e_0/rKappa;
+
+            if (e_Dev_e0 <= alpha)
+                break;
+
+            if (e_Dev_e0 < beta)
+            {
+                // pre peak polynomial smoothing
+                omega = 1. - e0_Dev_e*((1-alpha)*pow((e_Dev_e0-beta)/(beta-alpha),3.) +1 );
+                break;
+            }
+
+
+            double term = 2. * e_f / (e_0*(gamma-beta));
+            double A = -1. / (1+term);
+            if (e_Dev_e0 < gamma)
+            {
+                // post peak polynomial smoothing
+                omega = 1. - e0_Dev_e*( pow((e_Dev_e0-beta)/(gamma-beta),2.) * A  +1);
+                break;
+            }
+            double e_s = e_0*gamma+e_f*log(-A*term);
+
+
+            // else
+            omega = 1. - e0_Dev_e * exp((e_s-rKappa)/e_f);
+
+            break;
+        }
         case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
-            double e_c = mDamageLawParameters.GetValue(1);
             if (rKappa > e_0)
             {
                 if (rKappa < e_c)
@@ -695,6 +742,7 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa)cons
             break;
     }
 
+
     return omega;
 }
 
@@ -702,10 +750,13 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
 {
     double DomegaDkappa = 0;
 
+    double e_0 = mTensileStrength / mE;
+    double e_f = mFractureEnergy / mTensileStrength;
+    double e_c = 2* e_f; // or something
+
     switch (mDamageLawType) {
         case Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
             if (rKappa > e_0)
             {
                 DomegaDkappa = e_0 / (rKappa * rKappa);
@@ -714,8 +765,6 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
         }
         case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
-            double e_c = mDamageLawParameters.GetValue(1);
             if (rKappa > e_0 && rKappa < e_c)
             {
                 DomegaDkappa = e_c * e_0 / (rKappa * rKappa * (e_c - e_0) );
@@ -724,18 +773,50 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
         }
         case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
-            double e_f = mDamageLawParameters.GetValue(1);
             if (rKappa > e_0)
             {
                 DomegaDkappa = e_0/rKappa*(1/rKappa + 1/e_f) * exp((e_0 - rKappa)/e_f);
             }
             break;
         }
+        case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH:
+        {
+            double alpha = mDamageLawParameters[0];
+            double beta = mDamageLawParameters[1];
+            double gamma = mDamageLawParameters[2];
+
+            double e_Dev_e0 = rKappa / e_0;
+            double e0_dev_e2 = e_0/pow(rKappa,2.);
+
+            if (e_Dev_e0 <= alpha)
+                break;
+
+            if (e_Dev_e0 < beta)
+            {
+                // pre peak polynomial smoothing
+                DomegaDkappa = e0_dev_e2 * (1. + (1.-alpha)/pow(beta-alpha,3.) * pow(e_Dev_e0-beta,2.) * (-2.*e_Dev_e0-beta) );
+                break;
+            }
+
+
+            double term = 2. * e_f / (e_0*(gamma-beta));
+            double A = -1. / (1+term);
+            if (e_Dev_e0 < gamma)
+            {
+                // post peak polynomial smoothing
+                DomegaDkappa = e0_dev_e2 * (1. + (beta*beta-e_Dev_e0*e_Dev_e0)/((gamma-beta)*(gamma-beta-2.*e_f/e_0)));
+                break;
+            }
+            double e_s = e_0*gamma+e_f*log(-A*term);
+
+
+            // else
+            DomegaDkappa = e0_dev_e2 * (rKappa/e_f+1.)*exp((e_s-rKappa)/e_f);
+
+            break;
+        }
         case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
         {
-            double e_0 = mDamageLawParameters.GetValue(0);
-            double e_c = mDamageLawParameters.GetValue(1);
             if (rKappa > e_0 && rKappa < e_c)
             {
                 double kappa_scaled = (rKappa - e_0) / (e_c-e_0);
@@ -752,6 +833,7 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
 
             break;
     }
+
 
     return DomegaDkappa;
 }

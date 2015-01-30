@@ -35,7 +35,8 @@ double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
 {
     if (mAreaParameters == nullptr)
     {
-        throw NuTo::MechanicsException("[NuTo::SectionTruss::GetAreaFactor] Call NuTo::SectionTruss::SetAreaParameters first!") ;
+        return 1.;
+//        throw NuTo::MechanicsException("[NuTo::SectionTruss::GetAreaFactor] Call NuTo::SectionTruss::SetAreaParameters first!") ;
     }
 
     double xWeakSpot = mAreaParameters[0];
@@ -49,7 +50,9 @@ double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
     double areaFactor = 1.;
 
     if (xStartWeakSpot < rXCoordinate and rXCoordinate < xEndWeakSpot)
-        return 1 - alpha* std::pow(1.-std::abs((rXCoordinate-xWeakSpot)/lWeakSpot*2.) ,exponent);
+//        areaFactor = 1 - alpha* std::pow(1.-2*std::abs((rXCoordinate-xWeakSpot)/lWeakSpot) ,exponent);
+        areaFactor = 1- alpha/2*(1+std::cos(2*M_PI*(rXCoordinate-xWeakSpot) / lWeakSpot));
+
 
     assert(areaFactor > 0.);
 

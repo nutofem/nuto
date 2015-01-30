@@ -13,17 +13,19 @@
 
 bool CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
 {
-    double epsilon = 1.e-10;
-    double e0 = rConstitutiveLaw.GetDamageLaw().GetValue(1);
+    double epsilon = 1.e-8;
     double E = rConstitutiveLaw.GetYoungsModulus();
+    double e0 = rConstitutiveLaw.GetTensileStrength() / E;
+    double step = e0/5;
     for (int i = 1; i < 100; ++i)
     {
-        double kappa = i*e0+epsilon;
-
+        double kappa = i*step+epsilon;
+//        kappa = i*step;
         double sigma1 = (1 - rConstitutiveLaw.CalculateDamage(kappa))*E*kappa;
-        double sigma2 = (1 - rConstitutiveLaw.CalculateDamage(kappa+epsilon))*E*kappa;
+        double sigma2 = (1 - rConstitutiveLaw.CalculateDamage(kappa+epsilon))*E*(kappa+epsilon);
 
-        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa)*E*kappa;
+        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa)*E*kappa
+                + (1-rConstitutiveLaw.CalculateDamage(kappa))*E;
         double DsigmaDkappa_CDF = (sigma2-sigma1)/epsilon;
 
         double differenceSigma = DsigmaDkappa - DsigmaDkappa_CDF;
@@ -34,20 +36,11 @@ bool CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitut
             std::cout << "sigma1:" << sigma1 << " | sigma2: " << sigma2 << std::endl << std::endl;
 #endif
 
-        if (abs(differenceSigma)>1.e-1)
+        if (std::abs(differenceSigma)>1.e-3)
             return false;
     }
 
     return true;
-}
-
-bool CheckDamageLawsValues(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
-{
-    double epsilon = 1.e-12;
-    double e0 = rConstitutiveLaw.GetDamageLaw().GetValue(1);
-    double initialDamage = rConstitutiveLaw.CalculateDamage(e0+epsilon);
-    bool isCorrect = initialDamage < 1.e-6;
-    return isCorrect;
 }
 
 void CheckDamageLaws()
@@ -55,66 +48,64 @@ void CheckDamageLaws()
     NuTo::GradientDamageEngineeringStress myConstitutiveLaw;
 
 
-    double E = 20000.;
-    double e0 = 1.e-4;
+    myConstitutiveLaw.SetDensity        (1.0);
+    myConstitutiveLaw.SetYoungsModulus  (30000);
+    myConstitutiveLaw.SetPoissonsRatio  (0.3);
+    myConstitutiveLaw.SetNonlocalRadius (1.0);
+    myConstitutiveLaw.SetTensileStrength(4.);
+    myConstitutiveLaw.SetFractureEnergy (0.21);
 
-    myConstitutiveLaw.SetYoungsModulus(E);
-    myConstitutiveLaw.SetPoissonsRatio(0.3);
-    myConstitutiveLaw.SetNonlocalRadius(1.0);
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(1);
+    myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
 
     // create a damage law
-    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawNoSoftening(2);
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawNoSoftening(1);
     myDamageLawNoSoftening(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING;
-    myDamageLawNoSoftening(1) = e0;
 
-    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawLinear(3);
+
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawLinear(1);
     myDamageLawLinear(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING;
-    myDamageLawLinear(1) = e0;
-    myDamageLawLinear(2) = 0.005;
 
-    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawExponential(3);
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawExponential(1);
     myDamageLawExponential(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
-    myDamageLawExponential(1) = e0;
-    myDamageLawExponential(2) = 0.005;
 
-    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawHermite(3);
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawHermite(1);
     myDamageLawHermite(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE;
-    myDamageLawHermite(1) = e0;
-    myDamageLawHermite(2) = 0.005;
+
+//    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawExponentialSmooth(4);
+//    myDamageLawExponentialSmooth(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH;
+//    myDamageLawExponentialSmooth(1) = 0;
+//    myDamageLawExponentialSmooth(2) = 10;
+//    myDamageLawExponentialSmooth(3) = 20;
+
 
     myConstitutiveLaw.SetDamageLaw(myDamageLawNoSoftening);
-    if (not CheckDamageLawsValues(myConstitutiveLaw))
-        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_NO_SOFTENING: wrong initial damage");
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
             throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_NO_SOFTENING: wrong damage derivatives");
 
     myConstitutiveLaw.SetDamageLaw(myDamageLawLinear);
-    if (not CheckDamageLawsValues(myConstitutiveLaw))
-        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_LINEAR_SOFTENING: wrong initial damage");
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
             throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_LINEAR_SOFTENING: wrong damage derivatives");
 
 
     myConstitutiveLaw.SetDamageLaw(myDamageLawExponential);
-    if (not CheckDamageLawsValues(myConstitutiveLaw))
-        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING: wrong initial damage");
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
             throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING: wrong damage derivatives");
 
     myConstitutiveLaw.SetDamageLaw(myDamageLawHermite);
-    if (not CheckDamageLawsValues(myConstitutiveLaw))
-        throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong initial damage");
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
             throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong damage derivatives");
 
-
+//    myConstitutiveLaw.SetDamageLaw(myDamageLawExponentialSmooth);
+//    if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
+//            throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH: wrong damage derivatives");
 
 }
 
 
 int main()
 {
-try {
+//try {
 
     CheckDamageLaws();
 
@@ -135,18 +126,20 @@ try {
         // 1D structure
         NuTo::Structure myStructure(1);
 
+        NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(4);
+        myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH;
+        myDamageLaw(1) = 5;
+        myDamageLaw(2) = 10;
+        myDamageLaw(3) = 20;
         // create a damage law
-        NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(3);
-        myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
-        myDamageLaw(1) = 1.e-4;
-        myDamageLaw(2) = 0.005;
-
         int myNumberConstitutiveLaw = myStructure.ConstitutiveLawCreate("GradientDamageEngineeringStress");
-        myStructure.ConstitutiveLawSetDensity       (myNumberConstitutiveLaw, 1.0);
-        myStructure.ConstitutiveLawSetYoungsModulus (myNumberConstitutiveLaw, 20000.);
-        myStructure.ConstitutiveLawSetPoissonsRatio (myNumberConstitutiveLaw, 0.3);
-        myStructure.ConstitutiveLawSetNonlocalRadius(myNumberConstitutiveLaw, 1.0);
-        myStructure.ConstitutiveLawSetDamageLaw(myNumberConstitutiveLaw, myDamageLaw);
+        myStructure.ConstitutiveLawSetDensity        (myNumberConstitutiveLaw, 1.0);
+        myStructure.ConstitutiveLawSetYoungsModulus  (myNumberConstitutiveLaw, 30000);
+        myStructure.ConstitutiveLawSetPoissonsRatio  (myNumberConstitutiveLaw, 0.3);
+        myStructure.ConstitutiveLawSetNonlocalRadius (myNumberConstitutiveLaw, 1.0);
+        myStructure.ConstitutiveLawSetTensileStrength(myNumberConstitutiveLaw, 4.);
+        myStructure.ConstitutiveLawSetFractureEnergy (myNumberConstitutiveLaw, 0.21);
+        myStructure.ConstitutiveLawSetDamageLaw      (myNumberConstitutiveLaw, myDamageLaw);
 
         // create sections
         int mySection    = myStructure.SectionCreate("Truss");
@@ -237,18 +230,17 @@ try {
         // 1D structure
         NuTo::Structure myStructure(1);
 
-        // create a damage law
-        NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(3);
+        NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(1);
         myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
-        myDamageLaw(1) = 1.e-4;
-        myDamageLaw(2) = 0.005;
-
+        // create a damage law
         int myNumberConstitutiveLaw = myStructure.ConstitutiveLawCreate("GradientDamageEngineeringStress");
-        myStructure.ConstitutiveLawSetDensity       (myNumberConstitutiveLaw, 1.0);
-        myStructure.ConstitutiveLawSetYoungsModulus (myNumberConstitutiveLaw, 20000.);
-        myStructure.ConstitutiveLawSetPoissonsRatio (myNumberConstitutiveLaw, 0.3);
-        myStructure.ConstitutiveLawSetNonlocalRadius(myNumberConstitutiveLaw, 1.0);
-        myStructure.ConstitutiveLawSetDamageLaw(myNumberConstitutiveLaw, myDamageLaw);
+        myStructure.ConstitutiveLawSetDensity        (myNumberConstitutiveLaw, 1.0);
+        myStructure.ConstitutiveLawSetYoungsModulus  (myNumberConstitutiveLaw, 30000);
+        myStructure.ConstitutiveLawSetPoissonsRatio  (myNumberConstitutiveLaw, 0.3);
+        myStructure.ConstitutiveLawSetNonlocalRadius (myNumberConstitutiveLaw, 1.0);
+        myStructure.ConstitutiveLawSetTensileStrength(myNumberConstitutiveLaw, 4.);
+        myStructure.ConstitutiveLawSetFractureEnergy (myNumberConstitutiveLaw, 0.21);
+        myStructure.ConstitutiveLawSetDamageLaw      (myNumberConstitutiveLaw, myDamageLaw);
 
         // create sections
         int mySection    = myStructure.SectionCreate("Truss");
@@ -289,7 +281,7 @@ try {
             NuTo::FullVector<int, 2> nodeIds;
             nodeIds(0) = iElement;
             nodeIds(1) = iElement+1;
-            myStructure.ElementCreate(iElement, "Truss1D2N", nodeIds,"ConstitutiveLawIpNonlocal","StaticData");
+            myStructure.ElementCreate(iElement, "Truss1D2N", nodeIds,"ConstitutiveLawIp","StaticData");
             myStructure.ElementSetIntegrationType(iElement,"1D2NGauss3Ip","StaticData");
             myStructure.ElementSetSection(iElement,mySection);
             myStructure.ElementSetConstitutiveLaw(iElement,myNumberConstitutiveLaw);
@@ -321,11 +313,11 @@ try {
 
 
 
-} catch (NuTo::Exception& e) {
-    std::cout << "Error executing GradientDamage "<< std::endl;
-    std::cout << e.ErrorMessage() << std::endl;
-    return -1;
-}
+//} catch (NuTo::Exception& e) {
+//    std::cout << "Error executing GradientDamage "<< std::endl;
+//    std::cout << e.ErrorMessage() << std::endl;
+//    return -1;
+//}
     std::cout << "GradientDamage terminated normally."<< std::endl;
     return 0;
 }

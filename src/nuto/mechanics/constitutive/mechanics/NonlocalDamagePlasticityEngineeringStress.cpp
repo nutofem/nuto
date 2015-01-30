@@ -1440,7 +1440,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::GetTensileStrength() con
 //! @param rTensileStrength...  tensile strength
 void NuTo::NonlocalDamagePlasticityEngineeringStress::SetTensileStrength(double rTensileStrength)
 {
-    this->CheckNonlocalRadius(rTensileStrength);
+    this->CheckTensileStrength(rTensileStrength);
     this->mTensileStrength = rTensileStrength;
     this->SetParametersValid();
 }
@@ -1456,7 +1456,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::GetCompressiveStrength()
 //! @param rCompressiveStrength...  compressive strength
 void NuTo::NonlocalDamagePlasticityEngineeringStress::SetCompressiveStrength(double rCompressiveStrength)
 {
-    this->CheckNonlocalRadius(rCompressiveStrength);
+    this->CheckCompressiveStrength(rCompressiveStrength);
     this->mCompressiveStrength = rCompressiveStrength;
     this->SetParametersValid();
 }
@@ -1472,7 +1472,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::GetBiaxialCompressiveStr
 //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
 void NuTo::NonlocalDamagePlasticityEngineeringStress::SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength)
 {
-    this->CheckNonlocalRadius(rBiaxialCompressiveStrength);
+    this->CheckBiaxialCompressiveStrength(rBiaxialCompressiveStrength);
     this->mBiaxialCompressiveStrength = rBiaxialCompressiveStrength;
     this->SetParametersValid();
 }

@@ -61,6 +61,8 @@ extern "C" {
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -142,6 +144,10 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip]=
         NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NBoundaryGauss3Ip] =
+        NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType0DBoundary] =
+        NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic();
 
     mNumLoadCases = 1;
 

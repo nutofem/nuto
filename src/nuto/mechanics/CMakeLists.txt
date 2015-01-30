@@ -150,6 +150,7 @@ SET(NuToMechanicsIntegrationtypes_SOURCES
 integrationtypes/IntegrationPointBase.cpp
 integrationtypes/IntegrationType1D.cpp
 integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
+integrationtypes/IntegrationType0DBoundary.cpp
 integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp

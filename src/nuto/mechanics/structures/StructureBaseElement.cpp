@@ -742,13 +742,13 @@ bool NuTo::StructureBase::ElementCheckCoefficientMatrix_0(
         {
             mLogger << "[NuTo::StructureBase::ElementCheckCoefficientMatrix_0] Element ID: " << rElementId << " WRONG \n";
             mLogger << "element coefficient matrix algo" << "\n";
-            mLogger.Out(coeffMatrix,10,3,false);
+            mLogger.Out(coeffMatrix,10,3,true);
             mLogger << "\n";
             mLogger << "element coefficient matrix CDF" << "\n";
-            mLogger.Out(coeffMatrix_CDF,10,3,false);
+            mLogger.Out(coeffMatrix_CDF,10,3,true);
             mLogger << "\n";
             mLogger << "error" << "\n";
-            mLogger.Out(rDifference,10,3,false);
+            mLogger.Out(rDifference,10,3,true);
         }
     }
 

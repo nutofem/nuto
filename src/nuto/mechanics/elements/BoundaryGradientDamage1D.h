@@ -7,15 +7,24 @@
 
 namespace NuTo
 {
+
+namespace BoundaryCondition
+{
+
+enum eType
+{
+    NOT_SET,
+    NEUMANN_HOMOGENEOUS,            // grad nonlocal eq strain * n = 0
+    DIRICHLET_INHOMOGENEOUS,        // nonlocal eq strain = local eq strain
+    ROBIN_INHOMOGENEOUS,            // l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
+    ROBIN_HOMOGENEOUS               // l * grad nonlocal eq strain * n + nonlocal eq strain = 0
+};
+
+}  // namespace BoundaryCondition
+
+
 class StructureBase;
-class DeformationGradient1D;
 class ConstitutiveTangentLocal1x1;
-class EngineeringStress1D;
-class EngineeringStrain1D;
-class HeatFlux1D;
-class Damage;
-class LocalEqPlasticStrain;
-class NonlocalEqPlasticStrain;
 template <int TNumRows, int TNumColumns> class ConstitutiveTangentLocal;
 
 //! @author Jörg F. Unger, ISM
@@ -30,13 +39,20 @@ class BoundaryGradientDamage1D : public ElementBase
 public:
     //! @brief constructor
     BoundaryGradientDamage1D(const StructureBase* rStructure,
-    		const std::vector<NuTo::NodeBase* >& rNodes,
     		Truss* rRealBoundaryElement,
-    		bool rEdgeRealBoundaryElement,
+    		int rSurfaceEdge,
     		ElementData::eElementDataType rElementDataType,
     		IntegrationType::eIntegrationType rIntegrationType,
     		IpData::eIpDataType rIpDataType
     		);
+
+    BoundaryGradientDamage1D(const StructureBase* rStructure,
+            Truss* rRealBoundaryElement,
+            NodeBase* rSurfaceNode,
+            ElementData::eElementDataType rElementDataType,
+            IntegrationType::eIntegrationType rIntegrationType,
+            IpData::eIpDataType rIpDataType
+            );
 
     //! @brief returns the global dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -67,7 +83,7 @@ public:
     //! @return number of nodes
     int GetNumNodes()const
     {
-        return (int)mNodes.size();
+        return 1;
     }
 
     //! @brief returns a pointer to the i-th node of the element
@@ -75,8 +91,7 @@ public:
     //! @return pointer to the node
     NodeBase* GetNode(int rLocalNodeNumber)
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        return mNodes[rLocalNodeNumber];
+        return GetNode(rLocalNodeNumber);
     }
 
     //! @brief returns a pointer to the i-th node of the element
@@ -84,8 +99,10 @@ public:
     //! @return pointer to the node
     const NodeBase* GetNode(int rLocalNodeNumber)const
     {
-    	assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        return mNodes[rLocalNodeNumber];
+        assert(rLocalNodeNumber==0);
+        std::vector<const NodeBase*> surfaceNodes(1);
+        mRealBoundaryElement->GetSurfaceNodes(mSurfaceEdge, surfaceNodes);
+        return surfaceNodes[0];
     }
 
 
@@ -94,15 +111,14 @@ public:
     //! @param pointer to the node
     void SetNode(int rLocalNodeNumber, NodeBase* rNode)
     {
-    	assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        mNodes[rLocalNodeNumber] = rNode;
+        // todo?
     }
 
     //! @brief returns the number of nodes in this element(geometry interpolation)
     //! @return number of nodes
     int GetNumNodesGeometry()const
     {
-    	return mNodes.size();
+    	return 1;
     }
 
     //! @brief returns a pointer to the i-th node of the element
@@ -110,8 +126,7 @@ public:
     //! @return pointer to the node
     const NodeBase* GetNodeGeometry(int rLocalNodeNumber)const
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        return mNodes[rLocalNodeNumber];
+        return GetNode(rLocalNodeNumber);
     }
 
     //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
@@ -119,15 +134,14 @@ public:
     //! @return pointer to the node
     NodeBase* GetNodeGeometry(int rLocalNodeNumber)
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        return mNodes[rLocalNodeNumber];
+        return GetNode(rLocalNodeNumber);
     }
 
     //! @brief returns the number of nodes in this element(geometry interpolation)
     //! @return number of nodes
     int GetNumNodesField()const
     {
-    	return mNodes.size();
+    	return 1;
     }
 
     //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
@@ -135,8 +149,7 @@ public:
     //! @return pointer to the node
     const NodeBase* GetNodeField(int rLocalNodeNumber)const
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        return mNodes[rLocalNodeNumber];
+        return GetNode(rLocalNodeNumber);
     }
 
     //! @brief returns a pointer to the i-th node of the element (field interpolation)
@@ -144,8 +157,7 @@ public:
     //! @return pointer to the node
     NodeBase* GetNodeField(int rLocalNodeNumber)
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<(int)mNodes.size());
-        return mNodes[rLocalNodeNumber];
+        return GetNode(rLocalNodeNumber);
     }
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -185,139 +197,44 @@ public:
     //! @brief returns the global coordinates of an integration point
     //! @param rIpNum integration point
     //! @param rCoordinates coordinates to be returned
-    void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const;
+    void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
+    {}
 
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
     //! this can be checked with an assertation
-    void CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const;
-
-    //! @brief stores the nonlocal eq plastic strain of the nodes
-    //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
-    //! @param nonlocal eq plastic strain vector with already correct size allocated (2*nodes)
-    //! this can be checked with an assertation
-    void CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalEquivalentPlasticStrain)const;
-
-    //! @brief stores the nonlocal total strain of the nodes
-    //! @param time derivative (0 damage, 1 damage rate, 2 second time derivative of damage)
-    //! @param nonlocal total strain vector with already correct size allocated (1*nodes)
-    //! this can be checked with an assertation
-    void CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::vector<double>& rNodalNonlocalTotalStrain)const;
-
-    //! @brief returns the local coordinates of an integration point on the boundary (in the real boundary element)
-    //! @param rCoordinates local coordinates (return value)
-    void GetLocalIntegrationPointCoordinatesReal(double& rCoordinates)const;
-
-    //! @brief returns the local coordinates of an integration point
-    //! @param rIpNum integration point
-    //! @param rCoordinates local coordinates (return value)
-    void GetLocalIntegrationPointCoordinatesVirt(int rIpNum, double& rCoordinates)const;
-
-    //! @brief returns determinant of the Jacobian
-    //! @param derivativeShapeFunctions derivatives of the shape functions
-    //! @param localCoord local coordinates
-    //! @return determinant of the Jacobian
-    double DetJacobian(const std::vector<double>& derivativeShapeFunctions,const std::vector<double>& localCoord)const;
-
-    //! @brief calculates the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param shape functions for all the nodes
-    void CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
-
-    //! @brief calculates the derivative of the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param derivative of the shape functions for all the nodes,
-    //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
-
-    //! @brief calculates the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param shape functions for all the nodes
-    void CalculateShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const;
-
-    //! @brief calculates the derivative of the shape functions
-    //! @param rLocalCoordinates local coordinates of the integration point
-    //! @param derivative of the shape functions for all the nodes,
-    //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsField(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const;
-
-    //! @brief returns the nonlocal eq plastic strain interpolated from the nodal values
-    //! @param shapeFunctionsGlobal shape functions
-    //! @param rNodeDamage nonlocal eq plastic strain values of the nodes
-    //! @param rNonlocalEqentPlasticStrain return value
-    void CalculateNonlocalEqPlasticStrain(const std::vector<double>& shapeFunctions,
-    		const std::vector<double>& rNodeEquivalentPlasticStrain, NonlocalEqPlasticStrain& rNonlocalEqentPlasticStrain)const;
-
-    //! @brief returns the nonlocal total strain interpolated from the nodal values
-    //! @param shapeFunctionsGlobal shape functions
-    //! @param rNodeNonlocalTotalStrain nonlocal total strain values of the nodes
-    //! @param rNonlocalTotalStrain return value
-    void CalculateNonlocalTotalStrain(const std::vector<double>& shapeFunctions,
-    		const std::vector<double>& rNodeNonlocalTotalStrain, EngineeringStrain1D& rNonlocalTotalStrain)const;
+    void CalculateLocalCoordinates(std::vector<double>& rLocalCoordinates)const
+    {}
 
     //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    void InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const;
+    void InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const
+    {}
 
-    //! @brief add Kkk*omega+detJ*F (detJ is already included in Koo)
+    //! @brief calculates the boundary integral of Nt * c * n * B
     //! @param rShapeFunctions of the ip for all shape functions
-    //! @param rLocalTotalStrain local total strain values
-    //! @param rKkk stiffness matrix Kkk
-    //! @param rNodeNonlocalTotalStrain nodal nonlocal total strain values
-    //! @param rFactor factor including detJ and area
-    //! @param rResult result
-    void AddDetJRnonlocalTotalStrain(const std::vector<double>& rShapeFunctions,const EngineeringStrain1D& rLocalTotalStrain,
-    		const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
-    		const std::vector<double>& rNodeNonlocalTotalStrain, double rFactor, FullVector<double,Eigen::Dynamic>& rResult);
+    //! @param rSerivativeShapeFunctions of the ip for all shape functions
+    //! @param rNonlocalGradientRadius
+    //! @param rFactor multiplication factor (detJ area..)
+    //! @param rKkkMod return matrix with detJ * Nt * c * n * B
+    void CalculateKkkMod(
+            const std::vector<double>& rShapeFunctions,
+            const std::vector<double>& rDerivativeShapeFunctions,
+            double rNonlocalGradientRadius, double rNormalVector, double rfactor,
+            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkkMod) const;
 
-    void Sub_K_epsilonNonlocalVirt_NonlocalVirt(
-    		double rFactorVirt,
-    		const std::vector<double>& rShapeFunctionsVirt,
-    		const FullMatrix<double,1,1>& tangentStrainVirtNonlocalTotalStrainVirt,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+    void CalculateKedMod(
+            const std::vector<double>& rShapeFunctions,
+            const std::vector<double>& rDerivativeShapeFunctions,
+            double rNonlocalGradientRadius, double rfactor,
+            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKedMod) const;
 
-    //! @brief add Nt depsilonVirtdSigmaReal dSigmaRealdepsilonReal B
-    //! @param factorVirt factor
-    //! @param shapeFunctionsVirt
-    //! @param tangentStrainVirtStressReal
-    //! @param tangentStressRealStrainReal
-    //! @param derivativeShapeFunctionsLocalReal
-    //! @param rCol column where to add the submatrix
-    //! @param rResult return value (added)
-    void Sub_K_epsilonNonlocalVirt_DispReal
-      ( double factorVirt,
-        const std::vector<double>& shapeFunctionsVirt,
-    	const FullMatrix<double,1,1>& tangentStrainVirtStressReal,
-    	const FullMatrix<double,1,1>& tangentStressRealStrainReal,
-    	const std::vector<double>& derivativeShapeFunctionsLocalReal,
-    	int rCol,
-    	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
 
-    //! @brief add Nt depsilonVirtdSigmaReal dSigmaRealdepsilonReal B
-    //! @param factorVirt factor
-    //! @param shapeFunctionsVirt
-    //! @param tangentStrainVirtStressReal
-    //! @param rTangentStressRealNonlocalStrainReal
-    //! @param rShapeFunctionsReal
-    //! @param rCol column where to add the submatrix
-    //! @param rResult return value (added)
-    void Sub_K_epsilonNonlocalVirt_NonlocalStrainReal
-      ( double factorVirt,
-        const std::vector<double>& rShapeFunctionsVirt,
-    	const FullMatrix<double,1,1>& rTangentStrainVirtStressReal,
-    	const FullMatrix<double,1,1>& rTangentStressRealNonlocalStrainReal,
-    	int rCol,
-    	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
-
-    //! @brief calculates the Kkk matrix
-    //! @param shapeFunctions of the ip for all shape functions
-    //! @param derivativeShapeFunctions of the ip for all shape functions
-    //! @param c nonlocal gradient radius
-    //! @param factor multiplication factor (detJ area..)
-    //! @param Kkk return matrix with detJ * NtT+cBtB
-    void CalculateKkk(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
+    //! @brief creates constraints according to the boundary condition type
+    //! @param rType type of boundary condition, see enum. This is for try out purposes only. If a nice BC type is found, remove this method
+    //! @param rStructure nonconst ptr to the structure to create the constraints
+    void ApplyConstraints(BoundaryCondition::eType rType, StructureBase* rStructure);
 
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -345,18 +262,18 @@ protected:
     //The real boundary element that is attached to the virtual boundary element
     const Truss* mRealBoundaryElement;
 
+    // edge number 0.. left, 1.. right
+    int mSurfaceEdge;
 
-     std::vector<NodeBase*> mNodes;
-    //edge of the real boundary element where the virtual boundary element is attached to
-    //0 node 0
-    //1 last node
-    bool mEdgeRealBoundaryElement;
+    BoundaryCondition::eType mBoundaryConditionType;
 
     // build global row dofs
-    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumNonlocalTotalStrainDofsVirt) const;
+    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumNonlocalEqStrainDofs) const;
 
-    // build global col dofs
-    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofsVirt, int rNumNonlocalTotalStrainDofsVirt, int rNumDispDofsReal) const;
+    //! @brief returns the mSurfaceEdge variable for the node rNode
+    int CalculateSurfaceEdge(const NodeBase* rNode) const;
+
+
 
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes()
@@ -368,11 +285,22 @@ protected:
     {
     }
 
+
 };
+
+
 
 } // namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::BoundaryGradientDamage1D)
 #endif // ENABLE_SERIALIZATION
+
+
+
+
+
+
+
+
 
 #endif //BOUNDARYGRADIENTDAMAGE1D_H

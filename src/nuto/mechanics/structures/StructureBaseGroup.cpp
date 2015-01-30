@@ -464,7 +464,7 @@ void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNo
 					for (countNode=0; (countNode<elementVector[countElement].second->GetNumNodes()) && (addElement==false);
 							countNode++)
 					{
-						if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode))==nodePtrSet.end())
+						if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode))!=nodePtrSet.end())
 						{
 							addElement=true;
 						}

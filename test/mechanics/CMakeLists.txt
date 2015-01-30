@@ -174,4 +174,5 @@ IF(ENABLE_C++_TESTS_WIP)
     SET_TARGET_PROPERTIES(GradientDamage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
   ADD_TEST(c::mechanics::GradientDamage ${CMAKE_CURRENT_BUILD_DIR}/GradientDamage)
+  
 ENDIF(ENABLE_C++_TESTS_WIP)

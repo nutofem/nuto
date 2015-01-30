@@ -80,29 +80,29 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatri
 	break;
 	case Element::BOUNDARYGRADIENTDAMAGE1D:
 	{
-		const BoundaryGradientDamage1D* elementPtr (mParentElement->AsBoundaryGradientDamage1D());
-		// add constraint to constrain matrix
-		int numNonlocalTotalStrain(elementPtr->GetNumNodesField());
-
-		std::vector<double> derivativeShapeFunctionsNaturalNonlocalTotalStrain(numNonlocalTotalStrain);  //allocate space for derivatives of shape functions
-		//std::vector<double> derivativeShapeFunctionsLocalNonlocalTotalStrain(numNonlocalTotalStrain);    //allocate space for derivatives of shape functions
-
-		//derivative in natural coordinate system
-		elementPtr->CalculateDerivativeShapeFunctionsField(mLocalIpCoordinate, derivativeShapeFunctionsNaturalNonlocalTotalStrain);
-
-		//derivative in local coordinate system
-		//for (unsigned int count=0; count<derivativeShapeFunctionsLocalNonlocalTotalStrain.size(); count++)
-		//{
-		//	derivativeShapeFunctionsLocalNonlocalTotalStrain[count] = derivativeShapeFunctionsNaturalNonlocalTotalStrain[count]/detJ;
-		//}
-		// For 1D, there is only one point, so the detJ can be neglected
-
-		for (int count=0; count<numNonlocalTotalStrain; count++)
-		{
-			rConstraintMatrix.AddValue(curConstraintEquation,
-					elementPtr->GetNode(count)->GetDofNonlocalTotalStrain(0),
-	        		derivativeShapeFunctionsNaturalNonlocalTotalStrain[count]);
-		}
+//		const BoundaryGradientDamage1D* elementPtr (mParentElement->AsBoundaryGradientDamage1D());
+//		// add constraint to constrain matrix
+//		int numNonlocalTotalStrain(elementPtr->GetNumNodesField());
+//
+//		std::vector<double> derivativeShapeFunctionsNaturalNonlocalTotalStrain(numNonlocalTotalStrain);  //allocate space for derivatives of shape functions
+//		//std::vector<double> derivativeShapeFunctionsLocalNonlocalTotalStrain(numNonlocalTotalStrain);    //allocate space for derivatives of shape functions
+//
+//		//derivative in natural coordinate system
+//		elementPtr->CalculateDerivativeShapeFunctionsField(mLocalIpCoordinate, derivativeShapeFunctionsNaturalNonlocalTotalStrain);
+//
+//		//derivative in local coordinate system
+//		//for (unsigned int count=0; count<derivativeShapeFunctionsLocalNonlocalTotalStrain.size(); count++)
+//		//{
+//		//	derivativeShapeFunctionsLocalNonlocalTotalStrain[count] = derivativeShapeFunctionsNaturalNonlocalTotalStrain[count]/detJ;
+//		//}
+//		// For 1D, there is only one point, so the detJ can be neglected
+//
+//		for (int count=0; count<numNonlocalTotalStrain; count++)
+//		{
+//			rConstraintMatrix.AddValue(curConstraintEquation,
+//					elementPtr->GetNode(count)->GetDofNonlocalTotalStrain(0),
+//	        		derivativeShapeFunctionsNaturalNonlocalTotalStrain[count]);
+//		}
 	}
 	break;
 	default:

@@ -446,8 +446,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
             if (mCheckCoefficientMatrix)
             {
-                mStructure->CheckCoefficientMatrix_0(1.e-6, false);
-//                mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
+//                mStructure->CheckCoefficientMatrix_0(1.e-6, false);
+                mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
 
 //                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
 //                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
@@ -579,8 +579,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
                 if (mCheckCoefficientMatrix)
                 {
-                    mStructure->CheckCoefficientMatrix_0(1.e-6, false);
-//                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
+//                    mStructure->CheckCoefficientMatrix_0(1.e-6, false);
+                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
 
 //                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
 //                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
@@ -711,6 +711,41 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                     {
                         residual_mod = residual_j;
                     }
+
+
+//                    std::vector<double> residual_disp_vec, residual_nonloc_vec;
+//                    int numActiveDofs = mStructure->GetNumActiveDofs();
+//
+//                    // loop all nodes
+//                    for (int iNode = 0; iNode < mStructure->GetNumNodes(); ++iNode)
+//                    {
+//                        NodeBase* node = mStructure->NodeGetNodePtr(iNode);
+//                        int dofDisp = node->GetDofDisplacement(0);
+//                        if (dofDisp < numActiveDofs)
+//                            residual_disp_vec.push_back(residual_mod[dofDisp]);
+//
+//                        if (node->GetNumNonlocalEqStrain() != 0)
+//                        {
+//                            int dofNonloc = node->GetDofNonlocalEqStrain();
+//
+//                            if (dofNonloc < numActiveDofs)
+//                                residual_nonloc_vec.push_back(residual_mod[dofNonloc]);
+//                        }
+//                    }
+//                    // convert to full vectors for functionality
+//                    NuTo::FullVector<double, Eigen::Dynamic> residual_disp(residual_disp_vec);
+//                    NuTo::FullVector<double, Eigen::Dynamic> residual_nonloc(residual_nonloc_vec);
+//
+//                    std::cout << "res_mod maxval: " << residual_mod.cwiseAbs().maxCoeff() << std::endl;
+//                    std::cout << "res_disp maxval: " << residual_disp.cwiseAbs().maxCoeff() << std::endl;
+//                    std::cout << "res_nonl maxval: " << residual_nonloc.cwiseAbs().maxCoeff() << std::endl << std::endl;
+//
+
+
+
+
+
+
                     //std::cout << "residual_mod\n " << residual_mod << std::endl;
 
                     trialNormResidual=residual_mod.Norm();

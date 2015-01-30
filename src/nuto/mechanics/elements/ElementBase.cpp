@@ -404,6 +404,10 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         VisualizationCellsIncidence,
         VisualizationCellsIP);
 
+    if (NumVisualizationPoints == 0)
+        // no visualisation
+        return;
+
     // calculate global point coordinates and store point at the visualize object
     int dimension (VisualizationPointLocalCoordinates.size()/NumVisualizationPoints);
     assert(VisualizationPointLocalCoordinates.size() == NumVisualizationPoints * dimension);
