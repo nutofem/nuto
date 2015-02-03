@@ -315,6 +315,14 @@ public:
     //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
     virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
 
+    //! @brief ... based on the global dofs build submatrices of the global stiffness matrix0
+    //! @brief ... presumes elastic deformation, that is the state variables remain constant
+    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
+    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
+    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
+    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
+    virtual Error::eError BuildGlobalElasticStiffnessSubMatricesGeneral(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
+
     //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
     //! @param rType   ... matrix type (stiffness damping mass)
     //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
@@ -340,6 +348,15 @@ public:
     //! @param rUpdateHistoryVariables (update history variables after having calculated the response)
     virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
     		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables) = 0;
+
+    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
+    //! @brief ... presumes elastic deformation, that is the state variables remain constant
+    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
+    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
+    //! @param update of history variables is not performed
+    virtual Error::eError BuildGlobalElasticGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
+    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) = 0;
+
 //*************************************************
 //************ Node routines        ***************
 //***  defined in structures/StructureNode.cpp  ***

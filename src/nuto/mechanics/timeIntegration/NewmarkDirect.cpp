@@ -226,9 +226,9 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             residual_mod=prevResidual_j;
         }
 
+        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
         if (residual_mod.Norm()>mToleranceForce)
             throw MechanicsException("[NuTo::NewmarkDirect::Solve] Initial configuration is not in (dynamic) equilibrium.");
-        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
 
 /*        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector0(plotHistory);
         for (int countGroup=0; countGroup<mVecGroupNodesReactionForces.GetNumRows(); countGroup++)

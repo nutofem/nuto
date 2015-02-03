@@ -38,8 +38,8 @@ public:
     	return mMinLineSearchStep;
     }
 
-    //!@brief sets the number of increments of a single cycle, this should be divisible by 4, because the cycle consist of 4 parts
-    //!@param sets the number of increments of a single cycle, this should be divisible by 4, because the cycle consist of 4 parts
+    //!@brief sets the number of increments of a single cycle, this should be divisible by 4, because the cycle consist of 4 symmetric parts
+    //!@param sets the number of increments of a single cycle, this should be divisible by 4, because the cycle consist of 4 symmetric parts
     void SetHarmonicIncrementation(int rHarmonicIncrementation)
     {
     	if (fmod(rHarmonicIncrementation, 4) == 0) {
@@ -211,8 +211,24 @@ public:
     {
     	return 0;
     }
+    //!@brief calculate the global stiffness matrix for the BVP with mean displacement (rFourier = 0) or with displacement amplitude (rFourier = 1)
+    void CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVector2General<double>* rStiffnessMod, int rFourierMode);
 
+    //!@brief find equilibrium by calculating the Fourier coefficients (which are the displacement fields)
+    // rDisp_Mean_j ... mean displacement (active DOF, rFourier = 0)
+    // rDisp_Mean_k ... mean displacement (dependent DOF, rFourier = 0)
+    // rDisp_Ampl_j ... displacement amplitude (active DOF, rFourier = 1)
+    // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
+    void CalculateFourierCofficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
+    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k);
 
+    //!@brief straight-forward integration of a single cycle with a prescribed Fourier coefficients
+    // the displacement fields have the same meaning as above, see CalculateFourierCoefficients
+    // rIncludePostProcess ...false, if no postprocessing should be done during integration
+    // rIncludePostProcess ...true, postprocessing will be done
+    // Postprocessing should be done if the jump is acceptable; in this case the IntegrateSinleCycle should be repeated with a true option
+    void IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
+    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k, bool rIncludePostProcess);
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class
