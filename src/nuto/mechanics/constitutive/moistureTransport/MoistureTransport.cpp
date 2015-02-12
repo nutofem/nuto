@@ -16,6 +16,13 @@ NuTo::MoistureTransport::MoistureTransport()
     SetParametersValid();
 }
 
+//! @brief ... create new static data object for an integration point
+//! @return ... pointer to static data object
+NuTo::ConstitutiveStaticDataBase*           NuTo::MoistureTransport::AllocateStaticDataEngineeringStress_EngineeringStrain1D    (const ElementBase* rElement) const
+{
+    return new ConstitutiveStaticDataMoistureTransport();
+}
+
 //! @brief ... check compatibility between element type and type of constitutive relationship
 //! @param rElementType ... element type
 //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
@@ -181,6 +188,9 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
     const RelativeHumidity&     relativeHumidity    (rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY)->second->GetRelativeHumidity());
     const WaterPhaseFraction&   waterPhaseFraction  (rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_PHASE_FRACTION)->second->GetWaterPhaseFraction());
 
+    ConstitutiveStaticDataMoistureTransport *StaticData = (rElement->GetStaticData(rIp))->AsMoistureTransport();
+    //StaticData->RelHumDecreasingHistory = false;
+
     for (auto itOutput = rConstitutiveOutput.begin(); itOutput != rConstitutiveOutput.end(); itOutput++)
     {
         switch(itOutput->first)
@@ -209,9 +219,22 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
         case NuTo::Constitutive::Output::PHASE_MASS_EXCHANGE_RATE_TIMES_EQUILIBRIUM_SORPTION_CURVE:
         {
             ConstitutiveTangentLocal<1,1>& PhaseMassExchangeRateTimesEquilibriumSorptionCurve(itOutput->second->AsConstitutiveTangentLocal_1x1());
-            PhaseMassExchangeRateTimesEquilibriumSorptionCurve(0,0) = mR * (mActualSorptionCoeff(0) +
-                                                                            mActualSorptionCoeff(1) * relativeHumidity(0) +
-                                                                            mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0));
+
+            // Calculate sorption curves
+            if (StaticData->mLastRelHumValue < relativeHumidity(0) && StaticData->mSorptionHistoryDesorption == true)
+            {
+                StaticData->mActualSorptionCoeff(0) = 0.12;
+                //std::cout << "Changed Sorption Coeffs" << std::endl;
+            }
+            if (StaticData->mLastRelHumValue > relativeHumidity(0) && StaticData->mSorptionHistoryDesorption == false)
+            {
+                StaticData->mActualSorptionCoeff(0) = 0.12;
+                //std::cout << "Changed Sorption Coeffs" << std::endl;
+            }
+
+            PhaseMassExchangeRateTimesEquilibriumSorptionCurve(0,0) = mR * (StaticData->mActualSorptionCoeff(0) +
+                                                                            StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) +
+                                                                            StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0));
             PhaseMassExchangeRateTimesEquilibriumSorptionCurve.SetSymmetry(true);
             break;
         }
@@ -226,6 +249,7 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
         {
             if (waterPhaseFraction(0)>mEpsP)
             {
+                //std::cout << "WARNING: Water phase volume fraction bigger than porosity! --- NuTo::MoistureTransport::Evaluate1D";
                 throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate1D] Water phase volume fraction bigger than porosity!"));
             }
             ConstitutiveTangentLocal<1,1>& VaporPhaseSaturationDensityTimesVaporPhaseVolumeFraction(itOutput->second->AsConstitutiveTangentLocal_1x1());
@@ -240,6 +264,29 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
             VaporPhaseSaturationDensityTimesRelativeHumidity.SetSymmetry(true);
             break;
         }
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        {
+            if (StaticData->mLastRelHumValue > relativeHumidity(0))
+            {
+                StaticData->mSorptionHistoryDesorption = true;
+            }
+            if (StaticData->mLastRelHumValue < relativeHumidity(0))
+            {
+                StaticData->mSorptionHistoryDesorption = false;
+            }
+            StaticData->mLastRelHumValue = relativeHumidity(0);
+            StaticData->mLastSorptionCoeff = StaticData->mActualSorptionCoeff;
+
+            // Test
+            double Test[1];
+            rElement->GetNode(0)->GetCoordinates1D(Test);
+
+            if (Test[0] <= 0.1)
+            {
+                Test[0] = 1.0;
+            }
+            break;
+        }
         default:
             throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate1D ] output object)") +
                                      NuTo::Constitutive::OutputToString(itOutput->first) +
@@ -249,6 +296,35 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
 
     return Error::SUCCESSFUL;
 }
+
+//! @brief ... get adsorption coefficients as vector
+//! @return ... adsorption coefficients as vector
+NuTo::FullVector<double,3>                  NuTo::MoistureTransport::GetAdsorptionCoefficients          () const
+{
+    return mAdsorptionCoeff;
+}
+
+//! @brief ... get desorption coefficients as vector
+//! @return ... desorption coefficients as vector
+NuTo::FullVector<double,3>                  NuTo::MoistureTransport::GetDesorptionCoefficients          () const
+{
+    return mDesorptionCoeff;
+}
+
+//! @brief ... get the gradient correction when changing from desorption to adsorption
+//! @return ... gradient correction when changing from desorption to adsorption
+double                                      NuTo::MoistureTransport::GetKa                               () const
+{
+    return mKa;
+}
+
+//! @brief ... get the gradient correction when changing from adsorption to desorption
+//! @return ... gradient correction when changing from adsorption to desorption
+double                                      NuTo::MoistureTransport::GetKd                               () const
+{
+    return mKd;
+}
+
 
 //! @brief ... get mass exchange rate between water phase and vapor phase
 //! @return ... mass exchange rate
@@ -335,6 +411,40 @@ void                                        NuTo::MoistureTransport::Info       
     rLogger << "    Water phase diffusion coefficient  : " << this->GetWaterPhaseDiffusionCoefficient() << "\n";
     rLogger << "    Water phase diffusion exponent     : " << this->GetWaterPhaseDiffusionExponent()    << "\n";
 }
+
+
+//! @brief ... set adsorption coefficients as vector
+//! @param ... adsorption coefficients as vector
+void                                        NuTo::MoistureTransport::SetAdsorptionCoefficients          (NuTo::FullVector<double,3> rAdsorptionCoefficients)
+{
+    mAdsorptionCoeff = rAdsorptionCoefficients;
+    SetParametersValid();
+}
+
+//! @brief ... set desorption coefficients as vector
+//! @param ... desorption coefficients as vector
+void                                        NuTo::MoistureTransport::SetDesorptionCoefficients          (NuTo::FullVector<double,3> rDesorptionCoefficients)
+{
+    mDesorptionCoeff = rDesorptionCoefficients;
+    SetParametersValid();
+}
+
+//! @brief ... set the gradient correction when changing from desorption to adsorption
+//! @param ... gradient correction when changing from desorption to adsorption
+void                                        NuTo::MoistureTransport::SetKa                              (double rKa)
+{
+    mKa = rKa;
+    SetParametersValid();
+}
+
+//! @brief ... set the gradient correction when changing from adsorption to desorption
+//! @param ... gradient correction when changing from adsorption to desorption
+void                                        NuTo::MoistureTransport::SetKd                              (double rKd)
+{
+    mKd = rKd;
+    SetParametersValid();
+}
+
 
 //! @brief ... set mass exchange rate between water phase and vapor phase
 //! @param ... mass exchange rate

@@ -447,6 +447,63 @@ void NuTo::ConstitutiveBase::SetFatigueExtrapolation(bool rFatigueExtrapolation)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFatigueExtrapolation] The constitutive relationship does not have this option.");
 }
+
+//! @brief ... get adsorption coefficients as vector
+//! @return ... adsorption coefficients as vector
+NuTo::FullVector<double,3> NuTo::ConstitutiveBase::GetAdsorptionCoefficients() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set adsorption coefficients as vector
+//! @param ... adsorption coefficients as vector
+void NuTo::ConstitutiveBase::SetAdsorptionCoefficients(NuTo::FullVector<double,3> rAdsorptionCoefficients)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get desorption coefficients as vector
+//! @return ... desorption coefficients as vector
+NuTo::FullVector<double,3> NuTo::ConstitutiveBase::GetDesorptionCoefficients() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDesorptionCoefficients] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set desorption coefficients as vector
+//! @param ... desorption coefficients as vector
+void NuTo::ConstitutiveBase::SetDesorptionCoefficients(NuTo::FullVector<double,3> rDesorptionCoefficients)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDesorptionCoefficients] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get the gradient correction when changing from desorption to adsorption
+//! @return ... gradient correction when changing from desorption to adsorption
+double NuTo::ConstitutiveBase::GetKa() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetKa] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set the gradient correction when changing from desorption to adsorption
+//! @param ... gradient correction when changing from desorption to adsorption
+void NuTo::ConstitutiveBase::SetKa(double rKa)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetKa] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... get the gradient correction when changing from adsorption to desorption
+//! @return ... gradient correction when changing from adsorption to desorption
+double NuTo::ConstitutiveBase::GetKd() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetKd] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set the gradient correction when changing from adsorption to desorption
+//! @param ... gradient correction when changing from adsorption to desorption
+void NuTo::ConstitutiveBase::SetKd(double rKd)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetKd] The constitutive relationship does not have this parameter.");
+}
+
 //! @brief ... get mass exchange rate between water phase and vapor phase
 //! @return ... mass exchange rate
 double NuTo::ConstitutiveBase::GetMassExchangeRate() const

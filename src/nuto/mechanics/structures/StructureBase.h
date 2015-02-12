@@ -1462,6 +1462,46 @@ public:
     //! @param ... viscoplastic yield surface offset
     void ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset);
 
+    //! @brief ... get adsorption coefficients as vector
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... adsorption coefficients as vector
+    NuTo::FullVector<double,3> ConstitutiveLawGetAdsorptionCoefficients(int rIdent);
+
+    //! @brief ... set adsorption coefficients as vector
+    //! @param rIdent ... constitutive law identifier
+    //! @param rAdsorptionCoefficients ... adsorption coefficients as vector
+    void ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rAdsorptionCoefficients);
+
+    //! @brief ... get desorption coefficients as vector
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... desorption coefficients as vector
+    NuTo::FullVector<double,3> ConstitutiveLawGetDesorptionCoefficients(int rIdent);
+
+    //! @brief ... set desorption coefficients as vector
+    //! @param rIdent ... constitutive law identifier
+    //! @param rDesorptionCoefficients ... desorption coefficients as vector
+    void ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rDesorptionCoefficients);
+
+    //! @brief ... get the gradient correction when changing from desorption to adsorption
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... gradient correction when changing from desorption to adsorption
+    double ConstitutiveLawGetKa(int rIdent) const;
+
+    //! @brief ... set the gradient correction when changing from desorption to adsorption
+    //! @param rIdent ... constitutive law identifier
+    //! @param ... gradient correction when changing from desorption to adsorption
+    void ConstitutiveLawSetKa(int rIdent, double rKa);
+
+    //! @brief ... get the gradient correction when changing from adsorption to desorption
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... gradient correction when changing from adsorption to desorption
+    double ConstitutiveLawGetKd(int rIdent) const;
+
+    //! @brief ... set the gradient correction when changing from adsorption to desorption
+    //! @param rIdent ... constitutive law identifier
+    //! @param ... gradient correction when changing from adsorption to desorption
+    void ConstitutiveLawSetKd(int rIdent, double rKd);
+
     //! @brief ... get mass exchange rate between vapor phase and water phase
     //! @param rIdent ... constitutive law identifier
     double ConstitutiveLawGetMassExchangeRate(int rIdent);

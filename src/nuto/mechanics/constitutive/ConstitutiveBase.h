@@ -308,6 +308,38 @@ public:
     //! @param ... fatigue extrapolation flag
     virtual void SetFatigueExtrapolation(bool rFatigueExtrapolation);
 
+    //! @brief ... get adsorption coefficients as vector
+    //! @return ... adsorption coefficients as vector
+    virtual NuTo::FullVector<double,3> GetAdsorptionCoefficients() const;
+
+    //! @brief ... set adsorption coefficients as vector
+    //! @param ... adsorption coefficients as vector
+    virtual void SetAdsorptionCoefficients(NuTo::FullVector<double,3> rAdsorptionCoefficients);
+
+    //! @brief ... get desorption coefficients as vector
+    //! @return ... desorption coefficients as vector
+    virtual NuTo::FullVector<double,3> GetDesorptionCoefficients() const;
+
+    //! @brief ... set desorption coefficients as vector
+    //! @param ... desorption coefficients as vector
+    virtual void SetDesorptionCoefficients(NuTo::FullVector<double,3> rDesorptionCoefficients);
+
+    //! @brief ... set the gradient correction when changing from desorption to adsorption
+    //! @param ... gradient correction when changing from desorption to adsorption
+    virtual void SetKa(double rKa);
+
+    //! @brief ... get the gradient correction when changing from desorption to adsorption
+    //! @return ... gradient correction when changing from desorption to adsorption
+    virtual double GetKa() const;
+
+    //! @brief ... set the gradient correction when changing from adsorption to desorption
+    //! @param ... gradient correction when changing from adsorption to desorption
+    virtual void SetKd(double rKd);
+
+    //! @brief ... get the gradient correction when changing from adsorption to desorption
+    //! @return ... gradient correction when changing from adsorption to desorption
+    virtual double GetKd() const;
+
     //! @brief ... get mass exchange rate between water phase and vapor phase
     //! @return ... mass exchange rate
     virtual double GetMassExchangeRate() const;

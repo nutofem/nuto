@@ -1001,6 +1001,153 @@ bool NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation(int rIdent) con
     }
     return FatigueExtrapolation;
 }
+
+//! @brief ... get adsorption coefficients as vector
+//! @param rIdent ... constitutive law identifier
+//! @return ... adsorption coefficients as vector
+NuTo::FullVector<double,3> NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoefficients(int rIdent)
+{
+    NuTo::FullVector<double,3> AdsorptionCoefficients({0.0, 0.0, 0.0});
+
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        AdsorptionCoefficients = ConstitutiveLawPtr->GetAdsorptionCoefficients();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoefficients] error getting adsorption coefficients.");
+        throw e;
+    }
+    return AdsorptionCoefficients;
+
+}
+
+//! @brief ... set adsorption coefficients as vector
+//! @param rIdent ... constitutive law identifier
+//! @param rAdsorptionCoefficients ... adsorption coefficients as vector
+void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rAdsorptionCoefficients)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetAdsorptionCoefficients(rAdsorptionCoefficients);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients] error setting adsorption coefficients.");
+        throw e;
+    }
+}
+
+//! @brief ... get desorption coefficients as vector
+//! @param rIdent ... constitutive law identifier
+//! @return ... desorption coefficients as vector
+NuTo::FullVector<double,3> NuTo::StructureBase::ConstitutiveLawGetDesorptionCoefficients(int rIdent)
+{
+    NuTo::FullVector<double,3> DesorptionCoefficients({0.0, 0.0, 0.0});
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        DesorptionCoefficients = ConstitutiveLawPtr->GetDesorptionCoefficients();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDesorptionCoefficients] error getting desorption coefficients.");
+        throw e;
+    }
+    return DesorptionCoefficients;
+}
+
+//! @brief ... set desorption coefficients as vector
+//! @param rIdent ... constitutive law identifier
+//! @param rDesorptionCoefficients ... desorption coefficients as vector
+void NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rDesorptionCoefficients)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetDesorptionCoefficients(rDesorptionCoefficients);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients] error setting desorption coefficients.");
+        throw e;
+    }
+}
+
+//! @brief ... get the gradient correction when changing from desorption to adsorption
+//! @param rIdent ... constitutive law identifier
+//! @return ... gradient correction when changing from desorption to adsorption
+double NuTo::StructureBase::ConstitutiveLawGetKa(int rIdent) const
+{
+    double Ka = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        Ka = ConstitutiveLawPtr->GetKa();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetKa] error getting Ka.");
+        throw e;
+    }
+    return Ka;
+}
+
+//! @brief ... set the gradient correction when changing from desorption to adsorption
+//! @param rIdent ... constitutive law identifier
+//! @param ... gradient correction when changing from desorption to adsorption
+void NuTo::StructureBase::ConstitutiveLawSetKa(int rIdent, double rKa)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetKa(rKa);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetKa] error setting Ka.");
+        throw e;
+    }
+}
+
+//! @brief ... get the gradient correction when changing from adsorption to desorption
+//! @param rIdent ... constitutive law identifier
+//! @return ... gradient correction when changing from adsorption to desorption
+double NuTo::StructureBase::ConstitutiveLawGetKd(int rIdent) const
+{
+    double Kd = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        Kd = ConstitutiveLawPtr->GetKd();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetKd] error getting Kd.");
+        throw e;
+    }
+    return Kd;
+}
+
+//! @brief ... set the gradient correction when changing from adsorption to desorption
+//! @param rIdent ... constitutive law identifier
+//! @param ... gradient correction when changing from adsorption to desorption
+void NuTo::StructureBase::ConstitutiveLawSetKd(int rIdent, double rKd)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetKd(rKd);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetKd] error setting Kd.");
+        throw e;
+    }
+}
+
 //! @brief ... get mass exchange rate between vapor phase and water phase
 //! @param rIdent ... constitutive law identifier
 double NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate(int rIdent)
@@ -1017,7 +1164,6 @@ double NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate(int rIdent)
         throw e;
     }
     return MassExchangeRate;
-
 }
 
 //! @brief ... set mass exchange rate between vapor phase and water phase

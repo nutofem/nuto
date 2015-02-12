@@ -3,15 +3,24 @@
 
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.h"
 
+// Temporäre Includes
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 namespace NuTo
 {
+
 
 class MoistureTransport : public ConstitutiveBase
 {
 public:
     MoistureTransport();
+
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase*                 AllocateStaticDataEngineeringStress_EngineeringStrain1D (const ElementBase* rElement) const override;
 
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
@@ -63,6 +72,22 @@ public:
                                                                                      const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
                                                                                      std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput);
 
+    //! @brief ... get adsorption coefficients as vector
+    //! @return ... adsorption coefficients as vector
+    virtual NuTo::FullVector<double,3>          GetAdsorptionCoefficients           () const override;
+
+    //! @brief ... get desorption coefficients as vector
+    //! @return ... desorption coefficients as vector
+    virtual NuTo::FullVector<double,3>          GetDesorptionCoefficients           () const override;
+
+    //! @brief ... get the gradient correction when changing from desorption to adsorption
+    //! @return ... gradient correction when changing from desorption to adsorption
+    virtual double                              GetKa                               () const override;
+
+    //! @brief ... get the gradient correction when changing from adsorption to desorption
+    //! @return ... gradient correction when changing from adsorption to desorption
+    virtual double                              GetKd                               () const override;
+
     //! @brief ... get mass exchange rate between water phase and vapor phase
     //! @return ... mass exchange rate
     virtual double                              GetMassExchangeRate                 () const override;
@@ -108,6 +133,22 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void                                        Info                                (unsigned short rVerboseLevel, Logger& rLogger) const;
 
+    //! @brief ... set adsorption coefficients as vector
+    //! @param ... adsorption coefficients as vector
+    virtual void                                SetAdsorptionCoefficients           (NuTo::FullVector<double,3> rAdsorptionCoefficients) override;
+
+    //! @brief ... set desorption coefficients as vector
+    //! @param ... desorption coefficients as vector
+    virtual void                                SetDesorptionCoefficients           (NuTo::FullVector<double,3> rDesorptionCoefficients) override;
+
+    //! @brief ... set the gradient correction when changing from desorption to adsorption
+    //! @param ... gradient correction when changing from desorption to adsorption
+    virtual void                                SetKa                               (double rKa) override;
+
+    //! @brief ... set the gradient correction when changing from adsorption to desorption
+    //! @param ... gradient correction when changing from adsorption to desorption
+    virtual void                                SetKd                               (double rKd) override;
+
     //! @brief ... set mass exchange rate between water phase and vapor phase
     //! @param ... mass exchange rate
     virtual void                                SetMassExchangeRate                 (double rMassExchangeRate) override;
@@ -143,31 +184,41 @@ public:
 
 protected:
 
-    FullVector<double,3> mActualSorptionCoeff   {{0.20, 0.0, 0.0}};
+    //! @brief ... Coefficients of the adsorption curve
+    FullVector<double,3>    mAdsorptionCoeff        {{0.0, 0.0, 0.0}};
 
     //! @brief ... Vapor phase diffusion exponent \f$ \alpha_V \f$
-    double mAlphaV  = 1.0;
+    double                  mAlphaV                 = 1.0;
 
     //! @brief ... Water phase diffusion exponent \f$ \alpha_W \f$
-    double mAlphaW  = 1.0;
+    double                  mAlphaW                 = 1.0;
+
+    //! @brief ... Coefficients of the desorption curve
+    FullVector<double,3>    mDesorptionCoeff        {{0.0, 0.0, 0.0}};
 
     //! @brief ... Vapor phase diffusion coefficient \f$ D_v \f$
-    double mDV      = 1.0;
+    double                  mDV                     = 1.0;
 
     //! @brief ... Water phase diffusion coefficient \f$ D_w \f$
-    double mDW      = 1.0;
+    double                  mDW                     = 1.0;
 
     //! @brief ... Porosity of the specimen \f$ \Epsilon_p \f$
-    double mEpsP    = 0.5;
+    double                  mEpsP                   = 0.5;
+
+    //! @brief ... gradient correction when switching to adsorption
+    double                  mKa                     = 0.0;
+
+    //! @brief ... gradient correction when switching to desorption
+    double                  mKd                     = 0.0;
 
     //! @brief ... Mass exchange rate between vapor phase and water phase \f$ R \f$
-    double mR       = 1.0;
+    double                  mR                      = 1.0;
 
     //! @brief ... Water phase density \f$ \rho_w \f$
-    double mRhoW    = 1.0;
+    double                  mRhoW                   = 1.0;
 
     //! @brief ... Vapor phase saturation density \f$ \rho_v \f$
-    double mRhoVS   = 1.0;
+    double                  mRhoVS                  = 1.0;
 
 };
 

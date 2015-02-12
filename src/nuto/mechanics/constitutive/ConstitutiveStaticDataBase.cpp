@@ -152,6 +152,18 @@ const NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* NuTo::Constitu
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
 }
 
+//!@ brief reinterpret as moisture transport
+NuTo::ConstitutiveStaticDataMoistureTransport* NuTo::ConstitutiveStaticDataBase::AsMoistureTransport()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMoistureTransport] Static data is not of type ConstitutiveStaticDataMoistureTransport.");
+}
+
+//!@ brief reinterpret as moisture transport
+const NuTo::ConstitutiveStaticDataMoistureTransport* NuTo::ConstitutiveStaticDataBase::AsMoistureTransport()const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMoistureTransport] Static data is not of type ConstitutiveStaticDataMoistureTransport.");
+}
+
 
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {

@@ -64,6 +64,7 @@ constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
 constitutive/moistureTransport/MoistureTransport.cpp
 constitutive/moistureTransport/WaterPhaseFraction.cpp
 constitutive/moistureTransport/RelativeHumidity.cpp
+constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES
