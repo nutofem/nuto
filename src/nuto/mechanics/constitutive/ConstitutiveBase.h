@@ -310,19 +310,19 @@ public:
 
     //! @brief ... get adsorption coefficients as vector
     //! @return ... adsorption coefficients as vector
-    virtual NuTo::FullVector<double,3> GetAdsorptionCoefficients() const;
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetAdsorptionCoefficients() const;
 
     //! @brief ... set adsorption coefficients as vector
     //! @param ... adsorption coefficients as vector
-    virtual void SetAdsorptionCoefficients(NuTo::FullVector<double,3> rAdsorptionCoefficients);
+    virtual void SetAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
 
     //! @brief ... get desorption coefficients as vector
     //! @return ... desorption coefficients as vector
-    virtual NuTo::FullVector<double,3> GetDesorptionCoefficients() const;
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetDesorptionCoefficients() const;
 
     //! @brief ... set desorption coefficients as vector
     //! @param ... desorption coefficients as vector
-    virtual void SetDesorptionCoefficients(NuTo::FullVector<double,3> rDesorptionCoefficients);
+    virtual void SetDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
 
     //! @brief ... set the gradient correction when changing from desorption to adsorption
     //! @param ... gradient correction when changing from desorption to adsorption

@@ -61,6 +61,35 @@ bool                                        NuTo::MoistureTransport::CheckElemen
     }
 }
 
+//! @brief ... check the number of adsorption coefficients
+//! @param rAdsorptionCoefficients ... adsorption coefficients
+void                                        NuTo::MoistureTransport::CheckAdsorptionCoefficients        (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) const
+{
+    if (rAdsorptionCoefficients.GetNumRows() != 4)
+    {
+        throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckAdsorptionCoefficients] The vector for the adsorption coefficients must have 4 rows --- Polynom of 3th degree.");
+    }
+    if (rAdsorptionCoefficients(0)!=0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckAdsorptionCoefficients] The first adsorption coefficients (constant term) has to be zero");
+    }
+}
+
+//! @brief ... check the number of desorption coefficients
+//! @param rDesorptionCoefficients ... desorption coefficients
+void                                        NuTo::MoistureTransport::CheckDesorptionCoefficients         (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients) const
+{
+    if (rDesorptionCoefficients.GetNumRows() != 4)
+    {
+        throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckDesorptionCoefficients] The vector for the desorption coefficients must have 4 rows. --- Polynom of 3th degree");
+    }
+    if (rDesorptionCoefficients(0)!=0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckDesorptionCoefficients] The first desorption coefficients (constant term) has to be zero");
+    }
+}
+
+
 //! @brief ... check if the mass exchange rate is non-negative
 //! @param rMassExchangeRate ... mass exchange rate
 void                                        NuTo::MoistureTransport::CheckMassExchangeRate              (double rMassExchangeRate) const
@@ -223,12 +252,12 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
             // Calculate sorption curves
             if (StaticData->mLastRelHumValue < relativeHumidity(0) && StaticData->mSorptionHistoryDesorption == true)
             {
-                StaticData->mActualSorptionCoeff(0) = 0.12;
+                //StaticData->mActualSorptionCoeff(0) = 0.12;
                 //std::cout << "Changed Sorption Coeffs" << std::endl;
             }
             if (StaticData->mLastRelHumValue > relativeHumidity(0) && StaticData->mSorptionHistoryDesorption == false)
             {
-                StaticData->mActualSorptionCoeff(0) = 0.12;
+                //StaticData->mActualSorptionCoeff(0) = 0.12;
                 //std::cout << "Changed Sorption Coeffs" << std::endl;
             }
 
@@ -236,6 +265,7 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
                                                                             StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) +
                                                                             StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0));
             PhaseMassExchangeRateTimesEquilibriumSorptionCurve.SetSymmetry(true);
+
             break;
         }
         case NuTo::Constitutive::Output::WATER_PHASE_DENSITY:
@@ -299,14 +329,14 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
 
 //! @brief ... get adsorption coefficients as vector
 //! @return ... adsorption coefficients as vector
-NuTo::FullVector<double,3>                  NuTo::MoistureTransport::GetAdsorptionCoefficients          () const
+NuTo::FullVector<double,Eigen::Dynamic>     NuTo::MoistureTransport::GetAdsorptionCoefficients          () const
 {
     return mAdsorptionCoeff;
 }
 
 //! @brief ... get desorption coefficients as vector
 //! @return ... desorption coefficients as vector
-NuTo::FullVector<double,3>                  NuTo::MoistureTransport::GetDesorptionCoefficients          () const
+NuTo::FullVector<double,Eigen::Dynamic>     NuTo::MoistureTransport::GetDesorptionCoefficients          () const
 {
     return mDesorptionCoeff;
 }
@@ -415,16 +445,18 @@ void                                        NuTo::MoistureTransport::Info       
 
 //! @brief ... set adsorption coefficients as vector
 //! @param ... adsorption coefficients as vector
-void                                        NuTo::MoistureTransport::SetAdsorptionCoefficients          (NuTo::FullVector<double,3> rAdsorptionCoefficients)
+void                                        NuTo::MoistureTransport::SetAdsorptionCoefficients          (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients)
 {
+    CheckAdsorptionCoefficients(rAdsorptionCoefficients);
     mAdsorptionCoeff = rAdsorptionCoefficients;
     SetParametersValid();
 }
 
 //! @brief ... set desorption coefficients as vector
 //! @param ... desorption coefficients as vector
-void                                        NuTo::MoistureTransport::SetDesorptionCoefficients          (NuTo::FullVector<double,3> rDesorptionCoefficients)
+void                                        NuTo::MoistureTransport::SetDesorptionCoefficients          (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients)
 {
+    CheckDesorptionCoefficients(rDesorptionCoefficients);
     mDesorptionCoeff = rDesorptionCoefficients;
     SetParametersValid();
 }

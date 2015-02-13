@@ -1465,22 +1465,22 @@ public:
     //! @brief ... get adsorption coefficients as vector
     //! @param rIdent ... constitutive law identifier
     //! @return ... adsorption coefficients as vector
-    NuTo::FullVector<double,3> ConstitutiveLawGetAdsorptionCoefficients(int rIdent);
+    NuTo::FullVector<double,Eigen::Dynamic> ConstitutiveLawGetAdsorptionCoefficients(int rIdent);
 
     //! @brief ... set adsorption coefficients as vector
     //! @param rIdent ... constitutive law identifier
     //! @param rAdsorptionCoefficients ... adsorption coefficients as vector
-    void ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rAdsorptionCoefficients);
+    void ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
 
     //! @brief ... get desorption coefficients as vector
     //! @param rIdent ... constitutive law identifier
     //! @return ... desorption coefficients as vector
-    NuTo::FullVector<double,3> ConstitutiveLawGetDesorptionCoefficients(int rIdent);
+    NuTo::FullVector<double,Eigen::Dynamic> ConstitutiveLawGetDesorptionCoefficients(int rIdent);
 
     //! @brief ... set desorption coefficients as vector
     //! @param rIdent ... constitutive law identifier
     //! @param rDesorptionCoefficients ... desorption coefficients as vector
-    void ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rDesorptionCoefficients);
+    void ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
 
     //! @brief ... get the gradient correction when changing from desorption to adsorption
     //! @param rIdent ... constitutive law identifier

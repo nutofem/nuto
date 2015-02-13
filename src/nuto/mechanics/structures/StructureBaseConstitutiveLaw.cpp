@@ -1005,7 +1005,7 @@ bool NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation(int rIdent) con
 //! @brief ... get adsorption coefficients as vector
 //! @param rIdent ... constitutive law identifier
 //! @return ... adsorption coefficients as vector
-NuTo::FullVector<double,3> NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoefficients(int rIdent)
+NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoefficients(int rIdent)
 {
     NuTo::FullVector<double,3> AdsorptionCoefficients({0.0, 0.0, 0.0});
 
@@ -1026,7 +1026,7 @@ NuTo::FullVector<double,3> NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoef
 //! @brief ... set adsorption coefficients as vector
 //! @param rIdent ... constitutive law identifier
 //! @param rAdsorptionCoefficients ... adsorption coefficients as vector
-void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rAdsorptionCoefficients)
+void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients)
 {
     try
     {
@@ -1043,7 +1043,7 @@ void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, N
 //! @brief ... get desorption coefficients as vector
 //! @param rIdent ... constitutive law identifier
 //! @return ... desorption coefficients as vector
-NuTo::FullVector<double,3> NuTo::StructureBase::ConstitutiveLawGetDesorptionCoefficients(int rIdent)
+NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetDesorptionCoefficients(int rIdent)
 {
     NuTo::FullVector<double,3> DesorptionCoefficients({0.0, 0.0, 0.0});
     try
@@ -1062,7 +1062,7 @@ NuTo::FullVector<double,3> NuTo::StructureBase::ConstitutiveLawGetDesorptionCoef
 //! @brief ... set desorption coefficients as vector
 //! @param rIdent ... constitutive law identifier
 //! @param rDesorptionCoefficients ... desorption coefficients as vector
-void NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,3> rDesorptionCoefficients)
+void NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients)
 {
     try
     {

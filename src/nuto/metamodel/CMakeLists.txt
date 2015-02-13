@@ -8,6 +8,7 @@ SET(NuToMetamodel_SOURCES
   MinMaxTransformation.cpp
   ZeroMeanUnitVarianceTransformation.cpp
   SupportPoints.cpp
+  PolynomialLeastSquaresFitting.cpp
 )
 
 SET(NuToMetamodel_SWIG_MODULES

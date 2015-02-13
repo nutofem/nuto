@@ -450,28 +450,28 @@ void NuTo::ConstitutiveBase::SetFatigueExtrapolation(bool rFatigueExtrapolation)
 
 //! @brief ... get adsorption coefficients as vector
 //! @return ... adsorption coefficients as vector
-NuTo::FullVector<double,3> NuTo::ConstitutiveBase::GetAdsorptionCoefficients() const
+NuTo::FullVector<double,Eigen::Dynamic> NuTo::ConstitutiveBase::GetAdsorptionCoefficients() const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
 }
 
 //! @brief ... set adsorption coefficients as vector
 //! @param ... adsorption coefficients as vector
-void NuTo::ConstitutiveBase::SetAdsorptionCoefficients(NuTo::FullVector<double,3> rAdsorptionCoefficients)
+void NuTo::ConstitutiveBase::SetAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
 }
 
 //! @brief ... get desorption coefficients as vector
 //! @return ... desorption coefficients as vector
-NuTo::FullVector<double,3> NuTo::ConstitutiveBase::GetDesorptionCoefficients() const
+NuTo::FullVector<double,Eigen::Dynamic> NuTo::ConstitutiveBase::GetDesorptionCoefficients() const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDesorptionCoefficients] The constitutive relationship does not have this parameter.");
 }
 
 //! @brief ... set desorption coefficients as vector
 //! @param ... desorption coefficients as vector
-void NuTo::ConstitutiveBase::SetDesorptionCoefficients(NuTo::FullVector<double,3> rDesorptionCoefficients)
+void NuTo::ConstitutiveBase::SetDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDesorptionCoefficients] The constitutive relationship does not have this parameter.");
 }
