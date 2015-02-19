@@ -71,6 +71,7 @@ protected:
 
     bool    mSorptionHistoryDesorption      = true;
     double  mLastRelHumValue                = 1.0;
+    double  mJunctionPoint                  = 0.0;
     FullVector<double,Eigen::Dynamic> mActualSorptionCoeff   {{0.0, 0.0, 0.0}};
     FullVector<double,Eigen::Dynamic> mLastSorptionCoeff   {{0.0, 0.0, 0.0}};
 };

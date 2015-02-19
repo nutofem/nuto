@@ -483,6 +483,15 @@ double NuTo::ConstitutiveBase::GetKa() const
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetKa] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
+//! @param rRelativeHumidity ... relative humidity
+//! @return ... equilibrium water volume fraction
+double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive relationship does not have this parameter.");
+}
+
+
 //! @brief ... set the gradient correction when changing from desorption to adsorption
 //! @param ... gradient correction when changing from desorption to adsorption
 void NuTo::ConstitutiveBase::SetKa(double rKa)

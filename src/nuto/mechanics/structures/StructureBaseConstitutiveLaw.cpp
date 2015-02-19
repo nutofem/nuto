@@ -1076,6 +1076,27 @@ void NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients(int rIdent, N
     }
 }
 
+//! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
+//! @param rIdent ... constitutive law identifier
+//! @param rRelativeHumidity ... relative humidity
+//! @param rCoeffs ... polynomial coefficients of the sorption curve
+//! @return ... equilibrium water volume fraction
+double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
+{
+    double EquilibriumWaterVolumeFraction = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        EquilibriumWaterVolumeFraction = ConstitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity,rCoeffs);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction] error getting the equilibrium water volume fraction.");
+        throw e;
+    }
+    return EquilibriumWaterVolumeFraction;
+}
+
 //! @brief ... get the gradient correction when changing from desorption to adsorption
 //! @param rIdent ... constitutive law identifier
 //! @return ... gradient correction when changing from desorption to adsorption

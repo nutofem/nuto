@@ -324,6 +324,11 @@ public:
     //! @param ... desorption coefficients as vector
     virtual void SetDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
 
+    //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
+    //! @param rRelativeHumidity ... relative humidity
+    //! @return ... equilibrium water volume fraction
+    virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
+
     //! @brief ... set the gradient correction when changing from desorption to adsorption
     //! @param ... gradient correction when changing from desorption to adsorption
     virtual void SetKa(double rKa);

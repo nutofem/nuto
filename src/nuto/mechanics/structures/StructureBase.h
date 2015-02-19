@@ -1482,6 +1482,13 @@ public:
     //! @param rDesorptionCoefficients ... desorption coefficients as vector
     void ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
 
+    //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
+    //! @param rIdent ... constitutive law identifier
+    //! @param rRelativeHumidity ... relative humidity
+    //! @param rCoeffs ... polynomial coefficients of the sorption curve
+    //! @return ... equilibrium water volume fraction
+    double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
+
     //! @brief ... get the gradient correction when changing from desorption to adsorption
     //! @param rIdent ... constitutive law identifier
     //! @return ... gradient correction when changing from desorption to adsorption
