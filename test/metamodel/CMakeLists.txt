@@ -8,3 +8,11 @@ IF(ENABLE_METAMODEL)
 ENDIF(ENABLE_METAMODEL)
 ENDIF(ENABLE_PYTHON_TESTS)
 
+IF(ENABLE_C++_TESTS)
+IF(ENABLE_METAMODEL)
+  # test the CheckStiffness method globally and locally
+  ADD_EXECUTABLE(PolynomialLeastSquaresFitting PolynomialLeastSquaresFitting.cpp)
+  TARGET_LINK_LIBRARIES(PolynomialLeastSquaresFitting NuToMetamodel NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  ADD_TEST(c::metamodel::PolynomialLeastSquaresFitting ${CMAKE_CURRENT_BUILD_DIR}/PolynomialLeastSquaresFitting)
+ENDIF(ENABLE_METAMODEL)
+ENDIF(ENABLE_C++_TESTS)

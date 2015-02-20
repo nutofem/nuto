@@ -31,7 +31,7 @@ void NuTo::PolynomialLeastSquaresFitting::AddBoundaryCondition(double rX, double
     AddBoundaryCondition(std::pair<double, double>(rX,rY));
 }
 
-
+//! @brief determine regression parameters
 void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
 {
     // check dimension of output
@@ -40,7 +40,7 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
     {
         throw MetamodelException("[NuTo::PolynomialLeastSquaresFitting::BuildDerived] dimension of output must be 1.");
     }
-    if(mDegree < 1)
+    if(mDegree < 0)
     {
         throw MetamodelException("[NuTo::PolynomialLeastSquaresFitting::BuildDerived] Degree of polynom not set.");
     }
@@ -111,7 +111,7 @@ std::string NuTo::PolynomialLeastSquaresFitting::GetTypeId()const
 //! @param rDegree degree of the polynom
 void NuTo::PolynomialLeastSquaresFitting::SetDegree(int rDegree)
 {
-    if(rDegree < 1)
+    if(rDegree < 0)
     {
         throw MetamodelException("[NuTo::PolynomialLeastSquaresFitting::SetDegree] Degree must be non negative.");
     }
