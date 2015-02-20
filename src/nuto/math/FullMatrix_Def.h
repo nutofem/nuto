@@ -30,7 +30,7 @@ class Logger;
 //! @author Jörg F. Unger, ISM
 //! @date July 2009
 //! @brief ... class for full matrices derived from the abstract base class Matrix
-template <class T, int rows, int cols>
+template <class T, int rows=Eigen::Dynamic, int cols=Eigen::Dynamic>
 class FullMatrix : public Matrix<T>, public Eigen::Matrix<T, rows, cols>
 {
 #ifdef ENABLE_SERIALIZATION

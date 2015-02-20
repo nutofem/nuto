@@ -26,7 +26,7 @@ namespace NuTo
 	class StructureGrid;
 #endif // ENABLE_MECHANICS
 
-class ConjugateGradientGrid : public virtual Optimizer
+class ConjugateGradientGrid : public Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;

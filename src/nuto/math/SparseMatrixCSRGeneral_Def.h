@@ -151,15 +151,11 @@ public:
 
 #ifndef SWIG
     SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()override;
+    const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const override;
 #else
     SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral();
 #endif
 
-#ifndef SWIG
-    const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const override;
-#else
-    const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const;
-#endif //SWIG
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

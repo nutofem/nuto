@@ -33,7 +33,7 @@ public:
     }
 
     //! @brief clones (copies) the data
-    ConstitutiveStaticDataDamageViscoPlasticity3D* Clone()const
+    virtual ConstitutiveStaticDataDamageViscoPlasticity3D* Clone()const
     {
     	return new ConstitutiveStaticDataDamageViscoPlasticity3D(*this);
     }
@@ -45,10 +45,10 @@ public:
     virtual bool CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType)const;
 
     //!@ brief reinterpret as damage viscoplasticity static data
-    ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D();
+    virtual ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D();
 
     //!@ brief reinterpret as damage viscoplasticity static data
-    const ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D()const;
+    virtual const ConstitutiveStaticDataDamageViscoPlasticity3D* AsDamageViscoPlasticity3D()const;
 
     //!@brief get mKappaInelastic
     double GetKappaInelastic()

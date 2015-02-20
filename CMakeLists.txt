@@ -148,7 +148,13 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   if(WIN32)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
   else()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -pedantic-errors")
+    if (ENABLE_NUMPY)
+  #there is an error in the numpy headers, which produces are warning that is fatal when using pedantic-errors
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wno-unused-local-typedefs -pedantic")
+    else()
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wno-unused-local-typedefs -pedantic-errors")
+    endif()
+
   endif()
 ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
@@ -171,13 +177,15 @@ MESSAGE(STATUS "Checking for Python...")
 Set(PythonLibs_FIND_VERSION 2.7)
 FIND_PACKAGE(PythonLibs REQUIRED)
 FIND_PACKAGE(PythonInterp REQUIRED)
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
+
 #get python version
 EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3]);"
 		OUTPUT_VARIABLE PYTHON_VERSION
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
-#message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
-#message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
 ## Extra flags to work around build issues with Python on Mingw64
 if(MINGW64)
   # Python.h #defines 'hypot' to '_hypot'; this breaks the C++ header <cmath>.
@@ -217,7 +225,7 @@ ENDIF(ENABLE_MKL)
 
 # boost
 MESSAGE(STATUS "Checking for Boost...")
-SET(Boost_ADDITIONAL_VERSIONS "1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54;1.55")
+SET(Boost_ADDITIONAL_VERSIONS "1.57;1.56;1.55;1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54")
 IF(ENABLE_STATIC_EXTERNALS)
   SET(Boost_USE_STATIC_LIBS TRUE)
 ENDIF(ENABLE_STATIC_EXTERNALS)

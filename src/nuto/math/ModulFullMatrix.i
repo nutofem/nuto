@@ -1,4 +1,4 @@
-%module(package="nuto") ModulFullMatrix
+%module ModulFullMatrix
 %feature("autodoc","1");
 //remove the warning for not exposing the base class features of eigen to python via swig
 #pragma SWIG nowarn=401
@@ -11,11 +11,10 @@
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 %}
 
-
 //// parts added
-
 #ifdef ENABLE_NUMPY
 %include "numpy.i"
+
 
 %init %{
 import_array();
@@ -45,7 +44,6 @@ import_array();
 %import "nuto/math/NuToMath.i"
 %import "nuto/math/ModulMatrix.i"
 %import "nuto/math/ModulSparseMatrix.i"
-
 
 %include "nuto/math/FullMatrix_Def.h"
 

@@ -1,5 +1,5 @@
 // $Id$
-%module(package="nuto") NuToMath
+%module NuToMath
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files

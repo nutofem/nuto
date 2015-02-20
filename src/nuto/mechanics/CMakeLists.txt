@@ -202,6 +202,7 @@ loads/LoadSurfacePressure3D.cpp
 SET(NuToMechanicsNodes_SOURCES
 nodes/MapNodeKeyNodeEnum.cpp
 nodes/NodeBase.cpp
+nodes/NodeDof.cpp
 nodes/NodeGrid1D.cpp
 nodes/NodeGrid2D.cpp
 nodes/NodeGrid3D.cpp

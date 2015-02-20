@@ -543,7 +543,7 @@ public:
     int CrackCreate(NuTo::FullVector<int,Eigen::Dynamic>& rNodes);
 
     //! @brief ... delete an existing crack
-    //! @param rIdent ... crack identifier
+    //! @param rIdent ... crack identifier,Eigen::Dynamic
     void CrackDelete(int rIdent);
 
     //! @brief ... extends an existing crack

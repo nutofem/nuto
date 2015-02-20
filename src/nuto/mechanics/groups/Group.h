@@ -12,6 +12,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/utility/identity_type.hpp>
 #else
 #include <map>
 #endif // ENABLE_SERIALIZATION
@@ -48,7 +49,7 @@ public:
 #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialize Group<T>" << std::endl;
 #endif
-        ar & boost::serialization::make_nvp ("map",boost::serialization::base_object< std::map<int,T*> > ( *this ) )
+        ar & boost::serialization::make_nvp (BOOST_PP_STRINGIZE(*this),boost::serialization::base_object< std::map<int,T*> > ( *this ) )
            & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
 #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize Group<T>" << std::endl;
@@ -199,6 +200,8 @@ public:
 #ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::NodeBase>)
 BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::ElementBase>)
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int,NuTo::NodeBase*>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int,NuTo::ElementBase*>)))
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 #endif //GROUP_H

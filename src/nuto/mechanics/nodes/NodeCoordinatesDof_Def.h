@@ -54,8 +54,14 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NodeCoordinatesDof" << std::endl;
+#endif
         ar & boost::serialization::make_nvp("NodeDof",boost::serialization::base_object< NodeBase >(*this));
         ar & boost::serialization::make_nvp("NodeCoordinates",boost::serialization::base_object< NodeBase >(*this));
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NodeCoordinatesDof" << std::endl;
+#endif
     }
 #endif // ENABLE_SERIALIZATION
 

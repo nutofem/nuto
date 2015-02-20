@@ -34,7 +34,7 @@ public:
     }
 
     //! @brief clones (copies) the data
-    ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* Clone()const
+    virtual ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* Clone()const
     {
     	return new ConstitutiveStaticDataDamageViscoPlasticity3DFatigue(*this);
     }
@@ -179,6 +179,10 @@ protected:
 }
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue)
+namespace boost{
+template<>
+struct is_virtual_base_of<NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D, NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue>: public mpl::true_ {};
+}
 #endif // ENABLE_SERIALIZATION
 
 #endif // CONSTITUTIVESTATICDATADAMAGEVISCOPLASTICITY3DFATIGUE_H

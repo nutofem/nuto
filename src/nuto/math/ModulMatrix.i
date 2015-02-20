@@ -1,4 +1,4 @@
-%module(package="nuto") ModulMatrix
+%module ModulMatrix
 %feature("autodoc","1");
 //remove the warning for not exposing the base class features of eigen to python via swig
 #pragma SWIG nowarn=401

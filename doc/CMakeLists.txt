@@ -1,9 +1,6 @@
 # $Id$
 
-get_target_property(DOC_TARGET doc TYPE)
-if(NOT DOC_TARGET)
-    add_custom_target(doc)
-endif()
+add_custom_target(doc)
 
 MESSAGE(STATUS "Checking for doxygen ...")
 find_package(Doxygen)

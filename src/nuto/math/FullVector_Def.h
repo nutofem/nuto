@@ -12,7 +12,7 @@ class Logger;
 //! @author Jörg F. Unger, BAM
 //! @date July 2013
 //! @brief ... class for full vectors derived from the base class FullVector
-template <class T, int rows>
+template <class T, int rows=Eigen::Dynamic>
 class FullVector : public FullMatrix<T,rows,1>
 {
 #ifdef ENABLE_SERIALIZATION
