@@ -6,16 +6,16 @@
 
 
 
-                            NuTo::ConstraintLinearNodeRelativeHumidity::ConstraintLinearNodeRelativeHumidity            (const NodeBase* rNode, double rValue)
-    :   ConstraintNode(rNode),
-        ConstraintLinear(),
+NuTo::ConstraintLinearNodeRelativeHumidity::ConstraintLinearNodeRelativeHumidity(const NodeBase* rNode, double rValue)
+    :   ConstraintLinear(),
+		ConstraintNode(rNode),
         mRHS{rValue}
 {}
 
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void                        NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix                           (int& curConstraintEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
+void  NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNumRelativeHumidity()!=1)
@@ -30,14 +30,14 @@ void                        NuTo::ConstraintLinearNodeRelativeHumidity::AddToCon
 
 //! @brief returns the number of constraint equations
 //! @return number of constraints
-int                         NuTo::ConstraintLinearNodeRelativeHumidity::GetNumLinearConstraints                         () const
+int NuTo::ConstraintLinearNodeRelativeHumidity::GetNumLinearConstraints() const
 {
     return 1;
 }
 
 //!@brief returns the right hand side of the constraint equations
 //!@return rRHS
-double                      NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS                                          () const
+double NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS() const
 {
     return mRHS;
 }
@@ -46,7 +46,7 @@ double                      NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS  
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param rCurConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void                        NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS                                          (int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
+void NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS                                          (int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNumRelativeHumidity()!=1)
@@ -62,7 +62,7 @@ void                        NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS  
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
-void                        NuTo::ConstraintLinearNodeRelativeHumidity::Info                                            (unsigned short rVerboseLevel) const
+void NuTo::ConstraintLinearNodeRelativeHumidity::Info(unsigned short rVerboseLevel) const
 {
     throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::Info] to be implemented.");
 }

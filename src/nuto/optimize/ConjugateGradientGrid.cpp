@@ -54,8 +54,6 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 #pragma acc data copy(v),copyin(r,pr,h,d)
 
-	int precision = 6;
-	int width = 10;
 	bool converged(false);
 	double rAccuracyGradientScaled = mAccuracyGradient;
 	double rAccuracyGradientSquare =rAccuracyGradientScaled*rAccuracyGradientScaled;
@@ -328,6 +326,8 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		}
 		std::cout << std::endl;
 
+//	    int precision = 6;
+//		int width = 10;
 //		std::cout.precision(precision);
 //		std::cout << std::setw(width)<< "[ConjugateGradientGrid::Optimize] displacements " ;
 //		for (size_t count=0; count<mNumParameters; count++)
