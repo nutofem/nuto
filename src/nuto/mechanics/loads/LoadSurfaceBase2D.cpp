@@ -164,7 +164,8 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         	basisVector2*=1./detJ;
 
         	//calculate weighting factor
-        	double factor(detJ*(integrationType->GetIntegrationPointWeight(countIp)));
+            double thickness = mPlaneElements[countPlaneElement].first->GetSection()->GetThickness();
+            double factor(thickness*detJ*(integrationType->GetIntegrationPointWeight(countIp)));
 
 			//calculate surface load
         	FullVector<double,2> loadVector;

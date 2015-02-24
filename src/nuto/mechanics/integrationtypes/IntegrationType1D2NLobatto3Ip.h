@@ -42,7 +42,6 @@ public:
     //! @param rCoordinates (result)
     void GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const;
 
-
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
     int GetNumIntegrationPoints()const;
@@ -67,8 +66,14 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const;
+        std::vector<unsigned int>& VisualizationCellsIP)const;
 #endif // ENABLE_VISUALIZE
+private:
+    //! @brief ... integration points coordinates
+    double iPts[3];
+
+    //! @brief ... weights for the integration
+    double weights[3];
 };
 }
 #endif //IntegrationType1D2NLobatto3Ip_H

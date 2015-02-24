@@ -10,11 +10,33 @@
 #endif //ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include <assert.h>
 
 //! @brief constructor
 NuTo::IntegrationType2D4NLobatto25Ip::IntegrationType2D4NLobatto25Ip()
 {
+    NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
+    double coordinates1D2N5Ip[5];
+    double weights1D2N5Ip[5];
+
+    // get the 1D integration point coordinates and weights
+    for (int i = 0; i < 5; i++)
+    {
+        Lobatto1D2N5Ip.GetLocalIntegrationPointCoordinates1D(i, coordinates1D2N5Ip[i]);
+        weights1D2N5Ip[i] = Lobatto1D2N5Ip.GetIntegrationPointWeight(i);
+    }
+
+    // calculate the 2D integratration point coordinates and weights
+    int ipNum = 0;
+    for (int i = 0; i < 5; i++)
+        for (int j= 0; j < 5; j++)
+        {
+            weights[ipNum] = weights1D2N5Ip[i]*weights1D2N5Ip[j];
+            iPts[ipNum][0] = coordinates1D2N5Ip[j];
+            iPts[ipNum][1] = coordinates1D2N5Ip[i];
+            ipNum++;
+        }
 }
 
 
@@ -23,116 +45,13 @@ NuTo::IntegrationType2D4NLobatto25Ip::IntegrationType2D4NLobatto25Ip()
 //! @param rCoordinates (result)
 void NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
 {
-    assert(rIpNum>=0 && rIpNum<25);
-    switch (rIpNum)
+    if (rIpNum>=0 && rIpNum<25)
     {
-    case 0 :
-        rCoordinates[0] = -1.0;
-        rCoordinates[1] = -1.0;
-        break;
-    case 1 :
-        rCoordinates[0] = -0.654653670707977087;
-        rCoordinates[1] = -1.0;
-        break;
-    case 2 :
-        rCoordinates[0] = +0.0;
-        rCoordinates[1] = -1.0;
-        break;
-    case 3 :
-        rCoordinates[0] = +0.654653670707977087;
-        rCoordinates[1] = -1.0;
-        break;
-    case 4 :
-        rCoordinates[0] = +1.0;
-        rCoordinates[1] = -1;
-        break;
-
-    case 5 :
-        rCoordinates[0] = -1.0;
-        rCoordinates[1] = -0.654653670707977087;
-        break;
-    case 6 :
-        rCoordinates[0] = -0.654653670707977087;
-        rCoordinates[1] = -0.654653670707977087;
-        break;
-    case 7 :
-        rCoordinates[0] = +0.0;
-        rCoordinates[1] = -0.654653670707977087;
-        break;
-    case 8 :
-        rCoordinates[0] = +0.654653670707977087;
-        rCoordinates[1] = -0.654653670707977087;
-        break;
-    case 9 :
-        rCoordinates[0] = +1.0;
-        rCoordinates[1] = -0.654653670707977087;
-        break;
-
-    case 10 :
-        rCoordinates[0] = -1.0;
-        rCoordinates[1] = 0.0;
-        break;
-    case 11 :
-        rCoordinates[0] = -0.654653670707977087;
-        rCoordinates[1] = 0.0;
-        break;
-    case 12 :
-        rCoordinates[0] = +0.0;
-        rCoordinates[1] = 0.0;
-        break;
-    case 13 :
-        rCoordinates[0] = +0.654653670707977087;
-        rCoordinates[1] = 0.0;
-        break;
-    case 14 :
-        rCoordinates[0] = +1.0;
-        rCoordinates[1] = 0.0;
-        break;
-
-    case 15 :
-        rCoordinates[0] = -1.0;
-        rCoordinates[1] = +0.654653670707977087;
-        break;
-    case 16 :
-        rCoordinates[0] = -0.654653670707977087;
-        rCoordinates[1] = +0.654653670707977087;
-        break;
-    case 17 :
-        rCoordinates[0] = +0.0;
-        rCoordinates[1] = +0.654653670707977087;
-        break;
-    case 18 :
-        rCoordinates[0] = +0.654653670707977087;
-        rCoordinates[1] = +0.654653670707977087;
-        break;
-    case 19 :
-        rCoordinates[0] = +1.0;
-        rCoordinates[1] = +0.654653670707977087;
-        break;
-
-    case 20 :
-        rCoordinates[0] = -1.0;
-        rCoordinates[1] = 1.0;
-        break;
-    case 21 :
-        rCoordinates[0] = -0.654653670707977087;
-        rCoordinates[1] = 1.0;
-        break;
-    case 22 :
-        rCoordinates[0] = +0.0;
-        rCoordinates[1] = 1.0;
-        break;
-    case 23 :
-        rCoordinates[0] = +0.654653670707977087;
-        rCoordinates[1] = 1.0;
-        break;
-    case 24 :
-        rCoordinates[0] = +1.0;
-        rCoordinates[1] = 1.0;
-        break;
-    default:
-        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        rCoordinates[0] = iPts[rIpNum][0];
+        rCoordinates[1] = iPts[rIpNum][1];
     }
+    else
+        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 
@@ -148,86 +67,8 @@ int NuTo::IntegrationType2D4NLobatto25Ip::GetNumIntegrationPoints()const
 //! @return weight of integration points
 double NuTo::IntegrationType2D4NLobatto25Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    switch (rIpNum)
-    {
-    case 0 :
-        return 0.01;
-        break;
-    case 1 :
-    	return 0.05444444444444444;
-        break;
-    case 2 :
-    	return 0.07111111111111111;
-        break;
-    case 3 :
-    	return 0.05444444444444444;
-        break;
-    case 4 :
-    	return 0.01;
-        break;
-    case 5 :
-    	return 0.05444444444444444;
-        break;
-    case 6 :
-    	return 0.296419753086419713;
-        break;
-    case 7 :
-    	return 0.387160493827160501;
-        break;
-    case 8 :
-    	return 0.296419753086419713;
-        break;
-    case 9 :
-    	return 0.054444444444444441;
-        break;
-    case 10 :
-    	return 0.071111111111111111;
-        break;
-    case 11 :
-    	return 0.387160493827160501;
-        break;
-    case 12 :
-    	return 0.505679012345679024;
-        break;
-    case 13 :
-    	return 0.387160493827160501;
-        break;
-    case 14 :
-    	return 0.071111111111111111;
-        break;
-    case 15 :
-    	return 0.05444444444444444;
-        break;
-    case 16 :
-    	return 0.296419753086419713;
-        break;
-    case 17 :
-    	return 0.387160493827160501;
-        break;
-    case 18 :
-    	return 0.296419753086419713;
-        break;
-    case 19 :
-    	return 0.054444444444444441;
-        break;
-    case 20 :
-    	return 0.01;
-        break;
-    case 21 :
-    	return 0.05444444444444444;
-        break;
-    case 22 :
-    	return 0.071111111111111111;
-        break;
-    case 23 :
-    	return 0.05444444444444444;
-        break;
-    case 24 :
-    	return 0.01;
-        break;
-    default:
-        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
-    }
+    if (rIpNum>=0 && rIpNum<25) return weights[rIpNum];
+    throw MechanicsException("[NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 //! @brief returns a string with the identifier of the integration type

@@ -5,7 +5,9 @@
 
 
 // constructor
-NuTo::IntegrationType1D2NLobatto5Ip::IntegrationType1D2NLobatto5Ip()
+NuTo::IntegrationType1D2NLobatto5Ip::IntegrationType1D2NLobatto5Ip():
+    iPts{-1., -0.654653670707977087, 0., +0.654653670707977087, +1.},
+    weights{0.1, 0.544444444444444, 0.711111111111111, 0.544444444444444, 0.1}
 {
 }
 
@@ -14,26 +16,10 @@ NuTo::IntegrationType1D2NLobatto5Ip::IntegrationType1D2NLobatto5Ip()
 //! @param rCoordinates (result)
 void NuTo::IntegrationType1D2NLobatto5Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
 {
-    switch (rIpNum)
-    {
-    case 0 :
-        rCoordinates = -1.; //
-        break;
-    case 1 :
-        rCoordinates = -0.654653670707977087;
-        break;
-    case 2 :
-        rCoordinates = 0.; //
-        break;
-    case 3 :
-        rCoordinates = +0.654653670707977087; //
-        break;
-    case 4 :
-        rCoordinates = +1.; //
-        break;
-    default:
+    if(rIpNum >= 0 && rIpNum < 5)
+        rCoordinates = iPts[rIpNum];
+    else
         throw MechanicsException("[NuTo::IntegrationType1D2NLobatto5Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
-    }
 }
 
 
@@ -49,21 +35,8 @@ int NuTo::IntegrationType1D2NLobatto5Ip::GetNumIntegrationPoints()const
 //! @return weight of integration points
 double NuTo::IntegrationType1D2NLobatto5Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    switch (rIpNum)
-    {
-    case 0 :
-        return 0.1;
-    case 1 :
-    	return 0.544444444444444;
-    case 2 :
-        return 0.711111111111111;
-    case 3 :
-        return 0.544444444444444;
-    case 4 :
-        return 0.1;
-    default:
-        throw MechanicsException("[NuTo::IntegrationType1D2NLobatto5Ip::GetIntegrationPointWeight] Ip number out of range.");
-    }
+    if(rIpNum >= 0 && rIpNum < 5) return weights[rIpNum];
+    throw MechanicsException("[NuTo::IntegrationType1D2NLobatto5Ip::GetIntegrationPointWeight] Ip number out of range.");
 }
 
 //! @brief returns a string with the identifier of the integration type

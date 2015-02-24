@@ -69,6 +69,11 @@ public:
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
+private:
+    //! @brief ... integration points coordinates
+    double iPts[5];
+    //! @brief ... weights for the integration
+    double weights[5];
 };
 }
 #endif //IntegrationType1D2NLobatto5Ip_H

@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 701 2014-12-08 12:51:24Z ttitscher $
+# $Id$
 
 #test files for mechanics module
 IF(ENABLE_PYTHON_TESTS)
@@ -157,6 +157,21 @@ IF(ENABLE_C++_TESTS)
   TARGET_LINK_LIBRARIES(CoefficientChecks NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
   ADD_TEST(c::mechanics::CoefficientChecks ${CMAKE_CURRENT_BUILD_DIR}/CoefficientChecks)
 
+  # LobattoIntegration
+  # LobattoIntegration
+  ADD_EXECUTABLE(LobattoIntegration LobattoIntegration.cpp)
+  TARGET_LINK_LIBRARIES(LobattoIntegration NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(LobattoIntegration NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(LobattoIntegration ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(LobattoIntegration PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)#
+  ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
+  
 
 ENDIF(ENABLE_C++_TESTS)
 
